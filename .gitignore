@@ -1,0 +1,5 @@
+.env.*
+composer.json
+composer.phar
+composer-setup.php
+error_log

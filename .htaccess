@@ -1,0 +1,9 @@
+RewriteEngine On
+
+# Check if the request is for an existing file in the resources/ directory
+RewriteCond %{DOCUMENT_ROOT}/resources%{REQUEST_URI} -f
+RewriteRule ^(.*)$ ./resources/$1 [L]
+
+# Redirect all requests to index.php (assuming a typical front controller pattern)
+#RewriteCond %{REQUEST_FILENAME} !-f
+#RewriteRule ^ index.php [L]
