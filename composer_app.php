@@ -1,24 +1,43 @@
 <?php
 
+require 'vendor/autoload.php'; // Include Composer's autoloader
+
+/*
+use Composer\Factory;
+use Composer\Repository\InstalledRepositoryInterface;
+
+// Initialize Composer
+$composer = Factory::create();
+
+// Get the installed packages repository
+$installedRepo = $composer->getRepositoryManager()->getLocalRepository();
+
+// Get a list of installed packages
+$installedPackages = $installedRepo->getPackages();
+
+// Print the list of installed packages
+foreach ($installedPackages as $package) {
+    echo $package->getName() . ' (' . $package->getVersion() . ')' . PHP_EOL;
+}
+die();
+
+*/
+
+if (__FILE__ == get_required_files()[0])
+  if ($path = (basename(getcwd()) == 'public')
+    ? (is_file('../config.php') ? '../config.php' : (is_file('../config/config.php') ? '../config/config.php' : null))
+    : (is_file('config.php') ? 'config.php' : (is_file('config/config.php') ? 'config/config.php' : null))) require_once($path); 
+else die(var_dump($path . ' path was not found. file=config.php'));
+
 if ($path = (basename(getcwd()) == 'public')
     ? (is_file('../composer.php') ? '../composer.php' : (is_file('../config/composer.php') ? '../config/composer.php' : null))
     : (is_file('composer.php') ? 'composer.php' : (is_file('config/composer.php') ? 'config/composer.php' : null))) require_once($path); 
-else die(var_dump($path));
+else die(var_dump($path . ' path was not found. file=composer.php'));
 
-class composerSchema {
-  public $name;
-  public $description;
-  public $version;
-  public $type;
-  public $keywords;
-  public $homepage;
-  public $readme;
-  public $time; //date('Y-m-d H:i:s');
-  public $license;
-  public $authors;
-  public $require;
-  public $autoload;
-}
+if ($path = (basename(getcwd()) == 'public')
+    ? (is_file('console_app.php') ? 'console_app.php' : (is_file('../config/console_app.php') ? '../config/console_app.php' : null))
+    : (is_file('console_app.php') ? 'console_app.php' : (is_file('config/console_app.php') ? 'config/console_app.php' : 'console_app.php'))) require_once($path); 
+else die(var_dump($path . ' path was not found. file=console_app.php'));
 
 /*  ...
     "autoload": {
@@ -31,15 +50,22 @@ class composerSchema {
 
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 
-  //dd($_POST);
+  // consider creating a visual aspect for the lock file
 
   if (!empty($_POST['composer'])) {
     if (isset($_POST['composer']['config'])) {
       $composer = new composerSchema;
-  
+
+/*
+      if (isset($_POST['composer']['config']['version']) && preg_match(COMPOSER_VER_EXPR, $_POST['composer']['config']['version']))
+        $composer->{'version'} = $_POST['composer']['config']['version'];   // $_POST['composer']['config']['version'] !== ''
+      else unset($composer->{'version'});
+*/
       $composer->{'name'} = $_POST['composer']['config']['name']['vendor'] . '/' . $_POST['composer']['config']['name']['package'];
       $composer->{'description'} = $_POST['composer']['config']['description'];
-      $composer->{'version'} = $_POST['composer']['config']['version'];
+      if (isset($_POST['composer']['config']['version']) && preg_match(COMPOSER_VER_EXPR, $_POST['composer']['config']['version']))
+        $composer->{'version'} = $_POST['composer']['config']['version'];   // $_POST['composer']['config']['version'] !== ''
+      else unset($composer->{'version'});
       $composer->{'type'} = $_POST['composer']['config']['type'];
       $composer->{'keywords'} = (isset($_POST['composer']['config']['keywords']) ? $_POST['composer']['config']['keywords'] : []);
       $composer->{'homepage'} = 'https://github.com/' . $_POST['composer']['config']['name']['vendor'] . '/' . $_POST['composer']['config']['name']['package'];
@@ -50,7 +76,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 
       if (!empty($_POST['composer']['config']['authors'])) foreach ($_POST['composer']['config']['authors'] as $key => $author) {
 
-        if ($author['name'] != '' && $author['email'] != '') {
+        if ($author['name'] != '' || $author['email'] != '') {
           $object = new stdClass();
           $object->name = $author['name'] ?? 'John Doe';
           $object->email = $author['email'] ?? 'jdoe@example.com';
@@ -62,6 +88,10 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
   
       // $composer->{'support'}
       // $composer->{'funding'}
+      
+      // $composer->{'repositories'}
+      
+      if (!$composer->{'repositories'} || empty($composer->{'repositories'})) $composer->{'repositories'} = [];
   
       $composer->{'require'} = new stdClass(); //$_POST['composer']['require'];
       
@@ -75,7 +105,14 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         }
       } else $composer->{'require'} = new StdClass;
     
-    // $composer->{'require-dev'}
+      $composer->{'require-dev'} = new stdClass();
+      
+      if (!empty($_POST['composer']['config']['require-dev'])) {
+        //if (!in_array($require_0, $_POST['composer']['require'])) { continue; }
+        foreach ($_POST['composer']['config']['require-dev'] as $require) {   //   
+          if (preg_match('/(.*):(.*)/', $require, $match)) $composer->{'require-dev'}->{$match[1]} = $match[2] ?? '^';
+        }
+      } else $composer->{'require-dev'} = new StdClass;
 
       $composer->{'autoload'} = new StdClass; // $_POST['composer']['autoload'];
   //$composer->{'autoload'}->{'psr-4'} = new StdClass; 
@@ -109,9 +146,15 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 
       //dd($errors);
     }
+    //dd('env COMPOSER_ALLOW_SUPERUSER=' . COMPOSER_ALLOW_SUPERUSER . '; sudo ' . COMPOSER_EXEC . ' install ' . (isset($_POST['composer']['config']) ? '-o' : (isset($_POST['composer']['optimize-classes']) ? '-o': '')) . ';');
+    
+    if (isset($_POST['composer']['lock']))
+      unlink(APP_PATH . 'composer.lock');
+
+    
     
     if (isset($_POST['composer']['install'])) {
-      $proc = proc_open('env COMPOSER_ALLOW_SUPERUSER=' . COMPOSER_ALLOW_SUPERUSER . '; sudo ' . COMPOSER_EXEC . ' install ' . (isset($_POST['composer']['config']) ? '-o' : (isset($_POST['composer']['optimize-classes']) ? '-o': '')) . '; ' . COMPOSER_EXEC . ' update;', array( array("pipe","r"), array("pipe","w"), array("pipe","w")), $pipes);
+      $proc = proc_open('env COMPOSER_ALLOW_SUPERUSER=' . COMPOSER_ALLOW_SUPERUSER . '; sudo ' . COMPOSER_EXEC . ' install ' . (isset($_POST['composer']['config']) ? '-o' : (isset($_POST['composer']['optimize-classes']) ? '-o': '')) . ';', array( array("pipe","r"), array("pipe","w"), array("pipe","w")), $pipes);
 
       list($stdout, $stderr, $exitCode) = [stream_get_contents($pipes[1]), stream_get_contents($pipes[2]), proc_close($proc)];
 
@@ -127,12 +170,18 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     }
     
     if (isset($_POST['composer']['update'])) {
+    
+    /* Update won't work if the repositry has any upper/lower case letters differn't ... */
+/*  
+update [--with WITH] [--prefer-source] [--prefer-dist] [--prefer-install PREFER-INSTALL] [--dry-run] [--dev] [--no-dev] [--lock] [--no-install] [--no-audit] [--audit-format AUDIT-FORMAT] [--no-autoloader] [--no-suggest] [--no-progress] [-w|--with-dependencies] [-W|--with-all-dependencies] [-v|vv|vvv|--verbose] [-o|--optimize-autoloader] [-a|--classmap-authoritative] [--apcu-autoloader] [--apcu-autoloader-prefix APCU-AUTOLOADER-PREFIX] [--ignore-platform-req IGNORE-PLATFORM-REQ] [--ignore-platform-reqs] [--prefer-stable] [--prefer-lowest] [-i|--interactive] [--root-reqs] [--] [<packages>...]
+*/
+
       if (isset($_POST['composer']['self-update']) || file_exists(APP_PATH . 'composer.phar')) {
         if (!file_exists(APP_PATH . 'composer-setup.php'))
           copy('https://getcomposer.org/installer', 'composer-setup.php');
         exec('php composer-setup.php');
       }
-
+      // If this process isn't working, its because you have an invalid composer.json file
       $proc = proc_open('env COMPOSER_ALLOW_SUPERUSER=' . COMPOSER_ALLOW_SUPERUSER . '; sudo ' . COMPOSER_EXEC . ' update'  , array( array("pipe","r"), array("pipe","w"), array("pipe","w")), $pipes);
 
       list($stdout, $stderr, $exitCode) = [stream_get_contents($pipes[1]), stream_get_contents($pipes[2]), proc_close($proc)];
@@ -156,7 +205,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
       // $_POST['composer']['cmd'];
     }
 
-    exit(header('Location: ' . APP_WWW));
+    exit(header('Location: ' . APP_URL_BASE));
   }
 }
 
@@ -259,8 +308,12 @@ img { display: inline; }
 <?php $appComposer['style'] = ob_get_contents();
 ob_end_clean();
 
+// dd(glob('*')); dd(getcwd());
+
+//(APP_SELF == __FILE__ || isset($_GET['app']) && $_GET['app'] == 'composer' ? 'selected' : (version_compare(COMPOSER_LATEST, COMPOSER_VERSION, '>') != 0 ? (isset($_GET['app']) && $_GET['app'] != 'composer' ? '' : 'selected') :  '')) 
 ob_start(); ?>
-  <div id="app_composer-container" class="absolute <?= (APP_SELF == __FILE__ || isset($_GET['app']) && $_GET['app'] == 'composer' ? 'selected' : (version_compare(COMPOSER_LATEST, COMPOSER_VERSION, '>') != 0 ? (isset($_GET['app']) && $_GET['app'] != 'composer' ? '' : 'selected') :  '')) ?>" style="position: absolute; top: 60px; left: 0; right: 0; z-index: 1; margin: 0 auto; width: 600px; background-color: rgba(255,255,255,0.8); padding: 10px">
+
+  <div id="app_composer-container" class="absolute <?= (APP_SELF == __FILE__ || (isset($_GET['app']) && $_GET['app'] == 'composer') || (defined('COMPOSER') && !is_object(COMPOSER)) || count((array)COMPOSER) === 0 || version_compare(COMPOSER_LATEST, COMPOSER_VERSION, '>') != 0 ? 'selected' : '') ?>" style="position: absolute; top: 60px; left: 0; right: 0; z-index: 1; margin: 0 auto; width: 600px; background-color: rgba(255,255,255,0.8); padding: 10px">
     <div style="position: relative; margin: 0 auto; width: 404px; height: 306px; border: 3px dashed #6B4329; background-color: #FBF7F1;">
 
       <div class="absolute" style="position: absolute; display: inline-block; width: 100%; margin: -25px 0 10px 0; border-bottom: 1px solid #000; z-index: 3;">
@@ -273,12 +326,12 @@ ob_start(); ?>
           <span style="background-color: #B0B0B0; color: white;">Composer <?= (version_compare(COMPOSER_LATEST, COMPOSER_VERSION, '>') != 0 ? 'v'.substr(COMPOSER_LATEST, 0, similar_text(COMPOSER_LATEST, COMPOSER_VERSION)) . '<span class="update" style="color: green; cursor: pointer;">' . substr(COMPOSER_LATEST, similar_text(COMPOSER_LATEST, COMPOSER_VERSION)) . '</span>' : 'v'.COMPOSER_VERSION ); ?></span>
           <span>
 
-          <form style="display: inline;" autocomplete="off" spellcheck="false" action="?<?=http_build_query(APP_QUERY + array( 'app' => 'composer')) . (APP_ENV == 'development' ? '#!' : '') /* $c_or_p . '=' . (empty($_GET[$c_or_p]) ? '' : $$c_or_p->name) . '&amp;app=composer' */ ?>" method="GET">
+          <form style="display: inline;" autocomplete="off" spellcheck="false" action="<?= APP_URL_BASE . '?' . http_build_query(APP_QUERY + array( 'app' => 'composer')) . (APP_ENV == 'development' ? '#!' : '') /* $c_or_p . '=' . (empty($_GET[$c_or_p]) ? '' : $$c_or_p->name) . '&amp;app=composer' */ ?>" method="GET">
             <?php if (isset($_GET['debug'])) { ?> <input type="hidden" name="debug" value="" /> <?php } ?>
 
             <code class="text-sm" style="background-color: #fff; color: #0078D7;">$ 
               <input type="hidden" name="app" value="composer" />
-              <select name="exec" onchange="this.form.submit()">
+              <select name="exec" onchange="this.form.submit();">
                 <option <?= (COMPOSER_EXEC == COMPOSER_BIN ? 'selected' : '') ?> value="bin"><?= COMPOSER_BIN; ?></option>
                 <option <?= (COMPOSER_EXEC == COMPOSER_PHAR ? 'selected' : '') ?> value="phar"><?= COMPOSER_PHAR; ?></option>
               </select>
@@ -332,6 +385,7 @@ ob_start(); ?>
       <div class="absolute text-sm" style="position: absolute; bottom: 0; right: 0; padding: 2px; z-index: 1; "><?= (version_compare(COMPOSER_LATEST, COMPOSER_VERSION, '>') != 0 ? '<code>Latest: </code><span class="update" style="color: green; cursor: pointer;">' . 'v'.substr(COMPOSER_LATEST, 0, similar_text(COMPOSER_LATEST, COMPOSER_VERSION)). substr(COMPOSER_LATEST, similar_text(COMPOSER_LATEST, COMPOSER_VERSION))  . '</span>': 'Installed: v' . COMPOSER_VERSION ); ?></div>
       <div style="position: relative; overflow: hidden; width: 398px; height: 250px;">
 <?php
+
 $count = 0;
 if (defined('COMPOSER') && isset(COMPOSER->require))
   foreach (COMPOSER->require as $key => $require) {
@@ -340,7 +394,7 @@ if (defined('COMPOSER') && isset(COMPOSER->require))
         if (!empty($match) && !is_dir('vendor/'.$match[1].'/')) $count++;
 }
 ?>      
-      <div id="app_composer-frameMenu" class="app_composer-frame-container <?=($count >= 1 ? 'selected' : '' ); ?> absolute" style="background-color: rgb(225,196,151,.75); margin-top: 8px;">
+      <div id="app_composer-frameMenu" class="app_composer-frame-container <?=($count >= 1 ? '' : 'selected' ); ?> absolute" style="background-color: rgb(225,196,151,.75); margin-top: 8px;">
         <!--<h3>Main Menu</h3> <h4>Update - Edit Config - Initalize - Install</h4> -->
 
         <div style="display: block; margin: 5px auto;">
@@ -366,7 +420,7 @@ if (defined('COMPOSER') && isset(COMPOSER->require))
       </div>
 <?php ob_start(); ?>
       <div id="app_composer-frameUpdate" class="app_composer-frame-container absolute" style="overflow: scroll; background-color: rgb(225,196,151,.75);">
-    <form autocomplete="off" spellcheck="false" action="?<?=http_build_query(APP_QUERY + array( 'app' => 'composer')) . (APP_ENV == 'development' ? '#!' : '') /* $c_or_p . '=' . (empty($_GET[$c_or_p]) ? '' : $$c_or_p->name) . '&amp;app=composer' */ ?>" method="POST">
+    <form autocomplete="off" spellcheck="false" action="<?= APP_URL_BASE . '?' . http_build_query(APP_QUERY + array( 'app' => 'composer')) . (APP_ENV == 'development' ? '#!' : '') /* $c_or_p . '=' . (empty($_GET[$c_or_p]) ? '' : $$c_or_p->name) . '&amp;app=composer' */ ?>" method="POST">
       <input type="hidden" name="composer[update]" value="" />
       <div style="position: absolute; right: 0; float: right; text-align: center;">
         <input class="btn" id="composerSetupSubmit" type="submit" value="self-update">
@@ -397,10 +451,12 @@ ob_end_clean(); ?>
 
       <?= (version_compare(COMPOSER_LATEST, COMPOSER_VERSION, '>') == 0 ? NULL : $frameUpdateContents); ?>
 
-      <div id="app_composer-frameInit" class="app_composer-frame-container absolute <?= (defined('COMPOSER') && realpath(COMPOSER_JSON['path']) ? '' : 'selected'); ?>" style="overflow: hidden; height: 270px;">
-    <form autocomplete="off" spellcheck="false" action="?<?=http_build_query(APP_QUERY + array( 'app' => 'composer')) . (APP_ENV == 'development' ? '#!' : '') /* $c_or_p . '=' . (empty($_GET[$c_or_p]) ? '' : $$c_or_p->name) . '&amp;app=composer' */ ?>" method="POST">
+      <div id="app_composer-frameInit" class="app_composer-frame-container absolute <?= (realpath(COMPOSER_JSON['path']) ? '' : (defined('COMPOSER')  && is_object(COMPOSER) && count((array)COMPOSER) !== 0 ? '' : 'selected')); ?>" style="overflow: hidden; height: 270px;">
+<?php if (!defined('CONSOLE') && CONSOLE != true) { ?>
+    <form autocomplete="off" spellcheck="false" action="<?= APP_URL_BASE . '?' . http_build_query(APP_QUERY + array( 'app' => 'composer')) . (APP_ENV == 'development' ? '#!' : '') /* $c_or_p . '=' . (empty($_GET[$c_or_p]) ? '' : $$c_or_p->name) . '&amp;app=composer' */ ?>" method="POST">
+<?php } ?>
       <div style="position: absolute; right: 0; float: right; text-align: center;">
-          <button id="composerInitSubmit" class="btn" type="submit" value>Init/Run</button>
+          <button id="app_composer-init-submit" class="btn" type="submit" value>Init/Run</button>
       </div>
       <div style="display: inline-block; width: 100%; background-color: rgb(225,196,151,.75);">
         <div class="text-sm" style="display: inline;">
@@ -409,13 +465,15 @@ ob_end_clean(); ?>
       </div>
       <div id="composerInitForm" style="display: inline-block; padding: 10px; background-color: rgba(235, 216, 186, 0.8); border: 1px dashed #0078D7;">
         <label>Composer Command</label>
-        <textarea style="width: 100%" cols="40" rows="6" name="composer[init]"><?= preg_replace('/\s--/', "\n--", COMPOSER_INIT_PARAMS); ?></textarea>
+        <textarea id="app_composer-init-input" style="width: 100%" cols="40" rows="6" name="composer[init]"><?= preg_replace('/\s--/', "\n--", COMPOSER_INIT_PARAMS); ?></textarea>
       </div>
+<?php if (!defined('CONSOLE') && CONSOLE != true) { ?>
     </form>
+<?php } ?>
       </div>
 
       <div id="app_composer-frameConf" class="app_composer-frame-container absolute <?= (!defined('COMPOSER') && is_file(APP_PATH . 'composer.json') ? 'selected' : ''); ?>" style="overflow-x: hidden; overflow-y: auto; height: 230px;">
-    <form autocomplete="off" spellcheck="false" action="?<?=http_build_query(APP_QUERY + array('app' => 'composer')) . (APP_ENV == 'development' ? '#!' : '') /* $c_or_p . '=' . (empty($_GET[$c_or_p]) ? '' : $$c_or_p->name) . '&amp;app=composer' */ ?>" method="POST">
+    <form autocomplete="off" spellcheck="false" action="<?= APP_URL_BASE . '?' . http_build_query(APP_QUERY + array('app' => 'composer')) . (APP_ENV == 'development' ? '#!' : '') /* $c_or_p . '=' . (empty($_GET[$c_or_p]) ? '' : $$c_or_p->name) . '&amp;app=composer' */ ?>" method="POST">
       <input type="hidden" name="composer[config]" value="" />
 
       <div style="position: absolute; right: 0; float: right; text-align: center; z-index: 2;">
@@ -456,35 +514,37 @@ ob_end_clean(); ?>
         <div class="text-sm" style="display: inline;">
           <!-- <input id="composerJson" type="checkbox" style="cursor: pointer;" name="composerJson" value="true" checked=""> -->
           <label for="composerJson" id="appComposerJsonLabel" class="text-sm" style="background-color: #6B4329; <?= (defined('COMPOSER_JSON') && realpath(COMPOSER_JSON['path']) ? 'color: #F0E0C6; text-decoration: underline; ' : 'color:red; text-decoration: underline; text-decoration: line-through;') ?> cursor: pointer; font-weight: bold;" title="<?= (defined('COMPOSER_JSON') && realpath(COMPOSER_JSON['path']) ? COMPOSER_JSON['path'] : COMPOSER_JSON['path']) /*NULL*/; ?>">&#9650; <code>COMPOSER_PATH/composer.json</code></label>
+          <div class="text-xs" style="display: <?= (!is_file(APP_PATH . 'composer.lock') ? 'none' : 'inline-block' )?>; padding-top: 5px; padding-right: 10px; float: right;"><input type="checkbox" name="composer[lock]" value="" /> <span style="background-color: white; color: red; text-decoration: line-through;">composer.lock</span></div>
         </div>
       </div>
       <div id="appComposerJsonForm" style="position: relative; display: inline-block; overflow-x: hidden; overflow-y: auto; height: auto; padding: 10px; background-color: rgb(235,216,186,.80); border: 1px dashed #0078D7;">
 <?php if (defined('COMPOSER_JSON') && realpath(COMPOSER_JSON['path'])) { ?>
       <div style="display: inline-block; width: 100%; margin-bottom: 10px;">
-        <div style="display: inline-block; width: 28%;">Composer</div>
-        <div class="text-xs" style="display: inline-block; width: 70%; text-align: right;">
-          <span style="background-color: #0078D7; color: white;"><?= (isset(COMPOSER->time) ? COMPOSER->{'time'} : '') ?></span>
+        <div class="text-xs" style="display: inline-block; float: left; background-color: #0078D7; color: white;">Last Update: <span <?= (isset(COMPOSER->time) && COMPOSER->time === '' ? 'style="background-color: white; color: red;"' : 'style="background-color: white; color: #0078D7;"') ?>><?= (isset(COMPOSER->time) && COMPOSER->time !== '' ? COMPOSER->{'time'} : date('Y-m-d H:m:s')) ?></span></div>
+        
+        
+        <div class="text-xs" style="display: inline-block; float: right;">
           <input type="checkbox" name="composer[update]" value="" checked /> <span style="background-color: #0078D7; color: white;">Update</span>
           <input type="checkbox" name="composer[install]" value="" checked /> <span style="background-color: #0078D7; color: white;">Install</span>
         </div>
       </div>
 <?php } ?>
-      <div style="display: inline-block; width: 100%;">Name:
+      <div style="display: inline-block; width: 100%;"><span <?= (isset(COMPOSER->{'name'}) && COMPOSER->{'name'} !== '' ? '' : 'style="background-color: #fff; color: red;" title="Either Vendor or Package is missing"') ?>>Name:</span>
         <div style="position: relative; float: right;">
           <div class="absolute font-bold" style="position: absolute; top: -8px; left: 5px; font-size: 10px; z-index: 1;">Vendor</div>
           <input type="text" id="tst" name="composer[config][name][vendor]" placeholder="vendor" value="<?= (defined('COMPOSER') && isset(COMPOSER->name) ? explode('/', COMPOSER->name)[0] : ''); ?>" size="13"> / <div class="absolute font-bold" style="position: absolute; top: -8px; right: 82px; font-size: 10px; z-index: 1;">Package</div> <input type="text" id="tst" name="composer[config][name][package]" placeholder="package" value="<?= (defined('COMPOSER') && isset(COMPOSER->name)? explode('/', COMPOSER->name)[1] : ''); ?>" size="13" />   
         </div>
       </div>
-      <div style="display: inline-block; width: 100%;">Description:
+      <div style="display: inline-block; width: 100%;"><label for="composer-description" <?= (isset(COMPOSER->{'description'}) && COMPOSER->{'description'} !== '' ? '' : 'style="background-color: #fff; color: red; cursor: pointer;" title="Description is missing"') ?>>Description:</label>
         <div style="float: right;">
-          <input type="text" name="composer[config][description]" placeholder="Details" value="<?= (defined('COMPOSER') && isset(COMPOSER->description)? COMPOSER->description : ''); ?>">
+          <input id="composer-description" type="text" name="composer[config][description]" placeholder="Details" value="<?= (defined('COMPOSER') && isset(COMPOSER->description)? COMPOSER->description : ''); ?>">
         </div>
       </div>
       
       <!-- version -->
-      <div style="display: inline-block; width: 100%;">Version:
+      <div style="display: inline-block; width: 100%;"><label for="composer-version" <?= (isset(COMPOSER->{'version'}) && preg_match(COMPOSER_VER_EXPR, COMPOSER->{'version'}) ? '' : 'style="background-color: #fff; color: red; cursor: pointer;" title="Version must follow this format: ' . COMPOSER_VER_EXPR . '"') ?>>Version:</label>
         <div style="float: right;">
-          <input type="text" name="composer[config][version]" size="10" placeholder="(Version) 1.2.3" style="text-align: right;" pattern="(\d+\.\d+(?:\.\d+)?)" value="<?= (defined('COMPOSER') && isset(COMPOSER->version) ? COMPOSER->version : ''); ?>">
+          <input id="composer-version" type="text" name="composer[config][version]" size="10" placeholder="(Version) 1.2.3" style="text-align: right;" pattern="(\d+\.\d+(?:\.\d+)?)" value="<?= (defined('COMPOSER') && isset(COMPOSER->version) ? COMPOSER->version : ''); ?>">
         </div>
       </div>
       <!-- type -->
@@ -675,12 +735,12 @@ if (defined('COMPOSER') && isset(COMPOSER->require))
 
 ?>
       <div id="app_composer-frameInstall" class="app_composer-frame-container absolute <?= ($count > 0 ? 'selected' : ''); ?>" style="overflow: scroll; width: 400px; height: 270px;">
-    <form autocomplete="off" spellcheck="false" action="?<?=http_build_query(APP_QUERY + array( 'app' => 'composer')) . (APP_ENV == 'development' ? '#!' : '')  /* $c_or_p . '=' . (empty($_GET[$c_or_p]) ? '' : $$c_or_p->name) . '&amp;app=composer' */ ?>" method="POST">  
+    <form autocomplete="off" spellcheck="false" action="<?=APP_URL_BASE . '?' . http_build_query(APP_QUERY + array( 'app' => 'composer')) . (APP_ENV == 'development' ? '#!' : '')  /* $c_or_p . '=' . (empty($_GET[$c_or_p]) ? '' : $$c_or_p->name) . '&amp;app=composer' */ ?>" method="POST">  
       <div style="display: inline-block; width: 100%; background-color: rgb(225,196,151,.75);">
         <input type="hidden" name="composer[install]" value="" />
         <div style="position: absolute; right: 0; float: right; text-align: center; z-index: 1;">
 
-          <button id="composerInstallSubmit" class="btn" type="submit" style="<?= ($count > 0 ? 'color: red;' : '' ); ?>" value>Install<?= ($count > 0 ? ' '.$count : '' ); ?></button>
+          <button id="composerInstallSubmit" class="btn" type="submit" style="<?= ($count > 0 ? 'color: red;' : '' ); ?>" value>Install (<?= ($count > 0 ? $count : '' ); ?>)</button>
         </div> 
         <div class="text-sm" style="display: inline;">
           <label id="composerInstallLabel" for="composerInstall" style="background-color: hsl(343, 100%, 42%); color: white; cursor: pointer;">&#9650; <code>Install</code></label>
@@ -688,7 +748,7 @@ if (defined('COMPOSER') && isset(COMPOSER->require))
 
       </div>
 <?php if ($count > 0) { ?>
-      <div id="" style="display: inline-block; padding: 10px; margin-bottom: 5px; width: 100%; background-color: rgb(225,196,151,.75);  border: 1px dashed #0078D7;">
+      <div id="" style="display: inline-block; padding: 10px; margin-bottom: 5px; width: 100%; background-color: rgba(235, 216, 186, 0.8);  border: 1px dashed #0078D7;">
       
         Install (vendor/package): 
         <span >
@@ -906,7 +966,7 @@ $(document).ready(function() {
 
   $("#appComposerJsonLabel").click(function() {
     if ($('#appComposerJsonForm').css('display') == 'none') {
-      $('#appComposerJsonLabel').html("&#9650; <code>COMPOSER_PATH/composer.json");
+      $('#appComposerJsonLabel').html("&#9650; <code>COMPOSER_PATH/composer.json</code>");
       $('#appComposerJsonForm').slideDown( "slow", function() {
       // Animation complete.
       });
@@ -994,7 +1054,7 @@ $(document).ready(function() {
     //currentIndex--;    
     console.log(currentIndex);
   });
-    
+
   $("#app_composer-frameMenuNext").click(function() {
     currentIndex++;
     console.log(currentIndex + '!=' + totalFrames);
@@ -1071,5 +1131,5 @@ ob_start(); ?>
 ob_end_clean();
 
 //check if file is included or accessed directly
-if (__FILE__ == get_required_files()[0] || in_array(__FILE__, get_required_files()) && isset($_GET['app']) && $_GET['app'] == 'composer' && APP_DEBUG)
+if (__FILE__ == APP_SELF || in_array(__FILE__, get_required_files()) && isset($_GET['app']) && $_GET['app'] == 'composer' && APP_DEBUG)
   die($appComposer['html']);

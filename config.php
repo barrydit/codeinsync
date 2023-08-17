@@ -81,6 +81,36 @@ composer-setup.php
 END
 );
 
+  if (!is_file(APP_PATH . 'LICENSE'))
+    if (@touch(APP_PATH . 'LICENSE'))
+      file_put_contents(APP_PATH . 'LICENSE', <<<END
+This is free and unencumbered software released into the public domain.
+
+Anyone is free to copy, modify, publish, use, compile, sell, or
+distribute this software, either in source code form or as a compiled
+binary, for any purpose, commercial or non-commercial, and by any
+means.
+
+In jurisdictions that recognize copyright laws, the author or authors
+of this software dedicate any and all copyright interest in the
+software to the public domain. We make this dedication for the benefit
+of the public at large and to the detriment of our heirs and
+successors. We intend this dedication to be an overt act of
+relinquishment in perpetuity of all present and future rights to this
+software under copyright law.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
+IN NO EVENT SHALL THE AUTHORS BE LIABLE FOR ANY CLAIM, DAMAGES OR
+OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE,
+ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
+OTHER DEALINGS IN THE SOFTWARE.
+
+For more information, please refer to <https://unlicense.org>
+END
+);
+
 }
 ob_start();
 // write content
@@ -96,10 +126,11 @@ ob_start();
 if (($dir = basename(APP_PATH)) != 'config') {
   if (in_array($dir, ['public', 'public_html']))
     chdir('../');
+  //else chdir('../'); //
   //dd((__DIR__ . DIRECTORY_SEPARATOR . '*.php'));
     //if (is_dir('config')) {}
   $previousFilename = '';
-  $dirs = glob(__DIR__ . DIRECTORY_SEPARATOR . '*.php');
+  $dirs = array_filter(glob(__DIR__ . DIRECTORY_SEPARATOR . '*.php'), 'is_file');
 
   usort($dirs, function ($a, $b) {
       // Define your sorting criteria here
@@ -134,6 +165,7 @@ if (($dir = basename(APP_PATH)) != 'config') {
 
     $previousFilename = $currentFilename;
   }
+
 } elseif (basename(dirname(APP_SELF)) == 'public_html') { // basename(__DIR__) == 'public_html'
   $errors['APP_PUBLIC'] = 'The `public_html` scenario was detected.' . "\n";
   
@@ -159,7 +191,7 @@ if (($dir = basename(APP_PATH)) != 'config') {
 
 //sort($files);
 
-      foreach (glob(__DIR__ . DIRECTORY_SEPARATOR . '*.php') as $includeFile) {
+      foreach (array_filter(glob(__DIR__ . DIRECTORY_SEPARATOR . '*.php'), 'is_file') as $includeFile) {
         //echo $includeFile . "<br />\n";
 
         if (in_array($includeFile, get_required_files())) continue; // $includeFile == __FILE__
@@ -197,6 +229,82 @@ if ($path = realpath((basename(__DIR__) != 'config' ? NULL : __DIR__ . DIRECTORY
 
 //dd(get_defined_constants(true)['user']); // true
 
+/*
+
+// Define your installation constants
+define('INSTALL_ROOT', $_SERVER['DOCUMENT_ROOT']);  // Document root
+define('APP_ROOT', __DIR__);  // Directory of this script
+define('SRC_DIR', '../src/');
+define('PUBLIC_DIR', '../public/');
+define('CONFIG_DIR', '../config/');
+
+// Get the request path from the URL
+$requestPath = parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH);
+
+// Determine if installation is needed
+$installNeeded = (realpath(INSTALL_ROOT) === realpath(APP_ROOT));
+
+// Perform installation if needed
+if ($installNeeded) {
+    // Determine the target directories based on request path
+    $targetDirs = [
+        '/' => PUBLIC_DIR,
+        '/subdir/' => SRC_DIR,
+        '/config/' => CONFIG_DIR,
+    ];
+
+    // Find the appropriate target directory
+    $targetDir = '';
+    foreach ($targetDirs as $pathPrefix => $dir) {
+        if (strpos($requestPath, $pathPrefix) === 0) {
+            $targetDir = $dir;
+            break;
+        }
+    }
+
+    if (!$targetDir) {
+        echo "Installation path not found for request path: $requestPath";
+    } else {
+        // Define source and destination paths
+        $sourceFile = __FILE__;
+        $destinationFile = $targetDir . basename($sourceFile);
+
+        // Perform installation (copy the script)
+        if (copy($sourceFile, $destinationFile)) {
+            echo "Installation successful. Copied script to: $destinationFile";
+        } else {
+            echo "Installation failed. Unable to copy script.";
+        }
+    }
+} else {
+    echo "Installation not needed.";
+}
+
+*/
+
+
+
+/* Install code ...
+
+$installNeeded = (realpath($_SERVER['DOCUMENT_ROOT']) === realpath(APP_PATH));
+
+if ($installNeeded) {
+    // Define your target directories
+    $srcDir = APP_PATH . '..' . DIRECTORY_SEPARATOR . 'src' . DIRECTORY_SEPARATOR;
+    $publicDir = APP_PATH . '..' . DIRECTORY_SEPARATOR . 'public' . DIRECTORY_SEPARATOR;
+    $configDir = APP_PATH . '..' . DIRECTORY_SEPARATOR . 'config' . DIRECTORY_SEPARATOR;
+
+    // Perform installation (example: copy files)
+    // copy('source_path/file.php', $srcDir . 'file.php');
+    // copy('source_path/index.php', $publicDir . 'index.php');
+    // copy('source_path/config.php', $configDir . 'config.php');
+    
+    echo "Installation performed.";
+} else {
+    echo "Installation not needed.";
+}
+
+
 if (dirname(APP_SELF) == __DIR__) {
   if (dirname(APP_CONFIG) != 'config')
     if (!is_file(APP_PATH . 'install.php'))
@@ -221,8 +329,8 @@ END
 );
       define('APP_INSTALL', true);
     }
-
 }
+*/
 
 //(!extension_loaded('gd'))
 //  and $errors['ext/gd'] = 'PHP Extension: <b>gd</b> must be loaded inorder to export to xls for (PHPSpreadsheet).';

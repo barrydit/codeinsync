@@ -7,6 +7,11 @@ function dd(mixed $param = null) { //?string $param != work when missing argv
   return die();
 }
 
+  
+function htmlsanitize($argv = '') {
+  return mb_convert_encoding(htmlspecialchars(html_entity_decode($argv, ENT_QUOTES, 'UTF-8'), ENT_QUOTES, 'UTF-8' ), 'HTML-ENTITIES', 'utf-8');
+}
+
 
 /**
 This function takes in two parameters: $base and $path, which represent the base path and the path to be made relative, respectively.
@@ -79,6 +84,76 @@ function truepath($path){
     return $path;
 }
 
+
+// Snippet from PHP Share: http://www.phpshare.org
+
+function formatSizeUnits($bytes)
+{
+  if ($bytes >= 1073741824)
+    $bytes = number_format($bytes / 1073741824, 2) . ' GB';
+  elseif ($bytes >= 1048576)
+    $bytes = number_format($bytes / 1048576, 2) . ' MB';
+  elseif ($bytes >= 1024)
+    $bytes = number_format($bytes / 1024, 2) . ' KB';
+  elseif ($bytes > 1)
+    $bytes = $bytes . ' bytes';
+  elseif ($bytes == 1)
+    $bytes = $bytes . ' byte';
+  else
+    $bytes = '0 bytes';
+  return $bytes;
+}
+
+function convertToBytes($value) {
+    $unit = strtolower(substr($value, -1, 1));
+    return (int) $value * pow(1024, array_search($unit, array(1 =>'k','m','g')));
+}
+
+/**
+* Converts bytes into human readable file size.
+*
+* @param string $bytes
+* @return string human readable file size (2,87 ??)
+* @author Mogilev Arseny
+* @bug Does not handle 0 bytes
+*/
+function FileSizeConvert($bytes)
+{
+  $bytes = floatval($bytes);
+  $arBytes = array(
+    0 => array(
+      "UNIT" => "TB",
+      "VALUE" => pow(1024, 4)
+    ),
+    1 => array(
+      "UNIT" => "GB",
+      "VALUE" => pow(1024, 3)
+    ),
+    2 => array(
+      "UNIT" => "MB",
+      "VALUE" => pow(1024, 2)
+    ),
+    3 => array(
+      "UNIT" => "KB",
+      "VALUE" => 1024
+    ),
+    4 => array(
+      "UNIT" => "B",
+      "VALUE" => 1
+    ),
+  );
+
+  foreach($arBytes as $arItem)
+  {
+    if($bytes >= $arItem["VALUE"])
+    {
+      $result = $bytes / $arItem["VALUE"];
+      $result = str_replace(".", "," , strval(round($result, 2)))." ".$arItem["UNIT"];
+      break;
+    }
+  }
+  return $result;
+}
 
 function getElementsByClass(&$parentNode, $tagName, $className) {
     $nodes=array();
