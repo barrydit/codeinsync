@@ -1,4 +1,5 @@
 .env.*
+*.old
 .htaccess
 composer.json
 composer.phar
