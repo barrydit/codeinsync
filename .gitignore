@@ -1,6 +1,7 @@
 .env.*
 *.old
 .htaccess
+composer.lock
 composer.json
 composer.phar
 composer-setup.php
