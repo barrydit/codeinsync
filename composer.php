@@ -3,8 +3,13 @@
 define('COMPOSER_EXPR_NAME', '/[a-z0-9]([_.-]?[a-z0-9]+)*\/[a-z0-9](?:(?:[_.]|-{1,2})?[a-z0-9]+)*/'); // name
 define('COMPOSER_EXPR_VER', '/v?\d+(?:\.\d+){0,3}|dev-.*/'); // version
 
-require('vendor/autoload.php'); // Include Composer's autoloader
+if (!realpath('vendor/autoload.php')) {
+    exec('sudo composer update', $output, $returnCode) or $errors['COMPOSER-INIT-UPDATE'] = $output;
+    exec('sudo composer dump-autoload', $output, $returnCode) or $errors['COMPOSER-DUMP-AUTOLOAD'] = $output;
+}
 
+if (is_file('vendor/autoload.php'))
+    require('vendor/autoload.php'); // Include Composer's autoloader
 
 //dd(get_required_files());
 /*
