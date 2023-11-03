@@ -1,12 +1,11 @@
 config/
 public/
 vendor/
-var/*
+var/*.php
 .env.*
 *.old
 .htaccess
 composer.lock
-composer.json
 composer.phar
 composer-setup.php
 error_log

@@ -632,8 +632,9 @@ fclose($pipes[2]);
 
   //!isset($composer_obj->{'prefer-stable'})
   //  and $composer_obj->{'prefer-stable'} = true;
-
-  file_put_contents(COMPOSER_JSON['path'], json_encode($composer_obj, JSON_UNESCAPED_SLASHES|JSON_PRETTY_PRINT));
+  
+  if (!is_file(COMPOSER_JSON['path']))
+    file_put_contents(COMPOSER_JSON['path'], json_encode($composer_obj, JSON_UNESCAPED_SLASHES|JSON_PRETTY_PRINT));
 
 /* Previous unlink('composer.lock') location */
 
