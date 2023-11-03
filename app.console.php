@@ -35,8 +35,8 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         else if (preg_match('/^php\s+(:?(.*))/i', $_POST['cmd'], $match))
           exec($_POST['cmd'], $output);
         else if (preg_match('/^composer\s+(:?(.*))/i', $_POST['cmd'], $match)) {
-          $output[] = 'sudo ' . COMPOSER_EXEC . ' ' . $match[1];
-$proc=proc_open('sudo ' . COMPOSER_EXEC . ' ' . $match[1],
+          $output[] = 'sudo ' . COMPOSER_EXEC['bin'] . ' ' . $match[1];
+$proc=proc_open('sudo ' . COMPOSER_EXEC['bin'] . ' ' . $match[1],
   array(
     array("pipe","r"),
     array("pipe","w"),
@@ -68,7 +68,7 @@ $proc=proc_open('sudo ' . GIT_EXEC . ' ' . $match[1],
             if (isset($match[1]) && in_array($match[1], ['tail', 'cat', 'echo', 'env', 'sudo'])) {
               //exec('sudo ' . $match[1] . ' ' . $match[2], $output); // $output[] = var_dump($match);
               
-//$output[] = $match[1] . ' ' . $match[2];
+$output[] = 'sudo ' . $match[1] . ' ' . $match[2];
 $proc=proc_open('sudo ' . $match[1] . ' ' . $match[2],
   array(
     array("pipe","r"),
@@ -111,12 +111,12 @@ background-color: lightblue;
 /* Styles for the absolute div */
 .consoleContainer {
 position: absolute;
-bottom: 60px;
+bottom: 62px;
 left: 50%;
 transform: translateX(-50%);
 width: auto;
 height: 45px;
-background-color: rgba(255, 0, 0, 0.35);
+background-color: #FFA6A6; /* rgba(255, 0, 0, 0.35) */
 color: white;
 text-align: center;
 }
@@ -125,7 +125,7 @@ text-align: center;
 position: relative;
 display: block;
 margin: 0 auto;
-background-color: rgb(200,200,200,0.85);
+background-color: #D0D0D0; /* rgba(200,200,200,0.85) */
 color: black;
 cursor: pointer;
 height: 60px;
@@ -145,8 +145,8 @@ ob_start(); ?>
 <div id="myDiv" class="consoleContainer">
     <div style="text-align: left; position: relative;">
     
-        <div style="display: inline-block;">
-            <button id="requestSubmit" type="submit">Run</button>
+        <div style="display: inline-block; margin: 5px; ">
+            <button id="requestSubmit" type="submit">Run</button>&nbsp;&nbsp;
 
             <input list="commandHistory" id="requestInput" type="text" size="54" name="requestInput" autocomplete="off" spellcheck="off" placeholder="php -r &quot;echo 'hello world';&quot;" value="">
             <datalist id="commandHistory">
@@ -169,9 +169,13 @@ ob_start(); ?>
         </div>
         <button id="changePositionBtn" style="float: right; margin: 5px 10px 0 0;" type="submit">&#9650;</button>
         <textarea id="responseConsole" spellcheck="false" rows="10" cols="85" name="responseConsole"><?php
+//$errors->{'CONSOLE'}  = 'wtf';
+
+//dd($errors);
+
 if (!empty($errors))
   foreach($errors as $error) {
-    echo $error . "\n";
+    echo  $error . "\n";
   }
 
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
@@ -269,10 +273,10 @@ function show_console(event) {
     myDiv.style.top = '';
     myDiv.style.left = '50%';
     myDiv.style.right = '';
-    myDiv.style.bottom = '0';
+    myDiv.style.bottom = '30px';
     myDiv.style.transform = 'translate(-50%, -50%)';
     myDiv.style.textAlign = 'center';
-    myDiv.style.zIndex = '1';
+    myDiv.style.zIndex = '999';
 
     respCon.style.height = '60px';
 
@@ -290,6 +294,7 @@ function show_console(event) {
     myDiv.style.position = 'fixed';
     myDiv.style.top = '35%'; // Set the fixed position as needed
     myDiv.style.left = '50%';
+    myDiv.style.bottom = '30px';
     myDiv.style.transform = 'translate(-50%, -50%)';
     myDiv.style.zIndex = '999';
 

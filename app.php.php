@@ -72,6 +72,7 @@ ob_start(); ?>
 /* Styles for the absolute div */
 #app_php-container {
 position: absolute;
+display: none;
 top: 15%;
 //bottom: 60px;
 left: 50%;

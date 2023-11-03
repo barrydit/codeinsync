@@ -1,44 +1,68 @@
 <?php
 declare(strict_types=1); // First Line Only!
+
 error_reporting(E_ALL/*E_STRICT |*/);
+
+date_default_timezone_set('America/Vancouver');
+
 ini_set('display_errors', true);
 ini_set('display_startup_errors', true);
 ini_set('error_log', (is_dir($path = dirname(__DIR__, 1) . DIRECTORY_SEPARATOR . 'config') ? dirname($path, 1) . DIRECTORY_SEPARATOR . 'error_log' : 'error_log'));
 ini_set('log_errors', true);
+ini_set('xdebug.remote_enable', '0');
+ini_set('xdebug.profiler_enable', '0');
+ini_set('xdebug.default_enable', '0');
+
+putenv('XDEBUG_MODE=' . 'off');
+
+// Enable output buffering
+ini_set('output_buffering', 'On');
+
+ini_set("include_path", "src"); // PATH_SEPARATOR ;:
 
 if (count(get_included_files()) == ((version_compare(PHP_VERSION, '5.0.0', '>=')) ? 1:0 )):
   exit('Direct access is not allowed.');
 endif;
 
-//ini_set("include_path", "src"); // PATH_SEPARATOR ;:
+$errors = []; // (object)
+
+  // file_get_contents($path)
 
 //die(var_dump($_SERVER['PHP_SELF'] . DIRECTORY_SEPARATOR . basename($_SERVER['PHP_SELF'])));
-
 
 //$path = realpath((basename(__DIR__) != 'config' ? NULL : __DIR__ . DIRECTORY_SEPARATOR ) . 'functions.php');
 
 // (basename(__DIR__) != 'config' ?
 
+
+if ($path = realpath(__DIR__ . DIRECTORY_SEPARATOR . 'classes/class.shutdown.php'))
+  require_once($path);
+else die(var_dump($path . ' was not found. file=classes/class.shutdown.php'));
+
+
 if ($path = (is_file(__DIR__ . DIRECTORY_SEPARATOR . 'functions.php') ? __DIR__ . DIRECTORY_SEPARATOR . 'functions.php' : (is_file('config/functions.php') ? 'config/functions.php' : 'functions.php'))) // is_file('config/constants.php')) 
   require_once($path);
-else die(var_dump($path . ' does not exist.'));
+else die(var_dump($path . ' was not found. file=functions.php'));
+
+!function_exists('dd') and $errors['FUNCTIONS'] = 'functions.php failed to load. Therefor dd() does not exist.';
+//else dd('test');
 
 //!is_file( dirname($_SERVER['PHP_SELF']) . basename($_SERVER['PHP_SELF']) ?? __FILE__) // (!empty(get_included_files()) ? get_included_files()[0] : __FILE__)
 !defined('APP_SELF') and define('APP_SELF', get_included_files()[0] ?? __FILE__); // get_included_files()[0] | str_replace($_SERVER['DOCUMENT_ROOT'], '', $_SERVER['SCRIPT_FILENAME']) | $_SERVER['PHP_SELF']
+
+//var_dump(get_defined_constants(true)['user']);
+
+!defined('APP_ROOT') and define('APP_ROOT', dirname(APP_SELF) . DIRECTORY_SEPARATOR);  // Directory of this script
   
 !defined('APP_PATH') and define('APP_PATH', implode(DIRECTORY_SEPARATOR, array_intersect_assoc(
   explode(DIRECTORY_SEPARATOR, __DIR__),
   explode(DIRECTORY_SEPARATOR, dirname(APP_SELF))
 )) . DIRECTORY_SEPARATOR);
 
-define('APP_CONFIG',  str_replace(APP_PATH, '', basename(dirname(__FILE__))) == 'config' ? __FILE__ : basename(__FILE__));
+!defined('APP_CONFIG') and define('APP_CONFIG',  str_replace(APP_PATH, '', basename(dirname(__FILE__))) == 'config' ? __FILE__ : __FILE__);
 
-date_default_timezone_set('America/Vancouver');
+//$errors->{'CONFIG'} = 'OK';
 
-// Enable output buffering
-ini_set('output_buffering', 'On');
-
-$errors = NULL;
 
 $ob_content = NULL;
 //var_dump(dirname(APP_SELF) . ' == ' . __DIR__);
@@ -83,7 +107,10 @@ END
 
   if (!is_file(APP_PATH . 'LICENSE'))
     if (@touch(APP_PATH . 'LICENSE'))
-      file_put_contents(APP_PATH . 'LICENSE', <<<END
+      if (check_http_200('http://www.wtfpl.net/txt/copying'))
+        file_put_contents(APP_PATH . 'LICENSE', file_get_contents('http://www.wtfpl.net/txt/copying'));
+      else 
+        file_put_contents(APP_PATH . 'LICENSE', <<<END
 This is free and unencumbered software released into the public domain.
 
 Anyone is free to copy, modify, publish, use, compile, sell, or
@@ -123,32 +150,54 @@ ob_start();
 
 // Check if the directory structure is /public_html/
 
-if (($dir = basename(APP_PATH)) != 'config') {
-  if (in_array($dir, ['public', 'public_html']))
+require('constants.php');
+
+if (is_readable($path = ini_get('error_log')) && filesize($path) > 0 ) {
+  $errors['ERROR_LOG'] = shell_exec('sudo tail ' . $path);
+  if (isset($_GET[$error_log = basename(ini_get('error_log'))]) && $_GET[$error_log] == 'unlink') {
+    unlink($path);
+    exit(header('Location: ' . APP_WWW));
+  }
+}
+
+if (basename($dir = APP_PATH) != 'config') {
+  if (in_array(basename($dir), ['public', 'public_html']))
     chdir('../');
+
+//dd($dir);
+
   //else chdir('../'); //
   //dd((__DIR__ . DIRECTORY_SEPARATOR . '*.php'));
     //if (is_dir('config')) {}
   $previousFilename = '';
-  $dirs = array_filter(glob(__DIR__ . DIRECTORY_SEPARATOR . '*.php'), 'is_file');
+
+  $dirs = [
+    0 => APP_PATH . 'composer.php',
+    1 => APP_PATH . 'config.php',
+    2 => APP_PATH . 'constants.php',
+    3 => APP_PATH . 'functions.php',
+    4 => APP_PATH . 'git.php',
+    5 => APP_PATH . 'composer-setup.php',
+  ]; // array_filter(glob(__DIR__ . DIRECTORY_SEPARATOR . '*.php'), 'is_file');
 
   usort($dirs, function ($a, $b) {
       // Define your sorting criteria here
-    if (basename($a) === 'composer-setup.php') {
+    if (basename($a) === 'composer-setup.php')
         return 1; // $a comes after $b
-    } elseif (basename($b) === 'composer-setup.php') {
+    elseif (basename($b) === 'composer-setup.php')
         return -1; // $a comes before $b
-    } else {
+    else 
         return strcmp(basename($a), basename($b)); // Compare other filenames alphabetically
-    }
   });
 
+//dd($dirs);
+
   foreach ($dirs as $includeFile) {
+    if (in_array($includeFile, get_required_files())) continue; // $includeFile == __FILE__
+
     if (basename($includeFile) === 'composer-setup.php') continue;
 
     //echo basename($includeFile) . "<br />\n"; 
-    
-    if (in_array($includeFile, get_required_files())) continue; // $includeFile == __FILE__
 
     if (!file_exists($includeFile)) {
       error_log("Failed to load a necessary file: " . $includeFile . PHP_EOL);
@@ -165,6 +214,7 @@ if (($dir = basename(APP_PATH)) != 'config') {
 
     $previousFilename = $currentFilename;
   }
+  //dd(get_required_files());
 
 } elseif (basename(dirname(APP_SELF)) == 'public_html') { // basename(__DIR__) == 'public_html'
   $errors['APP_PUBLIC'] = 'The `public_html` scenario was detected.' . "\n";
@@ -181,6 +231,72 @@ if (($dir = basename(APP_PATH)) != 'config') {
 } elseif (basename(dirname(APP_SELF)) == 'public') {    // strpos(APP_SELF, '/public/') !== false
 
   //dd(APP_SELF . '   ' . __DIR__);
+  
+  dd(APP_BASE);
+
+  if (!is_file(APP_PATH . APP_BASE['public'] . 'install.php'))
+    if (@touch(APP_PATH . APP_BASE['public'] . 'install.php'))
+      file_put_contents(APP_PATH . APP_BASE['public'] . 'install.php', '<?php ' . <<<END
+if (\$_SERVER['REQUEST_METHOD'] == 'POST') {
+    foreach (['composer.php', 'config.php', 'constants.php', 'functions.php', 'git.php'] as \$file) {
+        if (!rename(APP_PATH . \$file, APP_PATH . 'config' . DIRECTORY_SEPARATOR . \$file))
+            \$errors['INSTALL_DESTPATH'] .= "(config) Failed to move '" . APP_PATH . "\$file'";
+    }
+
+    foreach (['composer_app.php', 'index.php'] as \$file) {
+        if (!rename(APP_PATH . \$file, APP_PATH . 'public' . DIRECTORY_SEPARATOR . \$file))
+            \$errors['INSTALL_DESTPATH'] .= "(public) Failed to move '" . APP_PATH . "\$file'";
+    }
+
+    if (!is_file(APP_PATH . 'index.php'))
+        if (@touch(APP_PATH . 'index.php'))
+            file_put_contents(APP_PATH . 'index.php', '<?php require_once(\'public/index.php\');');
+
+    unlink(__FILE__);
+}
+
+header("Cache-Control: no-store, no-cache, must-revalidate, max-age=0");
+header("Pragma: no-cache");
+?>
+
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <meta http-equiv="cache-control" content="no-cache, no-store, must-revalidate">
+  <meta http-equiv="pragma" content="no-cache">
+  <meta http-equiv="expires" content="0">
+
+<style>
+html, body {
+  height: 100%;
+  margin: 0;
+  padding: 0;
+}
+</style>
+</head>
+<body>
+<div style="position: relative; margin: 0 auto; border: 1px solid #000;">
+<div style="position: absolute; top: 0; left: 50%; transform: translate(-50%, 10%); text-align: center; width: 570px; height: 600px; background-position: center; background-size: cover; background-repeat: no-repeat; background-image: url('/resources/images/install-scenario-small.gif'); opacity: 0.8; z-index: 1; border: 1px solid #000;">
+
+<div style="position: absolute; top: 225px; left: 129px; width: 230px; height: 200px; border: 1px dashed #000;">
+<form>
+<div style="position: absolute; top: 30px; left: 28px;"><input type="radio" name="scenario" value="1" checked /></div>
+
+<div style="position: absolute; top: 30px; right: 20px;"><input type="radio" name="scenario" value="2" /></div>
+
+<div style="position: absolute; bottom: 34px; right: 20px;"><input type="radio" name="scenario" value="3" /></div>
+</form>
+</div>
+
+</div>
+</div>
+</body>
+</html>
+END
+);
 
   if (basename(get_required_files()[0]) !== 'release-notes.php')
     if (is_dir('config')) {
@@ -361,35 +477,34 @@ ob_end_clean();
 
 //var_dump(APP_ERRORS);
 
-if (defined('APP_ERRORS') && APP_ERRORS && defined('APP_DEBUG') && APP_DEBUG == false) // is_array($ob_content)
+if (defined('APP_ERRORS') && APP_ERRORS && defined('APP_DEBUG') && APP_DEBUG == true) // is_array($ob_content)
   dd(APP_ERRORS); // get_defined_constants(true)['user']'
 
+
+//Shutdown::setEnabled(false)->setShutdownMessage(function() {
+//echo 'hello world';
+//})->shutdown();
+
 //(defined('APP_DEBUG') && APP_DEBUG) and $errors['APP_DEBUG'] = (bool) var_export(APP_DEBUG, APP_DEBUG); // print('Debug (Mode): ' . var_export(APP_DEBUG, true) . "\n");
+/*
+Shutdown::setEnabled(false)->setShutdownMessage(function() {
+      global $pdo, $session_save;
+      //if (defined('APP_INSTALL') && APP_INSTALL && $path = APP_PATH . 'install.php') // is_file('config/constants.php')) 
+      //    require_once($path);
 
-/* function shutdown()
-{
-	global $pdo; //$myiconnect;
-    // This is our shutdown function, in 
-    // here we can do any last operations
-    // before the script is complete.
-	//mysqli_close($myiconnect);
+      defined('APP_END') or define('APP_END', microtime(true));
+      //include('checksum_md5.php'); // your_logger(get_included_files());
+      //unset($pdo);
+    
+      //echo "Executing shutdown function...\n";
+    })->shutdown();
 
-  unset($pdo);
-} */
+*/
 
-register_shutdown_function( // 'shutdown'
-  function() {
-    //global $pdo, $session_save;
+//Shutdown::create()->setEnabled(true)->shutdown();
 
-    //isset($session_save) and $session_save();
+//$shutdown = new Shutdown();
+//$shutdown->setEnabled(true)->shutdown();
 
-    if (defined('APP_INSTALL') && APP_INSTALL && $path = APP_PATH . 'install.php')// is_file('config/constants.php')) 
-        require_once($path);
-    //else if (!is_file($path) && !in_array($path, get_required_files()))
-    //    die(var_dump($path . ' was not found. file=install.php'));
 
-    defined('APP_END') or define('APP_END', microtime(true));
-    //include('checksum_md5.php'); // your_logger(get_included_files());
-    //unset($pdo);
-  }
-);
+

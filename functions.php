@@ -1,11 +1,81 @@
 <?php
 
-function dd(mixed $param = null) { //?string $param != work when missing argv
-  echo '<pre><code>';
-  var_dump($param); // var_export($param)
-  print '</code></pre>'; // get_defined_constants(true)['user']'
-  return die();
+function dd(mixed $param = null) {
+    Shutdown::setEnabled(false)->setShutdownMessage(function() use ($param) {
+        return '<pre><code>' . var_export($param, true) . '</code></pre>'; // var_dump
+    })->shutdown();
+
+    return $param; // If you want to return the parameter after printing it
 }
+
+function check_http_200($url = 'http://8.8.8.8') {
+    $output = null;
+    $status = null;
+    //$connected = @fsockopen("www.google.com", 80); //fclose($connected);
+
+    if (strtoupper(substr(PHP_OS, 0, 3)) === 'WIN') {
+        exec('ping -W 20 ' . parse_url($url, PHP_URL_HOST) ?? '8.8.8.8', $output, $status);
+    } else {
+        exec('sudo /bin/ping -c2 -w2 ' . parse_url($url, PHP_URL_HOST) ?? '8.8.8.8'  . ' 2>&1', $output, $status); // var_dump(\$status)
+    }
+
+    if ($status === 0) { // Ping was 2 == fail | 0 == success
+      if ($url !== 'http://8.8.8.8') {
+        $curl = curl_init($url);
+        curl_setopt($curl, CURLOPT_RETURNTRANSFER, true);
+        curl_setopt($curl, CURLOPT_TIMEOUT, 10);
+        curl_setopt($curl, CURLOPT_FOLLOWLOCATION, true);
+
+        $response = curl_exec($curl);
+        $http_status = curl_getinfo($curl, CURLINFO_HTTP_CODE);
+
+        curl_close($curl);
+        return ($http_status == 200 ? true : false);
+      } else
+        return true; // Special case for the default URL
+    }
+    return false; // Ping or HTTP request failed
+}
+
+function packagist_return_source($vendor, $package) {
+  $url = 'https://packagist.org/packages/' . $vendor . '/' . $package;
+  $initial_url = '';
+  
+  libxml_use_internal_errors(true); // Prevent HTML errors from displaying
+  $dom = new DOMDocument(1.0, 'utf-8');
+  if (check_http_200($url)) {
+    $dom->loadHTML(file_get_contents($url));
+
+    $anchors = $dom->getElementsByTagName('a');
+
+    foreach ($anchors as $anchor) {
+      if ($anchor->getAttribute('rel') == 'nofollow noopener external noindex ugc') {
+        //echo $anchor->nodeValue;
+        if ($anchor->nodeValue == 'Source')
+            $initial_url = $anchor->getAttribute('href'); //  '/composer.json'
+      }
+    }
+  }
+  // $initial_url = "https://github.com/php-fig/log/tree/3.0.0/";
+
+  if (preg_match('/^https:\/\/(?:www.?)github.com\//', $initial_url)) {
+
+  // Extract username, repository, and version from the initial URL
+    $parts = explode("/", rtrim($initial_url, "/"));
+    dd($initial_url);
+    dd($parts);
+    
+    $username = $parts[3];
+    $repository = $parts[4];
+    $version = $parts[6];
+
+  //$blob_url = "https://github.com/$username/$repository/blob/$version/composer.json";
+    return "https://raw.githubusercontent.com/$username/$repository/$version/composer.json";
+
+  }
+  return $initial_url;
+}
+
 
   
 function htmlsanitize($argv = '') {

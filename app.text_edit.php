@@ -1,5 +1,13 @@
 <?php
 
+//dd(get_required_files());
+
+//if (isset($_GET['path']) && isset($_GET['file']) && $path = realpath($_GET['path'] . $_GET['file']))
+
+//$errors->{'TEXT_MANAGER'} = $path . "\n" . 'File Modified:    Rights:    Date of creation: ';
+
+//dd($errors);
+
 if (__FILE__ == get_required_files()[0])
   if ($path = (basename(getcwd()) == 'public')
     ? (is_file('../config.php') ? '../config.php' : (is_file('../config/config.php') ? '../config/config.php' : null))
@@ -74,7 +82,7 @@ top: 10%;
 left: 50%;
 transform: translateX(-50%);
 width: auto;
-height: 400px;
+height: 408px;
 background-color: rgba(255, 255, 255, 0.9);
 color: black;
 text-align: center;
@@ -95,13 +103,29 @@ input {
   //height: 100%;
 }
 
+.containerTbl {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+  }
+
+table {
+    border-collapse: collapse;
+}
+
+td, th {
+    border: 1px solid black;
+    padding: 8px;
+}
+
 <?php $appTextEditor['style'] = ob_get_contents();
 ob_end_clean();
 
 ob_start(); ?>
 
 <!-- <div class="container" style="border: 1px solid #000;"> -->
-  <div id="app_text_editor-container" style="display: <?= (isset($_GET['app']) && $_GET['app'] == 'text_editor' ? 'block' : (isset($_GET['file']) ? 'block' : 'none')) ?>; border: 1px solid #000;">
+  <div id="app_text_editor-container" style="display: <?= (isset($_GET['app']) && $_GET['app'] == 'text_editor' ? 'block' : (isset($_GET['file']) ? 'block' : 'none')) ?>; width: auto; border: 1px solid #000;">
 
     <div class="header ui-widget-header" style="margin: 10px;">
 
@@ -113,13 +137,13 @@ ob_start(); ?>
       <div style="display: inline; float: right; text-align: center;">[<a style="cursor: pointer; font-size: 13px;" onclick="document.getElementById('app_text_editor-container').style.display='none';">X</a>]</div> 
     </div>
 
-      <div style="position:relative; display: inline-block; width: auto; padding-left: 10px;">
+    <div style="position: relative; display: inline-block; width: auto; padding-left: 10px;">
       <form style="display: inline;" autocomplete="off" spellcheck="false" action="<?= APP_URL_BASE . /*basename(__FILE__) .*/ '?' . http_build_query(APP_QUERY /*+ array( 'app' => 'text_editor')*/) . (APP_ENV == 'development' ? '#!' : '') /* $c_or_p . '=' . (empty($_GET[$c_or_p]) ? '' : $$c_or_p->name) . '&amp;app=composer' */ ?>" method="GET">
         <input type="hidden" name="app" value="text_editor" />
       <?php $path = realpath(getcwd() . (isset($_GET['path']) ? DIRECTORY_SEPARATOR . $_GET['path'] : '')) . DIRECTORY_SEPARATOR;
       if (isset($_GET['path'])) { ?>
         <!-- <input type="hidden" name="path" value="<?= $_GET['path']; ?>" /> -->
-      <?php } echo $path; ?>
+      <?php } echo '<span title="' . $path . '">' . parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH) . '</span>'; /* $path; */ ?>
         <select name="path" onchange="this.form.submit();">
           <option value>.</option>
           <option value>..</option>
@@ -149,27 +173,19 @@ foreach (array_filter( glob($path . DIRECTORY_SEPARATOR . '*.php'), 'is_file') a
       </form>
       </div>
 
-      <form style="display: inline;" action="<?= APP_URL_BASE . '?' . http_build_query(APP_QUERY + array( 'app' => 'text_editor')) . (APP_ENV == 'development' ? '#!' : '') /* $c_or_p . '=' . (empty($_GET[$c_or_p]) ? '' : $$c_or_p->name) . '&amp;app=composer' */ ?>" method="POST">
+      <form style="position: relative; display: inline;" action="<?= APP_URL_BASE . '?' . http_build_query(APP_QUERY + array( 'app' => 'text_editor')) . (APP_ENV == 'development' ? '#!' : '') /* $c_or_p . '=' . (empty($_GET[$c_or_p]) ? '' : $$c_or_p->name) . '&amp;app=composer' */ ?>" method="POST">
         <input type="hidden" name="path" value="<?= APP_PATH . APP_BASE['public']; ?>" />
         <div style="display: inline-block; width: auto; text-align: right; float: right;">
           <input type="submit" value="Save" class="btn" style="margin: -5px 5px 5px 0;" onclick="document.getElementsByClassName('ace_text-input')[0].value = editor.getSession().getValue(); document.getElementsByClassName('ace_text-input')[0].name = 'editor';"/>
         </div>
-
-<?php 
-  if (is_file($_GET['path'] . $_GET['file'])) {
-?>
         <!-- A (<?= $path ?>) future note: keep ace-editor nice and tight ... no spaces, as it interferes with the content window. -->
-        <div id="ace-editor" class="ace_editor" style="display: <?= (isset($_GET['file']) && isset($_GET['path']) && is_file($_GET['path'] . $_GET['file']) ? 'block': 'none')?>; width: 700px; height: 400px; z-index: 1;"><textarea name="contents" class="ace_text-input" autocorrect="off" autocapitalize="none" spellcheck="false" style="opacity: 0; font-size: 1px; height: 1px; width: 1px; top: 28px; left: 86px;" wrap="off"><?= (isset($_GET['file']) && $_GET['file'] ? htmlsanitize(file_get_contents($path . $_GET['file'])) : ''); /*   'clientele/' . $_GET['client'] . '/' . $_GET['domain'] . '/' .  */?></textarea></div>
-<?php
-} else {
-?>
-        <div style="position: absolute; background-ground: #fff;">
-
+        <div id="ace-editor" class="ace_editor" style="display: <?= (isset($_GET['file']) && isset($_GET['path']) && is_file($_GET['path'] . $_GET['file']) ? 'block': 'block')?>; width: 700px; height: 400px; z-index: 1;"><textarea name="contents" class="ace_text-input" autocorrect="off" autocapitalize="none" spellcheck="false" style="opacity: 0; font-size: 1px; height: 1px; width: 1px; top: 28px; left: 86px;" wrap="off"><?= (isset($_GET['file']) && is_file($path . $_GET['file']) ? htmlsanitize(file_get_contents($path . $_GET['file'])) : (isset($_GET['project']) ? htmlsanitize(file_get_contents($path . 'project.php')) : '') ); /*   'clientele/' . $_GET['client'] . '/' . $_GET['domain'] . '/' .  */?></textarea></div>
+<?= /*
+        <div class="containerTbl" style="background-ground: #fff; border: 1px solid #000; display: <?= (isset($_GET['file']) && isset($_GET['path']) && is_file($_GET['path'] . $_GET['file']) ? 'none': 'block' ) ?>;">
 <table width="" style="border: 1px solid #000;">
-
 <tr>
 <?php
-$paths = glob((isset($_GET['path']) && $_GET['path'] != '' ? '.' . urldecode($_GET['path']) : '.') . '/*');
+$paths = glob($path . '/*');
 //dd(urldecode($_GET['path']));
 usort($paths, function ($a, $b) {
     $aIsDir = is_dir($a);
@@ -189,27 +205,23 @@ usort($paths, function ($a, $b) {
 $count = 1;
 if (!empty($paths))
   foreach($paths as $key => $path) {
-    //if (count($paths) == $count) {
-      //$last_chart_no = $row['chart_no'];
       echo '<td style="border: 1px solid #000;" class="text-xs">' . "\n";
       if (is_dir($path))
-        echo '<a href="?app=text_editor&path=' . urldecode(basename($path)) . '/">'
+        echo '<a href="?app=text_editor&path=' . basename($path) . '">'
         . '<img src="../../resources/images/directory.png" width="50" height="32" /><br />' . basename($path) . '</a>' . "\n";
       elseif (is_file($path))
-        echo '<a href="?app=text_editor&path=' . basename(dirname($path)) . '/&file=' . basename($path) . '">'
+        echo '<a href="?app=text_editor&path=' . (basename(dirname($path)) == basename(parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH) ? 'failed' : basename(dirname($path)))) . '&file=' . basename($path) . '">'
         . '<img src="../../resources/images/php_file.png" width="40" height="50" /><br />' . basename($path) . '</a>' . "\n";
       echo '</td>' . "\n";
       if ($count >= 6 || $path == end($paths)) echo '</tr>';
       if (isset($count) && $count >= 6) $count = 1;
       else $count++;
-    //}
-    //$last_chart_no++;
   } 
 ?>
 </tr>
 </table>
         </div>
-<?php } ?>
+*/ NULL; ?>
       </form>
       
       <!-- <pre id="ace-editor" class="ace_editor"></pre> -->

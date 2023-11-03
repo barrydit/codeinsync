@@ -131,7 +131,7 @@ img { display: inline; }
 ob_end_clean(); 
 
 ob_start(); ?>
-  <div id="app_git-container" class="absolute <?= (APP_SELF == __FILE__ || isset($_GET['app']) && $_GET['app'] == 'git' ? 'selected' : (version_compare(GIT_LATEST, GIT_VERSION, '>') != 0 ? (isset($_GET['app']) && $_GET['app'] != 'git' ? '' : 'selected') :  '')) ?>" style="position: absolute; top: 60px; left: 0; right: 0; z-index: 1; margin: 0 auto; width: 600px; background-color: rgba(255,255,255,0.8); padding: 10px;">
+  <div id="app_git-container" class="absolute <?= (APP_SELF == __FILE__ || isset($_GET['app']) && $_GET['app'] == 'git' ? 'selected' : (version_compare(GIT_LATEST, GIT_VERSION, '>') != 0 ? (isset($_GET['app']) && $_GET['app'] != 'git' ? '' : '') :  '')) ?>" style="position: absolute; top: 60px; left: 0; right: 0; z-index: 1; margin: 0 auto; width: 600px; background-color: rgba(255,255,255,0.8); padding: 10px;">
 <div style="position: relative; margin: 0 auto; width: 404px; height: 306px; border: 3px dashed #F05033; background-color: #FBF7F1;">
 
       <div class="absolute" style="position: absolute; display: inline-block; width: 100%; margin: -25px 0 10px 0; border-bottom: 1px solid #000; z-index: 3;">

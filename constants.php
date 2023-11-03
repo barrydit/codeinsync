@@ -3,7 +3,7 @@
 //if ($path = realpath((basename(__DIR__) != 'config' ? NULL : __DIR__ . DIRECTORY_SEPARATOR) . 'config.php')) // is_file('config/config.php')) 
 //  require_once($path);
 
-define('DOMAIN_EXP', '/^(?:[a-z]+\:\/\/)?(?:[a-z0-9\-]+\.)+[a-z]{2,6}(?:\/\S*)?$/'); // /(?:\.(?:([-a-z0-9]+){1,}?)?)?\.[a-z]{2,6}$/
+define('DOMAIN_EXPR', '/^(?:[a-z]+\:\/\/)?(?:[a-z0-9\-]+\.)+[a-z]{2,6}(?:\/\S*)?$/'); // /(?:\.(?:([-a-z0-9]+){1,}?)?)?\.[a-z]{2,6}$/
 
 // Enable output buffering
 //ini_set('output_buffering', 'On');
@@ -40,7 +40,7 @@ define('APP_DOMAIN',   isset($_SERVER['HTTP_HOST']) === true ? $_SERVER['HTTP_HO
   and define('APP_HTTPS', TRUE);
 (defined('APP_HTTPS') && APP_HTTPS) and $errors['APP_HTTPS'] = (bool) var_export(APP_HTTPS, APP_HTTPS); // print("\t" . 'Http(S)://' . APP_DOMAIN . '/' . '... ' .  var_export(defined('APP_HTTPS'), true) . "\n");
 
-define('APP_WWW', 'http' . (defined('APP_HTTPS') ? 's':'') . '://' . APP_DOMAIN);
+define('APP_WWW', 'http' . (defined('APP_HTTPS') ? 's':'') . '://' . APP_DOMAIN . parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH));
 
 define('APP_TIMEOUT',   strtotime('1970-01-01 08:00:00'.'GMT'));
 (defined('APP_TIMEOUT') && !is_int(APP_TIMEOUT)) and $errors['APP_TIMEOUT'] = APP_TIMEOUT; // print('Timeout: ' . APP_TIMEOUT . "\n");
@@ -61,6 +61,7 @@ if (basename(__DIR__) == 'config') {
     'resources' => 'resources' . DIRECTORY_SEPARATOR,
     //'src' => 'src' . DIRECTORY_SEPARATOR,
     'var' => 'var' . DIRECTORY_SEPARATOR,
+    //'vendor' => 'vendor' . DIRECTORY_SEPARATOR,
     //'tmp' => 'var' . DIRECTORY_SEPARATOR . 'tmp' . DIRECTORY_SEPARATOR,
     //'export' =>  'var' . DIRECTORY_SEPARATOR . 'export' . DIRECTORY_SEPARATOR,
     //'session' => 'var' . DIRECTORY_SEPARATOR . 'session' . DIRECTORY_SEPARATOR,
@@ -73,6 +74,7 @@ if (basename(__DIR__) == 'config') {
     'public' => 'public' . DIRECTORY_SEPARATOR,   // basename(APP_PATH) could be composer||public[_html]/
     'resources' => 'resources' . DIRECTORY_SEPARATOR,
     'var' => 'var' . DIRECTORY_SEPARATOR,
+    'vendor' => 'vendor' . DIRECTORY_SEPARATOR,
   ]);
 }
 
@@ -88,7 +90,7 @@ if (defined('APP_DOMAIN') && !in_array(APP_DOMAIN, ['localhost', '127.0.0.1', ':
       file_put_contents(APP_PATH . '.env.development', "DB_UNAME=root\nDB_PWORD=");
     }
   }
-  define('APP_ENV', 'development');
+  define('APP_ENV', 'development'); // development
 } // APP_DEV |  APP_PROD
 
 (defined('APP_ENV') && !is_string(APP_ENV)) and $errors['APP_ENV'] = 'App Env: ' . APP_ENV; // print('App Env: ' . APP_ENV . "\n");
@@ -114,7 +116,7 @@ if (defined('APP_BASE'))
     }
   }
 
-define('APP_PUBLIC',  str_replace(APP_PATH, '', (basename(dirname(APP_SELF)) == 'public' ? APP_PATH . DIRECTORY_SEPARATOR . APP_BASE['public'] . basename(APP_SELF) : basename(APP_SELF))) );
+define('APP_PUBLIC',  str_replace(APP_PATH, '', (basename(dirname(APP_SELF)) == 'public' ? APP_PATH . APP_BASE['public'] . basename(APP_SELF) : basename(APP_SELF))) );
 
 //var_dump(APP_PATH . basename(dirname(__DIR__, 2)) . '/' . basename(dirname(__DIR__, 1)));
 
@@ -156,6 +158,9 @@ define('APP_QUERY', (!empty(parse_url($_SERVER['REQUEST_URI'])['query']) ? (pars
       )
     )
   );
+
+//dd(get_defined_constants(true)['user']);
+
 
 /*
 require_once('functions.php');

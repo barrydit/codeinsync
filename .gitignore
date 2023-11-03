@@ -1,3 +1,8 @@
+config/
+public/
+resources/
+vendor/
+var/*
 .env.*
 *.old
 .htaccess
@@ -6,7 +11,4 @@ composer.json
 composer.phar
 composer-setup.php
 error_log
-config/
-public/
-resources/
-vendor/
+notes.txt
