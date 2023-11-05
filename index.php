@@ -61,6 +61,11 @@ if ($path = (basename(getcwd()) == 'public')
 else die(var_dump($path . ' was not found. file=git_ui.php'));
 
 if ($path = (basename(getcwd()) == 'public')
+    ? (is_file('../npm.php') ? '../npm.php' : (is_file('../config/npm.php') ? '../config/npm.php' : null))
+    : (is_file('npm.php') ? 'npm.php' : (is_file('config/npm.php') ? 'config/npm.php' : null))) require_once($path); 
+else die(var_dump($path . ' path was not found. file=npm.php'));
+
+if ($path = (basename(getcwd()) == 'public')
     ? (is_file('app.php.php') ? 'app.php.php' : (is_file('../app.php.php') ? '../app.php.php' : (is_file('../config/app.php.php') ? '../config/app.php.php' : NULL)))
     : (is_file('../app.php.php') ? '../app.php.php' : (is_file('public/app.php.php') ? 'public/app.php.php' : (is_file('config/app.php.php') ? 'config/app.php.php' : 'app.php.php'))))
   require_once($path); 
@@ -623,23 +628,29 @@ if (!empty($paths))
 
 <?= $appConsole['body']; ?>
 
-
-<!-- For Text / Ace Editor -->
-  <script src="resources/js/ace/ace.js" type="text/javascript" charset="utf-8"></script>
-<!--  <script src="resources/js/ace/ext-language_tools.js" type="text/javascript" charset="utf-8"></script> -->
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/ace/1.4.12/ext-language_tools.js"></script>
-
-  <script src="resources/js/ace/mode-php.js" type="text/javascript" charset="utf-8"></script>
-<!-- End: For Text / Ace Editor -->
-
-  <script src="resources/js/play_sound.js"></script>
-
   <!-- https://cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.min.js -->
+  
+  <!-- https://code.jquery.com/jquery-3.7.1.min.js -->
+
   <script src="//code.jquery.com/jquery-1.12.4.js"></script>
   <script src="//code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
   
 
-  <script src="https://code.jquery.com/jquery-3.6.0.min.js" integrity="sha256-/xUj+3OJU5yExlq6GSYGSHk7tPXikynS7ogEvDej/m4=" crossorigin="anonymous"></script>
+  <!-- script src="https://code.jquery.com/jquery-3.6.0.min.js" integrity="sha256-/xUj+3OJU5yExlq6GSYGSHk7tPXikynS7ogEvDej/m4=" crossorigin="anonymous"></script -->
+
+  <script src="<?= (check_http_200('https://code.jquery.com/jquery-3.7.1.min.js') ? 'https://code.jquery.com/jquery-3.7.1.min.js' : APP_URL_BASE . 'resources/js/jquery/jquery-3.7.1.min.js')?>"></script>
+
+<!-- For Text / Ace Editor -->
+
+  <script src="dist/bundle.js" type="text/javascript" charset="utf-8"></script>
+<!-- 
+  <script src="resources/js/ace/src/ace.js" type="text/javascript" charset="utf-8"></script>
+  <script src="resources/js/ace/src/ext/language_tools.js" type="text/javascript" charset="utf-8"></script>
+  <!-- <script src="https://cdnjs.cloudflare.com/ajax/libs/ace/1.4.12/ext-language_tools.js"></script>
+
+  <script src="resources/js/ace/src/mode/php.js" type="text/javascript" charset="utf-8"></script>
+-->
+<!-- End: For Text / Ace Editor -->
 
   <!-- <script src="resources/js/jquery/jquery.min.js"></script> -->
 <script>
@@ -669,9 +680,12 @@ window.addEventListener('keydown', show_console);
 
 <?= $appPackagist['script']; ?>
 
-<?= $appTextEditor['script']; ?>
+<?= /* $appTextEditor['script']; */ NULL; ?>
 
 <?= $appTimesheet['script']; ?>
 </script>
+
+  <script src="resources/js/play_sound.js"></script>
+
 </body>
 </html>

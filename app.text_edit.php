@@ -71,6 +71,26 @@ $output[] = $_POST['cmd'];
 */
 }
 
+/*
+$proc=proc_open('sudo ' . GIT_EXEC . ' ' . $match[1],
+  array(
+    array("pipe","r"),
+    array("pipe","w"),
+    array("pipe","w")
+  ),
+  $pipes);
+          list($stdout, $stderr, $exitCode) = [stream_get_contents($pipes[1]), stream_get_contents($pipes[2]), proc_close($proc)];
+          $output[] = (!isset($stdout) ? NULL : $stdout . (isset($stderr) && $stderr === '' ? NULL : ' Error: ' . $stderr) . (isset($exitCode) && $exitCode == 0 ? NULL : 'Exit Code: ' . $exitCode));
+*/
+
+
+if (is_dir('resources/js/ace') && empty(glob('resources/js/ace')))
+    exec('sudo ' . GIT_EXEC . ' clone https://github.com/ajaxorg/ace.git resources/js/ace', $output, $returnCode) or $errors['GIT-CLONE-ACE'] = $output;
+elseif (!is_dir('resources/js/ace')) {
+    if (!mkdir('resources/js/ace', 0755))
+        $errors['GIT-CLONE-ACE'] = ' resources/js/ace does not exist.';
+    exec('sudo ' . GIT_EXEC . ' clone https://github.com/ajaxorg/ace.git resources/js/ace', $output, $returnCode) or $errors['GIT-CLONE-ACE'] = $output;
+}
 
 ob_start(); ?>
 
@@ -267,7 +287,7 @@ ob_start(); ?>
 
   <link rel="stylesheet" href="//code.jquery.com/ui/1.12.1/themes/smoothness/jquery-ui.css" />
 
-<script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdn.tailwindcss.com"></script>
 
 <style type="text/tailwindcss">
 <?= $appTextEditor['style']; ?>
@@ -276,11 +296,11 @@ ob_start(); ?>
 <body>
 <?= $appTextEditor['body']; ?>
 
-  <script src="../../resources/js/ace/ace.js" type="text/javascript" charset="utf-8"></script>
+  <script src="resources/js/ace/src/ace.js" type="text/javascript" charset="utf-8"></script>
 <!--  <script src="resources/js/ace/ext-language_tools.js" type="text/javascript" charset="utf-8"></script> -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/ace/1.4.12/ext-language_tools.js"></script>
 
-  <script src="../../resources/js/ace/mode-php.js" type="text/javascript" charset="utf-8"></script>
+  <script src="resources/js/ace/src/mode-php.js" type="text/javascript" charset="utf-8"></script>
   <!-- https://cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.min.js -->
   <script src="//code.jquery.com/jquery-1.12.4.js"></script>
   <script src="//code.jquery.com/ui/1.12.1/jquery-ui.js"></script>

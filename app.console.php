@@ -22,6 +22,11 @@ if ($path = (basename(getcwd()) == 'public')
     : (is_file('composer.php') ? 'composer.php' : (is_file('config/composer.php') ? 'config/composer.php' : null))) require_once($path); 
 else die(var_dump($path . ' path was not found. file=composer.php'));
 
+if ($path = (basename(getcwd()) == 'public')
+    ? (is_file('../npm.php') ? '../npm.php' : (is_file('../config/npm.php') ? '../config/npm.php' : null))
+    : (is_file('npm.php') ? 'npm.php' : (is_file('config/npm.php') ? 'config/npm.php' : null))) require_once($path); 
+else die(var_dump($path . ' path was not found. file=npm.php'));
+
 define('CONSOLE', true);
 
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
@@ -60,7 +65,21 @@ $proc=proc_open('sudo ' . GIT_EXEC . ' ' . $match[1],
           $output[] = (!isset($stdout) ? NULL : $stdout . (isset($stderr) && $stderr === '' ? NULL : ' Error: ' . $stderr) . (isset($exitCode) && $exitCode == 0 ? NULL : 'Exit Code: ' . $exitCode));
           //$output[] = $_POST['cmd'];
 
+        } else if (preg_match('/^npm\s+(:?(.*))/i', $_POST['cmd'], $match)) {
+          $output[] = 'sudo ' . NPM_EXEC . ' ' . $match[1];
+$proc=proc_open('sudo ' . NPM_EXEC . ' ' . $match[1],
+  array(
+    array("pipe","r"),
+    array("pipe","w"),
+    array("pipe","w")
+  ),
+  $pipes);
+          list($stdout, $stderr, $exitCode) = [stream_get_contents($pipes[1]), stream_get_contents($pipes[2]), proc_close($proc)];
+          $output[] = (!isset($stdout) ? NULL : $stdout . (isset($stderr) && $stderr === '' ? NULL : ' Error: ' . $stderr) . (isset($exitCode) && $exitCode == 0 ? NULL : 'Exit Code: ' . $exitCode));
+          //$output[] = $_POST['cmd'];
+
         }
+
 
           //exec($_POST['cmd'], $output);
         else {

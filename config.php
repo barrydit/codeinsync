@@ -177,7 +177,8 @@ if (basename($dir = APP_PATH) != 'config') {
     2 => APP_PATH . 'constants.php',
     3 => APP_PATH . 'functions.php',
     4 => APP_PATH . 'git.php',
-    5 => APP_PATH . 'composer-setup.php',
+    5 => APP_PATH . 'npm.php',
+    6 => APP_PATH . 'composer-setup.php',
   ]; // array_filter(glob(__DIR__ . DIRECTORY_SEPARATOR . '*.php'), 'is_file');
 
   usort($dirs, function ($a, $b) {
