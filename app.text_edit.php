@@ -85,11 +85,11 @@ $proc=proc_open('sudo ' . GIT_EXEC . ' ' . $match[1],
 
 
 if (is_dir('resources/js/ace') && empty(glob('resources/js/ace')))
-    exec('sudo ' . GIT_EXEC . ' clone https://github.com/ajaxorg/ace.git resources/js/ace', $output, $returnCode) or $errors['GIT-CLONE-ACE'] = $output;
+    exec('sudo ' . GIT_EXEC . ' clone https://github.com/ajaxorg/ace-builds.git resources/js/ace', $output, $returnCode) or $errors['GIT-CLONE-ACE'] = $output;
 elseif (!is_dir('resources/js/ace')) {
     if (!mkdir('resources/js/ace', 0755))
         $errors['GIT-CLONE-ACE'] = ' resources/js/ace does not exist.';
-    exec('sudo ' . GIT_EXEC . ' clone https://github.com/ajaxorg/ace.git resources/js/ace', $output, $returnCode) or $errors['GIT-CLONE-ACE'] = $output;
+    exec('sudo ' . GIT_EXEC . ' clone https://github.com/ajaxorg/ace-builds.git resources/js/ace', $output, $returnCode) or $errors['GIT-CLONE-ACE'] = $output;
 }
 
 ob_start(); ?>
@@ -257,7 +257,7 @@ ob_start(); ?>
 <?php //if (isset($_GET['client']) && $_GET['client'] != '') { 
 //if (isset($_GET['domain']) && $_GET['domain'] != '') {
 ?>
-ace.require("ace/ext/language_tools");
+//var ace = require("resources/js/ace/src/ace.js"); // ext/language_tools
 var editor = ace.edit("ace-editor");
 editor.setTheme("ace/theme/dracula");
 
@@ -274,7 +274,7 @@ editor.setOptions({
 <?php //} }
 ?>
 
-$(document).ready(function() {});
+<?= /* $(document).ready(function() {}); */ ''; ?>
 <?php $appTextEditor['script'] = ob_get_contents();
 ob_end_clean();
 
@@ -297,10 +297,10 @@ ob_start(); ?>
 <?= $appTextEditor['body']; ?>
 
   <script src="resources/js/ace/src/ace.js" type="text/javascript" charset="utf-8"></script>
-<!--  <script src="resources/js/ace/ext-language_tools.js" type="text/javascript" charset="utf-8"></script> -->
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/ace/1.4.12/ext-language_tools.js"></script>
+  <script src="resources/js/ace/src/ext-language_tools.js" type="text/javascript" charset="utf-8"></script> 
+<!--    <script src="https://cdnjs.cloudflare.com/ajax/libs/ace/1.4.12/ext-language_tools.js"></script>
 
-  <script src="resources/js/ace/src/mode-php.js" type="text/javascript" charset="utf-8"></script>
+  <script src="resources/js/ace/src/mode-php.js" type="text/javascript" charset="utf-8"></script>-->
   <!-- https://cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.min.js -->
   <script src="//code.jquery.com/jquery-1.12.4.js"></script>
   <script src="//code.jquery.com/ui/1.12.1/jquery-ui.js"></script>

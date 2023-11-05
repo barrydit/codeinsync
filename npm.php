@@ -11,7 +11,7 @@ define('NODE_ENV', APP_ENV ?? 'production');
 putenv('NODE_ENV=' . (string) NODE_ENV);
 
 define('NODE_EXEC', '/usr/bin/node');
-$proc = proc_open('sudo ' . NODE_EXEC . ' --version;', array( array("pipe","r"), array("pipe","w"), array("pipe","w")), $pipes);
+$proc = proc_open('sudo ' . NODE_EXEC . ' --version', array( array("pipe","r"), array("pipe","w"), array("pipe","w")), $pipes);
 
 $stdout = stream_get_contents($pipes[1]);
 $stderr = stream_get_contents($pipes[2]);
@@ -31,7 +31,7 @@ define('NODE_MODULES_PATH', APP_PATH . 'node_modules/');
 
 define('NPM_EXEC', '/usr/bin/npm');
 
-$proc = proc_open('sudo ' . NPM_EXEC . ' --version;', array( array("pipe","r"), array("pipe","w"), array("pipe","w")), $pipes);
+$proc = proc_open('sudo ' . NPM_EXEC . ' --version', array( array("pipe","r"), array("pipe","w"), array("pipe","w")), $pipes);
 
 $stdout = stream_get_contents($pipes[1]);
 $stderr = stream_get_contents($pipes[2]);
@@ -104,7 +104,7 @@ if (is_dir(NODE_MODULES_PATH)) {
   ),
   $pipes);
   list($stdout, $stderr, $exitCode) = [stream_get_contents($pipes[1]), stream_get_contents($pipes[2]), proc_close($proc)];
-  $errors['NPM-CACHE-CLEAN-F'] = (!isset($stdout) ? NULL : $stdout . (isset($stderr) && $stderr === '' ? NULL : ' Error: ' . $stderr) . (isset($exitCode) && $exitCode == 0 ? NULL : 'Exit Code: ' . $exitCode));
+  $errors['NPM-CACHE-CLEAN-F'] = (!isset($stdout) ? NULL : $stdout . (isset($stderr) && $stderr === '' ? NULL : (preg_match('/npm\sWARN\susing\s--force\sRecommended\sprotections\sdisabled./', $stderr) ? $stderr : ' Error: ' . $stderr)) . (isset($exitCode) && $exitCode == 0 ? NULL : 'Exit Code: ' . $exitCode));
   
   // Error: npm WARN using --force Recommended protections disabled.
 
@@ -130,13 +130,9 @@ if (is_dir(NODE_MODULES_PATH)) {
       ),
     $pipes);
     list($stdout, $stderr, $exitCode) = [stream_get_contents($pipes[1]), stream_get_contents($pipes[2]), proc_close($proc)];
-    $errors['NPM-WEBPACK'] = (!isset($stdout) ? NULL : $stdout . (isset($stderr) && $stderr === '' ? NULL : ' Error: ' . $stderr) . (isset($exitCode) && $exitCode == 0 ? NULL : /* 'Exit Code: ' . $exitCode*/ '' ));
+    $errors['NPM-WEBPACK'] = (!isset($stdout) ? NULL : $stdout . (isset($stderr) && $stderr === '' ? NULL : (preg_match('/sudo:\swebpack:\scommand\snot\sfound/', $stderr) ? '`webpack` is not currently installed (locally) on this computer.' . "\n" : ' Error: ' . $stderr)) . (isset($exitCode) && $exitCode == 0 ? NULL : /* 'Exit Code: ' . $exitCode*/ '' ));
     
-    if (preg_match('/sudo:\swebpack:\scommand\snot\sfound/', $stderr, $matches)) {
-    
-        $errors['NPM-WEBPACK'] = $errors['NPM-WEBPACK'] . "\n". '`webpack` is not currently installed (locally) on this computer.';
-    
-    } else {
+    if (!isset($errors['NPM-WEBPACK']) && !empty($errors['NPM-WEBPACK'])) {
     
   if (!is_dir(NODE_MODULES_PATH . 'webpack') || !is_dir(NODE_MODULES_PATH . 'webpack-cli') ) {
     $proc=proc_open('sudo ' . NPM_EXEC . ' install webpack webpack-cli --save-dev',

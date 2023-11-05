@@ -131,27 +131,6 @@ ob_end_clean();
 
 ob_start(); ?>
 
-<?php //if (isset($_GET['client']) && $_GET['client'] != '') { 
-//if (isset($_GET['domain']) && $_GET['domain'] != '') {
-?>
-ace.require("ace/ext/language_tools");
-var editor = ace.edit("ace-editor");
-editor.setTheme("ace/theme/dracula");
-
-//var JavaScriptMode = ace.require("ace/mode/javascript").Mode;
-editor.session.setMode("ace/mode/php");
-editor.setAutoScrollEditorIntoView(true);
-editor.setShowPrintMargin(false);
-editor.setOptions({
-    //  resize: "both"
-  enableBasicAutocompletion: true,
-  enableLiveAutocompletion: true,
-  enableSnippets: true
-});
-<?php //} }
-?>
-
-$(document).ready(function() {});
 <?php $appPackagist['script'] = ob_get_contents();
 ob_end_clean();
 

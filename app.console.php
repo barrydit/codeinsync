@@ -61,8 +61,18 @@ $proc=proc_open('sudo ' . GIT_EXEC . ' ' . $match[1],
     array("pipe","w")
   ),
   $pipes);
+  
+/*
+ Error: To https://github.com/barrydit/composer_app.git
+   5fbad5b..29f689e  main -> main
+   
+^To\s(?:[a-z]+\:\/\/)?(?:[a-z0-9\\-]+\.)+[a-z]{2,6}(?:\/\S*)?
+   
+   
+*/
+  // 
           list($stdout, $stderr, $exitCode) = [stream_get_contents($pipes[1]), stream_get_contents($pipes[2]), proc_close($proc)];
-          $output[] = (!isset($stdout) ? NULL : $stdout . (isset($stderr) && $stderr === '' ? NULL : ' Error: ' . $stderr) . (isset($exitCode) && $exitCode == 0 ? NULL : 'Exit Code: ' . $exitCode));
+          $output[] = (!isset($stdout) ? NULL : $stdout . (isset($stderr) && $stderr === '' ? NULL : (preg_match('/^To\s' . DOMAIN_EXPR . '/', $stderr) ? $stderr : 'Error: ' . $stderr) ) . (isset($exitCode) && $exitCode == 0 ? NULL : 'Exit Code: ' . $exitCode));
           //$output[] = $_POST['cmd'];
 
         } else if (preg_match('/^npm\s+(:?(.*))/i', $_POST['cmd'], $match)) {

@@ -126,7 +126,6 @@ END
 
 }
 
-
 header("Cache-Control: no-store, no-cache, must-revalidate, max-age=0");
 header("Pragma: no-cache");
 
@@ -638,22 +637,75 @@ if (!empty($paths))
 
   <!-- script src="https://code.jquery.com/jquery-3.6.0.min.js" integrity="sha256-/xUj+3OJU5yExlq6GSYGSHk7tPXikynS7ogEvDej/m4=" crossorigin="anonymous"></script -->
 
-  <script src="<?= (check_http_200('https://code.jquery.com/jquery-3.7.1.min.js') ? 'https://code.jquery.com/jquery-3.7.1.min.js' : APP_URL_BASE . 'resources/js/jquery/jquery-3.7.1.min.js')?>"></script>
+<?php
+is_dir(APP_PATH . APP_BASE['resources'] . 'js/jquery') or mkdir(APP_PATH . APP_BASE['resources'] . 'js/jquery', 0755);
+if (is_file(APP_PATH . APP_BASE['resources'] . 'js/jquery/jquery-3.7.1.min.js')) {
+  if (ceil(abs((strtotime(date('Y-m-d')) - strtotime(date('Y-m-d',strtotime('+5 days',filemtime(APP_PATH . APP_BASE['resources'] . 'js/jquery/jquery-3.7.1.min.js'))))) / 86400)) <= 0 ) {
+    $url = 'https://code.jquery.com/jquery-3.7.1.min.js';
+    $handle = curl_init($url);
+    curl_setopt($handle, CURLOPT_RETURNTRANSFER, true);
+
+    if (!empty($js = curl_exec($handle))) 
+      file_put_contents(APP_PATH . APP_BASE['resources'] . 'js/jquery/jquery-3.7.1.min.js', $js) or $errors['JS-REQUIREJS'] = $url . ' returned empty.';
+  }
+} else {
+  $url = 'https://code.jquery.com/jquery-3.7.1.min.js';
+  $handle = curl_init($url);
+  curl_setopt($handle, CURLOPT_RETURNTRANSFER, true);
+
+  if (!empty($js = curl_exec($handle))) 
+    file_put_contents(APP_PATH . APP_BASE['resources'] . 'js/jquery/jquery-3.7.1.min.js', $js) or $errors['JS-REQUIREJS'] = $url . ' returned empty.';
+}
+
+?>
+  <script src="<?= (check_http_200('https://code.jquery.com/jquery-3.7.1.min.js') ? 'https://code.jquery.com/jquery-3.7.1.min.js' : APP_URL_BASE . APP_BASE['resources'] . 'js/jquery/jquery-3.7.1.min.js') ?>"></script>
 
 <!-- For Text / Ace Editor -->
 
-  <script src="dist/bundle.js" type="text/javascript" charset="utf-8"></script>
-<!-- 
-  <script src="resources/js/ace/src/ace.js" type="text/javascript" charset="utf-8"></script>
-  <script src="resources/js/ace/src/ext/language_tools.js" type="text/javascript" charset="utf-8"></script>
-  <!-- <script src="https://cdnjs.cloudflare.com/ajax/libs/ace/1.4.12/ext-language_tools.js"></script>
+  <!-- <script src="https://unpkg.com/@popperjs/core@2" type="text/javascript" charset="utf-8"></script> -->
+  
+<?php
+is_dir(APP_PATH . APP_BASE['resources'] . 'js/requirejs') or mkdir(APP_PATH . APP_BASE['resources'] . 'js/requirejs', 0755);
+if (is_file(APP_PATH . APP_BASE['resources'] . 'js/requirejs/require-2.3.6.js')) {
+  if (ceil(abs((strtotime(date('Y-m-d')) - strtotime(date('Y-m-d',strtotime('+5 days',filemtime(APP_PATH . APP_BASE['resources'] . 'js/requirejs/require-2.3.6.js'))))) / 86400)) <= 0 ) {
+    $url = 'https://requirejs.org/docs/release/2.3.6/minified/require.js';
+    $handle = curl_init($url);
+    curl_setopt($handle, CURLOPT_RETURNTRANSFER, true);
 
-  <script src="resources/js/ace/src/mode/php.js" type="text/javascript" charset="utf-8"></script>
--->
+    if (!empty($js = curl_exec($handle))) 
+      file_put_contents(APP_PATH . APP_BASE['resources'] . 'js/requirejs/require-2.3.6.js', $js) or $errors['JS-REQUIREJS'] = $url . ' returned empty.';
+  }
+} else {
+  $url = 'https://requirejs.org/docs/release/2.3.6/minified/require.js';
+  $handle = curl_init($url);
+  curl_setopt($handle, CURLOPT_RETURNTRANSFER, true);
+
+  if (!empty($js = curl_exec($handle))) 
+    file_put_contents(APP_PATH . APP_BASE['resources'] . 'js/requirejs/require-2.3.6.js', $js) or $errors['JS-REQUIREJS'] = $url . ' returned empty.';
+}
+
+?>
+  <script src="<?= (check_http_200('https://requirejs.org/docs/release/2.3.6/minified/require.js') ? 'https://requirejs.org/docs/release/2.3.6/minified/require.js' : APP_URL_BASE . APP_BASE['resources'] . 'js/requirejs/require-2.3.6.js') ?>" type="text/javascript" charset="utf-8"></script>
+
+  <script src="resources/js/ace/src/ace.js" type="text/javascript" charset="utf-8"></script> <!-- -->
+  <script src="resources/js/ace/src/ext-language_tools.js" type="text/javascript" charset="utf-8"></script>
+<!-- <script src="https://cdnjs.cloudflare.com/ajax/libs/ace/1.4.12/ext-language_tools.js"></script>
+
+  <script src="resources/js/ace/src/mode-php.js" type="text/javascript" charset="utf-8"></script>
+  
+  <script src="resources/js/ace/src/theme-dracula.js" type="text/javascript" charset="utf-8"></script> -->
+
+<!--   <script src="dist/bundle.js" type="text/javascript" charset="utf-8"></script> -->
+
 <!-- End: For Text / Ace Editor -->
 
   <!-- <script src="resources/js/jquery/jquery.min.js"></script> -->
-<script>
+
+  <!-- script src="resources/js/play_sound.js" type="text/javascript" charset="utf-8"></script -->
+  
+  <script src="resources/js/dan-matt-dillahunty.js" type="text/javascript" charset="utf-8"></script>
+  
+  <script type="text/javascript" charset="utf-8">
 
 $(document).ready(function(){
     if ($( "#app_directory-container" ).css('display') == 'none') {
@@ -680,12 +732,81 @@ window.addEventListener('keydown', show_console);
 
 <?= $appPackagist['script']; ?>
 
-<?= /* $appTextEditor['script']; */ NULL; ?>
+/*
+require.config({
+  baseUrl: window.location.protocol + "//" + window.location.host
+  + window.location.pathname.split("/").slice(0, -1).join("/"),
+
+  paths: {
+    jquery: 'resources/js/jquery/jquery.min',
+    domReady: 'resources/js/domReady',
+    bootstrap: 'resources/js/bootstrap/dist/js/bootstrap',
+    ace: 'resources/js/ace/src/ace',
+    'lib/dom': 'resources/js/ace/src/lib/dom',
+    useragent: 'resources/js/ace/src/lib/useragent',
+    exports: 'resources/js/ace/src/lib/',
+    
+    //'../snippets': 'resources/js/ace/lib/ace/snippets',
+    //'./lib/oop': 'resources/js/ace/src/lib'
+  }
+});
+*/
+    require.config({
+      baseUrl: window.location.protocol + "//" + window.location.host
+      + window.location.pathname.split("/").slice(0, -1).join("/"),
+      paths: {
+        ace: "resources/js/ace/src"
+      }
+    })
+    define('testace', ['ace/ace'],
+        function(ace, langtools) {
+            console.log(langtools);
+
+<?= $appTextEditor['script']; ?>
+            require(["resources/js/require!ace/ace"], function(e){
+                editor.setValue(e);
+            })
+        }
+    );
+    require(['testace']);
+
+
+/*
+    require.config({paths: {ace: "../src"}})
+    define('testace', ['ace/ace'],
+        function(ace, langtools) {
+            console.log("This is the testace module");
+            var editor = ace.edit("editor");
+            editor.setTheme("ace/theme/twilight");
+            editor.session.setMode("ace/mode/javascript");
+            require(["ace/requirejs/text!src/ace"], function(e){
+                editor.setValue(e);
+            })
+        }
+    );
+    require(['testace'])
+
+require(['jquery', 'domReady', 'bootstrap', 'ace', 'lib/dom', 'useragent'], function($, domReady) {
+  console.log('domReady is working ... ');
+  // Code that uses 'lib/dom'
+});
+*/
+// ,'lib/dom', '../snippets', './lib/oop'
+/*
+require(['jquery','domReady','bootstrap','ace/ace'], function($, domReady) {
+    domReady(function () {
+
+console.log(require.config);
+console.log('domReady is working ... ');
+
+    })
+);
+*/
 
 <?= $appTimesheet['script']; ?>
-</script>
 
-  <script src="resources/js/play_sound.js"></script>
+  </script>
 
+  
 </body>
 </html>

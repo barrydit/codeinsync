@@ -255,7 +255,7 @@ putenv('COMPOSER_DISABLE_XDEBUG_WARN=' . (int) true);
 $composerUser = 'barrydit';
 $componetPkg = basename(dirname(__DIR__));
 $composerHome = (strtoupper(substr(PHP_OS, 0, 3)) === 'WIN' ?
-  'C:/Users/Barry Dick/AppData/Roaming/Composer/' : 
+  'C:/Users/' . (getenv('USERNAME') ?: getenv('USER')) . '/AppData/Roaming/Composer/' : 
   '/home/' . (getenv('USERNAME') ?: getenv('USER')) . '/.composer/'
 );
 

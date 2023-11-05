@@ -6,7 +6,6 @@ node_modules/
 vendor/
 var/*.php
 error_log
-.babelrc
 .env.*
 *.old
 .htaccess
