@@ -259,7 +259,7 @@ if ($path)
         </select>
 </form>
 </div>
-<div id="app_directory-container" style=" display: <?= ( isset($_GET['path']) ? 'block' : 'none') . ';'; ?>; position: absolute; top: 80px; margin-left: auto; margin-right: auto; left: 0; right: 0; width: 700px; ">
+<div id="app_directory-container" style=" display: <?= ( isset($_GET['path']) ? 'block' : 'none') . ';'; ?>; overflow-x: scroll; height: 580px; position: absolute; top: 80px; margin-left: auto; margin-right: auto; left: 0; right: 0; width: 700px; ">
 
 <?php if (isset($_GET['path']) && preg_match('/^vendor/', $_GET['path'])) { ?>
 
@@ -467,7 +467,7 @@ if (!empty($result))
 
 <?php } else { ?>
 
-<table width="" style="border: 1px solid #000;">
+<table width="" style="border: 0 solid #000;">
 <tr>
 <?php
 $paths = glob($path . '/' . '{.[!.]*,*}', GLOB_BRACE | GLOB_MARK);
@@ -521,7 +521,7 @@ usort($paths, function ($a, $b) {
 $count = 1;
 if (!empty($paths))
   foreach($paths as $key => $path) {
-      echo '<td style="border: 1px solid #000; text-align: center;" class="text-xs">' . "\n";
+      echo '<td style="border: 0 solid #000; text-align: center;" class="text-xs">' . "\n";
       if (is_dir($path))
         if (basename($path) == '.git')
           echo '<a href="#" onclick="document.getElementById(\'app_git-container\').style.display=\'block\';">' // "?path=' . basename($path) . '" 
