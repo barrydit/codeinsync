@@ -891,8 +891,8 @@ if (!empty(get_object_vars(COMPOSER->{'require-dev'})))
       
       <div style="display: inline-block; width: 100%;"><hr />Require:
         <div style="float: right;">
-          <input id="composerRequirePkg" type="text" title="Enter Text and onSelect" list="composerReqPackages" placeholder="" value="" onselect="get_package()">
-          <datalist id="composerReqPackages">
+          <input id="composerReqPkg" type="text" title="Enter Text and onSelect" list="composerReqPkgs" placeholder="" value="" onselect="get_package(this);">
+          <datalist id="composerReqPkgs">
             <option value=""></option>
           </datalist>
         </div>
@@ -1082,7 +1082,7 @@ function add_keyword() {
 //alert(x);
 
 
-document.getElementById("composerRequirePkg").addEventListener("input", function(event){
+document.getElementById("composerReqPkg").addEventListener("input", function(event){
   if(event.inputType == "insertReplacementText" || event.inputType == null) {
     var filledInputs = $('#composerAppendRequire').find(':input[type=text]').filter(function() {return !!this.value;}).length;
     document.getElementById('composerAppendRequire').style.display = "inline-block";
@@ -1097,16 +1097,17 @@ function selectPackage() {
 
 }
 
-function get_package() { // onSelect="get_package()"
-  var val = document.getElementById("composerRequirePkg").value;
+function get_package(element) { // onSelect="get_package()"
+  var val = element.value; // document.getElementById("composerReqPkg")
+  console.log(element.id+ 's');
   var url, packagesOption;
   url = 'https://packagist.org/search.json?q=' + val;
-  document.getElementById('composerReqPackages').innerHTML = '';
+  document.getElementById(element.id + 's').innerHTML = '';
   $.getJSON(url, function(data) {
   //populate the packages datalist
     $(data.results).each(function() {
       packagesOption = '<option value="' + this.name + '" />';
-      $('#composerReqPackages').append(packagesOption);
+      $('#' + element.id + 's').append(packagesOption);
       //console.log(this.favers);
     });
   });

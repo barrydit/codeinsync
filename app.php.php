@@ -73,7 +73,7 @@ ob_start(); ?>
 #app_php-container {
 position: absolute;
 display: none;
-top: 15%;
+top: 60px;
 //bottom: 60px;
 left: 50%;
 transform: translateX(-50%);

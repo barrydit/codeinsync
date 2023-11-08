@@ -34,11 +34,13 @@ $errors = []; // (object)
 
 // (basename(__DIR__) != 'config' ?
 
+$links = array_filter(glob(__DIR__ . DIRECTORY_SEPARATOR . 'classes/*.php'), 'is_file');
 
-if ($path = realpath(__DIR__ . DIRECTORY_SEPARATOR . 'classes/class.shutdown.php'))
-  require_once($path);
-else die(var_dump($path . ' was not found. file=classes/class.shutdown.php'));
-
+while ($link = array_shift($links)) {
+  if ($path = realpath($link))
+    require_once($path);
+  else die(var_dump(basename($path) . ' was not found. file=classes/' . basename($path)));
+}
 
 if ($path = (is_file(__DIR__ . DIRECTORY_SEPARATOR . 'functions.php') ? __DIR__ . DIRECTORY_SEPARATOR . 'functions.php' : (is_file('config/functions.php') ? 'config/functions.php' : 'functions.php'))) // is_file('config/constants.php')) 
   require_once($path);
@@ -159,6 +161,13 @@ if (is_readable($path = ini_get('error_log')) && filesize($path) > 0 ) {
     exit(header('Location: ' . APP_WWW));
   }
 }
+
+if (isset($_GET['src']) && is_readable($path = $_GET['src']) && filesize($path) > 0 ) {
+  Shutdown::setEnabled(false)->setShutdownMessage(function() use($path) {
+      return highlight_file($path); /* eval('?>' . $project_code); // -wow */
+    })->shutdown();
+}
+
 
 if (basename($dir = APP_PATH) != 'config') {
   if (in_array(basename($dir), ['public', 'public_html']))
@@ -478,8 +487,7 @@ ob_end_clean();
 
 //var_dump(APP_ERRORS);
 
-if (defined('APP_ERRORS') && APP_ERRORS && defined('APP_DEBUG') && APP_DEBUG == true) // is_array($ob_content)
-  dd(APP_ERRORS); // get_defined_constants(true)['user']'
+
 
 
 //Shutdown::setEnabled(false)->setShutdownMessage(function() {

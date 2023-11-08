@@ -71,6 +71,7 @@ if (basename(__DIR__) == 'config') {
   //define('APP_PATH', (dirname(APP_SELF) ?? $_SERVER['DOCUMENT_ROOT']) . DIRECTORY_SEPARATOR);
   define('APP_BASE', [
     'config' => 'config' . DIRECTORY_SEPARATOR,
+    'database' => 'database' . DIRECTORY_SEPARATOR,
     'public' => 'public' . DIRECTORY_SEPARATOR,   // basename(APP_PATH) could be composer||public[_html]/
     'resources' => 'resources' . DIRECTORY_SEPARATOR,
     'var' => 'var' . DIRECTORY_SEPARATOR,

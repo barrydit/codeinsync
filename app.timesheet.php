@@ -673,21 +673,15 @@ input {
    border: 1px solid #000;
 }
 
+td, tr {
+  border: none;
+}
+
+
 <?php $appTimesheet['style'] = ob_get_contents();
 ob_end_clean();
 
 ob_start(); ?>
-
-  <div style="position: fixed; top: 0; right: 0; margin: 4px;">
-    <table>
-      <tr><td><div id="idleTime" style="display: inline; margin: 7px 5px;"></div>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<img id="ts-status-light" src="resources/images/timesheet-light-Clear-2.gif" width="80" height="30" style="cursor: pointer;" /></td></tr>
-    </table>
-    <div id="clockTime" style="float: right;"></div>
-  </div>
-  <div style="position: fixed; bottom: 0; left: 0;">
-    <div id="stats">0 idles<br />1 hrs of mising time</div>  
-  </div>
-
 
   <div id="app_timesheet-container" class="<?= (APP_SELF == __FILE__ || isset($_GET['app']) && $_GET['app'] == 'timesheet' ? 'selected' : '') ?>" style="display: none; <?= /* */ null; ?>border: 1px solid #000; width: 800px; overflow: none;">
     <div class="header ui-widget-header" style=" text-align: center;">
@@ -1036,7 +1030,17 @@ function stop_beep() {
 function clockIncrement() {
     var time = new Date().toLocaleTimeString('en-US', { hour: '2-digit', hour12: true, minute: '2-digit', second: '2-digit'});
     var clocktime = document.getElementById('clockTime');
-    clocktime.innerHTML = '<i style="color: green;">' + time + '  ' + month + ' ' + date.getDate() + ' ' + date.getFullYear()  + '</i>';
+    var weekday=new Array(7);
+    weekday[0]="Mon,";
+    weekday[1]="Tues,";
+    weekday[2]="Wed,";
+    weekday[3]="Thurs,";
+    weekday[4]="Fri,";
+    weekday[5]="Sat,";
+    weekday[6]="Sun,";
+    
+    
+    clocktime.innerHTML = '<i style="color: green;">' + weekday[date.getDay()] + '  ' + time + '  ' + month + ' ' + date.getDate() + ' ' + date.getFullYear()  + '</i>';
 }
 
 function startInterval() {
@@ -1134,7 +1138,7 @@ function stopInterval() {
         
             console.log(count_idle);
         
-            $("#stats").html(count_idle + ' idles' + '<br />' + '' + ' hrs of idle time');
+            $("#stats").html('Idle: [' + count_idle + '] ' + '&nbsp;&nbsp;' + '' + ' <span style="color: red;">01:00:00');
 
             function myFunction(item, index, arr) {
               console.log(item);

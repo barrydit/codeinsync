@@ -113,7 +113,7 @@ ob_start(); ?>
     </div>
 
       <div style="display: inline-block; width: auto; padding-left: 10px;">
-        <iframe src="packagist_ui.php" style="height: 550px; width: 775px;"></iframe>
+        <iframe src="<?= basename(__FILE__) ?>" style="height: 550px; width: 775px;"></iframe>
       </div>
       
       
@@ -135,40 +135,64 @@ ob_start(); ?>
 ob_end_clean();
 
 ob_start(); ?>
-<!DOCTYPE html>
-<html>
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-  <link rel="stylesheet" href="//code.jquery.com/ui/1.12.1/themes/smoothness/jquery-ui.css" />
-
-<script src="https://cdn.tailwindcss.com"></script>
-
-<style type="text/tailwindcss">
-<?= $appPackagist['style']; ?>
-</style>
-</head>
-<body>
-<?= $appPackagist['body']; ?>
-
-  <script src="../../resources/js/ace/ace.js" type="text/javascript" charset="utf-8"></script>
-<!--  <script src="resources/js/ace/ext-language_tools.js" type="text/javascript" charset="utf-8"></script> -->
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/ace/1.4.12/ext-language_tools.js"></script>
-
-  <script src="../../resources/js/ace/mode-php.js" type="text/javascript" charset="utf-8"></script>
-  <!-- https://cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.min.js -->
-  <script src="//code.jquery.com/jquery-1.12.4.js"></script>
-  <script src="//code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
-  <!-- <script src="../resources/js/jquery/jquery.min.js"></script> -->
-<script>
-<?= /*$appPackagist['script'];*/ NULL; ?>
-</script>
-</body>
-</html>
 <?php $appPackagist['html'] = ob_get_contents(); 
 ob_end_clean();
 
+
+is_dir(APP_PATH . APP_BASE['var']) or mkdir(APP_PATH . APP_BASE['var'], 0755);
+if (is_file(APP_PATH . APP_BASE['var'] . 'packagist.org.html')) {
+  if (ceil(abs((strtotime(date('Y-m-d')) - strtotime(date('Y-m-d',strtotime('+5 days',filemtime(APP_PATH . APP_BASE['var'] . '/packagist.org.html'))))) / 86400)) <= 0 ) {
+    $url = 'https://packagist.org/';
+    $handle = curl_init($url);
+    curl_setopt($handle, CURLOPT_RETURNTRANSFER, true);
+
+    if (!empty($html = curl_exec($handle))) 
+      file_put_contents(APP_PATH . APP_BASE['var'] . 'packagist.org.html', $html) or $errors['COMPOSER_LATEST'] = $url . ' returned empty.';
+  }
+} else {
+  $url = 'https://packagist.org/';
+  $handle = curl_init($url);
+  curl_setopt($handle, CURLOPT_RETURNTRANSFER, true);
+
+  if (!empty($html = curl_exec($handle))) 
+    file_put_contents(APP_PATH . APP_BASE['var'] . 'packagist.org.html', $html) or $errors['COMPOSER_LATEST'] = $url . ' returned empty.';
+}
+
+libxml_use_internal_errors(true); // Prevent HTML errors from displaying
+$dom = new DOMDocument(1.0, 'utf-8');
+$dom->loadHTML(file_get_contents(APP_PATH . APP_BASE['var'] . 'packagist.org.html'), LIBXML_HTML_NOIMPLIED | LIBXML_HTML_NODEFDTD );   
+$xpath = new DOMXPath($dom);
+
+$destination = $xpath->query('//head/meta');
+$template = $dom->createDocumentFragment();
+$template->appendXML('<base href="https://packagist.org/" />');
+$destination[0]->parentNode->insertBefore($template, $destination[0]->nextSibling);
+
+/*
+$dom = new DOMDocument(1.0, 'utf-8');
+$dom->loadHTML(file_get_contents(APP_PATH . APP_BASE['var'] . 'packagist.org.html'));
+
+$divs = $dom->getElementsByTagName('head');
+
+$element = $dom->createElement('test', 'This is the root element!');
+
+$elm = createElement($dom, 'foo', 'bar', array('attr_name'=>'attr_value'));
+
+$dom->appendChild($elm);
+*/
+
+//dd($divs);
+
+//$content_node=$dom->getElementById("main");
+//$node=getElementsByClass($content_node, 'p', 'latest');
+
+//$dom->saveHTML($dom->documentElement);
+ 
+//echo file_get_contents("https://packagist.org/");
+
 //check if file is included or accessed directly
 if (__FILE__ == get_required_files()[0] || in_array(__FILE__, get_required_files()) && isset($_GET['app']) && $_GET['app'] == 'php' && APP_DEBUG)
-  die($appPackagist['html']);
+  Shutdown::setEnabled(false)->setShutdownMessage(function() use($dom) {
+      return $dom->saveHTML(); /* eval('?>' . $project_code); // -wow */
+    })->shutdown(); // die();

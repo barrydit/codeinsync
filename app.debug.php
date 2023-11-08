@@ -12,6 +12,8 @@ $path = $_SERVER['DOCUMENT_ROOT'] . parse_url($_SERVER['REQUEST_URI'], PHP_URL_P
 
 //dd( realpath($path) == realpath(APP_PATH) );
 
+if (defined('APP_ERRORS') && APP_ERRORS && defined('APP_DEBUG') && APP_DEBUG == true) // is_array($ob_content)
+  $report_errors = true; /// dd(APP_ERRORS); // get_defined_constants(true)['user']'
 
  // realpath($path) == "/mnt/c/www/public/composer" ... $path == "[/var/www/public]/composer/" == $_SERVER['DOCUMENT_ROOT'] . parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH)
 
