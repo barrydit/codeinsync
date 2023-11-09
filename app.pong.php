@@ -10,7 +10,7 @@ else die(var_dump($path . ' path was not found. file=config.php'));
 ob_start(); ?>
 
 /* Styles for the absolute div */
-#app_notes-container {
+#app_pong-container {
 position: absolute;
 display: none;
 top: 5%;
@@ -18,7 +18,7 @@ top: 5%;
 left: 50%;
 transform: translateX(-50%);
 width: auto;
-height: 500px;
+height: 400px;
 background-color: rgba(255, 255, 255, 0.9);
 color: black;
 text-align: center;
@@ -26,7 +26,7 @@ padding: 10px;
 z-index: 1;
 }
 
-<?php $appNotes['style'] = ob_get_contents();
+<?php $appPong['style'] = ob_get_contents();
 ob_end_clean();
 
 ob_start(); ?>
@@ -39,20 +39,20 @@ ob_start(); ?>
     </div>
 
       <div style="display: inline-block; width: auto;">
-        <iframe src="<?= basename(__FILE__) ?>" style="height: 460px; width: 800px;"></iframe>
+        <iframe src="<?= basename(__FILE__) ?>" style="height: 350px; width: 750px;"></iframe>
       </div>
       <!-- <pre id="ace-editor" class="ace_editor"></pre> -->
   </div>
 <!-- </div> -->
 
-<?php $appNotes['body'] = ob_get_contents();
+<?php $appPong['body'] = ob_get_contents();
 ob_end_clean();
 
 ob_start(); ?>
 
 
 
-<?php $appNotes['script'] = ob_get_contents();
+<?php $appPong['script'] = ob_get_contents();
 ob_end_clean();
 
 //dd($_SERVER);
@@ -110,7 +110,7 @@ html, body { width: 100%; height: 100%; <?= ($_SERVER['SCRIPT_FILENAME'] == __FI
           <div id="score_2">0</div>
         </div>
       </div>
-      <div id="right-panel" class="w-40 px-8 pt-12 bg-black rounded-md shadow-[5px_5px_20px_rgba(0,0,0,.4)]">
+      <div id="right-panel" class="w-80 px-8 pt-12 bg-black rounded-md shadow-[5px_5px_20px_rgba(0,0,0,.4)]">
         <div id="xyposition" class="">&nbsp;</div>
         <div id="mousepad" class="h-[170px] w-full border border-white"></div>
       </div>
@@ -120,9 +120,9 @@ html, body { width: 100%; height: 100%; <?= ($_SERVER['SCRIPT_FILENAME'] == __FI
   <script type="module" src="resources/js/bootstrap.js"></script>
 </body>
 </html>
-<?php $appPackagist['html'] = ob_get_contents(); 
+<?php $appPong['html'] = ob_get_contents(); 
 ob_end_clean();
 
 //check if file is included or accessed directly
 if (__FILE__ == get_required_files()[0] || in_array(__FILE__, get_required_files()) && isset($_GET['app']) && $_GET['app'] == 'php' && APP_DEBUG)
-  die($appPackagist['html']);
+  die($appPong['html']);

@@ -98,6 +98,13 @@ else die(var_dump($path . ' was not found. file=app.notes.php'));
 
 
 if ($path = (basename(getcwd()) == 'public')
+    ? (is_file('app.pong.php') ? 'app.pong.php' : (is_file('../app.pong.php') ? '../app.pong.php' : (is_file('../config/app.pong.php') ? '../config/app.pong.php' : NULL)))
+    : (is_file('../app.pong.php') ? '../app.pong.php' : (is_file('public/app.pong.php') ? 'public/app.pong.php' : (is_file('config/app.pong.php') ? 'config/app.pong.php' : 'app.pong.php'))))
+  require_once($path); 
+else die(var_dump($path . ' was not found. file=app.pong.php'));
+
+
+if ($path = (basename(getcwd()) == 'public')
     ? (is_file('app.text_edit.php') ? 'app.text_edit.php' : (is_file('../app.text_edit.php') ? '../app.text_edit.php' : (is_file('../config/app.text_edit.php') ? '../config/app.text_edit.php' : NULL)))
     : (is_file('../app.text_edit.php') ? '../app.text_edit.php' : (is_file('public/app.text_edit.php') ? 'public/app.text_edit.php' : (is_file('config/app.text_edit.php') ? 'config/app.text_edit.php' : 'app.text_edit.php'))))
   require_once($path); 
@@ -184,6 +191,8 @@ if (is_file(APP_ROOT . 'project.php') && isset($_GET['project']) && $_GET['proje
 <?= $appWhiteboard['style']; ?>
 
 <?= $appNotes['style']; ?> 
+
+<?= $appPong['style']; ?>
 
 <?= $appTextEditor['style']; ?>
 
@@ -441,7 +450,7 @@ https://stackoverflow.com/questions/12939928/make-a-link-open-a-new-window-not-t
 
 
 <div style="position: absolute; margin: 180px 0 0 550px; text-align: center;" class="text-sm"><a href="#!" onclick="document.getElementById('app_pong-container').style.display='block'; return false;"><span class="text-base">&nbsp;</span><br /><img style="text-align: center;" src="<?= APP_BASE['resources'] . 'images/pong.png' ?>" /><br /><span style="text-align: center;">Pong</span></a></div>
-<div style="position: absolute; margin: 200px 300px; width: 600px;">
+<div style="position: absolute; margin: 200px 300px;">
 
 
 
@@ -974,6 +983,8 @@ if (!empty($paths))
 
 <?= $appNotes['body']; ?>
 
+<?= $appPong['body']; ?>
+
 <?= $appTextEditor['body']; ?>
 
 <?= $appConsole['body']; ?>
@@ -1092,6 +1103,9 @@ window.addEventListener('keydown', show_console);
 <?= /*$appWhiteboard['script'];*/ NULL; ?>
 
 <?= /*$appNotes['script'];*/ NULL; ?>
+
+<?= $appPong['script']; ?>
+
 /*
 require.config({
   baseUrl: window.location.protocol + "//" + window.location.host
