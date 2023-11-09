@@ -72,6 +72,12 @@ if ($path = (basename(getcwd()) == 'public')
 else die(var_dump($path . ' was not found. file=app.php.php'));
 
 if ($path = (basename(getcwd()) == 'public')
+    ? (is_file('app.github.php') ? 'app.github.php' : (is_file('../app.github.php') ? '../app.github.php' : (is_file('../config/app.github.php') ? '../config/app.github.php' : NULL)))
+    : (is_file('../app.github.php') ? '../app.github.php' : (is_file('public/app.github.php') ? 'public/app.github.php' : (is_file('config/app.github.php') ? 'config/app.github.php' : 'app.github.php'))))
+  require_once($path); 
+else die(var_dump($path . ' was not found. file=app.github.php'));
+
+if ($path = (basename(getcwd()) == 'public')
     ? (is_file('app.packagist.php') ? 'app.packagist.php' : (is_file('../app.packagist.php') ? '../app.packagist.php' : (is_file('../config/app.packagist.php') ? '../config/app.packagist.php' : NULL)))
     : (is_file('../app.packagist.php') ? '../app.packagist.php' : (is_file('public/app.packagist.php') ? 'public/app.packagist.php' : (is_file('config/app.packagist.php') ? 'config/app.packagist.php' : 'app.packagist.php'))))
   require_once($path); 
@@ -170,6 +176,8 @@ if (is_file(APP_ROOT . 'project.php') && isset($_GET['project']) && $_GET['proje
 <?= $appGit['style']; ?>
 
 <?= $appPHP['style']; ?>
+
+<?= $appGithub['style']; ?>
 
 <?= $appPackagist['style']; ?>
 
@@ -342,7 +350,7 @@ function toggleSwitch(element) {
 
 
       </div>
-      <a href="<?= (APP_URL['query'] != '' ? '?'.APP_URL['query'] : '') . (APP_ENV == 'development' ? '#!' : '') ?>" onclick="document.getElementById('gitHubForm').style.display='block';"><img src="resources/images/github_icon.png" width="72" height="23"></a> |
+      <a href="<?= (APP_URL['query'] != '' ? '?'.APP_URL['query'] : '') . (APP_ENV == 'development' ? '#!' : '') ?>" onclick="document.getElementById('app_github-container').style.display='block';"><img src="resources/images/github_icon.png" width="72" height="23"></a> |
       <a href="<?= (APP_URL['query'] != '' ? '?'.APP_URL['query'] : '') . (APP_ENV == 'development' ? '#!' : '') ?>" onclick="document.getElementById('app_git-container').style.display='block';"><img src="resources/images/git_icon.png" width="58" height="24"></a> |
       <a href="<?= (APP_URL['query'] != '' ? '?'.APP_URL['query'] : '') . (APP_ENV == 'development' ? '#!' : '') ?>" onclick="document.getElementById('app_composer-container').style.display='block';"><img src="resources/images/composer_icon.png" width="31" height="40"> Composer</a> |
       <a href="<?= (APP_URL['query'] != '' ? '?'.APP_URL['query'] : '') . (APP_ENV == 'development' ? '#!' : '') ?>" onclick="document.getElementById('app_php-container').style.display='block';"><img src="resources/images/php_icon.png" width="40" height="27"> PHP <?= (preg_match("#^(\d+\.\d+)#", PHP_VERSION, $match) ? $match[1] : '8.0' ) ?></a> |
@@ -469,10 +477,11 @@ https://stackoverflow.com/questions/12939928/make-a-link-open-a-new-window-not-t
 
 <div style="width: 700px;">
 <div style="display: inline-block; width: 350px;">Composers Vendor Packages [Installed] List</div>
-<div style="display: inline-block; text-align: right; width: 248px;">
+<div style="display: inline-block; text-align: right; width: 300px; ">
 <form action="<?= (!defined('APP_URL_BASE') ? '//' . APP_DOMAIN . APP_URL_PATH . '?' . http_build_query(APP_QUERY, '', '&amp;') : APP_URL_BASE . '?' . http_build_query(APP_QUERY, '', '&amp;')) ?>" method="POST">
-<input id="RequirePkg" type="text" title="Enter Text and onSelect" list="RequirePkgs" placeholder="[vendor]/[package]" name="package" value onselect="get_package(this);" autocomplete="off" style="border: 1px solid #000;">
-<button type="submit" style="border: 1px solid #000;"> Add </button>
+<input id="RequirePkg" type="text" title="Enter Text and onSelect" list="RequirePkgs" placeholder="[vendor]/[package]" name="package" value onselect="get_package(this);" autocomplete="off" style=" margin-top: 4px;">
+<button type="submit" style="border: 1px solid #000; margin-top: 4px;"> Add </button>
+<div style="display: inline-block; float: right; text-align: left; margin-left: 10px;" class="text-xs"><input type="checkbox" name="install" value="" /> Install<br /><input type="checkbox" name="update" value="" /> Update</div>
 <datalist id="RequirePkgs">
   <option value=""></option>
 </datalist>
@@ -957,6 +966,8 @@ if (!empty($paths))
 
 <?= $appPHP['body'] ?>
 
+<?= $appGithub['body']; ?>
+
 <?= $appPackagist['body']; ?>
 
 <?= $appWhiteboard['body']; ?>
@@ -1073,6 +1084,8 @@ window.addEventListener('keydown', show_console);
 <?= $appComposer['script']; ?>
 
 <?= $appGit['script']; ?>
+
+<?= $appGithub['script']; ?>
 
 <?= $appPackagist['script']; ?>
 
