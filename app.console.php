@@ -289,7 +289,7 @@ function show_console(event) {
                 return false;
             }
         }
-  isFixed = !isFixed; 
+  //isFixed = !isFixed; 
     
   if (typeof isFixed === 'undefined') {
     //if (event !== undefined)
@@ -436,13 +436,25 @@ $(document).ready(function() {
     if ($('#myDiv').css('position') == 'absolute')
       show_console();
   });
-  
-  
-  
+
+
   $('#changePositionBtn').on('click', function() {
     console.log('Button Clicked!');
     show_console();
   });
+  
+  $("#app_git-add-cmd").click(function() {
+    $('#requestInput').val('git add .');
+    $('#requestSubmit').click();
+    console.log('wow');
+  });
+
+  $("#app_git-commit-cmd").click(function() {
+    $('#requestInput').val('git commit -m "default message"');
+    show_console();
+    //$('#requestSubmit').click();
+  });
+  
   
   $("#app_composer-init-submit").click(function() {
     const requestValue = $('#app_composer-init-input').val().replace(/\n/g, ' ');
@@ -478,7 +490,6 @@ $(document).ready(function() {
       } else {
         console.log("Invalid input format.");
       }
-    
     }
     
     
@@ -498,7 +509,6 @@ $(document).ready(function() {
       } else {
         console.log("Invalid input format.");
       }
-    
     }
 
     else if (argv == 'clear') $('#responseConsole').val('clear');

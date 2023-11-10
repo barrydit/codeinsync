@@ -200,6 +200,11 @@ ob_start(); ?>
           </div>
         </div>
         <div style="display: block; margin: 10px auto; width: 100%; background-color: rgb(255,255,255,.75);">
+        
+          <div style="position: absolute; top: 45px; left: 10px;" class="text-xs">
+            <span style="color: red;">[Help]</span><br />Commands<br />
+            <code class="text-xs"><a id="app_git-add-cmd" href="#!" onclick="">git add .</a><br /><a id="app_git-commit-cmd" href="#!">git commit -m "&lt;detail message&gt;"</a></code>
+          </div>
 
           <div style="display: inline-block; width: 32%; text-align: right;"><img src="resources/images/git.fw.png" width="52" height="37" style=" border: 1px dashed #F05033;" /></div>
           <div style="display: inline-block; width: 32%; text-align: center; border: 1px dashed #F05033; height: 44px; padding: 7px;">
@@ -398,7 +403,10 @@ document.getElementById('app_git-cmd-selected').addEventListener('submit', funct
   
   git_cmd.value = 'git ' + cmdSelect.value;
 
-  if (cmdSelect.value == 'commit') {
+
+  if (cmdSelect.value == 'config') {
+    console.log('Testing...');
+  } else if (cmdSelect.value == 'commit') {
     commit_msg_container.style.display = 'block';
     
     if (commit_msg.value != '') {

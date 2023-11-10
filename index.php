@@ -420,7 +420,7 @@ if ($path)
 </div>
 <div style="position: relative; width: 800px; margin: 0 auto;">
 
-<div style="position: absolute; margin: 75px 75px; text-align: center;" class="text-sm"><a href="#!" onclick="show_console(); return false;">Press <span class="text-base">`</span> (tick)<br /><img style="text-align: center;" src="<?= APP_BASE['resources'] . 'images/cli.png' ?>" /><br /><span style="text-align: center;">(CLI)</span></div>
+<div style="position: absolute; margin: 75px 75px; text-align: center;" class="text-sm"><a href="#!" onclick="show_console(); return false;">Press <span class="text-base">`</span> (tick)<br /><img style="text-align: center;" src="<?= APP_BASE['resources'] . 'images/cli.png' ?>" /><br /><span style="text-align: center;">(CLI)</span></a></div>
 
 <!-- 
 <a href="javascript:window.open('print.html', 'newwindow', 'width=300,height=250')">Print</a>
@@ -445,6 +445,8 @@ https://stackoverflow.com/questions/12939928/make-a-link-open-a-new-window-not-t
 
 <div style="position: absolute; margin: 75px 0 0 645px; text-align: center;" class="text-sm"><a href="#!" onclick="document.getElementById('app_browser-container').style.display='block'; return false;"><span class="text-base">&nbsp;</span><br /><img style="text-align: center;" src="<?= APP_BASE['resources'] . 'images/browser.png' ?>" /><br /><span style="text-align: center;">Browser</span></a></div>
 
+
+<div style="position: absolute; margin: 180px 80px; text-align: center;" class="text-sm"><a href="#!" onclick="document.getElementById('app_install-container').style.display='block'; return false;"><span class="text-base">&nbsp;</span><br /><img style="text-align: center;" src="<?= APP_BASE['resources'] . 'images/install.png' ?>" /><br /><span style="text-align: center;">New App.</span></a></div>
 
 <div style="position: absolute; margin: 180px 175px; text-align: center;" class="text-sm"><a href="#!" onclick="document.getElementById('app_calendar-container').style.display='block'; return false;"><span class="text-base">&nbsp;</span><br /><img style="text-align: center;" src="<?= APP_BASE['resources'] . 'images/calendar.png' ?>" /><br /><span style="text-align: center;">Calendar</span></a></div>
 
