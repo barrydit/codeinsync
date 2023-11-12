@@ -683,7 +683,7 @@ ob_end_clean();
 
 ob_start(); ?>
 
-  <div id="app_timesheet-container" class="<?= (APP_SELF == __FILE__ || isset($_GET['app']) && $_GET['app'] == 'timesheet' ? 'selected' : '') ?>" style="display: none; <?= /* */ null; ?>border: 1px solid #000; width: 800px; overflow: none;">
+  <div id="app_timesheet-container" class="<?= (APP_SELF == __FILE__ || isset($_GET['app']) && $_GET['app'] == 'timesheet' ? 'selected' : '') ?>" style="display: none; <?= /* */ null; ?>border: 1px solid #000; width: 800px; overflow-x: scroll;">
     <div class="header ui-widget-header" style=" text-align: center;">
       <div style="display: inline-block;">Weekly Time Sheet</div>
       <div style="display: inline; float: right; text-align: center;">[<a style="cursor: pointer; font-size: 13px;" onclick="document.getElementById('app_timesheet-container').style.display='none';">X</a>]</div> 

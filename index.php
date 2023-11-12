@@ -178,6 +178,10 @@ if (is_file(APP_ROOT . 'project.php') && isset($_GET['project']) && $_GET['proje
   <script src="<?= (check_http_200('https://cdn.tailwindcss.com') ? 'https://cdn.tailwindcss.com' : APP_WWW . 'resources/js/tailwindcss-3.3.5.js')?>"></script>
 
 <style type="text/tailwindcss">
+
+
+.row-container { display: flex; width: 100%; height: 100%; flex-direction: column; overflow: hidden; }
+
 <?= $appComposer['style']; ?>
 
 <?= $appGit['style']; ?>
@@ -199,6 +203,8 @@ if (is_file(APP_ROOT . 'project.php') && isset($_GET['project']) && $_GET['proje
 <?= $appConsole['style']; ?>
 
 <?= $appTimesheet['style']; ?>
+
+
 
   .container2 {
     position: relative;
@@ -322,28 +328,56 @@ input:checked + .label .slider:before {
 
 </style>
 
-<script type="text/javascript">
-function toggleSwitch(element) {
-  if (element.checked) {
-    // Third option is selected
-    // Add your logic here
-  } else {
-    // Third option is not selected
-    // Add your logic here
-  }
-}
-</script>
 </head>
 <body>
 
-  <div class="absolute" style="position: absolute; margin-left: auto; margin-right: auto; left: 0; right: 0; text-align: center; background-color: rgba(255, 255, 255, 0.8); border: 1px solid #000; width: 800px; z-index: 1;">
-    <div style="position: relative; margin: 0px auto; width: 800px;">
-      <div style="position: absolute; left: -125px; padding-top: 5px;">
+ <div class="row-container" style="position: absolute; left: 0; top: 0;">
+    <iframe id="iWindow" src="<?php
+if (!empty($_GET['client'])) {
+  $path = '/clientele/' . $_GET['client'] . '/';
+  $dirs = array_filter(glob(dirname(__DIR__) . '/../' . $path . '*'), 'is_dir');
+  
+  if (count($dirs) == 1)
+    foreach($dirs as $dir) {
+      $dirs[0] = $dirs[array_key_first($dirs)];
+      if (preg_match(DOMAIN_EXP, strtolower(basename($dirs[0])))) {
+        $_GET['domain'] = basename($dirs[0]);
+        break;
+      }
+      else unset($dirs[array_key_first($dirs)]);
+      continue;
+    }
 
-<form action="#!" method="GET">
-<?= (isset($_GET['debug']) && !$_GET['debug'] ? '' : '<input type="hidden" name="debug" value />') ?>
+  if (!empty($_GET['domain'])) {
+    foreach($dirs as $key => $dir) {
+      if (basename($dir) == $_GET['domain']) {
+        if (is_dir($dirs[$key].'/public/'))
+          $path .= basename($dirs[$key]).'/public/';
+        else 
+          $path .= basename($dirs[$key]);
+        break;
+      }
+    }
+    //else 
+    //exit(header('Location: http://localhost/clientele/' . $_GET['client']));    
+  }
+  $path = '?path=' . $path;
+} elseif (!empty($_GET['project'])) {
+  $path = '/projects/' . $_GET['project'] . '/';   
+  //$dirs = array_filter(glob(dirname(__DIR__) . '/projects/' . $_GET['project'] . '/*'), 'is_dir');
+  
+} else { $path = 'developer.php'; } echo $path;
+?>" style="height: 100%;"></iframe>
+  </div>
+  
+  <div style="position: relative; margin: 0px auto; width: 800px;">
+<div style="position: absolute; left: -130px; ">
 
-  <input class="input" id="toggle-debug" type="checkbox" onchange="toggleSwitch(this); this.form.submit();" <?= (isset($_GET['debug']) ? 'checked' : '') ?> />
+<!--form action="#!" method="GET">
+<?= (isset($_GET['debug']) && !$_GET['debug'] ? '' : '<input type="hidden" name="debug" value / >') ?> 
+  <input class="input" id="toggle-debug" type="checkbox" onchange="this.form.submit();" <?= (isset($_GET['debug']) ? 'checked' : '') ?> / -->
+
+  <input class="input" id="toggle-debug" type="checkbox" onchange="toggleSwitch(this);" <?= (isset($_GET['debug']) ? 'checked' : '') ?> />
 
   <label class="label" for="toggle-debug" style="margin-left: -6px;">
     <div class="switch">
@@ -354,11 +388,13 @@ function toggleSwitch(element) {
       Debug
     </div>
   </label>
-</form>
-
-
+<!-- /form -->
 
       </div>
+  <div id="debug-content" class="absolute" style="position: absolute; margin-left: auto; margin-right: auto; left: 0; right: 0; text-align: center; background-color: rgba(255, 255, 255, 0.8); border: 1px solid #000; width: 800px; z-index: 1;">
+ 
+
+
       <a href="<?= (APP_URL['query'] != '' ? '?'.APP_URL['query'] : '') . (APP_ENV == 'development' ? '#!' : '') ?>" onclick="document.getElementById('app_github-container').style.display='block';"><img src="resources/images/github_icon.png" width="72" height="23"></a> |
       <a href="<?= (APP_URL['query'] != '' ? '?'.APP_URL['query'] : '') . (APP_ENV == 'development' ? '#!' : '') ?>" onclick="document.getElementById('app_git-container').style.display='block';"><img src="resources/images/git_icon.png" width="58" height="24"></a> |
       <a href="<?= (APP_URL['query'] != '' ? '?'.APP_URL['query'] : '') . (APP_ENV == 'development' ? '#!' : '') ?>" onclick="document.getElementById('app_composer-container').style.display='block';"><img src="resources/images/composer_icon.png" width="31" height="40"> Composer</a> |
@@ -376,7 +412,7 @@ function toggleSwitch(element) {
     </div></td><td><img id="ts-status-light" src="resources/images/timesheet-light-Clear-2.gif" width="80" height="30" style="cursor: pointer;" /></td></tr>
     </table>
     </div>
-    </div>
+
   </div>
 
 <div id="app_project-container" style="display: none; position: absolute; top: 80px; padding: 20px; margin-left: auto; margin-right: auto; left: 0; right: 0; width: 700px; z-index: 2;">
@@ -391,7 +427,7 @@ function toggleSwitch(element) {
   </form>
 </div>
 
-<div style="position: absolute; top: 40px; margin-left: auto; margin-right: auto; left: 0; right: 0; width: 700px;">
+<div style="position: absolute; top: 40px; margin-left: auto; margin-right: auto; left: 0; right: 0; width: 700px; z-index: 1;">
 
 <form style="display: inline;" autocomplete="off" spellcheck="false" action="<?= APP_URL_BASE . /*basename(__FILE__) .*/ '?' . http_build_query(APP_QUERY /*+ array( 'app' => 'text_editor')*/) . (APP_ENV == 'development' ? '#!' : '') /* $c_or_p . '=' . (empty($_GET[$c_or_p]) ? '' : $$c_or_p->name) . '&amp;app=composer' */ ?>" method="GET">
         
@@ -418,9 +454,9 @@ if ($path)
         </select>
 </form>
 </div>
-<div style="position: relative; width: 800px; margin: 0 auto;">
+<div style="position: relative; width: 800px; margin: 0 auto; height: 500px; background-color: rgba(255, 255, 255, 0.9); overflow-x: scroll;">
 
-<div style="position: absolute; margin: 75px 75px; text-align: center;" class="text-sm"><a href="#!" onclick="show_console(); return false;">Press <span class="text-base">`</span> (tick)<br /><img style="text-align: center;" src="<?= APP_BASE['resources'] . 'images/cli.png' ?>" /><br /><span style="text-align: center;">(CLI)</span></a></div>
+<div style="position: absolute; margin: 100px 75px; text-align: center;" class="text-sm"><a href="#!" onclick="show_console(); return false;"><img style="text-align: center;" src="<?= APP_BASE['resources'] . 'images/cli.png' ?>" /></a><br /><a href="?app=text_editor&path=&file=app.console.php" style="text-align: center;">(CLI)</a></div>
 
 <!-- 
 <a href="javascript:window.open('print.html', 'newwindow', 'width=300,height=250')">Print</a>
@@ -429,33 +465,28 @@ onclick="window.open('app.whiteboard.php', 'newwindow', 'width=300,height=250');
 https://stackoverflow.com/questions/12939928/make-a-link-open-a-new-window-not-tab
  -->
 
-<div style="position: absolute; margin: 75px 170px; text-align: center;" class="text-sm"><a href="app.whiteboard.php" target="_blank" onclick="document.getElementById('app_whiteboard-container').style.display='block'; return false;"><span class="text-base">&nbsp;</span><br /><img style="text-align: center;" src="<?= APP_BASE['resources'] . 'images/whiteboard.png' ?>" /><br /><span style="text-align: center;">Whiteboard</span></a></div>
+<div style="position: absolute; margin: 100px 165px; text-align: center;" class="text-sm"><a href="app.whiteboard.php" target="_blank" onclick="document.getElementById('app_whiteboard-container').style.display='block'; return false;"><img style="text-align: center;" src="<?= APP_BASE['resources'] . 'images/whiteboard.png' ?>" /></a><br /><a href="?app=text_editor&path=&file=app.whiteboard.php" style="text-align: center;">Whiteboard</a></div>
 
-<div style="position: absolute; margin: 75px 265px; text-align: center;" class="text-sm"><a href="#!" onclick="document.getElementById('app_notes-container').style.display='block'; return false;"><span class="text-base">&nbsp;</span><br /><img style="text-align: center;" src="<?= APP_BASE['resources'] . 'images/notes.png' ?>" /><br /><span style="text-align: center;">Notes</span></a></div>
-
-
-<div style="position: absolute; margin: 75px 360px; text-align: center;" class="text-sm"><a href="#!" onclick="document.getElementById('app_applications-container').style.display='block'; return false;"><span class="text-base">&nbsp;</span><br /><img style="text-align: center;" src="<?= APP_BASE['resources'] . 'images/apps.png' ?>" /><br /><span style="text-align: center;">Apps</span></a></div>
+<div style="position: absolute; margin: 100px 260px; text-align: center;" class="text-sm"><a href="#!" onclick="document.getElementById('app_notes-container').style.display='block'; return false;"><img style="text-align: center;" src="<?= APP_BASE['resources'] . 'images/notes.png' ?>" /></a><br /><a href="?app=text_editor&path=&file=app.notes.php" style="text-align: center;">Notes</a></div>
 
 
-<div style="position: absolute; margin: 75px 0 0 455px ; text-align: center;" class="text-sm"><a href="#!" onclick="document.getElementById('app_debug-container').style.display='block'; return false;"><span class="text-base">&nbsp;</span><br /><img style="text-align: center;" src="<?= APP_BASE['resources'] . 'images/debug.png' ?>" /><br /><span style="text-align: center;">Debug</span></a></div>
+<div style="position: absolute; margin: 100px 350px; text-align: center;" class="text-sm"><a href="#!" onclick="document.getElementById('app_project-container').style.display='block'; return false;"><img style="text-align: center;" src="<?= APP_BASE['resources'] . 'images/project.png' ?>" /></a><br /><a href="?app=text_editor&path=&file=app.project.php"><span style="text-align: center;">Project</a></span></div>
 
 
-<div style="position: absolute; margin: 75px 0 0 550px; text-align: center;" class="text-sm"><a href="#!" onclick="document.getElementById('app_profile-container').style.display='block'; return false;"><span class="text-base">&nbsp;</span><br /><img style="text-align: center;" src="<?= APP_BASE['resources'] . 'images/user.png' ?>" /><br /><span style="text-align: center;">Profile</span></a></div>
+<div style="position: absolute; margin: 100px 0 0 450px ; text-align: center;" class="text-sm"><a href="#!" onclick="document.getElementById('app_debug-container').style.display='block'; return false;"><img style="text-align: center;" src="<?= APP_BASE['resources'] . 'images/debug.png' ?>" /><br /><span style="text-align: center;">Debug</span></a></div>
 
 
-<div style="position: absolute; margin: 75px 0 0 645px; text-align: center;" class="text-sm"><a href="#!" onclick="document.getElementById('app_browser-container').style.display='block'; return false;"><span class="text-base">&nbsp;</span><br /><img style="text-align: center;" src="<?= APP_BASE['resources'] . 'images/browser.png' ?>" /><br /><span style="text-align: center;">Browser</span></a></div>
+<div style="position: absolute; margin: 100px 0 0 540px; text-align: center;" class="text-sm"><a href="#!" onclick="document.getElementById('app_profile-container').style.display='block'; return false;"><img style="text-align: center;" src="<?= APP_BASE['resources'] . 'images/user.png' ?>" /><br /><span style="text-align: center;">Profile</span></a></div>
 
 
-<div style="position: absolute; margin: 180px 80px; text-align: center;" class="text-sm"><a href="#!" onclick="document.getElementById('app_install-container').style.display='block'; return false;"><span class="text-base">&nbsp;</span><br /><img style="text-align: center;" src="<?= APP_BASE['resources'] . 'images/install.png' ?>" /><br /><span style="text-align: center;">New App.</span></a></div>
-
-<div style="position: absolute; margin: 180px 175px; text-align: center;" class="text-sm"><a href="#!" onclick="document.getElementById('app_calendar-container').style.display='block'; return false;"><span class="text-base">&nbsp;</span><br /><img style="text-align: center;" src="<?= APP_BASE['resources'] . 'images/calendar.png' ?>" /><br /><span style="text-align: center;">Calendar</span></a></div>
+<div style="position: absolute; margin: 100px 0 0 630px; text-align: center;" class="text-sm"><a href="#!" onclick="document.getElementById('app_browser-container').style.display='block'; return false;"><img style="text-align: center;" src="<?= APP_BASE['resources'] . 'images/browser.png' ?>" /><br /><span style="text-align: center;">Browser</span></a></div>
 
 
-<div style="position: absolute; margin: 180px 0 0 550px; text-align: center;" class="text-sm"><a href="#!" onclick="document.getElementById('app_pong-container').style.display='block'; return false;"><span class="text-base">&nbsp;</span><br /><img style="text-align: center;" src="<?= APP_BASE['resources'] . 'images/pong.png' ?>" /><br /><span style="text-align: center;">Pong</span></a></div>
-<div style="position: absolute; margin: 200px 300px;">
+<div style="position: absolute; margin: 200px 75px; text-align: center;" class="text-sm"><a href="#!" onclick="document.getElementById('app_apps-container').style.display='block'; return false;"><img style="text-align: center;" src="<?= APP_BASE['resources'] . 'images/apps.png' ?>" /><br /><span style="text-align: center;">Apps.</span></a></div>
 
+<div style="position: absolute; margin: 200px 170px; text-align: center;" class="text-sm"><a href="#!" onclick="document.getElementById('app_calendar-container').style.display='block'; return false;"><img style="text-align: center;" src="<?= APP_BASE['resources'] . 'images/calendar.png' ?>" /><br /><span style="text-align: center;">Calendar</span></a></div>
 
-
+<div style="position: absolute; margin: 190px 240px; padding: 20px 40px; background-color: rgba(255, 255, 255, 0.8);">
 <form action="#!" method="GET">
 <?= (isset($_GET['project']) && !$_GET['project'] ? '<input type="hidden" name="client" value="" />' : '<input type="hidden" name="project" value="" />') ?>
 
@@ -479,6 +510,51 @@ https://stackoverflow.com/questions/12939928/make-a-link-open-a-new-window-not-t
   </label>
 </form>
 </div>
+
+<div style="position: absolute; margin: 200px 0 0 540px; text-align: center;" class="text-sm"><a href="#!" onclick="document.getElementById('app_pong-container').style.display='block'; return false;"><img style="text-align: center;" src="<?= APP_BASE['resources'] . 'images/pong.png' ?>" /><br /><span style="text-align: center;">Pong</span></a></div>
+
+
+<div style="position: absolute; margin: 200px 0 0 630px; text-align: center;" class="text-sm"><a href="#!" onclick="document.getElementById('app_browser-container').style.display='block'; return false;"><img style="text-align: center;" src="<?= APP_BASE['resources'] . 'images/regexp.png' ?>" /><br /><span style="text-align: center;">RegExp</span></a></div>
+
+
+<div style="position: absolute; margin: 300px 75px; text-align: center;" class="text-sm"><a href="#!" onclick="document.getElementById('app_browser-container').style.display='block'; return false;"><img style="text-align: center;" src="<?= APP_BASE['resources'] . 'images/chatgpt.png' ?>" /><br /><span style="text-align: center;">ChatGPT</span></a></div>
+
+
+<div style="position: absolute; margin: 300px 160px; text-align: center;" class="text-sm"><a href="#!" onclick="document.getElementById('app_browser-container').style.display='block'; return false;"><img style="text-align: center;" src="<?= APP_BASE['resources'] . 'images/stackoverflow.png' ?>" /><br /><span style="text-align: center;">Stackoverflow</span></a></div>
+
+
+<div style="position: absolute; margin: 300px 260px; text-align: center;" class="text-sm"><a href="#!" onclick="document.getElementById('app_browser-container').style.display='block'; return false;"><img style="text-align: center;" src="<?= APP_BASE['resources'] . 'images/validatejs.png' ?>" /><br /><span style="text-align: center;">ValidateJS</span></a></div>
+
+<!-- https://validator.w3.org/#validate_by_input // -->
+
+<div style="position: absolute; margin: 300px 340px; text-align: center;" class="text-sm"><a href="#!" onclick="document.getElementById('app_browser-container').style.display='block'; return false;"><img style="text-align: center;" src="<?= APP_BASE['resources'] . 'images/w3c.png' ?>" /><br /><span style="text-align: center;">W3C Validator</span></a></div>
+
+<!-- https://tailwindcss.com/docs/ // -->
+
+<div style="position: absolute; margin: 300px 0 0 445px; text-align: center;" class="text-sm"><a href="#!" onclick="document.getElementById('app_browser-container').style.display='block'; return false;"><img style="text-align: center;" src="<?= APP_BASE['resources'] . 'images/tailwindcss.png' ?>" /><br /><span style="text-align: center;">TailwindCSS<br />Docs</span></a></div>
+
+<!-- https://www.php.net/docs.php // -->
+
+<div style="position: absolute; margin: 300px 0 0 540px; text-align: center;" class="text-sm"><a href="#!" onclick="document.getElementById('app_browser-container').style.display='block'; return false;"><img style="text-align: center;" src="<?= APP_BASE['resources'] . 'images/php.png' ?>" /><br /><span style="text-align: center;">PHP Docs</span></a></div>
+
+<!-- https://dev.mysql.com/doc/ // -->
+
+<div style="position: absolute; margin: 300px 0 0 625px; text-align: center;" class="text-sm"><a href="#!" onclick="document.getElementById('app_browser-container').style.display='block'; return false;"><img style="text-align: center;" src="<?= APP_BASE['resources'] . 'images/mysql.png' ?>" /><br /><span style="text-align: center;">MySQL Docs</span></a></div>
+
+
+<div style="position: absolute; top: 400px; left: 65px; width: 80%; margin: 0 auto; height: 25px; border-bottom: 1px solid black; text-align: center; z-index: 0;">
+  <span style="font-size: 20px; background-color: #F3F5F6; padding: 0 20px; z-index: 1;">
+    USER APPS.
+  </span>
+</div>
+
+
+<div style="position: absolute; margin: 430px 75px; text-align: center;" class="text-sm"><a href="#!" onclick="document.getElementById('app_install-container').style.display='block'; return false;"><span style="text-align: center;">New App.</span><br /><img style="text-align: center;" src="<?= APP_BASE['resources'] . 'images/install.png' ?>" /></a></div>
+
+
+<div style="position: absolute; margin: 430px 160px; text-align: center;" class="text-sm"><a href="?app=text_editor&path=&file=app.user-app.php"><span style="text-align: center;">App #1</span></a><br /><a href="#!" onclick="document.getElementById('app_browser-container').style.display='block'; return false;"><img style="text-align: center;" src="<?= APP_BASE['resources'] . 'images/php-app.png' ?>" /></a></div>
+
+
 
 <div id="app_directory-container" style="position: absolute; display: <?= ( isset($_GET['path']) ? 'block' : 'none') . ';'; ?>; background-color: white; overflow-x: scroll; height: 580px; position: absolute; top: 80px; margin-left: auto; margin-right: auto; left: 0; right: 0; width: 700px;">
 
@@ -899,6 +975,12 @@ if (!empty($paths))
             . '</a>'
 /*            . (is_readable($path = ini_get('error_log')) && filesize($path) > 0 ? '<div style="position: absolute; right: 8px; bottom: -6px; color: red; font-weight: bold;">[1]</div>' : '' ) */
             . '</div>' . "\n";
+        
+          elseif(basename($path) == '.babelrc')
+            echo '<div style="position: relative;"><a href="?app=text_editor&path=' . (basename(dirname($path)) == basename(parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH) ? 'failed' : basename(dirname($path)))) . '&file=' . basename($path) . '"><img src="resources/images/babelrc_file.png" width="40" height="50" /><br />' . basename($path)
+            . '</a>'
+/*            . (is_readable($path = ini_get('error_log')) && filesize($path) > 0 ? '<div style="position: absolute; right: 8px; bottom: -6px; color: red; font-weight: bold;">[1]</div>' : '' ) */
+            . '</div>' . "\n";
           
           elseif (basename($path) == '.gitignore')
             echo '<div style="position: relative;"><a href="?app=text_editor&path=' . (basename(dirname($path)) == basename(parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH) ? 'failed' : basename(dirname($path)))) . '&file=' . basename($path) . '"><img src="resources/images/gitignore_file.png" width="40" height="50" /><br />' . basename($path)
@@ -969,6 +1051,7 @@ if (!empty($paths))
 </div>
 
 </div>
+
 <?= $appTimesheet['body']; ?>
 
 <?= $appComposer['body']; ?>
@@ -985,12 +1068,15 @@ if (!empty($paths))
 
 <?= $appNotes['body']; ?>
 
+<!-- https://pong-2.com/ -->
+
 <?= $appPong['body']; ?>
 
 <?= $appTextEditor['body']; ?>
 
-<?= $appConsole['body']; ?>
+</div>
 
+<?= $appConsole['body']; ?>
   <!-- https://cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.min.js -->
   
   <!-- https://code.jquery.com/jquery-3.7.1.min.js -->
@@ -1072,6 +1158,25 @@ if (is_file(APP_PATH . APP_BASE['resources'] . 'js/requirejs/require-2.3.6.js'))
   <script src="<?= array_rand(array_flip(array_filter(glob(APP_BASE['var'] . 'reels/*.js'), 'is_file')), 1); ?>" type="text/javascript" charset="utf-8"></script>
   
   <script type="text/javascript" charset="utf-8">
+  
+function toggleSwitch(element) {
+
+  if (element.checked) {
+    // Third option is selected
+    // Add your logic here
+    console.log('checked');
+    
+$("#debug-content").hide("slide", { direction: "right" }, 1000);
+
+  } else {
+    // Third option is not selected
+    // Add your logic here
+    console.log('(not) checked');
+    
+$("#debug-content").show("slide", { direction: "left" }, 1000);
+
+  }
+}
 
 $(document).ready(function(){
     if ($( "#app_directory-container" ).css('display') == 'none') {

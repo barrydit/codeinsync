@@ -12,6 +12,13 @@ RewriteRule ^(.*)$ ./resources/$1 [L]
 #RewriteCond %{REQUEST_FILENAME} !-f
 #RewriteRule ^ index.php [L]
 
+<IfModule mod_headers.c>
+    Header set Access-Control-Allow-Origin "*"
+    header set Access-Control-Allow-Methods: "GET, POST, OPTIONS"
+    header set Access-Control-Allow-Headers: "Origin, X-Requested-With, Content-Type, Accept"
+    Header set Access-Control-Allow-Credentials: "true"
+</IfModule>
+
 # Database passwords   getenv('DB_TEMPLATE_HOST')
 SetEnv DB_TEMPLATE_HOST host
 SetEnv DB_TEMPLATE_USER user

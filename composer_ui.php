@@ -1,5 +1,11 @@
 <?php
 
+if (__FILE__ == get_required_files()[0])
+  if ($path = (basename(getcwd()) == 'public')
+    ? (is_file('../config.php') ? '../config.php' : (is_file('../config/config.php') ? '../config/config.php' : null))
+    : (is_file('config.php') ? 'config.php' : (is_file('config/config.php') ? 'config/config.php' : null))) require_once($path); 
+else die(var_dump($path . ' path was not found. file=config.php'));
+
 require 'vendor/autoload.php'; // Include Composer's autoloader
 
 /*
@@ -23,11 +29,19 @@ die();
 
 */
 
-if (__FILE__ == get_required_files()[0])
-  if ($path = (basename(getcwd()) == 'public')
-    ? (is_file('../config.php') ? '../config.php' : (is_file('../config/config.php') ? '../config/config.php' : null))
-    : (is_file('config.php') ? 'config.php' : (is_file('config/config.php') ? 'config/config.php' : null))) require_once($path); 
-else die(var_dump($path . ' path was not found. file=config.php'));
+
+// composer create-project [PACKAGE] [DESTINATION PATH] [--FLAGS]
+
+if ($_SERVER['REQUEST_METHOD'] == 'POST') {
+
+  if (isset($_POST['create-project']) && $_POST['create-project'])
+  if (isset($_POST['package']) && $_POST['package'])
+         dd('test');
+
+
+}
+
+
 
 if ($path = (basename(getcwd()) == 'public')
     ? (is_file('../composer.php') ? '../composer.php' : (is_file('../config/composer.php') ? '../config/composer.php' : null))
@@ -318,7 +332,7 @@ ob_end_clean();
 ob_start(); ?>
 
   <div id="app_composer-container" class="absolute <?= (APP_SELF == __FILE__ || (isset($_GET['app']) && $_GET['app'] == 'composer') || (defined('COMPOSER') && !is_object(COMPOSER)) || count((array)COMPOSER) === 0 || version_compare(COMPOSER_LATEST, COMPOSER_VERSION, '>') != 0 ? 'selected' : '') ?>" style="position: absolute; top: 60px; left: 0; right: 0; z-index: 1; margin: 0 auto; width: 600px; background-color: rgba(255,255,255,0.8); padding: 10px">
-    <div style="position: relative; margin: 0 auto; width: 404px; height: 306px; border: 3px dashed #6B4329; background-color: #FBF7F1;">
+    <div style="position: relative; margin: 0 auto; width: 404px; height: 324px; border: 3px dashed #6B4329; background-color: #FBF7F1;">
 
       <div class="absolute" style="position: absolute; display: inline-block; width: 100%; margin: -25px 0 10px 0; border-bottom: 1px solid #000; z-index: 3;">
         <label class="composer-home" style="cursor: pointer;">
@@ -379,13 +393,27 @@ ob_start(); ?>
       <div class="absolute" style="position: absolute; top: 0; left: 0; right: 0; margin: 10px auto; opacity: 1.0; text-align: center; cursor: pointer; z-index: 1;">
         <img class="<?= (version_compare(COMPOSER_LATEST, COMPOSER_VERSION, '>') != 0 ? 'composer-update' : 'composer-menu') ?>" src="resources/images/composer.fw.png" style="margin-top: 45px;" width="150" height="198" />
       </div>
- 
+
+      <div class="absolute" style="position: absolute; bottom: 40px; left: 0; right: 0; width: 100%; text-align: center; z-index: 1; ">
+      <form action="#!" method="POST">
+        <input type="hidden" name="create-project" value="" />
+        <span style="">composer</span>
+        <select name="create-project[package]" onchange="this.form.submit();">
+          <option >create-project</option>
+          <option value="laravel/project">laravel/project</option>
+        </select>
+        <span>/public/*</span>
+      </form>
+      </div>
+
       <div class="absolute" style="position: absolute; bottom: 24px; left: 0; right: 0; width: 100%; text-align: center;">
         <span style="text-decoration-line: underline; text-decoration-style: solid;">A Dependency Manager for PHP</span>
       </div>
+
       <div style="position: absolute; bottom: 0; left: 0; padding: 2px; z-index: 1;">
         <a href="https://github.com/composer/composer"><img src="resources/images/github-composer.fw.png" /></a>
       </div>
+      
       <div class="absolute text-sm" style="position: absolute; bottom: 0; right: 0; padding: 2px; z-index: 1; "><?= (version_compare(COMPOSER_LATEST, COMPOSER_VERSION, '>') != 0 ? '<code>Latest: </code><span class="update" style="color: green; cursor: pointer;">' . 'v'.substr(COMPOSER_LATEST, 0, similar_text(COMPOSER_LATEST, COMPOSER_VERSION)). substr(COMPOSER_LATEST, similar_text(COMPOSER_LATEST, COMPOSER_VERSION))  . '</span>': 'Installed: v' . COMPOSER_VERSION ); ?></div>
       <div style="position: relative; overflow: hidden; width: 398px; height: 250px;">
 <?php

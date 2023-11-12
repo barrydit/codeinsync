@@ -199,6 +199,9 @@ foreach (array_filter( glob($path . DIRECTORY_SEPARATOR . '*.php'), 'is_file') a
           <input type="submit" value="Save" class="btn" style="margin: -5px 5px 5px 0;" onclick="document.getElementsByClassName('ace_text-input')[0].value = editor.getSession().getValue(); document.getElementsByClassName('ace_text-input')[0].name = 'editor';"/>
         </div>
         <!-- A (<?= $path ?>) future note: keep ace-editor nice and tight ... no spaces, as it interferes with the content window. -->
+
+<!-- https://scribbled.space/ace-editor-setup-usage/ -->
+
         <div id="ace-editor" class="ace_editor" style="display: <?= (isset($_GET['file']) && isset($_GET['path']) && is_file($_GET['path'] . $_GET['file']) ? 'block': 'block')?>; width: 700px; height: 400px; z-index: 1;"><textarea name="contents" class="ace_text-input" autocorrect="off" autocapitalize="none" spellcheck="false" style="opacity: 0; font-size: 1px; height: 1px; width: 1px; top: 28px; left: 86px;" wrap="off"><?= (isset($_GET['file']) && is_file($path . $_GET['file']) ? htmlsanitize(file_get_contents($path . $_GET['file'])) : (isset($_GET['project']) ? htmlsanitize(file_get_contents($path . 'project.php')) : '') ); /*   'clientele/' . $_GET['client'] . '/' . $_GET['domain'] . '/' .  */?></textarea></div>
 <?= /*
         <div class="containerTbl" style="background-ground: #fff; border: 1px solid #000; display: <?= (isset($_GET['file']) && isset($_GET['path']) && is_file($_GET['path'] . $_GET['file']) ? 'none': 'block' ) ?>;">

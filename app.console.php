@@ -139,7 +139,7 @@ background-color: lightblue;
 
 /* Styles for the absolute div */
 .consoleContainer {
-position: absolute;
+position: fixed;
 bottom: 62px;
 left: 50%;
 transform: translateX(-50%);
@@ -263,6 +263,7 @@ function show_console(event) {
             if (document.activeElement !== requestInput) {
                 // Replace the following line with your desired function
                 // If it's currently absolute, change to fixed
+                
                 if (!isFixed)
                     requestInput.focus();
                 event.preventDefault();
@@ -323,7 +324,7 @@ function show_console(event) {
     myDiv.style.position = 'fixed';
     myDiv.style.top = '35%'; // Set the fixed position as needed
     myDiv.style.left = '50%';
-    myDiv.style.bottom = '30px';
+    myDiv.style.bottom = '32px';
     myDiv.style.transform = 'translate(-50%, -50%)';
     myDiv.style.zIndex = '999';
 
@@ -340,10 +341,15 @@ function show_console(event) {
     requestInput.addEventListener('focus', function() {
         // Check the condition before calling the show_console function
         //if (myDiv.style.position !== 'fixed')
-        
+        if (  document.getElementById('consoleContainer').style.position != 'absolute') {
+          console.log('test 123');
+          if (isFixed)
+            requestInput.focus();
+        } else {
         if (isFixed) isFixed = !isFixed;
         isFixed = true;
             show_console();
+        }
     });
 
 initSubmit.addEventListener('click', () => {
