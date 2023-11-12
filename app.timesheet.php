@@ -683,12 +683,12 @@ ob_end_clean();
 
 ob_start(); ?>
 
-  <div id="app_timesheet-container" class="<?= (APP_SELF == __FILE__ || isset($_GET['app']) && $_GET['app'] == 'timesheet' ? 'selected' : '') ?>" style="display: none; <?= /* */ null; ?>border: 1px solid #000; width: 800px; overflow-x: scroll;">
+  <div id="app_timesheet-container" class="<?= (APP_SELF == __FILE__ || isset($_GET['app']) && $_GET['app'] == 'timesheet' ? 'selected' : '') ?>" style="display: none; <?= /* */ null; ?>border: 1px solid #000; width: 800px;">
     <div class="header ui-widget-header" style=" text-align: center;">
       <div style="display: inline-block;">Weekly Time Sheet</div>
       <div style="display: inline; float: right; text-align: center;">[<a style="cursor: pointer; font-size: 13px;" onclick="document.getElementById('app_timesheet-container').style.display='none';">X</a>]</div> 
     </div>
-
+<div style=" overflow-x: scroll;">
     <form style="display: inline;" action="<?= APP_URL_BASE . basename(APP_SELF) . '?' . http_build_query(APP_QUERY + array( 'app' => 'php')) . (APP_ENV == 'development' ? '#!' : '') /*  $c_or_p . '=' . (empty($_GET[$c_or_p]) ? '' : $$c_or_p->name) . '&amp;app=composer' */ ?>" method="GET">
       <div style="font-size: 12px;">
         <div style="float: left;">NAME OF EMPLOYEE<br />
@@ -986,6 +986,7 @@ echo <<<END
       <div style="clear: both;"></div>
 
     </form>
+  </div>
 END;
     }
     $today->modify('+1 day');

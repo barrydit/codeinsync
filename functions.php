@@ -77,10 +77,22 @@ function packagist_return_source($vendor, $package) {
 }
 
 
-  
-function htmlsanitize($argv = '') {
-  return mb_convert_encoding(htmlspecialchars(html_entity_decode($argv, ENT_QUOTES, 'UTF-8'), ENT_QUOTES, 'UTF-8' ), 'HTML-ENTITIES', 'utf-8');
+function htmlsanitize($input = '') {
+    // Convert HTML entities to their corresponding characters
+    $decoded = html_entity_decode($input, ENT_QUOTES, 'UTF-8');
+    
+    // Remove any invalid UTF-8 characters
+    $cleaned = mb_convert_encoding($decoded, 'UTF-8', 'UTF-8');
+    
+    // Convert special characters to HTML entities
+    $sanitized = htmlspecialchars($cleaned, ENT_QUOTES, 'UTF-8');
+
+    return $sanitized;
 }
+
+//function htmlsanitize($argv = '') {
+//  return html_entity_decode(mb_convert_encoding(htmlspecialchars($argv, ENT_QUOTES, 'UTF-8'), ENT_QUOTES, 'UTF-8' ), 'HTML-ENTITIES', 'utf-8');
+//}
 
 
 /**

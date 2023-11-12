@@ -366,7 +366,7 @@ if (!empty($_GET['client'])) {
   $path = '/projects/' . $_GET['project'] . '/';   
   //$dirs = array_filter(glob(dirname(__DIR__) . '/projects/' . $_GET['project'] . '/*'), 'is_dir');
   
-} else { $path = 'developer.php'; } echo $path;
+} else { $path = ''; } echo $path; // developer.php
 ?>" style="height: 100%;"></iframe>
   </div>
   
@@ -542,7 +542,7 @@ https://stackoverflow.com/questions/12939928/make-a-link-open-a-new-window-not-t
 <div style="position: absolute; margin: 300px 0 0 625px; text-align: center;" class="text-sm"><a href="#!" onclick="document.getElementById('app_browser-container').style.display='block'; return false;"><img style="text-align: center;" src="<?= APP_BASE['resources'] . 'images/mysql.png' ?>" /><br /><span style="text-align: center;">MySQL Docs</span></a></div>
 
 
-<div style="position: absolute; top: 400px; left: 65px; width: 80%; margin: 0 auto; height: 25px; border-bottom: 1px solid black; text-align: center; z-index: 0;">
+<div style="position: absolute; top: 400px; left: 65px; width: 80%; margin: 0 auto; height: 15px; border-bottom: 1px solid black; text-align: center; z-index: 0;">
   <span style="font-size: 20px; background-color: #F3F5F6; padding: 0 20px; z-index: 1;">
     USER APPS.
   </span>
@@ -556,7 +556,7 @@ https://stackoverflow.com/questions/12939928/make-a-link-open-a-new-window-not-t
 
 
 
-<div id="app_directory-container" style="position: absolute; display: <?= ( isset($_GET['path']) ? 'block' : 'none') . ';'; ?>; background-color: white; overflow-x: scroll; height: 580px; position: absolute; top: 80px; margin-left: auto; margin-right: auto; left: 0; right: 0; width: 700px;">
+<div id="app_directory-container" style="position: absolute; display: <?= ( isset($_GET['path']) ? 'block' : 'none') . ';'; ?>; background-color: white; height: 580px; position: absolute; top: 80px; margin-left: auto; margin-right: auto; left: 0; right: 0; width: 700px;">
 
 <?php if (isset($_GET['path']) && preg_match('/^vendor/', $_GET['path'])) { ?>
 

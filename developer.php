@@ -13,7 +13,7 @@ input[type='checkbox'] {
     margin-bottom: 24px;
 }
 form#fimprovdev{
-    background:url("developer.jpg");
+    background:url("developer.jpg"); // 
 }
 input[type='checkbox']:checked {
     background: #abd;
