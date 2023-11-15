@@ -17,6 +17,7 @@ use Psr\Log\LogLevel;
 // ob_start(); // $test = ob_get_contents();   ob_end_clean();
 
 return <<<END
+<!DOCTYPE html>
 <html>
 <head>
   <title></title>
@@ -26,6 +27,3 @@ return <<<END
 </body>
 </html>
 END;
-
-
-

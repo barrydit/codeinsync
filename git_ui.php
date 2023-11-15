@@ -27,7 +27,19 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 
 
 /*
+git reset filename   (unstage a specific file)
 
+git branch
+  -m   oldBranch newBranch   (Renaming a git branch)
+  -d   Safe deletion
+  -D   Forceful deletion
+
+git commit -am "Default message"
+
+git checkout -b branchName
+*/
+
+/*
 function testGit()
 	{
 		$descriptorspec = [
@@ -203,7 +215,7 @@ ob_start(); ?>
         
           <div style="position: absolute; top: 45px; left: 10px;" class="text-xs">
             <span style="color: red;">[Help]</span><br />Commands<br />
-            <code class="text-xs"><a id="app_git-add-cmd" href="#!" onclick="">git add .</a><br /><a id="app_git-commit-cmd" href="#!">git commit -m "&lt;detail message&gt;"</a></code>
+            <code class="text-xs"><a id="app_git-add-cmd" href="#!" onclick="">git add .</a><br /><a id="app_git-commit-cmd" href="#!">git commit -am "&lt;detail message&gt;"</a></code>
           </div>
 
           <div style="display: inline-block; width: 32%; text-align: right;"><img src="resources/images/git.fw.png" width="52" height="37" style=" border: 1px dashed #F05033;" /></div>
@@ -670,7 +682,30 @@ ob_start(); ?>
 
   <link rel="stylesheet" href="//code.jquery.com/ui/1.12.1/themes/smoothness/jquery-ui.css" />
 
-<script src="https://cdn.tailwindcss.com"></script>
+
+<?php
+// (check_http_200('https://cdn.tailwindcss.com') ? 'https://cdn.tailwindcss.com' : APP_WWW . 'resources/js/tailwindcss-3.3.5.js')?
+is_dir($path = APP_PATH . APP_BASE['resources'] . 'js/') or mkdir($path, 0755, true);
+if (is_file($path . 'tailwindcss-3.3.5.js')) {
+  if (ceil(abs((strtotime(date('Y-m-d')) - strtotime(date('Y-m-d',strtotime('+5 days',filemtime($path . 'tailwindcss-3.3.5.js'))))) / 86400)) <= 0 ) {
+    $url = 'https://cdn.tailwindcss.com';
+    $handle = curl_init($url);
+    curl_setopt($handle, CURLOPT_RETURNTRANSFER, true);
+
+    if (!empty($js = curl_exec($handle))) 
+      file_put_contents($path . 'tailwindcss-3.3.5.js', $js) or $errors['JS-TAILWIND'] = $url . ' returned empty.';
+  }
+} else {
+  $url = 'https://cdn.tailwindcss.com';
+  $handle = curl_init($url);
+  curl_setopt($handle, CURLOPT_RETURNTRANSFER, true);
+
+  if (!empty($js = curl_exec($handle))) 
+    file_put_contents($path . 'tailwindcss-3.3.5.js', $js) or $errors['JS-TAILWIND'] = $url . ' returned empty.';
+}
+?>
+
+  <script src="<?= 'resources/js/tailwindcss-3.3.5.js' ?? $url ?>"></script>
 
 <style type="text/tailwindcss">
 <?= $appGit['style']; ?>

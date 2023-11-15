@@ -269,7 +269,30 @@ ob_start(); ?>
 
   <link rel="stylesheet" href="//code.jquery.com/ui/1.12.1/themes/smoothness/jquery-ui.css" />
 
-  <script src="<?= (check_http_200('https://cdn.tailwindcss.com') ? 'https://cdn.tailwindcss.com' : APP_WWW . 'resources/js/tailwindcss-3.3.5.js')?>"></script>
+
+<?php
+// (check_http_200('https://cdn.tailwindcss.com') ? 'https://cdn.tailwindcss.com' : APP_WWW . 'resources/js/tailwindcss-3.3.5.js')?
+is_dir($path = APP_PATH . APP_BASE['resources'] . 'js/') or mkdir($path, 0755, true);
+if (is_file($path . 'tailwindcss-3.3.5.js')) {
+  if (ceil(abs((strtotime(date('Y-m-d')) - strtotime(date('Y-m-d',strtotime('+5 days',filemtime($path . 'tailwindcss-3.3.5.js'))))) / 86400)) <= 0 ) {
+    $url = 'https://cdn.tailwindcss.com';
+    $handle = curl_init($url);
+    curl_setopt($handle, CURLOPT_RETURNTRANSFER, true);
+
+    if (!empty($js = curl_exec($handle))) 
+      file_put_contents($path . 'tailwindcss-3.3.5.js', $js) or $errors['JS-TAILWIND'] = $url . ' returned empty.';
+  }
+} else {
+  $url = 'https://cdn.tailwindcss.com';
+  $handle = curl_init($url);
+  curl_setopt($handle, CURLOPT_RETURNTRANSFER, true);
+
+  if (!empty($js = curl_exec($handle))) 
+    file_put_contents($path . 'tailwindcss-3.3.5.js', $js) or $errors['JS-TAILWIND'] = $url . ' returned empty.';
+}
+?>
+
+  <script src="<?= 'resources/js/tailwindcss-3.3.5.js' ?? $url ?>"></script>
 
 <style type="text/tailwindcss">
 <?= /*$appWhiteboard['style'];*/ NULL; ?>

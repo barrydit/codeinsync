@@ -5,6 +5,15 @@ if ($path = (basename(getcwd()) == 'public')
     : (is_file('config.php') ? 'config.php' : (is_file('config/config.php') ? 'config/config.php' : null)))
     require_once($path); 
 else die(var_dump($path . ' was not found. file=config.php'));
+/*
+dd($_SERVER);
+
+$_SERVER['REQUEST_SCHEME']
+
+DOMAIN
+
+dd(parse_url($_SERVER['REQUEST_URI'], PHP_URL_HOST));
+*/
 
 
 if ($path = (basename(getcwd()) == 'public')
@@ -40,6 +49,14 @@ Psr/
 --Log/LogLevel   vendor/psr/log/Psr/Log/LogLevel.php
 */
 
+//composer[config][require][]
+
+
+
+// if ($_SERVER['REQUEST_METHOD'] == 'POST')
+
+
+
 
 if (in_array(APP_PATH . 'composer.php', get_required_files())) {
   if (class_exists('LogLevel'))
@@ -70,6 +87,13 @@ if ($path = (basename(getcwd()) == 'public')
     : (is_file('../app.php.php') ? '../app.php.php' : (is_file('public/app.php.php') ? 'public/app.php.php' : (is_file('config/app.php.php') ? 'config/app.php.php' : 'app.php.php'))))
   require_once($path); 
 else die(var_dump($path . ' was not found. file=app.php.php'));
+
+if ($path = (basename(getcwd()) == 'public')
+    ? (is_file('app.browser.php') ? 'app.browser.php' : (is_file('../app.browser.php') ? '../app.browser.php' : (is_file('../config/app.browser.php') ? '../config/app.browser.php' : NULL)))
+    : (is_file('../app.browser.php') ? '../app.browser.php' : (is_file('public/app.browser.php') ? 'public/app.browser.php' : (is_file('config/app.browser.php') ? 'config/app.browser.php' : 'app.browser.php'))))
+  require_once($path); 
+else die(var_dump($path . ' was not found. file=app.browser.php'));
+
 
 if ($path = (basename(getcwd()) == 'public')
     ? (is_file('app.github.php') ? 'app.github.php' : (is_file('../app.github.php') ? '../app.github.php' : (is_file('../config/app.github.php') ? '../config/app.github.php' : NULL)))
@@ -110,47 +134,13 @@ if ($path = (basename(getcwd()) == 'public')
   require_once($path); 
 else die(var_dump($path . ' was not found. file=app.text_edit.php'));
 
+
 if ($path = (basename(getcwd()) == 'public') // composer_app.php (depend.)
     ? (is_file('app.console.php') ? 'app.console.php' : (is_file('../app.console.php') ? '../app.console.php' : (is_file('../config/app.console.php') ? '../config/app.console.php' : 'public/app.console.php')))
     : (is_file('../app.console.php') ? '../app.console.php' : (is_file('public/app.console.php') ? 'public/app.console.php' : (is_file('config/app.console.php') ? 'config/app.console.php' : 'app.console.php'))))
   require_once($path); 
 else die(var_dump($path . ' was not found. file=app.console.php'));
 
-
-if ($_SERVER['REQUEST_METHOD'] == 'POST') {
-
-    //dd($_POST['package']);
-    
-    list($vendor, $package) = explode('/', $_POST['package']);
-
-    //if ($vendor == 'nesbot' && $package == 'carbon') {
-
-    if (preg_match(DOMAIN_EXPR, packagist_return_source($vendor, $package), $matches))
-$raw_url = $initial_url = $matches[0];
-    else $raw_url = '';
-    
-    if (!is_file(APP_BASE['var'].'package-' . $vendor . '-' . $package . '.php')) {
-
-    $source_blob = (check_http_200($raw_url) ? file_get_contents($raw_url) : '' );
-    
-    //dd('url: ' . $raw_url);
-    $raw_url = addslashes($raw_url);
-
-    $source_blob = addslashes(COMPOSER_JSON['json']); // $source_blob
-    file_put_contents(APP_BASE['var'].'package-' . $vendor . '-' . $package . '.php', '<?php' . "\n" . ( check_http_200($raw_url) ? '$source = "' . $raw_url . '";' : '' ) . "\n" . 
-<<<END
-\$composer_json = "{$source_blob}";
-return '<form action method="POST">'
-. '...'
-. '</form>';
-END
-);
-    }
-
-    exit(header('Location: ' . APP_URL_BASE . '?' . http_build_query(APP_QUERY, '', '&amp;')));
-    //}
-
-}
 
 header("Cache-Control: no-store, no-cache, must-revalidate, max-age=0");
 header("Pragma: no-cache");
@@ -174,12 +164,31 @@ if (is_file(APP_ROOT . 'project.php') && isset($_GET['project']) && $_GET['proje
   <base href="<?=(!is_array(APP_URL) ? APP_URL : APP_URL_BASE)?>" />
 
   <link rel="stylesheet" href="//code.jquery.com/ui/1.12.1/themes/smoothness/jquery-ui.css" />
+<?php
+// (check_http_200('https://cdn.tailwindcss.com') ? 'https://cdn.tailwindcss.com' : APP_WWW . 'resources/js/tailwindcss-3.3.5.js')?
+is_dir($path = APP_PATH . APP_BASE['resources'] . 'js/') or mkdir($path, 0755, true);
+if (is_file($path . 'tailwindcss-3.3.5.js')) {
+  if (ceil(abs((strtotime(date('Y-m-d')) - strtotime(date('Y-m-d',strtotime('+5 days',filemtime($path . 'tailwindcss-3.3.5.js'))))) / 86400)) <= 0 ) {
+    $url = 'https://cdn.tailwindcss.com';
+    $handle = curl_init($url);
+    curl_setopt($handle, CURLOPT_RETURNTRANSFER, true);
 
-  <script src="<?= (check_http_200('https://cdn.tailwindcss.com') ? 'https://cdn.tailwindcss.com' : APP_WWW . 'resources/js/tailwindcss-3.3.5.js')?>"></script>
+    if (!empty($js = curl_exec($handle))) 
+      file_put_contents($path . 'tailwindcss-3.3.5.js', $js) or $errors['JS-TAILWIND'] = $url . ' returned empty.';
+  }
+} else {
+  $url = 'https://cdn.tailwindcss.com';
+  $handle = curl_init($url);
+  curl_setopt($handle, CURLOPT_RETURNTRANSFER, true);
+
+  if (!empty($js = curl_exec($handle))) 
+    file_put_contents($path . 'tailwindcss-3.3.5.js', $js) or $errors['JS-TAILWIND'] = $url . ' returned empty.';
+}
+?>
+
+  <script src="<?= 'resources/js/tailwindcss-3.3.5.js' ?? $url ?>"></script>
 
 <style type="text/tailwindcss">
-
-
 .row-container { display: flex; width: 100%; height: 100%; flex-direction: column; overflow: hidden; }
 
 <?= $appComposer['style']; ?>
@@ -187,6 +196,8 @@ if (is_file(APP_ROOT . 'project.php') && isset($_GET['project']) && $_GET['proje
 <?= $appGit['style']; ?>
 
 <?= $appPHP['style']; ?>
+
+<?= $appBrowser['style']; ?>
 
 <?= $appGithub['style']; ?>
 
@@ -392,9 +403,6 @@ if (!empty($_GET['client'])) {
 
       </div>
   <div id="debug-content" class="absolute" style="position: absolute; margin-left: auto; margin-right: auto; left: 0; right: 0; text-align: center; background-color: rgba(255, 255, 255, 0.8); border: 1px solid #000; width: 800px; z-index: 1;">
- 
-
-
       <a href="<?= (APP_URL['query'] != '' ? '?'.APP_URL['query'] : '') . (APP_ENV == 'development' ? '#!' : '') ?>" onclick="document.getElementById('app_github-container').style.display='block';"><img src="resources/images/github_icon.png" width="72" height="23"></a> |
       <a href="<?= (APP_URL['query'] != '' ? '?'.APP_URL['query'] : '') . (APP_ENV == 'development' ? '#!' : '') ?>" onclick="document.getElementById('app_git-container').style.display='block';"><img src="resources/images/git_icon.png" width="58" height="24"></a> |
       <a href="<?= (APP_URL['query'] != '' ? '?'.APP_URL['query'] : '') . (APP_ENV == 'development' ? '#!' : '') ?>" onclick="document.getElementById('app_composer-container').style.display='block';"><img src="resources/images/composer_icon.png" width="31" height="40"> Composer</a> |
@@ -403,15 +411,18 @@ if (!empty($_GET['client'])) {
       <a href="<?= (APP_URL['query'] != '' ? '?'.APP_URL['query'] : '') . (APP_ENV == 'development' ? '#!' : '')?>" onclick="document.getElementById('app_text_editor-container').style.display='block';"><img src="resources/images/code_icon.png" width="32" height="32"> Text</a> |
       <a href="<?= (APP_URL['query'] != '' ? '?'.APP_URL['query'] : '') . (APP_ENV == 'development' ? '#!' : '') ?>" onclick="document.getElementById('httpHeaderForm').style.display='block';"><img src="resources/images/http_icon.jpg" width="32" height="32"> HTTP</a> |
       <a href="<?= (APP_URL['query'] != '' ? '?'.APP_URL['query'] : '') . (APP_ENV == 'development' ? '#!' : '') ?>" onclick="document.getElementById('app_timesheet-container').style.display='block';"><img src="resources/images/clock.gif" width="32" height="32"> Clock-In</a>
-      
-      
-        <div style="position: absolute; top: 20px; right: -10px; ">
-    <table class="text-sm" style="width: 300px;">
-      <tr><td><div id="idleTime" style="display: inline; margin: 7px 5px;"></div>
-      <div><div id="stats">Idle: [0]&nbsp;&nbsp;<span style="color: black;">00:00:00</span></div>  
-    </div></td><td><img id="ts-status-light" src="resources/images/timesheet-light-Clear-2.gif" width="80" height="30" style="cursor: pointer;" /></td></tr>
-    </table>
-    </div>
+
+      <div style="position: absolute; width: 315px; top: 40px; right: -10px; border: 1px solid #000; height: 25px;">
+        <div style="display: inline-block; width: 175px; ">
+          <div id="idleTime" style="display: inline; margin: 7px 5px;"></div>
+          <div>
+            <div id="stats">Idle: [0]&nbsp;&nbsp;<span style="color: black;">00:00:00</span></div>  
+          </div>
+        </div>
+        <div style="display: inline-block; width: 100px;">
+          <img id="ts-status-light" style="padding-bottom: 25px;" src="resources/images/timesheet-light-Clear-2.gif" width="80" height="30" style="cursor: pointer;" />
+        </div>
+      </div>
 
   </div>
 
@@ -437,7 +448,7 @@ if (isset($_GET['path'])) { ?>
         <!-- <input type="hidden" name="path" value="<?= $_GET['path']; ?>" /> -->
 <?php } ?>
 
-<?php echo '<a href="' . (APP_URL['query'] != '' ? '?' . APP_URL['query'] : '') . (isset($_GET['path']) && $_GET['path'] != '' ? parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH) : (APP_ENV == 'development' ? '#!' : '') ) . '"><span title="' . $path . '" style="cursor: pointer;" onclick="document.getElementById(\'app_directory-container\').style.display=\'block\';">' . (isset($_GET['project']) ? '/project/' : parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH)) . (isset($_GET['path']) && $_GET['path'] === '' ? '' : (!isset($_GET['path']) ? '' : basename($_GET['path']) . '/')) . '</span></a>'; /* $path; */ ?>
+<?php echo '<a href="' . (APP_URL['query'] != '' ? '?' . APP_URL['query'] : '') . (isset($_GET['path']) && $_GET['path'] != '' ? parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH) : (APP_ENV == 'development' ? '#!' : '') ) . '"><span title="' . $path . '" style="cursor: pointer;" onclick="document.getElementById(\'app_directory-container\').style.display=\'block\';"><button id="displayDirectoryBtn" style="float: left; margin: 2px 5px 0 0;" type="submit">&#9660;</button> ' . (isset($_GET['project']) ? '/project/' : parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH)) . (isset($_GET['path']) && $_GET['path'] === '' ? '' : (!isset($_GET['path']) ? '' : basename($_GET['path']) . '/')) . '</span></a>'; /* $path; */ ?>
 
 <select name="path" onchange="this.form.submit();">
   <option value="">.</option>
@@ -490,7 +501,7 @@ https://stackoverflow.com/questions/12939928/make-a-link-open-a-new-window-not-t
 <form action="#!" method="GET">
 <?= (isset($_GET['project']) && !$_GET['project'] ? '<input type="hidden" name="client" value="" />' : '<input type="hidden" name="project" value="" />') ?>
 
-  <div style="margin: 0 auto; ">
+  <div style="margin: 0 auto;">
     <div id="clockTime"></div>
   </div>  
   <input class="input" id="toggle-project" type="checkbox" onchange="toggleSwitch(this); this.form.submit();" <?= (isset($_GET['project']) ? 'checked' : '') ?> />
@@ -552,11 +563,11 @@ https://stackoverflow.com/questions/12939928/make-a-link-open-a-new-window-not-t
 <div style="position: absolute; margin: 430px 75px; text-align: center;" class="text-sm"><a href="#!" onclick="document.getElementById('app_install-container').style.display='block'; return false;"><span style="text-align: center;">New App.</span><br /><img style="text-align: center;" src="<?= APP_BASE['resources'] . 'images/install.png' ?>" /></a></div>
 
 
-<div style="position: absolute; margin: 430px 160px; text-align: center;" class="text-sm"><a href="?app=text_editor&path=&file=app.user-app.php"><span style="text-align: center;">App #1</span></a><br /><a href="#!" onclick="document.getElementById('app_browser-container').style.display='block'; return false;"><img style="text-align: center;" src="<?= APP_BASE['resources'] . 'images/php-app.png' ?>" /></a></div>
+<div style="position: absolute; margin: 430px 170px; text-align: center;" class="text-sm"><a href="?app=text_editor&path=&file=app.user-app.php"><span style="text-align: center;">App #1</span></a><br /><a href="#!" onclick="document.getElementById('app_browser-container').style.display='block'; return false;"><img style="text-align: center;" src="<?= APP_BASE['resources'] . 'images/php-app.png' ?>" /></a></div>
 
 
 
-<div id="app_directory-container" style="position: absolute; display: <?= ( isset($_GET['path']) ? 'block' : 'none') . ';'; ?>; background-color: white; height: 580px; position: absolute; top: 80px; margin-left: auto; margin-right: auto; left: 0; right: 0; width: 700px;">
+<div id="app_directory-container" style="position: absolute; display: <?= ( isset($_GET['debug']) ? 'block' : 'none') . ';'; ?>; background-color: white; height: 580px; position: absolute; top: 100px; margin-left: auto; margin-right: auto; left: 0; right: 0; width: 700px;">
 
 <?php if (isset($_GET['path']) && preg_match('/^vendor/', $_GET['path'])) { ?>
 
@@ -566,9 +577,11 @@ https://stackoverflow.com/questions/12939928/make-a-link-open-a-new-window-not-t
 <div style="display: inline-block; width: 350px;">Composers Vendor Packages [Installed] List</div>
 <div style="display: inline-block; text-align: right; width: 300px; ">
 <form action="<?= (!defined('APP_URL_BASE') ? '//' . APP_DOMAIN . APP_URL_PATH . '?' . http_build_query(APP_QUERY, '', '&amp;') : APP_URL_BASE . '?' . http_build_query(APP_QUERY, '', '&amp;')) ?>" method="POST">
-<input id="RequirePkg" type="text" title="Enter Text and onSelect" list="RequirePkgs" placeholder="[vendor]/[package]" name="package" value onselect="get_package(this);" autocomplete="off" style=" margin-top: 4px;">
+<input id="RequirePkg" type="text" title="Enter Text and onSelect" list="RequirePkgs" placeholder="[vendor]/[package]" name="composer[package]" value onselect="get_package(this);" autocomplete="off" style=" margin-top: 4px;">
 <button type="submit" style="border: 1px solid #000; margin-top: 4px;"> Add </button>
-<div style="display: inline-block; float: right; text-align: left; margin-left: 10px;" class="text-xs"><input type="checkbox" name="install" value="" /> Install<br /><input type="checkbox" name="update" value="" /> Update</div>
+<div style="display: inline-block; float: right; text-align: left; margin-left: 10px;" class="text-xs">
+<input type="checkbox" name="composer[install]" value="" /> Install<br />
+<input type="checkbox" name="composer[update]" value="" /> Update</div>
 <datalist id="RequirePkgs">
   <option value=""></option>
 </datalist>
@@ -700,7 +713,7 @@ if (!empty($paths))
             //  break;
             //}
           }
-          echo '<a class="pkg_dir" href="#" onclick="document.getElementById(\'app_project-container\').style.display=\'block\';">' // ?app=text_editor&path=vendor/' . $vendor . '
+          echo '<a class="pkg_dir" href="#!" onclick="document.getElementById(\'app_project-container\').style.display=\'block\';">' // ?app=text_editor&path=vendor/' . $vendor . '
           . '<img src="resources/images/directory-composer.png" width="50" height="32" style="' . (isset(COMPOSER->{'require'}->{$vendor . '/' . 'composer'}) || isset(COMPOSER->{'require-dev'}->{$vendor . '/' . $package})? '' : 'opacity:0.4;filter:alpha(opacity=40);') . '" /></a><br />'
           . '<div class="pkg_dir overlay">';
           foreach ($packages as $package) {
@@ -712,7 +725,7 @@ if (!empty($paths))
           }
           echo '</div>' . '<a href="?path=vendor/' . $vendor . '">' . ucfirst($vendor) . '</a>' . "\n";    
         } elseif ($vendor == 'psr') {
-          echo '<a class="pkg_dir" href="#" onclick="document.getElementById(\'app_project-container\').style.display=\'block\';">' // ?app=text_editor&path=vendor/' . $vendor . '
+          echo '<a class="pkg_dir" href="#!" onclick="document.getElementById(\'app_project-container\').style.display=\'block\';">' // ?app=text_editor&path=vendor/' . $vendor . '
           . '<img src="resources/images/directory-psr.png" width="50" height="32" style="' . (isset(COMPOSER->{'require'}->{$vendor . '/' . $package}) || isset(COMPOSER->{'require-dev'}->{$vendor . '/' . $package}) ? '' : (!$show_notice ? '' : 'opacity:0.4;filter:alpha(opacity=40);')) . '" />' . '</a><br />'
           . '<div class="overlay">';
           foreach ($packages as $package) {
@@ -751,7 +764,7 @@ $result = array_diff($dirs, $dirs_diff);
 if (!empty($result))
   foreach ($result as $install) {
     echo '<td style="border: none; text-align: center;" class="text-xs">' . "\n"
-    . '<a href="#" onclick="document.getElementById(\'app_git-container\').style.display=\'block\';">' // "?path=' . basename($path) . '" 
+    . '<a href="#!" onclick="document.getElementById(\'app_git-container\').style.display=\'block\';">' // "?path=' . basename($path) . '" 
     . '<img src="resources/images/directory-install.png" width="50" height="32" ' . /*style="opacity:0.4;filter:alpha(opacity=40);"*/' /><br />' . $install . '/</a>' . "\n";
     echo '</td>' . "\n";
     if ($count > 7 || $install == end($result)) echo '</tr>';
@@ -768,7 +781,7 @@ if (!empty($result))
 <?php if (readlinkToEnd('/var/www/projects') == '/mnt/c/www/projects') {  ?>
 <div style="text-align: center; border: none;" class="text-xs">
 <a class="pkg_dir" href="?project=#!" onclick="document.getElementById('app_project-container').style.display='block';">
-<img src="resources/images/project-icon.png" width="50" height="32" style="" /></a><br /><a href="<?= (APP_URL['query'] != '' ? '?'.APP_URL['query'] : '') . '#!' ?>" onclick="document.getElementById('app_text_editor-container').style.display='block';">project.php</a>
+<img src="resources/images/project-icon.png" width="50" height="32" style="" /></a><br /><a href="<?= (APP_URL['query'] != '' ? '?'. APP_URL['query'] : '') . '#!' ?>" onclick="document.getElementById('app_text_editor-container').style.display='block';">project.php</a>
 </div>
 
 <table width="" style="border: none;">
@@ -950,16 +963,16 @@ if (!empty($paths))
       echo '<td style="border: 0 solid #000; text-align: center;" class="text-xs">' . "\n";
       if (is_dir($path))
         if (basename($path) == '.git')
-          echo '<a href="#" onclick="document.getElementById(\'app_git-container\').style.display=\'block\';">' // "?path=' . basename($path) . '" 
+          echo '<a href="#!" onclick="document.getElementById(\'app_git-container\').style.display=\'block\';">' // "?path=' . basename($path) . '" 
           . '<img src="resources/images/directory-git.png" width="50" height="32" /><br />' . basename($path) . '/</a>' . "\n";
         elseif (basename($path) == 'vendor')
           echo '<div style="position: relative;">'
-          . '<a href="#" onclick="document.getElementById(\'app_composer-container\').style.display=\'block\';"><img src="resources/images/directory-composer.png" width="50" height="32" /></a><br />'
+          . '<a href="#!" onclick="document.getElementById(\'app_composer-container\').style.display=\'block\';"><img src="resources/images/directory-composer.png" width="50" height="32" /></a><br />'
           . '<a href="?path=' . basename($path) . '" onclick="">' . basename($path)  // "?path=' . basename($path) . '"         
           . '/</a></div>' . "\n";
         elseif (basename($path) == 'node_modules')
           echo '<div style="position: relative;">'
-          . '<a href="#" onclick="document.getElementById(\'app_composer-container\').style.display=\'block\';"><img src="resources/images/directory-npm.png" width="50" height="32" /></a><br />'
+          . '<a href="#!" onclick="document.getElementById(\'app_npm-container\').style.display=\'block\';"><img src="resources/images/directory-npm.png" width="50" height="32" /></a><br />'
           . '<a href="?path=' . basename($path) . '" onclick="">' . basename($path)  // "?path=' . basename($path) . '"         
           . '/</a></div>' . "\n";
         else 
@@ -1060,6 +1073,8 @@ if (!empty($paths))
 
 <?= $appPHP['body'] ?>
 
+<?= $appBrowser['body']; ?>
+
 <?= $appGithub['body']; ?>
 
 <?= $appPackagist['body']; ?>
@@ -1089,8 +1104,7 @@ if (!empty($paths))
 
 <?php
 
-$path = APP_PATH . APP_BASE['resources'] . 'js/jquery/';
-is_dir($path) or mkdir($path, 0755);
+is_dir($path = APP_PATH . APP_BASE['resources'] . 'js/jquery/') or mkdir($path, 0755, true);
 if (is_file($path . 'jquery-3.7.1.min.js')) {
   if (ceil(abs((strtotime(date('Y-m-d')) - strtotime(date('Y-m-d',strtotime('+5 days',filemtime($path . 'jquery-3.7.1.min.js'))))) / 86400)) <= 0 ) {
     $url = 'https://code.jquery.com/jquery-3.7.1.min.js';
@@ -1112,12 +1126,14 @@ if (is_file($path . 'jquery-3.7.1.min.js')) {
 ?>
   <script src="<?= (check_http_200('https://code.jquery.com/jquery-3.7.1.min.js') ? 'https://code.jquery.com/jquery-3.7.1.min.js' : $path . 'jquery-3.7.1.min.js') ?>"></script>
 
+
+
 <!-- For Text / Ace Editor -->
 
   <!-- <script src="https://unpkg.com/@popperjs/core@2" type="text/javascript" charset="utf-8"></script> -->
   
 <?php
-is_dir(APP_PATH . APP_BASE['resources'] . 'js/requirejs') or mkdir(APP_PATH . APP_BASE['resources'] . 'js/requirejs', 0755);
+is_dir(APP_PATH . APP_BASE['resources'] . 'js/requirejs') or mkdir(APP_PATH . APP_BASE['resources'] . 'js/requirejs', 0755, true);
 if (is_file(APP_PATH . APP_BASE['resources'] . 'js/requirejs/require-2.3.6.js')) {
   if (ceil(abs((strtotime(date('Y-m-d')) - strtotime(date('Y-m-d',strtotime('+5 days',filemtime(APP_PATH . APP_BASE['resources'] . 'js/requirejs/require-2.3.6.js'))))) / 86400)) <= 0 ) {
     $url = 'https://requirejs.org/docs/release/2.3.6/minified/require.js';
@@ -1137,7 +1153,7 @@ if (is_file(APP_PATH . APP_BASE['resources'] . 'js/requirejs/require-2.3.6.js'))
 }
 
 ?>
-  <script src="<?= (check_http_200('https://requirejs.org/docs/release/2.3.6/minified/require.js') ? 'https://requirejs.org/docs/release/2.3.6/minified/require.js' : APP_URL_BASE . APP_BASE['resources'] . 'js/requirejs/require-2.3.6.js') ?>" type="text/javascript" charset="utf-8"></script>
+  <script src="<?= APP_BASE['resources'] . 'js/requirejs/require-2.3.6.js' ?? $url ?>" type="text/javascript" charset="utf-8"></script>
 
   <script src="resources/js/ace/src/ace.js" type="text/javascript" charset="utf-8"></script> <!-- -->
   <script src="resources/js/ace/src/ext-language_tools.js" type="text/javascript" charset="utf-8"></script>
@@ -1158,7 +1174,35 @@ if (is_file(APP_PATH . APP_BASE['resources'] . 'js/requirejs/require-2.3.6.js'))
   <script src="<?= array_rand(array_flip(array_filter(glob(APP_BASE['var'] . 'reels/*.js'), 'is_file')), 1); ?>" type="text/javascript" charset="utf-8"></script>
   
   <script type="text/javascript" charset="utf-8">
+
+const appDirectoryContainer = document.getElementById('app_directory-container');
+
+//const styles = window.getComputedStyle(appDirectoryContainer);
+const displayDirectoryBtn = document.getElementById('displayDirectoryBtn');
+
+displayDirectoryBtn.addEventListener('click', () => {
+  if (appDirectoryContainer.style.display == 'block') {
+  $( '#app_directory-container' ).slideUp( "slow", function() {
+      // Animation complete.
+  });
   
+      displayDirectoryBtn.innerHTML = '&#9660;';
+  } else {
+  
+    $( '#app_directory-container' ).slideDown( "slow", function() {
+      // Animation complete.
+    });
+  
+      displayDirectoryBtn.innerHTML = '&#9650;';  
+
+  }
+  //show_console();
+
+});
+
+
+
+
 function toggleSwitch(element) {
 
   if (element.checked) {
@@ -1180,7 +1224,7 @@ $("#debug-content").show("slide", { direction: "left" }, 1000);
 
 $(document).ready(function(){
     if ($( "#app_directory-container" ).css('display') == 'none') {
-<?php if (!empty($_GET)) { ?>
+<?php if (isset($_GET['debug'])) { ?>
       $( '#app_directory-container' ).slideDown( "slow", function() {
       // Animation complete.
       });
@@ -1202,6 +1246,8 @@ window.addEventListener('keydown', show_console);
 <?= $appComposer['script']; ?>
 
 <?= $appGit['script']; ?>
+
+<?= $appBrowser['script']; ?>
 
 <?= $appGithub['script']; ?>
 

@@ -129,9 +129,7 @@ else die(var_dump($path . ' path was not found. file=console_app.php'));
 */
 
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
-  if (isset($_GET['app']) && $_GET['app'] == 'php')
-    if (isset($_POST['path']) && isset($_GET['filename']) && $path = realpath($_POST['path'] . $_GET['filename']))
-      file_put_contents($path, $_POST['editor']);
+
       
   //dd($_POST);
 
@@ -207,15 +205,6 @@ input {
   color: black;
 }
 
-#ace-editor {
-  margin: 0;
-  position: relative;
-  resize: both;
-  overflow: auto;
-  white-space: pre-wrap;
-  //width: 100%;
-  //height: 100%;
-}
 
 <?php $appGithub['style'] = ob_get_contents();
 ob_end_clean();
@@ -285,7 +274,7 @@ header('Access-Control-Allow-Headers: Origin, X-Requested-With, Content-Type, Ac
 
 $destination = $xpath->query('//head/meta');
 $template = $dom->createDocumentFragment();
-$template->appendXML('<base href="https://github.com/" />');
+$template->appendXML('<base href="https://github.githubassets.com/" />');
 $destination[0]->parentNode->insertBefore($template, $destination[0]->nextSibling);
 
 

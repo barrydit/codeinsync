@@ -70,6 +70,25 @@ $ob_content = NULL;
 //var_dump(dirname(APP_SELF) . ' == ' . __DIR__);
 //dd(APP_PATH  . '  ' .  __DIR__);
 
+if (!realpath($path = 'public/policies/')) {
+  if (!mkdir($path, 0755, true))
+    $errors['POLICIES'] = $path . ' does not exist';
+
+  if (!is_file('public/policies/privacy-policy'))
+    if (@touch('public/policies/privacy-policy'))
+      file_put_contents('public/policies/privacy-policy', <<<END
+Privacy Policy
+END
+);
+
+  if (!is_file('public/policies/terms-of-use'))
+    if (@touch('public/policies/terms-of-use'))
+      file_put_contents('public/policies/terms-of-use', <<<END
+Terms of Use
+END
+);
+}
+
 if (basename(dirname(APP_SELF)) == 'public') {
   if (!is_file('.htaccess'))
     if (@touch('.htaccess'))

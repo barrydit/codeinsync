@@ -12,23 +12,6 @@ if (__FILE__ == get_required_files()[0])
     : (is_file('config.php') ? 'config.php' : (is_file('config/config.php') ? 'config/config.php' : null))) require_once($path); 
 else die(var_dump($path . ' path was not found. file=config.php'));
 
-if ($path = (basename(getcwd()) == 'public')
-    ? (is_file('../git.php') ? '../git.php' : (is_file('../config/git.php') ? '../config/git.php' : null))
-    : (is_file('git.php') ? 'git.php' : (is_file('config/git.php') ? 'config/git.php' : null))) require_once($path); 
-else die(var_dump($path . ' path was not found. file=git.php'));
-
-if ($path = (basename(getcwd()) == 'public')
-    ? (is_file('../composer.php') ? '../composer.php' : (is_file('../config/composer.php') ? '../config/composer.php' : null))
-    : (is_file('composer.php') ? 'composer.php' : (is_file('config/composer.php') ? 'config/composer.php' : null))) require_once($path); 
-else die(var_dump($path . ' path was not found. file=composer.php'));
-
-if ($path = (basename(getcwd()) == 'public')
-    ? (is_file('../npm.php') ? '../npm.php' : (is_file('../config/npm.php') ? '../config/npm.php' : null))
-    : (is_file('npm.php') ? 'npm.php' : (is_file('config/npm.php') ? 'config/npm.php' : null))) require_once($path); 
-else die(var_dump($path . ' path was not found. file=npm.php'));
-
-define('CONSOLE', true);
-
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     if (isset($_POST['cmd'])) {
       if ($_POST['cmd'] && $_POST['cmd'] != '') 
@@ -53,6 +36,23 @@ $proc=proc_open('sudo ' . COMPOSER_EXEC['bin'] . ' ' . $match[1],
           //$output[] = $_POST['cmd'];
 
         } else if (preg_match('/^git\s+(:?(.*))/i', $_POST['cmd'], $match)) {
+        
+          if (preg_match('/^git\s+(help)(?:\s+)/i', $_POST['cmd'])) {
+          
+            $output[] = <<<END
+git reset filename   (unstage a specific file)
+
+git branch
+  -m   oldBranch newBranch   (Renaming a git branch)
+  -d   Safe deletion
+  -D   Forceful deletion
+
+git commit -am "Default message"
+
+git checkout -b branchName
+END;
+          } else {
+        
           $output[] = 'sudo ' . GIT_EXEC . ' ' . $match[1];
 $proc=proc_open('sudo ' . GIT_EXEC . ' ' . $match[1],
   array(
@@ -61,6 +61,8 @@ $proc=proc_open('sudo ' . GIT_EXEC . ' ' . $match[1],
     array("pipe","w")
   ),
   $pipes);
+  
+          }
   
 /*
  Error: To https://github.com/barrydit/composer_app.git
@@ -121,6 +123,25 @@ $proc=proc_open('sudo ' . $match[1] . ' ' . $match[2],
       exit();
     }
 }
+
+if ($path = (basename(getcwd()) == 'public')
+    ? (is_file('../git.php') ? '../git.php' : (is_file('../config/git.php') ? '../config/git.php' : null))
+    : (is_file('git.php') ? 'git.php' : (is_file('config/git.php') ? 'config/git.php' : null))) require_once($path); 
+else die(var_dump($path . ' path was not found. file=git.php'));
+
+if ($path = (basename(getcwd()) == 'public')
+    ? (is_file('../composer.php') ? '../composer.php' : (is_file('../config/composer.php') ? '../config/composer.php' : null))
+    : (is_file('composer.php') ? 'composer.php' : (is_file('config/composer.php') ? 'config/composer.php' : null))) require_once($path); 
+else die(var_dump($path . ' path was not found. file=composer.php'));
+
+if ($path = (basename(getcwd()) == 'public')
+    ? (is_file('../npm.php') ? '../npm.php' : (is_file('../config/npm.php') ? '../config/npm.php' : null))
+    : (is_file('npm.php') ? 'npm.php' : (is_file('config/npm.php') ? 'config/npm.php' : null))) require_once($path); 
+else die(var_dump($path . ' path was not found. file=npm.php'));
+
+define('CONSOLE', true);
+
+
 
 ob_start(); ?>
 html, body {
@@ -203,8 +224,8 @@ ob_start(); ?>
 //dd($errors);
 
 if (!empty($errors))
-  foreach($errors as $error) {
-    echo  $error . "\n";
+  foreach($errors as $key => $error) {
+      echo /*$key . '=>' . */$error . ($key != end($errors) ? '' : "\n");
   }
 
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
@@ -268,6 +289,7 @@ function show_console(event) {
                     requestInput.focus();
                 event.preventDefault();
                 isFixed = true; 
+                show_console();
             } else {
                 document.activeElement = null;
                 return false;
@@ -456,7 +478,7 @@ $(document).ready(function() {
   });
 
   $("#app_git-commit-cmd").click(function() {
-    $('#requestInput').val('git commit -m "default message"');
+    $('#requestInput').val('git commit -am "default message"');
     show_console();
     //$('#requestSubmit').click();
   });
@@ -520,7 +542,7 @@ $(document).ready(function() {
     else if (argv == 'clear') $('#responseConsole').val('clear');
     else if (argv == 'reset') $('#responseConsole').val('>_');
     else
-    $.post("<?= APP_URL_BASE; /*$projectRoot*/?>",
+    $.post("<?= basename(APP_SELF); /*APP_URL_BASE; $projectRoot*/?>",
     {
       cmd: argv
     },
@@ -553,7 +575,29 @@ ob_start(); ?>
 
   <link rel="stylesheet" href="//code.jquery.com/ui/1.12.1/themes/smoothness/jquery-ui.css" />
 
-<script src="https://cdn.tailwindcss.com"></script>
+<?php
+// (check_http_200('https://cdn.tailwindcss.com') ? 'https://cdn.tailwindcss.com' : APP_WWW . 'resources/js/tailwindcss-3.3.5.js')?
+is_dir($path = APP_PATH . APP_BASE['resources'] . 'js/') or mkdir($path, 0755, true);
+if (is_file($path . 'tailwindcss-3.3.5.js')) {
+  if (ceil(abs((strtotime(date('Y-m-d')) - strtotime(date('Y-m-d',strtotime('+5 days',filemtime($path . 'tailwindcss-3.3.5.js'))))) / 86400)) <= 0 ) {
+    $url = 'https://cdn.tailwindcss.com';
+    $handle = curl_init($url);
+    curl_setopt($handle, CURLOPT_RETURNTRANSFER, true);
+
+    if (!empty($js = curl_exec($handle))) 
+      file_put_contents($path . 'tailwindcss-3.3.5.js', $js) or $errors['JS-TAILWIND'] = $url . ' returned empty.';
+  }
+} else {
+  $url = 'https://cdn.tailwindcss.com';
+  $handle = curl_init($url);
+  curl_setopt($handle, CURLOPT_RETURNTRANSFER, true);
+
+  if (!empty($js = curl_exec($handle))) 
+    file_put_contents($path . 'tailwindcss-3.3.5.js', $js) or $errors['JS-TAILWIND'] = $url . ' returned empty.';
+}
+?>
+
+  <script src="<?= 'resources/js/tailwindcss-3.3.5.js' ?? $url ?>"></script>
 
 <style type="text/tailwindcss">
 <?= $appConsole['style']; ?>

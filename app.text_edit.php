@@ -6,7 +6,6 @@
 
 //$errors->{'TEXT_MANAGER'} = $path . "\n" . 'File Modified:    Rights:    Date of creation: ';
 
-//dd($errors);
 
 if (__FILE__ == get_required_files()[0])
   if ($path = (basename(getcwd()) == 'public')
@@ -16,6 +15,9 @@ else die(var_dump($path . ' path was not found. file=config.php'));
 
 
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
+
+dd($_POST);
+
   if (isset($_GET['app']) && $_GET['app'] == 'text_editor')
     if (isset($_POST['path']) && isset($_GET['file']) && $path = realpath($_POST['path'] . $_GET['file']))
       file_put_contents($path, $_POST['editor']);
@@ -87,7 +89,7 @@ $proc=proc_open('sudo ' . GIT_EXEC . ' ' . $match[1],
 if (is_dir('resources/js/ace') && empty(glob('resources/js/ace')))
     exec('sudo ' . GIT_EXEC . ' clone https://github.com/ajaxorg/ace-builds.git resources/js/ace', $output, $returnCode) or $errors['GIT-CLONE-ACE'] = $output;
 elseif (!is_dir('resources/js/ace')) {
-    if (!mkdir('resources/js/ace', 0755))
+    if (!mkdir('resources/js/ace', 0755, true))
         $errors['GIT-CLONE-ACE'] = ' resources/js/ace does not exist.';
     exec('sudo ' . GIT_EXEC . ' clone https://github.com/ajaxorg/ace-builds.git resources/js/ace', $output, $returnCode) or $errors['GIT-CLONE-ACE'] = $output;
 }
@@ -194,7 +196,7 @@ foreach (array_filter( glob($path . DIRECTORY_SEPARATOR . '*.php'), 'is_file') a
       </div>
 
       <form style="position: relative; display: inline;" action="<?= APP_URL_BASE . '?' . http_build_query(APP_QUERY + array( 'app' => 'text_editor')) . (APP_ENV == 'development' ? '#!' : '') /* $c_or_p . '=' . (empty($_GET[$c_or_p]) ? '' : $$c_or_p->name) . '&amp;app=composer' */ ?>" method="POST">
-        <input type="hidden" name="path" value="<?= APP_PATH . APP_BASE['public']; ?>" />
+        <input type="hidden" name="path" value="<?= APP_PATH /*. APP_BASE['public'];*/ ?>" />
         <div style="display: inline-block; width: auto; text-align: right; float: right;">
           <input type="submit" value="Save" class="btn" style="margin: -5px 5px 5px 0;" onclick="document.getElementsByClassName('ace_text-input')[0].value = editor.getSession().getValue(); document.getElementsByClassName('ace_text-input')[0].name = 'editor';"/>
         </div>
@@ -289,8 +291,31 @@ ob_start(); ?>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
   <link rel="stylesheet" href="//code.jquery.com/ui/1.12.1/themes/smoothness/jquery-ui.css" />
+  
+<?php
 
-  <script src="https://cdn.tailwindcss.com"></script>
+is_dir($path = APP_PATH . APP_BASE['resources'] . 'js/') or mkdir($path, 0755, true);
+if (is_file($path . 'tailwindcss-3.3.5.js')) {
+  if (ceil(abs((strtotime(date('Y-m-d')) - strtotime(date('Y-m-d',strtotime('+5 days',filemtime($path . 'tailwindcss-3.3.5.js'))))) / 86400)) <= 0 ) {
+    $url = 'https://cdn.tailwindcss.com';
+    $handle = curl_init($url);
+    curl_setopt($handle, CURLOPT_RETURNTRANSFER, true);
+
+    if (!empty($js = curl_exec($handle))) 
+      file_put_contents($path . 'tailwindcss-3.3.5.js', $js) or $errors['JS-TAILWIND'] = $url . ' returned empty.';
+  }
+} else {
+  $url = 'https://cdn.tailwindcss.com';
+  $handle = curl_init($url);
+  curl_setopt($handle, CURLOPT_RETURNTRANSFER, true);
+
+  if (!empty($js = curl_exec($handle))) 
+    file_put_contents($path . 'tailwindcss-3.3.5.js', $js) or $errors['JS-TAILWIND'] = $url . ' returned empty.';
+}
+?>
+
+  <script src="<?= 'resources/js/tailwindcss-3.3.5.js' ?? $url ?>"></script>
+   
 
 <style type="text/tailwindcss">
 <?= $appTextEditor['style']; ?>

@@ -239,13 +239,40 @@ ob_start();
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <link rel="stylesheet"
+      href="//cdnjs.cloudflare.com/ajax/libs/highlight.js/11.2.0/styles/a11y-dark.min.css">
+
+  <!-- href="//cdnjs.cloudflare.com/ajax/libs/highlight.js/11.2.0/styles/default.min.css" -->
 
   <link rel="stylesheet" href="//code.jquery.com/ui/1.12.1/themes/smoothness/jquery-ui.css" />
 
-<script src="https://cdn.tailwindcss.com"></script>
+<?php
+// (check_http_200('https://cdn.tailwindcss.com') ? 'https://cdn.tailwindcss.com' : APP_WWW . 'resources/js/tailwindcss-3.3.5.js')?
+is_dir($path = APP_PATH . APP_BASE['resources'] . 'js/') or mkdir($path, 0755, true);
+if (is_file($path . 'tailwindcss-3.3.5.js')) {
+  if (ceil(abs((strtotime(date('Y-m-d')) - strtotime(date('Y-m-d',strtotime('+5 days',filemtime($path . 'tailwindcss-3.3.5.js'))))) / 86400)) <= 0 ) {
+    $url = 'https://cdn.tailwindcss.com';
+    $handle = curl_init($url);
+    curl_setopt($handle, CURLOPT_RETURNTRANSFER, true);
 
-<style type="text/tailwindcss">
-<?= /*$appWhiteboard['style'];*/ NULL; ?>
+    if (!empty($js = curl_exec($handle))) 
+      file_put_contents($path . 'tailwindcss-3.3.5.js', $js) or $errors['JS-TAILWIND'] = $url . ' returned empty.';
+  }
+} else {
+  $url = 'https://cdn.tailwindcss.com';
+  $handle = curl_init($url);
+  curl_setopt($handle, CURLOPT_RETURNTRANSFER, true);
+
+  if (!empty($js = curl_exec($handle))) 
+    file_put_contents($path . 'tailwindcss-3.3.5.js', $js) or $errors['JS-TAILWIND'] = $url . ' returned empty.';
+}
+?>
+
+  <script src="<?= 'resources/js/tailwindcss-3.3.5.js' ?? $url ?>"></script>
+  <!-- <style type="text/tailwindcss"> -->
+  
+  <style type="text/tailwindcss">
 * { margin: 0; padding: 0; } /* to remove the top and left whitespace */
 
 html, body { width: 100%; height: 100%; <?= ($_SERVER['SCRIPT_FILENAME'] == __FILE__ ? 'overflow:hidden;' : '') ?> } /* just to be sure these are full screen*/
@@ -254,6 +281,10 @@ pre {
   background: #eee;
   padding-bottom: 1em;
 }
+</style>
+
+<style>
+<?= /*$appWhiteboard['style'];*/ NULL; ?>
 
 button.move_up::before {
   content: "\25b2";
@@ -274,6 +305,10 @@ button.move_down::before {
 p#open_add_new {
   font-weight: bold;
   cursor: pointer;
+}
+
+input, textarea {
+  border: 1px solid #000;
 }
 </style>
 </head>
@@ -320,7 +355,7 @@ foreach($data as $key1 => $sample) {
   <h3><?= $snippet['title']; ?></h3>
   <a href="<?= $snippet['stackoverflow']['url']; ?>"><?= (!empty($snippet['stackoverflow']['title']) ? $snippet['stackoverflow']['title'] : 'Stackoverflow Question/Answer') ?></a>
   <form action method="POST">
-    <img class="open_edit" src="resources/images/notes-edit.png" style="margin-left: 4px; padding-top: 5px; cursor: pointer; " height="25" width="21" onclick="document.getElementById('id').value = '<?= $key1 . '-' . $key2; ?>';" />  
+    <img class="open_edit" src="resources/images/notes-edit.png" style="display: inline-block;margin-left: 4px; padding-top: 5px; cursor: pointer; " height="25" width="21" onclick="document.getElementById('id').value = '<?= $key1 . '-' . $key2; ?>';" />  
     <input type="hidden" name="id" value="<?= $key1 . '-' . $key2; ?>" />
     <div style="display: inline-block; font-size: 18px; margin-top: 0px; padding-bottom: 5px;">
       <button type="submit" class="move_up" name="n_id" value="<?= $key1 . '-' . (empty($key2) ? $key2 : $key2 - 1 ); ?>" style="<?= ($counter == 0 ? 'visibility: hidden;' : '' ) /* NULL; */ ?>" onchange="this.form.submit();"></button>
@@ -339,14 +374,34 @@ foreach($data as $key1 => $sample) {
   <script src="//code.jquery.com/jquery-1.12.4.js"></script>
   <script src="//code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
   <!-- <script src="../resources/js/jquery/jquery.min.js"></script> -->
-  
-  <script src="//cdnjs.cloudflare.com/ajax/libs/highlight.js/11.6.0/highlight.min.js"></script>
+
+<?php
+// (check_http_200('https://cdn.tailwindcss.com') ? 'https://cdn.tailwindcss.com' : APP_WWW . 'resources/js/highlight.min.js"')?
+is_dir($path = APP_PATH . APP_BASE['resources'] . 'js/highlight.js/') or mkdir($path, 0755, true);
+if (is_file($path . 'highlight.min.js')) {
+  if (ceil(abs((strtotime(date('Y-m-d')) - strtotime(date('Y-m-d',strtotime('+5 days',filemtime($path . 'highlight.min.js'))))) / 86400)) <= 0 ) {
+    $url = 'https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.6.0/highlight.min.js';
+    $handle = curl_init($url);
+    curl_setopt($handle, CURLOPT_RETURNTRANSFER, true);
+
+    if (!empty($js = curl_exec($handle))) 
+      file_put_contents($path . 'highlight.min.js', $js) or $errors['JS-TAILWIND'] = $url . ' returned empty.';
+  }
+} else {
+  $url = 'https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.6.0/highlight.min.js';
+  $handle = curl_init($url);
+  curl_setopt($handle, CURLOPT_RETURNTRANSFER, true);
+
+  if (!empty($js = curl_exec($handle))) 
+    file_put_contents($path . 'highlight.min.js', $js) or $errors['JS-TAILWIND'] = $url . ' returned empty.';
+}
+?>
+
+  <script src="<?= 'resources/js/highlight.js/highlight.min.js' ?? $url ?>"></script>
 
 <script>
 <?= /* $appWhiteboard['script']; */ NULL; ?>
-</script>
-  
-  <script>
+
 hljs.highlightAll();
 $(document).ready(function(){
   $('#open_add_new').click(function() {

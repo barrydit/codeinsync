@@ -1,6 +1,6 @@
 <?php
 
-define('COMPOSER_EXPR_NAME', '/[a-z0-9]([_.-]?[a-z0-9]+)*\/[a-z0-9](?:(?:[_.]|-{1,2})?[a-z0-9]+)*/'); // name
+define('COMPOSER_EXPR_NAME', '/([a-z0-9](?:[_.-]?[a-z0-9]+)*)\/([a-z0-9](?:(?:[_.]|-{1,2})?[a-z0-9]+)*)/'); // name
 define('COMPOSER_EXPR_VER', '/v?\d+(?:\.\d+){0,3}|dev-.*/'); // version
 
 if (!realpath('vendor/autoload.php')) {
@@ -260,7 +260,7 @@ $composerHome = (strtoupper(substr(PHP_OS, 0, 3)) === 'WIN' ?
 );
 
 if (!realpath($composerHome)) {
-  if (!mkdir($composerHome, 0755))
+  if (!mkdir($composerHome, 0755, true))
     $errors['COMPOSER_HOME'] = $composerHome . ' does not exist';
 } else define('COMPOSER_HOME', $composerHome);
 
@@ -664,7 +664,6 @@ else $dirs_diff = [];
 //dd($vendors);
 
 if (!empty(array_diff($vendors, $dirs_diff)) ) {
-
     $proc = proc_open('sudo ' . COMPOSER_EXEC['bin'] . ' update', array( array("pipe","r"), array("pipe","w"), array("pipe","w")), $pipes);
 
     list($stdout, $stderr, $exitCode) = [stream_get_contents($pipes[1]), stream_get_contents($pipes[2]), proc_close($proc)];
@@ -675,7 +674,6 @@ if (!empty(array_diff($vendors, $dirs_diff)) ) {
           $errors['COMPOSER-UPDATE'] = '$stdout is empty. $stderr = ' . $stderr;
       } else $errors['COMPOSER-UPDATE'] = $stdout;
     //else $debug['COMPOSER-UPDATE'] = '$stdout=' $stdout . "\n".  '$stderr = ' . $stderr;
-
 }
 
   }
@@ -729,15 +727,13 @@ if (!empty(array_diff($vendors, $dirs_diff)) ) {
   }
 
 }
-
+  // https://getcomposer.org/doc/03-cli.md
   $proc = proc_open('sudo ' . COMPOSER_EXEC['bin'] . ' validate --no-check-all --no-check-publish --no-check-version', array( array("pipe","r"), array("pipe","w"), array("pipe","w")), $pipes); // $output = shell_exec("cd " . escapeshellarg(dirname(COMPOSER_JSON['path'])) . " && " . 'sudo ' . COMPOSER_EXEC . ' validate --no-check-all --no-check-publish --no-check-version');  dd($output);
 
   //  "./composer.json" does not match the expected JSON schema:  
   //  - NULL value found, but an object is required
   
   // poss. err './composer.json is valid but your composer.lock has some errors'   checks composer.lock
-    
-  
 
   list($stdout, $stderr, $exitCode) = [stream_get_contents($pipes[1]), stream_get_contents($pipes[2]), proc_close($proc)];
 

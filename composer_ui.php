@@ -34,11 +34,37 @@ die();
 
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 
-  if (isset($_POST['create-project']) && $_POST['create-project'])
-  if (isset($_POST['package']) && $_POST['package'])
-         dd('test');
+  if (isset($_POST['create-project']) && preg_match(COMPOSER_EXPR_NAME, $_POST['create-project']['package'], $matches))
+    if ($matches[1] == 'laravel' && $matches[2] == 'project')  
+      exec('sudo composer create-project ' . $_POST['create-project']['package'] . ' /project/laravel', $output, $returnCode) or $errors['COMPOSER-CREATE-PROJECT'] = $output;
+    elseif ($matches[1] == 'symfony' && $matches[2] == 'project')  
+      exec('sudo composer create-project ' . $_POST['create-project']['package'] . ' /project/smyfony', $output, $returnCode) or $errors['COMPOSER-CREATE-PROJECT'] = $output;
+/*
 
+Workflows and Projects
 
+PHP   .github / workflows / php.yml
+Build and test a PHP application using Composer
+
+SLSA Generic generator
+Generate SLSA3 provenance for your existing release workflows
+
+Jekyll using Docker image
+Package a Jekyll site using the jekyll/builder Docker image.
+
+Laravel
+Test a Laravel project.
+
+Symfony
+Test a Symfony project.
+
+Publish Node.js Package
+Publishes a Node.js package to npm.
+
+Publish Node.js Package to GitHub Packages
+Publishes a Node.js package to GitHub Packages.
+
+*/
 }
 
 
@@ -67,6 +93,55 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
   // consider creating a visual aspect for the lock file
 
   if (!empty($_POST['composer'])) {
+
+    if (isset($_POST['composer']['package'])) {
+
+    //dd($_POST['package']);
+
+      if (preg_match(COMPOSER_EXPR_NAME, $_POST['composer']['package'])) {
+
+        list($vendor, $package) = explode('/', $_POST['composer']['package']);
+
+        if (empty($vendor))
+          $errors['COMPOSER_PKG'] = 'vendor is missing its value. vendor=' . $vendor;
+        if (empty($package))
+          $errors['COMPOSER_PKG'] = 'package is missing its value. package=' . $package;
+
+        //if ($vendor == 'nesbot' && $package == 'carbon') {
+
+        if (preg_match('/' . DOMAIN_EXPR . '/', packagist_return_source($vendor, $package), $matches))
+$raw_url = $initial_url = $matches[0];
+        else $raw_url = '';
+    
+        if (!is_file(APP_BASE['var'].'package-' . $vendor . '-' . $package . '.php')) {
+
+        $source_blob = (check_http_200($raw_url) ? file_get_contents($raw_url) : '' );
+    
+        //dd('url: ' . $raw_url);
+        $raw_url = addslashes($raw_url);
+
+        $source_blob = addslashes(COMPOSER_JSON['json']); // $source_blob
+        file_put_contents(APP_BASE['var'].'package-' . $vendor . '-' . $package . '.php', '<?php' . "\n" . ( check_http_200($raw_url) ? '$source = "' . $raw_url . '";' : '' ) . "\n" . 
+<<<END
+\$composer_json = "{$source_blob}";
+return '<form action method="POST">'
+. '...'
+. '</form>';
+END
+);
+
+        if (isset($_POST['composer']['install'])) {
+          exec('sudo composer require ' . $_POST['composer']['package'], $output, $returnCode) or $errors['COMPOSER-REQUIRE'] = $output;
+        }
+
+      }
+    }
+    exit(header('Location: ' . APP_URL_BASE . '?' . http_build_query(APP_QUERY))); // , '', '&amp;'
+    //}
+
+  }
+
+  
     if (isset($_POST['composer']['config'])) {
       $composer = new composerSchema;
 
@@ -1397,7 +1472,29 @@ ob_start(); ?>
 
   <link rel="stylesheet" href="//code.jquery.com/ui/1.12.1/themes/smoothness/jquery-ui.css" />
 
-<script src="https://cdn.tailwindcss.com"></script>
+<?php
+// (check_http_200('https://cdn.tailwindcss.com') ? 'https://cdn.tailwindcss.com' : APP_WWW . 'resources/js/tailwindcss-3.3.5.js')?
+is_dir($path = APP_PATH . APP_BASE['resources'] . 'js/') or mkdir($path, 0755, true);
+if (is_file($path . 'tailwindcss-3.3.5.js')) {
+  if (ceil(abs((strtotime(date('Y-m-d')) - strtotime(date('Y-m-d',strtotime('+5 days',filemtime($path . 'tailwindcss-3.3.5.js'))))) / 86400)) <= 0 ) {
+    $url = 'https://cdn.tailwindcss.com';
+    $handle = curl_init($url);
+    curl_setopt($handle, CURLOPT_RETURNTRANSFER, true);
+
+    if (!empty($js = curl_exec($handle))) 
+      file_put_contents($path . 'tailwindcss-3.3.5.js', $js) or $errors['JS-TAILWIND'] = $url . ' returned empty.';
+  }
+} else {
+  $url = 'https://cdn.tailwindcss.com';
+  $handle = curl_init($url);
+  curl_setopt($handle, CURLOPT_RETURNTRANSFER, true);
+
+  if (!empty($js = curl_exec($handle))) 
+    file_put_contents($path . 'tailwindcss-3.3.5.js', $js) or $errors['JS-TAILWIND'] = $url . ' returned empty.';
+}
+?>
+
+  <script src="<?= 'resources/js/tailwindcss-3.3.5.js' ?? $url ?>"></script>
 
 <style type="text/tailwindcss">
 <?= $appComposer['style']; ?>
