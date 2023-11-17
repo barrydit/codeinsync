@@ -8,13 +8,13 @@
 /vendor
 /var/*.php
 /var/reels/
-error_log
 .env.*
-*.old
 .htaccess
+*.old
 composer.lock
 composer.phar
 composer-setup.php
+error_log
 main.js
 notes.txt
 package-lock.json
