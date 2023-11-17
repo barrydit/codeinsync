@@ -31,14 +31,15 @@ die();
 
 
 // composer create-project [PACKAGE] [DESTINATION PATH] [--FLAGS]
+//composer create-project laravel/laravel example-app
+
+
+//cd example-app
+
+//php artisan serve
 
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 
-  if (isset($_POST['create-project']) && preg_match(COMPOSER_EXPR_NAME, $_POST['create-project']['package'], $matches))
-    if ($matches[1] == 'laravel' && $matches[2] == 'project')  
-      exec('sudo composer create-project ' . $_POST['create-project']['package'] . ' /project/laravel', $output, $returnCode) or $errors['COMPOSER-CREATE-PROJECT'] = $output;
-    elseif ($matches[1] == 'symfony' && $matches[2] == 'project')  
-      exec('sudo composer create-project ' . $_POST['create-project']['package'] . ' /project/smyfony', $output, $returnCode) or $errors['COMPOSER-CREATE-PROJECT'] = $output;
 /*
 
 Workflows and Projects
@@ -92,14 +93,17 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 
   // consider creating a visual aspect for the lock file
 
-  if (!empty($_POST['composer'])) {
+  if (isset($_POST['composer']['create-project']) && preg_match(COMPOSER_EXPR_NAME, $_POST['composer']['package'], $matches)) {
+    if (!is_dir($path = APP_PATH . 'project'))
+      (@!mkdir($path, 0755, true) ?: $errors['COMPOSER-PROJECT'] = 'project/ could not be created.' );
+    if ($matches[1] == 'laravel' && $matches[2] == 'laravel')  
+      exec('sudo composer create-project ' . $_POST['composer']['package'] . ' project/laravel', $output, $returnCode) or $errors['COMPOSER-PROJECT-LARAVEL'] = $output;
+    elseif ($matches[1] == 'symfony' && $matches[2] == 'skeleton')  
+      exec('sudo composer create-project ' . $_POST['composer']['package'] . ' project/symfony', $output, $returnCode) or $errors['COMPOSER-PROJECT-SYMFONY'] = $output;
 
-    if (isset($_POST['composer']['package'])) {
-
-    //dd($_POST['package']);
-
-      if (preg_match(COMPOSER_EXPR_NAME, $_POST['composer']['package'])) {
-
+    unset($_POST['composer']['package']);
+    unset($_POST['composer']['create-project']);
+  } elseif (isset($_POST['composer']['package']) && preg_match(COMPOSER_EXPR_NAME, $_POST['composer']['package'])) {
         list($vendor, $package) = explode('/', $_POST['composer']['package']);
 
         if (empty($vendor))
@@ -115,13 +119,13 @@ $raw_url = $initial_url = $matches[0];
     
         if (!is_file(APP_BASE['var'].'package-' . $vendor . '-' . $package . '.php')) {
 
-        $source_blob = (check_http_200($raw_url) ? file_get_contents($raw_url) : '' );
+          $source_blob = (check_http_200($raw_url) ? file_get_contents($raw_url) : '' );
     
-        //dd('url: ' . $raw_url);
-        $raw_url = addslashes($raw_url);
+          //dd('url: ' . $raw_url);
+          $raw_url = addslashes($raw_url);
 
-        $source_blob = addslashes(COMPOSER_JSON['json']); // $source_blob
-        file_put_contents(APP_BASE['var'].'package-' . $vendor . '-' . $package . '.php', '<?php' . "\n" . ( check_http_200($raw_url) ? '$source = "' . $raw_url . '";' : '' ) . "\n" . 
+          $source_blob = addslashes(COMPOSER_JSON['json']); // $source_blob
+          file_put_contents(APP_BASE['var'].'package-' . $vendor . '-' . $package . '.php', '<?php' . "\n" . ( check_http_200($raw_url) ? '$source = "' . $raw_url . '";' : '' ) . "\n" . 
 <<<END
 \$composer_json = "{$source_blob}";
 return '<form action method="POST">'
@@ -130,19 +134,14 @@ return '<form action method="POST">'
 END
 );
 
-        if (isset($_POST['composer']['install'])) {
-          exec('sudo composer require ' . $_POST['composer']['package'], $output, $returnCode) or $errors['COMPOSER-REQUIRE'] = $output;
-        }
+          if (isset($_POST['composer']['install'])) {
+            exec('sudo composer require ' . $_POST['composer']['package'], $output, $returnCode) or $errors['COMPOSER-REQUIRE'] = $output;
+          }
 
-      }
-    }
-    exit(header('Location: ' . APP_URL_BASE . '?' . http_build_query(APP_QUERY))); // , '', '&amp;'
-    //}
+      exit(header('Location: ' . APP_URL_BASE . '?' . http_build_query(APP_QUERY))); // , '', '&amp;'
+      //}
 
-  }
-
-  
-    if (isset($_POST['composer']['config'])) {
+    } elseif (isset($_POST['composer']['config']) && !empty($_POST['composer']['config'])) {
       $composer = new composerSchema;
 
 /*
@@ -471,11 +470,12 @@ ob_start(); ?>
 
       <div class="absolute" style="position: absolute; bottom: 40px; left: 0; right: 0; width: 100%; text-align: center; z-index: 1; ">
       <form action="#!" method="POST">
-        <input type="hidden" name="create-project" value="" />
+        <input type="hidden" name="composer[create-project]" value="" />
         <span style="">composer</span>
-        <select name="create-project[package]" onchange="this.form.submit();">
+        <select name="composer[package]" onchange="this.form.submit();">
           <option >create-project</option>
-          <option value="laravel/project">laravel/project</option>
+          <option value="laravel/laravel">laravel/laravel</option>
+          <option value="symfony/skeleton">symfony/skeleton</option>
         </select>
         <span>/public/*</span>
       </form>

@@ -448,7 +448,7 @@ if (isset($_GET['path'])) { ?>
         <!-- <input type="hidden" name="path" value="<?= $_GET['path']; ?>" /> -->
 <?php } ?>
 
-<?php echo '<a href="' . (APP_URL['query'] != '' ? '?' . APP_URL['query'] : '') . (isset($_GET['path']) && $_GET['path'] != '' ? parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH) : (APP_ENV == 'development' ? '#!' : '') ) . '"><span title="' . $path . '" style="cursor: pointer;" onclick="document.getElementById(\'app_directory-container\').style.display=\'block\';"><button id="displayDirectoryBtn" style="float: left; margin: 2px 5px 0 0;" type="submit">&#9660;</button> ' . (isset($_GET['project']) ? '/project/' : parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH)) . (isset($_GET['path']) && $_GET['path'] === '' ? '' : (!isset($_GET['path']) ? '' : basename($_GET['path']) . '/')) . '</span></a>'; /* $path; */ ?>
+<?php echo '<button id="displayDirectoryBtn" style="float: left; margin: 2px 5px 0 0;" type="">&#9660;</button><a href="' . (APP_URL['query'] != '' ? '?' . APP_URL['query'] : '') . (isset($_GET['path']) && $_GET['path'] != '' ? parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH) : (APP_ENV == 'development' ? '#!' : '') ) . '"><span title="' . $path . '" style="cursor: pointer;" onclick="document.getElementById(\'app_directory-container\').style.display=\'block\';">' . (isset($_GET['project']) ? '/project/' : parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH)) . (isset($_GET['path']) && $_GET['path'] === '' ? '' : (!isset($_GET['path']) ? '' : basename($_GET['path']) . '/')) . '</span></a>'; /* $path; */ ?>
 
 <select name="path" onchange="this.form.submit();">
   <option value="">.</option>
@@ -1181,6 +1181,7 @@ const appDirectoryContainer = document.getElementById('app_directory-container')
 const displayDirectoryBtn = document.getElementById('displayDirectoryBtn');
 
 displayDirectoryBtn.addEventListener('click', () => {
+  event.preventDefault();
   if (appDirectoryContainer.style.display == 'block') {
   $( '#app_directory-container' ).slideUp( "slow", function() {
       // Animation complete.
@@ -1241,7 +1242,20 @@ function executeFunctionOnKeyPress(event) {
 }
 
 // Attach the event listener to the window object
-window.addEventListener('keydown', show_console);
+window.addEventListener('keydown', function() {
+        // Check the condition before calling the show_console function
+        //if (myDiv.style.position !== 'fixed')
+        if (  document.getElementById('app_console-container').style.position != 'absolute') {
+          console.log('test 123');
+          if (isFixed)
+            requestInput.focus();
+          show_console();
+        } else {
+        if (isFixed) isFixed = !isFixed;
+        isFixed = true;
+            show_console();
+        }
+    });
 
 <?= $appComposer['script']; ?>
 

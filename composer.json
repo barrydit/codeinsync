@@ -5,7 +5,8 @@
     "homepage": "https://github.com/barrydit/www",
     "require": {
         "php": "^7.4||^8.0",
-        "composer/composer": "^1.0"
+        "composer/composer": "^1.0",
+        "aura/session": "4.x-dev"
     },
     "require-dev": {
         "pds/skeleton": "^1.0"

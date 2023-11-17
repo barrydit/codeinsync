@@ -37,7 +37,7 @@ $proc=proc_open('sudo ' . COMPOSER_EXEC['bin'] . ' ' . $match[1],
 
         } else if (preg_match('/^git\s+(:?(.*))/i', $_POST['cmd'], $match)) {
         
-          if (preg_match('/^git\s+(help)(?:\s+)/i', $_POST['cmd'])) {
+          if (preg_match('/^git\s+(help)(:?\s+)?/i', $_POST['cmd'])) {
           
             $output[] = <<<END
 git reset filename   (unstage a specific file)
@@ -51,7 +51,7 @@ git commit -am "Default message"
 
 git checkout -b branchName
 END;
-          } else {
+          } //else {
         
           $output[] = 'sudo ' . GIT_EXEC . ' ' . $match[1];
 $proc=proc_open('sudo ' . GIT_EXEC . ' ' . $match[1],
@@ -62,7 +62,10 @@ $proc=proc_open('sudo ' . GIT_EXEC . ' ' . $match[1],
   ),
   $pipes);
   
-          }
+            list($stdout, $stderr, $exitCode) = [stream_get_contents($pipes[1]), stream_get_contents($pipes[2]), proc_close($proc)];
+          $output[] = (!isset($stdout) ? NULL : $stdout . (isset($stderr) && $stderr === '' ? NULL : (preg_match('/^To\s' . DOMAIN_EXPR . '/', $stderr) ? $stderr : 'Error: ' . $stderr) ) . (isset($exitCode) && $exitCode == 0 ? NULL : 'Exit Code: ' . $exitCode));
+          //$output[] = $_POST['cmd'];
+          //}
   
 /*
  Error: To https://github.com/barrydit/composer_app.git
@@ -73,9 +76,7 @@ $proc=proc_open('sudo ' . GIT_EXEC . ' ' . $match[1],
    
 */
   // 
-          list($stdout, $stderr, $exitCode) = [stream_get_contents($pipes[1]), stream_get_contents($pipes[2]), proc_close($proc)];
-          $output[] = (!isset($stdout) ? NULL : $stdout . (isset($stderr) && $stderr === '' ? NULL : (preg_match('/^To\s' . DOMAIN_EXPR . '/', $stderr) ? $stderr : 'Error: ' . $stderr) ) . (isset($exitCode) && $exitCode == 0 ? NULL : 'Exit Code: ' . $exitCode));
-          //$output[] = $_POST['cmd'];
+
 
         } else if (preg_match('/^npm\s+(:?(.*))/i', $_POST['cmd'], $match)) {
           $output[] = 'sudo ' . NPM_EXEC . ' ' . $match[1];
@@ -159,7 +160,7 @@ background-color: lightblue;
 }
 
 /* Styles for the absolute div */
-.consoleContainer {
+.app_console-container {
 position: fixed;
 bottom: 62px;
 left: 50%;
@@ -192,7 +193,7 @@ ob_start(); ?>
 
 <!-- <div class="container" style="border: 1px solid #000;"> -->
 
-<div id="myDiv" class="consoleContainer">
+<div id="myDiv" class="app_console-container">
     <div style="text-align: left; position: relative;">
     
         <div style="display: inline-block; margin: 5px; ">
@@ -278,6 +279,8 @@ changePositionBtn.addEventListener('click', () => {
 function show_console(event) {
       
     const myDiv = document.getElementById('myDiv');
+
+    //requestInput.focus();
     
     if (typeof event !== 'undefined')
         if (event.key === '`' || event.keyCode === 192) // c||67
@@ -363,10 +366,11 @@ function show_console(event) {
     requestInput.addEventListener('focus', function() {
         // Check the condition before calling the show_console function
         //if (myDiv.style.position !== 'fixed')
-        if (  document.getElementById('consoleContainer').style.position != 'absolute') {
+        if (  document.getElementById('app_console-container').style.position != 'absolute') {
           console.log('test 123');
           if (isFixed)
             requestInput.focus();
+          show_console();
         } else {
         if (isFixed) isFixed = !isFixed;
         isFixed = true;

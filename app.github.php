@@ -264,6 +264,8 @@ $dom = new DOMDocument(1.0, 'utf-8');
 $dom->loadHTML(file_get_contents(check_http_200('https://github.com/barrydit/composer_app') ? 'https://github.com/barrydit/composer_app' : APP_PATH . APP_BASE['var'] . 'github.com.html'), LIBXML_HTML_NOIMPLIED | LIBXML_HTML_NODEFDTD );   
 $xpath = new DOMXPath($dom);
 
+// https://stackoverflow.com/questions/27358966/how-can-i-set-x-frame-options-on-an-iframe
+
 //header('Content-Type: application/json');
 header('Access-Control-Allow-Origin: *');
 header('Access-Control-Allow-Methods: GET, OPTIONS');
