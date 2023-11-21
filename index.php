@@ -15,7 +15,6 @@ DOMAIN
 dd(parse_url($_SERVER['REQUEST_URI'], PHP_URL_HOST));
 */
 
-
 if ($path = (basename(getcwd()) == 'public')
     ? (is_file('app.timesheet.php') ? 'app.timesheet.php' : (is_file('../app.timesheet.php') ? '../app.timesheet.php' : (is_file('../config/app.timesheet.php') ? '../config/app.timesheet.php' : 'public/app.timesheet.php')))
     : (is_file('../app.timesheet.php') ? '../app.timesheet.php' : (is_file('public/app.timesheet.php') ? 'public/app.timesheet.php' : (is_file('config/app.timesheet.php') ? 'config/app.timesheet.php' : 'app.timesheet.php'))))
@@ -1018,14 +1017,17 @@ if (!empty($paths))
 
           if (basename($path) == 'composer.json')
             echo '<div style="position: relative;"><img src="resources/images/composer_json_file.gif" width="40" height="50" /><br />' . basename($path)
-          . (isset($errors['COMPOSER-VALIDATE-JSON']) ? '<div style="position: absolute; right: 8px; bottom: -6px; color: red; font-weight: bold;">[1]</div>' : '' )
+          . (isset($errors['COMPOSER-VALIDATE-JSON']) ? '<div style="position: absolute; right: 8px; top: -6px; color: red; font-weight: bold;">[1]</div>' : '' )
           . '</a></div>' . "\n";
 
           elseif (basename($path) == 'composer.lock')
+          
+            //$errors['COMPOSER-VALIDATE-LOCK']
+           
             echo '<div style="position: relative;"><img src="resources/images/composer_lock_file.gif" width="40" height="50" /><br />' . basename($path)
-            . (isset($errors['COMPOSER-VALIDATE-LOCK']) ? '<div style="position: absolute; right: 8px; bottom: -6px; color: red; font-weight: bold;">[1]</div>' : '' )
+            . (isset($errors['COMPOSER-VALIDATE-LOCK']) ? '<div style="position: absolute; right: 8px; top: -6px; color: red; font-weight: bold;">[1]</div>' : '' )
 /*            . (is_readable($path = ini_get('error_log')) && filesize($path) > 0 ? '<div style="position: absolute; right: 8px; bottom: -6px; color: red; font-weight: bold;">[1]</div>' : '' ) */
-          . '</a></div>' . "\n";
+            . '</a></div>' . "\n";
 
           elseif (basename($path) == 'composer.phar')
             echo '<div style="position: relative;"><img src="resources/images/phar_file.png" width="40" height="50" /><br />' . basename($path)

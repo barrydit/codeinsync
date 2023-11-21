@@ -728,27 +728,34 @@ if (!empty(array_diff($vendors, $dirs_diff)) ) {
 
 }
   // https://getcomposer.org/doc/03-cli.md
-  $proc = proc_open('sudo ' . COMPOSER_EXEC['bin'] . ' validate --no-check-all --no-check-publish --no-check-version', array( array("pipe","r"), array("pipe","w"), array("pipe","w")), $pipes); // $output = shell_exec("cd " . escapeshellarg(dirname(COMPOSER_JSON['path'])) . " && " . 'sudo ' . COMPOSER_EXEC . ' validate --no-check-all --no-check-publish --no-check-version');  dd($output);
+  $proc = proc_open('sudo ' . COMPOSER_EXEC['bin'] . ' validate --no-check-all --no-check-publish --no-check-version --strict', array( array("pipe","r"), array("pipe","w"), array("pipe","w")), $pipes); // $output = shell_exec("cd " . escapeshellarg(dirname(COMPOSER_JSON['path'])) . " && " . 'sudo ' . COMPOSER_EXEC . ' validate --no-check-all --no-check-publish --no-check-version');  dd($output);
 
   //  "./composer.json" does not match the expected JSON schema:  
   //  - NULL value found, but an object is required
-  
+
   // poss. err './composer.json is valid but your composer.lock has some errors'   checks composer.lock
 
   list($stdout, $stderr, $exitCode) = [stream_get_contents($pipes[1]), stream_get_contents($pipes[2]), proc_close($proc)];
 
-  if ($exitCode !== 0)
-    if (empty($stdout)) {
-      if (!empty($stderr)) {
-        if (preg_match('/\s+\"\.\/composer\.json\" does not match the expected JSON schema:/', $stderr))
-          $errors['COMPOSER-VALIDATE-JSON'] = true; //'$stdout is empty. $stderr = ' . $stderr;
+  if ($exitCode !== 0) {
+    if (!empty($stdout)) {
+      $errors['COMPOSER-VALIDATE'] = $stdout;
+
+      if (preg_match('/(?:\s*)?\"\.\/composer\.json\" does not match the expected JSON schema:/', $stdout))
+        $errors['COMPOSER-VALIDATE-JSON'] = false; //'$stdout is empty. $stderr = ' . $stderr;
       
-        if (preg_match('/\s+\"\.\/composer\.json\" is valid but your composer.lock has some errors/', $stderr))
-          $errors['COMPOSER-VALIDATE-LOCK'] = true; //'$stdout is empty. $stderr = ' . $stderr;
-      }
+      if (preg_match('/(?:\s*)?\.\/composer\.json is valid but your composer.lock has some errors/', $stdout)) // took off \"\"
+        $errors['COMPOSER-VALIDATE-LOCK'] = false; //'$stdout is empty. $stderr = ' . $stderr;
+    }
 
-    } else $errors['COMPOSER-VALIDATE'] = $stdout;
+    if (!empty($stderr)) {
+      $errors['COMPOSER-VALIDATE-ERR'] = $stderr;
 
+      if (preg_match('/(?:\s*)?\"\.\/composer\.json\" does not contain valid JSON/', $stderr))
+        $errors['COMPOSER-VALIDATE-JSON'] = false; //'$stdout is empty. $stderr = ' . $stderr;
+    }
+    //dd($errors);
+  }
 //if (strpos($output, 'No errors or warnings detected') !== false)
 //Deprecated:  strpos(): Passing null to parameter #1 ($haystack) of type string is deprecated
 
@@ -756,12 +763,10 @@ if (!empty(array_diff($vendors, $dirs_diff)) ) {
 defined('COMPOSER_JSON')
     and define('COMPOSER', json_decode(file_get_contents(COMPOSER_JSON['path'])));
 
-
 if (isset(COMPOSER->{'require'}) && !empty(COMPOSER->{'require'}))
 foreach (COMPOSER->require as $key => $value) {
-  if ($key == 'php') {
-
-  } else {
+  if ($key == 'php') continue;
+  else {
     if (isset(COMPOSER->require->{'composer/composer'}) && $value === COMPOSER->require->{'composer/composer'}) {
         //echo "The key is: $key";
     defined('VENDOR_JSON')
@@ -783,12 +788,12 @@ defined('VENDOR_JSON')
   }
 }
 
-defined('VENDOR_JSON')
-      or define('VENDOR_JSON', ['json' => (is_file(APP_PATH . 'vendor/' . $key . '/composer.json') ? file_get_contents(APP_PATH .'vendor/' . $key . '/composer.json') : '{}'), 'path' => APP_PATH . 'vendor/' . $key . '/composer.json']);
+if (!defined('VENDOR_JSON') && isset(COMPOSER->{'require'}[1]))
+  define('VENDOR_JSON', ['json' => (is_file(APP_PATH . 'vendor/' . COMPOSER->{'require'}[1] . '/composer.json') ? file_get_contents(APP_PATH .'vendor/' . COMPOSER->{'require'}[1] . '/composer.json') : '{}'), 'path' => APP_PATH . 'vendor/' . COMPOSER->{'require'}[1] . '/composer.json']);
 
-
-
-//dd(VENDOR);
+//dd(COMPOSER);
+//dd(COMPOSER);
+//dd(VENDOR_JSON['path']);
 
   //else $errors['COMPOSER-VALIDATE'] = $output;
 

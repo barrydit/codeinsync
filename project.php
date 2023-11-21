@@ -1,11 +1,30 @@
 <?php
 
+
 //use Pds\Skeleton;
 if (__FILE__ == get_required_files()[0])
   if ($path = (basename(getcwd()) == 'public')
     ? (is_file('../config.php') ? '../config.php' : (is_file('../config/config.php') ? '../config/config.php' : null))
     : (is_file('config.php') ? 'config.php' : (is_file('config/config.php') ? 'config/config.php' : null))) require_once($path);
 else die(var_dump($path . ' path was not found. file=config.php'));
+
+/*
+function nl2p(string $string, $line_breaks = true, $xml = true)
+{
+    $string = str_replace(array('<p>', '</p>', '<br>', '<br />'), '', $string);
+    if ($line_breaks == true) {
+        return '<p>' . preg_replace(array("/([\n]{2,})/i", "/([^>])\n([^<])/i"), array("</p>\n<p>", '$1<br' . ($xml == true ? ' /' : '') . '>$2'), trim($string)) . '</p>';
+    } else {
+        return '<p>' . preg_replace(
+                array("/([\n]{2,})/i", "/([\r\n]{3,})/i", "/([^>])\n([^<])/i"),
+                array("</p>\n<p>", "</p>\n<p>", '$1<br' . ($xml == true ? ' /' : '') . '>$2'),
+
+                trim($string)) . '</p>';
+    }
+}
+
+dd(nl2p("\n\n" . 'testing'));
+*/
 
 
 require_once 'vendor/autoload.php';

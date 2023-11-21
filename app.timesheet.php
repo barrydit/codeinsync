@@ -1032,13 +1032,13 @@ function clockIncrement() {
     var time = new Date().toLocaleTimeString('en-US', { hour: '2-digit', hour12: true, minute: '2-digit', second: '2-digit'});
     var clocktime = document.getElementById('clockTime');
     var weekday=new Array(7);
-    weekday[0]="Mon,";
-    weekday[1]="Tues,";
-    weekday[2]="Wed,";
-    weekday[3]="Thurs,";
-    weekday[4]="Fri,";
-    weekday[5]="Sat,";
-    weekday[6]="Sun,";
+    weekday[0]="Sun,";
+    weekday[1]="Mon,";
+    weekday[2]="Tues,";
+    weekday[3]="Wed,";
+    weekday[4]="Thurs,";
+    weekday[5]="Fri,";
+    weekday[6]="Sat,";
     
     
     clocktime.innerHTML = '<i style="color: green;">' + weekday[date.getDay()] + '  ' + time + '  ' + month + ' ' + date.getDate() + ' ' + date.getFullYear()  + '</i>';

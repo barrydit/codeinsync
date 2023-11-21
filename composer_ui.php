@@ -136,6 +136,7 @@ END
 
           if (isset($_POST['composer']['install'])) {
             exec('sudo composer require ' . $_POST['composer']['package'], $output, $returnCode) or $errors['COMPOSER-REQUIRE'] = $output;
+            exec('sudo composer update ' . $_POST['composer']['package'], $output, $returnCode) or $errors['COMPOSER-UPDATE'] = $output;
           }
 
       exit(header('Location: ' . APP_URL_BASE . '?' . http_build_query(APP_QUERY))); // , '', '&amp;'
@@ -461,9 +462,14 @@ ob_start(); ?>
         </div>
         <div style="clear: both;"></div>
       </div>
+      <div class="absolute" style="position: absolute; top: 50px; right: 0; margin: 0 auto; width: 200px; background-color: #FFF; text-align: right;">
+        <form action="?" method="POST">
+          <input type="hidden" name="update" value="" />Composer.lock requires an <button type="submit" style="border: 1px solid #000; z-index: 3;">Update</button>
+        </form>
+      </div>
       <div class="absolute" style="position: absolute; margin: 0px auto; text-align: center; height: 275px; width: 100%; background-repeat: no-repeat; <?= (version_compare(COMPOSER_LATEST, COMPOSER_VERSION, '>') != 0 ? "background-image: url('https://editablegifs.com/gifs/gifs/fireworks-1/output.gif?egv=3258')" : '') ?> ;">
       </div>
-      
+
       <div class="absolute" style="position: absolute; top: 0; left: 0; right: 0; margin: 10px auto; opacity: 1.0; text-align: center; cursor: pointer; z-index: 1;">
         <img class="<?= (version_compare(COMPOSER_LATEST, COMPOSER_VERSION, '>') != 0 ? 'composer-update' : 'composer-menu') ?>" src="resources/images/composer.fw.png" style="margin-top: 45px;" width="150" height="198" />
       </div>
@@ -590,7 +596,7 @@ ob_end_clean(); ?>
       <div style="position: relative; display: inline-block; width: 100%; background-color: rgb(225,196,151,.25); z-index: 1;">
         <div class="text-sm" style="display: inline;">
           <!-- <input id="composerJson" type="checkbox" style="cursor: pointer;" name="composerJson" value="true" checked=""> -->
-          <label for="composerJson" id="appComposerAuthLabel" title="<?= COMPOSER_AUTH['path'] ?>" style="background-color: #6B4329; <?= (defined('COMPOSER_JSON') && realpath(COMPOSER_AUTH['path']) ? 'color: #F0E0C6; text-decoration: underline; ' : 'color: red; text-decoration: underline; text-decoration: line-through;') ?> cursor: pointer; font-weight: bold;" title="<?= (defined('COMPOSER_AUTH') && realpath(COMPOSER_AUTH['path']) ? COMPOSER_AUTH['path'] : COMPOSER_AUTH['path']) /*NULL*/;?>">&#9660; <code>COMPOSER_HOME/auth.json</code></label>
+          <label for="composerJson" id="appComposerAuthLabel" title="<?= (defined('COMPOSER_AUTH') && realpath(COMPOSER_AUTH['path']) ? COMPOSER_AUTH['path'] : COMPOSER_AUTH['path']) /*NULL*/;?>" style="background-color: #6B4329; <?= (defined('COMPOSER_JSON') && realpath(COMPOSER_AUTH['path']) ? 'color: #F0E0C6; text-decoration: underline; ' : 'color: red; text-decoration: underline; text-decoration: line-through;') ?> cursor: pointer; font-weight: bold;">&#9660; <code>COMPOSER_HOME/auth.json</code></label>
         </div>
       </div>
       <div id="appComposerAuthJsonForm" style="display: none; padding: 10px; background-color: rgb(235,216,186,.80); border: 1px dashed #0078D7;">
@@ -605,7 +611,7 @@ ob_end_clean(); ?>
       <div style="position: relative; display: inline-block; width: 100%; background-color: rgb(225,196,151,.25); z-index: 1;">
         <div class="text-sm" style="display: inline;">
           <!-- <input id="composerJson" type="checkbox" style="cursor: pointer;" name="composerJson" value="true" checked=""> -->
-          <label for="composerJson" id="appComposerConfigLabel" title="<?= COMPOSER_CONFIG['path'] ?>" style="background-color: #6B4329; <?= (defined('COMPOSER_CONFIG') && realpath(COMPOSER_CONFIG['path']) ? 'color: #F0E0C6; text-decoration: underline; ' : 'color: red; text-decoration: underline; text-decoration: line-through;') ?> cursor: pointer; font-weight: bold;" title="<?= (defined('COMPOSER_CONFIG') && realpath(COMPOSER_CONFIG['path']) ? COMPOSER_CONFIG['path'] : COMPOSER_CONFIG['path']) /*NULL*/;?>">&#9660; <code>COMPOSER_HOME/config.json</code></label>
+          <label for="composerJson" id="appComposerConfigLabel" title="<?= (defined('COMPOSER_CONFIG') && realpath(COMPOSER_CONFIG['path']) ? COMPOSER_CONFIG['path'] : COMPOSER_CONFIG['path']) /*NULL*/;?>" style="background-color: #6B4329; <?= (defined('COMPOSER_CONFIG') && realpath(COMPOSER_CONFIG['path']) ? 'color: #F0E0C6; text-decoration: underline; ' : 'color: red; text-decoration: underline; text-decoration: line-through;') ?> cursor: pointer; font-weight: bold;" >&#9660; <code>COMPOSER_HOME/config.json</code></label>
         </div>
       </div>
       <div id="appComposerConfigJsonForm" style="display: none; padding: 10px; background-color: rgb(235,216,186,.80); border: 1px dashed #0078D7;">
@@ -627,7 +633,7 @@ ob_end_clean(); ?>
 <?php //if (defined('COMPOSER_JSON')) $composer = json_decode(COMPOSER_JSON['json']); ?>
         <div class="text-sm" style="display: inline;">
           <!-- <input id="composerJson" type="checkbox" style="cursor: pointer;" name="" value="true" checked=""> -->
-          <label for="composerJson" id="appComposerVendorJsonLabel" class="text-sm" style="background-color: #6B4329; <?= (defined('VENDOR_JSON') && realpath(VENDOR_JSON['path']) ? 'color: #F0E0C6; text-decoration: underline; ' : 'color:red; text-decoration: underline; text-decoration: line-through;') ?> cursor: pointer; font-weight: bold;" title="<?= (defined('VENDOR_JSON') && realpath(VENDOR_JSON['path']) ? VENDOR_JSON['path'] : VENDOR_JSON['path']) /*NULL*/; ?>">&#9650; <code>COMPOSER_PATH/[vendor/*].json</code></label>
+          <label for="composerJson" id="appComposerVendorJsonLabel" class="text-sm" style="background-color: #6B4329; <?= (defined('VENDOR_JSON') && realpath(VENDOR_JSON['path']) ? 'color: #F0E0C6; text-decoration: underline; ' : 'color:red; text-decoration: underline; text-decoration: line-through;') ?> cursor: pointer; font-weight: bold;" title="<?= (defined('VENDOR_JSON') && realpath(VENDOR_JSON['path']) ? VENDOR_JSON['path'] : '') /*NULL*/; ?>">&#9650; <code>COMPOSER_PATH/[vendor/*].json</code></label>
           <div class="text-xs" style="display: <?= (!is_file(APP_PATH . 'composer.lock') ? 'none' : 'inline-block' )?>; padding-top: 5px; padding-right: 10px; float: right;"></div>
         </div>
       </div>
