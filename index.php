@@ -7,6 +7,13 @@ if ($path = (basename(getcwd()) == 'public')
     : (is_file('config.php') ? 'config.php' : (is_file('config/config.php') ? 'config/config.php' : null)))
     require_once($path); 
 else die(var_dump($path . ' was not found. file=config.php'));
+
+switch ($_SERVER['REQUEST_METHOD']) {
+  case 'POST':    
+    //dd($_POST);
+    break;
+}
+
 /*
 switch ($_SERVER['REQUEST_METHOD']) {
   case 'POST':    
@@ -1351,24 +1358,32 @@ require.config({
   }
 });
 */
+
+var globalEditor; // Define a global variable
+
     require.config({
       baseUrl: window.location.protocol + "//" + window.location.host
       + window.location.pathname.split("/").slice(0, -1).join("/"),
       paths: {
         ace: "resources/js/ace/src"
       }
-    })
-    define('testace', ['ace/ace'],
-        function(ace, langtools) {
-            console.log(langtools);
+    });
+    
+    define('testace', ['ace/ace'], function(ace) {
+            //console.log(langtools);
 
 <?= $appTextEditor['script']; ?>
             //require(["resources/js/requirejs/require-2.3.6!ace/ace"], function(e){
                 //editor.setValue(e);
             //})
-        }
-    );
-    require(['testace']);
+            
+        globalEditor = editor;
+        return editor;
+    });
+    
+    require(['testace'], function (editor) {
+        console.log(editor);
+    });
 
 
 /*

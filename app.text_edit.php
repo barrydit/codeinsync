@@ -16,7 +16,7 @@ else die(var_dump($path . ' path was not found. file=config.php'));
 
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 
-dd($_POST);
+//dd($_POST);
 
   if (isset($_GET['app']) && $_GET['app'] == 'text_editor')
     if (isset($_POST['path']) && isset($_GET['file']) && $path = realpath($_POST['path'] . $_GET['file']))
@@ -198,7 +198,7 @@ foreach (array_filter( glob($path . DIRECTORY_SEPARATOR . '*.php'), 'is_file') a
       <form style="position: relative; display: inline;" action="<?= APP_URL_BASE . '?' . http_build_query(APP_QUERY + array( 'app' => 'text_editor')) . (APP_ENV == 'development' ? '#!' : '') /* $c_or_p . '=' . (empty($_GET[$c_or_p]) ? '' : $$c_or_p->name) . '&amp;app=composer' */ ?>" method="POST">
         <input type="hidden" name="path" value="<?= APP_PATH /*. APP_BASE['public'];*/ ?>" />
         <div style="display: inline-block; width: auto; text-align: right; float: right;">
-          <input type="submit" value="Save" class="btn" style="margin: -5px 5px 5px 0;" onclick="document.getElementsByClassName('ace_text-input')[0].value = editor.getSession().getValue(); document.getElementsByClassName('ace_text-input')[0].name = 'editor';"/>
+          <input type="submit" value="Save" class="btn" style="margin: -5px 5px 5px 0;" onclick="document.getElementsByClassName('ace_text-input')[0].value = globalEditor.getSession().getValue(); document.getElementsByClassName('ace_text-input')[0].name = 'editor';"/>
         </div>
         <!-- A (<?= $path ?>) future note: keep ace-editor nice and tight ... no spaces, as it interferes with the content window. -->
 

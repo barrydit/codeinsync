@@ -10,7 +10,6 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
   if (isset($_GET['app']) && $_GET['app'] == 'php')
     if (isset($_POST['path']) && isset($_GET['filename']) && $path = realpath($_POST['path'] . $_GET['filename']))
       file_put_contents($path, $_POST['editor']);
-
 }
 
 ob_start();
@@ -111,16 +110,13 @@ ob_start(); ?>
 
     <div style="display: inline; float: right; z-index: 1000;">
 
-<input type="submit" name="save-submit" value="&nbsp;&nbsp;Save&nbsp;&nbsp;" style="background-color: white; cursor: pointer;" onclick="document.getElementsByClassName('ace_text-input')[0].value = editor.getSession().getValue(); document.getElementsByClassName('ace_text-input')[0].name = 'editor';" />
+<input type="submit" name="save-submit" value="&nbsp;&nbsp;Save&nbsp;&nbsp;" style="background-color: white; cursor: pointer;" onclick="document.getElementsByClassName('ace_text-input')[0].value = globalEditor.getSession().getValue(); document.getElementsByClassName('ace_text-input')[0].name = 'editor';" />
 
 </div>
 
     </div>
     
     <div id="second">
-<input type="hidden" name="test" value="123" />
-
-<textarea name="another_test">1234</textarea>
 
 <?php $path = realpath(getcwd() . (isset($_GET['path']) ? DIRECTORY_SEPARATOR . $_GET['path'] : '')) . DIRECTORY_SEPARATOR; ?>
 <div id="ace-editor" class="ace_editor" style="display: <?= (isset($_GET['file']) && isset($_GET['path']) && is_file($_GET['path'] . $_GET['file']) ? 'block': 'block')?>; width: 778px; height: 287px; z-index: 1;"><textarea name="contents" class="ace_text-input" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" style="opacity: 0; font-size: 1px; height: 1px; width: 1px; top: 28px; left: 86px;" wrap="off"><?= htmlsanitize(file_get_contents('project.php')) /*   'clientele/' . $_GET['client'] . '/' . $_GET['domain'] . '/' .  */ ?></textarea></div>

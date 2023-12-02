@@ -160,7 +160,7 @@ background-color: lightblue;
 }
 
 /* Styles for the absolute div */
-.app_console-container {
+#app_console-container {
 position: fixed;
 bottom: 62px;
 left: 50%;
@@ -193,7 +193,7 @@ ob_start(); ?>
 
 <!-- <div class="container" style="border: 1px solid #000;"> -->
 
-<div id="myDiv" class="app_console-container">
+<div id="app_console-container" class="">
     <div style="text-align: left; position: relative;">
     
         <div style="display: inline-block; margin: 5px; ">
@@ -253,11 +253,11 @@ ob_end_clean();
 
 ob_start(); ?>
 
-const myDiv = document.getElementById('myDiv');
+const consoleContainer = document.getElementById('app_console-container');
 //const reqInp = document.getElementById('requestInput');
 const respCon = document.getElementById('responseConsole');
     
-const styles = window.getComputedStyle(myDiv);
+const styles = window.getComputedStyle(consoleContainer);
 const changePositionBtn = document.getElementById('changePositionBtn');
 
 const initSubmit = document.getElementById('app_composer-init-submit');
@@ -266,7 +266,7 @@ let isFixed = false; // Store the current position state
 var requestInput = document.getElementById('requestInput');
 
 changePositionBtn.addEventListener('click', () => {
-  if (myDiv.style.position == 'fixed') {
+  if (consoleContainer.style.position == 'fixed') {
       isFixed = !isFixed;
       changePositionBtn.innerHTML = '&#9650;';
   } else {
@@ -278,7 +278,7 @@ changePositionBtn.addEventListener('click', () => {
 
 function show_console(event) {
       
-    const myDiv = document.getElementById('myDiv');
+    const consoleContainer = document.getElementById('app_console-container');
 
     //requestInput.focus();
     
@@ -324,34 +324,34 @@ function show_console(event) {
   if (isFixed) {
 
     // If it's currently fixed, change back to absolute
-    myDiv.style.position = 'absolute';
-    myDiv.style.top = '';
-    myDiv.style.left = '50%';
-    myDiv.style.right = '';
-    myDiv.style.bottom = '30px';
-    myDiv.style.transform = 'translate(-50%, -50%)';
-    myDiv.style.textAlign = 'center';
-    myDiv.style.zIndex = '999';
+    consoleContainer.style.position = 'absolute';
+    consoleContainer.style.top = '';
+    consoleContainer.style.left = '50%';
+    consoleContainer.style.right = '';
+    consoleContainer.style.bottom = '30px';
+    consoleContainer.style.transform = 'translate(-50%, -50%)';
+    consoleContainer.style.textAlign = 'center';
+    consoleContainer.style.zIndex = '999';
 
     respCon.style.height = '60px';
 
     changePositionBtn.innerHTML = '&#9650;';
 
 /*
-    myDiv.style.marginLeft = 'auto';
-    myDiv.style.marginRight = 'auto';
-    myDiv.style.textAlign = 'center';
-    myDiv.style.transform = 'none';
+    consoleContainer.style.marginLeft = 'auto';
+    consoleContainer.style.marginRight = 'auto';
+    consoleContainer.style.textAlign = 'center';
+    consoleContainer.style.transform = 'none';
 */  
   } else {
 
     // If it's currently absolute, change to fixed
-    myDiv.style.position = 'fixed';
-    myDiv.style.top = '35%'; // Set the fixed position as needed
-    myDiv.style.left = '50%';
-    myDiv.style.bottom = '32px';
-    myDiv.style.transform = 'translate(-50%, -50%)';
-    myDiv.style.zIndex = '999';
+    consoleContainer.style.position = 'fixed';
+    consoleContainer.style.top = '35%'; // Set the fixed position as needed
+    consoleContainer.style.left = '50%';
+    consoleContainer.style.bottom = '32px';
+    consoleContainer.style.transform = 'translate(-50%, -50%)';
+    consoleContainer.style.zIndex = '999';
 
     respCon.style.height = '20%';
 
@@ -365,7 +365,7 @@ function show_console(event) {
 // Attach a focus event listener to the input element
     requestInput.addEventListener('focus', function() {
         // Check the condition before calling the show_console function
-        //if (myDiv.style.position !== 'fixed')
+        //if (consoleContainer.style.position !== 'fixed')
         if (  document.getElementById('app_console-container').style.position != 'absolute') {
           console.log('test 123');
           if (isFixed)
@@ -407,7 +407,7 @@ window.addEventListener('resize', () => {
  });
 
 
-//requestInput.addEventListener('focus', (myDiv.style.position == 'absolute' ? null : show_console()));
+//requestInput.addEventListener('focus', (consoleContainer.style.position == 'absolute' ? null : show_console()));
 
 $(document).ready(function() {
 
@@ -465,7 +465,7 @@ $(document).ready(function() {
   $('#consoleCls').on('click', function() {
     console.log('Button Clicked!');
     $('#responseConsole').val('$ >');
-    if ($('#myDiv').css('position') == 'absolute')
+    if ($('#app_console-container').css('position') == 'absolute')
       show_console();
   });
 
@@ -493,7 +493,7 @@ $(document).ready(function() {
     
     $('#requestInput').val(requestValue);
     $('#requestSubmit').click(); //show_console();
-    if ($('#myDiv').css('position') == 'absolute')
+    if ($('#app_console-container').css('position') == 'absolute')
       $('#changePositionBtn').click();
     $('#requestInput').val('');
   });
@@ -503,7 +503,7 @@ $(document).ready(function() {
     const autoClear = document.getElementById('app_text_editor-auto_clear').checked;
     console.log('autoClear is ' + autoClear);
     
-    if ($('#myDiv').css('position') == 'absolute') {
+    if ($('#app_console-container').css('position') == 'absolute') {
       show_console();
       //$('#changePositionBtn').click();
     }
