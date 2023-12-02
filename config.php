@@ -70,6 +70,54 @@ $ob_content = NULL;
 //var_dump(dirname(APP_SELF) . ' == ' . __DIR__);
 //dd(APP_PATH  . '  ' .  __DIR__);
 
+if (!realpath($path = 'CHANGELOG.md')) {
+  if (!is_file($path))
+    if (@touch($path))
+      file_put_contents($path, <<<END
+CHANGELOG
+END
+);
+}
+
+if (!realpath($path = 'CONTRIBUTING.md')) {
+  if (!is_file($path))
+    if (@touch($path))
+      file_put_contents($path, <<<END
+CONTRIBUTING
+END
+);
+}
+
+if (!realpath($path = 'LICENSE')) {
+  if (!is_file($path))
+    if (@touch($path))
+      file_put_contents($path, <<<END
+LICENSE
+END
+);
+}
+
+if (!realpath($path = 'README.md')) {
+  if (!is_file($path))
+    if (@touch($path))
+      file_put_contents($path, <<<END
+README
+END
+);
+}
+
+if (!realpath($path = 'docs/')) {
+  if (!mkdir($path, 0755, true))
+    $errors['DOCS'] = $path . ' does not exist';
+
+  if (!is_file('docs/getting-started.md'))
+    if (@touch('docs/getting-started.md'))   // https://github.com/auraphp/Aura.Session/docs/getting-started.md
+      file_put_contents('docs/getting-started.md', <<<END
+getting-started
+END
+);
+}
+
 if (!realpath($path = 'public/policies/')) {
   if (!mkdir($path, 0755, true))
     $errors['POLICIES'] = $path . ' does not exist';
@@ -173,6 +221,8 @@ ob_start();
 
 require('constants.php');
 
+if (APP_ENV == 'development') {
+
 if (is_readable($path = ini_get('error_log')) && filesize($path) > 0 ) {
   $errors['ERROR_LOG'] = shell_exec('sudo tail ' . $path);
   if (isset($_GET[$error_log = basename(ini_get('error_log'))]) && $_GET[$error_log] == 'unlink') {
@@ -180,13 +230,14 @@ if (is_readable($path = ini_get('error_log')) && filesize($path) > 0 ) {
     exit(header('Location: ' . APP_WWW));
   }
 }
-
+/**This Program Should be Disabled by default ... for debugging purposes only!**/
 if (isset($_GET['src']) && is_readable($path = $_GET['src']) && filesize($path) > 0 ) {
   Shutdown::setEnabled(false)->setShutdownMessage(function() use($path) {
-      return highlight_file($path); /* eval('?>' . $project_code); // -wow */
-    })->shutdown();
+    return highlight_file($path); /* eval('?>' . $project_code); // -wow */
+  })->shutdown();
 }
-
+/*****/
+}
 
 if (basename($dir = APP_PATH) != 'config') {
   if (in_array(basename($dir), ['public', 'public_html']))

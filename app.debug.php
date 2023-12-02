@@ -114,6 +114,7 @@ ob_end_clean();
 
 ob_start();
 $loaded_lines = 0;
+
 if ($total_lines != 0) {
     $percentage = abs(round((1 - $sql_lines / $total_lines) * 100 - 100, 2));
 } else {

@@ -1,11 +1,12 @@
 <?php
 
-function dd(mixed $param = null) {
-    Shutdown::setEnabled(false)->setShutdownMessage(function() use ($param) {
+function dd(mixed $param = null, $die = true) {
+    if ($die)
+      Shutdown::setEnabled(false)->setShutdownMessage(function() use ($param) {
         return '<pre><code>' . var_export($param, true) . '</code></pre>'; // var_dump
-    })->shutdown();
-
-    return $param; // If you want to return the parameter after printing it
+      })->shutdown();
+    else
+      return var_dump('<pre><code>' . var_export($param, true) . '</code></pre>'); // If you want to return the parameter after printing it
 }
 
 function check_http_200($url = 'http://8.8.8.8') {

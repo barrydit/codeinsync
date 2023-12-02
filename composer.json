@@ -6,7 +6,8 @@
     "require": {
         "php": "^7.4||^8.0",
         "composer/composer": "^1.0",
-        "aura/session": "^4.0"
+        "aura/session": "^4.0",
+        "laminas/laminas-session": "^2.5"
     },
     "require-dev": {
         "pds/skeleton": "^1.0"

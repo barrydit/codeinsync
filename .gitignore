@@ -7,7 +7,7 @@
 /project
 /vendor
 /var/*.php
-/var/reels/
+/resources/reels/
 .env.*
 .htaccess
 *.old

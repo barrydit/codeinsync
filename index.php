@@ -1,13 +1,43 @@
 <?php
 
+//die(var_dump($_POST));
+
 if ($path = (basename(getcwd()) == 'public')
     ? (is_file('../config.php') ? '../config.php' : (is_file('../config/config.php') ? '../config/config.php' : null))
     : (is_file('config.php') ? 'config.php' : (is_file('config/config.php') ? 'config/config.php' : null)))
     require_once($path); 
 else die(var_dump($path . ' was not found. file=config.php'));
 /*
-dd($_SERVER);
+switch ($_SERVER['REQUEST_METHOD']) {
+  case 'POST':    
+    //dd($_POST);
 
+    $_POST = filter_input_array(INPUT_POST, FILTER_SANITIZE_FULL_SPECIAL_CHARS | FILTER_SANITIZE_ENCODED, FILTER_REQUIRE_ARRAY ) ?? [];
+
+    break;
+  case 'GET':
+    $_GET = filter_input_array(INPUT_GET, FILTER_SANITIZE_FULL_SPECIAL_CHARS | FILTER_SANITIZE_ENCODED, FILTER_REQUIRE_ARRAY ) ?? [];
+    break;
+  default:
+    foreach(${'_'.$_SERVER['REQUEST_METHOD']} as $key => $value) {
+      ${'_'.$_SERVER['REQUEST_METHOD']}[$key] = filter_var($value, (
+        is_string($value) ? FILTER_SANITIZE_STRING : (
+          is_int($value) ? FILTER_VALIDATE_INT : FILTER_SANITIZE_STRING)
+        )
+      );
+    }
+    /*$request_method = '_'.$_SERVER['REQUEST_METHOD'];
+    foreach($$request_method as $key => $value) {
+      $$request_method[$key] = filter_var($value, (
+        is_string($value) ? FILTER_SANITIZE_STRING : (
+          is_int($value) ? FILTER_VALIDATE_INT : FILTER_SANITIZE_STRING
+        )
+      ));
+    }*/
+//}
+/**/
+
+/*
 $_SERVER['REQUEST_SCHEME']
 
 DOMAIN
@@ -49,13 +79,6 @@ Psr/
 */
 
 //composer[config][require][]
-
-
-
-// if ($_SERVER['REQUEST_METHOD'] == 'POST')
-
-
-
 
 if (in_array(APP_PATH . 'composer.php', get_required_files())) {
   if (class_exists('LogLevel'))
@@ -135,24 +158,35 @@ else die(var_dump($path . ' was not found. file=app.text_edit.php'));
 
 
 if ($path = (basename(getcwd()) == 'public') // composer_app.php (depend.)
+    ? (is_file('app.backup.php') ? 'app.backup.php' : (is_file('../app.backup.php') ? '../app.backup.php' : (is_file('../config/app.backup.php') ? '../config/app.backup.php' : 'public/app.backup.php')))
+    : (is_file('../app.backup.php') ? '../app.backup.php' : (is_file('public/app.backup.php') ? 'public/app.backup.php' : (is_file('config/app.backup.php') ? 'config/app.backup.php' : 'app.backup.php'))))
+  require_once($path); 
+else die(var_dump($path . ' was not found. file=app.backup.php'));
+
+
+if ($path = (basename(getcwd()) == 'public') // composer_app.php (depend.)
     ? (is_file('app.console.php') ? 'app.console.php' : (is_file('../app.console.php') ? '../app.console.php' : (is_file('../config/app.console.php') ? '../config/app.console.php' : 'public/app.console.php')))
     : (is_file('../app.console.php') ? '../app.console.php' : (is_file('public/app.console.php') ? 'public/app.console.php' : (is_file('config/app.console.php') ? 'config/app.console.php' : 'app.console.php'))))
   require_once($path); 
 else die(var_dump($path . ' was not found. file=app.console.php'));
 
+if ($path = (basename(getcwd()) == 'public') // composer_app.php (depend.)
+    ? (is_file('app.project.php') ? 'app.project.php' : (is_file('../app.project.php') ? '../app.project.php' : (is_file('../config/app.project.php') ? '../config/app.project.php' : 'public/app.project.php')))
+    : (is_file('../app.project.php') ? '../app.project.php' : (is_file('public/app.project.php') ? 'public/app.project.php' : (is_file('config/app.project.php') ? 'config/app.project.php' : 'app.project.php'))))
+  require_once($path); 
+else die(var_dump($path . ' was not found. file=app.project.php'));
+
 
 header("Cache-Control: no-store, no-cache, must-revalidate, max-age=0");
 header("Pragma: no-cache");
 
-$project_code = file_get_contents('project.php');
-
 if (is_file(APP_ROOT . 'project.php') && isset($_GET['project']) && $_GET['project'] == 'show') {
-  $project_code = file_get_contents('project.php');
-  Shutdown::setEnabled(false)->setShutdownMessage(function() use($project_code) {
-      return eval('?>' . $project_code); // -wow
+  Shutdown::setEnabled(false)->setShutdownMessage(function() {
+      return eval('?>' . file_get_contents('project.php')); // -wow
     })->shutdown();
   //die();
 }
+
 ?>
 <!DOCTYPE html>
 <html>
@@ -210,11 +244,13 @@ if (is_file($path . 'tailwindcss-3.3.5.js')) {
 
 <?= $appTextEditor['style']; ?>
 
+<?= $appBackup['style']; ?>
+
 <?= $appConsole['style']; ?>
 
 <?= $appTimesheet['style']; ?>
 
-
+<?= $appProject['style']; ?>
 
   .container2 {
     position: relative;
@@ -380,6 +416,10 @@ if (!empty($_GET['client'])) {
 ?>" style="height: 100%;"></iframe>
   </div>
   
+
+<?= $appBackup['body']; ?>
+
+  
   <div style="position: relative; margin: 0px auto; width: 800px;">
 <div style="position: absolute; left: -130px; ">
 
@@ -419,11 +459,13 @@ if (!empty($_GET['client'])) {
           </div>
         </div>
         <div style="display: inline-block; width: 100px;">
-          <img id="ts-status-light" style="padding-bottom: 25px;" src="resources/images/timesheet-light-Clear-2.gif" width="80" height="30" style="cursor: pointer;" />
+          <img id="ts-status-light" style="padding-bottom: 25px; cursor: pointer;" src="resources/images/timesheet-light-Clear-2.gif" width="80" height="30" />
         </div>
       </div>
 
   </div>
+
+<?= $appProject['body']; ?>
 
 <div id="app_project-container" style="display: none; position: absolute; top: 80px; padding: 20px; margin-left: auto; margin-right: auto; left: 0; right: 0; width: 700px; z-index: 2;">
   <div style="margin: -25px 0 20px 0;">
@@ -562,11 +604,11 @@ https://stackoverflow.com/questions/12939928/make-a-link-open-a-new-window-not-t
 <div style="position: absolute; margin: 430px 75px; text-align: center;" class="text-sm"><a href="#!" onclick="document.getElementById('app_install-container').style.display='block'; return false;"><span style="text-align: center;">New App.</span><br /><img style="text-align: center;" src="<?= APP_BASE['resources'] . 'images/install.png' ?>" /></a></div>
 
 
-<div style="position: absolute; margin: 430px 170px; text-align: center;" class="text-sm"><a href="?app=text_editor&path=&file=app.user-app.php"><span style="text-align: center;">App #1</span></a><br /><a href="#!" onclick="document.getElementById('app_browser-container').style.display='block'; return false;"><img style="text-align: center;" src="<?= APP_BASE['resources'] . 'images/php-app.png' ?>" /></a></div>
+<div style="position: absolute; margin: 430px 170px; text-align: center;" class="text-sm"><a href="?app=text_editor&path=&file=app.user-app.php"><span style="text-align: center;">App #1</span></a><br /><a href="#!" onclick="document.getElementById('app_browser-container').style.display='block'; return false;"><img style="text-align: center;" src="<?= APP_BASE['resources'] . 'images/php-app.png' ?>" /></a>
+<div style="height: 75px;"></div>
+</div>
 
-
-
-<div id="app_directory-container" style="position: absolute; display: <?= ( isset($_GET['debug']) ? 'block' : 'none') . ';'; ?>; background-color: white; height: 580px; position: absolute; top: 100px; margin-left: auto; margin-right: auto; left: 0; right: 0; width: 700px;">
+<div id="app_directory-container" style="position: absolute; display: <?= ( isset($_GET['debug']) ? 'block' : 'none'); ?>; background-color: white; height: 580px; position: absolute; top: 100px; margin-left: auto; margin-right: auto; left: 0; right: 0; width: 700px;">
 
 <?php if (isset($_GET['path']) && preg_match('/^vendor/', $_GET['path'])) { ?>
 
@@ -775,7 +817,7 @@ if (!empty($result))
 </tr>
 </table>
 
-<?php } elseif(isset($_GET['project'])) { ?> 
+<?php } elseif (isset($_GET['project'])) { ?> 
 
 <?php if (readlinkToEnd('/var/www/projects') == '/mnt/c/www/projects') {  ?>
 <div style="text-align: center; border: none;" class="text-xs">
@@ -843,12 +885,16 @@ $count = 1;
 
 <?php } elseif(isset($_GET['client'])) { ?> 
 
-<?php if (readlinkToEnd('/var/www/clientele') == '/mnt/c/www/clientele') {  ?>
+<?php if (readlinkToEnd('/var/www/clientele') == '/mnt/c/www/clientele') {
+foreach(['000', '001', '002', '003'] as $key => $status) {
 
+if ($key != 0) echo '</table>'."\n\n\n";
+
+$links = array_filter(glob(APP_PATH . '../../clientele/' . $status . '*'), 'is_dir'); ?>
+<h3>Status: On-call (<?= $status ?>)</h3>
 <table width="" style="border: none;">
 <tr style=" border: none;">
 <?php
-$links = array_filter(glob(APP_PATH . '../../clientele/*'), 'is_dir'); 
 
 $count = 1;
 ?>
@@ -865,7 +911,7 @@ $count = 1;
 
     echo '<td style="text-align: center; border: none;" class="text-xs">' . "\n";
 
-          echo '<a class="pkg_dir" href="?project=' . $link . '">'
+          echo '<a class="pkg_dir" href="?client=' . $link . '">'
           . '<img src="resources/images/directory.png" width="50" height="32" style="" /><br />' . $link . '</a><br />'
 
       . '</td>' . "\n";
@@ -882,7 +928,9 @@ $count = 1;
 </table>
 <!--
       <li>
-<?php if (readlinkToEnd('/var/www/clientele') == '/mnt/c/www/clientele') {  ?>
+<?php 
+}
+if (readlinkToEnd('/var/www/clientele') == '/mnt/c/www/clientele') {  ?>
 <a href="clientele/">client/</a>
         <ul style="padding-left: 10px;">
           <form action method="GET">
@@ -1091,6 +1139,8 @@ if (!empty($paths))
 
 <?= $appTextEditor['body']; ?>
 
+
+
 </div>
 
 <?= $appConsole['body']; ?>
@@ -1173,31 +1223,34 @@ if (is_file(APP_PATH . APP_BASE['resources'] . 'js/requirejs/require-2.3.6.js'))
 
 <?php ?>
   
-  <script src="<?= array_rand(array_flip(array_filter(glob(APP_BASE['var'] . 'reels/*.js'), 'is_file')), 1); ?>" type="text/javascript" charset="utf-8"></script>
+  <script src="<?= array_rand(array_flip(array_filter(glob(APP_BASE['resources'] . 'reels/*.js'), 'is_file')), 1); ?>" type="text/javascript" charset="utf-8"></script>
   
   <script type="text/javascript" charset="utf-8">
 
+
+displayDirectoryBtn.addEventListener('click', () => {
+
+event.preventDefault();
 const appDirectoryContainer = document.getElementById('app_directory-container');
 
 //const styles = window.getComputedStyle(appDirectoryContainer);
 const displayDirectoryBtn = document.getElementById('displayDirectoryBtn');
 
-displayDirectoryBtn.addEventListener('click', () => {
-  event.preventDefault();
-  if (appDirectoryContainer.style.display == 'block') {
-  $( '#app_directory-container' ).slideUp( "slow", function() {
+  console.log('state : ' + appDirectoryContainer.style.display );
+  if (appDirectoryContainer.style.display == 'none') {
+  $( '#app_directory-container' ).slideDown( "slow", function() {
       // Animation complete.
   });
-  
+    console.log('hide');
       displayDirectoryBtn.innerHTML = '&#9660;';
   } else {
   
-    $( '#app_directory-container' ).slideDown( "slow", function() {
+    $( '#app_directory-container' ).slideUp( "slow", function() {
       // Animation complete.
     });
   
       displayDirectoryBtn.innerHTML = '&#9650;';  
-
+    console.log('show');
   }
   //show_console();
 
@@ -1273,6 +1326,10 @@ window.addEventListener('keydown', function() {
 
 <?= /*$appNotes['script'];*/ NULL; ?>
 
+
+<?= $appBackup['script']; ?>
+
+
 <?= $appPong['script']; ?>
 
 /*
@@ -1347,6 +1404,9 @@ console.log('domReady is working ... ');
 */
 
 <?= $appTimesheet['script']; ?>
+
+
+<?= $appProject['script']; ?>
 
   </script>
 
