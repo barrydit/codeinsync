@@ -7,7 +7,17 @@ else die(var_dump($path . ' path was not found. file=config.php'));
 ob_start();
 // Dump the variable
 
-echo 'Hello World!';
+?>
++--+--+--+--+--+
+|  |  |  |  |  |
++--+--+--+--+--+
+|  |  |  |  |  |
++--+--+--+--+--+
+|  |  |  |  |  |
++--+--+--+--+--+
+|  |  |  |  |  |
++--+--+--+--+--+
+<?php
 
 // Capture the output into a variable
 $output = ob_get_clean();

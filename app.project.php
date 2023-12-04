@@ -1,16 +1,20 @@
 <?php
-
+/**/
 if (__FILE__ == get_required_files()[0])
   if ($path = (basename(getcwd()) == 'public')
     ? (is_file('../config.php') ? '../config.php' : (is_file('../config/config.php') ? '../config/config.php' : null))
     : (is_file('config.php') ? 'config.php' : (is_file('config/config.php') ? 'config/config.php' : null))) require_once($path);
 else die(var_dump($path . ' path was not found. file=config.php'));
 
+
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
-  if (isset($_GET['app']) && $_GET['app'] == 'php')
-    if (isset($_POST['path']) && isset($_GET['filename']) && $path = realpath($_POST['path'] . $_GET['filename']))
-      file_put_contents($path, $_POST['editor']);
+  if (isset($_GET['app']) && $_GET['app'] == 'project')
+    if (isset($_POST['path']) && isset($_GET['file']) && $path = realpath($_POST['path'] . $_GET['file'])) {
+      file_put_contents($path, $_POST['contents']);
+      die(); //header('Location: ' . APP_WWW)
+    }
 }
+
 
 ob_start();
 ?>
@@ -103,14 +107,16 @@ ob_start(); ?>
 <?php /* https://stackoverflow.com/questions/70107579/how-can-i-split-the-resizable-panel-vertically-using-javascript */ ?>
   <div class="splitter">
     <div id="first">
-      <iframe src="<?= basename('?project=show') ?>" style="height: 100%; width: 100%;"></iframe>
+      <iframe id="app_project-iframe" src="<?= basename('?project=show') ?>" style="height: 100%; width: 100%;"></iframe>
     </div>
-<form action method="POST">
+<form id="app_project-saveForm" method="POST">
     <div id="separator" style="height: 25px; text-align: center;"><pre style="display: inline;">---Drag Bar---</pre>
 
     <div style="display: inline; float: right; z-index: 1000;">
 
-<input type="submit" name="save-submit" value="&nbsp;&nbsp;Save&nbsp;&nbsp;" style="background-color: white; cursor: pointer;" onclick="document.getElementsByClassName('ace_text-input')[0].value = globalEditor.getSession().getValue(); document.getElementsByClassName('ace_text-input')[0].name = 'editor';" />
+      <button type="submit" style="background-color: white; cursor: pointer; border: 1px solid #000;">&nbsp;&nbsp;Save&nbsp;&nbsp;</button>
+
+<!-- input type="submit" name="save-submit" value="&nbsp;&nbsp;Save&nbsp;&nbsp;" style="background-color: white; cursor: pointer;" onclick="document.getElementsByClassName('ace_text-input')[0].value = globalEditor.getSession().getValue(); document.getElementsByClassName('ace_text-input')[0].name = 'editor';" / -->
 
 </div>
 
@@ -185,6 +191,40 @@ function dragElement(element, direction) {
 }
 
 dragElement(document.getElementById("separator"), "V");
+
+document.getElementById('app_project-saveForm').addEventListener('submit', function(event) {
+  // Prevent the default form submission
+  event.preventDefault();
+
+  document.getElementsByClassName('ace_text-input')[0].value = globalEditor.getSession().getValue();
+  document.getElementsByClassName('ace_text-input')[0].name = 'editor';
+
+  console.log(globalEditor.getSession().getValue());
+  
+
+      $.ajax({
+        url: 'app.project.php?app=project&file=project.php',
+        type: 'POST',
+        data: { path: '', contents: globalEditor.getSession().getValue() },
+        //dataType: 'json',
+        success: function (msg) {
+          //console.log(msg);
+          document.getElementById('app_project-iframe').contentWindow.location.reload();
+          //iframe refresh
+          console.log('window was reloaded');
+        },
+        error: function (jqXHR, textStatus) {
+          console.log(jqXHR.responseText);
+          //let responseText = jQuery.parseJSON(jqXHR.responseText);
+          //console.log(responseText);
+        }
+      });
+
+
+
+  
+
+});
 
 <?php $appProject['script'] = ob_get_contents();
 ob_end_clean();

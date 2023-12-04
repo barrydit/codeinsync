@@ -726,7 +726,6 @@ if (!empty(array_diff($vendors, $dirs_diff)) ) {
   
   }
 
-}
   // https://getcomposer.org/doc/03-cli.md
   $proc = proc_open('sudo ' . COMPOSER_EXEC['bin'] . ' validate --no-check-all --no-check-publish --no-check-version --strict', array( array("pipe","r"), array("pipe","w"), array("pipe","w")), $pipes); // $output = shell_exec("cd " . escapeshellarg(dirname(COMPOSER_JSON['path'])) . " && " . 'sudo ' . COMPOSER_EXEC . ' validate --no-check-all --no-check-publish --no-check-version');  dd($output);
 
@@ -756,6 +755,8 @@ if (!empty(array_diff($vendors, $dirs_diff)) ) {
     }
     //dd($errors);
   }
+
+}
 //if (strpos($output, 'No errors or warnings detected') !== false)
 //Deprecated:  strpos(): Passing null to parameter #1 ($haystack) of type string is deprecated
 

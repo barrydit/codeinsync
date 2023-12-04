@@ -79,19 +79,21 @@ if (basename(__DIR__) == 'config') {
   ]);
 }
 
+//define('APP_ENV', 'production');
+
 if (defined('APP_DOMAIN') && !in_array(APP_DOMAIN, ['localhost', '127.0.0.1', '::1'])) {
   if (!is_file(APP_PATH . '.env.production')) {
     if (@touch(APP_PATH . '.env.production'))
       file_put_contents(APP_PATH . '.env.production', "DB_UNAME=\nDB_PWORD=");
   }
-  define('APP_ENV', 'production');
+  defined('APP_ENV') or define('APP_ENV', 'production');
 } else {
   if (!is_file(APP_PATH . '.env.development')) {
     if (@touch(APP_PATH . '.env.development')) {
       file_put_contents(APP_PATH . '.env.development', "DB_UNAME=root\nDB_PWORD=");
     }
   }
-  define('APP_ENV', 'development'); // development
+  defined('APP_ENV') or define('APP_ENV', 'development'); // development
 } // APP_DEV |  APP_PROD
 
 (defined('APP_ENV') && !is_string(APP_ENV)) and $errors['APP_ENV'] = 'App Env: ' . APP_ENV; // print('App Env: ' . APP_ENV . "\n");

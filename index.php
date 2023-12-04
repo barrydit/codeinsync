@@ -187,13 +187,6 @@ else die(var_dump($path . ' was not found. file=app.project.php'));
 header("Cache-Control: no-store, no-cache, must-revalidate, max-age=0");
 header("Pragma: no-cache");
 
-if (is_file(APP_ROOT . 'project.php') && isset($_GET['project']) && $_GET['project'] == 'show') {
-  Shutdown::setEnabled(false)->setShutdownMessage(function() {
-      return eval('?>' . file_get_contents('project.php')); // -wow
-    })->shutdown();
-  //die();
-}
-
 ?>
 <!DOCTYPE html>
 <html>

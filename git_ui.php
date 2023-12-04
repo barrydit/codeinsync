@@ -229,7 +229,7 @@ ob_start(); ?>
             </select>
           </div>
           <div style="display: inline-block; width: 33%; padding-top: 2px;">
-          <form id="app_git-cmd-selected" action="GET">
+          <form id="app_git-cmd-selected" method="GET">
             <button type="submit"><img src="resources/images/git_icon_selected.fw.png" width="44" height="29" style="border: 1px dashed #F05033;" /></button>
           </form>
           </div>

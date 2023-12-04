@@ -13,15 +13,14 @@ if (__FILE__ == get_required_files()[0])
     : (is_file('config.php') ? 'config.php' : (is_file('config/config.php') ? 'config/config.php' : null))) require_once($path); 
 else die(var_dump($path . ' path was not found. file=config.php'));
 
+//dd($_GET);
 
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
-
-//dd($_POST);
-
   if (isset($_GET['app']) && $_GET['app'] == 'text_editor')
-    if (isset($_POST['path']) && isset($_GET['file']) && $path = realpath($_POST['path'] . $_GET['file']))
-      file_put_contents($path, $_POST['editor']);
-      
+    if (isset($_POST['path']) && isset($_GET['file']) && $path = realpath($_POST['path'] . $_GET['file'])) {
+      file_put_contents($path, $_POST['contents']);
+      die(header('Location: ' . APP_WWW));
+    }
   //dd($_POST);
 
 //  if (isset($_GET['file'])) {

@@ -239,6 +239,25 @@ if (isset($_GET['src']) && is_readable($path = $_GET['src']) && filesize($path) 
 /*****/
 }
 
+
+if (isset($_GET['project'])) {
+  //require_once('composer.php');
+  //require_once('project.php');
+
+if (isset($_GET['app']) && $_GET['app'] == 'project') require_once('app.project.php');
+
+  header("Cache-Control: no-store, no-cache, must-revalidate, max-age=0");
+  header("Pragma: no-cache");
+
+if (is_file(APP_ROOT . 'project.php') && isset($_GET['project']) && $_GET['project'] == 'show') {
+  Shutdown::setEnabled(false)->setShutdownMessage(function() {
+      return eval('?>' . file_get_contents('project.php')); // -wow
+    })->shutdown(); // die();
+}
+
+
+}
+
 if (basename($dir = APP_PATH) != 'config') {
   if (in_array(basename($dir), ['public', 'public_html']))
     chdir('../');
@@ -252,12 +271,13 @@ if (basename($dir = APP_PATH) != 'config') {
 
   $dirs = [
     0 => APP_PATH . 'composer.php',
-    1 => APP_PATH . 'config.php',
-    2 => APP_PATH . 'constants.php',
-    3 => APP_PATH . 'functions.php',
-    4 => APP_PATH . 'git.php',
-    5 => APP_PATH . 'npm.php',
-    6 => APP_PATH . 'composer-setup.php',
+    1 => APP_PATH . 'composer-setup.php',
+    //1 => APP_PATH . 'config.php',
+    //1 => APP_PATH . 'constants.php',
+    //2 => APP_PATH . 'functions.php',
+    2 => APP_PATH . 'git.php',
+    3 => APP_PATH . 'npm.php',
+
   ]; // array_filter(glob(__DIR__ . DIRECTORY_SEPARATOR . '*.php'), 'is_file');
 
   usort($dirs, function ($a, $b) {
