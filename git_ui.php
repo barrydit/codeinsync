@@ -213,9 +213,13 @@ ob_start(); ?>
         </div>
         <div style="display: block; margin: 10px auto; width: 100%; background-color: rgb(255,255,255,.75);">
         
-          <div style="position: absolute; top: 45px; left: 10px;" class="text-xs">
+          <div style="position: absolute; top: 25px; left: 10px;" class="text-xs">
             <span style="color: red;">[Help]</span><br />Commands<br />
-            <code class="text-xs"><a id="app_git-add-cmd" href="#!" onclick="">git add .</a><br /><a id="app_git-commit-cmd" href="#!">git commit -am "&lt;detail message&gt;"</a></code>
+            <code class="text-xs">
+            <a id="app_git-add-cmd" href="#!" onclick="">git add .</a><br />
+            <a id="app_git-remote-cmd" href="#!" onclick="">git remote -v</a><br />
+            <a id="app_git-commit-cmd" href="#!">git commit -am "&lt;detail message&gt;"</a>
+            </code>
           </div>
 
           <div style="display: inline-block; width: 32%; text-align: right;"><img src="resources/images/git.fw.png" width="52" height="37" style=" border: 1px dashed #F05033;" /></div>

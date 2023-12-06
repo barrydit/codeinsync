@@ -196,8 +196,8 @@ document.getElementById('app_project-saveForm').addEventListener('submit', funct
   // Prevent the default form submission
   event.preventDefault();
 
-  document.getElementsByClassName('ace_text-input')[0].value = globalEditor.getSession().getValue();
-  document.getElementsByClassName('ace_text-input')[0].name = 'editor';
+  //document.getElementsByClassName('ace_text-input')[0].value = globalEditor.getSession().getValue();
+  //document.getElementsByClassName('ace_text-input')[0].name = 'editor';
 
   console.log(globalEditor.getSession().getValue());
   

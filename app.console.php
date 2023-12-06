@@ -480,6 +480,12 @@ $(document).ready(function() {
     $('#requestSubmit').click();
     console.log('wow');
   });
+  
+  $("#app_git-remote-cmd").click(function() {
+    $('#requestInput').val('git remote -v');
+    $('#requestSubmit').click();
+    console.log('wow');
+  });
 
   $("#app_git-commit-cmd").click(function() {
     $('#requestInput').val('git commit -am "default message"');

@@ -246,8 +246,8 @@ if (isset($_GET['project'])) {
 
 if (isset($_GET['app']) && $_GET['app'] == 'project') require_once('app.project.php');
 
-  header("Cache-Control: no-store, no-cache, must-revalidate, max-age=0");
-  header("Pragma: no-cache");
+header("Cache-Control: no-store, no-cache, must-revalidate, max-age=0");
+header("Pragma: no-cache");
 
 if (is_file(APP_ROOT . 'project.php') && isset($_GET['project']) && $_GET['project'] == 'show') {
   Shutdown::setEnabled(false)->setShutdownMessage(function() {
