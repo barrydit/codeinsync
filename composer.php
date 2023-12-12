@@ -326,7 +326,6 @@ if (strtoupper(substr(PHP_OS, 0, 3)) === 'WIN') { // DO NOT REMOVE! { .. }
           if (preg_match('/^php composer\.(phar)$/', $exec['bin'])) define('COMPOSER_PHAR', $exec);
           else define('COMPOSER_BIN', $exec);
       }
-
 }
 
 

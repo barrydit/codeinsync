@@ -216,9 +216,9 @@ ob_start(); ?>
           <div style="position: absolute; top: 25px; left: 10px;" class="text-xs">
             <span style="color: red;">[Help]</span><br />Commands<br />
             <code class="text-xs">
-            <a id="app_git-add-cmd" href="#!" onclick="">git add .</a><br />
-            <a id="app_git-remote-cmd" href="#!" onclick="">git remote -v</a><br />
-            <a id="app_git-commit-cmd" href="#!">git commit -am "&lt;detail message&gt;"</a>
+            <a id="app_git-add-cmd" href="<?= (APP_URL['query'] != '' ? '?'.APP_URL['query'] : '') . (APP_ENV == 'development' ? '#!' : '') ?>" onclick="">git add .</a><br />
+            <a id="app_git-remote-cmd" href="<?= (APP_URL['query'] != '' ? '?'.APP_URL['query'] : '') . (APP_ENV == 'development' ? '#!' : '') ?>" onclick="">git remote -v</a><br />
+            <a id="app_git-commit-cmd" href="<?= (APP_URL['query'] != '' ? '?'.APP_URL['query'] : '') . (APP_ENV == 'development' ? '#!' : '') ?>">git commit -am "&lt;detail message&gt;"</a>
             </code>
           </div>
 

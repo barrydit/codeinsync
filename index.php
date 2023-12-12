@@ -8,6 +8,8 @@ if ($path = (basename(getcwd()) == 'public')
     require_once($path); 
 else die(var_dump($path . ' was not found. file=config.php'));
 
+// dd(getenv('PATH'));
+
 switch ($_SERVER['REQUEST_METHOD']) {
   case 'POST':    
     //dd($_POST);
@@ -123,7 +125,6 @@ if ($path = (basename(getcwd()) == 'public')
   require_once($path); 
 else die(var_dump($path . ' was not found. file=app.browser.php'));
 
-
 if ($path = (basename(getcwd()) == 'public')
     ? (is_file('app.github.php') ? 'app.github.php' : (is_file('../app.github.php') ? '../app.github.php' : (is_file('../config/app.github.php') ? '../config/app.github.php' : NULL)))
     : (is_file('../app.github.php') ? '../app.github.php' : (is_file('public/app.github.php') ? 'public/app.github.php' : (is_file('config/app.github.php') ? 'config/app.github.php' : 'app.github.php'))))
@@ -142,13 +143,11 @@ if ($path = (basename(getcwd()) == 'public')
   require_once($path); 
 else die(var_dump($path . ' was not found. file=app.whiteboard.php'));
 
-
 if ($path = (basename(getcwd()) == 'public')
     ? (is_file('app.notes.php') ? 'app.notes.php' : (is_file('../app.notes.php') ? '../app.notes.php' : (is_file('../config/app.notes.php') ? '../config/app.notes.php' : NULL)))
     : (is_file('../app.notes.php') ? '../app.notes.php' : (is_file('public/app.notes.php') ? 'public/app.notes.php' : (is_file('config/app.notes.php') ? 'config/app.notes.php' : 'app.notes.php'))))
   require_once($path); 
 else die(var_dump($path . ' was not found. file=app.notes.php'));
-
 
 if ($path = (basename(getcwd()) == 'public')
     ? (is_file('app.pong.php') ? 'app.pong.php' : (is_file('../app.pong.php') ? '../app.pong.php' : (is_file('../config/app.pong.php') ? '../config/app.pong.php' : NULL)))
@@ -156,20 +155,17 @@ if ($path = (basename(getcwd()) == 'public')
   require_once($path); 
 else die(var_dump($path . ' was not found. file=app.pong.php'));
 
-
 if ($path = (basename(getcwd()) == 'public')
     ? (is_file('app.text_edit.php') ? 'app.text_edit.php' : (is_file('../app.text_edit.php') ? '../app.text_edit.php' : (is_file('../config/app.text_edit.php') ? '../config/app.text_edit.php' : NULL)))
     : (is_file('../app.text_edit.php') ? '../app.text_edit.php' : (is_file('public/app.text_edit.php') ? 'public/app.text_edit.php' : (is_file('config/app.text_edit.php') ? 'config/app.text_edit.php' : 'app.text_edit.php'))))
   require_once($path); 
 else die(var_dump($path . ' was not found. file=app.text_edit.php'));
 
-
 if ($path = (basename(getcwd()) == 'public') // composer_app.php (depend.)
     ? (is_file('app.backup.php') ? 'app.backup.php' : (is_file('../app.backup.php') ? '../app.backup.php' : (is_file('../config/app.backup.php') ? '../config/app.backup.php' : 'public/app.backup.php')))
     : (is_file('../app.backup.php') ? '../app.backup.php' : (is_file('public/app.backup.php') ? 'public/app.backup.php' : (is_file('config/app.backup.php') ? 'config/app.backup.php' : 'app.backup.php'))))
   require_once($path); 
 else die(var_dump($path . ' was not found. file=app.backup.php'));
-
 
 if ($path = (basename(getcwd()) == 'public') // composer_app.php (depend.)
     ? (is_file('app.console.php') ? 'app.console.php' : (is_file('../app.console.php') ? '../app.console.php' : (is_file('../config/app.console.php') ? '../config/app.console.php' : 'public/app.console.php')))
@@ -186,6 +182,8 @@ else die(var_dump($path . ' was not found. file=app.project.php'));
 
 header("Cache-Control: no-store, no-cache, must-revalidate, max-age=0");
 header("Pragma: no-cache");
+
+
 
 ?>
 <!DOCTYPE html>
@@ -421,13 +419,13 @@ if (!empty($_GET['client'])) {
 
   
   <div style="position: relative; margin: 0px auto; width: 800px;">
-<div style="position: absolute; left: -130px; ">
+<div style="position: absolute; left: -130px;">
 
 <!--form action="#!" method="GET">
 <?= (isset($_GET['debug']) && !$_GET['debug'] ? '' : '<input type="hidden" name="debug" value / >') ?> 
   <input class="input" id="toggle-debug" type="checkbox" onchange="this.form.submit();" <?= (isset($_GET['debug']) ? 'checked' : '') ?> / -->
 
-  <input class="input" id="toggle-debug" type="checkbox" onchange="toggleSwitch(this);" <?= (isset($_GET['debug']) ? 'checked' : '') ?> />
+  <input class="input" id="toggle-debug" type="checkbox" onchange="toggleSwitch(this); return null;" <?= (isset($_GET['debug']) ? 'checked' : '') ?> />
 
   <label class="label" for="toggle-debug" style="margin-left: -6px;">
     <div class="switch">
@@ -448,8 +446,36 @@ if (!empty($_GET['client'])) {
       <a href="<?= (APP_URL['query'] != '' ? '?'.APP_URL['query'] : '') . (APP_ENV == 'development' ? '#!' : '') ?>" onclick="document.getElementById('app_php-container').style.display='block';"><img src="resources/images/php_icon.png" width="40" height="27"> PHP <?= (preg_match("#^(\d+\.\d+)#", PHP_VERSION, $match) ? $match[1] : '8.0' ) ?></a> |
       <a href="<?= (APP_URL['query'] != '' ? '?'.APP_URL['query'] : '') . (APP_ENV == 'development' ? '#!' : '') ?>" onclick="document.getElementById('app_packagist-container').style.display='block';"><img src="resources/images/packagist_icon.png" width="30" height="34"> Packagist</a> |
       <a href="<?= (APP_URL['query'] != '' ? '?'.APP_URL['query'] : '') . (APP_ENV == 'development' ? '#!' : '')?>" onclick="document.getElementById('app_text_editor-container').style.display='block';"><img src="resources/images/code_icon.png" width="32" height="32"> Text</a> |
-      <a href="<?= (APP_URL['query'] != '' ? '?'.APP_URL['query'] : '') . (APP_ENV == 'development' ? '#!' : '') ?>" onclick="document.getElementById('httpHeaderForm').style.display='block';"><img src="resources/images/http_icon.jpg" width="32" height="32"> HTTP</a> |
-      <a href="<?= (APP_URL['query'] != '' ? '?'.APP_URL['query'] : '') . (APP_ENV == 'development' ? '#!' : '') ?>" onclick="document.getElementById('app_timesheet-container').style.display='block';"><img src="resources/images/clock.gif" width="32" height="32"> Clock-In</a>
+      <a href="<?= (APP_URL['query'] != '' ? '?'.APP_URL['query'] : '') . (APP_ENV == 'development' ? '#!' : '') ?>" onclick="document.getElementById('app_menu-container').style.display='block';"><img src="resources/images/apps_icon.gif" width="20" height="20"> Apps</a> |
+      <a href="<?= (APP_URL['query'] != '' ? '?'.APP_URL['query'] : '') . (APP_ENV == 'development' ? '#!' : '') ?>" onclick="document.getElementById('app_timesheet-container').style.display='block';"><img src="resources/images/clock.gif" width="30" height="30"> Clock-In</a>
+
+<div style="position: absolute; top: 40px; left: 0; width: 400px; z-index: 1;">
+<form style="display: inline;" autocomplete="off" spellcheck="false" action="<?= APP_URL_BASE . /*basename(__FILE__) .*/ '?' . http_build_query(APP_QUERY /*+ array( 'app' => 'text_editor')*/) . (APP_ENV == 'development' ? '#!' : '') /* $c_or_p . '=' . (empty($_GET[$c_or_p]) ? '' : $$c_or_p->name) . '&amp;app=composer' */ ?>" method="GET">
+
+<?php $path = realpath(getcwd() . (isset($_GET['path']) ? DIRECTORY_SEPARATOR . $_GET['path'] : '')) . DIRECTORY_SEPARATOR;
+
+if (isset($_GET['path'])) { ?>
+        <!-- <input type="hidden" name="path" value="<?= $_GET['path']; ?>" /> -->
+<?php } ?>
+
+<?php echo '<button id="displayDirectoryBtn" style="float: left; margin: 2px 5px 0 0;" type="">&#9660;</button><a style="float: left; margin: 2px 5px 0 0;" href="' . (APP_URL['query'] != '' ? '?' . APP_URL['query'] : '') . (isset($_GET['path']) && $_GET['path'] != '' ? parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH) : (APP_ENV == 'development' ? '#!' : '') ) . '"><span title="' . $path . '" style="cursor: pointer;" onclick="document.getElementById(\'app_directory-container\').style.display=\'block\';">' . (isset($_GET['project']) ? '/project/' : parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH)) . (isset($_GET['path']) && $_GET['path'] === '' ? '' : (!isset($_GET['path']) ? '' : basename($_GET['path']) . '/')) . '</span></a>'; /* $path; */ ?>
+
+<select name="path" style="float: left; margin: 2px 5px 0 0;" onchange="this.form.submit();">
+  <option value="">.</option>
+  <option value="">..</option>
+<?php
+
+// Bug if the dir does not exist it defaults to the root ...
+
+if ($path)
+  foreach (array_filter( glob( $path . DIRECTORY_SEPARATOR . '*'), 'is_dir') as $dir) {
+    echo '<option value="' . (isset($_GET['path']) ?  $_GET['path'] . DIRECTORY_SEPARATOR : '') . basename($dir) . '"' . (isset($_GET['path']) && $_GET['path'] == basename($dir) ? ' selected' : '' )  . '>' . basename($dir) . '/</option>' . "\n";
+  }
+?>
+        </select>
+</form>
+</div>
+
 
       <div style="position: absolute; width: 315px; top: 40px; right: -10px; border: 1px solid #000; height: 25px;">
         <div style="display: inline-block; width: 175px; ">
@@ -479,34 +505,24 @@ if (!empty($_GET['client'])) {
   </form>
 </div>
 
-<div style="position: absolute; top: 40px; margin-left: auto; margin-right: auto; left: 0; right: 0; width: 700px; z-index: 1;">
 
-<form style="display: inline;" autocomplete="off" spellcheck="false" action="<?= APP_URL_BASE . /*basename(__FILE__) .*/ '?' . http_build_query(APP_QUERY /*+ array( 'app' => 'text_editor')*/) . (APP_ENV == 'development' ? '#!' : '') /* $c_or_p . '=' . (empty($_GET[$c_or_p]) ? '' : $$c_or_p->name) . '&amp;app=composer' */ ?>" method="GET">
-        
-<?php $path = realpath(getcwd() . (isset($_GET['path']) ? DIRECTORY_SEPARATOR . $_GET['path'] : '')) . DIRECTORY_SEPARATOR;
+<div style="position: relative;">
 
-if (isset($_GET['path'])) { ?>
-        <!-- <input type="hidden" name="path" value="<?= $_GET['path']; ?>" /> -->
-<?php } ?>
+<div id="app_installed_apps-container" style="position: absolute; width: 600px; margin: 150px auto; height: 500px; background-color: rgba(255, 255, 255, 0.9); text-align: center; overflow-x: scroll;">
 
-<?php echo '<button id="displayDirectoryBtn" style="float: left; margin: 2px 5px 0 0;" type="">&#9660;</button><a href="' . (APP_URL['query'] != '' ? '?' . APP_URL['query'] : '') . (isset($_GET['path']) && $_GET['path'] != '' ? parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH) : (APP_ENV == 'development' ? '#!' : '') ) . '"><span title="' . $path . '" style="cursor: pointer;" onclick="document.getElementById(\'app_directory-container\').style.display=\'block\';">' . (isset($_GET['project']) ? '/project/' : parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH)) . (isset($_GET['path']) && $_GET['path'] === '' ? '' : (!isset($_GET['path']) ? '' : basename($_GET['path']) . '/')) . '</span></a>'; /* $path; */ ?>
+<div style="position: absolute; margin: 0 auto; left: 0; right: 0; text-align: center;" class="text-sm">
 
-<select name="path" onchange="this.form.submit();">
-  <option value="">.</option>
-  <option value="">..</option>
-<?php
+<?= /*dd(GIT_EXEC,0) . dd(COMPOSER_EXEC,0) */ NULL;?>
 
-// Bug if the dir does not exist it defaults to the root ...
-
-if ($path)
-  foreach (array_filter( glob( $path . DIRECTORY_SEPARATOR . '*'), 'is_dir') as $dir) {
-    echo '<option value="' . (isset($_GET['path']) ?  $_GET['path'] . DIRECTORY_SEPARATOR : '') . basename($dir) . '"' . (isset($_GET['path']) && $_GET['path'] == basename($dir) ? ' selected' : '' )  . '>' . basename($dir) . '/</option>' . "\n";
-  }
-?>
-        </select>
-</form>
 </div>
-<div style="position: relative; width: 800px; margin: 0 auto; height: 500px; background-color: rgba(255, 255, 255, 0.9); overflow-x: scroll;">
+
+</div>
+
+
+<div id="app_menu-container" style="position: absolute; width: 800px; margin: 0 auto; height: 500px; background-color: rgba(255, 255, 255, 0.9); overflow-x: scroll;">
+
+<div style="position: absolute; margin: 80px 45px; text-align: center;" class="text-sm"><a href="#!" onclick="document.getElementById('app_menu-container').style.display='none'; return false;"><img style="text-align: center;" height="25" width="25" src="<?= APP_BASE['resources'] . 'images/close-red.gif' ?>" /></a><br /></div>
+
 
 <div style="position: absolute; margin: 100px 75px; text-align: center;" class="text-sm"><a href="#!" onclick="show_console(); return false;"><img style="text-align: center;" src="<?= APP_BASE['resources'] . 'images/cli.png' ?>" /></a><br /><a href="?app=text_editor&path=&file=app.console.php" style="text-align: center;">(CLI)</a></div>
 
@@ -534,7 +550,7 @@ https://stackoverflow.com/questions/12939928/make-a-link-open-a-new-window-not-t
 <div style="position: absolute; margin: 100px 0 0 630px; text-align: center;" class="text-sm"><a href="#!" onclick="document.getElementById('app_browser-container').style.display='block'; return false;"><img style="text-align: center;" src="<?= APP_BASE['resources'] . 'images/browser.png' ?>" /><br /><span style="text-align: center;">Browser</span></a></div>
 
 
-<div style="position: absolute; margin: 200px 75px; text-align: center;" class="text-sm"><a href="#!" onclick="document.getElementById('app_apps-container').style.display='block'; return false;"><img style="text-align: center;" src="<?= APP_BASE['resources'] . 'images/apps.png' ?>" /><br /><span style="text-align: center;">Apps.</span></a></div>
+<div style="position: absolute; margin: 200px 75px; text-align: center;" class="text-sm"><a href="#!" onclick="document.getElementById('app_menu-container').style.display='block'; return false;"><img style="text-align: center;" src="<?= APP_BASE['resources'] . 'images/apps.png' ?>" /><br /><span style="text-align: center;">Apps.</span></a></div>
 
 <div style="position: absolute; margin: 200px 170px; text-align: center;" class="text-sm"><a href="#!" onclick="document.getElementById('app_calendar-container').style.display='block'; return false;"><img style="text-align: center;" src="<?= APP_BASE['resources'] . 'images/calendar.png' ?>" /><br /><span style="text-align: center;">Calendar</span></a></div>
 
@@ -606,6 +622,9 @@ https://stackoverflow.com/questions/12939928/make-a-link-open-a-new-window-not-t
 
 <div style="position: absolute; margin: 430px 170px; text-align: center;" class="text-sm"><a href="?app=text_editor&path=&file=app.user-app.php"><span style="text-align: center;">App #1</span></a><br /><a href="#!" onclick="document.getElementById('app_browser-container').style.display='block'; return false;"><img style="text-align: center;" src="<?= APP_BASE['resources'] . 'images/php-app.png' ?>" /></a>
 <div style="height: 75px;"></div>
+</div>
+
+
 </div>
 
 <div id="app_directory-container" style="position: absolute; display: <?= ( isset($_GET['debug']) ? 'block' : 'none'); ?>; background-color: white; height: 580px; position: absolute; top: 100px; margin-left: auto; margin-right: auto; left: 0; right: 0; width: 700px;">
@@ -1090,7 +1109,7 @@ if (!empty($paths))
 /**/
         elseif (preg_match('/.*\.php/', basename($path))) {
           if (preg_match('/^project\.php/', basename($path)))
-            echo '<a style="position: relative;" href="' . (isset($_GET['project']) ? '?project#!' : '?project') . '" ' . (isset($_GET['project']) ? 'onclick="document.getElementById(\'app_project-container\').style.display=\'block\';"' : '') . '><div style="position: absolute; left: -60px; top: -20px; color: red; font-weight: bold;">' . (isset($_GET['project']) ? '' : '<img src="resources/images/click-here.gif" width="75" height="35" />') . '</div><img src="resources/images/project-icon.png" width="40" height="50" /></a><br /><a href="' . (isset($_GET['project']) ? '?project#!' : '?app=text_editor&path=' . (basename(dirname($path)) == basename(parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH) ? 'failed' : basename(dirname($path)))) . '&file=' . basename($path)) . '" ' . (isset($_GET['project']) ? 'onclick="document.getElementById(\'app_text_editor-container\').style.display=\'block\';"' : '') . '">' . basename($path) . '</a>';
+            echo '<a style="position: relative;" href="' . (isset($_GET['project']) ? '?project#!' : '?project') . '" ' . (isset($_GET['project']) ? 'onclick="document.getElementById(\'app_project-container\').style.display=\'block\';"' : '') . '><div style="position: absolute; left: -60px; top: -20px; color: red; font-weight: bold;">' . (isset($_GET['project']) ? '' : '') . '</div><img src="resources/images/project-icon.png" width="40" height="50" /></a><br /><a href="' . (isset($_GET['project']) ? '?project#!' : '?app=text_editor&path=' . (basename(dirname($path)) == basename(parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH) ? 'failed' : basename(dirname($path)))) . '&file=' . basename($path)) . '" ' . (isset($_GET['project']) ? 'onclick="document.getElementById(\'app_text_editor-container\').style.display=\'block\';"' : '') . '">' . basename($path) . '</a>';
           else echo '<a href="?app=text_editor&path=' . (basename(dirname($path)) == basename(parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH) ? 'failed' : basename(dirname($path)))) . '&file=' . basename($path) . '"><img src="resources/images/php_file.png" width="40" height="50" /><br />' . basename($path) . '</a>';
 
         } elseif (basename($path) == basename(ini_get('error_log')))
@@ -1112,7 +1131,6 @@ if (!empty($paths))
 
 <?php } ?>
 </div>
-
 </div>
 
 <?= $appTimesheet['body']; ?>
@@ -1148,10 +1166,6 @@ if (!empty($paths))
   
   <!-- https://code.jquery.com/jquery-3.7.1.min.js -->
 
-  <script src="//code.jquery.com/jquery-1.12.4.js"></script>
-  <script src="//code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
-  
-
   <!-- script src="https://code.jquery.com/jquery-3.6.0.min.js" integrity="sha256-/xUj+3OJU5yExlq6GSYGSHk7tPXikynS7ogEvDej/m4=" crossorigin="anonymous"></script -->
 
 <?php
@@ -1177,6 +1191,10 @@ if (is_file($path . 'jquery-3.7.1.min.js')) {
 
 ?>
   <script src="<?= (check_http_200('https://code.jquery.com/jquery-3.7.1.min.js') ? 'https://code.jquery.com/jquery-3.7.1.min.js' : $path . 'jquery-3.7.1.min.js') ?>"></script>
+
+
+  <script src="//code.jquery.com/jquery-1.12.4.js"></script>
+  <script src="//code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
 
 
 
@@ -1266,14 +1284,14 @@ function toggleSwitch(element) {
     // Add your logic here
     console.log('checked');
     
-$("#debug-content").hide("slide", { direction: "right" }, 1000);
+$("#debug-content").show("slide", { direction: "left" }, 1000);
 
   } else {
     // Third option is not selected
     // Add your logic here
     console.log('(not) checked');
     
-$("#debug-content").show("slide", { direction: "left" }, 1000);
+$("#debug-content").hide("slide", { direction: "left" }, 1000);
 
   }
 }
