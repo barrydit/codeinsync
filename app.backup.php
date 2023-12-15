@@ -97,7 +97,7 @@ ob_start(); ?>
 
 <?php
 if (isset($_GET['client']) && $_GET['client']) { 
-  $dirs = array_filter(glob(dirname(__DIR__) . '/clientele/' . $_GET['client'] . '/*'), 'is_dir');
+  $dirs = array_filter(glob(dirname(__DIR__) . '/../../clientele/' . $_GET['client'] . '/*'), 'is_dir');
 
 //if (count($dirs) >= 1) $_GET['domain'] = basename($dirs[array_key_first($dirs)]);
 
@@ -110,7 +110,7 @@ if (isset($_GET['client']) && $_GET['client']) {
 <select id="client" name="client" onchange="this.form.submit();">
   <option value="">---</option>
 <?php
-  $dirs = array_filter(glob(dirname(__DIR__) . '/clientele/*'), 'is_dir');
+  $dirs = array_filter(glob(dirname(__DIR__) . '/../../clientele/*'), 'is_dir');
 
   foreach ($dirs as $dir) { ?>
   <option <?= (isset($_GET['client']) && $_GET['client'] == basename($dir) ? 'selected' : '') ?>><?= basename($dir); ?></option>
@@ -119,7 +119,7 @@ if (isset($_GET['client']) && $_GET['client']) {
 </div>
 
 <?php if (!empty($_GET['client'])) { 
-    $dirs = array_filter(glob(dirname(__DIR__) . '/clientele/' . $_GET['client'] . '/*'), 'is_dir'); ?>
+    $dirs = array_filter(glob(dirname(__DIR__) . '/../../clientele/' . $_GET['client'] . '/*'), 'is_dir'); ?>
 <div style="display: inline-block;">
 <label for="domain">Domain:</label>
 <select id="domain" name="domain" onchange="this.form.submit();">

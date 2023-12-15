@@ -91,10 +91,9 @@ $proc=proc_open('sudo ' . NPM_EXEC . ' ' . $match[1],
           $output[] = (!isset($stdout) ? NULL : $stdout . (isset($stderr) && $stderr === '' ? NULL : ' Error: ' . $stderr) . (isset($exitCode) && $exitCode == 0 ? NULL : 'Exit Code: ' . $exitCode));
           //$output[] = $_POST['cmd'];
 
-        }
-
-
           //exec($_POST['cmd'], $output);
+        } else if (preg_match('/^wget\s+(:?(.*))/i', $_POST['cmd'], $match))
+          exec('wget -qO- ' . $match[1] . ' &> /dev/null', $output);
         else {
           if (preg_match('/^(\w+)\s+(:?(.*))/i', $_POST['cmd'], $match))
             if (isset($match[1]) && in_array($match[1], ['tail', 'cat', 'echo', 'env', 'sudo'])) {
@@ -493,7 +492,12 @@ $(document).ready(function() {
     //$('#requestSubmit').click();
   });
   
-  
+  $("#app_php-error-log").click(function() {
+    $('#requestInput').val('wget <?= APP_WWW ?>?error_log=unlink'); // unlink
+    //show_console();
+    $('#requestSubmit').click();
+  });
+
   $("#app_composer-init-submit").click(function() {
     const requestValue = $('#app_composer-init-input').val().replace(/\n/g, ' ');
     

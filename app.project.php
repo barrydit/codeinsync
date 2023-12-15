@@ -99,7 +99,7 @@ ob_end_clean();
 ob_start(); ?>
 
 <!-- <div class="container" style="border: 1px solid #000;"> -->
-  <div id="app_project-container" class="<?= (APP_SELF == __FILE__ || (isset($_GET['app']) && $_GET['app'] == 'packagist') || (defined('COMPOSER') && !is_object(COMPOSER)) || count((array)COMPOSER) === 0 || version_compare(COMPOSER_LATEST, COMPOSER_VERSION, '>') != 0 ? 'selected' : '') ?>" style="border: 1px solid #000;">
+  <div id="app_project-container" class="<?= (APP_SELF == __FILE__ || (isset($_GET['app']) && $_GET['app'] == 'project') || isset($_GET['project']) ? 'selected' : '') ?>" style="border: 1px solid #000;">
     <div class="header ui-widget-header">
       <div style="display: inline-block;">Project</div>
       <div style="display: inline; float: right; text-align: center; padding: -4px 5px 0px 0px;">[<a style="cursor: pointer; font-size: 13px;" onclick="document.getElementById('app_project-container').style.display='none';">X</a>]</div> 

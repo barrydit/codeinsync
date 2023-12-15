@@ -113,13 +113,8 @@ ob_start(); ?>
     </div>
 
       <div style="display: inline-block; width: auto; padding-left: 10px;">
-        <iframe src="<?= basename(__FILE__) ?>" style="height: 550px; width: 775px;"></iframe>
+        <iframe src="<?= /* basename(__FILE__) */ NULL; ?>" style="height: 550px; width: 775px;"></iframe>
       </div>
-      
-      
-
-
-
 
       <!-- <pre id="ace-editor" class="ace_editor"></pre> -->
 

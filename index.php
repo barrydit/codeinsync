@@ -8,11 +8,21 @@ if ($path = (basename(getcwd()) == 'public')
     require_once($path); 
 else die(var_dump($path . ' was not found. file=config.php'));
 
+//dd($_SERVER); php_self, script_name, request_uri /folder/
+
 // dd(getenv('PATH'));
 
 switch ($_SERVER['REQUEST_METHOD']) {
   case 'POST':    
     //dd($_POST);
+    break;
+  case 'GET':
+    if (!empty($_GET['path']))
+      exit(header('Location: ' . APP_WWW . $_GET['path']));
+    if (isset($_GET['category']) && !empty($_GET['category']))
+      exit(header('Location: ' . APP_WWW . '?' . $_GET['category']));
+    elseif (isset($_GET['category']) && empty($_GET['category']))
+      exit(header('Location: ' . APP_WWW . '?debug'));
     break;
 }
 
@@ -179,11 +189,8 @@ if ($path = (basename(getcwd()) == 'public') // composer_app.php (depend.)
   require_once($path); 
 else die(var_dump($path . ' was not found. file=app.project.php'));
 
-
 header("Cache-Control: no-store, no-cache, must-revalidate, max-age=0");
 header("Pragma: no-cache");
-
-
 
 ?>
 <!DOCTYPE html>
@@ -378,8 +385,8 @@ input:checked + .label .slider:before {
  <div class="row-container" style="position: absolute; left: 0; top: 0;">
     <iframe id="iWindow" src="<?php
 if (!empty($_GET['client'])) {
-  $path = '/clientele/' . $_GET['client'] . '/';
-  $dirs = array_filter(glob(dirname(__DIR__) . '/../' . $path . '*'), 'is_dir');
+  $path = '../../clientele/' . $_GET['client'] . '/';
+  $dirs = array_filter(glob(dirname(__DIR__) . '/' . $path . '*'), 'is_dir');
   
   if (count($dirs) == 1)
     foreach($dirs as $dir) {
@@ -392,7 +399,7 @@ if (!empty($_GET['client'])) {
       continue;
     }
 
-  if (!empty($_GET['domain'])) {
+  if (!empty($_GET['domain']))
     foreach($dirs as $key => $dir) {
       if (basename($dir) == $_GET['domain']) {
         if (is_dir($dirs[$key].'/public/'))
@@ -404,7 +411,7 @@ if (!empty($_GET['client'])) {
     }
     //else 
     //exit(header('Location: http://localhost/clientele/' . $_GET['client']));    
-  }
+
   $path = '?path=' . $path;
 } elseif (!empty($_GET['project'])) {
   $path = '/projects/' . $_GET['project'] . '/';   
@@ -423,9 +430,9 @@ if (!empty($_GET['client'])) {
 
 <!--form action="#!" method="GET">
 <?= (isset($_GET['debug']) && !$_GET['debug'] ? '' : '<input type="hidden" name="debug" value / >') ?> 
-  <input class="input" id="toggle-debug" type="checkbox" onchange="this.form.submit();" <?= (isset($_GET['debug']) ? 'checked' : '') ?> / -->
+  <input class="input" id="toggle-debug" type="checkbox" onchange="this.form.submit();" <?= (isset($_GET['debug']) || APP_ENV == 'development'? 'checked' : '') ?> / -->
 
-  <input class="input" id="toggle-debug" type="checkbox" onchange="toggleSwitch(this); return null;" <?= (isset($_GET['debug']) ? 'checked' : '') ?> />
+  <input class="input" id="toggle-debug" type="checkbox" onchange="toggleSwitch(this); return null;" <?= (isset($_GET['debug']) || APP_ENV == 'development' ? 'checked' : '') ?> />
 
   <label class="label" for="toggle-debug" style="margin-left: -6px;">
     <div class="switch">
@@ -458,9 +465,52 @@ if (isset($_GET['path'])) { ?>
         <!-- <input type="hidden" name="path" value="<?= $_GET['path']; ?>" /> -->
 <?php } ?>
 
-<?php echo '<button id="displayDirectoryBtn" style="float: left; margin: 2px 5px 0 0;" type="">&#9660;</button><a style="float: left; margin: 2px 5px 0 0;" href="' . (APP_URL['query'] != '' ? '?' . APP_URL['query'] : '') . (isset($_GET['path']) && $_GET['path'] != '' ? parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH) : (APP_ENV == 'development' ? '#!' : '') ) . '"><span title="' . $path . '" style="cursor: pointer;" onclick="document.getElementById(\'app_directory-container\').style.display=\'block\';">' . (isset($_GET['project']) ? '/project/' : parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH)) . (isset($_GET['path']) && $_GET['path'] === '' ? '' : (!isset($_GET['path']) ? '' : basename($_GET['path']) . '/')) . '</span></a>'; /* $path; */ ?>
+<?php echo '<button id="displayDirectoryBtn" style="float: left; margin: 2px 5px 0 0;" type="">&#9660;</button><a style="float: left; margin: 2px 5px 0 0;" href="' . (APP_URL['query'] != '' ? '?' . APP_URL['query'] : '') . (isset($_GET['path']) && $_GET['path'] != '' ? parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH) : (APP_ENV == 'development' ? '#!' : '') ) . '"><span title="' . $path . '" style="cursor: pointer;" onclick="">'
+. '/<form action="" method="GET"><select name="category" onchange="this.form.submit();">'
+. '<option value="" ' . (empty(APP_QUERY) ? 'selected' : '') . '>' . basename(parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH)) . '</option>'
+. '<option value="project" ' . (isset($_GET['project']) ? 'selected' : '') . '>projects</option>'
+. '<option value="client" ' . (isset($_GET['client']) ? 'selected' : '') . '>clientele</option>'
+. '</select></form>/'
+. '</span></a>'; /* $path; */ ?>
+<?php
 
-<select name="path" style="float: left; margin: 2px 5px 0 0;" onchange="this.form.submit();">
+if (isset($_GET['project'])) { 
+$links = array_filter(glob(APP_PATH . '../../projects/*'), 'is_dir');
+?>
+
+<select name="project" style="float: left; margin: 2px 5px 0 0;" onchange="this.form.submit(); return false;">
+  <option value="">---</option>
+<?php
+      while ($link = array_shift($links)) {
+
+        $link = basename($link); // Get the directory name from the full path
+        if (is_dir(APP_PATH . '../../projects/' . $link)) {
+          echo '  <option value="' . $link . '" ' . (current($_GET) == $link ? 'selected' : '') . '>' . $link . '</option>' . "\n";
+        }
+
+      }
+      ?>
+    </select>
+<?php } elseif(isset($_GET['client'])) { 
+$links = array_filter(glob(APP_PATH . '../../clientele/*'), 'is_dir');
+?>
+
+<select name="client" style="float: left; margin: 2px 5px 0 0;" onchange="this.form.submit(); return false;">
+  <option value="">---</option>
+<?php
+      while ($link = array_shift($links)) {
+
+        $link = basename($link); // Get the directory name from the full path
+        if (is_dir(APP_PATH . '../../clientele/' . $link)) {
+          echo '  <option value="' . $link . '" ' . (current($_GET) == $link ? 'selected' : '') . '>' . $link . '</option>' . "\n";
+        }
+
+      }
+      ?>
+    </select>
+<?php } else { ?>
+
+<select name="path" style="float: left; margin: 2px 5px 0 0;" onchange="this.form.submit(); return false;">
   <option value="">.</option>
   <option value="">..</option>
 <?php
@@ -473,6 +523,8 @@ if ($path)
   }
 ?>
         </select>
+
+<?php } ?>
 </form>
 </div>
 
@@ -508,18 +560,7 @@ if ($path)
 
 <div style="position: relative;">
 
-<div id="app_installed_apps-container" style="position: absolute; width: 600px; margin: 150px auto; height: 500px; background-color: rgba(255, 255, 255, 0.9); text-align: center; overflow-x: scroll;">
-
-<div style="position: absolute; margin: 0 auto; left: 0; right: 0; text-align: center;" class="text-sm">
-
-<?= /*dd(GIT_EXEC,0) . dd(COMPOSER_EXEC,0) */ NULL;?>
-
-</div>
-
-</div>
-
-
-<div id="app_menu-container" style="position: absolute; width: 800px; margin: 0 auto; height: 500px; background-color: rgba(255, 255, 255, 0.9); overflow-x: scroll;">
+<div id="app_menu-container" style="position: absolute; display: none; width: 800px; margin: 0 auto; height: 500px; background-color: rgba(255, 255, 255, 0.9); overflow-x: scroll;">
 
 <div style="position: absolute; margin: 80px 45px; text-align: center;" class="text-sm"><a href="#!" onclick="document.getElementById('app_menu-container').style.display='none'; return false;"><img style="text-align: center;" height="25" width="25" src="<?= APP_BASE['resources'] . 'images/close-red.gif' ?>" /></a><br /></div>
 
@@ -627,7 +668,7 @@ https://stackoverflow.com/questions/12939928/make-a-link-open-a-new-window-not-t
 
 </div>
 
-<div id="app_directory-container" style="position: absolute; display: <?= ( isset($_GET['debug']) ? 'block' : 'none'); ?>; background-color: white; height: 580px; position: absolute; top: 100px; margin-left: auto; margin-right: auto; left: 0; right: 0; width: 700px;">
+<div id="app_directory-container" style="position: absolute; display: <?= ( isset($_GET['debug']) || isset($_GET['project']) ? 'block' : 'none'); ?>; background-color: white; height: 580px; position: absolute; top: 100px; margin-left: auto; margin-right: auto; left: 0; right: 0; width: 700px;">
 
 <?php if (isset($_GET['path']) && preg_match('/^vendor/', $_GET['path'])) { ?>
 
@@ -902,15 +943,22 @@ $count = 1;
 <?php } ?></li>
 -->
 
-<?php } elseif(isset($_GET['client'])) { ?> 
+<?php } elseif(isset($_GET['client']) && empty($_GET['client'])) { ?> 
 
 <?php if (readlinkToEnd('/var/www/clientele') == '/mnt/c/www/clientele') {
-foreach(['000', '001', '002', '003'] as $key => $status) {
+foreach(['000', '001', '002', '003', '004'] as $key => $status) {
 
 if ($key != 0) echo '</table>'."\n\n\n";
 
-$links = array_filter(glob(APP_PATH . '../../clientele/' . $status . '*'), 'is_dir'); ?>
-<h3>Status: On-call (<?= $status ?>)</h3>
+$links = array_filter(glob(APP_PATH . '../../clientele/' . $status . '*'), 'is_dir');
+$statusCode = $status;
+$status = ($status == 000) ? "On-call" :
+         (($status == 001) ? "Working" :
+         (($status == 002) ? "Planning" :
+         (($status == 003) ? "Previous" :
+         (($status == 004) ? "Future" : "Unknown"))));
+?>
+<h3>Stage: <?= $status ?> (<?= $statusCode ?>)</h3>
 <table width="" style="border: none;">
 <tr style=" border: none;">
 <?php
@@ -919,9 +967,9 @@ $count = 1;
 ?>
 
       <?php
-      if (empty($links)) {
-        echo '<option value="" selected>---</option>' . "\n"; // label="     "
-      } else  //dd($links);
+      //if (empty($links)) {
+      //  echo '<option value="" selected>---</option>' . "\n"; // label="     "
+      //} else  //dd($links);
       $old_links = $links;
       while ($link = array_shift($links)) {
         $old_link = $link;
@@ -945,32 +993,8 @@ $count = 1;
       
 ?>
 </table>
-<!--
-      <li>
-<?php 
-}
-if (readlinkToEnd('/var/www/clientele') == '/mnt/c/www/clientele') {  ?>
-<a href="clientele/">client/</a>
-        <ul style="padding-left: 10px;">
-          <form action method="GET">
-            <select id="sproject" name="project" style="color: #000;">
-<?php
-      while ($link = array_shift($links)) {
 
-        $link = basename($link); // Get the directory name from the full path
-        if (is_dir(APP_PATH . '../../clientele/' . $link)) {
-          echo '  <option value="' . $link . '" ' . (current($_GET) == $link ? 'selected' : '') . '>' . $link . '</option>' . "\n";
-        }
-
-      }
-      ?>
-            </select>
-          </form>
-	    </ul>
-<?php } ?></li>
--->
-
-<?php } else { ?>
+<?php } } else { ?>
 
 <table width="" style="border: 0 solid #000;">
 <tr>
@@ -1114,7 +1138,7 @@ if (!empty($paths))
 
         } elseif (basename($path) == basename(ini_get('error_log')))
           echo '<a href="?app=text_editor&path=' . (basename(dirname($path)) == basename(parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH) ? 'failed' : basename(dirname($path)))) . '&file=' . basename($path) . '">'
-          . '<div style="position: relative;"><img src="resources/images/error_log.png" width="40" height="50" /></a><br /><a href="?' . basename(ini_get('error_log')) . '=unlink" style="text-decoration: line-through; background-color: red; color: white;">' . basename($path)
+          . '<div style="position: relative;"><img src="resources/images/error_log.png" width="40" height="50" /></a><br /><a id="app_php-error-log" href="' . (APP_URL['query'] != '' ? '?'.APP_URL['query'] : '') . (APP_ENV == 'development' ? '#!' : '') . /* '?' . basename(ini_get('error_log')) . '=unlink' */ '" style="text-decoration: line-through; background-color: red; color: white;">' . basename($path)
           . (is_readable($path = ini_get('error_log')) && filesize($path) > 0 ? '</a><div style="position: absolute; right: 8px; bottom: -6px; color: red; font-weight: bold;">[1]</div>' : '' )
           . '</div>' . "\n";
         else

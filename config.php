@@ -223,11 +223,11 @@ require('constants.php');
 
 if (APP_ENV == 'development') {
 
-if (is_readable($path = ini_get('error_log')) && filesize($path) > 0 ) {
+if (is_readable($path = ini_get('error_log')) && filesize($path) >= 0 ) {
   $errors['ERROR_LOG'] = shell_exec('sudo tail ' . $path);
   if (isset($_GET[$error_log = basename(ini_get('error_log'))]) && $_GET[$error_log] == 'unlink') {
     unlink($path);
-    exit(header('Location: ' . APP_WWW));
+    exit(); // header('Location: ' . APP_WWW)
   }
 }
 /**This Program Should be Disabled by default ... for debugging purposes only!**/
