@@ -134,7 +134,7 @@ ob_end_clean();
 ob_start(); ?>
 
 <!-- <div class="container" style="border: 1px solid #000;"> -->
-  <div id="app_browser-container" class="<?= (APP_SELF == __FILE__ || (isset($_GET['app']) && $_GET['app'] == 'browser') || (defined('COMPOSER') && !is_object(COMPOSER)) || count((array)COMPOSER) === 0 || version_compare(COMPOSER_LATEST, COMPOSER_VERSION, '>') != 0 ? 'selected' : '') ?>" style="border: 1px solid #000;">
+  <div id="app_browser-container" class="<?= (APP_SELF == __FILE__ || (isset($_GET['app']) && $_GET['app'] == 'browser') ? 'selected' : '') ?>" style="border: 1px solid #000;">
     <div class="header ui-widget-header">
       <div style="display: inline-block;">Browser ()</div>
       <div style="display: inline; float: right; text-align: center;">[<a style="cursor: pointer; font-size: 13px;" onclick="document.getElementById('app_browser-container').style.display='none';">X</a>]</div> 
@@ -182,6 +182,7 @@ if (is_file(APP_PATH . APP_BASE['var'] . 'github.com.html')) {
     file_put_contents(APP_PATH . APP_BASE['var'] . 'github.com.html', $html) or $errors['COMPOSER_LATEST'] = $url . ' returned empty.';
 }
 
+/*
 libxml_use_internal_errors(true); // Prevent HTML errors from displaying
 $dom = new DOMDocument(1.0, 'utf-8');
 $dom->loadHTML(file_get_contents(check_http_200('https://github.com/barrydit/composer_app') ? 'https://github.com/barrydit/composer_app' : APP_PATH . APP_BASE['var'] . 'github.com.html'), LIBXML_HTML_NOIMPLIED | LIBXML_HTML_NODEFDTD );   
@@ -199,7 +200,7 @@ $destination = $xpath->query('//head/meta');
 $template = $dom->createDocumentFragment();
 $template->appendXML('<base href="https://github.com/" />');
 $destination[0]->parentNode->insertBefore($template, $destination[0]->nextSibling);
-
+*/
 
 /*
 $dom = new DOMDocument(1.0, 'utf-8');
@@ -225,7 +226,7 @@ $dom->appendChild($elm);
 
 //check if file is included or accessed directly
 if (__FILE__ == get_required_files()[0] || in_array(__FILE__, get_required_files()) && isset($_GET['app']) && $_GET['app'] == 'php' && APP_DEBUG)
-  Shutdown::setEnabled(false)->setShutdownMessage(function() use($dom) {
+  Shutdown::setEnabled(false)->setShutdownMessage(function() { // use($dom) 
 
-      return $dom->saveHTML() ?? file_get_contents("https://github.com/barrydit/composer_app"); // $dom->saveHTML(); /* eval('? >' . $project_code); // -wow */
+      return ''; // $dom->saveHTML() ?? file_get_contents("https://github.com/barrydit/composer_app"); // $dom->saveHTML(); /* eval('? >' . $project_code); // -wow */
     })->shutdown(); // die();

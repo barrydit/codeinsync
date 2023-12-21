@@ -81,7 +81,7 @@ foreach ($installedPackages['packages']  as $package) { //
 }
 */
 
-$installedPackages = \Composer\InstalledVersions::getInstalledPackages();
+//dd(get_declared_classes());
 
 if (!function_exists('get_declared_classes')) {
   $autoloadContent = file_get_contents('vendor/autoload.php');
@@ -96,12 +96,12 @@ if (!function_exists('get_declared_classes')) {
         $errors['COMPOSER-AutoloaderInit'] = 'ComposerAutloaderInit failed to be matched.';
     }
 
-if (isset($matches[1]))
+if (isset($matches[1])) {
   define('COMPOSER_AUTOLOADERINIT', $matches[1]); // no dashes
 
-$classesFound = [];
-$foundKey = false; // Flag to indicate if key 179 has been found
-foreach ($classes as $key => $class) {
+  $classesFound = [];
+  $foundKey = false; // Flag to indicate if key 179 has been found
+  foreach ($classes as $key => $class) {
     if ($foundKey) {
         // Now $key is the key and $item is the value
         //echo "$key => $class\n"; // Print key-value pair
@@ -111,6 +111,7 @@ foreach ($classes as $key => $class) {
         $classesFound[] = $class;
         $foundKey = true; // Set the flag to true once key 179 is found
     }
+  }
 }
 
 $loadedLibraries = [];
@@ -125,7 +126,11 @@ if (in_array('Composer\Autoload\ClassLoader', $loadedLibraries)) {
     // The library is loaded
 //  echo 'Library found.';
     //$loadedLibraries;
+    
+    $installedPackages = \Composer\InstalledVersions::getInstalledPackages();
+
 }
+
 
 
 //dd();
@@ -292,7 +297,7 @@ if (strtoupper(substr(PHP_OS, 0, 3)) === 'WIN') { // DO NOT REMOVE! { .. }
 */
     foreach(array('/usr/local/bin/composer', 'php composer.phar', '/usr/bin/composer') as $key => $bin) {
         !isset($composer) and $composer = array();
-
+/*//*/
         $proc = proc_open('env COMPOSER_ALLOW_SUPERUSER=' . COMPOSER_ALLOW_SUPERUSER . '; sudo ' . $bin . ' --version;', array( array("pipe","r"), array("pipe","w"), array("pipe","w")), $pipes);
 
         $stdout = stream_get_contents($pipes[1]);
@@ -310,6 +315,7 @@ if (strtoupper(substr(PHP_OS, 0, 3)) === 'WIN') { // DO NOT REMOVE! { .. }
                     $errors['COMPOSER_VERSION'] = '$stdout is empty. $stderr = ' . $stderr;
             } // else $errors['COMPOSER_VERSION'] = $stdout . ' does not match $version'; }
         }
+
     }
 
     usort($composer, function($a, $b) {
@@ -575,7 +581,7 @@ $stderr = stream_get_contents($pipes[2]);
 fclose($pipes[1]);
 fclose($pipes[2]);
 */
-
+/**/
     list($stdout, $stderr, $exitCode) = [stream_get_contents($pipes[1]), stream_get_contents($pipes[2]), proc_close($proc)];
     
     if (empty($stdout)) {
@@ -584,7 +590,7 @@ fclose($pipes[2]);
     } else $errors['COMPOSER_UPDATE'] = $stdout;
 
   }
-  
+
   if (!is_dir('vendor') || !is_file('vendor/autoload.php'))
     exec('sudo composer dump-autoload', $output, $returnCode) or $errors['COMPOSER-DUMP-AUTOLOAD'] = $output;
   else
@@ -726,13 +732,13 @@ if (!empty(array_diff($vendors, $dirs_diff)) ) {
   }
 
   // https://getcomposer.org/doc/03-cli.md
-  $proc = proc_open('sudo ' . COMPOSER_EXEC['bin'] . ' validate --no-check-all --no-check-publish --no-check-version --strict', array( array("pipe","r"), array("pipe","w"), array("pipe","w")), $pipes); // $output = shell_exec("cd " . escapeshellarg(dirname(COMPOSER_JSON['path'])) . " && " . 'sudo ' . COMPOSER_EXEC . ' validate --no-check-all --no-check-publish --no-check-version');  dd($output);
+//  $proc = proc_open('sudo ' . COMPOSER_EXEC['bin'] . ' validate --no-check-all --no-check-publish --no-check-version --strict', array( array("pipe","r"), array("pipe","w"), array("pipe","w")), $pipes); // $output = shell_exec("cd " . escapeshellarg(dirname(COMPOSER_JSON['path'])) . " && " . 'sudo ' . COMPOSER_EXEC . ' validate --no-check-all --no-check-publish --no-check-version');  dd($output);
 
   //  "./composer.json" does not match the expected JSON schema:  
   //  - NULL value found, but an object is required
 
   // poss. err './composer.json is valid but your composer.lock has some errors'   checks composer.lock
-
+/*
   list($stdout, $stderr, $exitCode) = [stream_get_contents($pipes[1]), stream_get_contents($pipes[2]), proc_close($proc)];
 
   if ($exitCode !== 0) {
@@ -754,11 +760,11 @@ if (!empty(array_diff($vendors, $dirs_diff)) ) {
     }
     //dd($errors);
   }
-
+*/
 }
+
 //if (strpos($output, 'No errors or warnings detected') !== false)
 //Deprecated:  strpos(): Passing null to parameter #1 ($haystack) of type string is deprecated
-
 
 defined('COMPOSER_JSON')
     and define('COMPOSER', json_decode(file_get_contents(COMPOSER_JSON['path'])));

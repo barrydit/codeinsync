@@ -92,7 +92,7 @@ ob_end_clean();
 ob_start(); ?>
 
 <!-- <div class="container" style="border: 1px solid #000;"> -->
-  <div id="app_whiteboard-container" class="<?= (APP_SELF == __FILE__ || (isset($_GET['app']) && $_GET['app'] == 'whiteboard') || (defined('COMPOSER') && !is_object(COMPOSER)) || count((array)COMPOSER) === 0 || version_compare(COMPOSER_LATEST, COMPOSER_VERSION, '>') != 0 ? 'selected' : '') ?>" style="border: 1px solid #000;">
+  <div id="app_whiteboard-container" class="<?= (APP_SELF == __FILE__ || (isset($_GET['app']) && $_GET['app'] == 'whiteboard') ? 'selected' : '') ?>" style="border: 1px solid #000;">
     <div class="header ui-widget-header">
       <div style="display: inline-block;">Whiteboard</div>
       <div style="display: inline; float: right; text-align: center;">[<a style="cursor: pointer; font-size: 13px;" onclick="document.getElementById('app_whiteboard-container').style.display='none';">X</a>]</div> 

@@ -123,7 +123,7 @@ $proc=proc_open('sudo ' . $match[1] . ' ' . $match[2],
       exit();
     }
 }
-
+/*
 if ($path = (basename(getcwd()) == 'public')
     ? (is_file('../git.php') ? '../git.php' : (is_file('../config/git.php') ? '../config/git.php' : null))
     : (is_file('git.php') ? 'git.php' : (is_file('config/git.php') ? 'config/git.php' : null))) require_once($path); 
@@ -138,6 +138,8 @@ if ($path = (basename(getcwd()) == 'public')
     ? (is_file('../npm.php') ? '../npm.php' : (is_file('../config/npm.php') ? '../config/npm.php' : null))
     : (is_file('npm.php') ? 'npm.php' : (is_file('config/npm.php') ? 'config/npm.php' : null))) require_once($path); 
 else die(var_dump($path . ' path was not found. file=npm.php'));
+*/
+
 
 define('CONSOLE', true);
 
@@ -259,7 +261,9 @@ const respCon = document.getElementById('responseConsole');
 const styles = window.getComputedStyle(consoleContainer);
 const changePositionBtn = document.getElementById('changePositionBtn');
 
+<?php if (defined('COMPOSER')) { ?>
 const initSubmit = document.getElementById('app_composer-init-submit');
+<?php } ?>
 let isFixed = false; // Store the current position state
 
 var requestInput = document.getElementById('requestInput');
@@ -376,7 +380,7 @@ function show_console(event) {
             show_console();
         }
     });
-
+<?php if (defined('COMPOSER')) { ?>
 initSubmit.addEventListener('click', () => {
   show_console();
   const requestInput = document.getElementById('requestInput');
@@ -400,7 +404,7 @@ initSubmit.addEventListener('click', () => {
   
   );
 });
-
+<?php } ?>
 window.addEventListener('resize', () => {
   // document.getElementById('responseConsole').style.width = window.innerWidth - 15 + 'px';
  });

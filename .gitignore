@@ -1,11 +1,12 @@
 /config
 /dist
 /public
-/database/weekly-timesheet-[0-9]{4}-[0-9]{2}.json
+/database/weekly-timesheet-????-??.json
 /resources/js
 /node_modules
 /project
 /vendor
+/var/*.html
 /var/*.php
 /resources/reels/
 .env.*

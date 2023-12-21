@@ -387,7 +387,6 @@ $totalHours[$rotationIndex][1] = new DateInterval("PT{$newHours}H{$newMinutes}M{
           // Get the current hour
           $currentHour = (int) $timestamp->format('G');
 
-
           if ($rotationIndex === null) //{
             $rotationIndex = $index - 1;
           else {

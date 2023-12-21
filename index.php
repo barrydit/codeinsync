@@ -1,6 +1,6 @@
 <?php
 
-//die(var_dump($_POST));
+//die(var_dump($_GET));
 
 if ($path = (basename(getcwd()) == 'public')
     ? (is_file('../config.php') ? '../config.php' : (is_file('../config/config.php') ? '../config/config.php' : null))
@@ -17,10 +17,11 @@ switch ($_SERVER['REQUEST_METHOD']) {
     //dd($_POST);
     break;
   case 'GET':
-    if (!empty($_GET['path']))
+    if (!empty($_GET['path']) && !isset($_GET['app']))
       exit(header('Location: ' . APP_WWW . $_GET['path']));
     if (isset($_GET['category']) && !empty($_GET['category']))
-      exit(header('Location: ' . APP_WWW . '?' . $_GET['category']));
+      //if ($_GET['category'] != 'project')
+        exit(header('Location: ' . APP_WWW . '?' . $_GET['category']));
     elseif (isset($_GET['category']) && empty($_GET['category']))
       exit(header('Location: ' . APP_WWW . '?debug'));
     break;
@@ -111,18 +112,18 @@ if (in_array(APP_PATH . 'composer.php', get_required_files())) {
   require_once($path); 
   else die(var_dump($path . ' was not found. file=composer_ui.php'));
 }
-
+// >> This guy makes the visual screwed up!
 if ($path = (basename(getcwd()) == 'public')
     ? (is_file('git_ui.php') ? 'git_ui.php' : (is_file('../git_ui.php') ? '../git_ui.php' : (is_file('../config/git_ui.php') ? '../config/git_ui.php' : NULL)))
     : (is_file('../git_ui.php') ? '../git_ui.php' : (is_file('public/git_ui.php') ? 'public/git_ui.php' : (is_file('config/git_ui.php') ? 'config/git_ui.php' : 'git_ui.php'))))
   require_once($path); 
 else die(var_dump($path . ' was not found. file=git_ui.php'));
-
+/*
 if ($path = (basename(getcwd()) == 'public')
     ? (is_file('../npm.php') ? '../npm.php' : (is_file('../config/npm.php') ? '../config/npm.php' : null))
     : (is_file('npm.php') ? 'npm.php' : (is_file('config/npm.php') ? 'config/npm.php' : null))) require_once($path); 
 else die(var_dump($path . ' path was not found. file=npm.php'));
-
+*/
 if ($path = (basename(getcwd()) == 'public')
     ? (is_file('app.php.php') ? 'app.php.php' : (is_file('../app.php.php') ? '../app.php.php' : (is_file('../config/app.php.php') ? '../config/app.php.php' : NULL)))
     : (is_file('../app.php.php') ? '../app.php.php' : (is_file('public/app.php.php') ? 'public/app.php.php' : (is_file('config/app.php.php') ? 'config/app.php.php' : 'app.php.php'))))
@@ -190,9 +191,7 @@ if ($path = (basename(getcwd()) == 'public') // composer_app.php (depend.)
 else die(var_dump($path . ' was not found. file=app.project.php'));
 
 header("Cache-Control: no-store, no-cache, must-revalidate, max-age=0");
-header("Pragma: no-cache");
-
-?>
+header("Pragma: no-cache"); ?>
 <!DOCTYPE html>
 <html>
 <head>
@@ -229,9 +228,9 @@ if (is_file($path . 'tailwindcss-3.3.5.js')) {
 <style type="text/tailwindcss">
 .row-container { display: flex; width: 100%; height: 100%; flex-direction: column; overflow: hidden; }
 
-<?= $appComposer['style']; ?>
+<?= (isset($appComposer) ? $appComposer['style'] : null); ?>
 
-<?= $appGit['style']; ?>
+<?= (isset($appGit) ? $appGit['style'] : null); ?>
 
 <?= $appPHP['style']; ?>
 
@@ -457,7 +456,10 @@ if (!empty($_GET['client'])) {
       <a href="<?= (APP_URL['query'] != '' ? '?'.APP_URL['query'] : '') . (APP_ENV == 'development' ? '#!' : '') ?>" onclick="document.getElementById('app_timesheet-container').style.display='block';"><img src="resources/images/clock.gif" width="30" height="30"> Clock-In</a>
 
 <div style="position: absolute; top: 40px; left: 0; width: 400px; z-index: 1;">
-<form style="display: inline;" autocomplete="off" spellcheck="false" action="<?= APP_URL_BASE . /*basename(__FILE__) .*/ '?' . http_build_query(APP_QUERY /*+ array( 'app' => 'text_editor')*/) . (APP_ENV == 'development' ? '#!' : '') /* $c_or_p . '=' . (empty($_GET[$c_or_p]) ? '' : $$c_or_p->name) . '&amp;app=composer' */ ?>" method="GET">
+<form style="display: inline;" autocomplete="off" spellcheck="false" action="<?= 
+//APP_URL_BASE . /*basename(__FILE__) .*/ '?' . http_build_query(APP_QUERY /*+ array( 'app' => 'text_editor')*/) . (APP_ENV == 'development' ? '#!' : '') 
+
+/* $c_or_p . '=' . (empty($_GET[$c_or_p]) ? '' : $$c_or_p->name) . '&amp;app=composer' */ NULL; ?>" method="GET">
 
 <?php $path = realpath(getcwd() . (isset($_GET['path']) ? DIRECTORY_SEPARATOR . $_GET['path'] : '')) . DIRECTORY_SEPARATOR;
 
@@ -465,20 +467,24 @@ if (isset($_GET['path'])) { ?>
         <!-- <input type="hidden" name="path" value="<?= $_GET['path']; ?>" /> -->
 <?php } ?>
 
-<?php echo '<button id="displayDirectoryBtn" style="float: left; margin: 2px 5px 0 0;" type="">&#9660;</button><a style="float: left; margin: 2px 5px 0 0;" href="' . (APP_URL['query'] != '' ? '?' . APP_URL['query'] : '') . (isset($_GET['path']) && $_GET['path'] != '' ? parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH) : (APP_ENV == 'development' ? '#!' : '') ) . '"><span title="' . $path . '" style="cursor: pointer;" onclick="">'
-. '/<form action="" method="GET"><select name="category" onchange="this.form.submit();">'
+<?php echo '<button id="displayDirectoryBtn" style="float: left; margin: 2px 5px 0 0;" type="">&#9660;</button>'
+//.'<a style="" href="' . (APP_URL['query'] != '' ? '?' . APP_URL['query'] : '') . (isset($_GET['path']) && $_GET['path'] != '' ? parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH) : (APP_ENV == 'development' ? '#!' : '') ) . '"></a>'
+. '<span title="' . $path . '" style="float: left; margin: 2px 5px 0 0; cursor: pointer;" onclick="">'
+. '/ '
+. '<select name="category" onchange="this.form.submit();">'
 . '<option value="" ' . (empty(APP_QUERY) ? 'selected' : '') . '>' . basename(parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH)) . '</option>'
 . '<option value="project" ' . (isset($_GET['project']) ? 'selected' : '') . '>projects</option>'
 . '<option value="client" ' . (isset($_GET['client']) ? 'selected' : '') . '>clientele</option>'
-. '</select></form>/'
-. '</span></a>'; /* $path; */ ?>
+. '</select></span></form>'
+. '<form style="display: inline;" action method="GET">'
+. '<span title="' . $path . '" style="float: left; margin: 2px 5px 0 0; cursor: pointer;" onclick=""> / '; /* $path; */ ?>
 <?php
 
 if (isset($_GET['project'])) { 
 $links = array_filter(glob(APP_PATH . '../../projects/*'), 'is_dir');
 ?>
 
-<select name="project" style="float: left; margin: 2px 5px 0 0;" onchange="this.form.submit(); return false;">
+<select name="project" style="" onchange="this.form.submit(); return false;">
   <option value="">---</option>
 <?php
       while ($link = array_shift($links)) {
@@ -495,7 +501,7 @@ $links = array_filter(glob(APP_PATH . '../../projects/*'), 'is_dir');
 $links = array_filter(glob(APP_PATH . '../../clientele/*'), 'is_dir');
 ?>
 
-<select name="client" style="float: left; margin: 2px 5px 0 0;" onchange="this.form.submit(); return false;">
+<select name="client" style="" onchange="this.form.submit(); return false;">
   <option value="">---</option>
 <?php
       while ($link = array_shift($links)) {
@@ -510,7 +516,7 @@ $links = array_filter(glob(APP_PATH . '../../clientele/*'), 'is_dir');
     </select>
 <?php } else { ?>
 
-<select name="path" style="float: left; margin: 2px 5px 0 0;" onchange="this.form.submit(); return false;">
+<select name="path" style="" onchange="this.form.submit(); return false;">
   <option value="">.</option>
   <option value="">..</option>
 <?php
@@ -525,6 +531,7 @@ if ($path)
         </select>
 
 <?php } ?>
+</span>
 </form>
 </div>
 
@@ -560,6 +567,43 @@ if ($path)
 
 <div style="position: relative;">
 
+<?php
+if (isset($_GET['client']) && $_GET['client'] != '') { ?>
+
+<div id="app_client-container" style="position: absolute; top: 100px; width: 800px; margin: 0 auto; height: 300px; background-color: rgba(255, 255, 255, 0.9); overflow-x: scroll;">
+
+<div style="margin: 0 10px; ">
+<input type="checkbox" checked /> Preview Domain<br />
+
+<div style="display: inline; width: 49%; border: 1px solid #000;">
+<?php
+
+$input = $_GET['client'];
+
+// Decode the URL-encoded string
+$decoded = urldecode($input);
+
+// Use regex to extract name components
+if (preg_match('/^\d+-(\w+)[,]\s*(\w+)$/', $decoded, $matches)) {
+    // $matches[1] contains the last name, $matches[2] contains the first name
+    $output = $matches[2] . ' ' . $matches[1];
+} else {
+    $output = 'Invalid Input';
+}
+
+?>
+Name: <input type="text" value="<?= $output; ?>" /><br />
+Hours: <input type="text" value="999" />
+</div>
+
+<div style="display: inline; width: 49%; text-align: right; border: 1px solid #000;">
+<span style="float: right;">Domain: <select><option>davidraymant.ca</option></select></span><br />
+<span style="float: right;">Add Domain: <input type="text"></span><br />
+
+</div>
+
+</div>
+<?php } ?>
 <div id="app_menu-container" style="position: absolute; display: none; width: 800px; margin: 0 auto; height: 500px; background-color: rgba(255, 255, 255, 0.9); overflow-x: scroll;">
 
 <div style="position: absolute; margin: 80px 45px; text-align: center;" class="text-sm"><a href="#!" onclick="document.getElementById('app_menu-container').style.display='none'; return false;"><img style="text-align: center;" height="25" width="25" src="<?= APP_BASE['resources'] . 'images/close-red.gif' ?>" /></a><br /></div>
@@ -668,7 +712,7 @@ https://stackoverflow.com/questions/12939928/make-a-link-open-a-new-window-not-t
 
 </div>
 
-<div id="app_directory-container" style="position: absolute; display: <?= ( isset($_GET['debug']) || isset($_GET['project']) ? 'block' : 'none'); ?>; background-color: white; height: 580px; position: absolute; top: 100px; margin-left: auto; margin-right: auto; left: 0; right: 0; width: 700px;">
+<div id="app_directory-container" style="position: absolute; display: <?= ( isset($_GET['debug']) || isset($_GET['project']) || isset($_GET['path'])  ? 'block' : 'none'); ?>; background-color: white; height: 580px; position: absolute; top: 100px; margin-left: auto; margin-right: auto; left: 0; right: 0; width: 700px;">
 
 <?php if (isset($_GET['path']) && preg_match('/^vendor/', $_GET['path'])) { ?>
 
@@ -881,7 +925,7 @@ if (!empty($result))
 
 <?php if (readlinkToEnd('/var/www/projects') == '/mnt/c/www/projects') {  ?>
 <div style="text-align: center; border: none;" class="text-xs">
-<a class="pkg_dir" href="?project=#!" onclick="document.getElementById('app_project-container').style.display='block';">
+<a class="pkg_dir" href="?project#!" onclick="document.getElementById('app_project-container').style.display='block';">
 <img src="resources/images/project-icon.png" width="50" height="32" style="" /></a><br /><a href="<?= (APP_URL['query'] != '' ? '?'. APP_URL['query'] : '') . '#!' ?>" onclick="document.getElementById('app_text_editor-container').style.display='block';">project.php</a>
 </div>
 
@@ -1058,7 +1102,7 @@ if (!empty($paths))
         elseif (basename($path) == 'vendor')
           echo '<div style="position: relative;">'
           . '<a href="#!" onclick="document.getElementById(\'app_composer-container\').style.display=\'block\';"><img src="resources/images/directory-composer.png" width="50" height="32" /></a><br />'
-          . '<a href="?path=' . basename($path) . '" onclick="">' . basename($path)  // "?path=' . basename($path) . '"         
+          . '<a href="?app=composer&path=' . basename($path) . '" onclick="">' . basename($path)  // "?path=' . basename($path) . '"         
           . '/</a></div>' . "\n";
         elseif (basename($path) == 'node_modules')
           echo '<div style="position: relative;">'
@@ -1159,9 +1203,9 @@ if (!empty($paths))
 
 <?= $appTimesheet['body']; ?>
 
-<?= $appComposer['body']; ?>
+<?= (isset($appComposer) ? $appComposer['body'] : null); ?>
 
-<?= $appGit['body']; ?>
+<?= (isset($appGit) ? $appGit['body'] : null); ?>
 
 <?= $appPHP['body'] ?>
 
@@ -1182,10 +1226,10 @@ if (!empty($paths))
 <?= $appTextEditor['body']; ?>
 
 
-
 </div>
-
 <?= $appConsole['body']; ?>
+
+
   <!-- https://cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.min.js -->
   
   <!-- https://code.jquery.com/jquery-3.7.1.min.js -->
@@ -1263,10 +1307,12 @@ if (is_file(APP_PATH . APP_BASE['resources'] . 'js/requirejs/require-2.3.6.js'))
 
   <!-- <script src="resources/js/jquery/jquery.min.js"></script> -->
 
-<?php ?>
+<?php // array_rand() can't be empty ?>
   
-  <script src="<?= array_rand(array_flip(array_filter(glob(APP_BASE['resources'] . 'reels/*.js'), 'is_file')), 1); ?>" type="text/javascript" charset="utf-8"></script>
-  
+  <!-- script src="<?= array_rand(array_flip(array_filter(glob('../../resources/reels/*.js'), 'is_file')), 1); /* APP_BASE['resources']  */?>" type="text/javascript" charset="utf-8"></script -->
+
+  <script src="/resources/reels/christmas-mkay.js" type="text/javascript" charset="utf-8"></script>
+
   <script type="text/javascript" charset="utf-8">
 
 
@@ -1354,9 +1400,11 @@ window.addEventListener('keydown', function() {
         }
     });
 
-<?= $appComposer['script']; ?>
 
-<?= $appGit['script']; ?>
+
+<?= (isset($appComposer) ? $appComposer['script'] : null); ?>
+
+<?= (isset($appGit) ? $appGit['script'] : null); ?>
 
 <?= $appBrowser['script']; ?>
 
@@ -1455,11 +1503,8 @@ console.log('domReady is working ... ');
 
 <?= $appTimesheet['script']; ?>
 
-
 <?= $appProject['script']; ?>
 
   </script>
-
-  
 </body>
 </html>

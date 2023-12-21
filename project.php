@@ -4,16 +4,18 @@ if (__FILE__ == get_required_files()[0])
     ? '' : (is_file('config.php') ? 'config.php' : '')) require_once($path); 
 else die(var_dump($path . ' path was not found. file=config.php'));
 ob_start();
-/*
-foreach(['id' => 1, 'firstName'=>'barb', 'lastName' => 'thompson'] as $key => $value) {
-    echo "\$key == $key => \$value == $value\n\n" ;
-}
-*/
+
+?>
+
+|||ffghfgh||||
+
+<?php
+
 // Capture the output into a variable
 $output = ob_get_clean();
 ob_end_clean();
 
-$output = ($output == '' ? '&nbsp;' : $output);
+$output = ($output == '' ? ' ' : $output);
 
 return <<<END
 <!DOCTYPE html>

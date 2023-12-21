@@ -135,6 +135,14 @@ END
 Terms of Use
 END
 );
+/*
+  if (!is_file('public/policies/legal/cookies'))
+    if (@touch('public/policies/legal/cookies'))
+      file_put_contents('public/policies/legal/cookies', <<<END
+Cookies
+END
+);
+*/
 }
 
 if (basename(dirname(APP_SELF)) == 'public') {
@@ -296,7 +304,6 @@ pre {
 END
 );
 }
-
 
 }
 
