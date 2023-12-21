@@ -156,7 +156,7 @@ ob_start();
           </div>
         </label>
         <div style="display: inline; padding-left: 40px;">
-          <span style="background-color: white; color: #F05033;">Git <?= (version_compare(GIT_LATEST, GIT_VERSION, '>') != 0 ? 'v'.substr(GIT_LATEST, 0, similar_text(GIT_LATEST, GIT_VERSION)) . '<span class="update" style="color: green; cursor: pointer;">' . substr(GIT_LATEST, similar_text(GIT_LATEST, GIT_VERSION)) . '</span>' : 'v'.GIT_VERSION ); ?></span> <span style="background-color: #0078D7; color: white;"><code class="text-sm" style="background-color: white; color: #0078D7;">$ <?= defined('GIT_EXEC') and GIT_EXEC; ?></code></span>
+          <span style="background-color: white; color: #F05033;">Git <?= (version_compare(GIT_LATEST, GIT_VERSION, '>') != 0 ? 'v'.substr(GIT_LATEST, 0, similar_text(GIT_LATEST, GIT_VERSION)) . '<span class="update" style="color: green; cursor: pointer;">' . substr(GIT_LATEST, similar_text(GIT_LATEST, GIT_VERSION)) . '</span>' : 'v'.GIT_VERSION ); ?></span> <span style="background-color: #0078D7; color: white;"><code class="text-sm" style="background-color: white; color: #0078D7;">$ <?= (defined('GIT_EXEC') ? GIT_EXEC : null); ?></code></span>
         </div>
         
         <div style="display: inline; float: right; text-align: center; color: blue;"><code style="background-color: white; color: #0078D7;"><a style="cursor: pointer; font-size: 13px;" onclick="document.getElementById('app_git-container').style.display='none';">[X]</a></code></div> 

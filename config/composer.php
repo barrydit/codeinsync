@@ -8,8 +8,8 @@ if (!realpath('vendor/autoload.php')) {
     exec('sudo composer dump-autoload', $output, $returnCode) or $errors['COMPOSER-DUMP-AUTOLOAD'] = $output;
 }
 
-if (is_file('vendor/autoload.php'))
-    require('vendor/autoload.php'); // Include Composer's autoloader
+// moved to config.php load (last)
+// is_file('vendor/autoload.php') and require('vendor/autoload.php'); // Include Composer's autoloader
 
 //dd(get_required_files());
 /*
@@ -286,8 +286,10 @@ if (strtoupper(substr(PHP_OS, 0, 3)) === 'WIN') { // DO NOT REMOVE! { .. }
         define('COMPOSER_BIN', /*'composer.exe'*/ NULL);
     }
 } else {
+  if (file_exists(APP_PATH . 'composer.phar'))
+    define('COMPOSER_PHAR', ['bin' => 'php composer.phar']);
 /*
-  if (file_exists('/usr/bin/composer')) {
+  if (file_exists(APP_PATH . 'composer.phar')) {
     define('COMPOSER_PHAR', (file_exists(APP_PATH . 'composer.phar') ? APP_PATH . 'composer.phar' : '/usr/bin/composer'));
     define('COMPOSER_BIN', '/usr/bin/composer');
   } elseif (file_exists('/usr/local/bin/composer')) {
@@ -325,12 +327,11 @@ if (strtoupper(substr(PHP_OS, 0, 3)) === 'WIN') { // DO NOT REMOVE! { .. }
     if (empty($composer)) $errors['COMPOSER-BIN'] = 'There are no composer binaries.';
     else 
       foreach ($composer as $key => $exec) {
-        if ($key == 0) { 
+        if ($key == 0 || $key == 1) { 
           if (preg_match('/^php composer\.(phar)$/', $exec['bin'])) define('COMPOSER_PHAR', $exec);
           else define('COMPOSER_BIN', $exec);
-        } elseif ($key == 1)
-          if (preg_match('/^php composer\.(phar)$/', $exec['bin'])) define('COMPOSER_PHAR', $exec);
-          else define('COMPOSER_BIN', $exec);
+          break;
+        }
       }
 }
 

@@ -67,7 +67,7 @@ $output[] = $_POST['cmd'];
 */
 //}
 
-if (!file_exists($path = APP_BASE['database'].'notes.json'))
+if (!file_exists($path = '../'.APP_BASE['database'].'notes.json'))
   $data = json_decode(<<<'JSON'
 [{
   "language":"PHP",
@@ -212,7 +212,7 @@ ob_start(); ?>
     </div>
 
       <div style="display: inline-block; width: auto;">
-        <iframe src="<?= basename(__FILE__) ?>" style="height: 460px; width: 800px;"></iframe>
+        <iframe src="<?= (is_dir(APP_PATH . APP_BASE['public']) ? APP_BASE['public'] : '') . basename(__FILE__) ?>" style="height: 460px; width: 800px;"></iframe>
       </div>
       <!-- <pre id="ace-editor" class="ace_editor"></pre> -->
   </div>

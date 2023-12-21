@@ -77,7 +77,7 @@ else die(var_dump($path . ' path was not found. file=composer.php'));
 
 if ($path = (basename(getcwd()) == 'public')
     ? (is_file('app.console.php') ? 'app.console.php' : (is_file('../config/app.console.php') ? '../config/app.console.php' : null))
-    : (is_file('app.console.php') ? 'app.console.php' : (is_file('config/app.console.php') ? 'config/app.console.php' : 'app.console.php'))) require_once($path); 
+    : (is_file('app.console.php') ? 'app.console.php' : (is_file('public/app.console.php') ? 'public/app.console.php' : 'app.console.php'))) require_once($path); 
 else die(var_dump($path . ' path was not found. file=app.console.php'));
 
 /*  ...

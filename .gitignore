@@ -1,9 +1,9 @@
-/config
+#/config
 /dist
-/public
 /database/weekly-timesheet-????-??.json
 /resources/js
 /node_modules
+#/public
 /project
 /vendor
 /var/*.html

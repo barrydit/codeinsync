@@ -56,12 +56,12 @@ if (basename(__DIR__) == 'config') {
   //chdir('../');
   define('APP_BASE', [ // https://stackoverflow.com/questions/8037266/get-the-url-of-a-file-included-by-php
     'config' => 'config' . DIRECTORY_SEPARATOR,
-    //'database' => 'database' . DIRECTORY_SEPARATOR,
+    'database' => 'database' . DIRECTORY_SEPARATOR,
     'public' => 'public' . DIRECTORY_SEPARATOR,
     'resources' => 'resources' . DIRECTORY_SEPARATOR,
     //'src' => 'src' . DIRECTORY_SEPARATOR,
     'var' => 'var' . DIRECTORY_SEPARATOR,
-    //'vendor' => 'vendor' . DIRECTORY_SEPARATOR,
+    'vendor' => 'vendor' . DIRECTORY_SEPARATOR,
     //'tmp' => 'var' . DIRECTORY_SEPARATOR . 'tmp' . DIRECTORY_SEPARATOR,
     //'export' =>  'var' . DIRECTORY_SEPARATOR . 'export' . DIRECTORY_SEPARATOR,
     //'session' => 'var' . DIRECTORY_SEPARATOR . 'session' . DIRECTORY_SEPARATOR,
@@ -72,7 +72,7 @@ if (basename(__DIR__) == 'config') {
   define('APP_BASE', [
     'config' => 'config' . DIRECTORY_SEPARATOR,
     'database' => 'database' . DIRECTORY_SEPARATOR,
-    'public' => 'public' . DIRECTORY_SEPARATOR,   // basename(APP_PATH) could be composer||public[_html]/
+    //'public' => 'public' . DIRECTORY_SEPARATOR,   // basename(APP_PATH) could be composer||public[_html]/
     'resources' => 'resources' . DIRECTORY_SEPARATOR,
     'var' => 'var' . DIRECTORY_SEPARATOR,
     'vendor' => 'vendor' . DIRECTORY_SEPARATOR,

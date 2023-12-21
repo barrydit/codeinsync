@@ -70,7 +70,8 @@ $ob_content = NULL;
 //var_dump(dirname(APP_SELF) . ' == ' . __DIR__);
 //dd(APP_PATH  . '  ' .  __DIR__);
 
-if (!realpath($path = 'CHANGELOG.md')) {
+/*
+if (!realpath($path = APP_PATH . 'CHANGELOG.md')) {
   if (!is_file($path))
     if (@touch($path))
       file_put_contents($path, <<<END
@@ -79,7 +80,7 @@ END
 );
 }
 
-if (!realpath($path = 'CONTRIBUTING.md')) {
+if (!realpath($path = APP_PATH . 'CONTRIBUTING.md')) {
   if (!is_file($path))
     if (@touch($path))
       file_put_contents($path, <<<END
@@ -88,7 +89,7 @@ END
 );
 }
 
-if (!realpath($path = 'LICENSE')) {
+if (!realpath($path = APP_PATH . 'LICENSE')) {
   if (!is_file($path))
     if (@touch($path))
       file_put_contents($path, <<<END
@@ -97,7 +98,7 @@ END
 );
 }
 
-if (!realpath($path = 'README.md')) {
+if (!realpath($path = APP_PATH . 'README.md')) {
   if (!is_file($path))
     if (@touch($path))
       file_put_contents($path, <<<END
@@ -106,45 +107,44 @@ END
 );
 }
 
-if (!realpath($path = 'docs/')) {
+if (!realpath($path = APP_PATH . 'docs/')) {
   if (!mkdir($path, 0755, true))
     $errors['DOCS'] = $path . ' does not exist';
 
-  if (!is_file('docs/getting-started.md'))
-    if (@touch('docs/getting-started.md'))   // https://github.com/auraphp/Aura.Session/docs/getting-started.md
-      file_put_contents('docs/getting-started.md', <<<END
+  if (!is_file($path . 'getting-started.md'))
+    if (@touch($path . 'getting-started.md'))   // https://github.com/auraphp/Aura.Session/docs/getting-started.md
+      file_put_contents($path . 'getting-started.md', <<<END
 getting-started
 END
 );
 }
 
-if (!realpath($path = 'public/policies/')) {
+if (!realpath($path = APP_PATH . APP_BASE['public'] . 'policies/')) {
   if (!mkdir($path, 0755, true))
     $errors['POLICIES'] = $path . ' does not exist';
 
-  if (!is_file('public/policies/privacy-policy'))
-    if (@touch('public/policies/privacy-policy'))
-      file_put_contents('public/policies/privacy-policy', <<<END
+  if (!is_file($path . 'privacy-policy'))
+    if (@touch($path . 'privacy-policy'))
+      file_put_contents($path . 'privacy-policy', <<<END
 Privacy Policy
 END
 );
 
-  if (!is_file('public/policies/terms-of-use'))
-    if (@touch('public/policies/terms-of-use'))
-      file_put_contents('public/policies/terms-of-use', <<<END
+  if (!is_file($path . 'terms-of-use'))
+    if (@touch($path . 'terms-of-use'))
+      file_put_contents($path . 'terms-of-use', <<<END
 Terms of Use
 END
 );
-/*
-  if (!is_file('public/policies/legal/cookies'))
-    if (@touch('public/policies/legal/cookies'))
-      file_put_contents('public/policies/legal/cookies', <<<END
+
+  if (!is_file($path . 'legal/cookies'))
+    if (@touch($path . 'legal/cookies'))
+      file_put_contents($path . 'legal/cookies', <<<END
 Cookies
 END
 );
-*/
 }
-
+*/
 if (basename(dirname(APP_SELF)) == 'public') {
   if (!is_file('.htaccess'))
     if (@touch('.htaccess'))
@@ -319,13 +319,14 @@ if (basename($dir = APP_PATH) != 'config') {
   $previousFilename = '';
 
   $dirs = [
-    0 => APP_PATH . 'composer.php',
+    0 => APP_PATH . APP_BASE['config'] . 'composer.php',
     1 => APP_PATH . 'composer-setup.php',
     //1 => APP_PATH . 'config.php',
     //1 => APP_PATH . 'constants.php',
     //2 => APP_PATH . 'functions.php',
-    2 => APP_PATH . 'git.php',
-    3 => APP_PATH . 'npm.php',
+    2 => APP_PATH . APP_BASE['config'] . 'git.php',
+    3 => APP_PATH . APP_BASE['config'] . 'npm.php',
+    3 => APP_PATH . APP_BASE['vendor'] . 'autoload.php',
 
   ]; // array_filter(glob(__DIR__ . DIRECTORY_SEPARATOR . '*.php'), 'is_file');
 

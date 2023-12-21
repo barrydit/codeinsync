@@ -100,14 +100,14 @@ Psr/
 
 //composer[config][require][]
 
-if (in_array(APP_PATH . 'composer.php', get_required_files())) {
+if (in_array(APP_PATH . APP_BASE['config'] . 'composer.php', get_required_files())) {
   if (class_exists('LogLevel'))
     if (null !== LogLevel::DEBUG) // isset() || 
       if (defined('LogLevel'))
         $errors['LogLevel'] = 'Now let\'s use LogLevel... ' . LogLevel::DEBUG . "\n";
 
   if ($path = (basename(getcwd()) == 'public')
-    ? (is_file('composer_ui.php') ? 'composer_ui.php' : (is_file('../composer_ui.php') ? '../composer_ui.php' : (is_file('../config/composer_ui.php') ? '../config/composer_ui.php' : NULL)))
+    ? (is_file('composer_ui.php') ? 'composer_ui.php' : (is_file('../composer_ui.php') ? '../composer_ui.php' : (is_file('../config/composer_ui.php') ? '../config/composer_ui.php' : 'composer_ui.php')))
     : (is_file('../composer_ui.php') ? '../composer_ui.php' : (is_file('public/composer_ui.php') ? 'public/composer_ui.php' : (is_file('config/composer_ui.php') ? 'config/composer_ui.php' : 'composer_ui.php'))))
   require_once($path); 
   else die(var_dump($path . ' was not found. file=composer_ui.php'));
@@ -179,16 +179,17 @@ if ($path = (basename(getcwd()) == 'public') // composer_app.php (depend.)
 else die(var_dump($path . ' was not found. file=app.backup.php'));
 
 if ($path = (basename(getcwd()) == 'public') // composer_app.php (depend.)
+    ? (is_file('app.project.php') ? 'app.project.php' : (is_file('../app.project.php') ? '../app.project.php' : (is_file('../config/app.project.php') ? '../config/app.project.php' : 'public/app.project.php')))
+    : (is_file('../app.project.php') ? '../app.project.php' : (is_file('public/app.project.php') ? 'public/app.project.php' : (is_file('config/app.project.php') ? 'config/app.project.php' : 'app.project.php'))))
+  require_once($path); 
+else die(var_dump($path . ' was not found. file=app.project.php'));
+
+if ($path = (basename(getcwd()) == 'public') // composer_app.php (depend.)
     ? (is_file('app.console.php') ? 'app.console.php' : (is_file('../app.console.php') ? '../app.console.php' : (is_file('../config/app.console.php') ? '../config/app.console.php' : 'public/app.console.php')))
     : (is_file('../app.console.php') ? '../app.console.php' : (is_file('public/app.console.php') ? 'public/app.console.php' : (is_file('config/app.console.php') ? 'config/app.console.php' : 'app.console.php'))))
   require_once($path); 
 else die(var_dump($path . ' was not found. file=app.console.php'));
 
-if ($path = (basename(getcwd()) == 'public') // composer_app.php (depend.)
-    ? (is_file('app.project.php') ? 'app.project.php' : (is_file('../app.project.php') ? '../app.project.php' : (is_file('../config/app.project.php') ? '../config/app.project.php' : 'public/app.project.php')))
-    : (is_file('../app.project.php') ? '../app.project.php' : (is_file('public/app.project.php') ? 'public/app.project.php' : (is_file('config/app.project.php') ? 'config/app.project.php' : 'app.project.php'))))
-  require_once($path); 
-else die(var_dump($path . ' was not found. file=app.project.php'));
 
 header("Cache-Control: no-store, no-cache, must-revalidate, max-age=0");
 header("Pragma: no-cache"); ?>
