@@ -21,7 +21,7 @@ switch ($_SERVER['REQUEST_METHOD']) {
       exit(header('Location: ' . APP_WWW . $_GET['path']));
     if (isset($_GET['category']) && !empty($_GET['category']))
       //if ($_GET['category'] != 'project')
-        exit(header('Location: ' . APP_WWW . '?' . $_GET['category']));
+      exit(header('Location: ' . APP_WWW . '?' . $_GET['category']));
     elseif (isset($_GET['category']) && empty($_GET['category']))
       exit(header('Location: ' . APP_WWW . '?debug'));
     break;
@@ -107,28 +107,28 @@ if (in_array(APP_PATH . APP_BASE['config'] . 'composer.php', get_required_files(
         $errors['LogLevel'] = 'Now let\'s use LogLevel... ' . LogLevel::DEBUG . "\n";
 
   if ($path = (basename(getcwd()) == 'public')
-    ? (is_file('composer_ui.php') ? 'composer_ui.php' : (is_file('../composer_ui.php') ? '../composer_ui.php' : (is_file('../config/composer_ui.php') ? '../config/composer_ui.php' : 'composer_ui.php')))
-    : (is_file('../composer_ui.php') ? '../composer_ui.php' : (is_file('public/composer_ui.php') ? 'public/composer_ui.php' : (is_file('config/composer_ui.php') ? 'config/composer_ui.php' : 'composer_ui.php'))))
+    ? (is_file('ui.composer.php') ? 'ui.composer.php' : (is_file('../ui.composer.php') ? '../ui.composer.php' : (is_file('../config/ui.composer.php') ? '../config/ui.composer.php' : 'ui.composer.php')))
+    : (is_file('../ui.composer.php') ? '../ui.composer.php' : (is_file('public/ui.composer.php') ? 'public/ui.composer.php' : (is_file('config/ui.composer.php') ? 'config/ui.composer.php' : 'ui.composer.php'))))
   require_once($path); 
-  else die(var_dump($path . ' was not found. file=composer_ui.php'));
+  else die(var_dump($path . ' was not found. file=ui.composer.php'));
 }
 // >> This guy makes the visual screwed up!
 if ($path = (basename(getcwd()) == 'public')
-    ? (is_file('git_ui.php') ? 'git_ui.php' : (is_file('../git_ui.php') ? '../git_ui.php' : (is_file('../config/git_ui.php') ? '../config/git_ui.php' : NULL)))
-    : (is_file('../git_ui.php') ? '../git_ui.php' : (is_file('public/git_ui.php') ? 'public/git_ui.php' : (is_file('config/git_ui.php') ? 'config/git_ui.php' : 'git_ui.php'))))
+    ? (is_file('ui.git.php') ? 'ui.git.php' : (is_file('../ui.git.php') ? '../ui.git.php' : (is_file('../config/ui.git.php') ? '../config/ui.git.php' : NULL)))
+    : (is_file('../ui.git.php') ? '../ui.git.php' : (is_file('public/ui.git.php') ? 'public/ui.git.php' : (is_file('config/ui.git.php') ? 'config/ui.git.php' : 'ui.git.php'))))
   require_once($path); 
-else die(var_dump($path . ' was not found. file=git_ui.php'));
+else die(var_dump($path . ' was not found. file=ui.git.php'));
 /*
 if ($path = (basename(getcwd()) == 'public')
-    ? (is_file('../npm.php') ? '../npm.php' : (is_file('../config/npm.php') ? '../config/npm.php' : null))
-    : (is_file('npm.php') ? 'npm.php' : (is_file('config/npm.php') ? 'config/npm.php' : null))) require_once($path); 
-else die(var_dump($path . ' path was not found. file=npm.php'));
+    ? (is_file('../ui.npm.php') ? '../ui.npm.php' : (is_file('../config/ui.npm.php') ? '../config/ui.npm.php' : null))
+    : (is_file('ui.npm.php') ? 'ui.npm.php' : (is_file('config/ui.npm.php') ? 'config/ui.npm.php' : null))) require_once($path); 
+else die(var_dump($path . ' path was not found. file=ui.npm.php'));
 */
 if ($path = (basename(getcwd()) == 'public')
-    ? (is_file('app.php.php') ? 'app.php.php' : (is_file('../app.php.php') ? '../app.php.php' : (is_file('../config/app.php.php') ? '../config/app.php.php' : NULL)))
-    : (is_file('../app.php.php') ? '../app.php.php' : (is_file('public/app.php.php') ? 'public/app.php.php' : (is_file('config/app.php.php') ? 'config/app.php.php' : 'app.php.php'))))
+    ? (is_file('ui.php.php') ? 'ui.php.php' : (is_file('../ui.php.php') ? '../ui.php.php' : (is_file('../config/ui.php.php') ? '../config/ui.php.php' : NULL)))
+    : (is_file('../ui.php.php') ? '../ui.php.php' : (is_file('public/ui.php.php') ? 'public/ui.php.php' : (is_file('config/ui.php.php') ? 'config/ui.php.php' : 'ui.php.php'))))
   require_once($path); 
-else die(var_dump($path . ' was not found. file=app.php.php'));
+else die(var_dump($path . ' was not found. file=ui.php.php'));
 
 if ($path = (basename(getcwd()) == 'public')
     ? (is_file('app.browser.php') ? 'app.browser.php' : (is_file('../app.browser.php') ? '../app.browser.php' : (is_file('../config/app.browser.php') ? '../config/app.browser.php' : NULL)))
@@ -199,9 +199,9 @@ header("Pragma: no-cache"); ?>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-  <base href="<?=(!is_array(APP_URL) ? APP_URL : APP_URL_BASE)?>" />
+  <base href="<?=(!is_array(APP_URL) ? APP_URL : APP_URL_BASE) . (APP_URL['query'] != '' ? '?'.APP_URL['query'] : '') . (APP_ENV == 'development' ? '#!' : ''); ?>" />
 
-  <link rel="stylesheet" href="//code.jquery.com/ui/1.12.1/themes/smoothness/jquery-ui.css" />
+  <!-- link rel="stylesheet" href="//code.jquery.com/ui/1.12.1/themes/smoothness/jquery-ui.css" / -->
 <?php
 // (check_http_200('https://cdn.tailwindcss.com') ? 'https://cdn.tailwindcss.com' : APP_WWW . 'resources/js/tailwindcss-3.3.5.js')?
 is_dir($path = APP_PATH . APP_BASE['resources'] . 'js/') or mkdir($path, 0755, true);
@@ -227,6 +227,7 @@ if (is_file($path . 'tailwindcss-3.3.5.js')) {
   <script src="<?= 'resources/js/tailwindcss-3.3.5.js' ?? $url ?>"></script>
 
 <style type="text/tailwindcss">
+
 .row-container { display: flex; width: 100%; height: 100%; flex-direction: column; overflow: hidden; }
 
 <?= (isset($appComposer) ? $appComposer['style'] : null); ?>
@@ -290,7 +291,7 @@ table {
 
 td, th {
     padding: 8px;
-    text-align: center;
+    /* text-align: center; */
 }
 
 /* the interesting bit */
@@ -377,9 +378,15 @@ input:checked + .label .slider:before {
   font-family: sans-serif;
 }
 
+
+.ui-widget-header {
+    cursor: pointer;
+}
+
 </style>
 
 </head>
+
 <body>
 
  <div class="row-container" style="position: absolute; left: 0; top: 0;">
@@ -417,47 +424,45 @@ if (!empty($_GET['client'])) {
   $path = '/projects/' . $_GET['project'] . '/';   
   //$dirs = array_filter(glob(dirname(__DIR__) . '/projects/' . $_GET['project'] . '/*'), 'is_dir');
   
-} else { $path = ''; } echo $path; // developer.php
+} else { $path = ''; } 
+
+if (empty(APP_URL['query'])) echo 'public/developer.php';
+else echo $path; // developer.php
 ?>" style="height: 100%;"></iframe>
   </div>
-  
 
 <?= $appBackup['body']; ?>
 
-  
+<?= (isset($appComposer) ? $appComposer['body'] : null); ?>
+
   <div style="position: relative; margin: 0px auto; width: 800px;">
-<div style="position: absolute; left: -130px;">
-
-<!--form action="#!" method="GET">
+    <div style="position: absolute; left: -130px;">
+      <!--form action="#!" method="GET">
 <?= (isset($_GET['debug']) && !$_GET['debug'] ? '' : '<input type="hidden" name="debug" value / >') ?> 
-  <input class="input" id="toggle-debug" type="checkbox" onchange="this.form.submit();" <?= (isset($_GET['debug']) || APP_ENV == 'development'? 'checked' : '') ?> / -->
+      <input class="input" id="toggle-debug" type="checkbox" onchange="this.form.submit();" <?= (isset($_GET['debug']) || APP_ENV == 'development'? 'checked' : '') ?> / -->
 
-  <input class="input" id="toggle-debug" type="checkbox" onchange="toggleSwitch(this); return null;" <?= (isset($_GET['debug']) || APP_ENV == 'development' ? 'checked' : '') ?> />
+      <input class="input" id="toggle-debug" type="checkbox" onchange="toggleSwitch(this); return null;" <?= (isset($_GET['debug']) || APP_ENV == 'development' ? 'checked' : '') ?> />
 
-  <label class="label" for="toggle-debug" style="margin-left: -6px;">
-    <div class="switch">
-      <span class="slider round"></span>
+      <label class="label" for="toggle-debug" style="margin-left: -6px;">
+        <div class="switch">
+          <span class="slider round"></span>
+        </div>
+
+        <div class="right"> Debug </div>
+      </label>
+      <!-- /form -->
     </div>
-
-    <div class="right">
-      Debug
-    </div>
-  </label>
-<!-- /form -->
-
-      </div>
-  <div id="debug-content" class="absolute" style="position: absolute; margin-left: auto; margin-right: auto; left: 0; right: 0; text-align: center; background-color: rgba(255, 255, 255, 0.8); border: 1px solid #000; width: 800px; z-index: 1;">
-      <a href="<?= (APP_URL['query'] != '' ? '?'.APP_URL['query'] : '') . (APP_ENV == 'development' ? '#!' : '') ?>" onclick="document.getElementById('app_github-container').style.display='block';"><img src="resources/images/github_icon.png" width="72" height="23"></a> |
-      <a href="<?= (APP_URL['query'] != '' ? '?'.APP_URL['query'] : '') . (APP_ENV == 'development' ? '#!' : '') ?>" onclick="document.getElementById('app_git-container').style.display='block';"><img src="resources/images/git_icon.png" width="58" height="24"></a> |
-      <a href="<?= (APP_URL['query'] != '' ? '?'.APP_URL['query'] : '') . (APP_ENV == 'development' ? '#!' : '') ?>" onclick="document.getElementById('app_composer-container').style.display='block';"><img src="resources/images/composer_icon.png" width="31" height="40"> Composer</a> |
-      <a href="<?= (APP_URL['query'] != '' ? '?'.APP_URL['query'] : '') . (APP_ENV == 'development' ? '#!' : '') ?>" onclick="document.getElementById('app_php-container').style.display='block';"><img src="resources/images/php_icon.png" width="40" height="27"> PHP <?= (preg_match("#^(\d+\.\d+)#", PHP_VERSION, $match) ? $match[1] : '8.0' ) ?></a> |
-      <a href="<?= (APP_URL['query'] != '' ? '?'.APP_URL['query'] : '') . (APP_ENV == 'development' ? '#!' : '') ?>" onclick="document.getElementById('app_packagist-container').style.display='block';"><img src="resources/images/packagist_icon.png" width="30" height="34"> Packagist</a> |
-      <a href="<?= (APP_URL['query'] != '' ? '?'.APP_URL['query'] : '') . (APP_ENV == 'development' ? '#!' : '')?>" onclick="document.getElementById('app_text_editor-container').style.display='block';"><img src="resources/images/code_icon.png" width="32" height="32"> Text</a> |
-      <a href="<?= (APP_URL['query'] != '' ? '?'.APP_URL['query'] : '') . (APP_ENV == 'development' ? '#!' : '') ?>" onclick="document.getElementById('app_menu-container').style.display='block';"><img src="resources/images/apps_icon.gif" width="20" height="20"> Apps</a> |
-      <a href="<?= (APP_URL['query'] != '' ? '?'.APP_URL['query'] : '') . (APP_ENV == 'development' ? '#!' : '') ?>" onclick="document.getElementById('app_timesheet-container').style.display='block';"><img src="resources/images/clock.gif" width="30" height="30"> Clock-In</a>
-
-<div style="position: absolute; top: 40px; left: 0; width: 400px; z-index: 1;">
-<form style="display: inline;" autocomplete="off" spellcheck="false" action="<?= 
+    <div id="debug-content" class="absolute" style="position: absolute; margin-left: auto; margin-right: auto; left: 0; right: 0; text-align: center; background-color: rgba(255, 255, 255, 0.8); border: 1px solid #000; width: 800px; z-index: 1;">
+      <a href="#" onclick="document.getElementById('app_github-container').style.display='block';"><img src="resources/images/github_icon.png" width="72" height="23"></a> |
+      <a href="#" onclick="document.getElementById('app_git-container').style.display='block';"><img src="resources/images/git_icon.png" width="58" height="24"></a> |
+      <a href="#" onclick="document.getElementById('app_composer-container').style.display='block';"><img src="resources/images/composer_icon.png" width="31" height="40"> Composer</a> |
+      <a href="#" onclick="document.getElementById('app_php-container').style.display='block';"><img src="resources/images/php_icon.png" width="40" height="27"> PHP <?= (preg_match("#^(\d+\.\d+)#", PHP_VERSION, $match) ? $match[1] : '8.0' ) ?></a> |
+      <a href="#" onclick="document.getElementById('app_packagist-container').style.display='block';"><img src="resources/images/packagist_icon.png" width="30" height="34"> Packagist</a> |
+      <a href="#" onclick="document.getElementById('app_text_editor-container').style.display='block';"><img src="resources/images/code_icon.png" width="32" height="32"> Text</a> |
+      <a href="#" onclick="document.getElementById('app_menu-container').style.display='block';"><img src="resources/images/apps_icon.gif" width="20" height="20"> Apps</a> |
+      <a href="#" onclick="document.getElementById('app_timesheet-container').style.display='block';"><img src="resources/images/clock.gif" width="30" height="30"> Clock-In</a>
+      <div style="position: absolute; top: 40px; left: 0; z-index: 1;">
+        <form style="display: inline;" autocomplete="off" spellcheck="false" action="<?= 
 //APP_URL_BASE . /*basename(__FILE__) .*/ '?' . http_build_query(APP_QUERY /*+ array( 'app' => 'text_editor')*/) . (APP_ENV == 'development' ? '#!' : '') 
 
 /* $c_or_p . '=' . (empty($_GET[$c_or_p]) ? '' : $$c_or_p->name) . '&amp;app=composer' */ NULL; ?>" method="GET">
@@ -468,76 +473,91 @@ if (isset($_GET['path'])) { ?>
         <!-- <input type="hidden" name="path" value="<?= $_GET['path']; ?>" /> -->
 <?php } ?>
 
-<?php echo '<button id="displayDirectoryBtn" style="float: left; margin: 2px 5px 0 0;" type="">&#9660;</button>'
-//.'<a style="" href="' . (APP_URL['query'] != '' ? '?' . APP_URL['query'] : '') . (isset($_GET['path']) && $_GET['path'] != '' ? parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH) : (APP_ENV == 'development' ? '#!' : '') ) . '"></a>'
-. '<span title="' . $path . '" style="float: left; margin: 2px 5px 0 0; cursor: pointer;" onclick="">'
-. '/ '
-. '<select name="category" onchange="this.form.submit();">'
-. '<option value="" ' . (empty(APP_QUERY) ? 'selected' : '') . '>' . basename(parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH)) . '</option>'
-. '<option value="project" ' . (isset($_GET['project']) ? 'selected' : '') . '>projects</option>'
-. '<option value="client" ' . (isset($_GET['client']) ? 'selected' : '') . '>clientele</option>'
-. '</select></span></form>'
-. '<form style="display: inline;" action method="GET">'
-. '<span title="' . $path . '" style="float: left; margin: 2px 5px 0 0; cursor: pointer;" onclick=""> / '; /* $path; */ ?>
+<?= '          <button id="displayDirectoryBtn" style="float: left; margin: 2px 5px 0 0;" type="">&#9660;</button> / ' . "\n"; ?>
+
+<?php if (isset($_GET['client']) /*&& $_GET['client'] != ''*/ || isset($_GET['project']) /*&& $_GET['project'] != ''*/) { ?>
+
 <?php
-
-if (isset($_GET['project'])) { 
-$links = array_filter(glob(APP_PATH . '../../projects/*'), 'is_dir');
+if (isset($_GET['project'])) {
+  $links = array_filter(glob(APP_PATH . '../../projects/*'), 'is_dir');
 ?>
-
-<select name="project" style="" onchange="this.form.submit(); return false;">
-  <option value="">---</option>
+            <select name="project" style="" onchange="this.form.submit(); return false;">
+              <option value="">---</option>
 <?php
       while ($link = array_shift($links)) {
 
         $link = basename($link); // Get the directory name from the full path
-        if (is_dir(APP_PATH . '../../projects/' . $link)) {
-          echo '  <option value="' . $link . '" ' . (current($_GET) == $link ? 'selected' : '') . '>' . $link . '</option>' . "\n";
-        }
+        if (is_dir(APP_PATH . '../../projects/' . $link))
+          echo '              <option value="' . $link . '" ' . (current($_GET) == $link ? 'selected' : '') . '>' . $link . '</option>' . "\n";
 
       }
       ?>
-    </select>
-<?php } elseif(isset($_GET['client'])) { 
+            </select>
+          </form>
+<?php } elseif (isset($_GET['client'])) { 
 $links = array_filter(glob(APP_PATH . '../../clientele/*'), 'is_dir');
 ?>
 
-<select name="client" style="" onchange="this.form.submit(); return false;">
-  <option value="">---</option>
+            <select name="client" style="" onchange="this.form.submit(); return false;">
+              <option value="" style="text-align: center;">--clientele--</option>
 <?php
       while ($link = array_shift($links)) {
-
         $link = basename($link); // Get the directory name from the full path
-        if (is_dir(APP_PATH . '../../clientele/' . $link)) {
-          echo '  <option value="' . $link . '" ' . (current($_GET) == $link ? 'selected' : '') . '>' . $link . '</option>' . "\n";
-        }
-
+        if (is_dir(APP_PATH . '../../clientele/' . $link))
+          echo '              <option value="' . $link . '" ' . (current($_GET) == $link ? 'selected' : '') . '>' . $link . '</option>' . "\n";
       }
-      ?>
-    </select>
-<?php } else { ?>
+?>
+            </select> /
 
-<select name="path" style="" onchange="this.form.submit(); return false;">
-  <option value="">.</option>
-  <option value="">..</option>
+<?php if (!empty($_GET['client'])) { 
+    $dirs = array_filter(glob(dirname(__DIR__) . '/../clientele/' . $_GET['client'] . '/*'), 'is_dir'); ?>
+<select id="domain" name="domain" onchange="this.form.submit();">
+  <option value="">---</option>
+<?php foreach ($dirs as $dir) { ?>
+  <option <?= (isset($_GET['domain']) && $_GET['domain'] == basename($dir) ? 'selected' : '') ?>><?= basename($dir); ?></option>
+<?php } ?>
+</select> /
+
+          </form>
+<?php } ?>
+
+<?php } } else {
+
+//.'<a style="" href="' . (APP_URL['query'] != '' ? '?' . APP_URL['query'] : '') . (isset($_GET['path']) && $_GET['path'] != '' ? parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH) : (APP_ENV == 'development' ? '#!' : '') ) . '"></a>'
+
+echo '          <span title="' . $path . '" style="float: left; margin: 2px 5px 0 0; cursor: pointer;" onclick="">' . '/ '
+. '            <select name="category" onchange="this.form.submit();">' . "\n"
+. '              <option value="" ' . (empty(APP_QUERY) ? 'selected' : '') . '>' . basename(parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH)) . '</option>' . "\n"
+. '              <option value="client" ' . (isset($_GET['client']) ? 'selected' : '') . '>clientele</option>' . "\n"
+. '              <option value="project" ' . (isset($_GET['project']) ? 'selected' : '') . '>projects</option>' . "\n"
+
+. '            </select>' . "\n"
+. '          </span>' . "\n";
+
+echo '        <form style="display: inline;" action method="GET">' . "\n"
+. '          <span title="' . $path . '" style="float: left; margin: 2px 5px 0 0; cursor: pointer;" onclick=""> / ' . "\n"; /* $path; */ ?>
+
+            <select name="path" style="" onchange="this.form.submit(); return false;">
+              <option value="">.</option>
+              <option value="">..</option>
 <?php
 
 // Bug if the dir does not exist it defaults to the root ...
 
 if ($path)
   foreach (array_filter( glob( $path . DIRECTORY_SEPARATOR . '*'), 'is_dir') as $dir) {
-    echo '<option value="' . (isset($_GET['path']) ?  $_GET['path'] . DIRECTORY_SEPARATOR : '') . basename($dir) . '"' . (isset($_GET['path']) && $_GET['path'] == basename($dir) ? ' selected' : '' )  . '>' . basename($dir) . '/</option>' . "\n";
+    echo '              <option value="' . (isset($_GET['path']) ?  $_GET['path'] . DIRECTORY_SEPARATOR : '') . basename($dir) . '"' . (isset($_GET['path']) && $_GET['path'] == basename($dir) ? ' selected' : '' )  . '>' . basename($dir) . '/</option>' . "\n";
   }
 ?>
-        </select>
+            </select>
+          </span>
+        </form>
 
 <?php } ?>
-</span>
-</form>
-</div>
 
+      </div>
 
-      <div style="position: absolute; width: 315px; top: 40px; right: -10px; border: 1px solid #000; height: 25px;">
+      <div style="position: absolute; width: 285px; top: 40px; right: -10px; border: 1px solid #000; height: 25px;">
         <div style="display: inline-block; width: 175px; ">
           <div id="idleTime" style="display: inline; margin: 7px 5px;"></div>
           <div>
@@ -549,34 +569,39 @@ if ($path)
         </div>
       </div>
 
-  </div>
+    </div>
 
 <?= $appProject['body']; ?>
+<?php /*
+    <div id="app_project-container" style="display: none; position: absolute; top: 80px; padding: 20px; margin-left: auto; margin-right: auto; left: 0; right: 0; width: 700px; z-index: 2;">
+      <div style="margin: -25px 0 20px 0;">
+        <div style="display: inline; float: right; text-align: center;">[<a style="cursor: pointer; font-size: 13px;" onclick="document.getElementById('app_project-container').style.display='none';">X</a>]</div>
+      </div>
+      <form style="background-color: #ddd; padding: 20px;">
+        <h3>Psr/Log</h3>
+        <label><input type="checkbox" checked> Add to Project.</label>
+        <button type="submit" style="float: right;">Save</button>
+        <iframe src="<?= APP_WWW ?>?project=show" style="height: 300px; width: 600px;"></iframe>
+      </form>
+    </div>
+*/ ?>
 
-<div id="app_project-container" style="display: none; position: absolute; top: 80px; padding: 20px; margin-left: auto; margin-right: auto; left: 0; right: 0; width: 700px; z-index: 2;">
-  <div style="margin: -25px 0 20px 0;">
-    <div style="display: inline; float: right; text-align: center;">[<a style="cursor: pointer; font-size: 13px;" onclick="document.getElementById('app_project-container').style.display='none';">X</a>]</div>
-  </div>
-  <form style="background-color: #ddd; padding: 20px;">
-    <h3>Psr/Log</h3>
-    <label><input type="checkbox" checked> Add to Project.</label>
-    <button type="submit" style="float: right;">Save</button>
-    <iframe src="<?= APP_WWW ?>?project=show" style="height: 300px; width: 600px;"></iframe>
-  </form>
-</div>
+    <div style="position: relative;">
 
+<?php if (isset($_GET['client']) && $_GET['client'] != '') { ?>
 
-<div style="position: relative;">
+      <div id="app_client-container" style="position: absolute; top: 100px; width: 800px; margin: 0 auto; height: 300px; background-color: rgba(255, 255, 255, 0.9); overflow-x: scroll;">
+        <div style="display: inline;">
+          <span style="background-color: #B0B0B0; color: white;">
+            <input type="checkbox" checked /> Preview Domain
+          
+          </span>
 
-<?php
-if (isset($_GET['client']) && $_GET['client'] != '') { ?>
+        </div>
+        <div style="display: inline; float: right; text-align: center; "><code style=" background-color: white; color: #0078D7;"><a style="cursor: pointer; font-size: 13px;" onclick="document.getElementById('app_client-container').style.display='none';">[X]</a></code></div>
 
-<div id="app_client-container" style="position: absolute; top: 100px; width: 800px; margin: 0 auto; height: 300px; background-color: rgba(255, 255, 255, 0.9); overflow-x: scroll;">
-
-<div style="margin: 0 10px; ">
-<input type="checkbox" checked /> Preview Domain<br />
-
-<div style="display: inline; width: 49%; border: 1px solid #000;">
+        <div style="margin: 0 10px;">
+          <div style="display: inline-block; float: left; width: 49%; border: 1px solid #000;">
 <?php
 
 $input = $_GET['client'];
@@ -595,148 +620,43 @@ if (preg_match('/^\d+-(\w+)[,]\s*(\w+)$/', $decoded, $matches)) {
 ?>
 Name: <input type="text" value="<?= $output; ?>" /><br />
 Hours: <input type="text" value="999" />
-</div>
+        </div>
 
-<div style="display: inline; width: 49%; text-align: right; border: 1px solid #000;">
-<span style="float: right;">Domain: <select><option>davidraymant.ca</option></select></span><br />
-<span style="float: right;">Add Domain: <input type="text"></span><br />
+        <div style="display: inline-block; float: right; text-align: right; border: 1px solid #000;">
+          <span style="">Domain: <select><option>davidraymant.ca</option></select></span><br />
+          <span style="">Add Domain: <input type="text"></span>
 
-</div>
+        </div>
 
-</div>
+      </div>
 <?php } ?>
-<div id="app_menu-container" style="position: absolute; display: none; width: 800px; margin: 0 auto; height: 500px; background-color: rgba(255, 255, 255, 0.9); overflow-x: scroll;">
-
-<div style="position: absolute; margin: 80px 45px; text-align: center;" class="text-sm"><a href="#!" onclick="document.getElementById('app_menu-container').style.display='none'; return false;"><img style="text-align: center;" height="25" width="25" src="<?= APP_BASE['resources'] . 'images/close-red.gif' ?>" /></a><br /></div>
 
 
-<div style="position: absolute; margin: 100px 75px; text-align: center;" class="text-sm"><a href="#!" onclick="show_console(); return false;"><img style="text-align: center;" src="<?= APP_BASE['resources'] . 'images/cli.png' ?>" /></a><br /><a href="?app=text_editor&path=&file=app.console.php" style="text-align: center;">(CLI)</a></div>
-
-<!-- 
-<a href="javascript:window.open('print.html', 'newwindow', 'width=300,height=250')">Print</a>
-onclick="window.open('app.whiteboard.php', 'newwindow', 'width=300,height=250'); return false;"
-
-https://stackoverflow.com/questions/12939928/make-a-link-open-a-new-window-not-tab
- -->
-
-<div style="position: absolute; margin: 100px 165px; text-align: center;" class="text-sm"><a href="app.whiteboard.php" target="_blank" onclick="document.getElementById('app_whiteboard-container').style.display='block'; return false;"><img style="text-align: center;" src="<?= APP_BASE['resources'] . 'images/whiteboard.png' ?>" /></a><br /><a href="?app=text_editor&path=&file=app.whiteboard.php" style="text-align: center;">Whiteboard</a></div>
-
-<div style="position: absolute; margin: 100px 260px; text-align: center;" class="text-sm"><a href="#!" onclick="document.getElementById('app_notes-container').style.display='block'; return false;"><img style="text-align: center;" src="<?= APP_BASE['resources'] . 'images/notes.png' ?>" /></a><br /><a href="?app=text_editor&path=&file=app.notes.php" style="text-align: center;">Notes</a></div>
-
-
-<div style="position: absolute; margin: 100px 350px; text-align: center;" class="text-sm"><a href="#!" onclick="document.getElementById('app_project-container').style.display='block'; return false;"><img style="text-align: center;" src="<?= APP_BASE['resources'] . 'images/project.png' ?>" /></a><br /><a href="?app=text_editor&path=&file=app.project.php"><span style="text-align: center;">Project</a></span></div>
-
-
-<div style="position: absolute; margin: 100px 0 0 450px ; text-align: center;" class="text-sm"><a href="#!" onclick="document.getElementById('app_debug-container').style.display='block'; return false;"><img style="text-align: center;" src="<?= APP_BASE['resources'] . 'images/debug.png' ?>" /><br /><span style="text-align: center;">Debug</span></a></div>
-
-
-<div style="position: absolute; margin: 100px 0 0 540px; text-align: center;" class="text-sm"><a href="#!" onclick="document.getElementById('app_profile-container').style.display='block'; return false;"><img style="text-align: center;" src="<?= APP_BASE['resources'] . 'images/user.png' ?>" /><br /><span style="text-align: center;">Profile</span></a></div>
-
-
-<div style="position: absolute; margin: 100px 0 0 630px; text-align: center;" class="text-sm"><a href="#!" onclick="document.getElementById('app_browser-container').style.display='block'; return false;"><img style="text-align: center;" src="<?= APP_BASE['resources'] . 'images/browser.png' ?>" /><br /><span style="text-align: center;">Browser</span></a></div>
-
-
-<div style="position: absolute; margin: 200px 75px; text-align: center;" class="text-sm"><a href="#!" onclick="document.getElementById('app_menu-container').style.display='block'; return false;"><img style="text-align: center;" src="<?= APP_BASE['resources'] . 'images/apps.png' ?>" /><br /><span style="text-align: center;">Apps.</span></a></div>
-
-<div style="position: absolute; margin: 200px 170px; text-align: center;" class="text-sm"><a href="#!" onclick="document.getElementById('app_calendar-container').style.display='block'; return false;"><img style="text-align: center;" src="<?= APP_BASE['resources'] . 'images/calendar.png' ?>" /><br /><span style="text-align: center;">Calendar</span></a></div>
-
-<div style="position: absolute; margin: 190px 240px; padding: 20px 40px; background-color: rgba(255, 255, 255, 0.8);">
-<form action="#!" method="GET">
-<?= (isset($_GET['project']) && !$_GET['project'] ? '<input type="hidden" name="client" value="" />' : '<input type="hidden" name="project" value="" />') ?>
-
-  <div style="margin: 0 auto;">
-    <div id="clockTime"></div>
-  </div>  
-  <input class="input" id="toggle-project" type="checkbox" onchange="toggleSwitch(this); this.form.submit();" <?= (isset($_GET['project']) ? 'checked' : '') ?> />
-
-  <label class="label" for="toggle-project" style="margin-left: -6px;">
-    <div class="left">
-      Client
-    </div>
-
-    <div class="switch">
-      <span class="slider round"></span>
-    </div>
-
-    <div class="right">
-      Project
-    </div>
-  </label>
-</form>
-</div>
-
-<div style="position: absolute; margin: 200px 0 0 540px; text-align: center;" class="text-sm"><a href="#!" onclick="document.getElementById('app_pong-container').style.display='block'; return false;"><img style="text-align: center;" src="<?= APP_BASE['resources'] . 'images/pong.png' ?>" /><br /><span style="text-align: center;">Pong</span></a></div>
-
-
-<div style="position: absolute; margin: 200px 0 0 630px; text-align: center;" class="text-sm"><a href="#!" onclick="document.getElementById('app_browser-container').style.display='block'; return false;"><img style="text-align: center;" src="<?= APP_BASE['resources'] . 'images/regexp.png' ?>" /><br /><span style="text-align: center;">RegExp</span></a></div>
-
-
-<div style="position: absolute; margin: 300px 75px; text-align: center;" class="text-sm"><a href="#!" onclick="document.getElementById('app_browser-container').style.display='block'; return false;"><img style="text-align: center;" src="<?= APP_BASE['resources'] . 'images/chatgpt.png' ?>" /><br /><span style="text-align: center;">ChatGPT</span></a></div>
-
-
-<div style="position: absolute; margin: 300px 160px; text-align: center;" class="text-sm"><a href="#!" onclick="document.getElementById('app_browser-container').style.display='block'; return false;"><img style="text-align: center;" src="<?= APP_BASE['resources'] . 'images/stackoverflow.png' ?>" /><br /><span style="text-align: center;">Stackoverflow</span></a></div>
-
-
-<div style="position: absolute; margin: 300px 260px; text-align: center;" class="text-sm"><a href="#!" onclick="document.getElementById('app_browser-container').style.display='block'; return false;"><img style="text-align: center;" src="<?= APP_BASE['resources'] . 'images/validatejs.png' ?>" /><br /><span style="text-align: center;">ValidateJS</span></a></div>
-
-<!-- https://validator.w3.org/#validate_by_input // -->
-
-<div style="position: absolute; margin: 300px 340px; text-align: center;" class="text-sm"><a href="#!" onclick="document.getElementById('app_browser-container').style.display='block'; return false;"><img style="text-align: center;" src="<?= APP_BASE['resources'] . 'images/w3c.png' ?>" /><br /><span style="text-align: center;">W3C Validator</span></a></div>
-
-<!-- https://tailwindcss.com/docs/ // -->
-
-<div style="position: absolute; margin: 300px 0 0 445px; text-align: center;" class="text-sm"><a href="#!" onclick="document.getElementById('app_browser-container').style.display='block'; return false;"><img style="text-align: center;" src="<?= APP_BASE['resources'] . 'images/tailwindcss.png' ?>" /><br /><span style="text-align: center;">TailwindCSS<br />Docs</span></a></div>
-
-<!-- https://www.php.net/docs.php // -->
-
-<div style="position: absolute; margin: 300px 0 0 540px; text-align: center;" class="text-sm"><a href="#!" onclick="document.getElementById('app_browser-container').style.display='block'; return false;"><img style="text-align: center;" src="<?= APP_BASE['resources'] . 'images/php.png' ?>" /><br /><span style="text-align: center;">PHP Docs</span></a></div>
-
-<!-- https://dev.mysql.com/doc/ // -->
-
-<div style="position: absolute; margin: 300px 0 0 625px; text-align: center;" class="text-sm"><a href="#!" onclick="document.getElementById('app_browser-container').style.display='block'; return false;"><img style="text-align: center;" src="<?= APP_BASE['resources'] . 'images/mysql.png' ?>" /><br /><span style="text-align: center;">MySQL Docs</span></a></div>
-
-
-<div style="position: absolute; top: 400px; left: 65px; width: 80%; margin: 0 auto; height: 15px; border-bottom: 1px solid black; text-align: center; z-index: 0;">
-  <span style="font-size: 20px; background-color: #F3F5F6; padding: 0 20px; z-index: 1;">
-    USER APPS.
-  </span>
-</div>
-
-
-<div style="position: absolute; margin: 430px 75px; text-align: center;" class="text-sm"><a href="#!" onclick="document.getElementById('app_install-container').style.display='block'; return false;"><span style="text-align: center;">New App.</span><br /><img style="text-align: center;" src="<?= APP_BASE['resources'] . 'images/install.png' ?>" /></a></div>
-
-
-<div style="position: absolute; margin: 430px 170px; text-align: center;" class="text-sm"><a href="?app=text_editor&path=&file=app.user-app.php"><span style="text-align: center;">App #1</span></a><br /><a href="#!" onclick="document.getElementById('app_browser-container').style.display='block'; return false;"><img style="text-align: center;" src="<?= APP_BASE['resources'] . 'images/php-app.png' ?>" /></a>
-<div style="height: 75px;"></div>
-</div>
-
-
-</div>
-
-<div id="app_directory-container" style="position: absolute; display: <?= ( isset($_GET['debug']) || isset($_GET['project']) || isset($_GET['path'])  ? 'block' : 'none'); ?>; background-color: white; height: 580px; position: absolute; top: 100px; margin-left: auto; margin-right: auto; left: 0; right: 0; width: 700px;">
+      <div id="app_directory-container" style="position: absolute; display: <?= ( isset($_GET['debug']) || isset($_GET['project']) || isset($_GET['path'])  ? 'block' : 'none'); ?>; background-color: white; height: 580px; position: absolute; top: 100px; margin-left: auto; margin-right: auto; left: 0; right: 0; width: 700px;">
 
 <?php if (isset($_GET['path']) && preg_match('/^vendor/', $_GET['path'])) { ?>
 
 <!-- iframe src="composer_pkg.php" style="height: 500px; width: 700px;"></iframe -->
 
-<div style="width: 700px;">
-<div style="display: inline-block; width: 350px;">Composers Vendor Packages [Installed] List</div>
-<div style="display: inline-block; text-align: right; width: 300px; ">
-<form action="<?= (!defined('APP_URL_BASE') ? '//' . APP_DOMAIN . APP_URL_PATH . '?' . http_build_query(APP_QUERY, '', '&amp;') : APP_URL_BASE . '?' . http_build_query(APP_QUERY, '', '&amp;')) ?>" method="POST">
-<input id="RequirePkg" type="text" title="Enter Text and onSelect" list="RequirePkgs" placeholder="[vendor]/[package]" name="composer[package]" value onselect="get_package(this);" autocomplete="off" style=" margin-top: 4px;">
-<button type="submit" style="border: 1px solid #000; margin-top: 4px;"> Add </button>
-<div style="display: inline-block; float: right; text-align: left; margin-left: 10px;" class="text-xs">
-<input type="checkbox" name="composer[install]" value="" /> Install<br />
-<input type="checkbox" name="composer[update]" value="" /> Update</div>
-<datalist id="RequirePkgs">
-  <option value=""></option>
-</datalist>
-</form>
-</div>
-</div>
+      <div style="width: 700px;">
+        <div style="display: inline-block; width: 350px;">Composers Vendor Packages [Installed] List</div>
+        <div style="display: inline-block; text-align: right; width: 300px; ">
+          <form action="<?= (!defined('APP_URL_BASE') ? '//' . APP_DOMAIN . APP_URL_PATH . '?' . http_build_query(APP_QUERY, '', '&amp;') : APP_URL_BASE . '?' . http_build_query(APP_QUERY, '', '&amp;')) ?>" method="POST">
+            <input id="RequirePkg" type="text" title="Enter Text and onSelect" list="RequirePkgs" placeholder="[vendor]/[package]" name="composer[package]" value onselect="get_package(this);" autocomplete="off" style=" margin-top: 4px;">
+            <button type="submit" style="border: 1px solid #000; margin-top: 4px;"> Add </button>
+            <div style="display: inline-block; float: right; text-align: left; margin-left: 10px;" class="text-xs">
+              <input type="checkbox" name="composer[install]" value="" /> Install<br />
+              <input type="checkbox" name="composer[update]" value="" /> Update
+            </div>
+            <datalist id="RequirePkgs">
+              <option value=""></option>
+            </datalist>
+          </form>
+        </div>
+      </div>
 
-<table width="" style="border: none;">
-<tr style=" border: none;">
+      <table width="" style="border: none;">
+        <tr style=" border: none;">
 <?php
 //$paths = glob($path . '/*');
 $paths = COMPOSER_VENDORS;
@@ -791,8 +711,8 @@ $count = 1;
 if (!empty($paths))
   foreach($paths as $vendor => $packages) {
 
-    echo '<td style="text-align: center; border: none;" class="text-xs">' . "\n"
-    . '<div class="container2">' . "\n";
+    echo '          <td style="text-align: center; border: none;" class="text-xs">' . "\n"
+    . '            <div class="container2">' . "\n";
 
     $show_notice = true;
 
@@ -919,19 +839,19 @@ if (!empty($result))
   }
 
 ?>
-</tr>
-</table>
+        </tr>
+      </table>
 
 <?php } elseif (isset($_GET['project'])) { ?> 
 
 <?php if (readlinkToEnd('/var/www/projects') == '/mnt/c/www/projects') {  ?>
-<div style="text-align: center; border: none;" class="text-xs">
-<a class="pkg_dir" href="?project#!" onclick="document.getElementById('app_project-container').style.display='block';">
-<img src="resources/images/project-icon.png" width="50" height="32" style="" /></a><br /><a href="<?= (APP_URL['query'] != '' ? '?'. APP_URL['query'] : '') . '#!' ?>" onclick="document.getElementById('app_text_editor-container').style.display='block';">project.php</a>
-</div>
+      <div style="text-align: center; border: none;" class="text-xs">
+        <a class="pkg_dir" href="#" onclick="document.getElementById('app_project-container').style.display='block';">
+        <img src="resources/images/project-icon.png" width="50" height="32" style="" /></a><br /><a href="?project">project.php</a>
+      </div>
 
-<table width="" style="border: none;">
-<tr style=" border: none;">
+      <table width="" style="border: none;">
+        <tr style=" border: none;">
 <?php
 $links = array_filter(glob(APP_PATH . '../../projects/*'), 'is_dir'); 
 
@@ -942,32 +862,29 @@ $count = 1;
       if (empty($links)) {
         echo '<option value="" selected>---</option>' . "\n"; // label="     "
       } else  //dd($links);
-      $old_links = $links;
+        $old_links = $links;
       while ($link = array_shift($links)) {
         $old_link = $link;
         $link = basename($link);
 
 
-    echo '<td style="text-align: center; border: none;" class="text-xs">' . "\n";
-
-          echo '<a class="pkg_dir" href="?project=' . $link . '">'
-          . '<img src="resources/images/directory.png" width="50" height="32" style="" /><br />' . $link . '</a><br />'
-
-      . '</td>' . "\n";
-      if ($count > 7 || $old_link == end($old_links)) echo '</tr>';
-      if (isset($count) && $count > 7) $count = 1;
-      else $count++;
-
-        }
+        echo '<td style="text-align: center; border: none;" class="text-xs">' . "\n";
+        echo '<a class="pkg_dir" href="?project=' . $link . '">'
+        . '<img src="resources/images/directory.png" width="50" height="32" style="" /><br />' . $link . '</a><br />'
+        . '</td>' . "\n";
+        if ($count > 7 || $old_link == end($old_links)) echo '</tr>';
+        if (isset($count) && $count > 7) $count = 1;
+        else $count++;
 
       }
-      
-      
+
+    }
+
 ?>
-</table>
+      </table>
 <!--
       <li>
-<?php if (readlinkToEnd('/var/www/projects') == '/mnt/c/www/projects') {  ?>
+<?php if (readlinkToEnd('/var/www/projects') == '/mnt/c/www/projects') { ?>
 <a href="projects/">project/</a>
         <ul style="padding-left: 10px;">
           <form action method="GET">
@@ -1003,9 +920,9 @@ $status = ($status == 000) ? "On-call" :
          (($status == 003) ? "Previous" :
          (($status == 004) ? "Future" : "Unknown"))));
 ?>
-<h3>Stage: <?= $status ?> (<?= $statusCode ?>)</h3>
-<table width="" style="border: none;">
-<tr style=" border: none;">
+      <h3>Stage: <?= $status ?> (<?= $statusCode ?>)</h3>
+      <table width="" style="border: none;">
+        <tr style=" border: none;">
 <?php
 
 $count = 1;
@@ -1021,28 +938,23 @@ $count = 1;
         $link = basename($link);
 
 
-    echo '<td style="text-align: center; border: none;" class="text-xs">' . "\n";
+        echo '<td style="text-align: center; border: none;" class="text-xs">' . "\n";
 
-          echo '<a class="pkg_dir" href="?client=' . $link . '">'
-          . '<img src="resources/images/directory.png" width="50" height="32" style="" /><br />' . $link . '</a><br />'
-
-      . '</td>' . "\n";
-      if ($count > 7 || $old_link == end($old_links)) echo '</tr>';
-      if (isset($count) && $count > 7) $count = 1;
-      else $count++;
-
-        }
-
+        echo '<a class="pkg_dir" href="?client=' . $link . '">'
+        . '<img src="resources/images/directory.png" width="50" height="32" style="" /><br />' . $link . '</a><br />'
+        . '</td>' . "\n";
+        if ($count > 7 || $old_link == end($old_links)) echo '</tr>';
+        if (isset($count) && $count > 7) $count = 1;
+        else $count++;
       }
-      
-      
+    }
 ?>
-</table>
+      </table>
 
 <?php } } else { ?>
 
-<table width="" style="border: 0 solid #000;">
-<tr>
+      <table width="" style="border: 0 solid #000;">
+        <tr>
 <?php
 $paths = glob($path . '/' . '{.[!.]*,*}', GLOB_BRACE | GLOB_MARK);
 //dd(urldecode($_GET['path']));
@@ -1115,9 +1027,8 @@ if (!empty($paths))
           . '<img src="resources/images/directory.png" width="50" height="32" /><br />' . basename($path) . '/</a>';
       elseif (is_file($path)) {
 
-        
         if (preg_match('/^\..*/', basename($path))) {
-        
+
           if (basename($path) == '.htaccess')
             echo '<div style="position: relative;"><a href="?app=text_editor&path=' . (basename(dirname($path)) == basename(parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH) ? 'failed' : basename(dirname($path)))) . '&file=' . basename($path) . '"><img src="resources/images/htaccess_file.png" width="40" height="50" /><br />' . basename($path)
             . '</a>'
@@ -1157,9 +1068,9 @@ if (!empty($paths))
           . '</a></div>' . "\n";
 
           elseif (basename($path) == 'composer.lock')
-          
+
             //$errors['COMPOSER-VALIDATE-LOCK']
-           
+
             echo '<div style="position: relative;"><img src="resources/images/composer_lock_file.gif" width="40" height="50" /><br />' . basename($path)
             . (isset($errors['COMPOSER-VALIDATE-LOCK']) ? '<div style="position: absolute; right: 8px; top: -6px; color: red; font-weight: bold;">[1]</div>' : '' )
 /*            . (is_readable($path = ini_get('error_log')) && filesize($path) > 0 ? '<div style="position: absolute; right: 8px; bottom: -6px; color: red; font-weight: bold;">[1]</div>' : '' ) */
@@ -1178,7 +1089,7 @@ if (!empty($paths))
 /**/
         elseif (preg_match('/.*\.php/', basename($path))) {
           if (preg_match('/^project\.php/', basename($path)))
-            echo '<a style="position: relative;" href="' . (isset($_GET['project']) ? '?project#!' : '?project') . '" ' . (isset($_GET['project']) ? 'onclick="document.getElementById(\'app_project-container\').style.display=\'block\';"' : '') . '><div style="position: absolute; left: -60px; top: -20px; color: red; font-weight: bold;">' . (isset($_GET['project']) ? '' : '') . '</div><img src="resources/images/project-icon.png" width="40" height="50" /></a><br /><a href="' . (isset($_GET['project']) ? '?project#!' : '?app=text_editor&path=' . (basename(dirname($path)) == basename(parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH) ? 'failed' : basename(dirname($path)))) . '&file=' . basename($path)) . '" ' . (isset($_GET['project']) ? 'onclick="document.getElementById(\'app_text_editor-container\').style.display=\'block\';"' : '') . '">' . basename($path) . '</a>';
+            echo '<a style="position: relative;" href="' . (isset($_GET['project']) ? '?project#!' : '#') . '" onclick="document.getElementById(\'app_project-container\').style.display=\'block\';"><div style="position: absolute; left: -60px; top: -20px; color: red; font-weight: bold;">' . (isset($_GET['project']) ? '' : '') . '</div><img src="resources/images/project-icon.png" width="40" height="50" /></a><br /><a href="' . (isset($_GET['project']) ? '?project#!' : '?app=text_editor&path=' . (basename(dirname($path)) == basename(parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH) ? 'failed' : basename(dirname($path)))) . '&file=' . basename($path)) . '" ' . (isset($_GET['project']) ? 'onclick="document.getElementById(\'app_text_editor-container\').style.display=\'block\';"' : '') . '">' . basename($path) . '</a>';
           else echo '<a href="?app=text_editor&path=' . (basename(dirname($path)) == basename(parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH) ? 'failed' : basename(dirname($path)))) . '&file=' . basename($path) . '"><img src="resources/images/php_file.png" width="40" height="50" /><br />' . basename($path) . '</a>';
 
         } elseif (basename($path) == basename(ini_get('error_log')))
@@ -1195,18 +1106,184 @@ if (!empty($paths))
       else $count++;
   }
 ?>
-</tr>
-</table>
+        </tr>
+      </table>
 
 <?php } ?>
-</div>
-</div>
+    </div>
+  </div>
+  
+      <div id="app_menu-container" style="position: absolute; display: none; width: 800px; margin: 0 auto; height: 500px; background-color: rgba(255, 255, 255, 0.9); overflow-x: scroll;">
+
+        <div style="position: absolute; margin: 80px 45px; text-align: center;" class="text-sm"><a href="#!" onclick="document.getElementById('app_menu-container').style.display='none'; return false;"><img style="text-align: center;" height="25" width="25" src="<?= APP_BASE['resources'] . 'images/close-red.gif' ?>" /></a><br /></div>
+
+        <div style="position: absolute; margin: 100px 75px; text-align: center;" class="text-sm"><a href="#!" onclick="show_console(); return false;"><img style="text-align: center;" src="<?= APP_BASE['resources'] . 'images/cli.png' ?>" /></a><br /><a href="?app=text_editor&path=&file=app.console.php" style="text-align: center;">(CLI)</a></div>
+
+<!-- 
+<a href="javascript:window.open('print.html', 'newwindow', 'width=300,height=250')">Print</a>
+onclick="window.open('app.whiteboard.php', 'newwindow', 'width=300,height=250'); return false;"
+
+https://stackoverflow.com/questions/12939928/make-a-link-open-a-new-window-not-tab
+ -->
+
+        <div style="position: absolute; margin: 100px 165px; text-align: center;" class="text-sm"><a href="app.whiteboard.php" target="_blank" onclick="document.getElementById('app_whiteboard-container').style.display='block'; return false;"><img style="text-align: center;" src="<?= APP_BASE['resources'] . 'images/whiteboard.png' ?>" /></a><br /><a href="?app=text_editor&path=&file=app.whiteboard.php" style="text-align: center;">Whiteboard</a></div>
+
+        <div style="position: absolute; margin: 100px 260px; text-align: center;" class="text-sm"><a href="#!" onclick="document.getElementById('app_notes-container').style.display='block'; return false;"><img style="text-align: center;" src="<?= APP_BASE['resources'] . 'images/notes.png' ?>" /></a><br /><a href="?app=text_editor&path=&file=app.notes.php" style="text-align: center;">Notes</a></div>
+
+        <div style="position: absolute; margin: 100px 350px; text-align: center;" class="text-sm"><a href="#!" onclick="document.getElementById('app_project-container').style.display='block'; return false;"><img style="text-align: center;" src="<?= APP_BASE['resources'] . 'images/project.png' ?>" /></a><br /><a href="?app=text_editor&path=&file=app.project.php"><span style="text-align: center;">Project</a></span></div>
+
+        <div style="position: absolute; margin: 100px 0 0 450px ; text-align: center;" class="text-sm"><a href="#!" onclick="document.getElementById('app_debug-container').style.display='block'; return false;"><img style="text-align: center;" src="<?= APP_BASE['resources'] . 'images/debug.png' ?>" /><br /><span style="text-align: center;">Debug</span></a></div>
+
+        <div style="position: absolute; margin: 100px 0 0 540px; text-align: center;" class="text-sm"><a href="#!" onclick="document.getElementById('app_profile-container').style.display='block'; return false;"><img style="text-align: center;" src="<?= APP_BASE['resources'] . 'images/user.png' ?>" /><br /><span style="text-align: center;">Profile</span></a></div>
+
+        <div style="position: absolute; margin: 100px 0 0 630px; text-align: center;" class="text-sm"><a href="#!" onclick="document.getElementById('app_browser-container').style.display='block'; return false;"><img style="text-align: center;" src="<?= APP_BASE['resources'] . 'images/browser.png' ?>" /><br /><span style="text-align: center;">Browser</span></a></div>
+
+        <div style="position: absolute; margin: 200px 75px; text-align: center;" class="text-sm"><a href="#!" onclick="document.getElementById('app_menu-container').style.display='block'; return false;"><img style="text-align: center;" src="<?= APP_BASE['resources'] . 'images/apps.png' ?>" /><br /><span style="text-align: center;">Apps.</span></a></div>
+
+        <div style="position: absolute; margin: 200px 170px; text-align: center;" class="text-sm"><a href="#!" onclick="document.getElementById('app_calendar-container').style.display='block'; return false;"><img style="text-align: center;" src="<?= APP_BASE['resources'] . 'images/calendar.png' ?>" /><br /><span style="text-align: center;">Calendar</span></a></div>
+
+        <div style="position: absolute; margin: 190px 240px; padding: 20px 40px; background-color: rgba(255, 255, 255, 0.8);">
+          <form action="#!" method="GET">
+<?= '            ' . (isset($_GET['project']) && !$_GET['project'] ? '<input type="hidden" name="client" value="" />' : '<input type="hidden" name="project" value="" />') ?>
+
+            <div style="margin: 0 auto;">
+              <div id="clockTime"></div>
+            </div>  
+            <input class="input" id="toggle-project" type="checkbox" onchange="toggleSwitch(this); this.form.submit();" <?= (isset($_GET['project']) ? 'checked' : '') ?> />
+
+            <label class="label" for="toggle-project" style="margin-left: -6px;">
+              <div class="left"> Client </div>
+              <div class="switch"><span class="slider round"></span></div>
+              <div class="right"> Project </div>
+            </label>
+          </form>
+        </div>
+
+        <div style="position: absolute; margin: 200px 0 0 540px; text-align: center;" class="text-sm"><a href="#!" onclick="document.getElementById('app_pong-container').style.display='block'; return false;"><img style="text-align: center;" src="<?= APP_BASE['resources'] . 'images/pong.png' ?>" /><br /><span style="text-align: center;">Pong</span></a></div>
+
+        <div style="position: absolute; margin: 200px 0 0 630px; text-align: center;" class="text-sm"><a href="#!" onclick="document.getElementById('app_browser-container').style.display='block'; return false;"><img style="text-align: center;" src="<?= APP_BASE['resources'] . 'images/regexp.png' ?>" /><br /><span style="text-align: center;">RegExp</span></a></div>
+
+        <div style="position: absolute; margin: 300px 75px; text-align: center;" class="text-sm"><a href="#!" onclick="document.getElementById('app_browser-container').style.display='block'; return false;"><img style="text-align: center;" src="<?= APP_BASE['resources'] . 'images/chatgpt.png' ?>" /><br /><span style="text-align: center;">ChatGPT</span></a></div>
+
+        <div style="position: absolute; margin: 300px 160px; text-align: center;" class="text-sm"><a href="#!" onclick="document.getElementById('app_browser-container').style.display='block'; return false;"><img style="text-align: center;" src="<?= APP_BASE['resources'] . 'images/stackoverflow.png' ?>" /><br /><span style="text-align: center;">Stackoverflow</span></a></div>
+
+        <div style="position: absolute; margin: 300px 260px; text-align: center;" class="text-sm"><a href="#!" onclick="document.getElementById('app_browser-container').style.display='block'; return false;"><img style="text-align: center;" src="<?= APP_BASE['resources'] . 'images/validatejs.png' ?>" /><br /><span style="text-align: center;">ValidateJS</span></a></div>
+
+<!-- https://validator.w3.org/#validate_by_input // -->
+
+        <div style="position: absolute; margin: 300px 340px; text-align: center;" class="text-sm"><a href="#!" onclick="document.getElementById('app_browser-container').style.display='block'; return false;"><img style="text-align: center;" src="<?= APP_BASE['resources'] . 'images/w3c.png' ?>" /><br /><span style="text-align: center;">W3C Validator</span></a></div>
+
+<!-- https://tailwindcss.com/docs/ // -->
+
+        <div style="position: absolute; margin: 300px 0 0 445px; text-align: center;" class="text-sm"><a href="#!" onclick="document.getElementById('app_browser-container').style.display='block'; return false;"><img style="text-align: center;" src="<?= APP_BASE['resources'] . 'images/tailwindcss.png' ?>" /><br /><span style="text-align: center;">TailwindCSS<br />Docs</span></a></div>
+
+<!-- https://www.php.net/docs.php // -->
+
+        <div style="position: absolute; margin: 300px 0 0 540px; text-align: center;" class="text-sm"><a href="#!" onclick="document.getElementById('app_browser-container').style.display='block'; return false;"><img style="text-align: center;" src="<?= APP_BASE['resources'] . 'images/php.png' ?>" /><br /><span style="text-align: center;">PHP Docs</span></a></div>
+
+<!-- https://dev.mysql.com/doc/ // -->
+
+        <div style="position: absolute; margin: 300px 0 0 625px; text-align: center;" class="text-sm"><a href="#!" onclick="document.getElementById('app_browser-container').style.display='block'; return false;"><img style="text-align: center;" src="<?= APP_BASE['resources'] . 'images/mysql.png' ?>" /><br /><span style="text-align: center;">MySQL Docs</span></a></div>
+
+        <div style="position: absolute; top: 400px; left: 65px; width: 80%; margin: 0 auto; height: 15px; border-bottom: 1px solid black; text-align: center; z-index: 0;">
+          <span style="font-size: 20px; background-color: #F3F5F6; padding: 0 20px; z-index: 1;"> USER APPS. </span>
+        </div>
+
+        <div style="position: absolute; margin: 430px 75px; text-align: center;" class="text-sm"><a href="#!" onclick="document.getElementById('app_install-container').style.display='block'; return false;"><span style="text-align: center;">New App.</span><br /><img style="text-align: center;" src="<?= APP_BASE['resources'] . 'images/install.png' ?>" /></a></div>
+
+        <div style="position: absolute; margin: 430px 170px; text-align: center;" class="text-sm">
+          <a href="?app=text_editor&path=&file=app.user-app.php"><span style="text-align: center;">App #1</span></a><br />
+          <a href="#!" onclick="document.getElementById('app_browser-container').style.display='block'; return false;"><img style="text-align: center;" src="<?= APP_BASE['resources'] . 'images/php-app.png' ?>" /></a>
+          <div style="height: 75px;"></div>
+        </div>
+      </div>
+  
+      <div id="app_menu-container" style="position: absolute; display: none; width: 800px; margin: 0 auto; height: 500px; background-color: rgba(255, 255, 255, 0.9); overflow-x: scroll;">
+
+        <div style="position: absolute; margin: 80px 45px; text-align: center;" class="text-sm"><a href="#!" onclick="document.getElementById('app_menu-container').style.display='none'; return false;"><img style="text-align: center;" height="25" width="25" src="<?= APP_BASE['resources'] . 'images/close-red.gif' ?>" /></a><br /></div>
+
+        <div style="position: absolute; margin: 100px 75px; text-align: center;" class="text-sm"><a href="#!" onclick="show_console(); return false;"><img style="text-align: center;" src="<?= APP_BASE['resources'] . 'images/cli.png' ?>" /></a><br /><a href="?app=text_editor&path=&file=app.console.php" style="text-align: center;">(CLI)</a></div>
+
+<!-- 
+<a href="javascript:window.open('print.html', 'newwindow', 'width=300,height=250')">Print</a>
+onclick="window.open('app.whiteboard.php', 'newwindow', 'width=300,height=250'); return false;"
+
+https://stackoverflow.com/questions/12939928/make-a-link-open-a-new-window-not-tab
+ -->
+
+        <div style="position: absolute; margin: 100px 165px; text-align: center;" class="text-sm"><a href="app.whiteboard.php" target="_blank" onclick="document.getElementById('app_whiteboard-container').style.display='block'; return false;"><img style="text-align: center;" src="<?= APP_BASE['resources'] . 'images/whiteboard.png' ?>" /></a><br /><a href="?app=text_editor&path=&file=app.whiteboard.php" style="text-align: center;">Whiteboard</a></div>
+
+        <div style="position: absolute; margin: 100px 260px; text-align: center;" class="text-sm"><a href="#!" onclick="document.getElementById('app_notes-container').style.display='block'; return false;"><img style="text-align: center;" src="<?= APP_BASE['resources'] . 'images/notes.png' ?>" /></a><br /><a href="?app=text_editor&path=&file=app.notes.php" style="text-align: center;">Notes</a></div>
+
+        <div style="position: absolute; margin: 100px 350px; text-align: center;" class="text-sm"><a href="#!" onclick="document.getElementById('app_project-container').style.display='block'; return false;"><img style="text-align: center;" src="<?= APP_BASE['resources'] . 'images/project.png' ?>" /></a><br /><a href="?app=text_editor&path=&file=app.project.php"><span style="text-align: center;">Project</a></span></div>
+
+        <div style="position: absolute; margin: 100px 0 0 450px ; text-align: center;" class="text-sm"><a href="#!" onclick="document.getElementById('app_debug-container').style.display='block'; return false;"><img style="text-align: center;" src="<?= APP_BASE['resources'] . 'images/debug.png' ?>" /><br /><span style="text-align: center;">Debug</span></a></div>
+
+        <div style="position: absolute; margin: 100px 0 0 540px; text-align: center;" class="text-sm"><a href="#!" onclick="document.getElementById('app_profile-container').style.display='block'; return false;"><img style="text-align: center;" src="<?= APP_BASE['resources'] . 'images/user.png' ?>" /><br /><span style="text-align: center;">Profile</span></a></div>
+
+        <div style="position: absolute; margin: 100px 0 0 630px; text-align: center;" class="text-sm"><a href="#!" onclick="document.getElementById('app_browser-container').style.display='block'; return false;"><img style="text-align: center;" src="<?= APP_BASE['resources'] . 'images/browser.png' ?>" /><br /><span style="text-align: center;">Browser</span></a></div>
+
+        <div style="position: absolute; margin: 200px 75px; text-align: center;" class="text-sm"><a href="#!" onclick="document.getElementById('app_menu-container').style.display='block'; return false;"><img style="text-align: center;" src="<?= APP_BASE['resources'] . 'images/apps.png' ?>" /><br /><span style="text-align: center;">Apps.</span></a></div>
+
+        <div style="position: absolute; margin: 200px 170px; text-align: center;" class="text-sm"><a href="#!" onclick="document.getElementById('app_calendar-container').style.display='block'; return false;"><img style="text-align: center;" src="<?= APP_BASE['resources'] . 'images/calendar.png' ?>" /><br /><span style="text-align: center;">Calendar</span></a></div>
+
+        <div style="position: absolute; margin: 190px 240px; padding: 20px 40px; background-color: rgba(255, 255, 255, 0.8);">
+          <form action="#!" method="GET">
+<?= '            ' . (isset($_GET['project']) && !$_GET['project'] ? '<input type="hidden" name="client" value="" />' : '<input type="hidden" name="project" value="" />') ?>
+
+            <div style="margin: 0 auto;">
+              <div id="clockTime"></div>
+            </div>  
+            <input class="input" id="toggle-project" type="checkbox" onchange="toggleSwitch(this); this.form.submit();" <?= (isset($_GET['project']) ? 'checked' : '') ?> />
+
+            <label class="label" for="toggle-project" style="margin-left: -6px;">
+              <div class="left"> Client </div>
+              <div class="switch"><span class="slider round"></span></div>
+              <div class="right"> Project </div>
+            </label>
+          </form>
+        </div>
+
+        <div style="position: absolute; margin: 200px 0 0 540px; text-align: center;" class="text-sm"><a href="#!" onclick="document.getElementById('app_pong-container').style.display='block'; return false;"><img style="text-align: center;" src="<?= APP_BASE['resources'] . 'images/pong.png' ?>" /><br /><span style="text-align: center;">Pong</span></a></div>
+
+        <div style="position: absolute; margin: 200px 0 0 630px; text-align: center;" class="text-sm"><a href="#!" onclick="document.getElementById('app_browser-container').style.display='block'; return false;"><img style="text-align: center;" src="<?= APP_BASE['resources'] . 'images/regexp.png' ?>" /><br /><span style="text-align: center;">RegExp</span></a></div>
+
+        <div style="position: absolute; margin: 300px 75px; text-align: center;" class="text-sm"><a href="#!" onclick="document.getElementById('app_browser-container').style.display='block'; return false;"><img style="text-align: center;" src="<?= APP_BASE['resources'] . 'images/chatgpt.png' ?>" /><br /><span style="text-align: center;">ChatGPT</span></a></div>
+
+        <div style="position: absolute; margin: 300px 160px; text-align: center;" class="text-sm"><a href="#!" onclick="document.getElementById('app_browser-container').style.display='block'; return false;"><img style="text-align: center;" src="<?= APP_BASE['resources'] . 'images/stackoverflow.png' ?>" /><br /><span style="text-align: center;">Stackoverflow</span></a></div>
+
+        <div style="position: absolute; margin: 300px 260px; text-align: center;" class="text-sm"><a href="#!" onclick="document.getElementById('app_browser-container').style.display='block'; return false;"><img style="text-align: center;" src="<?= APP_BASE['resources'] . 'images/validatejs.png' ?>" /><br /><span style="text-align: center;">ValidateJS</span></a></div>
+
+<!-- https://validator.w3.org/#validate_by_input // -->
+
+        <div style="position: absolute; margin: 300px 340px; text-align: center;" class="text-sm"><a href="#!" onclick="document.getElementById('app_browser-container').style.display='block'; return false;"><img style="text-align: center;" src="<?= APP_BASE['resources'] . 'images/w3c.png' ?>" /><br /><span style="text-align: center;">W3C Validator</span></a></div>
+
+<!-- https://tailwindcss.com/docs/ // -->
+
+        <div style="position: absolute; margin: 300px 0 0 445px; text-align: center;" class="text-sm"><a href="#!" onclick="document.getElementById('app_browser-container').style.display='block'; return false;"><img style="text-align: center;" src="<?= APP_BASE['resources'] . 'images/tailwindcss.png' ?>" /><br /><span style="text-align: center;">TailwindCSS<br />Docs</span></a></div>
+
+<!-- https://www.php.net/docs.php // -->
+
+        <div style="position: absolute; margin: 300px 0 0 540px; text-align: center;" class="text-sm"><a href="#!" onclick="document.getElementById('app_browser-container').style.display='block'; return false;"><img style="text-align: center;" src="<?= APP_BASE['resources'] . 'images/php.png' ?>" /><br /><span style="text-align: center;">PHP Docs</span></a></div>
+
+<!-- https://dev.mysql.com/doc/ // -->
+
+        <div style="position: absolute; margin: 300px 0 0 625px; text-align: center;" class="text-sm"><a href="#!" onclick="document.getElementById('app_browser-container').style.display='block'; return false;"><img style="text-align: center;" src="<?= APP_BASE['resources'] . 'images/mysql.png' ?>" /><br /><span style="text-align: center;">MySQL Docs</span></a></div>
+
+        <div style="position: absolute; top: 400px; left: 65px; width: 80%; margin: 0 auto; height: 15px; border-bottom: 1px solid black; text-align: center; z-index: 0;">
+          <span style="font-size: 20px; background-color: #F3F5F6; padding: 0 20px; z-index: 1;"> USER APPS. </span>
+        </div>
+
+        <div style="position: absolute; margin: 430px 75px; text-align: center;" class="text-sm"><a href="#!" onclick="document.getElementById('app_install-container').style.display='block'; return false;"><span style="text-align: center;">New App.</span><br /><img style="text-align: center;" src="<?= APP_BASE['resources'] . 'images/install.png' ?>" /></a></div>
+
+        <div style="position: absolute; margin: 430px 170px; text-align: center;" class="text-sm">
+          <a href="?app=text_editor&path=&file=app.user-app.php"><span style="text-align: center;">App #1</span></a><br />
+          <a href="#!" onclick="document.getElementById('app_browser-container').style.display='block'; return false;"><img style="text-align: center;" src="<?= APP_BASE['resources'] . 'images/php-app.png' ?>" /></a>
+          <div style="height: 75px;"></div>
+        </div>
+      </div>
 
 <?= $appTimesheet['body']; ?>
-
-<?= (isset($appComposer) ? $appComposer['body'] : null); ?>
-
-<?= (isset($appGit) ? $appGit['body'] : null); ?>
 
 <?= $appPHP['body'] ?>
 
@@ -1227,9 +1304,12 @@ if (!empty($paths))
 <?= $appTextEditor['body']; ?>
 
 
+<?= (isset($appGit) ? $appGit['body'] : null); ?>
 </div>
-<?= $appConsole['body']; ?>
 
+</div>
+
+<?= $appConsole['body']; ?>
 
   <!-- https://cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.min.js -->
   
@@ -1239,7 +1319,7 @@ if (!empty($paths))
 
 <?php
 
-is_dir($path = APP_PATH . APP_BASE['resources'] . 'js/jquery/') or mkdir($path, 0755, true);
+is_dir($path = APP_BASE['resources'] . 'js/jquery/') or mkdir($path, 0755, true);
 if (is_file($path . 'jquery-3.7.1.min.js')) {
   if (ceil(abs((strtotime(date('Y-m-d')) - strtotime(date('Y-m-d',strtotime('+5 days',filemtime($path . 'jquery-3.7.1.min.js'))))) / 86400)) <= 0 ) {
     $url = 'https://code.jquery.com/jquery-3.7.1.min.js';
@@ -1259,11 +1339,12 @@ if (is_file($path . 'jquery-3.7.1.min.js')) {
 }
 
 ?>
+
   <script src="<?= (check_http_200('https://code.jquery.com/jquery-3.7.1.min.js') ? 'https://code.jquery.com/jquery-3.7.1.min.js' : $path . 'jquery-3.7.1.min.js') ?>"></script>
+  <!-- You need to include jQueryUI for the extended easing options. -->
 
-
-  <script src="//code.jquery.com/jquery-1.12.4.js"></script>
-  <script src="//code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
+  <!-- script src="//code.jquery.com/jquery-1.12.4.js"></script -->
+  <script src="//code.jquery.com/ui/1.12.1/jquery-ui.js"></script> <!-- Uncaught ReferenceError: jQuery is not defined -->
 
 
 
@@ -1308,13 +1389,54 @@ if (is_file(APP_PATH . APP_BASE['resources'] . 'js/requirejs/require-2.3.6.js'))
 
   <!-- <script src="resources/js/jquery/jquery.min.js"></script> -->
 
-<?php // array_rand() can't be empty ?>
-  
-  <!-- script src="<?= array_rand(array_flip(array_filter(glob('../../resources/reels/*.js'), 'is_file')), 1); /* APP_BASE['resources']  */?>" type="text/javascript" charset="utf-8"></script -->
+<?php if (date('m-d') == /*1928-*/ '08-07' ?? /*2023-*/ '03-30') { ?>
+  <script src="/resources/reels/leave-a-light-on.js" type="text/javascript" charset="utf-8"></script>
+<?php } elseif (date('m-d') == /*1976-*/ '03-20' ?? /*2017-*/ '07-20') { ?>
+  <script src="/resources/reels/leave-a-light-on.js" type="text/javascript" charset="utf-8"></script>
+<?php } else {  // array_rand() can't be empty ?>
+  <script src="<?= array_rand(array_flip(array_filter(glob('../../resources/reels/*.js'), 'is_file')), 1); /* APP_BASE['resources'] */?>" type="text/javascript" charset="utf-8"></script>
+<?php } ?>
 
-  <script src="/resources/reels/christmas-mkay.js" type="text/javascript" charset="utf-8"></script>
+<script type="text/javascript" charset="utf-8">
 
-  <script type="text/javascript" charset="utf-8">
+  function makeDraggable(windowId) {
+    const windowElement = document.getElementById(windowId);
+    const headerElement = windowElement.querySelector('.ui-widget-header');
+
+    let isDragging = false;
+    let offsetX, offsetY;
+
+    headerElement.addEventListener('mousedown', function(event) {
+      // Bring the clicked window to the front
+      document.body.appendChild(windowElement);
+      offsetX = event.clientX - windowElement.getBoundingClientRect().left;
+      offsetY = event.clientY - windowElement.getBoundingClientRect().top;
+      isDragging = true;
+    });
+
+    document.addEventListener('mousemove', function(event) {
+      if (isDragging) {
+        const left = event.clientX - offsetX;
+        const top = event.clientY - offsetY;
+        //windowElement.style.left = `${left}px`;
+        //windowElement.style.top = `${top}px`;
+
+        // Boundary restrictions
+        const maxX = window.innerWidth - windowElement.clientWidth;
+        const maxY = window.innerHeight - windowElement.clientHeight;
+
+        windowElement.style.left = `${Math.max(0, Math.min(left, maxX))}px`;
+        windowElement.style.top = `${Math.max(0, Math.min(top, maxY))}px`;
+      }
+    });
+
+    document.addEventListener('mouseup', function() {
+      isDragging = false;
+    });
+  }
+
+  makeDraggable('app_composer-container');
+  makeDraggable('app_git-container');
 
 
 displayDirectoryBtn.addEventListener('click', () => {
@@ -1354,16 +1476,27 @@ function toggleSwitch(element) {
     // Third option is selected
     // Add your logic here
     console.log('checked');
+  
+    $( '#app_directory-container' ).slideDown( "slow", function() {
+      // Animation complete.
+    });
     
 $("#debug-content").show("slide", { direction: "left" }, 1000);
+
+$("#app_backup-container").show("slide", { direction: "right" }, 1000);
 
   } else {
     // Third option is not selected
     // Add your logic here
     console.log('(not) checked');
-    
+  
+    $( '#app_directory-container' ).slideUp( "slow", function() {
+      // Animation complete.
+    });
+
 $("#debug-content").hide("slide", { direction: "left" }, 1000);
 
+$("#app_backup-container").hide("slide", { direction: "right" }, 1000);
   }
 }
 
@@ -1499,13 +1632,14 @@ console.log(require.config);
 console.log('domReady is working ... ');
 
     })
-);
+});
 */
 
 <?= $appTimesheet['script']; ?>
 
 <?= $appProject['script']; ?>
 
-  </script>
+
+</script>
 </body>
 </html>

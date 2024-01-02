@@ -78,10 +78,10 @@ $json_data = <<<END
 }
 END;
 
-!is_file('database/weekly-timesheet-' . date('Y-m') . '.json')
-  and @touch('database/weekly-timesheet-' . date('Y-m') . '.json');
+!is_file(APP_PATH . APP_BASE['database'] . 'weekly-timesheet-' . date('Y-m') . '.json')
+  and @touch(APP_PATH . APP_BASE['database'] . 'weekly-timesheet-' . date('Y-m') . '.json');
 
-$json_data = json_decode(file_get_contents('database/weekly-timesheet-' . date('Y-m') . '.json'), true);
+$json_data = json_decode(file_get_contents(APP_PATH . APP_BASE['database'] . 'weekly-timesheet-' . date('Y-m') . '.json'), true);
 
 if (empty($json_data))
   $json_data = json_decode('{' . '"' . date('Y-m-d') . 'T' . date('H').':00:00-24:00' . '": {' . '} }', true);
@@ -585,12 +585,12 @@ $Now = new DateTime(date('Y-m-d') . 'T' . date('H').':00:00', new DateTimeZone('
 
 //dd($Now->format('Y-m-d H:i:s'));
 
-$json = (!is_file('database/weekly-timesheet-' . date('Y-m') . '.json') ? 
-  (!@touch('database/weekly-timesheet-' . date('Y-m') . '.json') ? 
-    (!file_get_contents('database/weekly-timesheet-' . date('Y-m') . '.json', true) ? json_encode([$Now->format(DATE_RFC3339) => []]) : file_get_contents('database/weekly-timesheet-' . date('Y-m') . '.json', true)) :
-    (!@file_put_contents('database/weekly-timesheet-' . date('Y-m') . '.json', $json = json_encode([$Now->format(DATE_RFC3339) => []]), LOCK_EX) ?: $json)
+$json = (!is_file(APP_PATH . APP_BASE['database'] . 'weekly-timesheet-' . date('Y-m') . '.json') ? 
+  (!@touch(APP_PATH . APP_BASE['database'] . 'weekly-timesheet-' . date('Y-m') . '.json') ? 
+    (!file_get_contents(APP_PATH . APP_BASE['database'] . 'weekly-timesheet-' . date('Y-m') . '.json', true) ? json_encode([$Now->format(DATE_RFC3339) => []]) : file_get_contents(APP_PATH . APP_BASE['database'] . 'weekly-timesheet-' . date('Y-m') . '.json', true)) :
+    (!@file_put_contents(APP_PATH . APP_BASE['database'] . 'weekly-timesheet-' . date('Y-m') . '.json', $json = json_encode([$Now->format(DATE_RFC3339) => []]), LOCK_EX) ?: $json)
   ) :
-  (!file_get_contents('database/weekly-timesheet-' . date('Y-m') . '.json', true) ? json_encode([$Now->format(DATE_RFC3339) => []]) : file_get_contents('database/weekly-timesheet-' . date('Y-m') . '.json', true))
+  (!file_get_contents(APP_PATH . APP_BASE['database'] . 'weekly-timesheet-' . date('Y-m') . '.json', true) ? json_encode([$Now->format(DATE_RFC3339) => []]) : file_get_contents(APP_PATH . APP_BASE['database'] . 'weekly-timesheet-' . date('Y-m') . '.json', true))
 );
 
 //file_get_contents('database/weekly-timesheet-' . date('Y-m') . '.json', true) :  : (!@touch('timesheet.json') ? '' . json_encode([$Now->format(DATE_RFC3339) => []]), 'timesheet.json', LOCK_EX) : file_get_contents('timesheet.json', true)));
@@ -631,7 +631,7 @@ switch ($_SERVER['REQUEST_METHOD']) {
 
       $_POST['idletime'] = json_encode($_POST['idletime']); 
       
-      file_put_contents('database/weekly-timesheet-' . date("Y-m") . '.json', json_encode($json_decode), LOCK_EX);
+      file_put_contents(APP_PATH . APP_BASE['database'] . 'weekly-timesheet-' . date("Y-m") . '.json', json_encode($json_decode), LOCK_EX);
       
       //Shutdown::setEnabled(false)->setShutdownMessage()->shutdown(); 
       Shutdown::setEnabled(false)->setShutdownMessage(function() use($json_decode) {
@@ -644,8 +644,8 @@ switch ($_SERVER['REQUEST_METHOD']) {
     //Shutdown::setEnabled(false)->shutdown(json_encode($json_decode));// $_POST['idletime']
     break;
   case 'GET':
-    if (!is_file('database/weekly-timesheet-' . date("Y-m") . '.json'))
-      file_put_contents('database/weekly-timesheet-' . date("Y-m") . '.json', json_encode([$Now->format('Y-m-d\TH:i:sP') => []]), LOCK_EX);
+    if (!is_file(APP_PATH . APP_BASE['database'] . 'weekly-timesheet-' . date("Y-m") . '.json'))
+      file_put_contents(APP_PATH . APP_BASE['database'] . 'weekly-timesheet-' . date("Y-m") . '.json', json_encode([$Now->format('Y-m-d\TH:i:sP') => []]), LOCK_EX);
     //die(); // $Now->format('H:i:s') => null
       break;
 }
@@ -1124,7 +1124,7 @@ function stopInterval() {
       time = date.toLocaleTimeString('en-US', { hour: '2-digit', hour12: false,  minute: '2-digit', second: '2-digit'}); // .replace(/AM|PM/,'')
       console.log("File Recorded - Time: " + idleTime);
       $.ajax({
-        url: '<?= basename(__FILE__) ?>',
+        url: 'public/<?= basename(__FILE__) ?>',
         type: 'POST',
         data: idletimeobj, // { idletime: { time: time, idle: toTime(idleTime)['time'], note: "" } }
         dataType: 'json',

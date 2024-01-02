@@ -326,7 +326,7 @@ if (basename($dir = APP_PATH) != 'config') {
     //2 => APP_PATH . 'functions.php',
     2 => APP_PATH . APP_BASE['config'] . 'git.php',
     3 => APP_PATH . APP_BASE['config'] . 'npm.php',
-    3 => APP_PATH . APP_BASE['vendor'] . 'autoload.php',
+    4 => APP_PATH . APP_BASE['vendor'] . 'autoload.php',
 
   ]; // array_filter(glob(__DIR__ . DIRECTORY_SEPARATOR . '*.php'), 'is_file');
 

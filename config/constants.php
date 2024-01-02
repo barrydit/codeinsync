@@ -82,15 +82,15 @@ if (basename(__DIR__) == 'config') {
 //define('APP_ENV', 'production');
 
 if (defined('APP_DOMAIN') && !in_array(APP_DOMAIN, ['localhost', '127.0.0.1', '::1'])) {
-  if (!is_file(APP_PATH . '.env.production')) {
-    if (@touch(APP_PATH . '.env.production'))
-      file_put_contents(APP_PATH . '.env.production', "DB_UNAME=\nDB_PWORD=");
+  if (!is_file(APP_PATH . '.env')) {
+    if (@touch(APP_PATH . '.env'))
+      file_put_contents(APP_PATH . '.env', "DB_UNAME=\nDB_PWORD=");
   }
   defined('APP_ENV') or define('APP_ENV', 'production');
 } else {
-  if (!is_file(APP_PATH . '.env.development')) {
-    if (@touch(APP_PATH . '.env.development')) {
-      file_put_contents(APP_PATH . '.env.development', "DB_UNAME=root\nDB_PWORD=");
+  if (!is_file(APP_PATH . '.env')) {
+    if (@touch(APP_PATH . '.env')) {
+      file_put_contents(APP_PATH . '.env', "DB_UNAME=root\nDB_PWORD=");
     }
   }
   defined('APP_ENV') or define('APP_ENV', 'development'); // development

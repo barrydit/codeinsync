@@ -6,7 +6,7 @@ if (__FILE__ == get_required_files()[0])
     : (is_file('config.php') ? 'config.php' : (is_file('config/config.php') ? 'config/config.php' : null))) require_once($path); 
 else die(var_dump($path . ' path was not found. file=config.php'));
 
-
+// dd(APP_PATH . '  ' . APP_ROOT);
 // PHP_URL_SCHEME, PHP_URL_HOST, PHP_URL_PORT, PHP_URL_USER, PHP_URL_PASS, PHP_URL_PATH, PHP_URL_QUERY or PHP_URL_FRAGMENT
 
 
@@ -226,7 +226,6 @@ $dom->appendChild($elm);
 
 //check if file is included or accessed directly
 if (__FILE__ == get_required_files()[0] || in_array(__FILE__, get_required_files()) && isset($_GET['app']) && $_GET['app'] == 'php' && APP_DEBUG)
-  Shutdown::setEnabled(false)->setShutdownMessage(function() { // use($dom) 
-
-      return ''; // $dom->saveHTML() ?? file_get_contents("https://github.com/barrydit/composer_app"); // $dom->saveHTML(); /* eval('? >' . $project_code); // -wow */
+  Shutdown::setEnabled(false)->setShutdownMessage(function() { // use($dom)
+      return '<!DOCTYPE html>'; // $dom->saveHTML() ?? file_get_contents("https://github.com/barrydit/composer_app"); // $dom->saveHTML(); /* eval('? >' . $project_code); // -wow */
     })->shutdown(); // die();

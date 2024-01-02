@@ -6,7 +6,7 @@ if (__FILE__ == get_required_files()[0])
     : (is_file('config.php') ? 'config.php' : (is_file('config/config.php') ? 'config/config.php' : null))) require_once($path); 
 else die(var_dump($path . ' path was not found. file=config.php'));
 
-require 'vendor/autoload.php'; // Include Composer's autoloader
+// require 'vendor/autoload.php'; // Include Composer's autoloader
 
 /*
 use Composer\Factory;
@@ -406,10 +406,11 @@ ob_end_clean();
 //(APP_SELF == __FILE__ || isset($_GET['app']) && $_GET['app'] == 'composer' ? 'selected' : (version_compare(COMPOSER_LATEST, COMPOSER_VERSION, '>') != 0 ? (isset($_GET['app']) && $_GET['app'] != 'composer' ? '' : 'selected') :  '')) 
 ob_start(); ?>
 
-  <div id="app_composer-container" class="absolute <?= (APP_SELF == __FILE__ || (isset($_GET['app']) && $_GET['app'] == 'composer') && !isset($_GET['path']) || (defined('COMPOSER') && !is_object(COMPOSER)) || count((array)COMPOSER) === 0 || version_compare(COMPOSER_LATEST, COMPOSER_VERSION, '>') != 0 ? 'selected' : '') ?>" style="position: absolute; top: 60px; left: 0; right: 0; z-index: 1; margin: 0 auto; width: 600px; background-color: rgba(255,255,255,0.8); padding: 10px">
+  <div id="app_composer-container" class="absolute <?= (APP_SELF == __FILE__ || (isset($_GET['app']) && $_GET['app'] == 'composer') && !isset($_GET['path']) || (defined('COMPOSER') && !is_object(COMPOSER)) || count((array)COMPOSER) === 0 || version_compare(COMPOSER_LATEST, COMPOSER_VERSION, '>') != 0 ? 'selected' : '') ?>" style="position: absolute; top: 60px; left: 0; right: 0; z-index: 1; width: 424px; background-color: rgba(255,255,255,0.8); padding: 10px;">
+
     <div style="position: relative; margin: 0 auto; width: 404px; height: 324px; border: 3px dashed #6B4329; background-color: #FBF7F1;">
 
-      <div class="absolute" style="position: absolute; display: inline-block; width: 100%; margin: -25px 0 10px 0; border-bottom: 1px solid #000; z-index: 3;">
+      <div class="absolute ui-widget-header" id="" style="position: absolute; display: inline-block; width: 100%; margin: -25px 0 10px 0; border-bottom: 1px solid #000; z-index: 3;">
         <label class="composer-home" style="cursor: pointer;">
           <div class="absolute" style="position: absolute; top: 0px; left: 3px;">
             <img src="resources/images/composer_icon.png" width="32" height="40" />
@@ -426,7 +427,7 @@ ob_start(); ?>
               <input type="hidden" name="app" value="composer" />
               <select name="exec" onchange="this.form.submit();">
                 <option <?= (COMPOSER_EXEC == COMPOSER_BIN ? 'selected' : '') ?> value="bin"><?= COMPOSER_BIN['bin']; ?></option>
-                <option <?= (COMPOSER_EXEC == COMPOSER_PHAR ? 'selected' : '') ?> value="phar"><?= COMPOSER_PHAR['bin']; ?></option>
+                <option <?= (COMPOSER_EXEC == COMPOSER_PHAR ? 'selected' : '') ?> value="phar"><?= 'php composer.phar' /*COMPOSER_PHAR['bin']*/; ?></option>
               </select>
 
             </code>
@@ -437,7 +438,7 @@ ob_start(); ?>
         <div style="display: inline; float: right; text-align: center; "><code style=" background-color: white; color: #0078D7;"><a style="cursor: pointer; font-size: 13px;" onclick="document.getElementById('app_composer-container').style.display='none';">[X]</a></code></div> 
       </div>
       
-      <div class="" style="position: relative; display: block; width: 398px; background-color: rgba(251,247,241); z-index: 2;">
+      <div class="ui-widget-content" style="position: relative; display: block; width: 398px; background-color: rgba(251,247,241); z-index: 2;">
         <div style="display: inline-block; text-align: left; width: 130px;">
           <div class="composer-menu text-sm" style="cursor: pointer; font-weight: bold; padding-left: 40px; border: 1px solid #000;">Main Menu</div>
           <div class="text-xs" style="display: inline-block; border: 1px solid #000;">
@@ -477,13 +478,13 @@ ob_start(); ?>
       <div class="absolute" style="position: absolute; bottom: 40px; left: 0; right: 0; width: 100%; text-align: center; z-index: 1; ">
       <form action="#!" method="POST">
         <input type="hidden" name="composer[create-project]" value="" />
-        <span style="">composer</span>
+        <span style="pdding-left: 125px"></span>
         <select name="composer[package]" onchange="this.form.submit();">
-          <option >create-project</option>
+          <option value="" selected>create-project</option>
           <option value="laravel/laravel">laravel/laravel</option>
           <option value="symfony/skeleton">symfony/skeleton</option>
         </select>
-        <span>/public/*</span>
+        <span>/project/*</span>
       </form>
       </div>
 
@@ -558,7 +559,7 @@ php composer.phar -v
 sudo composer self-update</textarea>
       </div>
     </form>
-      </div>
+    </div>
 <?php
 $frameUpdateContents = ob_get_contents();
 ob_end_clean(); ?>

@@ -139,6 +139,8 @@ ob_start(); ?>
 img { display: inline; }
 
 .show { display: block; }
+
+
 <?php $appGit['style'] = ob_get_contents();
 ob_end_clean(); 
 
@@ -146,10 +148,10 @@ ob_start();
 !defined('GIT_VERSION') and define('GIT_VERSION', '1.0.0');
 !defined('GIT_LATEST') and define('GIT_LATEST', GIT_VERSION);
 ?>
-  <div id="app_git-container" class="absolute <?= (APP_SELF == __FILE__ || isset($_GET['app']) && $_GET['app'] == 'git' ? 'selected' : (version_compare(GIT_LATEST, GIT_VERSION, '>') != 0 ? (isset($_GET['app']) && $_GET['app'] != 'git' ? '' : '') :  '')) ?>" style="position: absolute; top: 60px; left: 0; right: 0; z-index: 1; margin: 0 auto; width: 600px; background-color: rgba(255,255,255,0.8); padding: 10px;">
+  <div id="app_git-container" class="absolute <?= (APP_SELF == __FILE__ || isset($_GET['app']) && $_GET['app'] == 'git' ? 'selected' : (version_compare(GIT_LATEST, GIT_VERSION, '>') != 0 ? (isset($_GET['app']) && $_GET['app'] != 'git' ? '' : '') :  '')) ?>" style="position: absolute; top: 60px; left: 0; right: 0; z-index: 1; width: 424px; background-color: rgba(255,255,255,0.8); padding: 10px;">
 <div style="position: relative; margin: 0 auto; width: 404px; height: 306px; border: 3px dashed #F05033; background-color: #FBF7F1;">
 
-      <div class="absolute" style="position: absolute; display: inline-block; width: 100%; margin: -25px 0 10px 0; border-bottom: 1px solid #000; z-index: 3;">
+      <div class="absolute ui-widget-header" style="position: absolute; display: inline-block; width: 100%; margin: -25px 0 10px 0; border-bottom: 1px solid #000; z-index: 3;">
         <label class="git-home" style="cursor: pointer;">
           <div class="absolute" style="position: absolute; top: 0px; left: 3px;">
             <img src="resources/images/git_icon.fw.png" width="32" height="32" />
@@ -162,7 +164,7 @@ ob_start();
         <div style="display: inline; float: right; text-align: center; color: blue;"><code style="background-color: white; color: #0078D7;"><a style="cursor: pointer; font-size: 13px;" onclick="document.getElementById('app_git-container').style.display='none';">[X]</a></code></div> 
       </div>
       
-      <div class="" style="position: relative; display: block; width: 398px; background-color: rgba(251,247,241); z-index: 2;">
+      <div class=" ui-widget-content" style="position: relative; display: block; width: 398px; background-color: rgba(251,247,241); z-index: 2;">
         <div style="display: inline-block; text-align: left; width: 125px;">
           <div class="git-menu text-sm" style="cursor: pointer; font-weight: bold; padding-left: 25px; border: 1px solid #000;">Main Menu</div>
           <div class="text-xs" style="display: inline-block; border: 1px solid #000;">
@@ -687,7 +689,7 @@ ob_start(); ?>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-  <link rel="stylesheet" href="//code.jquery.com/ui/1.12.1/themes/smoothness/jquery-ui.css" />
+  <!-- link rel="stylesheet" href="//code.jquery.com/ui/1.12.1/themes/smoothness/jquery-ui.css" /-->
 
 
 <?php
@@ -723,7 +725,7 @@ if (is_file($path . 'tailwindcss-3.3.5.js')) {
 
   <!-- https://cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.min.js -->
   <script src="//code.jquery.com/jquery-1.12.4.js"></script>
-  <script src="//code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
+  <!-- script src="//code.jquery.com/ui/1.12.1/jquery-ui.js"></script -->
   <!-- <script src="resources/js/jquery/jquery.min.js"></script> -->
 <script>
 <?= $appGit['script']; ?>

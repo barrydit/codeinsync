@@ -51,7 +51,7 @@ if (preg_match($pattern, $node[0]->nodeValue, $matches)) {
 
 
 if (basename(dirname(APP_SELF)) == __DIR__ . DIRECTORY_SEPARATOR . 'public')
-  if ($path = realpath((basename(__DIR__) != 'config' ? NULL : __DIR__ . DIRECTORY_SEPARATOR) . 'git_ui.php')) // is_file('public/git_app.php')) 
+  if ($path = realpath((basename(__DIR__) != 'config' ? NULL : __DIR__ . DIRECTORY_SEPARATOR) . 'ui.git.php')) // is_file('public/git_app.php')) 
     require_once($path);
 
 if (APP_SELF == __FILE__ || defined(APP_DEBUG) && isset($_GET['app']) && $_GET['app'] == 'git')

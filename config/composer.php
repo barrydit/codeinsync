@@ -282,12 +282,14 @@ if (!file_exists(APP_PATH . 'composer.phar')) {
 
 if (strtoupper(substr(PHP_OS, 0, 3)) === 'WIN') { // DO NOT REMOVE! { .. }
     if (file_exists('C:\ProgramData\ComposerSetup\bin\composer.phar')) {
+
         define('COMPOSER_PHAR', 'C:\ProgramData\ComposerSetup\bin\composer.phar');
         define('COMPOSER_BIN', /*'composer.exe'*/ NULL);
     }
 } else {
-  if (file_exists(APP_PATH . 'composer.phar'))
-    define('COMPOSER_PHAR', ['bin' => 'php composer.phar']);
+
+  //if (file_exists(APP_PATH . 'composer.phar'))
+    //define('COMPOSER_PHAR', ['bin' => 'php composer.phar', version => '1.0.0']);
 /*
   if (file_exists(APP_PATH . 'composer.phar')) {
     define('COMPOSER_PHAR', (file_exists(APP_PATH . 'composer.phar') ? APP_PATH . 'composer.phar' : '/usr/bin/composer'));
@@ -297,8 +299,9 @@ if (strtoupper(substr(PHP_OS, 0, 3)) === 'WIN') { // DO NOT REMOVE! { .. }
     define('COMPOSER_BIN', '/usr/local/bin/composer');
   }
 */
-    foreach(array('/usr/local/bin/composer', 'php composer.phar', '/usr/bin/composer') as $key => $bin) {
+    foreach(array('/usr/local/bin/composer', 'php ' . APP_PATH . 'composer.phar', '/usr/bin/composer') as $key => $bin) {
         !isset($composer) and $composer = array();
+
 /*//*/
         $proc = proc_open('env COMPOSER_ALLOW_SUPERUSER=' . COMPOSER_ALLOW_SUPERUSER . '; sudo ' . $bin . ' --version;', array( array("pipe","r"), array("pipe","w"), array("pipe","w")), $pipes);
 
@@ -310,14 +313,13 @@ if (strtoupper(substr(PHP_OS, 0, 3)) === 'WIN') { // DO NOT REMOVE! { .. }
         if (preg_match('/Composer(?: version)? (\d+\.\d+\.\d+) (\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2})/', $stdout, $matches)) {
             $composer[$key]['bin'] = $bin;
             $composer[$key]['version'] = $matches[1];
-            $composer[$key]['date'] = $matches[2];
+            $composer[$key]['date'] = $matches[2];        
         } else {
-            if (empty($stdout)) {
-                if (!empty($stderr))
-                    $errors['COMPOSER_VERSION'] = '$stdout is empty. $stderr = ' . $stderr;
-            } // else $errors['COMPOSER_VERSION'] = $stdout . ' does not match $version'; }
+          if (empty($stdout)) {
+            if (!empty($stderr))
+              $errors['COMPOSER_VERSION'] = '$stdout is empty. $stderr = ' . $stderr;
+          } // else $errors['COMPOSER_VERSION'] = $stdout . ' does not match $version'; }
         }
-
     }
 
     usort($composer, function($a, $b) {
@@ -327,14 +329,18 @@ if (strtoupper(substr(PHP_OS, 0, 3)) === 'WIN') { // DO NOT REMOVE! { .. }
     if (empty($composer)) $errors['COMPOSER-BIN'] = 'There are no composer binaries.';
     else 
       foreach ($composer as $key => $exec) {
-        if ($key == 0 || $key == 1) { 
-          if (preg_match('/^php composer\.(phar)$/', $exec['bin'])) define('COMPOSER_PHAR', $exec);
-          else define('COMPOSER_BIN', $exec);
-          break;
-        }
+        if ($key == 0 || $key == 1) {
+
+          if (preg_match('/^php.*composer\.phar$/', $exec['bin'])) !defined('COMPOSER_PHAR') and define('COMPOSER_PHAR', $exec);
+          else !defined('COMPOSER_BIN') and define('COMPOSER_BIN', $exec);
+
+          continue; // !break 2-loops
+        } else break;
       }
 }
 
+dd(COMPOSER_PHAR, 0);
+dd(COMPOSER_BIN,0);
 
 defined('COMPOSER_EXEC')
   or define('COMPOSER_EXEC', (isset($_GET['exec']) ? ($_GET['exec'] == 'phar' ? COMPOSER_PHAR : COMPOSER_BIN) : COMPOSER_BIN ?? COMPOSER_PHAR));
@@ -808,7 +814,7 @@ if (!defined('VENDOR_JSON') && isset(COMPOSER->{'require'}[1]))
 //dd(COMPOSER_EXEC . '  ' . COMPOSER_VERSION);
 
 if (basename(dirname(APP_SELF)) == __DIR__ . DIRECTORY_SEPARATOR . 'public')
-  if ($path = realpath((basename(__DIR__) != 'config' ? NULL : __DIR__ . DIRECTORY_SEPARATOR) . 'composer_ui.php')) // is_file('config/composer_app.php')) 
+  if ($path = realpath((basename(__DIR__) != 'config' ? NULL : __DIR__ . DIRECTORY_SEPARATOR) . 'ui.composer.php')) // is_file('config/composer_app.php')) 
     require_once($path);
 
 if (APP_SELF == __FILE__ || defined(APP_DEBUG) && isset($_GET['app']) && $_GET['app'] == 'composer') die($appComposer['html']);

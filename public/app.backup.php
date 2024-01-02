@@ -13,6 +13,8 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 
 }
 
+define('APP_BACKUP_PATH', '/var/www/backup/'); // symlink(/mnt/d)
+
 ob_start();
 ?>
 
@@ -96,7 +98,10 @@ ob_start(); ?>
   <div id="app_backup-container" class="<?= (APP_SELF == __FILE__ || isset($_GET['client']) && $_GET['client'] || (isset($_GET['app']) && $_GET['app'] == 'backup')  ? 'selected' : '') ?>" style="position: absolute; <?= (isset($_GET['client']) && $_GET['client'] ? 'display: block;':'' ) ?> border: 1px solid #000; right: 0; top: 0; z-index: 1;">
 
 <?php
-if (isset($_GET['client']) && $_GET['client']) { 
+if (isset($_GET['client']) && $_GET['client']) {
+
+$_GET['client'] = urldecode($_GET['client']);
+
   $dirs = array_filter(glob(dirname(__DIR__) . '/../../clientele/' . $_GET['client'] . '/*'), 'is_dir');
 
 //if (count($dirs) >= 1) $_GET['domain'] = basename($dirs[array_key_first($dirs)]);
@@ -131,7 +136,8 @@ if (isset($_GET['client']) && $_GET['client']) {
 </div>
 </form>
 <div style="clear: both;"></div>
-<?php if (!empty($_GET['domain'])) { 
+<?php
+ if (!empty($_GET['domain'])) { 
 
 /*
 die(var_dump($dirs));
@@ -144,7 +150,7 @@ die(var_dump($dirs));
 <?= (!isset($_GET['domain'])?: '<input type="hidden" name="domain" value="' . $_GET['domain'] . '" />') ?>
 <div style="padding-left: 50px; text-align: right;">
 <?php
-  $dirs = array_filter(glob(dirname(__DIR__) . '/clientele/' . $_GET['client'] . '/' . $_GET['domain'] . '/*'), 'is_dir');
+  $dirs = array_filter(glob(dirname(__DIR__) . '/../../clientele/' . $_GET['client'] . '/' . $_GET['domain'] . '/*'), 'is_dir');
   foreach ($dirs as $key => $dir) {
     $dir_key = $key;
   ?>
@@ -156,7 +162,8 @@ die(var_dump($dirs));
 
 <?php
   $dir = basename($dir);
-  $files = glob(dirname(__DIR__) . '/clientele/' . $_GET['client'] . '/' . $_GET['domain'] . '/' . $dir . '/*.php');
+//dd($dir);
+  $files = glob(dirname(__DIR__) . '/../../clientele/' . $_GET['client'] . '/' . $_GET['domain'] . '/' . $dir . '/*.php');
   foreach ($files as $key => $file) {
     $b_file = APP_BACKUP_PATH . 'clientele/' . $_GET['client'] . '/' . $_GET['domain'] . '/' . $dir . '/'. basename($file);
     $hash = md5_file($file);

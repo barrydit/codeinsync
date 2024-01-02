@@ -15,7 +15,6 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     }
 }
 
-
 ob_start();
 ?>
 
@@ -39,7 +38,6 @@ z-index: 1;
 input {
   color: black;
 }
-
 
 .splitter {
   width: 100%;
@@ -200,7 +198,6 @@ document.getElementById('app_project-saveForm').addEventListener('submit', funct
   //document.getElementsByClassName('ace_text-input')[0].name = 'editor';
 
   console.log(globalEditor.getSession().getValue());
-  
 
       $.ajax({
         url: 'app.project.php?app=project&file=project.php',
@@ -219,10 +216,6 @@ document.getElementById('app_project-saveForm').addEventListener('submit', funct
           //console.log(responseText);
         }
       });
-
-
-
-  
 
 });
 
