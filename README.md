@@ -1,6 +1,8 @@
 # composer_app
 Front-end command for php composer. I intended to make it a lot simplier to install php libraries off of packagist and github, and that I wanted to be able to just plug the code in, and make it would work. I also wanted to show my skills off. I realize there are many other peoples content/images that are copyrighted, but if you ask nicely, they will be removed.
 
+![image](https://github.com/barrydit/composer_app/assets/6217010/763efd9c-71f2-4e66-8ced-0e2b17c82da2)
+
 The code has the ability to operate in a root directory (/public_html/) scenario, but only on initial install of the program, it corrects itself into a project root directory(project/[config|public]), where the configuration files are in in config, and the web code is under public. I learned in this course of work how to use .htaccess mod rewrite, and being able to change the url in order for [project/index.php] and [project/public/index.php] can still result in see the same thing. 
 
 <p align="center">
