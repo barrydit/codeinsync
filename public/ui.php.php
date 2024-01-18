@@ -112,9 +112,7 @@ ob_start(); ?>
       <div style="display: inline; float: right; text-align: center;">[<a style="cursor: pointer; font-size: 13px;" onclick="document.getElementById('app_php-container').style.display='none';">X</a>]</div> 
     </div>
 
-      <div style="display: inline-block; width: auto; padding-left: 10px;">
-
-      </div>
+    <div class=" ui-widget-content" style="display: inline-block; width: auto; padding-left: 10px;">
 
       <form style="display: inline;" action="<?= APP_URL_BASE . basename(APP_SELF) . '?' . http_build_query(APP_QUERY + array( 'app' => 'php')) . (APP_ENV == 'development' ? '#!' : '') /*  $c_or_p . '=' . (empty($_GET[$c_or_p]) ? '' : $$c_or_p->name) . '&amp;app=composer' */ ?>" method="GET">
 
@@ -136,6 +134,8 @@ ob_start(); ?>
 
   </div>
 <!-- </div> -->
+</div>
+
 
 <?php $appPHP['body'] = ob_get_contents();
 ob_end_clean();

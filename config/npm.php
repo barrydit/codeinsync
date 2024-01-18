@@ -78,9 +78,7 @@ if (!is_dir(NODE_MODULES_PATH)) {
   $pipes);
   list($stdout, $stderr, $exitCode) = [stream_get_contents($pipes[1]), stream_get_contents($pipes[2]), proc_close($proc)];
   $errors['NPM-INSTALL']= (!isset($stdout) ? NULL : $stdout . (isset($stderr) && $stderr === '' ? NULL : ' Error: ' . $stderr) . (isset($exitCode) && $exitCode == 0 ? NULL : 'Exit Code: ' . $exitCode));
-} 
-
-if (is_dir(NODE_MODULES_PATH)) {
+} else {
 /*
 
   $proc=proc_open('sudo ' . NPM_EXEC . ' --force update',
@@ -218,7 +216,7 @@ END
         ),
       $pipes);
       list($stdout, $stderr, $exitCode) = [stream_get_contents($pipes[1]), stream_get_contents($pipes[2]), proc_close($proc)];
-      $errors['NPM-RUN-BUILD[bundle.js]']= (!isset($stdout) ? NULL : $stdout . (isset($stderr) && $stderr === '' ? NULL : ' Error: ' . $stderr) . (isset($exitCode) && $exitCode == 0 ? NULL : 'Exit Code: ' . $exitCode));
+      $errors['NPM-RUN-BUILD[bundle.js]'] = (!isset($stdout) ? NULL : $stdout . (isset($stderr) && $stderr === '' ? NULL : ' Error: ' . $stderr) . (isset($exitCode) && $exitCode == 0 ? NULL : 'Exit Code: ' . $exitCode));
     }
   }
   }

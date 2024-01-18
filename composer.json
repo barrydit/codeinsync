@@ -4,10 +4,12 @@
     "type": "project",
     "homepage": "https://github.com/barrydit/www",
     "require": {
-        "php": "^7.4||^8.0",
+        "php": "^8.1 || ^8.2.5",
         "composer/composer": "^1.0",
         "aura/session": "^4.0",
-        "laminas/laminas-session": "^2.5"
+        "laminas/laminas-session": "^2.5",
+        "kevinoo/phpwhois": "dev-main",
+        "ipinfo/ipinfo" : "^2.2.0"
     },
     "require-dev": {
         "pds/skeleton": "^1.0"
@@ -19,5 +21,6 @@
             "email": "barryd.it@gmail.com"
         }
     ],
-    "minimum-stability": "dev"
+    "minimum-stability": "dev",
+    "platform-check": false
 }

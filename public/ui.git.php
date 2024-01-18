@@ -11,6 +11,9 @@ if ($path = (basename(getcwd()) == 'public')
     : (is_file('git.php') ? 'git.php' : (is_file('config/git.php') ? 'config/git.php' : null))) require_once($path); 
 else die(var_dump($path . ' path was not found. file=git.php'));
 
+/* https://stackoverflow.com/questions/73026623/how-to-ignore-or-permanently-block-the-files-which-contain-date-or-datetime-in */
+
+
 if ($path = (basename(getcwd()) == 'public')
     ? (is_file('../composer.php') ? '../composer.php' : (is_file('../config/composer.php') ? '../config/composer.php' : null))
     : (is_file('composer.php') ? 'composer.php' : (is_file('config/composer.php') ? 'config/composer.php' : null))) require_once($path); 
@@ -90,7 +93,7 @@ ob_end_clean(); ?>
 
 ob_start(); ?>
 
-#app_git-container { position: absolute; display: none; top: 0; left: 0; }
+#app_git-container { position: absolute; display: none; top: 60px; margin: 0 auto; left: 50%; right: 50%;  }
 #app_git-container.selected { display: block; z-index: 1; 
   /* Add your desired styling for the selected container */
   /*
@@ -148,7 +151,7 @@ ob_start();
 !defined('GIT_VERSION') and define('GIT_VERSION', '1.0.0');
 !defined('GIT_LATEST') and define('GIT_LATEST', GIT_VERSION);
 ?>
-  <div id="app_git-container" class="absolute <?= (APP_SELF == __FILE__ || isset($_GET['app']) && $_GET['app'] == 'git' ? 'selected' : (version_compare(GIT_LATEST, GIT_VERSION, '>') != 0 ? (isset($_GET['app']) && $_GET['app'] != 'git' ? '' : '') :  '')) ?>" style="position: absolute; top: 60px; left: 0; right: 0; z-index: 1; width: 424px; background-color: rgba(255,255,255,0.8); padding: 10px;">
+  <div id="app_git-container" class="absolute <?= (APP_SELF == __FILE__ || isset($_GET['app']) && $_GET['app'] == 'git' ? 'selected' : (version_compare(GIT_LATEST, GIT_VERSION, '>') != 0 ? (isset($_GET['app']) && $_GET['app'] != 'git' ? '' : '') :  '')) ?>" style="z-index: 1; width: 424px; background-color: rgba(255,255,255,0.8); padding: 10px;">
 <div style="position: relative; margin: 0 auto; width: 404px; height: 306px; border: 3px dashed #F05033; background-color: #FBF7F1;">
 
       <div class="absolute ui-widget-header" style="position: absolute; display: inline-block; width: 100%; margin: -25px 0 10px 0; border-bottom: 1px solid #000; z-index: 3;">
@@ -173,7 +176,7 @@ ob_start();
         </div>
         <div class="absolute" style="position: absolute; display: inline-block; top: 4px; text-align: right; width: 272px; ">
           <div class="text-xs" style="display: inline-block;">
-          + 1612 <a href="https://github.com/git/git/graphs/contributors">contributors</a>
+          + 1626 <a href="https://github.com/git/git/graphs/contributors">contributors</a>
           <br /><a href="http://github.com/git"><img src="resources/images/github.fw.png" title="http://github.com/git" width="18" height="18" /></a>
           <a style="color: blue; text-decoration-line: underline; text-decoration-style: solid;" href="http://git-scm.com/" title="http://git-scm.com/">http://git-scm.com/</a>
           </div>
@@ -722,6 +725,15 @@ if (is_file($path . 'tailwindcss-3.3.5.js')) {
 </head>
 <body>
 <?= $appGit['body']; ?>
+
+
+  <script src="<?= (check_http_200('https://code.jquery.com/jquery-3.7.1.min.js') ? 'https://code.jquery.com/jquery-3.7.1.min.js' : $path . 'jquery-3.7.1.min.js') ?>"></script>
+  <!-- You need to include jQueryUI for the extended easing options. -->
+<?php /* https://stackoverflow.com/questions/12592279/typeerror-p-easingthis-easing-is-not-a-function */ ?>
+  <!-- script src="//code.jquery.com/jquery-1.12.4.js"></script -->
+  <script src="//code.jquery.com/ui/1.12.1/jquery-ui.js"></script> <!-- Uncaught ReferenceError: jQuery is not defined -->
+
+
 
   <!-- https://cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.min.js -->
   <script src="//code.jquery.com/jquery-1.12.4.js"></script>

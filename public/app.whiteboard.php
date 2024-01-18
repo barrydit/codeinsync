@@ -1,5 +1,13 @@
 <?php
 
+/*
+
+https://stackoverflow.com/questions/2368784/draw-on-html5-canvas-using-a-mouse
+
+https://leimao.github.io/blog/HTML-Canvas-Mouse-Touch-Drawing/
+
+*/
+
 if (__FILE__ == get_required_files()[0])
   if ($path = (basename(getcwd()) == 'public')
     ? (is_file('../config.php') ? '../config.php' : (is_file('../config/config.php') ? '../config/config.php' : null))

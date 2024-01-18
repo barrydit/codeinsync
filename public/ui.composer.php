@@ -311,11 +311,11 @@ update [--with WITH] [--prefer-source] [--prefer-dist] [--prefer-install PREFER-
 ob_start(); ?>
 
 
-#app_composer-container { position: absolute; display: none; top: 0; left: 0; }
+#app_composer-container { position: absolute; display: none; top: 60px; left: 50%; right: 50%; margin: 0 auto; }
 #app_composer-container.selected { display: block; z-index: 1; 
   /* Add your desired styling for the selected container */
   /*
-  // background-color: rgb(240, 224, 198); //  240, 224, 198, .75    #FBF7F1; // rgba(240, 224, 198, .25);
+  // background-color: rgb(240, 224, 198); //  240, 224, 198, .75  #FBF7F1; // rgba(240, 224, 198, .25);
   
   bg-[#FBF7F1];
   bg-opacity-75;
@@ -406,7 +406,7 @@ ob_end_clean();
 //(APP_SELF == __FILE__ || isset($_GET['app']) && $_GET['app'] == 'composer' ? 'selected' : (version_compare(COMPOSER_LATEST, COMPOSER_VERSION, '>') != 0 ? (isset($_GET['app']) && $_GET['app'] != 'composer' ? '' : 'selected') :  '')) 
 ob_start(); ?>
 
-  <div id="app_composer-container" class="absolute <?= (APP_SELF == __FILE__ || (isset($_GET['app']) && $_GET['app'] == 'composer') && !isset($_GET['path']) || (defined('COMPOSER') && !is_object(COMPOSER)) || count((array)COMPOSER) === 0 || version_compare(COMPOSER_LATEST, COMPOSER_VERSION, '>') != 0 ? 'selected' : '') ?>" style="position: absolute; top: 60px; left: 0; right: 0; z-index: 1; width: 424px; background-color: rgba(255,255,255,0.8); padding: 10px;">
+  <div id="app_composer-container" class="absolute <?= (APP_SELF == __FILE__ || (isset($_GET['app']) && $_GET['app'] == 'composer') && !isset($_GET['path']) || (defined('COMPOSER') && !is_object(COMPOSER)) || count((array)COMPOSER) === 0 || version_compare(COMPOSER_LATEST, COMPOSER_VERSION, '>') != 0 ? 'selected' : '') ?>" style="z-index: 1; width: 424px; background-color: rgba(255,255,255,0.8); padding: 10px;">
 
     <div style="position: relative; margin: 0 auto; width: 404px; height: 324px; border: 3px dashed #6B4329; background-color: #FBF7F1;">
 
@@ -447,7 +447,7 @@ ob_start(); ?>
         </div>
         <div class="absolute" style="position: absolute; display: inline-block; top: 4px; text-align: right; width: 264px; ">
           <div class="text-xs" style="display: inline-block;">
-          + 942 <a href="https://github.com/composer/composer/graphs/contributors">contributors</a>
+          + 960 <a href="https://github.com/composer/composer/graphs/contributors">contributors</a>
           <br />
           <a style="color: blue; text-decoration-line: underline; text-decoration-style: solid;" href="http://getcomposer.org/">http://getcomposer.org/</a>
           </div>
@@ -463,9 +463,9 @@ ob_start(); ?>
         </div>
         <div style="clear: both;"></div>
       </div>
-      <div class="absolute" style="position: absolute; top: 50px; right: 0; margin: 0 auto; width: 200px; background-color: #FFF; text-align: right;">
-        <form action="?" method="POST">
-          <input type="hidden" name="update" value="" />Composer.lock requires an <button type="submit" style="border: 1px solid #000; z-index: 3;">Update</button>
+      <div class="absolute" style="position: absolute; bottom: 60px; right: 0; margin: 0 auto; width: 225px; text-align: right;">
+        <form action="?" method="POST" class="text-sm">
+          <input type="hidden" name="update" value="" />composer.lock requires an <button type="submit" style="border: 1px solid #000; z-index: 3;">Update</button>
         </form>
       </div>
       <div class="absolute" style="position: absolute; margin: 0px auto; text-align: center; height: 275px; width: 100%; background-repeat: no-repeat; <?= (version_compare(COMPOSER_LATEST, COMPOSER_VERSION, '>') != 0 ? "background-image: url('https://editablegifs.com/gifs/gifs/fireworks-1/output.gif?egv=3258')" : '') ?> ;">
@@ -1477,7 +1477,7 @@ ob_start(); ?>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-  <link rel="stylesheet" href="//code.jquery.com/ui/1.12.1/themes/smoothness/jquery-ui.css" />
+  <!-- link rel="stylesheet" href="//code.jquery.com/ui/1.12.1/themes/smoothness/jquery-ui.css" /-->
 
 <?php
 // (check_http_200('https://cdn.tailwindcss.com') ? 'https://cdn.tailwindcss.com' : APP_WWW . 'resources/js/tailwindcss-3.3.5.js')?
@@ -1510,10 +1510,12 @@ if (is_file($path . 'tailwindcss-3.3.5.js')) {
 <body>
 <?= $appComposer['body']; ?>
 
-  <!-- https://cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.min.js -->
-  <script src="//code.jquery.com/jquery-1.12.4.js"></script>
-  <script src="//code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
-  <!-- <script src="resources/js/jquery/jquery.min.js"></script> -->
+  <script src="<?= (check_http_200('https://code.jquery.com/jquery-3.7.1.min.js') ? 'https://code.jquery.com/jquery-3.7.1.min.js' : $path . 'jquery-3.7.1.min.js') ?>"></script>
+  <!-- You need to include jQueryUI for the extended easing options. -->
+<?php /* https://stackoverflow.com/questions/12592279/typeerror-p-easingthis-easing-is-not-a-function */ ?>
+  <!-- script src="//code.jquery.com/jquery-1.12.4.js"></script -->
+  <script src="//code.jquery.com/ui/1.12.1/jquery-ui.js"></script> <!-- Uncaught ReferenceError: jQuery is not defined -->
+
 <script>
 <?= $appComposer['script']; ?>
 </script>

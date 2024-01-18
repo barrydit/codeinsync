@@ -92,11 +92,14 @@ $proc=proc_open('sudo ' . NPM_EXEC . ' ' . $match[1],
           //$output[] = $_POST['cmd'];
 
           //exec($_POST['cmd'], $output);
-        } else if (preg_match('/^wget\s+(:?(.*))/i', $_POST['cmd'], $match))
+        } else if (preg_match('/^whoami(:?(.*))/i', $_POST['cmd'], $match))
+          exec('whoami', $output);
+        else if (preg_match('/^wget\s+(:?(.*))/i', $_POST['cmd'], $match))
+          /* https://stackoverflow.com/questions/9691367/how-do-i-request-a-file-but-not-save-it-with-wget */
           exec('wget -qO- ' . $match[1] . ' &> /dev/null', $output);
         else {
           if (preg_match('/^(\w+)\s+(:?(.*))/i', $_POST['cmd'], $match))
-            if (isset($match[1]) && in_array($match[1], ['tail', 'cat', 'echo', 'env', 'sudo'])) {
+            if (isset($match[1]) && in_array($match[1], ['tail', 'cat', 'echo', 'env', 'sudo', 'whoami'])) {
               //exec('sudo ' . $match[1] . ' ' . $match[2], $output); // $output[] = var_dump($match);
               
 $output[] = 'sudo ' . $match[1] . ' ' . $match[2];
