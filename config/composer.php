@@ -8,6 +8,11 @@ if (!realpath('vendor/autoload.php')) {
     exec('sudo composer dump-autoload', $output, $returnCode) or $errors['COMPOSER-DUMP-AUTOLOAD'] = $output;
 }
 
+
+/** Loading Time: 0.134s **/
+
+  //dd(get_required_files(), true);
+
 // moved to config.php load (last)
 // is_file('vendor/autoload.php') and require('vendor/autoload.php'); // Include Composer's autoloader
 
@@ -128,7 +133,6 @@ if (in_array('Composer\Autoload\ClassLoader', $loadedLibraries)) {
     //$loadedLibraries;
     
     $installedPackages = \Composer\InstalledVersions::getInstalledPackages();
-
 }
 
 
@@ -340,7 +344,7 @@ if (strtoupper(substr(PHP_OS, 0, 3)) === 'WIN') { // DO NOT REMOVE! { .. }
 }
 
 dd(COMPOSER_PHAR, 0);
-dd(COMPOSER_BIN,0);
+dd(COMPOSER_BIN, 0);
 
 defined('COMPOSER_EXEC')
   or define('COMPOSER_EXEC', (isset($_GET['exec']) ? ($_GET['exec'] == 'phar' ? COMPOSER_PHAR : COMPOSER_BIN) : COMPOSER_BIN ?? COMPOSER_PHAR));
@@ -405,6 +409,7 @@ putenv('PWD=' . APP_PATH);
 $composer_exec = (COMPOSER_EXEC['bin'] == COMPOSER_PHAR['bin'] ? COMPOSER_PHAR['bin'] : basename(COMPOSER_EXEC['bin']));
 
 if (APP_ENV == 'development') {
+
 
   if (defined('APP_CLIENT') || defined('APP_PROJECT'))
     $$c_or_p = APP_CLIENT ?? APP_PROJECT;
@@ -558,7 +563,6 @@ if (preg_match($pattern, $node[0]->nodeValue, $matches)) {
   //echo "New Version: " . COMPOSER_LATEST . "\n";
 } else $errors['COMPOSER_LATEST'] = $node[0]->nodeValue . ' did not match $version';
 
-
 if (defined('COMPOSER_JSON') && !empty(COMPOSER_JSON['json']))
   $composer_obj = json_decode(COMPOSER_JSON['json']);
 else {
@@ -650,46 +654,51 @@ fclose($pipes[2]);
 
 /* Previous unlink('composer.lock') location */
 
+
   if (check_http_200()) {
-  
-  
-$vendors = $dirs_diff = [];
+
+    $vendors = $dirs_diff = [];
 
 //$dirs = array_filter( glob( 'vendor/*'), 'is_dir');
 
-foreach (COMPOSER_VENDORS as $vendor => $packages) {
-    if ($vendor == basename('bin')) continue;
-    if ($vendor == 'barrydit') continue;
-    if (in_array('vendor/' . $vendor, array_filter(glob('vendor/' . $vendor . ''), 'is_dir'))) continue;
-    else $dirs_diff[] = basename($vendor);
+    foreach (COMPOSER_VENDORS as $vendor => $packages) {
+      if ($vendor == basename('bin')) continue;
+      if ($vendor == 'barrydit') continue;
+      if (in_array('vendor/' . $vendor, array_filter(glob('vendor/' . $vendor . ''), 'is_dir'))) continue;
+      else $dirs_diff[] = basename($vendor);
 
-    if (!isset($uniqueNames[$vendor])) {
+      if (!isset($uniqueNames[$vendor])) {
           $uniqueNames[$vendor] = true;
           $vendors[] = $vendor;
+      }
     }
-}
 
-if (!isset($dirs_diff) && !empty($dirs_diff))
-  dd($dirs_diff);
-else $dirs_diff = [];
+    if (!isset($dirs_diff) && !empty($dirs_diff))
+      dd($dirs_diff);
+    else $dirs_diff = [];
 
 //dd($vendors);
 
-if (!empty(array_diff($vendors, $dirs_diff)) ) {
-    $proc = proc_open('sudo ' . COMPOSER_EXEC['bin'] . ' update', array( array("pipe","r"), array("pipe","w"), array("pipe","w")), $pipes);
 
-    list($stdout, $stderr, $exitCode) = [stream_get_contents($pipes[1]), stream_get_contents($pipes[2]), proc_close($proc)];
+//dd('composer timeout', false);
 
-    if ($exitCode !== 0)
-      if (empty($stdout)) {
-        if (!empty($stderr))
-          $errors['COMPOSER-UPDATE'] = '$stdout is empty. $stderr = ' . $stderr;
-      } else $errors['COMPOSER-UPDATE'] = $stdout;
+    if (!empty(array_diff($vendors, $dirs_diff)) ) {
+      $proc = proc_open('sudo ' . COMPOSER_EXEC['bin'] . ' update', array( array("pipe","r"), array("pipe","w"), array("pipe","w")), $pipes);
+
+      list($stdout, $stderr, $exitCode) = [stream_get_contents($pipes[1]), stream_get_contents($pipes[2]), proc_close($proc)];
+
+      if ($exitCode !== 0)
+        if (empty($stdout)) {
+          if (!empty($stderr))
+            $errors['COMPOSER-UPDATE'] = '$stdout is empty. $stderr = ' . $stderr;
+        } else $errors['COMPOSER-UPDATE'] = $stdout;
     //else $debug['COMPOSER-UPDATE'] = '$stdout=' $stdout . "\n".  '$stderr = ' . $stderr;
-}
+    
+      if (preg_match('/^.*Composer is operating significantly slower than normal because you do not have the PHP curl extension enabled./m', $stdout)) {
+        $errors['composer-curl-error'] = 'PHP cURL needs to be installed and enabled.';
+      }
 
-  }
-
+    }
 
   if (!empty($errors) && isset($errors['COMPOSER-UPDATE'])) {
     if (preg_match('/^.*Problem \d*(\r?\n)*.*- Root composer\.json requires ([a-z0-9](?:[_.-]?[a-z0-9]+)*\/[a-z0-9](?:(?:[_.]|-{1,2})?[a-z0-9]+)) (\^v?\d+(?:\.\d+){0,3}|^dev-.*), it is satisfiable by (?:[a-z0-9](?:[_.-]?[a-z0-9]+)*\/[a-z0-9](?:(?:[_.]|-{1,2})?[a-z0-9]+))\[\d+(?:\.\d+){0,3}\] from composer repo \((?:[a-z]+\:\/\/)?(?:[a-z0-9\-]+\.)+[a-z]{2,6}(?:\/\S*)?\) but (?:[a-z0-9](?:[_.-]?[a-z0-9]+)*\/[a-z0-9](?:(?:[_.]|-{1,2})?[a-z0-9]+))\[(.*)\]/m', $errors['COMPOSER-UPDATE'], $matches)) {
@@ -715,6 +724,7 @@ if (!empty(array_diff($vendors, $dirs_diff)) ) {
       file_put_contents(COMPOSER_JSON['path'], json_encode($composer_obj, JSON_UNESCAPED_SLASHES|JSON_PRETTY_PRINT));
       unset($errors['COMPOSER-UPDATE']);
     }
+  }
   }
 
 //     while() { $errors['COMPOSER-UPDATE'] } // loop for 5 attempts to fix a problem 
@@ -770,6 +780,7 @@ if (!empty(array_diff($vendors, $dirs_diff)) ) {
 */
 }
 
+
 //if (strpos($output, 'No errors or warnings detected') !== false)
 //Deprecated:  strpos(): Passing null to parameter #1 ($haystack) of type string is deprecated
 
@@ -800,6 +811,7 @@ defined('VENDOR_JSON')
     }
   }
 }
+
 
 if (!defined('VENDOR_JSON') && isset(COMPOSER->{'require'}[1]))
   define('VENDOR_JSON', ['json' => (is_file(APP_PATH . 'vendor/' . COMPOSER->{'require'}[1] . '/composer.json') ? file_get_contents(APP_PATH .'vendor/' . COMPOSER->{'require'}[1] . '/composer.json') : '{}'), 'path' => APP_PATH . 'vendor/' . COMPOSER->{'require'}[1] . '/composer.json']);

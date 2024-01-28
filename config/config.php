@@ -34,6 +34,22 @@ $errors = []; // (object)
 
 // (basename(__DIR__) != 'config' ?
 
+
+//!is_file( dirname($_SERVER['PHP_SELF']) . basename($_SERVER['PHP_SELF']) ?? __FILE__) // (!empty(get_included_files()) ? get_included_files()[0] : __FILE__)
+!defined('APP_SELF') and define('APP_SELF', get_included_files()[0] ?? __FILE__); // get_included_files()[0] | str_replace($_SERVER['DOCUMENT_ROOT'], '', $_SERVER['SCRIPT_FILENAME']) | $_SERVER['PHP_SELF']
+
+//var_dump(get_defined_constants(true)['user']);
+
+!defined('APP_ROOT') and define('APP_ROOT', dirname(APP_SELF) . DIRECTORY_SEPARATOR);  // Directory of this script
+  
+!defined('APP_PATH') and define('APP_PATH', implode(DIRECTORY_SEPARATOR, array_intersect_assoc(
+  explode(DIRECTORY_SEPARATOR, __DIR__),
+  explode(DIRECTORY_SEPARATOR, dirname(APP_SELF))
+)) . DIRECTORY_SEPARATOR);
+
+require('constants.php');
+
+
 $links = array_filter(glob(__DIR__ . DIRECTORY_SEPARATOR . 'classes/*.php'), 'is_file');
 
 while ($link = array_shift($links)) {
@@ -49,22 +65,9 @@ else die(var_dump($path . ' was not found. file=functions.php'));
 !function_exists('dd') and $errors['FUNCTIONS'] = 'functions.php failed to load. Therefor dd() does not exist.';
 //else dd('test');
 
-//!is_file( dirname($_SERVER['PHP_SELF']) . basename($_SERVER['PHP_SELF']) ?? __FILE__) // (!empty(get_included_files()) ? get_included_files()[0] : __FILE__)
-!defined('APP_SELF') and define('APP_SELF', get_included_files()[0] ?? __FILE__); // get_included_files()[0] | str_replace($_SERVER['DOCUMENT_ROOT'], '', $_SERVER['SCRIPT_FILENAME']) | $_SERVER['PHP_SELF']
-
-//var_dump(get_defined_constants(true)['user']);
-
-!defined('APP_ROOT') and define('APP_ROOT', dirname(APP_SELF) . DIRECTORY_SEPARATOR);  // Directory of this script
-  
-!defined('APP_PATH') and define('APP_PATH', implode(DIRECTORY_SEPARATOR, array_intersect_assoc(
-  explode(DIRECTORY_SEPARATOR, __DIR__),
-  explode(DIRECTORY_SEPARATOR, dirname(APP_SELF))
-)) . DIRECTORY_SEPARATOR);
-
 !defined('APP_CONFIG') and define('APP_CONFIG',  str_replace(APP_PATH, '', basename(dirname(__FILE__))) == 'config' ? __FILE__ : __FILE__);
 
 //$errors->{'CONFIG'} = 'OK';
-
 
 $ob_content = NULL;
 //var_dump(dirname(APP_SELF) . ' == ' . __DIR__);
@@ -216,6 +219,7 @@ END
 );
 
 }
+
 ob_start();
 // write content
 
@@ -227,9 +231,14 @@ ob_start();
 
 // Check if the directory structure is /public_html/
 
-require('constants.php');
+//require('constants.php');
+
+
+
+
 
 if (APP_ENV == 'development') {
+
 
 if (is_readable($path = ini_get('error_log')) && filesize($path) >= 0 ) {
   $errors['ERROR_LOG'] = shell_exec('sudo tail ' . $path);
@@ -247,12 +256,12 @@ if (isset($_GET['src']) && is_readable($path = $_GET['src']) && filesize($path) 
 /*****/
 }
 
-
 if (isset($_GET['project'])) {
   //require_once('composer.php');
   //require_once('project.php');
 
 if (isset($_GET['app']) && $_GET['app'] == 'project') require_once('app.project.php');
+
 
 header("Cache-Control: no-store, no-cache, must-revalidate, max-age=0");
 header("Pragma: no-cache");
@@ -304,8 +313,8 @@ pre {
 END
 );
 }
-
 }
+
 
 if (basename($dir = APP_PATH) != 'config') {
   if (in_array(basename($dir), ['public', 'public_html']))
@@ -340,8 +349,6 @@ if (basename($dir = APP_PATH) != 'config') {
         return strcmp(basename($a), basename($b)); // Compare other filenames alphabetically
   });
 
-//dd($dirs);
-
   foreach ($dirs as $includeFile) {
     if (in_array($includeFile, get_required_files())) continue; // $includeFile == __FILE__
 
@@ -360,10 +367,17 @@ if (basename($dir = APP_PATH) != 'config') {
 
     if (!empty($previousFilename) && strpos($currentFilename, $previousFilename) !== false) continue;
 
+    // dd('file:'.$currentFilename,false);
+
     require_once $includeFile;
 
     $previousFilename = $currentFilename;
   }
+
+
+// dd('loaded apps');
+
+
   //dd(get_required_files());
 
 } elseif (basename(dirname(APP_SELF)) == 'public_html') { // basename(__DIR__) == 'public_html'
@@ -624,6 +638,7 @@ if (is_array($errors) && !empty($errors)) { ?>
 
 define('APP_ERRORS', $errors ?? (($error = ob_get_contents()) == null ? null : 'ob_get_contents() maybe populated/defined/errors... error=' . $error ));
 ob_end_clean();
+
 
 //var_dump(APP_ERRORS);
 

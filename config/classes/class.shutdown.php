@@ -8,6 +8,7 @@ class Shutdown {
 
     public function __construct() {
         $this->functions = array();
+        defined('APP_END') or define('APP_END', microtime(true));
         register_shutdown_function(array($this, 'onShutdown'));
     }
 
@@ -25,7 +26,6 @@ class Shutdown {
             //if (defined('APP_INSTALL') && APP_INSTALL && $path = APP_PATH . 'install.php') // is_file('config/constants.php')) 
             //    require_once($path);
 
-            defined('APP_END') or define('APP_END', microtime(true));
     //include('checksum_md5.php'); // your_logger(get_included_files());
     //unset($pdo);
             return;

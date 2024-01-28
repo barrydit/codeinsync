@@ -94,7 +94,6 @@ ob_end_clean();
 
 ob_start(); ?>
 
-<!-- <div class="container" style="border: 1px solid #000;"> -->
   <div id="app_backup-container" class="<?= (APP_SELF == __FILE__ || isset($_GET['client']) && $_GET['client'] || (isset($_GET['app']) && $_GET['app'] == 'backup')  ? 'selected' : '') ?>" style="position: absolute; <?= (isset($_GET['client']) && $_GET['client'] ? 'display: block;':'' ) ?> border: 1px solid #000; right: 0; top: 0; z-index: 1;">
 
 <?php
@@ -197,7 +196,6 @@ die(var_dump($dirs));
 <?php } ?>
 
   </div>
-<!-- </div> -->
 
 <?php $appBackup['body'] = ob_get_contents();
 ob_end_clean();

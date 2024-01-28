@@ -69,6 +69,9 @@ Publishes a Node.js package to GitHub Packages.
 }
 
 
+/** Loading Time: 5.1s **/
+  
+  //dd(get_required_files(), true);
 
 if ($path = (basename(getcwd()) == 'public')
     ? (is_file('../composer.php') ? '../composer.php' : (is_file('../config/composer.php') ? '../config/composer.php' : null))
@@ -301,6 +304,16 @@ update [--with WITH] [--prefer-source] [--prefer-dist] [--prefer-install PREFER-
     exit(header('Location: ' . APP_URL_BASE));
   }
 }
+
+
+
+
+/** Loading Time: 4.99s **/
+  
+  //dd(get_required_files(), true);
+
+
+
 
 /*
 <?php ob_start(); ?>
@@ -1470,6 +1483,12 @@ $(document).ready(function() {
 <?php $appComposer['script'] = ob_get_contents(); 
 ob_end_clean();
 
+
+
+/** Loading Time: 6.73s **/
+  
+  //dd(get_required_files(), true);
+
 ob_start(); ?>
 <!DOCTYPE html>
 <html>
@@ -1527,3 +1546,9 @@ ob_end_clean();
 //check if file is included or accessed directly
 if (__FILE__ == APP_SELF || in_array(__FILE__, get_required_files()) && isset($_GET['app']) && $_GET['app'] == 'composer' && APP_DEBUG)
   die($appComposer['html']);
+
+
+
+/** Loading Time: 7.0s **/
+  
+  //dd(get_required_files(), true);

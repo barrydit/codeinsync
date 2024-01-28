@@ -1,14 +1,14 @@
 #/config
 /dist
 /database/weekly-timesheet-????-??.json
-/resources/js
 /node_modules
 #/public
 /project
+/resources/js
+/resources/reels/
 /vendor
 /var/*.html
 /var/*.php
-/resources/reels/
 .env.*
 .htaccess
 *.old

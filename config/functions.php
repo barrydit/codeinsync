@@ -1,12 +1,18 @@
 <?php
 
-function dd(mixed $param = null, $die = true) {
+function dd(mixed $param = null, $die = true, $debug = true) {
+    $output = ($debug == true && !defined('APP_END') ? 
+          'Execution time: <b>'  . round(microtime(true) - APP_START, 3) . '</b> secs' : 
+          //APP_END . ' == APP_END'
+          'Execution time: <b>'  . round(APP_END - APP_START, 3) . '</b> secs'
+          ) . "<br />\n";
     if ($die)
-      Shutdown::setEnabled(false)->setShutdownMessage(function() use ($param) {
-        return '<pre><code>' . var_export($param, true) . '</code></pre>'; // var_dump
+      Shutdown::setEnabled(false)->setShutdownMessage(function() use ($param, $output) {
+        return '<pre><code>' . var_export($param, true) . '</code></pre>' . $output; //.  // var_dump
       })->shutdown();
     else
-      return var_dump('<pre><code>' . var_export($param, true) . '</code></pre>'); // If you want to return the parameter after printing it
+      return var_dump('<pre><code>' . var_export($param, true) . '</code></pre>' . $output); // If you want to return the parameter after printing it
+
 }
 
 function check_http_200($url = 'http://8.8.8.8') {
