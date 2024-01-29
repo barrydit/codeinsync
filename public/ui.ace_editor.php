@@ -16,7 +16,7 @@ else die(var_dump($path . ' path was not found. file=config.php'));
 //dd($_GET);
 
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
-  if (isset($_GET['app']) && $_GET['app'] == 'text_editor')
+  if (isset($_GET['app']) && $_GET['app'] == 'ace_editor')
     if (isset($_POST['path']) && isset($_GET['file']) && $path = realpath($_POST['path'] . $_GET['file'])) {
       file_put_contents($path, $_POST['contents']);
       die(header('Location: ' . APP_WWW));
@@ -96,7 +96,7 @@ elseif (!is_dir('resources/js/ace')) {
 ob_start(); ?>
 
 /* Styles for the absolute div */
-#app_text_editor-container {
+#app_ace_editor-container {
 position: absolute;
 top: 10%;
 //bottom: 60px;
@@ -146,21 +146,21 @@ ob_end_clean();
 ob_start(); ?>
 
 <!-- <div class="container" style="border: 1px solid #000;"> -->
-  <div id="app_text_editor-container" style="display: <?= (isset($_GET['app']) && $_GET['app'] == 'text_editor' ? 'block' : (isset($_GET['file']) ? 'block' : 'none')) ?>; width: auto; border: 1px solid #000;">
+  <div id="app_ace_editor-container" style="display: <?= (isset($_GET['app']) && $_GET['app'] == 'ace_editor' ? 'block' : (isset($_GET['file']) ? 'block' : 'none')) ?>; width: auto; border: 1px solid #000;">
 
     <div class="header ui-widget-header" style="margin: 10px;">
 
       <div style="display: inline-block;">
           <div class="absolute" style="position: absolute; top: 5px; left: 10px;">
-            <img src="resources/images/code_icon.png" width="32" height="32">
+            <img src="resources/images/ace_editor_icon.png" width="32" height="32">
           </div>
-          Text Editor</div>
-      <div style="display: inline; float: right; text-align: center;">[<a style="cursor: pointer; font-size: 13px;" onclick="document.getElementById('app_text_editor-container').style.display='none';">X</a>]</div> 
+          ACE Editor</div>
+      <div style="display: inline; float: right; text-align: center;">[<a style="cursor: pointer; font-size: 13px;" onclick="document.getElementById('app_ace_editor-container').style.display='none';">X</a>]</div> 
     </div>
 
     <div style="position: relative; display: inline-block; width: auto; padding-left: 10px;">
-      <form style="display: inline;" autocomplete="off" spellcheck="false" action="<?= APP_URL_BASE . /*basename(__FILE__) .*/ '?' . http_build_query(APP_QUERY /*+ array( 'app' => 'text_editor')*/) . (APP_ENV == 'development' ? '#!' : '') /* $c_or_p . '=' . (empty($_GET[$c_or_p]) ? '' : $$c_or_p->name) . '&amp;app=composer' */ ?>" method="GET">
-        <input type="hidden" name="app" value="text_editor" />
+      <form style="display: inline;" autocomplete="off" spellcheck="false" action="<?= APP_URL_BASE . /*basename(__FILE__) .*/ '?' . http_build_query(APP_QUERY /*+ array( 'app' => 'ace_editor')*/) . (APP_ENV == 'development' ? '#!' : '') /* $c_or_p . '=' . (empty($_GET[$c_or_p]) ? '' : $$c_or_p->name) . '&amp;app=composer' */ ?>" method="GET">
+        <input type="hidden" name="app" value="ace_editor" />
       <?php $path = realpath(getcwd() . (isset($_GET['path']) ? DIRECTORY_SEPARATOR . $_GET['path'] : '')) . DIRECTORY_SEPARATOR;
       if (isset($_GET['path'])) { ?>
         <!-- <input type="hidden" name="path" value="<?= $_GET['path']; ?>" /> -->
@@ -177,8 +177,8 @@ if ($path)
         </select>
       </form>
  /<!--<input type="text" name="file" value="index.php" />-->
-      <form style="display: inline;" autocomplete="off" spellcheck="false" action="<?= APP_URL_BASE . /*basename(__FILE__) .*/ '?' . http_build_query(APP_QUERY /*+ array( 'app' => 'text_editor')*/) . (APP_ENV == 'development' ? '#!' : '') /* $c_or_p . '=' . (empty($_GET[$c_or_p]) ? '' : $$c_or_p->name) . '&amp;app=composer' */ ?>" method="GET">
-      <input type="hidden" name="app" value="text_editor" />
+      <form style="display: inline;" autocomplete="off" spellcheck="false" action="<?= APP_URL_BASE . /*basename(__FILE__) .*/ '?' . http_build_query(APP_QUERY /*+ array( 'app' => 'ace_editor')*/) . (APP_ENV == 'development' ? '#!' : '') /* $c_or_p . '=' . (empty($_GET[$c_or_p]) ? '' : $$c_or_p->name) . '&amp;app=composer' */ ?>" method="GET">
+      <input type="hidden" name="app" value="ace_editor" />
 
       <input type="hidden" name="path" value="<?= (isset($_GET['path']) ? $_GET['path'] : '') ?>" />
 
@@ -194,7 +194,7 @@ foreach (array_filter( glob($path . DIRECTORY_SEPARATOR . '*.php'), 'is_file') a
       </form>
       </div>
 
-      <form style="position: relative; display: inline;" action="<?= APP_URL_BASE . '?' . http_build_query(APP_QUERY + array( 'app' => 'text_editor')) . (APP_ENV == 'development' ? '#!' : '') /* $c_or_p . '=' . (empty($_GET[$c_or_p]) ? '' : $$c_or_p->name) . '&amp;app=composer' */ ?>" method="POST">
+      <form style="position: relative; display: inline;" action="<?= APP_URL_BASE . '?' . http_build_query(APP_QUERY + array( 'app' => 'ace_editor')) . (APP_ENV == 'development' ? '#!' : '') /* $c_or_p . '=' . (empty($_GET[$c_or_p]) ? '' : $$c_or_p->name) . '&amp;app=composer' */ ?>" method="POST">
         <input type="hidden" name="path" value="<?= APP_PATH /*. APP_BASE['public'];*/ ?>" />
         <div style="display: inline-block; width: auto; text-align: right; float: right;">
           <input type="submit" value="Save" class="btn" style="margin: -5px 5px 5px 0;" onclick="document.getElementsByClassName('ace_text-input')[0].value = globalEditor.getSession().getValue(); document.getElementsByClassName('ace_text-input')[0].name = 'editor';"/>
@@ -231,10 +231,10 @@ if (!empty($paths))
   foreach($paths as $key => $path) {
       echo '<td style="border: 1px solid #000;" class="text-xs">' . "\n";
       if (is_dir($path))
-        echo '<a href="?app=text_editor&path=' . basename($path) . '">'
+        echo '<a href="?app=ace_editor&path=' . basename($path) . '">'
         . '<img src="../../resources/images/directory.png" width="50" height="32" /><br />' . basename($path) . '</a>' . "\n";
       elseif (is_file($path))
-        echo '<a href="?app=text_editor&path=' . (basename(dirname($path)) == basename(parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH) ? 'failed' : basename(dirname($path)))) . '&file=' . basename($path) . '">'
+        echo '<a href="?app=ace_editor&path=' . (basename(dirname($path)) == basename(parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH) ? 'failed' : basename(dirname($path)))) . '&file=' . basename($path) . '">'
         . '<img src="../../resources/images/php_file.png" width="40" height="50" /><br />' . basename($path) . '</a>' . "\n";
       echo '</td>' . "\n";
       if ($count >= 6 || $path == end($paths)) echo '</tr>';
@@ -341,5 +341,5 @@ if (is_file($path . 'tailwindcss-3.3.5.js')) {
 ob_end_clean();
 
 //check if file is included or accessed directly
-if (__FILE__ == get_required_files()[0] || in_array(__FILE__, get_required_files()) && isset($_GET['app']) && $_GET['app'] == 'text_editor' && APP_DEBUG)
+if (__FILE__ == get_required_files()[0] || in_array(__FILE__, get_required_files()) && isset($_GET['app']) && $_GET['app'] == 'ace_editor' && APP_DEBUG)
   die($appTextEditor['html']);

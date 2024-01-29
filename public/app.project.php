@@ -200,7 +200,7 @@ document.getElementById('app_project-saveForm').addEventListener('submit', funct
   console.log(globalEditor.getSession().getValue());
 
       $.ajax({
-        url: 'app.project.php?app=project&file=project.php',
+        url: 'public/app.project.php?app=project&file=../project.php',
         type: 'POST',
         data: { path: '', contents: globalEditor.getSession().getValue() },
         //dataType: 'json',

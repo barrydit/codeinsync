@@ -260,10 +260,10 @@
   else die(var_dump($path . ' was not found. file=app.pong.php'));
   
   if ($path = (basename(getcwd()) == 'public')
-      ? (is_file('app.text_edit.php') ? 'app.text_edit.php' : (is_file('../app.text_edit.php') ? '../app.text_edit.php' : (is_file('../config/app.text_edit.php') ? '../config/app.text_edit.php' : NULL)))
-      : (is_file('../app.text_edit.php') ? '../app.text_edit.php' : (is_file('public/app.text_edit.php') ? 'public/app.text_edit.php' : (is_file('config/app.text_edit.php') ? 'config/app.text_edit.php' : 'app.text_edit.php'))))
+      ? (is_file('ui.ace_editor.php') ? 'ui.ace_editor.php' : (is_file('../ui.ace_editor.php') ? '../ui.ace_editor.php' : (is_file('../config/ui.ace_editor.php') ? '../config/ui.ace_editor.php' : NULL)))
+      : (is_file('../ui.ace_editor.php') ? '../ui.ace_editor.php' : (is_file('public/ui.ace_editor.php') ? 'public/ui.ace_editor.php' : (is_file('config/ui.ace_editor.php') ? 'config/ui.ace_editor.php' : 'ui.ace_editor.php'))))
     require_once($path); 
-  else die(var_dump($path . ' was not found. file=app.text_edit.php'));
+  else die(var_dump($path . ' was not found. file=ui.ace_editor.php'));
   
   if ($path = (basename(getcwd()) == 'public') // composer_app.php (depend.)
       ? (is_file('app.backup.php') ? 'app.backup.php' : (is_file('../app.backup.php') ? '../app.backup.php' : (is_file('../config/app.backup.php') ? '../config/app.backup.php' : 'public/app.backup.php')))
@@ -551,6 +551,7 @@
               ?>
 
             <form style="display: inline;" autocomplete="off" spellcheck="false" action="" method="GET">
+              <?= (isset($_GET['project']) && !$_GET['project'] ? '' : '<input type="hidden" name="project" value="' . $_GET['project'] . '" / >') ?> 
                 <select name="project" style="" onchange="this.form.submit(); return false;">
                   <option value="">---</option>
                   <?php
@@ -579,19 +580,22 @@
                   }
                   ?>
               </select>/
+            </form>
 
+            
             <?php if (!empty($_GET['client'])) {
-              $dirs = array_filter(glob(dirname(__DIR__) . '/../clientele/' . $_GET['client'] . '/*'), 'is_dir'); ?>
+              $dirs = array_filter(glob(dirname(__DIR__) . '/../clientele/' . $_GET['client'] . '/*'), 'is_dir'); ?>            
+            <form style="display: inline;" autocomplete="off" spellcheck="false" action="" method="GET">
+              <?= (isset($_GET['client']) && !$_GET['client'] ? '' : '<input type="hidden" name="client" value="' . $_GET['client'] . '" / >') ?> 
               <select id="domain" name="domain" onchange="this.form.submit();">
                 <option value="">---</option>
                 <?php foreach ($dirs as $dir) { ?>
                 <option <?= (isset($_GET['domain']) && $_GET['domain'] == basename($dir) ? 'selected' : '') ?>><?= basename($dir); ?></option>
                 <?php } ?>
               </select>/
+            </form>
               <?php } ?>
 
-            </form>
-          </div>
           <?php } else {
             //.'<a style="" href="' . (APP_URL['query'] != '' ? '?' . APP_URL['query'] : '') . (isset($_GET['path']) && $_GET['path'] != '' ? parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH) : (APP_ENV == 'development' ? '#!' : '') ) . '"></a>'
             
@@ -616,8 +620,9 @@
           </select>
           </span>
           </form>
-          </div>
+
 <?php } ?>
+          </div>
           <div style="position: absolute; width: 285px; top: 40px; right: -10px; border: 1px solid #000; height: 25px;">
             <div style="display: inline-block; width: 175px; ">
               <div id="idleTime" style="display: inline; margin: 7px 5px;"></div>
@@ -726,7 +731,7 @@
   $decoded = urldecode($input);
               
   // Use regex to extract name components
-  if (preg_match('/^\d+-(\w+)[,]\s*(\w+)$/', $decoded, $matches)) {
+  if (preg_match('/^\d*-(\w+)[,]\s*(\w+)$/', $decoded, $matches)) {
     // $matches[1] contains the last name, $matches[2] contains the first name
     $output = $matches[2] . ' ' . $matches[1];
   } else {
@@ -736,15 +741,15 @@
             Work Status: 
             <select>
               <?php
-                foreach(['000', '001', '002', '003', '004'] as $key => $status) {
+                foreach(['000', '100', '200', '300', '400'] as $key => $status) {
                 
                 $links = array_filter(glob(APP_PATH . '../../clientele/' . $status . '*'), 'is_dir');
                 $statusCode = $status;
                 $status = ($status == 000) ? "On-call" :
-                         (($status == 001) ? "Working" :
-                         (($status == 002) ? "Planning" :
-                         (($status == 003) ? "Previous" :
-                         (($status == 004) ? "Future" : "Unknown"))));
+                         (($status == 100) ? "Working" :
+                         (($status == 200) ? "Planning" :
+                         (($status == 300) ? "Previous" :
+                         (($status == 400) ? "Future" : "Unknown"))));
                 ?>
               <option><?= $statusCode . ' - ' . $status ?></option>
               <?php
@@ -1233,8 +1238,20 @@
           </ul>
           <?php } ?></li>
           -->
-        <?php } elseif(isset($_GET['application']) && empty($_GET['application'])) { ?> 
+        <?php } elseif(isset($_GET['application'])) { ?>
+
         <?php if (readlinkToEnd('/var/www/applications') == '/mnt/c/www/applications') {
+        if ($_GET['application']) {
+
+          $links = array_filter(glob(APP_PATH . '../../applications/' . $_GET['application']), 'is_file');
+          
+          echo '<h3>Application: 7-Zip</h3>';
+          
+          
+          echo '<br /><div style="text-align: center; margin: 0 auto;"><a href="https://www.7-zip.org/download.html"><img width="110" height="63" src="http://www.7-zip.org/7ziplogo.png" alt="7-Zip" border="0" /><br />'. basename($links[0]) . ' =&gt; <a href="https://www.7-zip.org/a/7z2301-x64.exe">7z2301-x64.exe</a></a></div>' . "<br />";
+          
+          
+        } else {
           $links = array_filter(glob(APP_PATH . '../../applications/*'), 'is_file'); ?>
         <h3>Applications:</h3>
         <table width="" style="border: none;">
@@ -1265,7 +1282,7 @@
               
               ?>
         </table>
-        <?php } } elseif(isset($_GET['node_module']) && empty($_GET['node_module'])) { ?> 
+        <?php } } } elseif(isset($_GET['node_module']) && empty($_GET['node_module'])) { ?> 
         <?php //if (readlinkToEnd('/var/www/applications') == '/mnt/c/www/applications') { }
           $links = array_filter(glob(APP_PATH . 'node_modules/*'), 'is_dir'); ?>
         <div style="display: inline-block; width: 350px;">Node Modules [Installed] List</div>
@@ -1311,19 +1328,19 @@
               ?>
         </table>
         <?php } elseif(isset($_GET['client']) && empty($_GET['client'])) { ?> 
-        <?php if (readlinkToEnd('/var/www/clientele') == '/mnt/c/www/clientele') {
-          foreach(['000', '001', '002', '003', '004'] as $key => $status) {
+        <?php if (readlinkToEnd('/var/www/clientele') == '/mnt/c/www/clientele') { ?>
+
+<?php     foreach(['000', '100', '200', '300', '400'] as $key => $status) {
           
           if ($key != 0) echo '</table>'."\n\n\n";
           
           $links = array_filter(glob(APP_PATH . '../../clientele/' . $status . '*'), 'is_dir');
           $statusCode = $status;
           $status = ($status == 000) ? "On-call" :
-                   (($status == 001) ? "Working" :
-                   (($status == 002) ? "Planning" :
-                   (($status == 003) ? "Previous" :
-                   (($status == 004) ? "Future" : "Unknown"))));
-          ?>
+                   (($status == 100) ? "Working" :
+                   (($status == 200) ? "Planning" :
+                   (($status == 300) ? "Previous" :
+                   (($status == 400) ? "Future" : "Unknown")))); ?>
         <h3>&#9660; Stage: <?= $status ?> (<?= $statusCode ?>)</h3>
         <table width="" style="border: none;">
           <tr style=" border: none;">
@@ -1355,6 +1372,15 @@
               }
               ?>
         </table>
+        <?php } else { ?>
+
+        <div style="position: absolute; top: 100px; width: 200px; left: 36%; right: 64%; text-align: center; border: 1px solid #000;">
+                <?php echo '<a class="pkg_dir" style="border: 1px dashed blue;" href="?client=' . '">'
+                . 'Missing directory.<br/>'
+                . '<img src="resources/images/directory.png" width="60" height="42" style="" /><br />Create <input type="text" style="text-align: right;"size="7" name="clientele" value="clientele/"></a><br />' . "\n"; ?>
+
+        </div>
+
         <?php } } else {
           if(isset($_GET['client']) && !empty($_GET['client']))
             $path .= '../../clientele/' . $_GET['client'] . '/' . (isset($_GET['domain']) && !empty($_GET['domain']) ? $_GET['domain'] . '/' : '');

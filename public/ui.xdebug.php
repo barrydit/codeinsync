@@ -19,14 +19,17 @@ function performComplexTask() {
 $a = 5;
 $b = 10;
 
+if (function_exists('xdebug_start_trace'))
 // Profiling starts here
-xdebug_start_trace(APP_PATH . 'test_trace');
+  xdebug_start_trace(APP_PATH . 'test_trace');
 
 $result = calculateSum($a, $b);
 performComplexTask();
 
-// Profiling ends here
-xdebug_stop_trace();
+
+if (function_exists('xdebug_stop_trace'))
+  // Profiling ends here
+  xdebug_stop_trace();
 
 echo "Result: $result";
 ?>
