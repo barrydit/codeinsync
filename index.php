@@ -1,5 +1,6 @@
 <?php
-  //die(var_dump($_GET));
+   //phpinfo();
+   //die(var_dump($_GET));
   
   if ($path = (basename(getcwd()) == 'public')
     ? (is_file('../config/config.php') ? '../config/config.php' : 'config.php')
@@ -28,7 +29,8 @@
       //  exit(header('Location: ' . APP_WWW . $_GET['path']));
   
       if (isset($_GET['category']) && !empty($_GET['category'])) {
-        //if ($_GET['category'] != 'project')
+        if ($_GET['category'] == 'projects')
+          exit(header('Location: ' . APP_WWW . '?project='));
         if ($_GET['category'] == 'vendor')
           exit(header('Location: ' . APP_WWW . '?app=composer&path=' . $_GET['category']));
         //if ($_GET['category'] == 'applications')
@@ -222,6 +224,14 @@
 /** Loading Time: 11.3s **/
   
   //dd(null, true);
+  
+  
+  if ($path = (basename(getcwd()) == 'public')
+      ? (is_file('ui.ace_editor.php') ? 'ui.ace_editor.php' : (is_file('../ui.ace_editor.php') ? '../ui.ace_editor.php' : (is_file('../config/ui.ace_editor.php') ? '../config/ui.ace_editor.php' : NULL)))
+      : (is_file('../ui.ace_editor.php') ? '../ui.ace_editor.php' : (is_file('public/ui.ace_editor.php') ? 'public/ui.ace_editor.php' : (is_file('config/ui.ace_editor.php') ? 'config/ui.ace_editor.php' : 'ui.ace_editor.php'))))
+    require_once($path); 
+  else die(var_dump($path . ' was not found. file=ui.ace_editor.php'));
+  
 
   if ($path = (basename(getcwd()) == 'public')
       ? (is_file('app.browser.php') ? 'app.browser.php' : (is_file('../app.browser.php') ? '../app.browser.php' : (is_file('../config/app.browser.php') ? '../config/app.browser.php' : NULL)))
@@ -258,13 +268,7 @@
       : (is_file('../app.pong.php') ? '../app.pong.php' : (is_file('public/app.pong.php') ? 'public/app.pong.php' : (is_file('config/app.pong.php') ? 'config/app.pong.php' : 'app.pong.php'))))
     require_once($path); 
   else die(var_dump($path . ' was not found. file=app.pong.php'));
-  
-  if ($path = (basename(getcwd()) == 'public')
-      ? (is_file('ui.ace_editor.php') ? 'ui.ace_editor.php' : (is_file('../ui.ace_editor.php') ? '../ui.ace_editor.php' : (is_file('../config/ui.ace_editor.php') ? '../config/ui.ace_editor.php' : NULL)))
-      : (is_file('../ui.ace_editor.php') ? '../ui.ace_editor.php' : (is_file('public/ui.ace_editor.php') ? 'public/ui.ace_editor.php' : (is_file('config/ui.ace_editor.php') ? 'config/ui.ace_editor.php' : 'ui.ace_editor.php'))))
-    require_once($path); 
-  else die(var_dump($path . ' was not found. file=ui.ace_editor.php'));
-  
+
   if ($path = (basename(getcwd()) == 'public') // composer_app.php (depend.)
       ? (is_file('app.backup.php') ? 'app.backup.php' : (is_file('../app.backup.php') ? '../app.backup.php' : (is_file('../config/app.backup.php') ? '../config/app.backup.php' : 'public/app.backup.php')))
       : (is_file('../app.backup.php') ? '../app.backup.php' : (is_file('public/app.backup.php') ? 'public/app.backup.php' : (is_file('config/app.backup.php') ? 'config/app.backup.php' : 'app.backup.php'))))
@@ -515,7 +519,7 @@
           <a href="#" onclick="document.getElementById('app_git-container').style.display='block';"><img src="resources/images/git_icon.png" width="58" height="24"></a> | <a href="#" onclick="document.getElementById('app_npm-container').style.display='block';"><img src="resources/images/npm_icon.png" width="32" height="32"> Node.js</a>
           |
           <a href="#" onclick="document.getElementById('app_php-container').style.display='block';"><img src="resources/images/php_icon.png" width="40" height="27"> PHP <?= (preg_match("#^(\d+\.\d+)#", PHP_VERSION, $match) ? $match[1] : '8.0' ) ?></a> | <a href="#" onclick="document.getElementById('app_composer-container').style.display='block';"><img src="resources/images/composer_icon.png" width="31" height="40"> Composer</a> |
-          <a href="#" onclick="document.getElementById('app_text_editor-container').style.display='block';"><img src="resources/images/ace_editor_icon.png" width="32" height="32"> Editor</a> |
+          <a href="#" onclick="document.getElementById('app_ace_editor-container').style.display='block';"><img src="resources/images/ace_editor_icon.png" width="32" height="32"> Editor</a> |
           <a href="#" onclick="document.getElementById('app_tools-container').style.display='block';"><img src="resources/images/apps_icon.gif" width="20" height="20"> Tools</a> |
           <a href="#" onclick="document.getElementById('app_timesheet-container').style.display='block';"><img src="resources/images/clock.gif" width="30" height="30"> Clock-In</a>
           <div style="position: absolute; top: 40px; left: 0; z-index: 1;">
@@ -524,24 +528,24 @@
             <!-- <input type="hidden" name="path" value="<?= $_GET['path']; ?>" /> -->
             <?php } ?>
             <?= 
-              //APP_URL_BASE . /*basename(__FILE__) .*/ '?' . http_build_query(APP_QUERY /*+ array( 'app' => 'text_editor')*/) . (APP_ENV == 'development' ? '#!' : '') 
+              //APP_URL_BASE . /*basename(__FILE__) .*/ '?' . http_build_query(APP_QUERY /*+ array( 'app' => 'ace_editor')*/) . (APP_ENV == 'development' ? '#!' : '') 
               
               /* $c_or_p . '=' . (empty($_GET[$c_or_p]) ? '' : $$c_or_p->name) . '&amp;app=composer' */ NULL; ?>
-            <?= '          <button id="displayDirectoryBtn" style="float: left; margin: 2px 5px 0 0;" type="">&#9660;</button> / ' . "\n"; ?>
+            <?= '          <button id="displayDirectoryBtn" style="float: left; margin: 2px 5px 0 0;" type="">&#9660;</button> ' . "\n";
+            ?>
             <?php
-              $main_cat = '        <form style="display: inline;" autocomplete="off" spellcheck="false" action="" method="GET">'  . "\n"
-              . '          <span title="' . $path . '" style="float: left; margin: 2px 5px 0 0; cursor: pointer;" onclick="">' . '/ ' . "\n"
+              $main_cat = '        <form style="display: inline;" autocomplete="off" spellcheck="false" action="" method="GET">/'  . "\n"
               . '            <select name="category" onchange="this.form.submit();">' . "\n"
               
               . '              <option value="" ' . (empty(APP_QUERY) ? 'selected' : '') . '>' . basename(parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH)) . '</option>' . "\n"
               . '              <option value="application" ' . (isset($_GET['application']) ? 'selected' : '') . '>../applications</option>' . "\n"
               . '              <option value="client" ' . (isset($_GET['client']) ? 'selected' : '') . '>../clientele</option>' . "\n"
-              . '              <option value="project" ' . (isset($_GET['project']) ? 'selected' : '') . '>../projects</option>' . "\n"
+              . '              <option value="projects" ' . (isset($_GET['project']) && $_GET['project'] || preg_match('/(?:^|&)project(?:[^&]*=)/', $_SERVER['QUERY_STRING']) ? 'selected' : '') . '>../projects</option>' . "\n"
               . '              <option value="node_module" ' . (isset($_GET['path']) && $_GET['path'] == 'resources' ? 'selected' : '') . '>./node_modules</option>' . "\n"
               . '              <option value="resources" ' . (isset($_GET['path']) && $_GET['path'] == 'resources' ? 'selected' : '') . '>./resources</option>' . "\n"
+              . '              <option value="project" ' . (isset($_GET['project']) && !$_GET['project'] && preg_match('/(?:^|&)project(?![^&]*=)/', $_SERVER['QUERY_STRING']) ? 'selected' : '') . '>./project</option>' . "\n"
               . '              <option value="vendor" ' . (isset($_GET['path']) && $_GET['path'] == 'vendor' ? 'selected' : '') . '>./vendor</option>' . "\n"
               . '            </select>' . "\n"
-              . '          </span>' . "\n"
               . '        </form>';
 
               if (isset($_GET['project']) /*&& $_GET['project'] != ''*/) {
@@ -551,17 +555,19 @@
               ?>
 
             <form style="display: inline;" autocomplete="off" spellcheck="false" action="" method="GET">
-              <?= (isset($_GET['project']) && !$_GET['project'] ? '' : '<input type="hidden" name="project" value="' . $_GET['project'] . '" / >') ?> 
-                <select name="project" style="" onchange="this.form.submit(); return false;">
-                  <option value="">---</option>
-                  <?php
-                    while ($link = array_shift($links)) {
-                      $link = basename($link); // Get the directory name from the full path
-                      if (is_dir(APP_PATH . '../../projects/' . $link))
-                        echo '              <option value="' . $link . '" ' . (current($_GET) == $link ? 'selected' : '') . '>' . $link . '</option>' . "\n";
-                    } ?>
-                </select>
+              <span title="" style="cursor: pointer; margin: 2px 5px 0 0; " onclick="">/
+              <select name="project" style="" onchange="this.form.submit(); return false;">
+                <option value="">---</option>
+                <?php
+                  while ($link = array_shift($links)) {
+                    $link = basename($link); // Get the directory name from the full path
+                    if (is_dir(APP_PATH . '../../projects/' . $link))
+                      echo '              <option value="' . $link . '" ' . (current($_GET) == $link ? 'selected' : '') . '>' . $link . '</option>' . "\n";
+                  } ?>
+              </select>/
+            </span>
             </form>
+
             <?php
               } elseif (isset($_GET['client']) /*&& $_GET['client'] != ''*/ ) {
               if ($_GET['client'] == '') echo $main_cat;
@@ -570,7 +576,8 @@
                        /* */
               ?>
             <form style="display: inline;" autocomplete="off" spellcheck="false" action="" method="GET">
-              <select name="client" style="margin: 2px 5px 0 0;" onchange="this.form.submit(); return false;">
+              <span title="" style="cursor: pointer; margin: 2px 5px 0 0; " onclick="">/
+              <select name="client" style="" onchange="this.form.submit(); return false;">
                 <option value="" style="text-align: center;">--clientele--</option>
                 <?php
                   while ($link = array_shift($links)) {
@@ -580,6 +587,7 @@
                   }
                   ?>
               </select>/
+              </span>
             </form>
 
             
@@ -605,7 +613,7 @@
             //. '        </form>' . "\n";
             
             echo '        <form style="display: inline;" action method="GET">' . "\n"
-            . '          <span title="' . $path . '" style="float: left; margin: 2px 5px 0 0; cursor: pointer;" onclick=""> / ' . "\n"; /* $path; */ ?>
+            . '          <span title="' . $path . '" style="margin: 2px 5px 0 0; cursor: pointer;" onclick=""> / ' . "\n"; /* $path; */ ?>
           <select name="path" style="" onchange="this.form.submit(); return false;">
             <option value="">.</option>
             <option value="">..</option>
@@ -617,7 +625,7 @@
                   echo '              <option value="' . (isset($_GET['path']) ?  $_GET['path'] . DIRECTORY_SEPARATOR : '') . basename($dir) . '"' . (isset($_GET['path']) && $_GET['path'] == basename($dir) ? ' selected' : '' )  . '>' . basename($dir) . '/</option>' . "\n";
                 }
               ?>
-          </select>
+          </select>/
           </span>
           </form>
 
@@ -636,16 +644,16 @@
           </div>
           <div id="app_tools-container" style="position: absolute; display: none; width: 800px; margin: 0 auto; height: 500px; background-color: rgba(255, 255, 255, 0.9); overflow-x: scroll;">
             <div style="position: absolute; margin: 80px 45px; text-align: center;" class="text-sm"><a href="#!" onclick="document.getElementById('app_tools-container').style.display='none'; return false;"><img style="text-align: center;" height="25" width="25" src="<?= APP_BASE['resources'] . 'images/close-red.gif' ?>" /></a><br /></div>
-            <div style="position: absolute; margin: 100px 75px; text-align: center;" class="text-sm"><a href="#!" onclick="show_console(); return false;"><img style="text-align: center;" src="<?= APP_BASE['resources'] . 'images/cli.png' ?>" /></a><br /><a href="?app=text_editor&path=&file=app.console.php" style="text-align: center;">(CLI)</a></div>
+            <div style="position: absolute; margin: 100px 75px; text-align: center;" class="text-sm"><a href="#!" onclick="show_console(); return false;"><img style="text-align: center;" src="<?= APP_BASE['resources'] . 'images/cli.png' ?>" /></a><br /><a href="?app=ace_editor&path=&file=app.console.php" style="text-align: center;">(CLI)</a></div>
             <!-- 
               <a href="javascript:window.open('print.html', 'newwindow', 'width=300,height=250')">Print</a>
               onclick="window.open('app.whiteboard.php', 'newwindow', 'width=300,height=250'); return false;"
               
               https://stackoverflow.com/questions/12939928/make-a-link-open-a-new-window-not-tab
                -->
-            <div style="position: absolute; margin: 100px 165px; text-align: center;" class="text-sm"><a href="app.whiteboard.php" target="_blank" onclick="document.getElementById('app_whiteboard-container').style.display='block'; return false;"><img style="text-align: center;" src="<?= APP_BASE['resources'] . 'images/whiteboard.png' ?>" /></a><br /><a href="?app=text_editor&path=&file=app.whiteboard.php" style="text-align: center;">Whiteboard</a></div>
-            <div style="position: absolute; margin: 100px 260px; text-align: center;" class="text-sm"><a href="#!" onclick="document.getElementById('app_notes-container').style.display='block'; return false;"><img style="text-align: center;" src="<?= APP_BASE['resources'] . 'images/notes.png' ?>" /></a><br /><a href="?app=text_editor&path=&file=app.notes.php" style="text-align: center;">Notes</a></div>
-            <div style="position: absolute; margin: 100px 350px; text-align: center;" class="text-sm"><a href="#!" onclick="document.getElementById('app_project-container').style.display='block'; return false;"><img style="text-align: center;" src="<?= APP_BASE['resources'] . 'images/project.png' ?>" /></a><br /><a href="?app=text_editor&path=&file=app.project.php"><span style="text-align: center;">Project</span></a></div>
+            <div style="position: absolute; margin: 100px 165px; text-align: center;" class="text-sm"><a href="app.whiteboard.php" target="_blank" onclick="document.getElementById('app_whiteboard-container').style.display='block'; return false;"><img style="text-align: center;" src="<?= APP_BASE['resources'] . 'images/whiteboard.png' ?>" /></a><br /><a href="?app=ace_editor&path=&file=app.whiteboard.php" style="text-align: center;">Whiteboard</a></div>
+            <div style="position: absolute; margin: 100px 260px; text-align: center;" class="text-sm"><a href="#!" onclick="document.getElementById('app_notes-container').style.display='block'; return false;"><img style="text-align: center;" src="<?= APP_BASE['resources'] . 'images/notes.png' ?>" /></a><br /><a href="?app=ace_editor&path=&file=app.notes.php" style="text-align: center;">Notes</a></div>
+            <div style="position: absolute; margin: 100px 350px; text-align: center;" class="text-sm"><a href="#!" onclick="document.getElementById('app_project-container').style.display='block'; return false;"><img style="text-align: center;" src="<?= APP_BASE['resources'] . 'images/project.png' ?>" /></a><br /><a href="?app=ace_editor&path=&file=app.project.php"><span style="text-align: center;">Project</span></a></div>
             <div style="position: absolute; margin: 100px 0 0 450px ; text-align: center;" class="text-sm"><a href="#!" onclick="document.getElementById('app_debug-container').style.display='block'; return false;"><img style="text-align: center;" src="<?= APP_BASE['resources'] . 'images/debug.png' ?>" /><br /><span style="text-align: center;">Debug</span></a></div>
             <div style="position: absolute; margin: 100px 0 0 540px; text-align: center;" class="text-sm"><a href="#!" onclick="document.getElementById('app_profile-container').style.display='block'; return false;"><img style="text-align: center;" src="<?= APP_BASE['resources'] . 'images/user.png' ?>" /><br /><span style="text-align: center;">Profile</span></a></div>
             <div style="position: absolute; margin: 100px 0 0 630px; text-align: center;" class="text-sm"><a href="#!" onclick="document.getElementById('app_browser-container').style.display='block'; return false;"><img style="text-align: center;" src="<?= APP_BASE['resources'] . 'images/browser.png' ?>" /><br /><span style="text-align: center;">Browser</span></a></div>
@@ -683,7 +691,7 @@
             </div>
             <div style="position: absolute; margin: 430px 75px; text-align: center;" class="text-sm"><a href="#!" onclick="document.getElementById('app_install-container').style.display='block'; return false;"><span style="text-align: center;">New App.</span><br /><img style="text-align: center;" src="<?= APP_BASE['resources'] . 'images/install.png' ?>" /></a></div>
             <div style="position: absolute; margin: 430px 170px; text-align: center;" class="text-sm">
-              <a href="?app=text_editor&path=&file=app.user-app.php"><span style="text-align: center;">App #1</span></a><br />
+              <a href="?app=ace_editor&path=&file=app.user-app.php"><span style="text-align: center;">App #1</span></a><br />
               <a href="#!" onclick="document.getElementById('app_browser-container').style.display='block'; return false;"><img style="text-align: center;" src="<?= APP_BASE['resources'] . 'images/php-app.png' ?>" /></a>
               <div style="height: 75px;"></div>
             </div>
@@ -1092,9 +1100,9 @@
                         . '<div class="overlay">';
                         foreach ($packages as $package) {
                           if (in_array(APP_PATH.'vendor/'.$vendor.'/'.$package.'/bootstrap.php', get_required_files()))
-                            echo '<a href="?app=text_editor&path=vendor/'.$vendor.'/'.$package.'/&file=bootstrap.php"><code style="background-color: white; color: #0078D7; font-size: 9px;">' . $package. '</code></a><br />';
+                            echo '<a href="?app=ace_editor&path=vendor/'.$vendor.'/'.$package.'/&file=bootstrap.php"><code style="background-color: white; color: #0078D7; font-size: 9px;">' . $package. '</code></a><br />';
                           elseif (in_array(APP_PATH.'vendor/'.$vendor.'/'.$package.'/function.php', get_required_files()))
-                            echo '<a href="?app=text_editor&path=vendor/'.$vendor.'/'.$package.'/&file=function.php"><code style="background-color: white; color: #0078D7; font-size: 9px;">' . $package. '</code></a><br />';
+                            echo '<a href="?app=ace_editor&path=vendor/'.$vendor.'/'.$package.'/&file=function.php"><code style="background-color: white; color: #0078D7; font-size: 9px;">' . $package. '</code></a><br />';
                           else 
                             echo '<p style="background-color: #0078D7;">' . $package . '</p>' . PHP_EOL;
                           //echo APP_PATH.'vendor/'.$vendor.'/'.$package;
@@ -1112,24 +1120,24 @@
                           //  break;
                           //}
                         }
-                        echo '<a class="pkg_dir" href="#!" onclick="document.getElementById(\'app_composer-container\').style.display=\'block\';">' // ?app=text_editor&path=vendor/' . $vendor . '
+                        echo '<a class="pkg_dir" href="#!" onclick="document.getElementById(\'app_composer-container\').style.display=\'block\';">' // ?app=ace_editor&path=vendor/' . $vendor . '
                         . '<img src="resources/images/directory-composer.png" width="50" height="32" style="' . (isset(COMPOSER->{'require'}->{$vendor . '/' . 'composer'}) || isset(COMPOSER->{'require-dev'}->{$vendor . '/' . $package})? '' : 'opacity:0.4;filter:alpha(opacity=40);') . '" /></a><br />'
                         . '<div class="pkg_dir overlay">';
                         foreach ($packages as $package) {
                           if (!in_array(APP_PATH.'vendor/'.$vendor.'/'.$package.'/Psr/Log/LogLevel.php', get_required_files()) && $package == 'log') {
-                            echo '<a href="?app=text_editor&path=vendor/'.$vendor.'/'.$package.'/Psr/Log/&file=LogLevel.php"><code style="background-color: white; color: #0078D7; font-size: 10px;">' . $package. '</code></a>';
+                            echo '<a href="?app=ace_editor&path=vendor/'.$vendor.'/'.$package.'/Psr/Log/&file=LogLevel.php"><code style="background-color: white; color: #0078D7; font-size: 10px;">' . $package. '</code></a>';
                             continue;
                           }
                           echo '<p style="background-color: #0078D7;">' . $package. '</p>' . PHP_EOL;
                         }
                         echo '</div>' . '<a href="?path=vendor/' . $vendor . '">' . ucfirst($vendor) . '</a>' . "\n";    
                       } elseif ($vendor == 'psr') {
-                        echo '<a class="pkg_dir" href="#!" onclick="document.getElementById(\'app_project-container\').style.display=\'block\';">' // ?app=text_editor&path=vendor/' . $vendor . '
+                        echo '<a class="pkg_dir" href="#!" onclick="document.getElementById(\'app_project-container\').style.display=\'block\';">' // ?app=ace_editor&path=vendor/' . $vendor . '
                         . '<img src="resources/images/directory-psr.png" width="50" height="32" style="' . (isset(COMPOSER->{'require'}->{$vendor . '/' . $package}) || isset(COMPOSER->{'require-dev'}->{$vendor . '/' . $package}) ? '' : (!$show_notice ? '' : 'opacity:0.4;filter:alpha(opacity=40);')) . '" />' . '</a><br />'
                         . '<div class="overlay">';
                         foreach ($packages as $package) {
                           if (!in_array(APP_PATH.'vendor/'.$vendor.'/'.$package.'/Psr/Log/LogLevel.php', get_required_files()) && $package == 'log') {
-                            echo '<a href="?app=text_editor&path=vendor/'.$vendor.'/'.$package.'/Psr/Log/&file=LogLevel.php"><code style="background-color: white; color: #0078D7; font-size: 10px;">' . $package. '</code></a>';
+                            echo '<a href="?app=ace_editor&path=vendor/'.$vendor.'/'.$package.'/Psr/Log/&file=LogLevel.php"><code style="background-color: white; color: #0078D7; font-size: 10px;">' . $package. '</code></a>';
                             continue;
                           }
                           
@@ -1185,7 +1193,7 @@
         <?php if (readlinkToEnd('/var/www/projects') == '/mnt/c/www/projects') {  ?>
         <div style="text-align: center; border: none;" class="text-xs">
           <a class="pkg_dir" href="#" onclick="document.getElementById('app_project-container').style.display='block';">
-          <img src="resources/images/project-icon.png" width="50" height="32" style="" /></a><br /><a href="?project">project.php</a>
+          <img src="resources/images/project-icon.png" width="50" height="32" style="" /></a><br /><a href="?project">./project/</a>
         </div>
         <table width="" style="border: none;">
           <tr style=" border: none;">
@@ -1469,37 +1477,37 @@
                       if (preg_match('/^\..*/', basename($path))) {
               
                         if (basename($path) == '.htaccess')
-                          echo '<div style="position: relative;"><a href="?app=text_editor&path=' . (basename(dirname($path)) == basename(parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH) ? 'failed' : basename(dirname($path)))) . '&file=' . basename($path) . '"><img src="resources/images/htaccess_file.png" width="40" height="50" /><br />' . basename($path)
+                          echo '<div style="position: relative;"><a href="?app=ace_editor&path=' . (basename(dirname($path)) == basename(parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH) ? 'failed' : basename(dirname($path)))) . '&file=' . basename($path) . '"><img src="resources/images/htaccess_file.png" width="40" height="50" /><br />' . basename($path)
                           . '</a>'
               /*            . (is_readable($path = ini_get('error_log')) && filesize($path) > 0 ? '<div style="position: absolute; right: 8px; bottom: -6px; color: red; font-weight: bold;">[1]</div>' : '' ) */
                           . '</div>' . "\n";
                       
                         elseif(basename($path) == '.babelrc')
-                          echo '<div style="position: relative;"><a href="?app=text_editor&path=' . (basename(dirname($path)) == basename(parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH) ? 'failed' : basename(dirname($path)))) . '&file=' . basename($path) . '"><img src="resources/images/babelrc_file.png" width="40" height="50" /><br />' . basename($path)
+                          echo '<div style="position: relative;"><a href="?app=ace_editor&path=' . (basename(dirname($path)) == basename(parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH) ? 'failed' : basename(dirname($path)))) . '&file=' . basename($path) . '"><img src="resources/images/babelrc_file.png" width="40" height="50" /><br />' . basename($path)
                           . '</a>'
               /*            . (is_readable($path = ini_get('error_log')) && filesize($path) > 0 ? '<div style="position: absolute; right: 8px; bottom: -6px; color: red; font-weight: bold;">[1]</div>' : '' ) */
                           . '</div>' . "\n";
                         
                         elseif (basename($path) == '.gitignore')
-                          echo '<div style="position: relative;"><a href="?app=text_editor&path=' . (basename(dirname($path)) == basename(parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH) ? 'failed' : basename(dirname($path)))) . '&file=' . basename($path) . '"><img src="resources/images/gitignore_file.png" width="40" height="50" /><br />' . basename($path)
+                          echo '<div style="position: relative;"><a href="?app=ace_editor&path=' . (basename(dirname($path)) == basename(parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH) ? 'failed' : basename(dirname($path)))) . '&file=' . basename($path) . '"><img src="resources/images/gitignore_file.png" width="40" height="50" /><br />' . basename($path)
                           . '</a>'
               /*            . (is_readable($path = ini_get('error_log')) && filesize($path) > 0 ? '<div style="position: absolute; right: 8px; bottom: -6px; color: red; font-weight: bold;">[1]</div>' : '' ) */
                           . '</div>' . "\n";
                         
                         elseif (basename($path) == '.env')
-                          echo '<div style="position: relative;"><a href="?app=text_editor&path=' . (basename(dirname($path)) == basename(parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH) ? 'failed' : basename(dirname($path)))) . '&file=' . basename($path) . '"><img src="resources/images/env_file.png" width="40" height="50" /><br />' . basename($path)
+                          echo '<div style="position: relative;"><a href="?app=ace_editor&path=' . (basename(dirname($path)) == basename(parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH) ? 'failed' : basename(dirname($path)))) . '&file=' . basename($path) . '"><img src="resources/images/env_file.png" width="40" height="50" /><br />' . basename($path)
                         . '</a>'
               /*            . (is_readable($path = ini_get('error_log')) && filesize($path) > 0 ? '<div style="position: absolute; right: 8px; bottom: -6px; color: red; font-weight: bold;">[1]</div>' : '' ) */
                         . '</div>' . "\n";
                         
                         else
-                          echo '<div style="position: relative;"><a href="?app=text_editor&path=' . (basename(dirname($path)) == basename(parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH) ? 'failed' : basename(dirname($path)))) . '&file=' . basename($path) . '"><img src="resources/images/htaccess_file.png" width="40" height="50" /><br />' . basename($path)
+                          echo '<div style="position: relative;"><a href="?app=ace_editor&path=' . (basename(dirname($path)) == basename(parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH) ? 'failed' : basename(dirname($path)))) . '&file=' . basename($path) . '"><img src="resources/images/htaccess_file.png" width="40" height="50" /><br />' . basename($path)
                           . '</a>'
               /*            . (is_readable($path = ini_get('error_log')) && filesize($path) > 0 ? '<div style="position: absolute; right: 8px; bottom: -6px; color: red; font-weight: bold;">[1]</div>' : '' ) */
                           . '</div>' . "\n";
               
                       }  elseif (preg_match('/package(?:-lock)?\.(json)/', basename($path))) {
-                        echo '<a href="?app=text_editor&path=' . (basename(dirname($path)) == basename(parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH) ? 'failed' : basename(dirname($path)))) . '&file=' . basename($path) . '">';
+                        echo '<a href="?app=ace_editor&path=' . (basename(dirname($path)) == basename(parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH) ? 'failed' : basename(dirname($path)))) . '&file=' . basename($path) . '">';
               
                         if (basename($path) == 'package.json')
                           echo '<div style="position: relative;"><img src="resources/images/package_json_file.png" width="40" height="50" /><br />' . basename($path)
@@ -1511,7 +1519,7 @@
                           . '</a></div>' . "\n";
                         
                       } elseif (preg_match('/composer(?:-setup)?\.(json|lock|php|phar)/', basename($path))) {
-                        echo '<div style="position: relative;"><a href="?app=text_editor&path=' . (basename(dirname($path)) == basename(parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH) ? 'failed' : basename(dirname($path)))) . '&file=' . basename($path) . '">';
+                        echo '<div style="position: relative;"><a href="?app=ace_editor&path=' . (basename(dirname($path)) == basename(parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH) ? 'failed' : basename(dirname($path)))) . '&file=' . basename($path) . '">';
               
                         if (basename($path) == 'composer.json')
                           echo '<img src="resources/images/composer_json_file.gif" width="40" height="50" /><br />' . basename($path)
@@ -1538,32 +1546,32 @@
                       } elseif (preg_match('/.*\.js$/', basename($path))) {
                       
                         if  (basename($path) == 'webpack.config.js')
-                          echo '<a href="?app=text_editor&path=' . (basename(dirname($path)) == basename(parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH) ? 'failed' : basename(dirname($path)))) . '&file=' . basename($path) . '"><img src="resources/images/webpack_config_js_file.png" width="40" height="50" /><br />' . basename($path) . '</a>';
+                          echo '<a href="?app=ace_editor&path=' . (basename(dirname($path)) == basename(parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH) ? 'failed' : basename(dirname($path)))) . '&file=' . basename($path) . '"><img src="resources/images/webpack_config_js_file.png" width="40" height="50" /><br />' . basename($path) . '</a>';
                         else
-                          echo '<a href="?app=text_editor&path=' . (basename(dirname($path)) == basename(parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH) ? 'failed' : basename(dirname($path)))) . '&file=' . basename($path) . '"><img src="resources/images/js_file.png" width="40" height="50" /><br />' . basename($path) . '</a>';
+                          echo '<a href="?app=ace_editor&path=' . (basename(dirname($path)) == basename(parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH) ? 'failed' : basename(dirname($path)))) . '&file=' . basename($path) . '"><img src="resources/images/js_file.png" width="40" height="50" /><br />' . basename($path) . '</a>';
               
                       } elseif (preg_match('/.*\.md$/', basename($path))) {
-                        echo '<a href="?app=text_editor&path=' . (basename(dirname($path)) == basename(parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH) ? 'failed' : basename(dirname($path)))) . '&file=' . basename($path) . '"><img src="resources/images/md_file.png" width="40" height="50" /><br />' . basename($path) . '</a>';
+                        echo '<a href="?app=ace_editor&path=' . (basename(dirname($path)) == basename(parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH) ? 'failed' : basename(dirname($path)))) . '&file=' . basename($path) . '"><img src="resources/images/md_file.png" width="40" height="50" /><br />' . basename($path) . '</a>';
               
                       } elseif (preg_match('/.*\.php$/', basename($path))) {
                         if (preg_match('/^project\.php/', basename($path)))
-                          echo '<a style="position: relative;" href="' . (isset($_GET['project']) ? '?project#!' : '#') . '" onclick="document.getElementById(\'app_project-container\').style.display=\'block\';"><div style="position: absolute; left: -60px; top: -20px; color: red; font-weight: bold;">' . (isset($_GET['project']) ? '' : '') . '</div><img src="resources/images/project-icon.png" width="40" height="50" /></a><br /><a href="' . (isset($_GET['project']) ? '?project#!' : '?app=text_editor&path=' . (basename(dirname($path)) == basename(parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH) ? 'failed' : basename(dirname($path)))) . '&file=' . basename($path)) . '" ' . (isset($_GET['project']) ? 'onclick="document.getElementById(\'app_text_editor-container\').style.display=\'block\';"' : '') . '>' . basename($path) . '</a>';
-                        elseif (basename($path) == 'phpunit.php') echo '<a href="?app=text_editor&path=' . (basename(dirname($path)) == basename(parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH) ? 'failed' : basename(dirname($path)))) . '&file=' . basename($path) . '"><img src="resources/images/phpunit_php_file.png" width="40" height="50" /><br />' . basename($path) . '</a>';
-                        else echo '<a href="?app=text_editor&path=' . (basename(dirname($path)) == basename(parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH) ? 'failed' : basename(dirname($path)))) . '&file=' . basename($path) . '"><img src="resources/images/php_file.png" width="40" height="50" /><br />' . basename($path) . '</a>';
+                          echo '<a style="position: relative;" href="' . (isset($_GET['project']) ? '?project#!' : '#') . '" onclick="document.getElementById(\'app_project-container\').style.display=\'block\';"><div style="position: absolute; left: -60px; top: -20px; color: red; font-weight: bold;">' . (isset($_GET['project']) ? '' : '') . '</div><img src="resources/images/project-icon.png" width="40" height="50" /></a><br /><a href="' . (isset($_GET['project']) ? '?project#!' : '?app=ace_editor&path=' . (basename(dirname($path)) == basename(parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH) ? 'failed' : basename(dirname($path)))) . '&file=' . basename($path)) . '" ' . (isset($_GET['project']) ? 'onclick="document.getElementById(\'app_ace_editor-container\').style.display=\'block\';"' : '') . '>' . basename($path) . '</a>';
+                        elseif (basename($path) == 'phpunit.php') echo '<a href="?app=ace_editor&path=' . (basename(dirname($path)) == basename(parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH) ? 'failed' : basename(dirname($path)))) . '&file=' . basename($path) . '"><img src="resources/images/phpunit_php_file.png" width="40" height="50" /><br />' . basename($path) . '</a>';
+                        else echo '<a href="?app=ace_editor&path=' . (basename(dirname($path)) == basename(parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH) ? 'failed' : basename(dirname($path)))) . '&file=' . basename($path) . '"><img src="resources/images/php_file.png" width="40" height="50" /><br />' . basename($path) . '</a>';
               
                       } elseif (basename($path) == 'LICENSE') {
                         /* https://github.com/unlicense */
-                          echo '<div style="position: relative;"><a href="?app=text_editor&path=' . (basename(dirname($path)) == basename(parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH) ? 'failed' : basename(dirname($path)))) . '&file=' . basename($path) . '"><img src="resources/images/license_file.png" width="40" height="50" /><br />un' . basename($path)
+                          echo '<div style="position: relative;"><a href="?app=ace_editor&path=' . (basename(dirname($path)) == basename(parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH) ? 'failed' : basename(dirname($path)))) . '&file=' . basename($path) . '"><img src="resources/images/license_file.png" width="40" height="50" /><br />un' . basename($path)
                         . '.org</a>'
               /*            . (is_readable($path = ini_get('error_log')) && filesize($path) > 0 ? '<div style="position: absolute; right: 8px; bottom: -6px; color: red; font-weight: bold;">[1]</div>' : '' ) */
                         . '</div>' . "\n";
                       } elseif (basename($path) == basename(ini_get('error_log')))
-                        echo '<a href="?app=text_editor&path=' . (basename(dirname($path)) == basename(parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH) ? 'failed' : basename(dirname($path)))) . '&file=' . basename($path) . '">'
+                        echo '<a href="?app=ace_editor&path=' . (basename(dirname($path)) == basename(parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH) ? 'failed' : basename(dirname($path)))) . '&file=' . basename($path) . '">'
                         . '<div style="position: relative;"><img src="resources/images/error_log.png" width="40" height="50" /></a><br /><a id="app_php-error-log" href="' . (APP_URL['query'] != '' ? '?'.APP_URL['query'] : '') . (APP_ENV == 'development' ? '#!' : '') . /* '?' . basename(ini_get('error_log')) . '=unlink' */ '" style="text-decoration: line-through; background-color: red; color: white;">' . basename($path)
                         . (is_readable($path = ini_get('error_log')) && filesize($path) > 0 ? '</a><div style="position: absolute; right: 8px; bottom: -6px; color: red; font-weight: bold;">[1]</div>' : '' )
                         . '</div>' . "\n";
                       else
-                        echo '<a href="?app=text_editor&path=' . (basename(dirname($path)) == basename(parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH) ? 'failed' : basename(dirname($path)))) . '&file=' . basename($path) . '"><img src="resources/images/php_file.png" width="40" height="50" /><br />' . basename($path) . '</a>';
+                        echo '<a href="?app=ace_editor&path=' . (basename(dirname($path)) == basename(parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH) ? 'failed' : basename(dirname($path)))) . '&file=' . basename($path) . '"><img src="resources/images/php_file.png" width="40" height="50" /><br />' . basename($path) . '</a>';
                     }
                     echo '</td>' . "\n";
                     if ($count >= 6) echo '</tr><tr>';
@@ -1782,20 +1790,42 @@
       <?= $appConsole['script']; ?>
       
       // Define the function to be executed when "c" key is pressed
-      function executeFunctionOnKeyPress(event) {
-      // Check if the pressed key is "c" (you can use event.key or event.keyCode)
+
       
-      }
+      document.addEventListener('keydown', function() {
+      // Check if the pressed key is "c" (you can use event.key or event.keyCode)
+        if (event.key === '`' || event.keyCode === 192) // c||67
+            if (document.activeElement !== requestInput) {
+                // Replace the following line with your desired function
+                // If it's currently absolute, change to fixed
+                if (!isFixed)
+                    requestInput.focus();
+                event.preventDefault();
+                show_console();
+            } else {
+                document.activeElement = null;
+                return false;
+            }
+        else if (event.key === 'c' || event.keyCode === 67) {
+          // Execute your desired function or code here
+          console.log('The "c" key was pressed!');
+          // Replace the above line with the actual code you want to execute
+        }
+        console.log('keyboard shortcut');
+      });
       
       // Attach the event listener to the window object
       window.addEventListener('keydown', function() {
             // Check the condition before calling the show_console function
             //if (myDiv.style.position !== 'fixed')
+            console.log('windowEvent');
             if (  document.getElementById('app_console-container').style.position != 'absolute') {
-              console.log('test 123');
-              if (isFixed)
-                requestInput.focus();
-              show_console();
+
+              if (!isFixed) {
+                //requestInput.focus();
+              } else {
+                //show_console();
+              }
             } else {
             if (isFixed) isFixed = !isFixed;
             isFixed = true;

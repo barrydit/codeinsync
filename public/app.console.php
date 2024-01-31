@@ -21,7 +21,10 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
           //exec($_POST['cmd'], $output);
           //die(header('Location: ' . APP_URL_BASE . '?app=text_editor&filename='.$_POST['cmd']));
         else if (preg_match('/^php\s+(:?(.*))/i', $_POST['cmd'], $match))
-          exec($_POST['cmd'], $output);
+          if (preg_match('/^php\s+(?:(-r))/i', $_POST['cmd']))
+            exec($_POST['cmd'], $output);
+          if (preg_match('/^php\s+(?!(-r))/i', $_POST['cmd'])) 
+            $output[] = eval(trim($match[1], '"'));
         else if (preg_match('/^composer\s+(:?(.*))/i', $_POST['cmd'], $match)) {
           $output[] = 'sudo ' . COMPOSER_EXEC['bin'] . ' ' . $match[1];
 $proc=proc_open('sudo ' . COMPOSER_EXEC['bin'] . ' ' . $match[1],
@@ -193,6 +196,11 @@ input {
 <?php $appConsole['style'] = ob_get_contents();
 ob_end_clean();
 
+
+$auto_clear = false;
+
+$shell_prompt = 'www-data@localhost:~$ '; // '$ >'
+
 ob_start(); ?>
 
 <!-- <div class="container" style="border: 1px solid #000;"> -->
@@ -214,11 +222,11 @@ ob_start(); ?>
         <div style="position: relative; display: inline-block; margin: 5px 10px 0px 0px; width: 175px; float: right;">
             <div style="float: right;">
                 <button id="consoleAnykeyBind" class="text-xs" type="submit">Bind Any[key] </button>
-                <input id="app_text_editor-auto_bind_anykey" type="checkbox" name="auto_bind_anykey" checked="">
+                <input id="app_ace_editor-auto_bind_anykey" type="checkbox" name="auto_bind_anykey" checked="">
             </div>
             <div style="float: left;">
                 <button id="consoleCls" class="text-xs" type="submit">Clear (auto)</button>
-                <input id="app_text_editor-auto_clear" type="checkbox" name="auto_clear" checked="">
+                <input id="app_console-auto_clear" type="checkbox" name="auto_clear" <?= ($auto_clear ? 'checked="" ' : '') ?> />
             </div>
         </div>
         </div>
@@ -235,15 +243,15 @@ if (!empty($errors))
 
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
   //var_dump($output['results']);
-  if (!empty($output['command'])) // echo join("\n$ > ", $output['command']) . "\n";
+  if (!empty($output['command'])) // echo join("\n$shell_prompt", $output['command']) . "\n";
     foreach($output['command'] as $command) {
       if (!empty($output['results'])) {
-        echo '$ > ' . $command . "\n";
+        echo $shell_prompt . $command;
         foreach($output['results'] as $result) 
           foreach($result as $line) { echo $line . "\n"; }
       }
     }
-  else echo '$ > ';
+  else echo $shell_prompt;
 
 }?></textarea>
         
@@ -273,17 +281,20 @@ var requestInput = document.getElementById('requestInput');
 
 changePositionBtn.addEventListener('click', () => {
   if (consoleContainer.style.position == 'fixed') {
+      isFixed = false;
+      changePositionBtn.innerHTML = '&#9660;';
+  } else {
+
       isFixed = !isFixed;
       changePositionBtn.innerHTML = '&#9650;';
-  } else {
-      isFixed = true;
-      changePositionBtn.innerHTML = '&#9660;';
+
   }
-  show_console();
+//show_console();
 });
 
 function show_console(event) {
-      
+    console.log('showing console...'); 
+
     const consoleContainer = document.getElementById('app_console-container');
 
     //requestInput.focus();
@@ -293,11 +304,9 @@ function show_console(event) {
             if (document.activeElement !== requestInput) {
                 // Replace the following line with your desired function
                 // If it's currently absolute, change to fixed
-                
                 if (!isFixed)
                     requestInput.focus();
                 event.preventDefault();
-                isFixed = true; 
                 show_console();
             } else {
                 document.activeElement = null;
@@ -314,11 +323,15 @@ function show_console(event) {
                 if (!isFixed) {
                     requestInput.value = event.key;
                     requestInput.focus();
-                }
+                //isFixed = true; 
+show_console();
+                } else {                }
                 event.preventDefault();
+                console.log('activeElement');
             } else {
                 document.activeElement = null;
                 return false;
+                console.log('else');
             }
         }
   //isFixed = !isFixed; 
@@ -327,7 +340,7 @@ function show_console(event) {
     //if (event !== undefined)
     console.log('isFixed is undefined');
   } else {
-  if (isFixed) {
+  if (!isFixed) {
 
     // If it's currently fixed, change back to absolute
     consoleContainer.style.position = 'absolute';
@@ -363,9 +376,12 @@ function show_console(event) {
 
     changePositionBtn.innerHTML = '&#9660;';
   }
+
   }
+  if (isFixed) isFixed = !isFixed;
+  //isFixed = true;
   // Toggle the state for the next click
-    isFixed = !isFixed;
+    //isFixed = !isFixed;
 }
 
 // Attach a focus event listener to the input element
@@ -373,15 +389,14 @@ function show_console(event) {
         // Check the condition before calling the show_console function
         //if (consoleContainer.style.position !== 'fixed')
         if (  document.getElementById('app_console-container').style.position != 'absolute') {
-          console.log('test 123');
           if (isFixed)
             requestInput.focus();
-          show_console();
-        } else {
-        if (isFixed) isFixed = !isFixed;
-        isFixed = true;
-            show_console();
+
+          //show_console();
         }
+        if (isFixed) {isFixed = !isFixed;}
+        isFixed = true;
+        show_console();
     });
 <?php if (defined('COMPOSER')) { ?>
 initSubmit.addEventListener('click', () => {
@@ -398,7 +413,7 @@ initSubmit.addEventListener('click', () => {
     console.log("Data: " + data + "\nStatus1: " + status);
     if (requestConsole !== null) {
       requestConsole.value = data + argv;
-      requestConsole.value = '$ > ' + argv + " \n" + data;
+      requestConsole.value = '<?= $shell_prompt; ?>' + argv + " \n" + data;
     
       requestConsole.scrollTop = requestConsole.scrollHeight;
       console.log('changed scroll');
@@ -417,7 +432,7 @@ window.addEventListener('resize', () => {
 
 $(document).ready(function() {
 
-  const autoClear = $("#app_text_editor-auto_clear").checked;
+  const autoClear = $("#app_console-auto_clear").checked;
 
 
   //$('#responseConsole').css('width', $(window).width() - 20 + 'px');
@@ -460,9 +475,11 @@ $(document).ready(function() {
       //  break;
       case 40:
         $('#requestInput').val('test down');
+        
         break;
       default:
         console.log('Key Code: ' + code);
+        //show_console();
         break;
     }
   };
@@ -470,14 +487,14 @@ $(document).ready(function() {
 
   $('#consoleCls').on('click', function() {
     console.log('Button Clicked!');
-    $('#responseConsole').val('$ >');
+    $('#responseConsole').val('<?= $shell_prompt; ?>');
     if ($('#app_console-container').css('position') == 'absolute')
       show_console();
   });
 
 
   $('#changePositionBtn').on('click', function() {
-    console.log('Button Clicked!');
+    console.log('Drop Button Clicked!');
     show_console();
   });
   
@@ -517,7 +534,7 @@ $(document).ready(function() {
 
   $('#requestSubmit').click(function() {
     let matches = null;
-    const autoClear = document.getElementById('app_text_editor-auto_clear').checked;
+    const autoClear = document.getElementById('app_console-auto_clear').checked;
     console.log('autoClear is ' + autoClear);
     
     if ($('#app_console-container').css('position') == 'absolute') {
@@ -528,21 +545,47 @@ $(document).ready(function() {
     
     console.log('Argv: ' + argv);
     
-    if (autoClear) $('#responseConsole').val('$ > ' + argv);
-    if (argv == 'cls') $('#responseConsole').val('$ >');
+    if (autoClear) $('#responseConsole').val('<?= $shell_prompt; ?>' + argv);
+
+    if (argv == 'cls') $('#responseConsole').val('<?= $shell_prompt; ?>');
     
-    if (matches = argv.match(/^echo\s+(hello)\sworld$/i))  { // argv == 'edit'
+    if (matches = argv.match(/^(?:echo\s+)?(hello)\s+world/i)) { // argv == 'edit'
       if (matches) {
-        const pathname = matches[1]; // "/path/to/file.txt"
-        $('#responseConsole').val('$ >' + argv + "\n" + matches[1] + ' ' + 'Barry');
+        $('#responseConsole').val(matches[1] + ' ' + 'Barry' + "\n" + '<?= $shell_prompt; ?>' + argv + "\n" + $('#responseConsole').val());
         return false;
       } else {
         console.log("Invalid input format.");
       }
     }
     
+    if (matches = argv.match(/^(?:j(?:ava)?s(?:cript)?\s+)?(\S+)$/)) {
+// Save the original console.log function
+var originalLog = console.log;
+
+// Create an array to store log messages
+var logMessages = [];
+
+  var js_prompt = 'javascript: ';
+  var codeString = matches[1]; // "console.log('Hello, world!');";
+  var myFunction = new Function(codeString);
+
+  myFunction();
+// Override console.log to capture messages
+console.log = function() {
+  // Save the log message to the array
+  logMessages.push(Array.from(codeString).join(' '));
+
+  $('#responseConsole').val(logMessages[1] + "\n" + js_prompt + codeString + "\n" + $('#responseConsole').val());
+
+  // Call the original console.log function
+  originalLog.apply(console, codeString);      
+      return false;
+};
+      console = originalLog;
+      return false;
+    }
     
-    if (matches = argv.match(/^edit\s+(\S+)$/))  { // argv == 'edit'
+    if (matches = argv.match(/^edit\s+(\S+)$/)) { // argv == 'edit'
       if (matches) {
         const pathname = matches[1]; // "/path/to/file.txt"
         console.log("Editing: ", pathname);
@@ -559,8 +602,8 @@ $(document).ready(function() {
         console.log("Invalid input format.");
       }
     }
-
-    else if (argv == 'clear') $('#responseConsole').val('clear');
+    
+    if (argv == 'clear') $('#responseConsole').val('clear');
     else if (argv == 'reset') $('#responseConsole').val('>_');
     else
     $.post("<?= basename(APP_SELF); /*APP_URL_BASE; $projectRoot*/?>",
@@ -574,9 +617,9 @@ $(document).ready(function() {
 
       if (autoClear) {
         $('#responseConsole').val(data + argv);
-        $('#responseConsole').val('$ > ' + argv + " \n" + data );
+        $('#responseConsole').val('<?= $shell_prompt; ?>' + argv + "\n" + data);
       } else {
-        $('#responseConsole').val('$ > ' + argv + "\n" + data + $('#responseConsole').val()) ; //  + 
+        $('#responseConsole').val('<?= $shell_prompt; ?>' + argv + "\n" + data + "\n" + $('#responseConsole').val()) ; //  + 
       }
       $('#requestInput').val('');
       

@@ -35,6 +35,19 @@ padding: 10px;
 z-index: 1;
 }
 
+#app_project-container.selected { display: block; z-index: 1; 
+  /* Add your desired styling for the selected container */
+  /*
+  // background-color: rgb(240, 224, 198); //  240, 224, 198, .75    #FBF7F1; // rgba(240, 224, 198, .25);
+  
+  bg-[#FBF7F1];
+  bg-opacity-75;
+
+  font-weight: bold;
+  #top { background-color: rgba(240, 224, 198, .75); }
+  */
+}
+
 input {
   color: black;
 }
@@ -97,7 +110,7 @@ ob_end_clean();
 ob_start(); ?>
 
 <!-- <div class="container" style="border: 1px solid #000;"> -->
-  <div id="app_project-container" class="<?= (APP_SELF == __FILE__ || (isset($_GET['app']) && $_GET['app'] == 'project') || isset($_GET['project']) ? 'selected' : '') ?>" style="border: 1px solid #000;">
+  <div id="app_project-container" class="absolute <?= (APP_SELF == __FILE__ || (isset($_GET['project']) && !$_GET['project'] && preg_match('/(?:^|&)project(?![^&]*=)/', $_SERVER['QUERY_STRING'])) ? 'selected' : '') ?>" style="border: 1px solid #000;">
     <div class="header ui-widget-header">
       <div style="display: inline-block;">Project</div>
       <div style="display: inline; float: right; text-align: center; padding: -4px 5px 0px 0px;">[<a style="cursor: pointer; font-size: 13px;" onclick="document.getElementById('app_project-container').style.display='none';">X</a>]</div> 

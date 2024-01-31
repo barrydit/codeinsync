@@ -455,13 +455,14 @@ document.getElementById('app_git-cmd-selected').addEventListener('submit', funct
 
   requestSubmit.dispatchEvent(clickEvent);
 
-  var changePositionBtn = document.getElementById('changePositionBtn');
-  const myDiv = document.getElementById('myDiv');
+//  var changePositionBtn = document.getElementById('changePositionBtn');
+//  const myDiv = document.getElementById('myDiv');
 
-  if (myDiv.style.position == 'absolute')
-    changePositionBtn.dispatchEvent(clickEvent);
+//  if (myDiv.style.position == 'absolute')
+//    changePositionBtn.dispatchEvent(clickEvent);
 
-  //show_console();
+  isFixed = true;
+  show_console();
 
   // For example, you can show an alert to indicate that the form submission is disabled
   console.log(cmdSelect.value + ' was executed.');
