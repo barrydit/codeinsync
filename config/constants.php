@@ -33,14 +33,14 @@ define('APP_NAME',      'Updater');
 //define('APP_HOURS', ['open' => '08:00', 'closed' => '17:00']);
 //if (defined('APP_HOURS')) echo 'Hours of Operation: ' . APP_HOURS['open'] . ' -> ' . APP_HOURS['closed']  . "\n";
 
-define('APP_DOMAIN',   isset($_SERVER['HTTP_HOST']) === true ? $_SERVER['HTTP_HOST'] : $_SERVER['SERVER_NAME']);
+define('APP_DOMAIN',   isset($_SERVER['HTTP_HOST']) ? $_SERVER['HTTP_HOST'] : (isset($_SERVER['SERVER_NAME']) ? $_SERVER['SERVER_NAME'] : 'localhost'));
 (!is_string(APP_DOMAIN)) and $errors['APP_DOMAIN'] = 'APP_DOMAIN is not valid. (' . APP_DOMAIN . ')'. "\n";
 
 (isset($_SERVER['HTTPS']) === true && $_SERVER['HTTPS'] == 'on') // strtolower(substr($_SERVER["SERVER_PROTOCOL"],0,5))=='https'
   and define('APP_HTTPS', TRUE);
 (defined('APP_HTTPS') && APP_HTTPS) and $errors['APP_HTTPS'] = (bool) var_export(APP_HTTPS, APP_HTTPS); // print("\t" . 'Http(S)://' . APP_DOMAIN . '/' . '... ' .  var_export(defined('APP_HTTPS'), true) . "\n");
 
-define('APP_WWW', 'http' . (defined('APP_HTTPS') ? 's':'') . '://' . APP_DOMAIN . parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH));
+define('APP_WWW', 'http' . (defined('APP_HTTPS') ? 's':'') . '://' . APP_DOMAIN . parse_url((isset($_SERVER['SERVER_NAME']) ? $_SERVER['REQUEST_URI'] : '') , PHP_URL_PATH));
 
 define('APP_TIMEOUT',   strtotime('1970-01-01 08:00:00'.'GMT'));
 (defined('APP_TIMEOUT') && !is_int(APP_TIMEOUT)) and $errors['APP_TIMEOUT'] = APP_TIMEOUT; // print('Timeout: ' . APP_TIMEOUT . "\n");
@@ -133,13 +133,13 @@ define('APP_PUBLIC',  str_replace(APP_PATH, '', (basename(dirname(APP_SELF)) == 
     and define('APP_URL', 'http' . (defined('APP_HTTPS') ? 's':'') . '://' . APP_DOMAIN . substr($_SERVER['REQUEST_URI'], 0, strrpos($_SERVER['REQUEST_URI'], '/') + 1)) :
   define('APP_URL', [
     'scheme' => 'http' . (defined('APP_HTTPS') && APP_HTTPS ? 's': ''), // ($_SERVER['HTTPS'] == 'on', (isset($_SERVER['HTTPS']) === true ? 'https' : 'http')
-    'host' => (isset($_SERVER['HTTP_HOST']) ? $_SERVER['HTTP_HOST'] : $_SERVER['SERVER_NAME']),
-    'port' => (int) $_SERVER['SERVER_PORT'],
+    'host' => APP_DOMAIN,
+    'port' => (int) (isset($_SERVER['SERVER_PORT']) ? $_SERVER['SERVER_PORT'] : 80),
     /* https://www.php.net/manual/en/features.http-auth.php */
     'user' => (!isset($_SERVER['PHP_AUTH_USER']) ? NULL : $_SERVER['PHP_AUTH_USER']),
     'pass' => (!isset($_SERVER['PHP_AUTH_PW']) ? NULL : $_SERVER['PHP_AUTH_PW']),
     'path' => substr($_SERVER['REQUEST_URI'], 0, strrpos($_SERVER['REQUEST_URI'], '/') + 1), // https://stackoverflow.com/questions/7921065/manipulate-url-serverrequest-uri
-    'query' => $_SERVER['QUERY_STRING'], // array( key($_REQUEST) => current($_REQUEST) )
+    'query' => (isset($_SERVER['QUERY_STRING']) ? $_SERVER['QUERY_STRING'] : ''), // array( key($_REQUEST) => current($_REQUEST) )
     'fregment' => '',
   ]);
 

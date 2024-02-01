@@ -140,7 +140,7 @@ td, th {
     padding: 8px;
 }
 
-<?php $appTextEditor['style'] = ob_get_contents();
+<?php $appAceEditor['style'] = ob_get_contents();
 ob_end_clean();
 
 ob_start(); ?>
@@ -253,7 +253,7 @@ if (!empty($paths))
   </div>
 <!-- </div> -->
 
-<?php $appTextEditor['body'] = ob_get_contents();
+<?php $appAceEditor['body'] = ob_get_contents();
 ob_end_clean();
 
 ob_start(); ?>
@@ -279,7 +279,7 @@ editor.setOptions({
 ?>
 
 <?= /* $(document).ready(function() {}); */ ''; ?>
-<?php $appTextEditor['script'] = ob_get_contents();
+<?php $appAceEditor['script'] = ob_get_contents();
 ob_end_clean();
 
 ob_start(); ?>
@@ -317,11 +317,11 @@ if (is_file($path . 'tailwindcss-3.3.5.js')) {
    
 
 <style type="text/tailwindcss">
-<?= $appTextEditor['style']; ?>
+<?= $appAceEditor['style']; ?>
 </style>
 </head>
 <body>
-<?= $appTextEditor['body']; ?>
+<?= $appAceEditor['body']; ?>
 
   <script src="resources/js/ace/src/ace.js" type="text/javascript" charset="utf-8"></script>
   <script src="resources/js/ace/src/ext-language_tools.js" type="text/javascript" charset="utf-8"></script> 
@@ -333,13 +333,13 @@ if (is_file($path . 'tailwindcss-3.3.5.js')) {
   <script src="//code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
   <!-- <script src="../resources/js/jquery/jquery.min.js"></script> -->
 <script>
-<?= $appTextEditor['script']; ?>
+<?= $appAceEditor['script']; ?>
 </script>
 </body>
 </html>
-<?php $appTextEditor['html'] = ob_get_contents(); 
+<?php $appAceEditor['html'] = ob_get_contents(); 
 ob_end_clean();
 
 //check if file is included or accessed directly
 if (__FILE__ == get_required_files()[0] || in_array(__FILE__, get_required_files()) && isset($_GET['app']) && $_GET['app'] == 'ace_editor' && APP_DEBUG)
-  die($appTextEditor['html']);
+  die($appAceEditor['html']);

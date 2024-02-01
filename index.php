@@ -12,7 +12,7 @@
       require_once($path); 
   else die(var_dump($path . ' was not found. file=config.php'));
 
-/** Loading Time: 4.93s **/
+/** Loading Time: 4.65s **/
   
   // dd(null, true);
 
@@ -112,6 +112,11 @@
   */
 
 
+/** Loading Time: 4.77s **/
+  
+  // dd(null, true);
+
+
   use phpWhois\Whois;
   /*
   $whois = new Whois(); // Domain lookup / nserver (Domain lookup)
@@ -123,15 +128,7 @@
   // composer require ipinfo/ipinfo:^2.2.0 (^3.1+ req. php 8.2.5)
   //use ipinfo\ipinfo\IPinfo; // api / key service
   //--use ipinfo\ipinfo\IPinfoException;
-  
-/** Loading Time: 4.95s **/
-  //dd(null, true);
 
-  if ($path = (basename(getcwd()) == 'public')
-      ? (is_file('app.timesheet.php') ? 'app.timesheet.php' : (is_file('../app.timesheet.php') ? '../app.timesheet.php' : (is_file('../config/app.timesheet.php') ? '../config/app.timesheet.php' : 'public/app.timesheet.php')))
-      : (is_file('../app.timesheet.php') ? '../app.timesheet.php' : (is_file('public/app.timesheet.php') ? 'public/app.timesheet.php' : (is_file('config/app.timesheet.php') ? 'config/app.timesheet.php' : 'app.timesheet.php'))))
-    require_once($path);
-  else die(var_dump($path . ' was not found. file=app.timesheet.php'));
   
 /** Loading Time: 4.84s **/
 
@@ -167,9 +164,9 @@
   //composer[config][require][]
 
 
-/** Loading Time: 4.9s **/
+/** Loading Time: 3.67s **/
   
-  //dd(null, true);
+  // dd(null, true);
 
 
 //echo getcwd();
@@ -180,19 +177,35 @@
         if (defined('LogLevel'))
           $errors['LogLevel'] = 'Now let\'s use LogLevel... ' . LogLevel::DEBUG . "\n";
   
-    if ($path = (basename(getcwd()) == 'public') 
-      ? (is_file('public/ui.composer.php') ? 'public/ui.composer.php' : 'ui.composer.php') : (is_file('ui.composer.php') ? 'ui.composer.php' : 'public/ui.composer.php'))
-      require_once($path); 
-    else die(var_dump($path . ' was not found. file=ui.composer.php'));
+    //if ($path = (basename(getcwd()) == 'public'))
+      //? (is_file('public/ui.composer.php') ? 'public/ui.composer.php' : 'ui.composer.php') : (is_file('ui.composer.php') ? 'ui.composer.php' : 'public/ui.composer.php'))
+      //require_once($path); 
+    $additionalPaths = [__DIR__ . DIRECTORY_SEPARATOR . 'public/ui.composer.php']; //require_once('public/ui.composer.php'); 
+    //else die(var_dump($path . ' was not found. file=ui.composer.php'));
     //dd('wtf');
   }
 
+$paths = array_unique(array_filter(glob(__DIR__ . DIRECTORY_SEPARATOR . 'public/ui.*.php'), 'is_file') + $additionalPaths);
 
-//require_once('public/ui.composer.php'); 
+/**/
 
-/** Loading Time: 6.93s **/
+while ($path = array_shift($paths)) {
+  if ($path = realpath($path)) {
   
-  //dd(null, true);
+    // dd('file:'.basename($path),false);
+    require_once($path);
+    
+  }
+  else dd(basename($path) . ' was not found. file=public/' . basename($path));
+}
+
+/** Loading Time: 11.27s - 4.77s == 6.51s **/
+
+  //dd('start time: ', false);
+
+  //require_once(__DIR__ . DIRECTORY_SEPARATOR . 'public/ui_complete.php');
+  
+  //dd('final time: ', true);
 
   // >> This guy makes the visual screwed up!
   if ($path = (basename(getcwd()) == 'public')
@@ -231,7 +244,15 @@
       : (is_file('../ui.ace_editor.php') ? '../ui.ace_editor.php' : (is_file('public/ui.ace_editor.php') ? 'public/ui.ace_editor.php' : (is_file('config/ui.ace_editor.php') ? 'config/ui.ace_editor.php' : 'ui.ace_editor.php'))))
     require_once($path); 
   else die(var_dump($path . ' was not found. file=ui.ace_editor.php'));
-  
+
+/** Loading Time: 4.95s **/
+  //dd(null, true);
+
+  if ($path = (basename(getcwd()) == 'public')
+      ? (is_file('app.timesheet.php') ? 'app.timesheet.php' : (is_file('../app.timesheet.php') ? '../app.timesheet.php' : (is_file('../config/app.timesheet.php') ? '../config/app.timesheet.php' : 'public/app.timesheet.php')))
+      : (is_file('../app.timesheet.php') ? '../app.timesheet.php' : (is_file('public/app.timesheet.php') ? 'public/app.timesheet.php' : (is_file('config/app.timesheet.php') ? 'config/app.timesheet.php' : 'app.timesheet.php'))))
+    require_once($path);
+  else die(var_dump($path . ' was not found. file=app.timesheet.php'));
 
   if ($path = (basename(getcwd()) == 'public')
       ? (is_file('app.browser.php') ? 'app.browser.php' : (is_file('../app.browser.php') ? '../app.browser.php' : (is_file('../config/app.browser.php') ? '../config/app.browser.php' : NULL)))
@@ -338,7 +359,7 @@
       <?= $appWhiteboard['style']; ?>
       <?= $appNotes['style']; ?> 
       <?= $appPong['style']; ?>
-      <?= $appTextEditor['style']; ?>
+      <?= $appAceEditor['style']; ?>
       <?= $appBackup['style']; ?>
       <?= $appConsole['style']; ?>
       <?= $appTimesheet['style']; ?>
@@ -451,8 +472,7 @@
   <body>
     <div class="row-container" style="position: absolute; left: 0; top: 0;">
       <?php // https://stackoverflow.com/questions/86428/what-s-the-best-way-to-reload-refresh-an-iframe ?>
-      <iframe id="iWindow" src="<?php
-        if (!empty($_GET['client'])) {
+      <iframe id="iWindow" src="<?php if (!empty($_GET['client'])) {
           $path = '../../clientele/' . $_GET['client'] . '/';
           $dirs = array_filter(glob(dirname(__DIR__) . '/' . $path . '*'), 'is_dir');
           
@@ -538,7 +558,7 @@
               . '            <select name="category" onchange="this.form.submit();">' . "\n"
               
               . '              <option value="" ' . (empty(APP_QUERY) ? 'selected' : '') . '>' . basename(parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH)) . '</option>' . "\n"
-              . '              <option value="application" ' . (isset($_GET['application']) ? 'selected' : '') . '>../applications</option>' . "\n"
+              . '              <option value="application" ' . (isset($_GET['application']) ? 'selected' : '') . ' ' . (realpath(APP_PATH . '../../applications/') ? '' : 'disabled') . '>../applications</option>' . "\n"
               . '              <option value="client" ' . (isset($_GET['client']) ? 'selected' : '') . '>../clientele</option>' . "\n"
               . '              <option value="projects" ' . (isset($_GET['project']) && $_GET['project'] || preg_match('/(?:^|&)project(?:[^&]*=)/', $_SERVER['QUERY_STRING']) ? 'selected' : '') . '>../projects</option>' . "\n"
               . '              <option value="node_module" ' . (isset($_GET['path']) && $_GET['path'] == 'resources' ? 'selected' : '') . '>./node_modules</option>' . "\n"
@@ -1600,7 +1620,7 @@
     <?= $appNotes['body']; ?>
     <!-- https://pong-2.com/ -->
     <?= $appPong['body']; ?>
-    <?= $appTextEditor['body']; ?>
+    <?= $appAceEditor['body']; ?>
     </div>
     <!-- /div -->
     <?= $appConsole['body']; ?>
@@ -1730,14 +1750,14 @@
           // Animation complete.
       });
         console.log('hide');
-          displayDirectoryBtn.innerHTML = '&#9660;';
+          displayDirectoryBtn.innerHTML = '&#9650;';
       } else {
       
         $( '#app_directory-container' ).slideUp( "slow", function() {
           // Animation complete.
         });
       
-          displayDirectoryBtn.innerHTML = '&#9650;';  
+          displayDirectoryBtn.innerHTML = '&#9660;';  
         console.log('show');
       }
       //show_console();
@@ -1890,7 +1910,7 @@
         define('testace', ['ace/ace'], function(ace) {
                 //console.log(langtools);
       
-      <?= $appTextEditor['script']; ?>
+      <?= $appAceEditor['script']; ?>
                 //require(["resources/js/requirejs/require-2.3.6!ace/ace"], function(e){
                     //editor.setValue(e);
                 //})

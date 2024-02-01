@@ -1,6 +1,9 @@
 <?php
 // test.php
 
+
+// php -dxdebug.profiler_enable=1 -dxdebug.profiler_output_dir=. public/ui_complete.php
+
 phpinfo();
 
 die();

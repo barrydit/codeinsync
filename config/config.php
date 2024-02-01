@@ -47,13 +47,11 @@ $errors = []; // (object)
   explode(DIRECTORY_SEPARATOR, dirname(APP_SELF))
 )) . DIRECTORY_SEPARATOR);
 
-require('constants.php');
+$additionalPaths = [__DIR__ . DIRECTORY_SEPARATOR . 'constants.php']; //require('constants.php'); 
+$paths = array_merge(array_filter(glob(__DIR__ . DIRECTORY_SEPARATOR . 'classes/*.php'), 'is_file'), $additionalPaths);
 
-
-$links = array_filter(glob(__DIR__ . DIRECTORY_SEPARATOR . 'classes/*.php'), 'is_file');
-
-while ($link = array_shift($links)) {
-  if ($path = realpath($link))
+while ($path = array_shift($paths)) {
+  if ($path = realpath($path))
     require_once($path);
   else die(var_dump(basename($path) . ' was not found. file=classes/' . basename($path)));
 }
@@ -261,7 +259,6 @@ if (isset($_GET['project'])) {
   //require_once('project.php');
 
 if (isset($_GET['app']) && $_GET['app'] == 'project') require_once('app.project.php');
-
 
 header("Cache-Control: no-store, no-cache, must-revalidate, max-age=0");
 header("Pragma: no-cache");

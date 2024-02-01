@@ -242,7 +242,10 @@ else die(var_dump($path));
 // php -d xdebug.remote_enable=0 composer <your_command_here>
 // -d xdebug.remote_enable=0 \
 // -d xdebug.profiler_enable=0 \
+// -d xdebug.profiler_output_dir=. \
 // -d xdebug.default_enable=0
+
+// php -dxdebug.mode=debug -dxdebug.output_dir=. public/ui_complete.php
 
 define('COMPOSER_ALLOW_SUPERUSER', true);
 putenv('COMPOSER_ALLOW_SUPERUSER=' . (int) COMPOSER_ALLOW_SUPERUSER);
@@ -265,13 +268,19 @@ $composerUser = 'barrydit';
 $componetPkg = basename(dirname(__DIR__));
 $composerHome = (strtoupper(substr(PHP_OS, 0, 3)) === 'WIN' ?
   'C:/Users/' . (getenv('USERNAME') ?: getenv('USER')) . '/AppData/Roaming/Composer/' : 
-  '/home/' . (getenv('USERNAME') ?: getenv('USER')) . '/.composer/'
+  ($user = (getenv('USERNAME') ?: getenv('USER')) == 'root' ?
+    '/' . (getenv('USERNAME') ?: getenv('USER')) . '/.composer/' :
+    '/home/' . (getenv('USERNAME') ?: getenv('USER')) . '/.composer/'  
+  ) 
 );
 
 if (!realpath($composerHome)) {
   if (!mkdir($composerHome, 0755, true))
     $errors['COMPOSER_HOME'] = $composerHome . ' does not exist';
 } else define('COMPOSER_HOME', $composerHome);
+
+//dd($errors);
+//dd('Composer Home: ' . $composerHome, 0);
 
 putenv('COMPOSER_HOME=' . $composerHome ?? '/var/www/.composer/');
 
@@ -343,8 +352,8 @@ if (strtoupper(substr(PHP_OS, 0, 3)) === 'WIN') { // DO NOT REMOVE! { .. }
       }
 }
 
-dd(COMPOSER_PHAR, 0);
-dd(COMPOSER_BIN, 0);
+// dd(COMPOSER_PHAR, 0);
+// dd(COMPOSER_BIN, 0);
 
 defined('COMPOSER_EXEC')
   or define('COMPOSER_EXEC', (isset($_GET['exec']) ? ($_GET['exec'] == 'phar' ? COMPOSER_PHAR : COMPOSER_BIN) : COMPOSER_BIN ?? COMPOSER_PHAR));
