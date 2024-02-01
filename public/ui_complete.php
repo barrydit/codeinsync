@@ -2641,8 +2641,19 @@ if (__FILE__ == get_required_files()[0] || in_array(__FILE__, get_required_files
 
 ob_start(); ?>
 
-#app_npm-container { position: absolute; /*display: none;*/ top: 60px; margin: 0 auto; left: 50%; right: 50%;  }
+#app_npm-container { position: absolute; display: none; top: 60px; margin: 0 auto; left: 50%; right: 50%;  }
+#app_npm-container.selected { display: block; z-index: 1; 
+  /* Add your desired styling for the selected container */
+  /*
+  // background-color: rgb(240, 224, 198); //  240, 224, 198, .75    #FBF7F1; // rgba(240, 224, 198, .25);
+  
+  bg-[#FBF7F1];
+  bg-opacity-75;
 
+  font-weight: bold;
+  #top { background-color: rgba(240, 224, 198, .75); }
+  */
+}
 
 img { display: inline; }
 

@@ -12,6 +12,7 @@ ob_start(); // dd('Break/test the dd();'); ?>
 <tr><td>Create</td><td>a</td><td>table</td><td>columns</td></tr>
 <tr><td>A</td><td>new</td><td>row</td></tr>
 <tr><td>And</td><td>some</td><td>more</td><td>rows</td></tr>
+
 </table>
 
 <?php

@@ -169,7 +169,7 @@ background-color: lightblue;
 /* Styles for the absolute div */
 #app_console-container {
 position: fixed;
-bottom: 62px;
+bottom: 65px;
 left: 50%;
 transform: translateX(-50%);
 width: auto;
@@ -208,7 +208,7 @@ ob_start(); ?>
 <div id="app_console-container" class="">
     <div style="text-align: left; position: relative;">
     
-        <div style="display: inline-block; margin: 5px; ">
+        <div style="display: inline-block; margin: 5px 0px 0px 10px; float: left;">
             <button id="requestSubmit" type="submit">Run</button>&nbsp;&nbsp;
 
             <input list="commandHistory" id="requestInput" type="text" size="54" name="requestInput" autocomplete="off" spellcheck="off" placeholder="php -r &quot;echo 'hello world';&quot;" value="">
@@ -219,7 +219,7 @@ ob_start(); ?>
         </div>
         <div style="display: inline-block;">
         
-        <div style="position: relative; display: inline-block; margin: 5px 10px 0px 0px; width: 175px; float: right;">
+        <div style="position: relative; display: inline-block; margin: 5px 10px 0px 0px; width: 180px; float: right;">
             <div style="float: right;">
                 <button id="consoleAnykeyBind" class="text-xs" type="submit">Bind Any[key] </button>
                 <input id="app_ace_editor-auto_bind_anykey" type="checkbox" name="auto_bind_anykey" checked="">
@@ -347,7 +347,7 @@ show_console();
     consoleContainer.style.top = '';
     consoleContainer.style.left = '50%';
     consoleContainer.style.right = '';
-    consoleContainer.style.bottom = '30px';
+    consoleContainer.style.bottom = '35px';
     consoleContainer.style.transform = 'translate(-50%, -50%)';
     consoleContainer.style.textAlign = 'center';
     consoleContainer.style.zIndex = '999';
@@ -512,6 +512,8 @@ $(document).ready(function() {
 
   $("#app_git-commit-cmd").click(function() {
     $('#requestInput').val('git commit -am "default message"');
+
+    if (!isFixed) isFixed = true;
     show_console();
     //$('#requestSubmit').click();
   });
@@ -546,19 +548,26 @@ $(document).ready(function() {
     console.log('Argv: ' + argv);
     
     if (autoClear) $('#responseConsole').val('<?= $shell_prompt; ?>' + argv);
-
-    if (argv == 'cls') $('#responseConsole').val('<?= $shell_prompt; ?>');
     
-    if (matches = argv.match(/^(?:echo\s+)?(hello)\s+world/i)) { // argv == 'edit'
+    if (argv == '') $('#responseConsole').val('<?= $shell_prompt; ?>' + "\n" + $('#responseConsole').val()) ; //  + 
+    else if (matches = argv.match(/^(?:echo\s+)?(hello)\s+world/i)) { // argv == 'edit'
       if (matches) {
         $('#responseConsole').val(matches[1] + ' ' + 'Barry' + "\n" + '<?= $shell_prompt; ?>' + argv + "\n" + $('#responseConsole').val());
         return false;
       } else {
         console.log("Invalid input format.");
       }
-    }
-    
-    if (matches = argv.match(/^(?:j(?:ava)?s(?:cript)?\s+)?(\S+)$/)) {
+    } else if (matches = argv.match(/^project/i)) { // argv == 'edit'
+      if (matches) {
+        document.getElementById('app_project-container').style.display='block';
+        $('#responseConsole').val('Barry, here you can begin editing your project.' + "\n" + '<?= $shell_prompt; ?>' + argv + "\n" + $('#responseConsole').val());
+        if (isFixed) isFixed = !isFixed;
+        show_console();
+        return false;
+      } else {
+        console.log("Invalid input format.");
+      }
+    } else if (matches = argv.match(/^(?:j(?:ava)?s(?:cript)?\s+)?(\S+)$/)) {
 // Save the original console.log function
 var originalLog = console.log;
 
@@ -578,14 +587,13 @@ console.log = function() {
   $('#responseConsole').val(logMessages[1] + "\n" + js_prompt + codeString + "\n" + $('#responseConsole').val());
 
   // Call the original console.log function
-  originalLog.apply(console, codeString);      
+  originalLog.apply(console, logMessages);      
       return false;
 };
-      console = originalLog;
+      console.log();
+      console.log = originalLog;
       return false;
-    }
-    
-    if (matches = argv.match(/^edit\s+(\S+)$/)) { // argv == 'edit'
+    } else if (matches = argv.match(/^edit\s+(\S+)$/)) { // argv == 'edit'
       if (matches) {
         const pathname = matches[1]; // "/path/to/file.txt"
         console.log("Editing: ", pathname);
@@ -601,9 +609,9 @@ console.log = function() {
       } else {
         console.log("Invalid input format.");
       }
-    }
-    
-    if (argv == 'clear') $('#responseConsole').val('clear');
+      return false;
+    } else if (argv == 'clear') $('#responseConsole').val('clear');
+    else if (argv == 'cls') $('#responseConsole').val('<?= $shell_prompt; ?>');
     else if (argv == 'reset') $('#responseConsole').val('>_');
     else
     $.post("<?= basename(APP_SELF); /*APP_URL_BASE; $projectRoot*/?>",

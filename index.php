@@ -345,6 +345,9 @@ while ($path = array_shift($paths)) {
       ?>
     <script src="<?= 'resources/js/tailwindcss-3.3.5.js' ?? $url ?>"></script>
     <style type="text/tailwindcss">
+      * {
+        border: 1px dashed #FF0000;
+      }
       body {
         background-color: #E4F2E0;
       }
@@ -664,7 +667,7 @@ while ($path = array_shift($paths)) {
           </div>
           <div id="app_tools-container" style="position: absolute; display: none; width: 800px; margin: 0 auto; height: 500px; background-color: rgba(255, 255, 255, 0.9); overflow-x: scroll;">
             <div style="position: absolute; margin: 80px 45px; text-align: center;" class="text-sm"><a href="#!" onclick="document.getElementById('app_tools-container').style.display='none'; return false;"><img style="text-align: center;" height="25" width="25" src="<?= APP_BASE['resources'] . 'images/close-red.gif' ?>" /></a><br /></div>
-            <div style="position: absolute; margin: 100px 75px; text-align: center;" class="text-sm"><a href="#!" onclick="show_console(); return false;"><img style="text-align: center;" src="<?= APP_BASE['resources'] . 'images/cli.png' ?>" /></a><br /><a href="?app=ace_editor&path=&file=app.console.php" style="text-align: center;">(CLI)</a></div>
+            <div style="position: absolute; margin: 100px 75px; text-align: center;" class="text-sm"><a href="#!" onclick="isFixed = true; show_console(); return false;"><img style="text-align: center;" src="<?= APP_BASE['resources'] . 'images/cli.png' ?>" /></a><br /><a href="?app=ace_editor&path=&file=app.console.php" style="text-align: center;">(CLI)</a></div>
             <!-- 
               <a href="javascript:window.open('print.html', 'newwindow', 'width=300,height=250')">Print</a>
               onclick="window.open('app.whiteboard.php', 'newwindow', 'width=300,height=250'); return false;"
