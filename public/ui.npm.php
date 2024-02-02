@@ -26,7 +26,7 @@ ob_end_clean();
 ob_start(); ?>
   <div id="app_npm-container" class="absolute <?= (APP_SELF == __FILE__ || (isset($_GET['app']) && $_GET['app'] == 'npm') && !isset($_GET['path']) ? 'selected' : '') ?>" style="z-index: 1; width: 424px; background-color: rgba(255,255,255,0.8); padding: 10px;">
     <div style="position: relative; margin: 0 auto; width: 404px; height: 306px; border: 3px dashed #DD0000; background-color: #FBF7F1;">
-      <div class="absolute ui-widget-header" style="position: absolute; display: inline-block; width: 100%; margin: -25px 0 10px 0; border-bottom: 1px solid #000; z-index: 3;">
+      <div class="absolute ui-widget-header" style="position: absolute; display: inline-block; width: 100%; height: 50px; margin: -5px 0 10px 0; border-bottom: 1px solid #000; z-index: 3;">
         <label class="npm-home" style="cursor: pointer;">
           <div class="absolute" style="position: absolute; top: 0px; left: 3px;">
             <img src="resources/images/npm_icon.png" width="32" height="32" />

@@ -346,7 +346,11 @@ while ($path = array_shift($paths)) {
     <script src="<?= 'resources/js/tailwindcss-3.3.5.js' ?? $url ?>"></script>
     <style type="text/tailwindcss">
       * {
+<?php if (isset($_GET['debug'])) { ?>
         border: 1px dashed #FF0000;
+<?php } else { ?> 
+        /* border: 1px dashed #FF0000; */
+<?php } ?>
       }
       body {
         background-color: #E4F2E0;
@@ -443,6 +447,7 @@ while ($path = array_shift($paths)) {
       -webkit-transition: 0.4s;
       transition: 0.4s;
       }
+      
       input:checked + .label .slider {
       background-color: #2196f3;
       }
@@ -530,7 +535,7 @@ while ($path = array_shift($paths)) {
             <div class="switch">
               <span class="slider round"></span>
             </div>
-            <div class="right"> Debug </div>
+            <div class="right"> <a href="?debug">Debug</a> </div>
           </label>
           <!-- /form -->
         </div>
@@ -587,7 +592,7 @@ while ($path = array_shift($paths)) {
                     if (is_dir(APP_PATH . '../../projects/' . $link))
                       echo '              <option value="' . $link . '" ' . (current($_GET) == $link ? 'selected' : '') . '>' . $link . '</option>' . "\n";
                   } ?>
-              </select>/
+              </select> /
             </span>
             </form>
 
@@ -624,6 +629,8 @@ while ($path = array_shift($paths)) {
                 <option <?= (isset($_GET['domain']) && $_GET['domain'] == basename($dir) ? 'selected' : '') ?>><?= basename($dir); ?></option>
                 <?php } ?>
               </select>/
+
+
             </form>
               <?php } ?>
 
@@ -1734,6 +1741,7 @@ while ($path = array_shift($paths)) {
       }
       
       makeDraggable('app_composer-container');
+      makeDraggable('app_project-container');
       makeDraggable('app_git-container');
       makeDraggable('app_npm-container');
       makeDraggable('app_php-container');
@@ -1841,7 +1849,31 @@ while ($path = array_shift($paths)) {
       window.addEventListener('keydown', function() {
             // Check the condition before calling the show_console function
             //if (myDiv.style.position !== 'fixed')
+
+        if (event.key === '`' || event.keyCode === 192) // c||67
+            if (document.activeElement !== requestInput) {
+                // Replace the following line with your desired function
+                // If it's currently absolute, change to fixed
+                if (!isFixed)
+                    requestInput.focus();
+                event.preventDefault();
+                if (isFixed) isFixed = !isFixed;
+                isFixed = false;
+                show_console();
+                return false;
+            } else {
+                document.activeElement = null;
+                return false;
+            }
+
+
             console.log('windowEvent');
+            
+            var textField = document.getElementById('requestInput');
+
+            // Check if the text field is focused
+            var isFocused = textField === document.activeElement;
+            
             if (  document.getElementById('app_console-container').style.position != 'absolute') {
 
               if (!isFixed) {
@@ -1850,14 +1882,16 @@ while ($path = array_shift($paths)) {
                 //show_console();
               }
             } else {
-            if (isFixed) isFixed = !isFixed;
-            isFixed = true;
-                show_console();
+
+
+              if (isFixed) isFixed = !isFixed;
+              isFixed = true;
+            
+              if (isFocused)  show_console();
             }
         });
-      
-      
-      
+
+
       <?= (isset($appComposer) ? $appComposer['script'] : null); ?>
       
       <?= (isset($appGit) ? $appGit['script'] : null); ?>
