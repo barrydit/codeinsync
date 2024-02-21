@@ -40,7 +40,7 @@ $errors = []; // (object)
 
 //var_dump(get_defined_constants(true)['user']);
 
-!defined('APP_ROOT') and define('APP_ROOT', dirname(APP_SELF) . DIRECTORY_SEPARATOR);  // Directory of this script
+!defined('APP_ROOT') and define('APP_ROOT', dirname(APP_SELF, (basename(getcwd()) != 'public' ?: 2)) . DIRECTORY_SEPARATOR);  // Directory of this script
   
 !defined('APP_PATH') and define('APP_PATH', implode(DIRECTORY_SEPARATOR, array_intersect_assoc(
   explode(DIRECTORY_SEPARATOR, __DIR__),
@@ -265,7 +265,7 @@ header("Pragma: no-cache");
 
 if (is_file(APP_ROOT . 'project.php') && isset($_GET['project']) && $_GET['project'] == 'show') {
   Shutdown::setEnabled(false)->setShutdownMessage(function() {
-      return eval('?>' . file_get_contents('project.php')); // -wow
+      return eval('?>' . file_get_contents(APP_ROOT . 'project.php')); // -wow
     })->shutdown(); // die();
 } elseif (!is_file(APP_ROOT . 'project.php')) {
 file_put_contents(APP_ROOT . 'project.php', '<?php ' . <<<END
@@ -313,7 +313,7 @@ END
 }
 
 
-if (basename($dir = APP_PATH) != 'config') {
+if (basename($dir = getcwd()) != 'config') {
   if (in_array(basename($dir), ['public', 'public_html']))
     chdir('../');
 

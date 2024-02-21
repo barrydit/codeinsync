@@ -1,5 +1,11 @@
 <?php
 
+if (__FILE__ == get_required_files()[0])
+  if ($path = (basename(getcwd()) == 'public')
+    ? (is_file('../config.php') ? '../config.php' : (is_file('../config/config.php') ? '../config/config.php' : null))
+    : (is_file('config.php') ? 'config.php' : (is_file('config/config.php') ? 'config/config.php' : null))) require_once($path); 
+else die(var_dump($path . ' path was not found. file=config.php'));
+
 ob_start(); ?>
 
 #app_npm-container { position: absolute; display: none; top: 60px; margin: 0 auto; left: 50%; right: 50%;  }
@@ -20,19 +26,19 @@ ob_start(); ?>
 img { display: inline; }
 
 
-<?php $appNpm['style'] = ob_get_contents();
+<?php $app['style'] = ob_get_contents();
 ob_end_clean(); 
 
 ob_start(); ?>
-  <div id="app_npm-container" class="absolute <?= (APP_SELF == __FILE__ || (isset($_GET['app']) && $_GET['app'] == 'npm') && !isset($_GET['path']) ? 'selected' : '') ?>" style="z-index: 1; width: 424px; background-color: rgba(255,255,255,0.8); padding: 10px;">
+  <div id="app_npm-container" class="absolute <?= (__FILE__ ==  get_required_files()[0] || (isset($_GET['app']) && $_GET['app'] == 'npm') && !isset($_GET['path']) ? 'selected' : '') ?>" style="z-index: 1; width: 424px; background-color: rgba(255,255,255,0.8); padding: 10px;">
     <div style="position: relative; margin: 0 auto; width: 404px; height: 306px; border: 3px dashed #DD0000; background-color: #FBF7F1;">
-      <div class="absolute ui-widget-header" style="position: absolute; display: inline-block; width: 100%; height: 50px; margin: -5px 0 10px 0; border-bottom: 1px solid #000; z-index: 3;">
+      <div class="absolute ui-widget-header" style="position: absolute; display: inline-block; width: 100%; height: 25px; margin: -50px 0 25px 0; padding: 24px 0; border-bottom: 1px solid #000; z-index: 3;">
         <label class="npm-home" style="cursor: pointer;">
-          <div class="absolute" style="position: absolute; top: 0px; left: 3px;">
+          <div class="" style="position: relative; display: inline-block; top: 0; left: 0; margin-top: -5px;">
             <img src="resources/images/npm_icon.png" width="32" height="32" />
           </div>
         </label>
-        <div style="display: inline; padding-left: 40px;">
+        <div style="display: inline;">
           <span style="background-color: white; color: #DD0000;">Node.js <?= /* (version_compare(NPM_LATEST, NPM_VERSION, '>') != 0 ? 'v'.substr(NPM_LATEST, 0, similar_text(NPM_LATEST, NPM_VERSION)) . '<span class="update" style="color: green; cursor: pointer;">' . substr(NPM_LATEST, similar_text(NPM_LATEST, NPM_VERSION)) . '</span>' : 'v'.NPM_VERSION ); */ NULL; ?></span> <span style="background-color: #0078D7; color: white;"><code class="text-sm" style="background-color: white; color: #0078D7;">$ <?= (defined('NPM_EXEC') ? NPM_EXEC : null); ?></code></span>
         </div>
         
@@ -235,15 +241,19 @@ Dev. Dependencies<br />
       </div>
     </div>
   </div>
-<?php $appNpm['body'] = ob_get_contents();
+<?php $app['body'] = ob_get_contents();
 ob_end_clean();
 
 ob_start(); ?>
 
 
-<?php $appNpm['script'] = ob_get_contents();
+<?php $app['script'] = ob_get_contents();
 ob_end_clean();
 
+
+
+//check if file is included or accessed directly
+if (__FILE__ == get_required_files()[0] || in_array(__FILE__, get_required_files()) && isset($_GET['app']) && $_GET['app'] == 'npm' && APP_DEBUG) {
 header("Cache-Control: no-store, no-cache, must-revalidate, max-age=0");
 header("Pragma: no-cache"); 
 ob_start(); ?>
@@ -280,11 +290,11 @@ if (is_file($path . 'tailwindcss-3.3.5.js')) {
   <script src="<?= 'resources/js/tailwindcss-3.3.5.js' ?? $url ?>"></script>
 
 <style type="text/tailwindcss">
-<?= $appNpm['style']; ?>
+<?= $app['style']; ?>
 </style>
 </head>
 <body>
-<?= $appNpm['body']; ?>
+<?= $app['body']; ?>
 
   <script src="<?= (check_http_200('https://code.jquery.com/jquery-3.7.1.min.js') ? 'https://code.jquery.com/jquery-3.7.1.min.js' : $path . 'jquery-3.7.1.min.js') ?>"></script>
   <!-- You need to include jQueryUI for the extended easing options. -->
@@ -293,13 +303,53 @@ if (is_file($path . 'tailwindcss-3.3.5.js')) {
   <script src="//code.jquery.com/ui/1.12.1/jquery-ui.js"></script> <!-- Uncaught ReferenceError: jQuery is not defined -->
 
 <script>
-<?= $appNpm['script']; ?>
+
+      function makeDraggable(windowId) {
+        const windowElement = document.getElementById(windowId);
+        const headerElement = windowElement.querySelector('.ui-widget-header');
+      
+        let isDragging = false;
+        let offsetX, offsetY;
+      
+        headerElement.addEventListener('mousedown', function(event) {
+          // Bring the clicked window to the front
+          document.body.appendChild(windowElement);
+          offsetX = event.clientX - windowElement.getBoundingClientRect().left;
+          offsetY = event.clientY - windowElement.getBoundingClientRect().top;
+          isDragging = true;
+        });
+
+        document.addEventListener('mousemove', function(event) {
+          if (isDragging) {
+            const left = event.clientX - offsetX;
+            const top = event.clientY - offsetY;
+            //windowElement.style.left = `${left}px`;
+            //windowElement.style.top = `${top}px`;
+
+            // Boundary restrictions
+            const maxX = window.innerWidth - windowElement.clientWidth - 100;
+            const maxY = window.innerHeight - windowElement.clientHeight;
+
+            windowElement.style.left = `${Math.max(-200, Math.min(left, maxX))}px`;
+            windowElement.style.top = `${Math.max(0, Math.min(top, maxY))}px`;
+            
+            console.log('Left: ' + windowElement.style.left + '    Top: ' + windowElement.style.top);
+          }
+        });
+
+        document.addEventListener('mouseup', function() {
+          isDragging = false;
+        });
+      }
+
+      makeDraggable('app_npm-container');
+
+<?= $app['script']; ?>
 </script>
 </body>
 </html>
-<?php $appNpm['html'] = ob_get_contents(); 
-ob_end_clean();
-
-//check if file is included or accessed directly
-if (__FILE__ == get_required_files()[0] || in_array(__FILE__, get_required_files()) && isset($_GET['app']) && $_GET['app'] == 'npm' && APP_DEBUG)
-  die($appNpm['html']);
+<?php return ob_get_contents(); 
+  ob_end_clean(); 
+} else {
+  return $app;
+}

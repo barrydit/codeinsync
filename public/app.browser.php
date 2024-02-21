@@ -134,7 +134,7 @@ ob_end_clean();
 ob_start(); ?>
 
 <!-- <div class="container" style="border: 1px solid #000;"> -->
-  <div id="app_browser-container" class="<?= (APP_SELF == __FILE__ || (isset($_GET['app']) && $_GET['app'] == 'browser') ? 'selected' : '') ?>" style="border: 1px solid #000;">
+  <div id="app_browser-container" class="<?= (__FILE__ == get_required_files()[0] || (isset($_GET['app']) && $_GET['app'] == 'browser') ? 'selected' : '') ?>" style="border: 1px solid #000;">
     <div class="header ui-widget-header">
       <div style="display: inline-block;">Browser ()</div>
       <div style="display: inline; float: right; text-align: center;">[<a style="cursor: pointer; font-size: 13px;" onclick="document.getElementById('app_browser-container').style.display='none';">X</a>]</div> 
@@ -142,7 +142,7 @@ ob_start(); ?>
 
       <div style="display: inline-block; width: auto; padding-left: 10px;">
         <div style="position: absolute; background-color: white; left: 0; right: 0; width: auto;">WWW: <input type="text" name="url" onselect="go_to_url();" /></div>
-        <iframe src="<?= (is_dir(APP_PATH . APP_BASE['public']) ? APP_BASE['public'] : '') . basename(__FILE__) ?>" style="height: 550px; width: 775px;"></iframe>
+        <iframe src="<?= (is_dir($path = APP_PATH . APP_BASE['public']) && getcwd() == realpath($path) ? '' : APP_BASE['public']) . basename(__FILE__) ?>" style="height: 550px; width: 775px;"></iframe>
       </div>
 
       <!-- <pre id="ace-editor" class="ace_editor"></pre> -->
@@ -225,7 +225,7 @@ $dom->appendChild($elm);
 //echo 
 
 //check if file is included or accessed directly
-if (__FILE__ == get_required_files()[0] || in_array(__FILE__, get_required_files()) && isset($_GET['app']) && $_GET['app'] == 'php' && APP_DEBUG)
+if (__FILE__ == get_required_files()[0] || in_array(__FILE__, get_required_files()) && isset($_GET['app']) && $_GET['app'] == 'browser' && APP_DEBUG)
   Shutdown::setEnabled(false)->setShutdownMessage(function() { // use($dom)
       return '<!DOCTYPE html>'; // $dom->saveHTML() ?? file_get_contents("https://github.com/barrydit/composer_app"); // $dom->saveHTML(); /* eval('? >' . $project_code); // -wow */
     })->shutdown(); // die();

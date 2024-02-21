@@ -5,7 +5,6 @@ if (__FILE__ == get_required_files()[0])
     : (is_file('config.php') ? 'config.php' : (is_file('config/config.php') ? 'config/config.php' : null))) require_once($path);
 else die(var_dump($path . ' path was not found. file=config.php'));
 
-
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
   if (isset($_GET['app']) && $_GET['app'] == 'project')
     if (isset($_POST['path']) && isset($_GET['file']) && $path = realpath($_POST['path'] . $_GET['file'])) {
@@ -16,7 +15,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 
 ob_start(); ?>
 
-#app_project-container { position: absolute; display: none; top: 60px; margin: 0 auto; left: 50%; right: 50%;  }
+#app_project-container { position: absolute; height: auto; display: none; top: 50%; left: 50%; transform: translate(-50%, -50%); }
 #app_project-container.selected { display: block; z-index: 1; 
   /* Add your desired styling for the selected container */
   /*
@@ -30,9 +29,7 @@ ob_start(); ?>
   */
 }
 
-
 img { display: inline; }
-
 
 input {
   color: black;
@@ -206,7 +203,7 @@ document.getElementById('app_project-saveForm').addEventListener('submit', funct
   console.log(globalEditor.getSession().getValue());
 
       $.ajax({
-        url: 'public/app.project.php?app=project&file=../project.php',
+        url: '<?= basename(__FILE__); ?>?app=project&file=project.php',
         type: 'POST',
         data: { path: '', contents: globalEditor.getSession().getValue() },
         //dataType: 'json',
@@ -228,8 +225,8 @@ document.getElementById('app_project-saveForm').addEventListener('submit', funct
 <?php $appProject['script'] = ob_get_contents();
 ob_end_clean();
 
-header("Cache-Control: no-store, no-cache, must-revalidate, max-age=0");
-header("Pragma: no-cache"); 
+//header("Cache-Control: no-store, no-cache, must-revalidate, max-age=0");
+//header("Pragma: no-cache"); 
 ob_start(); ?>
 <!DOCTYPE html>
 <html>

@@ -177,6 +177,7 @@ height: 45px;
 background-color: #FFA6A6; /* rgba(255, 0, 0, 0.35) */
 color: white;
 text-align: center;
+z-index: 1;
 }
 
 #responseConsole {
@@ -193,6 +194,49 @@ input {
   color: black;
 }
 
+    .vert-slider-container {
+      position: relative;
+      float: right;
+      width: 10px; /* Adjust the width as needed */
+      height: 100px; /* Adjust the height as needed */
+      /* margin: 10px auto; Adjust margin to center vertically */
+      background-color: #f0f0f0; /* Background color for the slider */
+    }
+
+    .vert-slider {
+      position: absolute;
+      top: 45px;
+      left: -70px;
+      width: 100px; /* Adjust the width of the slider track */
+      height: 10px;
+      background: #4CAF50; /* Slider track color */
+      /*transform: translateX(-50%);*/
+      transform: rotate(90deg); /* Rotate the slider vertically */
+      cursor: pointer;
+    }
+
+    .vert-slider::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      appearance: none;
+      width: 20px; /* Adjust the thumb width */
+      height: 20px; /* Adjust the thumb height */
+      background: #fff; /* Thumb color */
+      border: 2px solid #4CAF50; /* Thumb border color */
+      border-radius: 50%; /* Rounded thumb */
+      cursor: pointer;
+      margin-top: -10px; /* Adjust thumb position */
+      margin-left: -10px; /* Adjust thumb position */
+    }
+
+    .vert-slider::-moz-range-thumb {
+      width: 20px; /* Adjust the thumb width */
+      height: 20px; /* Adjust the thumb height */
+      background: #fff; /* Thumb color */
+      border: 2px solid #4CAF50; /* Thumb border color */
+      border-radius: 50%; /* Rounded thumb */
+      cursor: pointer;
+    }
+
 <?php $appConsole['style'] = ob_get_contents();
 ob_end_clean();
 
@@ -205,13 +249,28 @@ ob_start(); ?>
 
 <!-- <div class="container" style="border: 1px solid #000;"> -->
 
-<div id="app_console-container" class="">
-    <div style="text-align: left; position: relative;">
-    
-        <div style="display: inline-block; margin: 5px 0px 0px 10px; float: left;">
-            <button id="requestSubmit" type="submit">Run</button>&nbsp;&nbsp;
+<div id="app_console-container" class="" style="border: 1px dashed #000; ">
+    <div style="position: absolute; top: -160px; background-color: rgba(255, 255, 255, 0.6); border: 1px dashed #000; height: 160px; width: 100%; padding: 20px 10px; color: #000; text-align: left; z-index: -1;" class="text-sm">
+      <div style="display: inline; float: left; background-color: #FFF; width: 50%; border: 1px dashed #000; ">
+        <input type="checkbox" checked /> Interactive<br />
+        <input type="checkbox" checked /> font-family: 'Courier New', Courier, monospace;
+      </div>
+      <div style="display: inline; float: right; text-align: right; width: 50%; border: 1px dashed #000; ">
+      <div style="display: inline; float: left; width: 85%; text-align: right;">Text Zoom:</div>
+      <div class="vert-slider-container" style="display: inline; float: right;">
+        <input type="range" min="-2" max="2" value="0" step="1" class="vert-slider" id="mySlider">
+      </div>
+      </div>
+    </div>
 
-            <input list="commandHistory" id="requestInput" type="text" size="54" name="requestInput" autocomplete="off" spellcheck="off" placeholder="php -r &quot;echo 'hello world';&quot;" value="">
+    <div style="position: absolute; top: -24px; background-color: #FFA6A6; border: 1px dashed #000; border-right: none; z-index: -1;"><button style="padding: 0 4px 4px 4px; font-weight: bold;" class="text-xs">[Settings...]</button></div>
+        <div style="position: absolute; top: -24px; left: 73px; background-color: #FFA6A6; border: 1px dashed #000; border-left: none; z-index: -1;"> | <button style="border: 1px dashed #000; padding: 0 4px 2px 4px; border: 1px dashed #000; font-weight: bold; color: black;" class="text-xs">SQL Query</button> | <button style="border: 1px dashed #000; padding: 0 4px 2px 4px; font-weight: bold;" class="text-xs">PHP</button> | <button style="border: 1px dashed #000; padding: 0 4px 2px 4px; font-weight: bold;" class="text-xs">Perl</button> | <button style="border: 1px dashed #000; padding: 0 4px 2px 4px; font-weight: bold;" class="text-xs">Python</button> | <button style="border: 1px dashed #000; padding: 0 4px 2px 4px; font-weight: bold;" class="text-xs">JavaScript</button> | <button style="border: 1px dashed #000; padding: 0 4px 2px 4px; font-weight: bold;" class="text-xs">CSS</button> | <button style="border: 1px dashed #000; padding: 0 4px 2px 4px; font-weight: bold;" class="text-xs">HTML</button> | </div>
+    <div style="text-align: left; position: relative;">
+
+        <div style="display: inline-block; margin: 5px 0px 0px 10px; float: left;">
+            <button id="requestSubmit" type="submit" style="border: 1px dashed #FFF; padding: 2px 4px;">Run</button>&nbsp;
+
+            <input list="commandHistory" id="requestInput" class="text-sm" style="font-family: 'Courier New', Courier, monospace;" type="text" size="54" name="requestInput" autocomplete="off" spellcheck="off" placeholder="php [-rn] &quot;echo 'hello world';&quot;" value="">
             <datalist id="commandHistory">
                 <option value="Edge"></option>
             </datalist>
@@ -219,14 +278,14 @@ ob_start(); ?>
         </div>
         <div style="display: inline-block;">
         
-        <div style="position: relative; display: inline-block; margin: 5px 10px 0px 0px; width: 180px; float: right;">
+        <div style="position: relative; display: inline-block; margin: 5px 10px 0px 0px; width: 200px; float: right;">
             <div style="float: right;">
-                <button id="consoleAnykeyBind" class="text-xs" type="submit">Bind Any[key] </button>
+                &nbsp;<button id="consoleAnykeyBind" class="text-xs" type="submit" style="border: 1px dashed #FFF; padding: 2px 4px;">Bind Any[key] </button>
                 <input id="app_ace_editor-auto_bind_anykey" type="checkbox" name="auto_bind_anykey" checked="">
             </div>
             <div style="float: left;">
-                <button id="consoleCls" class="text-xs" type="submit">Clear (auto)</button>
-                <input id="app_console-auto_clear" type="checkbox" name="auto_clear" <?= ($auto_clear ? 'checked="" ' : '') ?> />
+                <button id="consoleCls" class="text-xs" type="submit" style="border: 1px dashed #FFF; padding: 2px 4px;">Clear (auto)</button>
+                <input id="app_console-auto_clear" type="checkbox" name="auto_clear" <?= ($auto_clear ? 'checked="" ' : '') ?> />&nbsp;
             </div>
         </div>
         </div>
@@ -238,7 +297,9 @@ ob_start(); ?>
 
 if (!empty($errors))
   foreach($errors as $key => $error) {
+      if (!is_array($error))
       echo /*$key . '=>' . */$error . ($key != end($errors) ? '' : "\n");
+      //else dd($error);
   }
 
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
@@ -264,6 +325,40 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 ob_end_clean();
 
 ob_start(); ?>
+
+var slider = document.getElementById("mySlider");
+
+slider.addEventListener("input", function() {
+
+var respConsole = document.getElementById("responseConsole");
+
+switch (this.value) {
+  case "-2":
+    respConsole.style.fontSize = "x-large"; 
+    console.log("x-large");
+    break;
+  case "-1":
+    respConsole.style.fontSize = "large"; 
+    console.log("large");
+    break;
+  case "0":
+    respConsole.style.fontSize = "medium"; 
+    console.log("medium");
+    break;
+  case "1":
+    respConsole.style.fontSize = "small"; 
+    console.log("small");
+    break;
+  case "2":
+    respConsole.style.fontSize = "x-small"; 
+    console.log("x-small");
+    break;
+  default:
+    console.log(this.value);
+}
+
+    console.log(this.value); // Output the value to console (you can replace this with any other action)
+});
 
 const consoleContainer = document.getElementById('app_console-container');
 //const reqInp = document.getElementById('requestInput');

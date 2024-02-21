@@ -87,7 +87,7 @@ $repo->push('origin', 'master');
 /*
 <?php ob_start(); ?>
 <HTML ...>
-<?php $appGit['css'] = ob_get_contents();
+<?php $app['css'] = ob_get_contents();
 ob_end_clean(); ?>
 */ 
 
@@ -144,30 +144,30 @@ img { display: inline; }
 .show { display: block; }
 
 
-<?php $appGit['style'] = ob_get_contents();
+<?php $app['style'] = ob_get_contents();
 ob_end_clean(); 
 
 ob_start();
 !defined('GIT_VERSION') and define('GIT_VERSION', '1.0.0');
 !defined('GIT_LATEST') and define('GIT_LATEST', GIT_VERSION);
 ?>
-  <div id="app_git-container" class="absolute <?= (APP_SELF == __FILE__ || isset($_GET['app']) && $_GET['app'] == 'git' ? 'selected' : (version_compare(GIT_LATEST, GIT_VERSION, '>') != 0 ? (isset($_GET['app']) && $_GET['app'] != 'git' ? '' : '') :  '')) ?>" style="z-index: 1; width: 424px; background-color: rgba(255,255,255,0.8); padding: 10px;">
+  <div id="app_git-container" class="absolute <?= (__FILE__ ==  get_required_files()[0] || isset($_GET['app']) && $_GET['app'] == 'git' ? 'selected' : (version_compare(GIT_LATEST, GIT_VERSION, '>') != 0 ? (isset($_GET['app']) && $_GET['app'] != 'git' ? '' : '') :  '')) ?>" style="z-index: 1; width: 424px; background-color: rgba(255,255,255,0.8); padding: 10px;">
 <div style="position: relative; margin: 0 auto; width: 404px; height: 306px; border: 3px dashed #F05033; background-color: #FBF7F1;">
 
-      <div class="absolute ui-widget-header" style="position: absolute; display: inline-block; width: 100%; margin: -25px 0 10px 0; border-bottom: 1px solid #000; z-index: 3;">
+      <div class="absolute ui-widget-header" style="position: absolute; display: inline-block; width: 100%; height: 25px; margin: -50px 0 25px 0; padding: 24px 0; border-bottom: 1px solid #000; z-index: 3;">
         <label class="git-home" style="cursor: pointer;">
-          <div class="absolute" style="position: absolute; top: 0px; left: 3px;">
+          <div class="" style="position: relative; display: inline-block; top: 0; left: 0; margin-top: -5px;">
             <img src="resources/images/git_icon.fw.png" width="32" height="32" />
           </div>
         </label>
-        <div style="display: inline; padding-left: 40px;">
-          <span style="background-color: white; color: #F05033;">Git <?= (version_compare(GIT_LATEST, GIT_VERSION, '>') != 0 ? 'v'.substr(GIT_LATEST, 0, similar_text(GIT_LATEST, GIT_VERSION)) . '<span class="update" style="color: green; cursor: pointer;">' . substr(GIT_LATEST, similar_text(GIT_LATEST, GIT_VERSION)) . '</span>' : 'v'.GIT_VERSION ); ?></span> <span style="background-color: #0078D7; color: white;"><code class="text-sm" style="background-color: white; color: #0078D7;">$ <?= (defined('GIT_EXEC') ? GIT_EXEC : null); ?></code></span>
+        <div style="display: inline;">
+          <span style="background-color: white; color: #F05033;">Git <?= (version_compare(GIT_LATEST, GIT_VERSION, '>') != 0 ? 'v'.substr(GIT_LATEST, 0, similar_text(GIT_LATEST, GIT_VERSION)) . '<span class="update" style="color: green; cursor: pointer;">' . substr(GIT_LATEST, similar_text(GIT_LATEST, GIT_VERSION)) . '</span>' : 'v'.GIT_VERSION ) . ' '; ?></span><span style="background-color: #0078D7; color: white;"><code class="text-sm" style="background-color: white; color: #0078D7;">$ <?= (defined('GIT_EXEC') ? GIT_EXEC : null); ?></code></span>
         </div>
         
         <div style="display: inline; float: right; text-align: center; color: blue;"><code style="background-color: white; color: #0078D7;"><a style="cursor: pointer; font-size: 13px;" onclick="document.getElementById('app_git-container').style.display='none';">[X]</a></code></div> 
       </div>
       
-      <div class=" ui-widget-content" style="position: relative; display: block; width: 398px; background-color: rgba(251,247,241); z-index: 2;">
+      <div class="ui-widget-content" style="position: relative; display: block; width: 398px; background-color: rgba(251,247,241); z-index: 2;">
         <div style="display: inline-block; text-align: left; width: 125px;">
           <div class="git-menu text-sm" style="cursor: pointer; font-weight: bold; padding-left: 25px; border: 1px solid #000;">Main Menu</div>
           <div class="text-xs" style="display: inline-block; border: 1px solid #000;">
@@ -386,7 +386,7 @@ ob_start();
       </div>
     </div>
   </div>
-<?php $appGit['body'] = ob_get_contents();
+<?php $app['body'] = ob_get_contents();
 ob_end_clean();
 
 ob_start(); ?>
@@ -683,8 +683,15 @@ $(document).ready(function() {
   });
 */
 });
-<?php $appGit['script'] = ob_get_contents();
+<?php $app['script'] = ob_get_contents();
 ob_end_clean();
+
+
+//check if file is included or accessed directly
+if (__FILE__ == get_required_files()[0] || in_array(__FILE__, get_required_files()) && isset($_GET['app']) && $_GET['app'] == 'git' && APP_DEBUG) {
+
+header("Cache-Control: no-store, no-cache, must-revalidate, max-age=0");
+header("Pragma: no-cache"); 
 
 ob_start(); ?>
 <!DOCTYPE html>
@@ -694,7 +701,6 @@ ob_start(); ?>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
   <!-- link rel="stylesheet" href="//code.jquery.com/ui/1.12.1/themes/smoothness/jquery-ui.css" /-->
-
 
 <?php
 // (check_http_200('https://cdn.tailwindcss.com') ? 'https://cdn.tailwindcss.com' : APP_WWW . 'resources/js/tailwindcss-3.3.5.js')?
@@ -721,12 +727,11 @@ if (is_file($path . 'tailwindcss-3.3.5.js')) {
   <script src="<?= 'resources/js/tailwindcss-3.3.5.js' ?? $url ?>"></script>
 
 <style type="text/tailwindcss">
-<?= $appGit['style']; ?>
+<?= $app['style']; ?>
 </style>
 </head>
 <body>
-<?= $appGit['body']; ?>
-
+<?= $app['body']; ?>
 
   <script src="<?= (check_http_200('https://code.jquery.com/jquery-3.7.1.min.js') ? 'https://code.jquery.com/jquery-3.7.1.min.js' : $path . 'jquery-3.7.1.min.js') ?>"></script>
   <!-- You need to include jQueryUI for the extended easing options. -->
@@ -734,20 +739,18 @@ if (is_file($path . 'tailwindcss-3.3.5.js')) {
   <!-- script src="//code.jquery.com/jquery-1.12.4.js"></script -->
   <script src="//code.jquery.com/ui/1.12.1/jquery-ui.js"></script> <!-- Uncaught ReferenceError: jQuery is not defined -->
 
-
-
   <!-- https://cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.min.js -->
   <script src="//code.jquery.com/jquery-1.12.4.js"></script>
   <!-- script src="//code.jquery.com/ui/1.12.1/jquery-ui.js"></script -->
   <!-- <script src="resources/js/jquery/jquery.min.js"></script> -->
 <script>
-<?= $appGit['script']; ?>
+<?= $app['script']; ?>
 </script>
 </body>
 </html>
-<?php $appGit['html'] = ob_get_contents(); 
-ob_end_clean();
+<?php return ob_get_contents(); 
+  ob_end_clean();
+} else {
 
-//check if file is included or accessed directly
-if (__FILE__ == get_required_files()[0] || in_array(__FILE__, get_required_files()) && isset($_GET['app']) && $_GET['app'] == 'git' && APP_DEBUG)
-  die($appGit['html']);
+  return $app;
+}

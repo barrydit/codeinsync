@@ -86,6 +86,22 @@ padding: 10px;
 z-index: 1;
 }
 
+#app_php-container.selected {
+  display: block;
+  z-index: 1;
+  /* Add your desired styling for the selected container */
+  /*
+  // background-color: rgb(240, 224, 198); //  240, 224, 198, .75    #FBF7F1; // rgba(240, 224, 198, .25);
+  
+  bg-[#FBF7F1];
+  bg-opacity-75;
+
+  font-weight: bold;
+  #top { background-color: rgba(240, 224, 198, .75); }
+  */
+}
+
+
 input {
   color: black;
 }
@@ -100,13 +116,16 @@ input {
   //height: 100%;
 }
 
-<?php $appPHP['style'] = ob_get_contents();
+<?php $app['style'] = ob_get_contents();
 ob_end_clean();
 
-ob_start(); ?>
+ob_start(); 
+
+define('PHP_LATEST', 'PHP_VERSION');
+?>
 
 <!-- <div class="container" style="border: 1px solid #000;"> -->
-  <div id="app_php-container" style="border: 1px solid #000; width: 400px;">
+  <div id="app_php-container" class="absolute <?= (__FILE__ ==  get_required_files()[0] || isset($_GET['app']) && $_GET['app'] == 'php' ? 'selected' : (version_compare(PHP_LATEST, PHP_VERSION, '>') != 0 ? (isset($_GET['app']) && $_GET['app'] != 'php' ? '' : '') :  '')) ?>" style="border: 1px solid #000; width: 400px;">
     <div class="header ui-widget-header">
       <div style="display: inline-block;">PHP <?= 'v' . PHP_VERSION; ?> Configuration/Settings</div>
       <div style="display: inline; float: right; text-align: center;">[<a style="cursor: pointer; font-size: 13px;" onclick="document.getElementById('app_php-container').style.display='none';">X</a>]</div> 
@@ -137,7 +156,7 @@ ob_start(); ?>
 </div>
 
 
-<?php $appPHP['body'] = ob_get_contents();
+<?php $app['body'] = ob_get_contents();
 ob_end_clean();
 
 ob_start(); ?>
@@ -145,6 +164,7 @@ ob_start(); ?>
 <?php //if (isset($_GET['client']) && $_GET['client'] != '') { 
 //if (isset($_GET['domain']) && $_GET['domain'] != '') {
 ?>
+/*
 ace.require("ace/ext/language_tools");
 var editor = ace.edit("ace-editor");
 editor.setTheme("ace/theme/dracula");
@@ -159,14 +179,20 @@ editor.setOptions({
   enableLiveAutocompletion: true,
   enableSnippets: true
 });
-<?php //} }
-?>
+*/
+<?php //} } ?>
 
 $(document).ready(function() {});
-<?php $appPHP['script'] = ob_get_contents();
+<?php $app['script'] = ob_get_contents();
 ob_end_clean();
 
-ob_start(); ?>
+//check if file is included or accessed directly
+if (__FILE__ == get_required_files()[0] || in_array(__FILE__, get_required_files()) && isset($_GET['app']) && $_GET['app'] == 'php' && APP_DEBUG) {
+
+header("Cache-Control: no-store, no-cache, must-revalidate, max-age=0");
+header("Pragma: no-cache"); 
+
+  ob_start(); ?>
 <!DOCTYPE html>
 <html>
 <head>
@@ -195,16 +221,17 @@ if (is_file($path . 'tailwindcss-3.3.5.js')) {
   if (!empty($js = curl_exec($handle))) 
     file_put_contents($path . 'tailwindcss-3.3.5.js', $js) or $errors['JS-TAILWIND'] = $url . ' returned empty.';
 }
+unset($path);
 ?>
 
   <script src="<?= 'resources/js/tailwindcss-3.3.5.js' ?? $url ?>"></script>
 
 <style type="text/tailwindcss">
-<?= $appPHP['style']; ?>
+<?= $app['style']; ?>
 </style>
 </head>
 <body>
-<?= $appPHP['body']; ?>
+<?= $app['body']; ?>
 
   <script src="../../resources/js/ace/ace.js" type="text/javascript" charset="utf-8"></script>
 <!--  <script src="resources/js/ace/ext-language_tools.js" type="text/javascript" charset="utf-8"></script> -->
@@ -216,13 +243,12 @@ if (is_file($path . 'tailwindcss-3.3.5.js')) {
   <script src="//code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
   <!-- <script src="../resources/js/jquery/jquery.min.js"></script> -->
 <script>
-<?= /*$appPHP['script'];*/ NULL; ?>
+<?= /*$app['script'];*/ NULL; ?>
 </script>
 </body>
 </html>
-<?php $appPHP['html'] = ob_get_contents(); 
-ob_end_clean();
-
-//check if file is included or accessed directly
-if (__FILE__ == get_required_files()[0] || in_array(__FILE__, get_required_files()) && isset($_GET['app']) && $_GET['app'] == 'php' && APP_DEBUG)
-  die($appPHP['html']);
+<?php return ob_get_contents(); 
+  ob_end_clean();
+} else {
+  return $app;
+}

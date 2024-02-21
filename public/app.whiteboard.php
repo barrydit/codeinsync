@@ -107,7 +107,7 @@ ob_start(); ?>
     </div>
 
       <div style="display: inline-block; width: auto;">
-        <iframe src="<?= (is_dir(APP_PATH . APP_BASE['public']) ? APP_BASE['public'] : '') . basename(__FILE__) ?>" style="height: 460px; width: 800px;"></iframe>
+        <iframe src="<?= (is_dir($path = APP_PATH . APP_BASE['public']) && getcwd() == realpath($path) ? APP_BASE['public'] : '' ) . basename(__FILE__) ?>" style="height: 460px; width: 800px;"></iframe>
       </div>
 
       <!-- <pre id="ace-editor" class="ace_editor"></pre> -->

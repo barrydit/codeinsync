@@ -9,6 +9,8 @@ if (!realpath('vendor/autoload.php')) {
 }
 
 
+// dd(getcwd());
+
 /** Loading Time: 0.134s **/
 
   //dd(get_required_files(), true);
@@ -663,7 +665,6 @@ fclose($pipes[2]);
 
 /* Previous unlink('composer.lock') location */
 
-
   if (check_http_200()) {
 
     $vendors = $dirs_diff = [];
@@ -673,7 +674,7 @@ fclose($pipes[2]);
     foreach (COMPOSER_VENDORS as $vendor => $packages) {
       if ($vendor == basename('bin')) continue;
       if ($vendor == 'barrydit') continue;
-      if (in_array('vendor/' . $vendor, array_filter(glob('vendor/' . $vendor . ''), 'is_dir'))) continue;
+      if (in_array(APP_ROOT . 'vendor/' . $vendor, array_filter(glob(APP_ROOT . 'vendor/' . $vendor . ''), 'is_dir'))) continue;
       else $dirs_diff[] = basename($vendor);
 
       if (!isset($uniqueNames[$vendor])) {

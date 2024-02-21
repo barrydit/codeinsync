@@ -1124,7 +1124,7 @@ function stopInterval() {
       time = date.toLocaleTimeString('en-US', { hour: '2-digit', hour12: false,  minute: '2-digit', second: '2-digit'}); // .replace(/AM|PM/,'')
       console.log("File Recorded - Time: " + idleTime);
       $.ajax({
-        url: 'public/<?= basename(__FILE__) ?>',
+        url: '<?= (is_dir($path = APP_PATH . APP_BASE['public']) && getcwd() == realpath($path) ? '1.'.APP_BASE['public'] : '' ) . basename(__FILE__) . '' ?>',
         type: 'POST',
         data: idletimeobj, // { idletime: { time: time, idle: toTime(idleTime)['time'], note: "" } }
         dataType: 'json',
@@ -1178,7 +1178,22 @@ function stopInterval() {
           
             $("#ts-status-light").attr('src', 'resources/images/timesheet-light-G.gif');
 
-             snd.play();
+             try {
+    // Attempt to play the media element
+      snd.play();
+} catch (error) {
+    // Check if the error is a DOMException
+    if (error instanceof DOMException && error.name === 'NotAllowedError') {
+        // Handle the error (e.g., show a message to the user)
+        console.error('The play method is not allowed by the user agent or the platform.');
+    } else {
+        // If it's a different type of error, rethrow it
+        throw error;
+    }
+}
+             
+             
+             
              //snd.pause();
              
              $("#ts-status-light").attr('src', 'resources/images/timesheet-light-Y.gif');

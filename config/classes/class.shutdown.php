@@ -56,7 +56,7 @@ class Shutdown {
         return self::instance(); // $this; // Return $this to allow method chaining
     }
 
-    public function shutdown() {
+    public function shutdown($die = true) {
         if (!self::$enabled) {
             foreach ($this->functions as $fnc) {
                 $fnc($this->shutdownMessage);
@@ -67,8 +67,8 @@ class Shutdown {
         } else {
             $message = $this->shutdownMessage;
         }
-
-        exit($message);
+        if ($die == true)
+            exit($message);
     }
 
     public static function create() {

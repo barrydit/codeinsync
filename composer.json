@@ -9,7 +9,8 @@
         "aura/session": "^4.0",
         "laminas/laminas-session": "^2.5",
         "kevinoo/phpwhois": "dev-main",
-        "ipinfo/ipinfo" : "^2.2.0"
+        "ipinfo/ipinfo" : "^2.2.0",
+        "noximo/php-colored-ascii-linechart": "dev-master"
     },
     "require-dev": {
         "pds/skeleton": "^1.0"
