@@ -10,7 +10,8 @@
         "laminas/laminas-session": "^2.5",
         "kevinoo/phpwhois": "dev-main",
         "ipinfo/ipinfo" : "^2.2.0",
-        "noximo/php-colored-ascii-linechart": "dev-master"
+        "noximo/php-colored-ascii-linechart": "dev-master",
+        "vlucas/phpdotenv": "^5.6@dev"
     },
     "require-dev": {
         "pds/skeleton": "^1.0"

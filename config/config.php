@@ -24,6 +24,8 @@ if (count(get_included_files()) == ((version_compare(PHP_VERSION, '5.0.0', '>=')
   exit('Direct access is not allowed.');
 endif;
 
+define('PHP_EXEC', '/usr/bin/php');
+
 $errors = []; // (object)
 
   // file_get_contents($path)
@@ -40,12 +42,53 @@ $errors = []; // (object)
 
 //var_dump(get_defined_constants(true)['user']);
 
-!defined('APP_ROOT') and define('APP_ROOT', dirname(APP_SELF, (basename(getcwd()) != 'public' ?: 2)) . DIRECTORY_SEPARATOR);  // Directory of this script
-  
 !defined('APP_PATH') and define('APP_PATH', implode(DIRECTORY_SEPARATOR, array_intersect_assoc(
   explode(DIRECTORY_SEPARATOR, __DIR__),
   explode(DIRECTORY_SEPARATOR, dirname(APP_SELF))
 )) . DIRECTORY_SEPARATOR);
+
+
+if (!empty($_GET['client']) && !empty($_GET['domain'])) {
+  $path = /*'../../'.*/ 'clientele/' . $_GET['client'] . '/';
+  $dirs = array_filter(glob(dirname(__DIR__) . '/' . $path . '*'), 'is_dir');
+
+  if (count($dirs) == 1)
+  foreach($dirs as $dir) {
+    $dirs[0] = $dirs[array_key_first($dirs)];
+    if (preg_match(DOMAIN_EXP, strtolower(basename($dirs[0])))) {
+      $_GET['domain'] = basename($dirs[0]);
+      break;
+    } else unset($dirs[array_key_first($dirs)]);
+    continue;
+  }
+
+  $dirs = array_filter(glob(dirname(__DIR__) . '/' . $path . '*'), 'is_dir');
+
+  if (!empty($_GET['domain']))
+    foreach($dirs as $key => $dir) {
+      if (basename($dir) == $_GET['domain']) {
+        //$path .= 'davidraymant.ca/';
+        //if (is_dir($dirs[$key].'/public/'))
+        //  $path .= basename($dirs[$key]).'/public/';
+        $path .= basename($dirs[$key]) . DIRECTORY_SEPARATOR;
+        break;
+      }
+    }
+    
+  if (!empty($_GET['path']) && is_dir(APP_PATH . $path . $_GET['path'])) $path .= $_GET['path'];
+    //else 
+      //exit(header('Location: http://localhost/clientele/' . $_GET['client']));    
+    //$path = '?path=' . $path;
+} elseif (!empty($_GET['project'])) {
+  $path = 'projects' . DIRECTORY_SEPARATOR . $_GET['project'] . DIRECTORY_SEPARATOR;   
+  //$dirs = array_filter(glob(dirname(__DIR__) . '/projects/' . $_GET['project'] . '/*'), 'is_dir');
+
+  if (!empty($_GET['path']) && is_dir(APP_PATH . $path . $_GET['path'])) $path .= $_GET['path'];
+
+} else { $path = ''; } 
+
+!defined('APP_ROOT') and define('APP_ROOT', $path = (realpath(APP_PATH . $path) ? $path : null )); // dirname(APP_SELF, (basename(getcwd()) != 'public' ?: 2))
+// Directory of this script
 
 $additionalPaths = [__DIR__ . DIRECTORY_SEPARATOR . 'constants.php']; //require('constants.php'); 
 $paths = array_merge(array_filter(glob(__DIR__ . DIRECTORY_SEPARATOR . 'classes/*.php'), 'is_file'), $additionalPaths);
@@ -233,8 +276,6 @@ ob_start();
 
 
 
-
-
 if (APP_ENV == 'development') {
 
 
@@ -263,16 +304,19 @@ if (isset($_GET['app']) && $_GET['app'] == 'project') require_once('app.project.
 header("Cache-Control: no-store, no-cache, must-revalidate, max-age=0");
 header("Pragma: no-cache");
 
-if (is_file(APP_ROOT . 'project.php') && isset($_GET['project']) && $_GET['project'] == 'show') {
+if (is_file(APP_ROOT . 'projects/project.php') && isset($_GET['project']) && $_GET['project'] == 'show') {
   Shutdown::setEnabled(false)->setShutdownMessage(function() {
-      return eval('?>' . file_get_contents(APP_ROOT . 'project.php')); // -wow
+      return eval('?>' . file_get_contents(APP_PATH . APP_ROOT . 'projects/project.php')); // -wow
     })->shutdown(); // die();
-} elseif (!is_file(APP_ROOT . 'project.php')) {
-file_put_contents(APP_ROOT . 'project.php', '<?php ' . <<<END
-if (__FILE__ == get_required_files()[0])
-  if (\$path = (basename(getcwd()) == 'public')
-    ? '' : (is_file('config.php') ? 'config.php' : '')) require_once(\$path); 
+} elseif (!is_file(APP_ROOT . 'projects/project.php')) {
+file_put_contents(APP_ROOT . 'projects/project.php', '<?php ' . <<<END
+//if (__FILE__ != get_required_files()[0])
+\$require = function(\$path) { require_once(\$path); };
+if (\$path = (basename(getcwd()) == 'public')
+  ? (is_file('config.php') ? 'config.php' : '../config/config.php') : '') \$require(\$path);
 else die(var_dump(\$path . ' path was not found. file=config.php'));
+
+require_once(APP_PATH . 'vendor/autoload.php');
 
 ob_start();
 // Dump the variable
@@ -311,7 +355,6 @@ END
 );
 }
 }
-
 
 if (basename($dir = getcwd()) != 'config') {
   if (in_array(basename($dir), ['public', 'public_html']))
@@ -483,7 +526,7 @@ END
         //$pattern = '/^' . preg_quote($previousFilename, '/')  . /*_[a-zA-Z0-9-]*/'(_\.+)?\.php$/'; // preg_match($pattern, $currentFilename)
 
         if (!empty($previousFilename) && strpos($currentFilename, $previousFilename) !== false) {
-          continue;
+            continue;
         }
 
         require_once $includeFile;
@@ -498,6 +541,7 @@ END
 
     if (defined('APP_PROJECT')) require_once('public/install.php');
 }
+
 /*
 if ($path = realpath((basename(__DIR__) != 'config' ? NULL : __DIR__ . DIRECTORY_SEPARATOR ) . 'constants.php')) // is_file('config/constants.php')) 
   if (!in_array($path, get_required_files()))
@@ -633,6 +677,248 @@ if (is_array($errors) && !empty($errors)) { ?>
   die();
 } */
 
+use vlucas\phpdotenv;
+
+use Dotenv\Dotenv;
+use Dotenv\Store\StoreInterface;
+
+use Dotenv\Exception\InvalidEncodingException;
+use Dotenv\Exception\InvalidPathException;
+
+
+//use Dotenv\Store\FileStore;
+use Dotenv\Loader\LoaderInterface;
+//use Dotenv\Store;
+
+class CustomFileStore implements StoreInterface
+{
+    protected $filePaths;
+    protected $immutable;
+
+    public function __construct(array $filePaths, bool $immutable = false)
+    {
+        $this->filePaths = $filePaths;
+        $this->immutable = $immutable;
+    }
+
+    public function read(): string
+    {
+        $contents = '';
+
+        foreach ($this->filePaths as $filePath) {
+            if (is_readable($filePath)) {
+                $contents .= file_get_contents($filePath) . PHP_EOL;
+            } else {
+                throw new InvalidPathException("File path '$filePath' is not readable.");
+            }
+        }
+
+        return $contents;
+    }
+
+    public function getFilePath(): string
+    {
+        return $this->filePaths[0]; // Assuming there is only one file path
+    }
+}
+
+use Dotenv\Repository\RepositoryInterface;
+
+class CustomRepository implements RepositoryInterface
+{
+    protected $variables = [];
+
+    public function get(string $name): ?string
+    {
+        return $this->variables[$name] ?? null;
+    }
+
+    public function set(string $name, string $value): void
+    {
+        $this->variables[$name] = $value;
+    }
+
+    public function clear(string $name): void
+    {
+        unset($this->variables[$name]);
+    }
+
+    public function all(): array
+    {
+        return $this->variables;
+    }
+
+    public function has(string $name): bool
+    {
+        return isset($this->variables[$name]);
+    }
+}
+
+class CustomLoader implements LoaderInterface
+{
+    public function load(RepositoryInterface $repository, array $entries): array
+    {
+        foreach ($entries as $name => $value) {
+            $repository->set($name, $value);
+        }
+        // Implement your custom loading logic here
+        // For simplicity, we'll just return an empty array
+        return $repository->all();
+    }
+}
+
+use Dotenv\Parser\ParserInterface;
+
+class CustomParser implements ParserInterface
+{
+    public function parse(string $data): array
+    {
+        $lines = explode("\n", $data);
+        $entries = [];
+
+        foreach ($lines as $line) {
+            $line = trim($line);
+            if (!empty($line) && strpos($line, '=') !== false) {
+                list($name, $value) = explode('=', $line, 2);
+                $entries[$name] = $value;
+            }
+        }
+        return $entries;
+    }
+}
+
+class CustomDotenv extends Dotenv
+{
+    protected $store;
+    protected $parser;
+    protected $loader;
+    protected $repository;
+
+    public function __construct(StoreInterface $store, ParserInterface $parser, LoaderInterface $loader, RepositoryInterface $repository)
+    {
+        parent::__construct($store, $parser, $loader, $repository);
+        $this->store = $store;
+        $this->parser = $parser;
+        $this->loader = $loader;
+        $this->repository = $repository;
+    }
+
+    public function load(): array
+    {
+        $envFilePath = $this->store->getFilePath(); // Get the file path from the store
+
+        if (!file_exists($envFilePath) || !is_readable($envFilePath)) {
+            throw new \RuntimeException("The environment file \"$envFilePath\" is not readable.");
+        }
+
+        $envContent = file_get_contents($envFilePath); // $this->store->read();
+
+        $entries = $this->loader->load($this->repository, $this->parser->parse($envContent));
+
+        foreach ($entries as $name => $value) {
+           $_ENV[$name] = $value;
+        }
+
+/*
+        foreach ($entries as $entry) {
+            if (is_array($entry) && count($entry) >= 2) {
+                list($name, $value) = $this->loader->load($this->repository, [$entry]);
+                putenv("$name=$value");
+                $_ENV[$name] = $value;
+            }
+        }
+*/
+        return $entries;
+    }
+
+    public function set(string $name, string $value): void
+    {
+        $this->repository->set($name, $value); // parent::set($name, $value);
+        putenv("$name=$value"); // Update the environment variable
+        $_ENV[$name] = $value; // Update $_ENV as well
+    }
+    
+    public function save()
+    {
+        $envFilePath = $this->store->getFilePath(); // Get the file path from the store
+
+            if (!file_exists($envFilePath) || !is_writable($envFilePath)) {
+            return false;
+        }
+
+        // Read existing environment variables from the .env file
+        $existingEnvContent = file_get_contents($envFilePath);
+        $existingEnvVariables = $this->parser->parse($existingEnvContent);
+
+        // Merge existing environment variables with repository variables
+        $allVariables = array_merge($existingEnvVariables, $this->repository->all());
+
+        $envContent = '';
+        foreach ($allVariables as $name => $value) {
+            $envContent .= $name . '=' . $this->quoteValue($value) . PHP_EOL;
+        }
+
+        // Save the environment variables to the .env file
+        $result = (bool)file_put_contents($envFilePath, $envContent);
+
+        // Load the environment variables back into $_ENV
+        $this->loadEnv();
+
+        return $result;
+    }
+
+    protected function loadEnv()
+    {
+        foreach ($this->repository->all() as $name => $value) {
+            $_ENV[$name] = $value;
+        }
+    }
+
+    protected function quoteValue($value): string
+    {
+        if ($this->needsQuotes($value) && preg_match('/^\".*\"$/', $value)) {
+            return $value; // addcslashes($value, '"')
+        }
+
+        return $value;
+    }
+
+    protected function needsQuotes($value): bool
+    {
+        return strpos($value, ' ') !== false || strpos($value, '#') !== false || strpos($value, '"') !== false;
+    }
+
+    protected function loadExistingEnv(): array
+    {
+        $existingEnv = [];
+        foreach ($_ENV as $name => $value) {
+            $existingEnv[$name] = $value;
+        }
+        return $existingEnv;
+    }
+}
+
+$dotenv = new CustomDotenv(new CustomFileStore([dirname(__DIR__, 1) . '/.env'], true), new CustomParser(), new CustomLoader(), new CustomRepository());
+$dotenv->load();
+
+// Modify or add new environment variables
+//$dotenv->set('NEW_VARIABLE', 'new_value1');
+$dotenv->set('ANOTHER_NEW_VARIABLE', 'new_value1');
+$dotenv->set('GITHUB_OAUTH', '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');
+
+// Save the modified variables back to the .env file
+$dotenv->save();
+
+//dd($_ENV);
+
+// $dotenv->load();
+
+
+/*
+
+$dotenv = Dotenv\Dotenv::createImmutable(dirname(__DIR__, 1));
+$dotenv->safeLoad();
+*/
 define('APP_ERRORS', $errors ?? (($error = ob_get_contents()) == null ? null : 'ob_get_contents() maybe populated/defined/errors... error=' . $error ));
 ob_end_clean();
 

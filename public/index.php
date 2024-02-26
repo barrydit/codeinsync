@@ -280,48 +280,48 @@ do {
   //require_once(__DIR__ . DIRECTORY_SEPARATOR . 'public/ui_complete.php');
   
   //dd('final time: ', true);
-
+/*
   // >> This guy makes the visual screwed up!
   if ($path = (basename(getcwd()) == 'public')
       ? (is_file('ui.git.php') ? 'ui.git.php' : (is_file('../ui.git.php') ? '../ui.git.php' : (is_file('../config/ui.git.php') ? '../config/ui.git.php' : NULL)))
       : (is_file('../ui.git.php') ? '../ui.git.php' : (is_file('public/ui.git.php') ? 'public/ui.git.php' : (is_file('config/ui.git.php') ? 'config/ui.git.php' : 'ui.git.php'))))
     require_once($path); 
   else die(var_dump($path . ' was not found. file=ui.git.php'));
-
+*/
 /** Loading Time: 9.0s **/
   
   //dd(null, true);
-
+/*
   if ($path = (basename(getcwd()) == 'public')
       ? (is_file('ui.npm.php') ? 'ui.npm.php' : (is_file('../ui.npm.php') ? '../ui.npm.php' : (is_file('../config/ui.npm.php') ? '../config/ui.npm.php' : NULL)))
       : (is_file('../ui.npm.php') ? '../ui.npm.php' : (is_file('public/ui.npm.php') ? 'public/ui.npm.php' : (is_file('config/ui.npm.php') ? 'config/ui.npm.php' : 'ui.npm.php'))))
     require_once($path); 
   else die(var_dump($path . ' was not found. file=ui.npm.php'));
-
+*/
 /** Loading Time: 11.1s **/
   
   //dd(null, true);
-
+/*
   if ($path = (basename(getcwd()) == 'public')
       ? (is_file('ui.php.php') ? 'ui.php.php' : (is_file('../ui.php.php') ? '../ui.php.php' : (is_file('../config/ui.php.php') ? '../config/ui.php.php' : NULL)))
       : (is_file('../ui.php.php') ? '../ui.php.php' : (is_file('public/ui.php.php') ? 'public/ui.php.php' : (is_file('config/ui.php.php') ? 'config/ui.php.php' : 'ui.php.php'))))
     require_once($path); 
   else die(var_dump($path . ' was not found. file=ui.php.php'));
-
+*/
 /** Loading Time: 11.3s **/
   
   //dd(null, true);
   
-  
+/*
   if ($path = (basename(getcwd()) == 'public')
       ? (is_file('ui.ace_editor.php') ? 'ui.ace_editor.php' : (is_file('../ui.ace_editor.php') ? '../ui.ace_editor.php' : (is_file('../config/ui.ace_editor.php') ? '../config/ui.ace_editor.php' : NULL)))
       : (is_file('../ui.ace_editor.php') ? '../ui.ace_editor.php' : (is_file('public/ui.ace_editor.php') ? 'public/ui.ace_editor.php' : (is_file('config/ui.ace_editor.php') ? 'config/ui.ace_editor.php' : 'ui.ace_editor.php'))))
     require_once($path); 
   else die(var_dump($path . ' was not found. file=ui.ace_editor.php'));
-
+*/
 /** Loading Time: 4.95s **/
   //dd(null, true);
-
+/*  */
   if ($path = (basename(getcwd()) == 'public')
       ? (is_file('app.timesheet.php') ? 'app.timesheet.php' : (is_file('../app.timesheet.php') ? '../app.timesheet.php' : (is_file('../config/app.timesheet.php') ? '../config/app.timesheet.php' : 'public/app.timesheet.php')))
       : (is_file('../app.timesheet.php') ? '../app.timesheet.php' : (is_file('public/app.timesheet.php') ? 'public/app.timesheet.php' : (is_file('config/app.timesheet.php') ? 'config/app.timesheet.php' : 'app.timesheet.php'))))
@@ -563,7 +563,7 @@ do {
     <div class="row-container" style="position: absolute; left: 0; top: 0;">
       <?php // https://stackoverflow.com/questions/86428/what-s-the-best-way-to-reload-refresh-an-iframe ?>
       <iframe id="iWindow" src="<?php if (!empty($_GET['client'])) {
-          $path = '../../clientele/' . $_GET['client'] . '/';
+          $path = /*'../../'.*/ 'clientele/' . $_GET['client'] . '/';
           $dirs = array_filter(glob(dirname(__DIR__) . '/' . $path . '*'), 'is_dir');
           
           if (count($dirs) == 1)
@@ -582,7 +582,7 @@ do {
           if (!empty($_GET['domain']))
             foreach($dirs as $key => $dir) {
               if (basename($dir) == $_GET['domain']) {
-                $path .= 'davidraymant.ca/';
+                //$path .= 'davidraymant.ca/';
         
                 if (is_dir($dirs[$key].'/public/'))
                   $path .= basename($dirs[$key]).'/public/';
@@ -647,10 +647,10 @@ do {
               . '            <select name="category" onchange="this.form.submit();">' . "\n"
               
               . '              <option value="" ' . (empty(APP_QUERY) ? 'selected' : '') . '>' . basename(parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH)) . '</option>' . "\n"
-              . '              <option value="application" ' . (isset($_GET['application']) ? 'selected' : '') . ' ' . (realpath(APP_PATH . '../../applications/') ? '' : 'disabled') . '>../applications</option>' . "\n"
+              . '              <option value="application" ' . (isset($_GET['application']) ? 'selected' : '') . ' ' . (realpath(APP_PATH . /*'../../'.*/ 'applications/') ? '' : 'disabled') . '>../applications</option>' . "\n"
               . '              <option value="client" ' . (isset($_GET['client']) ? 'selected' : '') . '>../clientele</option>' . "\n"
               . '              <option value="projects" ' . (isset($_GET['project']) && $_GET['project'] || preg_match('/(?:^|&)project(?:[^&]*=)/', $_SERVER['QUERY_STRING']) ? 'selected' : '') . '>../projects</option>' . "\n"
-              . '              <option value="node_module" ' . (isset($_GET['path']) && $_GET['path'] == 'resources' ? 'selected' : '') . '>./node_modules</option>' . "\n"
+              . '              <option value="node_module" ' . (isset($_GET['node_module']) && !$_GET['node_module'] && preg_match('/(?:^|&)node_module(?![^&]*=)/', $_SERVER['QUERY_STRING']) ? 'selected' : '') . '>./node_modules</option>' . "\n"
               . '              <option value="resources" ' . (isset($_GET['path']) && $_GET['path'] == 'resources' ? 'selected' : '') . '>./resources</option>' . "\n"
               . '              <option value="project" ' . (isset($_GET['project']) && !$_GET['project'] && preg_match('/(?:^|&)project(?![^&]*=)/', $_SERVER['QUERY_STRING']) ? 'selected' : '') . '>./project</option>' . "\n"
               . '              <option value="vendor" ' . (isset($_GET['path']) && $_GET['path'] == 'vendor' ? 'selected' : '') . '>./vendor</option>' . "\n"
@@ -660,7 +660,7 @@ do {
               if (isset($_GET['project']) /*&& $_GET['project'] != ''*/) {
                 if ($_GET['project'] == '' || !empty($_GET['project'])) echo $main_cat;
 
-                $links = array_filter(glob(APP_PATH . '../../projects/*'), 'is_dir');
+                $links = array_filter(glob(APP_PATH . /*'../../'.*/ 'projects/*'), 'is_dir');
               ?>
 
             <form style="display: inline;" autocomplete="off" spellcheck="false" action="" method="GET">
@@ -670,7 +670,7 @@ do {
                 <?php
                   while ($link = array_shift($links)) {
                     $link = basename($link); // Get the directory name from the full path
-                    if (is_dir(APP_PATH . '../../projects/' . $link))
+                    if (is_dir(APP_PATH . /*'../../'.*/ 'projects/' . $link))
                       echo '              <option value="' . $link . '" ' . (current($_GET) == $link ? 'selected' : '') . '>' . $link . '</option>' . "\n";
                   } ?>
               </select> /
@@ -681,7 +681,7 @@ do {
               } elseif (isset($_GET['client']) /*&& $_GET['client'] != ''*/ ) {
               if ($_GET['client'] == '') echo $main_cat;
               
-              $links = array_filter(glob(APP_PATH . '../../clientele/*'), 'is_dir');
+              $links = array_filter(glob(APP_PATH . /*'../../'.*/ 'clientele/*'), 'is_dir');
                        /* */
               ?>
             <form style="display: inline;" autocomplete="off" spellcheck="false" action="" method="GET">
@@ -691,7 +691,7 @@ do {
                 <?php
                   while ($link = array_shift($links)) {
                     $link = basename($link); // Get the directory name from the full path
-                    if (is_dir(APP_PATH . '../../clientele/' . $link))
+                    if (is_dir(APP_PATH . /*'../../'.*/ 'clientele/' . $link))
                       echo '              <option value="' . $link . '" ' . (current($_GET) == $link ? 'selected' : '') . '>' . $link . '</option>' . "\n";
                   }
                   ?>
@@ -701,7 +701,7 @@ do {
 
             
             <?php if (!empty($_GET['client'])) {
-              $dirs = array_filter(glob(dirname(__DIR__) . '/../clientele/' . $_GET['client'] . '/*'), 'is_dir'); ?>            
+              $dirs = array_filter(glob(dirname(__DIR__) . /*'../../'.*/ '/clientele/' . $_GET['client'] . '/*'), 'is_dir'); ?>            
             <form style="display: inline;" autocomplete="off" spellcheck="false" action="" method="GET">
               <?= (isset($_GET['client']) && !$_GET['client'] ? '' : '<input type="hidden" name="client" value="' . $_GET['client'] . '" / >') ?> 
               <select id="domain" name="domain" onchange="this.form.submit();">
@@ -724,15 +724,15 @@ do {
             //. '        </form>' . "\n";
             
             echo '        <form style="display: inline;" action method="GET">' . "\n"
-            . '          <span title="' . $path . '" style="margin: 2px 5px 0 0; cursor: pointer;" onclick=""> / ' . "\n"; /* $path; */ ?>
+            . '          <span title="' . APP_PATH . '" style="margin: 2px 5px 0 0; cursor: pointer;" onclick=""> / ' . "\n"; /* $path; */ ?>
           <select name="path" style="" onchange="this.form.submit(); return false;">
             <option value="">.</option>
             <option value="">..</option>
             <?php
               // Bug if the dir does not exist it defaults to the root ...
-              
-              if ($path)
-                foreach (array_filter( glob( $path . DIRECTORY_SEPARATOR . '*'), 'is_dir') as $dir) {
+
+              if (APP_PATH)
+                foreach (array_filter( glob( APP_PATH . APP_ROOT . '*'), 'is_dir') as $dir) {
                   echo '              <option value="' . (isset($_GET['path']) ?  $_GET['path'] . DIRECTORY_SEPARATOR : '') . basename($dir) . '"' . (isset($_GET['path']) && $_GET['path'] == basename($dir) ? ' selected' : '' )  . '>' . basename($dir) . '/</option>' . "\n";
                 }
               ?>
@@ -859,7 +859,7 @@ do {
               <?php
                 foreach(['000', '100', '200', '300', '400'] as $key => $status) {
                 
-                $links = array_filter(glob(APP_PATH . '../../clientele/' . $status . '*'), 'is_dir');
+                $links = array_filter(glob(APP_PATH . /*'../../'.*/ 'clientele/' . $status . '*'), 'is_dir');
                 $statusCode = $status;
                 $status = ($status == 000) ? "On-call" :
                          (($status == 100) ? "Working" :
@@ -1129,7 +1129,7 @@ do {
               });
               */
               
-              $handle = fopen(APP_ROOT . 'project.php', 'r');
+              $handle = fopen(APP_PATH . 'projects/project.php', 'r');
               $pkgs_matched = [];
               
               if ($handle) {
@@ -1306,13 +1306,13 @@ do {
         <table width="" style="border: none;">
           <tr style=" border: none;">
             <?php
-              $links = array_filter(glob(APP_PATH . '../../projects/*'), 'is_dir'); 
+              $links = array_filter(glob(APP_PATH . /*'../../'.*/ 'projects/*'), 'is_dir'); 
               
               $count = 1;
               ?>
             <?php
               if (empty($links)) {
-                echo '<option value="" selected>---</option>' . "\n"; // label="     "
+                echo '<hr />' . "\n"; // label="     "
               } else  //dd($links);
                 $old_links = $links;
               while ($link = array_shift($links)) {
@@ -1345,7 +1345,7 @@ do {
           <?php
             while ($link = array_shift($links)) {
               $link = basename($link); // Get the directory name from the full path
-              if (is_dir(APP_PATH . '../../projects/' . $link))
+              if (is_dir(APP_PATH . /*'../../'.*/ 'projects/' . $link))
                 echo '  <option value="' . $link . '" ' . (current($_GET) == $link ? 'selected' : '') . '>' . $link . '</option>' . "\n";
             }
             ?>
@@ -1359,7 +1359,7 @@ do {
         <?php if (readlinkToEnd('/var/www/applications') == '/mnt/c/www/applications') {
         if ($_GET['application']) {
 
-          $links = array_filter(glob(APP_PATH . '../../applications/' . $_GET['application']), 'is_file');
+          $links = array_filter(glob(APP_PATH . /*'../../'.*/ 'applications/' . $_GET['application']), 'is_file');
           
           echo '<h3>Application: 7-Zip</h3>';
           
@@ -1368,7 +1368,7 @@ do {
           
           
         } else {
-          $links = array_filter(glob(APP_PATH . '../../applications/*'), 'is_file'); ?>
+          $links = array_filter(glob(APP_PATH . /*'../../'.*/ 'applications/*'), 'is_file'); ?>
         <h3>Applications:</h3>
         <table width="" style="border: none;">
           <tr style=" border: none;">
@@ -1434,10 +1434,10 @@ do {
                 . '<img src="resources/images/directory.png" width="50" height="32" style="" /><br />' . $link . '</a><br />'
                 . '</td>' . "\n";
                 
-                if ($count >= 2) echo '</tr><tr>';
+                if ($count >= 3) echo '</tr><tr>';
                 elseif ($old_link == end($old_links)) echo '</tr>';
               
-                if (isset($count) && $count >= 2) $count = 1;
+                if (isset($count) && $count >= 3) $count = 1;
                 else $count++;
               }
               
@@ -1450,7 +1450,7 @@ do {
           
           if ($key != 0) echo '</table>'."\n\n\n";
           
-          $links = array_filter(glob(APP_PATH . '../../clientele/' . $status . '*'), 'is_dir');
+          $links = array_filter(glob(APP_PATH . /*'../../'.*/ 'clientele/' . $status . '*'), 'is_dir');
           $statusCode = $status;
           $status = ($status == 000) ? "On-call" :
                    (($status == 100) ? "Working" :
@@ -1499,19 +1499,19 @@ do {
 
         <?php } } else {
           if(isset($_GET['client']) && !empty($_GET['client']))
-            $path .= '../../clientele/' . $_GET['client'] . '/' . (isset($_GET['domain']) && !empty($_GET['domain']) ? $_GET['domain'] . '/' : '');
+            $path .= /*'../../'.*/ 'clientele/' . $_GET['client'] . '/' . (isset($_GET['domain']) && !empty($_GET['domain']) ? $_GET['domain'] . '/' : '');
           
           elseif(isset($_GET['project']) && !empty($_GET['project']))
-            $path .= '../../projects/' . $_GET['project'] . '/';
+            $path .= /*'../../'.*/ 'projects/' . $_GET['project'] . '/';
           
           ob_start(); 
           
-          echo APP_ROOT;
+          echo APP_PATH . APP_ROOT;
           ?> 
         <table width="" style="border: 0 solid #000;">
           <tr>
             <?php
-              $paths = glob(APP_ROOT . '/' . '{.[!.]*,*}', GLOB_BRACE | GLOB_MARK);
+              $paths = glob(APP_PATH . APP_ROOT . '/' . '{.[!.]*,*}', GLOB_BRACE | GLOB_MARK);
               //dd(urldecode($_GET['path']));
               
               usort($paths, function ($a, $b) {
@@ -1749,7 +1749,7 @@ do {
       }
       unset($path);
       ?>
-    <div style="position: fixed; top: 0; left: 0;">
+    <div style="position: fixed; top: 0; left: 0; z-index: 1;">
       <span>Loading Time: <?= round(microtime(true) - APP_START, 3); ?></span>
     </div>
     <script src="<?= (check_http_200('https://code.jquery.com/jquery-3.7.1.min.js') ? 'https://code.jquery.com/jquery-3.7.1.min.js' : APP_BASE['resources'] . 'js/jquery/' . 'jquery-3.7.1.min.js') ?>"></script>

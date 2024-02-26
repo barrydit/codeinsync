@@ -419,9 +419,15 @@ putenv('PWD=' . APP_PATH);
 
 $composer_exec = (COMPOSER_EXEC['bin'] == COMPOSER_PHAR['bin'] ? COMPOSER_PHAR['bin'] : basename(COMPOSER_EXEC['bin']));
 
+/*
+APP_WORK[client]
+
+APP_CLIENT / APP_PROJECT APP_ {key(APP_WORK)}
+  [path]
+  [user]
+*/
+
 if (APP_ENV == 'development') {
-
-
   if (defined('APP_CLIENT') || defined('APP_PROJECT'))
     $$c_or_p = APP_CLIENT ?? APP_PROJECT;
   else {
@@ -431,16 +437,18 @@ if (APP_ENV == 'development') {
     $$c_or_p->name = 'www';
     define('APP_CLIENT', $$c_or_p);
   }
+
   if (!isset($c_or_p) && !is_object($$c_or_p))
     $errors['COMPOSER_CLIENT-PROJECT'] = '$c_or_p is not set. No project or client was selected. Using APP as client.';
   else {
     //die('test');
+    ob_start(); ?>
+<?= $composer_exec; ?> init --quiet --no-interaction --working-dir="<?= APP_PATH . APP_ROOT; ?>" --name="<?= $composerUser . '/' . $$c_or_p->name; ?>" --description="General Description" --author="Barry Dick <barryd.it@gmail.com>" --type="project" --homepage="https://github.com/<?= $composerUser . '/' . $$c_or_p->name; ?>"" --require="php:^7.4||^8.0" --require="composer/composer:^1.0" --require-dev="pds/skeleton:^1.0" --stability="dev" --license="WTFPL"
+<?php
     defined('COMPOSER_INIT_PARAMS')
-      or define('COMPOSER_INIT_PARAMS', <<<TEXT
-{$composer_exec} init --quiet --no-interaction --working-dir="{$$c_or_p->path}" --name="{$composerUser}/{$$c_or_p->name}" --description="General Description" --author="Barry Dick <barryd.it@gmail.com>" --type="project" --homepage="https://github.com/{$composerUser}/{$$c_or_p->name}" --require="php:^7.4||^8.0" --require="composer/composer:^1.0" --require-dev="pds/skeleton:^1.0" --stability="dev" --license="WTFPL"
-TEXT
-);
-
+      or define('COMPOSER_INIT_PARAMS', /*<<<TEXT TEXT*/ ob_get_contents());
+    ob_end_clean();
+    
   if (!is_dir($$c_or_p->path . 'vendor'))
     $errors['COMPOSER_INIT-VENDOR'] = 'Failed to create the vendor/ directory. If you are seeing this. An error has occured.';
     

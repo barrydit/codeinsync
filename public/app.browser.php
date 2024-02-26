@@ -142,7 +142,7 @@ ob_start(); ?>
 
       <div style="display: inline-block; width: auto; padding-left: 10px;">
         <div style="position: absolute; background-color: white; left: 0; right: 0; width: auto;">WWW: <input type="text" name="url" onselect="go_to_url();" /></div>
-        <iframe src="<?= (is_dir($path = APP_PATH . APP_BASE['public']) && getcwd() == realpath($path) ? '' : APP_BASE['public']) . basename(__FILE__) ?>" style="height: 550px; width: 775px;"></iframe>
+        <iframe src="<?= (is_dir($path = APP_PATH . APP_BASE['public']) && getcwd() == realpath($path) ?  APP_BASE['public']:'' ) . basename(__FILE__) ?>" style="height: 550px; width: 775px;"></iframe>
       </div>
 
       <!-- <pre id="ace-editor" class="ace_editor"></pre> -->

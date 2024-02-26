@@ -14,6 +14,7 @@ else die(var_dump($path . ' path was not found. file=config.php'));
 
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     if (isset($_POST['cmd'])) {
+      chdir(APP_PATH . APP_ROOT);
       if ($_POST['cmd'] && $_POST['cmd'] != '') 
         if (preg_match('/^install/i', $_POST['cmd']))
           include('templates/' . preg_split("/^install (\s*+)/i", $_POST['cmd'])[1] . '.php');
@@ -55,9 +56,15 @@ git commit -am "Default message"
 git checkout -b branchName
 END;
           } //else {
-        
-          $output[] = 'sudo ' . GIT_EXEC . ' ' . $match[1];
-$proc=proc_open('sudo ' . GIT_EXEC . ' ' . $match[1],
+
+          // git --git-dir=/var/www/.git --work-tree=/var/www pull
+          
+          // $GIT_DIR environment variable
+          
+          $output[] = 'GetCWD: ' . getcwd();
+
+          $output[] = $command = 'sudo ' . GIT_EXEC . (is_dir($path = APP_PATH . APP_ROOT . '.git') || APP_PATH . APP_ROOT != APP_PATH ? ' --git-dir="' . $path . '" --work-tree="' . dirname($path) . '"': '' ) . ' ' . $match[1];
+$proc=proc_open($command,
   array(
     array("pipe","r"),
     array("pipe","w"),
@@ -709,7 +716,7 @@ console.log = function() {
     else if (argv == 'cls') $('#responseConsole').val('<?= $shell_prompt; ?>');
     else if (argv == 'reset') $('#responseConsole').val('>_');
     else
-    $.post("<?= basename(APP_SELF); /*APP_URL_BASE; $projectRoot*/?>",
+    $.post("<?= basename(__FILE__) . '?' . $_SERVER['QUERY_STRING']  ; /*APP_URL_BASE; $projectRoot*/?>",
     {
       cmd: argv
     },

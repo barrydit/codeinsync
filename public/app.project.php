@@ -100,7 +100,7 @@ ob_start(); ?>
           </div>
         </label>
         <div style="display: inline;">
-          <span style="background-color: white; color: #DD0000;">Project <?= /* (version_compare(NPM_LATEST, NPM_VERSION, '>') != 0 ? 'v'.substr(NPM_LATEST, 0, similar_text(NPM_LATEST, NPM_VERSION)) . '<span class="update" style="color: green; cursor: pointer;">' . substr(NPM_LATEST, similar_text(NPM_LATEST, NPM_VERSION)) . '</span>' : 'v'.NPM_VERSION ); */ NULL; ?></span> <span style="background-color: #0078D7; color: white;"><code class="text-sm" style="background-color: white; color: #0078D7;">$ <?= (defined('NPM_EXEC') ? 'project.php' : null); ?></code></span>
+          <span style="background-color: white; color: #DD0000;">Project <?= /* (version_compare(NPM_LATEST, NPM_VERSION, '>') != 0 ? 'v'.substr(NPM_LATEST, 0, similar_text(NPM_LATEST, NPM_VERSION)) . '<span class="update" style="color: green; cursor: pointer;">' . substr(NPM_LATEST, similar_text(NPM_LATEST, NPM_VERSION)) . '</span>' : 'v'.NPM_VERSION ); */ NULL; ?></span> <span style="background-color: #0078D7; color: white;"><code class="text-sm" style="background-color: white; color: #0078D7;">$ <?= (defined('PHP_EXEC') ? 'projects/project.php' : null); ?></code></span>
         </div>
         
         <div style="display: inline; float: right; text-align: center; color: blue;"><code style="background-color: white; color: #0078D7;"><a style="cursor: pointer; font-size: 13px;" onclick="document.getElementById('app_project-container').style.display='none';">[X]</a></code></div> 
@@ -110,7 +110,7 @@ ob_start(); ?>
 
         <div class="splitter">
           <div id="first">
-            <iframe id="app_project-iframe" src="<?= basename('?project=show') ?>" style="height: 100%; width: 100%;"></iframe>
+            <iframe id="app_project-iframe" src="<?= basename(/*'?project=show'*/ 'project.php') ?>" style="height: 100%; width: 100%;"></iframe>
           </div>
           <form id="app_project-saveForm" method="POST">
           <div id="separator" style="height: 25px; text-align: center;"><pre style="display: inline;">---Drag Bar---</pre>
@@ -128,7 +128,7 @@ ob_start(); ?>
           <div id="second">
 
 <?php $path = realpath(getcwd() . (isset($_GET['path']) ? DIRECTORY_SEPARATOR . $_GET['path'] : '')) . DIRECTORY_SEPARATOR; ?>
-            <div id="ace-editor" class="ace_editor" style="display: <?= (isset($_GET['file']) && isset($_GET['path']) && is_file($_GET['path'] . $_GET['file']) ? 'block': 'block')?>; width: 778px; height: 287px; z-index: 2;"><textarea name="contents" class="ace_text-input" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" style="opacity: 0; font-size: 1px; height: 1px; width: 1px; top: 28px; left: 86px;" wrap="off"><?= htmlsanitize(file_get_contents('project.php')) /*   'clientele/' . $_GET['client'] . '/' . $_GET['domain'] . '/' .  */ ?></textarea></div>
+            <div id="ace-editor" class="ace_editor" style="display: <?= (isset($_GET['file']) && isset($_GET['path']) && is_file($_GET['path'] . $_GET['file']) ? 'block': 'block')?>; width: 778px; height: 287px; z-index: 2;"><textarea name="contents" class="ace_text-input" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" style="opacity: 0; font-size: 1px; height: 1px; width: 1px; top: 28px; left: 86px;" wrap="off"><?= htmlsanitize(file_get_contents('projects/project.php')) /*   'clientele/' . $_GET['client'] . '/' . $_GET['domain'] . '/' .  */ ?></textarea></div>
           </div>
         </form>
       </div>
@@ -203,7 +203,7 @@ document.getElementById('app_project-saveForm').addEventListener('submit', funct
   console.log(globalEditor.getSession().getValue());
 
       $.ajax({
-        url: '<?= basename(__FILE__); ?>?app=project&file=project.php',
+        url: '<?= basename(__FILE__); ?>?app=project&file=projects/project.php',
         type: 'POST',
         data: { path: '', contents: globalEditor.getSession().getValue() },
         //dataType: 'json',
@@ -284,5 +284,5 @@ ob_end_clean();
 //check if file is included or accessed directly
 if (__FILE__ == get_required_files()[0] || in_array(__FILE__, get_required_files()) && isset($_GET['app']) && $_GET['app'] == 'project' && APP_DEBUG)
   Shutdown::setEnabled(false)->setShutdownMessage(function() {
-      return eval('?>' . file_get_contents('project.php')); // -wow */
+      return eval('?>' . file_get_contents('projects/project.php')); // -wow */
     })->shutdown(); // die();ob_start(); ?>

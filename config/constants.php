@@ -59,6 +59,7 @@ if (basename(__DIR__) == 'config') {
     'database' => 'database' . DIRECTORY_SEPARATOR,
     'public' => 'public' . DIRECTORY_SEPARATOR,
     'resources' => 'resources' . DIRECTORY_SEPARATOR,
+    'projects' => 'projects' . DIRECTORY_SEPARATOR,
     //'src' => 'src' . DIRECTORY_SEPARATOR,
     'var' => 'var' . DIRECTORY_SEPARATOR,
     'vendor' => 'vendor' . DIRECTORY_SEPARATOR,

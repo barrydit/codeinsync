@@ -363,14 +363,14 @@ ob_end_clean();
 ob_start(); ?>
 
 <!-- <div class="container" style="border: 1px solid #000;"> -->
-  <div id="app_pong-container" class="<?= (APP_SELF == __FILE__ || (isset($_GET['app']) && $_GET['app'] == 'pong') ? 'selected' : '') ?>" style="border: 1px solid #000; overflow-x: scroll;">
+  <div id="app_pong-container" class="<?= (__FILE__ == get_required_files()[0] || (isset($_GET['app']) && $_GET['app'] == 'pong') ? 'selected' : '') ?>" style="border: 1px solid #000; overflow-x: scroll;">
     <div class="header ui-widget-header">
       <div style="display: inline-block;">Pong</div>
       <div style="display: inline; float: right; text-align: center;">[<a style="cursor: pointer; font-size: 13px;" onclick="document.getElementById('app_pong-container').style.display='none';">X</a>]</div> 
     </div>
 
       <div style="display: inline-block; width: auto;">
-        <iframe src="<?= (is_dir($path = APP_PATH . APP_BASE['public']) && getcwd() == realpath($path) ? '' : APP_BASE['public']) . basename(__FILE__) ?>" style="height: 350px; width: 750px;"></iframe>
+        <iframe src="<?= (is_dir($path = APP_PATH . APP_BASE['public']) && getcwd() == realpath($path) ? APP_BASE['public']:''  ) . basename(__FILE__) ?>" style="height: 350px; width: 750px;"></iframe>
       </div>
       <!-- <pre id="ace-editor" class="ace_editor"></pre> -->
   </div>
