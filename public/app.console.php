@@ -40,9 +40,9 @@ $proc=proc_open('sudo ' . COMPOSER_EXEC['bin'] . ' ' . $match[1],
           //$output[] = $_POST['cmd'];
 
         } else if (preg_match('/^git\s+(:?(.*))/i', $_POST['cmd'], $match)) {
-        
+          $requireFile = function($file) { require_once($file); };
+          $requireFile('config/git.php');
           if (preg_match('/^git\s+(help)(:?\s+)?/i', $_POST['cmd'])) {
-          
             $output[] = <<<END
 git reset filename   (unstage a specific file)
 
@@ -62,8 +62,10 @@ END;
           // $GIT_DIR environment variable
           
           $output[] = 'GetCWD: ' . getcwd();
+          
+          $composerHome = 
 
-          $output[] = $command = 'sudo ' . GIT_EXEC . (is_dir($path = APP_PATH . APP_ROOT . '.git') || APP_PATH . APP_ROOT != APP_PATH ? ' --git-dir="' . $path . '" --work-tree="' . dirname($path) . '"': '' ) . ' ' . $match[1];
+          $output[] = $command = ((strtoupper(substr(PHP_OS, 0, 3)) === 'WIN') ? '' : 'sudo ') . GIT_EXEC . (is_dir($path = APP_PATH . APP_ROOT . '.git') || APP_PATH . APP_ROOT != APP_PATH ? ' --git-dir="' . $path . '" --work-tree="' . dirname($path) . '"': '' ) . ' ' . $match[1];
 $proc=proc_open($command,
   array(
     array("pipe","r"),

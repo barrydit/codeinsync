@@ -4,20 +4,19 @@ if (__FILE__ == get_required_files()[0])
   if ($path = (basename(getcwd()) == 'public')
     ? (is_file('../config.php') ? '../config.php' : (is_file('../config/config.php') ? '../config/config.php' : null))
     : (is_file('config.php') ? 'config.php' : (is_file('config/config.php') ? 'config/config.php' : null))) require_once($path); 
-else die(var_dump($path . ' path was not found. file=config.php'));
+  else die(var_dump($path . ' path was not found. file=config.php'));
+else {
+  if ($path = (is_file('config/git.php') ? 'config/git.php' : '') )
+    require_once($path); 
+  else die(var_dump($path . ' path was not found. file=git.php'));
+  if ($path = (is_file('config/composer.php') ? 'config/composer.php' : '') )
+    require_once($path); 
+  else die(var_dump($path . ' path was not found. file=git.php'));
+}
 
-if ($path = (basename(getcwd()) == 'public')
-    ? (is_file('../git.php') ? '../git.php' : (is_file('../config/git.php') ? '../config/git.php' : null))
-    : (is_file('git.php') ? 'git.php' : (is_file('config/git.php') ? 'config/git.php' : null))) require_once($path); 
-else die(var_dump($path . ' path was not found. file=git.php'));
+// dd(get_included_files());
 
 /* https://stackoverflow.com/questions/73026623/how-to-ignore-or-permanently-block-the-files-which-contain-date-or-datetime-in */
-
-
-if ($path = (basename(getcwd()) == 'public')
-    ? (is_file('../composer.php') ? '../composer.php' : (is_file('../config/composer.php') ? '../config/composer.php' : null))
-    : (is_file('composer.php') ? 'composer.php' : (is_file('config/composer.php') ? 'config/composer.php' : null))) require_once($path); 
-else die(var_dump($path . ' path was not found. file=composer.php'));
 
 
 /*

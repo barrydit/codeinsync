@@ -3,92 +3,47 @@
 define('COMPOSER_EXPR_NAME', '/([a-z0-9](?:[_.-]?[a-z0-9]+)*)\/([a-z0-9](?:(?:[_.]|-{1,2})?[a-z0-9]+)*)/'); // name
 define('COMPOSER_EXPR_VER', '/v?\d+(?:\.\d+){0,3}|dev-.*/'); // version
 
-if (!realpath('vendor/autoload.php')) {
-    exec('sudo composer update', $output, $returnCode) or $errors['COMPOSER-INIT-UPDATE'] = $output;
-    exec('sudo composer dump-autoload', $output, $returnCode) or $errors['COMPOSER-DUMP-AUTOLOAD'] = $output;
+//composer config --global --auth --unset github-oauth.github.com
+//composer config --global github-oauth.github.com __TOKEN__
+//putenv('COMPOSER_use-github-api=true');
+//putenv('COMPOSER_github-oauth.github.com=BAM');
+
+// php -d xdebug.remote_enable=0 composer
+// php -d xdebug.remote_enable=0 composer <your_command_here>
+// -d xdebug.remote_enable=0 \
+// -d xdebug.profiler_enable=0 \
+// -d xdebug.profiler_output_dir=. \
+// -d xdebug.default_enable=0
+
+// php -dxdebug.mode=debug -dxdebug.output_dir=. public/ui_complete.php
+
+define('COMPOSER_ALLOW_SUPERUSER', true);
+putenv('COMPOSER_ALLOW_SUPERUSER=' . (int) COMPOSER_ALLOW_SUPERUSER);
+
+define('COMPOSER_ALLOW_XDEBUG', false); // didn't work
+putenv('COMPOSER_ALLOW_XDEBUG=' . (int) COMPOSER_ALLOW_XDEBUG);
+
+putenv('COMPOSER_DISABLE_XDEBUG_WARN=' . (int) true);
+
+//dd(getenv('COMPOSER_ALLOW_SUPERUSER'));
+
+class composerSchema {
+  public $name;
+  public $description;
+  public $version;
+  public $type;
+  public $keywords;
+  public $homepage;
+  public $readme;
+  public $time; //date('Y-m-d H:i:s');
+  public $license;
+  public $authors;
+  public $repositories;
+  public $require;
+//public $require_dev;  // using {'require-dev'}
+  public $autoload;
+//public $autoload_dev;  // using {'autoload-dev'}
 }
-
-
-// dd(getcwd());
-
-/** Loading Time: 0.134s **/
-
-  //dd(get_required_files(), true);
-
-// moved to config.php load (last)
-// is_file('vendor/autoload.php') and require('vendor/autoload.php'); // Include Composer's autoloader
-
-//dd(get_required_files());
-/*
-
-use Composer\Console\Application;
-use Symfony\Component\Console\Input\ArrayInput;
-use Symfony\Component\Console\Output\BufferedOutput;
-
-// Create a new Composer Application
-$application = new Application();
-
-// Create a BufferedOutput to capture the output
-$output = new BufferedOutput();
-
-// Create an input object with the show command
-$input = new ArrayInput(['command' => 'show']);
-
-// Run the show command and capture the output
-$exitCode = $application->run($input, $output);
-
-// Check if the command was successful
-if ($exitCode === 0) {
-    // Get the captured output and print it
-    $outputText = $output->fetch();
-    echo $outputText;
-} else {
-    // Handle the case where the command failed
-    echo "Composer show command failed with exit code $exitCode";
-}
-*/
-/*
-// Use the Composer\Factory to create a Composer instance
-$composer = \Composer\Factory::create();
-
-// Get the installed repository, which contains a list of installed packages
-$repository = $composer->getRepositoryManager()->getLocalRepository();
-
-// Get all installed packages
-$packages = $repository->getPackages();
-
-// Print information about each package
-foreach ($packages as $package) {
-    echo $package->getName() . ' - ' . $package->getPrettyVersion() . PHP_EOL;
-}
-*/
-/*
-// Use the Composer\Factory to create a Composer instance
-$composer = new \Composer\Semver\Semver();
-
-// Get the list of installed packages
-$installedPackages = $composer::getInstalledPackages();
-*/
-/*
-// Use Composer's InstalledVersions class to get a list of installed packages
-$installedPackages = Composer\InstalledVersions::getAll();
-
-// Print information about each package
-foreach ($installedPackages as $package) {
-    echo $package['name'] . ' - ' . $package['version'] . PHP_EOL;
-}
-*/
-
-/*
-// Read the installed packages from the installed.json file
-$installedPackages = json_decode(file_get_contents('vendor/composer/installed.json'), true);
-
-foreach ($installedPackages['packages']  as $package) { //
-    echo $package['name'] . ' - ' . $package['version'] . ' - ' . $package['description']. '<br />' . PHP_EOL; // 
-}
-*/
-
-//dd(get_declared_classes());
 
 if (!function_exists('get_declared_classes')) {
   $autoloadContent = file_get_contents('vendor/autoload.php');
@@ -100,7 +55,7 @@ if (!function_exists('get_declared_classes')) {
       if (preg_match('/(ComposerAutoloaderInit[a-f0-9]+)/', $class, $matches)) 
         break;
       if ($class == end($classes))
-        $errors['COMPOSER-AutoloaderInit'] = 'ComposerAutloaderInit failed to be matched.';
+        $errors['COMPOSER-AutoloaderInit'] = 'ComposerAutloaderInit2 failed to be matched.';
     }
 
 if (isset($matches[1])) {
@@ -146,19 +101,20 @@ $vendors = [];
 
 if (isset($installedPackages) && !empty($installedPackages)) {
 foreach ($installedPackages as $key => $package) { //
-    if (preg_match('/([a-z0-9](?:[_.-]?[a-z0-9]+)*)\/([a-z0-9](?:(?:[_.]|-{1,2})?[a-z0-9]+)*)/', $package, $matches))
+    if (preg_match(COMPOSER_EXPR_NAME, $package, $matches))
       $vendors[$key] = $matches[1];
 }
 
 $uniqueVendors = array_unique($vendors);
 
 foreach ($installedPackages as $key => $package) { //
-    if (preg_match('/([a-z0-9](?:[_.-]?[a-z0-9]+)*)\/([a-z0-9](?:(?:[_.]|-{1,2})?[a-z0-9]+)*)/', $package, $matches))
+    if (preg_match(COMPOSER_EXPR_NAME, $package, $matches))
       $uniqueVendors[$matches[1]][] = $matches[2];
       unset($uniqueVendors[$key]);
 }
 
 define('COMPOSER_VENDORS', $uniqueVendors);
+<<<<<<< HEAD
 }
 
 /* This code starts here */
@@ -202,67 +158,9 @@ if ($latestPackage !== null) {
     echo 'Package is installable.';
 } else {
     echo 'Package is not installable.';
+=======
+>>>>>>> 620aff1352362956a8cd4b12bf627331eda921bc
 }
-*/
-
-class composerSchema {
-  public $name;
-  public $description;
-  public $version;
-  public $type;
-  public $keywords;
-  public $homepage;
-  public $readme;
-  public $time; //date('Y-m-d H:i:s');
-  public $license;
-  public $authors;
-  public $repositories;
-  public $require;
-//public $require_dev;  // using {'require-dev'}
-  public $autoload;
-//public $autoload_dev;  // using {'autoload-dev'}
-}
-
-
-if ($path = (is_file(__DIR__ . DIRECTORY_SEPARATOR . 'constants.php') ? __DIR__ . DIRECTORY_SEPARATOR . 'constants.php' : (is_file('config/constants.php') ? 'config/constants.php' : NULL))) // is_file('config/composer.php')) 
-  require_once($path);
-else die(var_dump($path));
-
-// isset($$c_or_p) and dd($$c_or_p);
-
-//cd /usr/local/bin
-//curl -sS https://getcomposer.org/installer | php /* -- --filename=composer */
-//chmod a+x composer.phar
-//sudo mv composer /usr/local/bin/composer
-//Change into a project directory cd /path/to/my/project
-
-
-//composer config --global --auth --unset github-oauth.github.com
-//composer config --global github-oauth.github.com __TOKEN__
-//putenv('COMPOSER_use-github-api=true');
-//putenv('COMPOSER_github-oauth.github.com=BAM');
-
-// php -d xdebug.remote_enable=0 composer
-// php -d xdebug.remote_enable=0 composer <your_command_here>
-// -d xdebug.remote_enable=0 \
-// -d xdebug.profiler_enable=0 \
-// -d xdebug.profiler_output_dir=. \
-// -d xdebug.default_enable=0
-
-// php -dxdebug.mode=debug -dxdebug.output_dir=. public/ui_complete.php
-
-define('COMPOSER_ALLOW_SUPERUSER', true);
-putenv('COMPOSER_ALLOW_SUPERUSER=' . (int) COMPOSER_ALLOW_SUPERUSER);
-
-define('COMPOSER_ALLOW_XDEBUG', false); // didn't work
-putenv('COMPOSER_ALLOW_XDEBUG=' . (int) COMPOSER_ALLOW_XDEBUG);
-
-putenv('COMPOSER_DISABLE_XDEBUG_WARN=' . (int) true);
-
-//dd(getenv('COMPOSER_ALLOW_SUPERUSER'));
-
-
-//defined('PHP_WINDOWS_VERSION_MAJOR') ? 'APPDATA' : 'HOME';
 
 /*
   Must be defined before the composer-setup.php can be preformed.
@@ -297,7 +195,11 @@ if (!file_exists(APP_PATH . 'composer.phar')) {
   $errors['COMPOSER-PHAR'] = 'Composer setup was executed and ' . (file_exists(APP_PATH.'composer.phar') ? 'does' : 'does not') . ' exist. version='.exec('php composer.phar -V') . '  error=' . $error;
 } else {
 
+<<<<<<< HEAD
 if (preg_match('/Composer(?: version)? (\d+\.\d+\.\d+) (\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2})/', exec($bin = 'php composer.phar' . ' -V'), $matches))
+=======
+if (preg_match('/Composer(?: version)? (\d+\.\d+\.\d+) (\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2})/', exec(($bin = 'php composer.phar') . ' -V'), $matches))
+>>>>>>> 620aff1352362956a8cd4b12bf627331eda921bc
 define('COMPOSER_BIN', ['bin' => $bin, 'version' => $matches[1], 'date' => $matches[2]]);
 
 }
@@ -539,6 +441,155 @@ defined('COMPOSER_INIT_PARAMS')
 {$composer_exec} init --quiet --no-interaction --working-dir="" --name="<vendor id>/{$componetPkg}" --description="General Description" --author="<name> <email@url.ext>" --type="project" --homepage="https://github.com/<vendor id>/{$componetPkg}" --require="php:^7.4||^8.0" --require="composer/composer:^1.0" --require-dev="pds/skeleton:^1.0" --stability="dev" --license="WTFPL"
 TEXT
 );
+
+
+if (!realpath('vendor')) {
+  exec(COMPOSER_INIT_PARAMS);
+} elseif (!realpath('vendor/autoload.php')) {
+    exec('sudo composer update', $output, $returnCode) or $errors['COMPOSER-INIT-UPDATE'] = $output;
+    exec('sudo composer dump-autoload', $output, $returnCode) or $errors['COMPOSER-DUMP-AUTOLOAD'] = $output;
+  }
+
+// dd(getcwd());
+
+/** Loading Time: 0.134s **/
+
+  //dd(get_required_files(), true);
+
+// moved to config.php load (last)
+// is_file('vendor/autoload.php') and require('vendor/autoload.php'); // Include Composer's autoloader
+
+//dd(get_required_files());
+/*
+
+use Composer\Console\Application;
+use Symfony\Component\Console\Input\ArrayInput;
+use Symfony\Component\Console\Output\BufferedOutput;
+
+// Create a new Composer Application
+$application = new Application();
+
+// Create a BufferedOutput to capture the output
+$output = new BufferedOutput();
+
+// Create an input object with the show command
+$input = new ArrayInput(['command' => 'show']);
+
+// Run the show command and capture the output
+$exitCode = $application->run($input, $output);
+
+// Check if the command was successful
+if ($exitCode === 0) {
+    // Get the captured output and print it
+    $outputText = $output->fetch();
+    echo $outputText;
+} else {
+    // Handle the case where the command failed
+    echo "Composer show command failed with exit code $exitCode";
+}
+*/
+/*
+// Use the Composer\Factory to create a Composer instance
+$composer = \Composer\Factory::create();
+
+// Get the installed repository, which contains a list of installed packages
+$repository = $composer->getRepositoryManager()->getLocalRepository();
+
+// Get all installed packages
+$packages = $repository->getPackages();
+
+// Print information about each package
+foreach ($packages as $package) {
+    echo $package->getName() . ' - ' . $package->getPrettyVersion() . PHP_EOL;
+}
+*/
+/*
+// Use the Composer\Factory to create a Composer instance
+$composer = new \Composer\Semver\Semver();
+
+// Get the list of installed packages
+$installedPackages = $composer::getInstalledPackages();
+*/
+/*
+// Use Composer's InstalledVersions class to get a list of installed packages
+$installedPackages = Composer\InstalledVersions::getAll();
+
+// Print information about each package
+foreach ($installedPackages as $package) {
+    echo $package['name'] . ' - ' . $package['version'] . PHP_EOL;
+}
+*/
+
+/*
+// Read the installed packages from the installed.json file
+$installedPackages = json_decode(file_get_contents('vendor/composer/installed.json'), true);
+
+foreach ($installedPackages['packages']  as $package) { //
+    echo $package['name'] . ' - ' . $package['version'] . ' - ' . $package['description']. '<br />' . PHP_EOL; // 
+}
+*/
+
+//dd(get_declared_classes());
+
+
+
+
+/* This code starts here */
+
+
+
+
+/* Ends here */
+
+
+/*
+
+use Composer\Composer;
+use Composer\Factory;
+use Composer\DependencyResolver\Request;
+use Composer\Package\Version\VersionSelector;
+use Composer\Repository\CompositeRepository;
+use Composer\Repository\PlatformRepository;
+
+// Initialize Composer
+$composer = Factory::create();
+
+// Create a repository representing all known packages
+$repositorySet = $composer->getRepositoryManager()->getLocalRepositorySet();
+
+// Create a PlatformRepository to represent the currently installed packages
+$platformRepo = new PlatformRepository();
+
+// Create a CompositeRepository with both the known packages and the installed packages
+$compositeRepo = new CompositeRepository([$platformRepo, $repositorySet->getCanonicalLocalRepository()]);
+
+// Create a Request for the package you're looking to install
+$request = new Request();
+$request->install(['package-name' => '*']);
+
+// Get the latest version of the package
+$versionSelector = new VersionSelector($compositeRepo);
+$latestPackage = $versionSelector->findBestCandidate('package-name');
+
+if ($latestPackage !== null) {
+    echo 'Package is installable.';
+} else {
+    echo 'Package is not installable.';
+}
+*/
+
+// isset($$c_or_p) and dd($$c_or_p);
+
+//cd /usr/local/bin
+//curl -sS https://getcomposer.org/installer | php /* -- --filename=composer */
+//chmod a+x composer.phar
+//sudo mv composer /usr/local/bin/composer
+//Change into a project directory cd /path/to/my/project
+
+
+
+//defined('PHP_WINDOWS_VERSION_MAJOR') ? 'APPDATA' : 'HOME';
+
 
 //dd(APP_PATH);
 

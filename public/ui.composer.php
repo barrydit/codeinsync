@@ -4,9 +4,15 @@ if (__FILE__ == get_required_files()[0])
   if ($path = (basename(getcwd()) == 'public')
     ? (is_file('../config.php') ? '../config.php' : (is_file('../config/config.php') ? '../config/config.php' : null))
     : (is_file('config.php') ? 'config.php' : (is_file('config/config.php') ? 'config/config.php' : null))) require_once($path); 
-else die(var_dump($path . ' path was not found. file=config.php'));
-
+  else die(var_dump($path . ' path was not found. file=config.php'));
+else {
+  if ($path = (is_file('config/composer.php') ? 'config/composer.php' : '') )
+    require_once($path); 
+  else die(var_dump($path . ' path was not found. file=composer.php'));
+}
 // require 'vendor/autoload.php'; // Include Composer's autoloader
+
+// dd(get_required_files());
 
 /*
 use Composer\Factory;
