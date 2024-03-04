@@ -60,7 +60,7 @@ if (basename(__DIR__) == 'config') {
     'public' => 'public' . DIRECTORY_SEPARATOR,
     'resources' => 'resources' . DIRECTORY_SEPARATOR,
     'projects' => 'projects' . DIRECTORY_SEPARATOR,
-    //'src' => 'src' . DIRECTORY_SEPARATOR,
+    'src' => 'src' . DIRECTORY_SEPARATOR,
     'var' => 'var' . DIRECTORY_SEPARATOR,
     'vendor' => 'vendor' . DIRECTORY_SEPARATOR,
     //'tmp' => 'var' . DIRECTORY_SEPARATOR . 'tmp' . DIRECTORY_SEPARATOR,
@@ -82,30 +82,30 @@ if (basename(__DIR__) == 'config') {
 
 //define('APP_ENV', 'production');
 
-if (defined('APP_DOMAIN') && !in_array(APP_DOMAIN, ['localhost', '127.0.0.1', '::1'])) {
-  if (!is_file(APP_PATH . '.env')) {
+if (defined('APP_DOMAIN') && !in_array(APP_DOMAIN, [/*'localhost',*/ '127.0.0.1', '::1'])) {
+/*  if (!is_file(APP_PATH . '.env')) {
     if (@touch(APP_PATH . '.env'))
       file_put_contents(APP_PATH . '.env', "DB_UNAME=\nDB_PWORD=");
-  }
-  defined('APP_ENV') or define('APP_ENV', 'production');
+  } */
+//  defined('APP_ENV') or define('APP_ENV', 'production');
 } else {
-  if (!is_file(APP_PATH . '.env')) {
+/*  if (!is_file(APP_PATH . '.env')) {
     if (@touch(APP_PATH . '.env')) {
       file_put_contents(APP_PATH . '.env', "DB_UNAME=root\nDB_PWORD=");
     }
-  }
-  defined('APP_ENV') or define('APP_ENV', 'development'); // development
+  } */
+//  defined('APP_ENV') or define('APP_ENV', 'development'); // development
 } // APP_DEV |  APP_PROD
 
 (defined('APP_ENV') && !is_string(APP_ENV)) and $errors['APP_ENV'] = 'App Env: ' . APP_ENV; // print('App Env: ' . APP_ENV . "\n");
-
+/*
 if (APP_ENV == 'development') { 
   if ($path = realpath((basename(__DIR__) != 'config' ? NULL : __DIR__ . DIRECTORY_SEPARATOR) . 'constants_backup.php')) // is_file('config/constants.php')) 
     require_once($path);
 
   if ($path = realpath((basename(__DIR__) != 'config' ? NULL : __DIR__ . DIRECTORY_SEPARATOR) . 'constants_client-project.php')) // is_file('config/constants.php')) 
     require_once($path);
-}
+}*/
 
 //(defined('APP_PATH') && truepath(APP_PATH)) and $errors['APP_PATH'] = truepath(APP_PATH); // print('App Path: ' . APP_PATH . "\n" . "\t" . '$_SERVER[\'DOCUMENT_ROOT\'] => ' . $_SERVER['DOCUMENT_ROOT'] . "\n");
 

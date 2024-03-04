@@ -67,7 +67,7 @@ $output[] = $_POST['cmd'];
 */
 //}
 
-if (!file_exists($path = '../'.APP_BASE['database'].'notes.json'))
+if (!file_exists($path = APP_PATH . APP_BASE['database'].'notes.json'))
   $data = json_decode(<<<'JSON'
 [{
   "language":"PHP",
@@ -88,7 +88,7 @@ else
 
 $categories = ['String Manipulation', 'Array Manipulation', 'Regular Expressions', 'Error Handling', 'File Handling', 'Database Operations', 'Form Handling', 'Date and Time', 'Image Manipulation', 'Email Handling', 'Encryption and Security', 'API Integration', 'Performance Optimization', 'Session Management', 'Authentication and Authorization', 'File Upload and Download', 'Templating', 'Caching', 'Logging and Debugging', 'Web Scraping', 'PDF Generation', 'XML and JSON Manipulation', '(CLI) Applications', 'Web Services and RESTful APIs', 'Internationalization and Localization', 'Error Reporting and Logging', 'HTML and Markup Generation', 'Server-Side Rendering', 'Image Processing and Manipulation', 'Data Validation and Sanitization', 'Networking and HTTP Requests', 'Templating Engines', 'Testing and Test Frameworks'];
 
-$tags = [0 => ['Concatenation', 'Substring', 'Replace', 'Split', 'Trim', 'Search', 'Case Conversion', 'Regular Expressions', 'Character Encoding', 'Length/Size', 'String Comparison', 'Format/Parse', 'Join', 'Padding', 'Reverse', 'Tokenize', 'Escape/Unescape', 'Format Specifiers', 'Palindrome', 'Anagram'],1 => ['Indexing', 'Iteration/Traversal', 'Adding/Removing Elements', 'Concatenation', 'Copying/Cloning', 'Sorting', 'Filtering/Selecting Elements', 'Mapping/Transforming Elements', 'Searching', 'Joining Arrays', 'Splitting Arrays', 'Reversing', 'Slicing', 'Merging Arrays', 'Finding Min/Max Elements', 'Finding Duplicates', 'Finding Unique Elements', 'Shuffling/Randomizing', 'Flattening Nested Arrays', 'Combining Arrays'],2 => ['Pattern Matching', 'Regex Syntax', 'Metacharacters', 'Quantifiers', 'Anchors', 'Character Classes', 'Alternation', 'Grouping and Capturing', 'Escape Sequences', 'Assertions', 'Modifiers', 'Greedy vs. Non-Greedy', 'Backreferences', 'Lookahead and Lookbehind', 'Boundary Matchers', 'Unicode Characters in Regex', 'Matching HTML/XML Tags', 'Validating Email Addresses', 'Validating Dates', 'Password Validation'], 3 => []];
+$tags = [0 => ['Concatenation', 'Substring', 'Replace', 'Split', 'Trim', 'Search', 'Case Conversion', 'Regular Expressions', 'Character Encoding', 'Length/Size', 'String Comparison', 'Format/Parse', 'Join', 'Padding', 'Reverse', 'Tokenize', 'Escape/Unescape', 'Format Specifiers', 'Palindrome', 'Anagram'], 1 => ['Indexing', 'Iteration/Traversal', 'Adding/Removing Elements', 'Concatenation', 'Copying/Cloning', 'Sorting', 'Filtering/Selecting Elements', 'Mapping/Transforming Elements', 'Searching', 'Joining Arrays', 'Splitting Arrays', 'Reversing', 'Slicing', 'Merging Arrays', 'Finding Min/Max Elements', 'Finding Duplicates', 'Finding Unique Elements', 'Shuffling/Randomizing', 'Flattening Nested Arrays', 'Combining Arrays'], 2 => ['Pattern Matching', 'Regex Syntax', 'Metacharacters', 'Quantifiers', 'Anchors', 'Character Classes', 'Alternation', 'Grouping and Capturing', 'Escape Sequences', 'Assertions', 'Modifiers', 'Greedy vs. Non-Greedy', 'Backreferences', 'Lookahead and Lookbehind', 'Boundary Matchers', 'Unicode Characters in Regex', 'Matching HTML/XML Tags', 'Validating Email Addresses', 'Validating Dates', 'Password Validation'], 3 => []];
 
 foreach($data as $key => $sample) {
   if (!in_array($sample['category'], $categories))

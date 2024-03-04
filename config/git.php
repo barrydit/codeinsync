@@ -6,7 +6,10 @@
 if ($path = realpath((basename(__DIR__) != 'config' ? NULL : __DIR__ . DIRECTORY_SEPARATOR) . 'constants.php')) // is_file('config/constants.php')) 
   require_once($path);
 
-define('GIT_EXEC', '/usr/bin/git');
+if (strtoupper(substr(PHP_OS, 0, 3)) === 'WIN')
+  define('GIT_EXEC', 'git.exe');
+else
+  define('GIT_EXEC', '/usr/bin/git');
 
 define('GIT_VERSION', (preg_match("/(?:version|v)\s*((?:[0-9]+\.?)+)/i", exec('git --version'), $match) ? rtrim($match[1], '.') : ''));
 
