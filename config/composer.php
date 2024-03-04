@@ -114,52 +114,6 @@ foreach ($installedPackages as $key => $package) { //
 }
 
 define('COMPOSER_VENDORS', $uniqueVendors);
-<<<<<<< HEAD
-}
-
-/* This code starts here */
-
-
-
-
-/* Ends here */
-
-
-/*
-
-use Composer\Composer;
-use Composer\Factory;
-use Composer\DependencyResolver\Request;
-use Composer\Package\Version\VersionSelector;
-use Composer\Repository\CompositeRepository;
-use Composer\Repository\PlatformRepository;
-
-// Initialize Composer
-$composer = Factory::create();
-
-// Create a repository representing all known packages
-$repositorySet = $composer->getRepositoryManager()->getLocalRepositorySet();
-
-// Create a PlatformRepository to represent the currently installed packages
-$platformRepo = new PlatformRepository();
-
-// Create a CompositeRepository with both the known packages and the installed packages
-$compositeRepo = new CompositeRepository([$platformRepo, $repositorySet->getCanonicalLocalRepository()]);
-
-// Create a Request for the package you're looking to install
-$request = new Request();
-$request->install(['package-name' => '*']);
-
-// Get the latest version of the package
-$versionSelector = new VersionSelector($compositeRepo);
-$latestPackage = $versionSelector->findBestCandidate('package-name');
-
-if ($latestPackage !== null) {
-    echo 'Package is installable.';
-} else {
-    echo 'Package is not installable.';
-=======
->>>>>>> 620aff1352362956a8cd4b12bf627331eda921bc
 }
 
 /*
@@ -195,11 +149,7 @@ if (!file_exists(APP_PATH . 'composer.phar')) {
   $errors['COMPOSER-PHAR'] = 'Composer setup was executed and ' . (file_exists(APP_PATH.'composer.phar') ? 'does' : 'does not') . ' exist. version='.exec('php composer.phar -V') . '  error=' . $error;
 } else {
 
-<<<<<<< HEAD
-if (preg_match('/Composer(?: version)? (\d+\.\d+\.\d+) (\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2})/', exec($bin = 'php composer.phar' . ' -V'), $matches))
-=======
 if (preg_match('/Composer(?: version)? (\d+\.\d+\.\d+) (\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2})/', exec(($bin = 'php composer.phar') . ' -V'), $matches))
->>>>>>> 620aff1352362956a8cd4b12bf627331eda921bc
 define('COMPOSER_BIN', ['bin' => $bin, 'version' => $matches[1], 'date' => $matches[2]]);
 
 }
@@ -361,8 +311,8 @@ if (defined('APP_ENV') and APP_ENV == 'development') {
       or define('COMPOSER_INIT_PARAMS', /*<<<TEXT TEXT*/ ob_get_contents());
     ob_end_clean();
     
-    if (!is_dir($$c_or_p->path . 'vendor'))
-      $errors['COMPOSER_INIT-VENDOR'] = 'Failed to create the vendor/ directory. If you are seeing this. An error has occured.';
+  if (!is_dir($$c_or_p->path . 'vendor'))
+    $errors['COMPOSER_INIT-VENDOR'] = 'Failed to create the vendor/ directory. If you are seeing this. An error has occured.';
     
     //@mkdir($$c_or_p->path . 'vendor');
 
