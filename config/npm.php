@@ -7,7 +7,7 @@ npm WARN EBADENGINE   current: { node: 'v12.22.12', npm: '7.5.2' }
 npm WARN EBADENGINE }
 */
 
-define('NODE_ENV', APP_ENV ?? 'production');
+define('NODE_ENV', (!defined('APP_ENV') ?:APP_ENV) ?? 'production');
 putenv('NODE_ENV=' . (string) NODE_ENV);
 
 define('NODE_EXEC', '/usr/bin/node');

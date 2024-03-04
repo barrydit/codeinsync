@@ -257,7 +257,18 @@ ob_start(); ?>
 <!-- <div class="container" style="border: 1px solid #000;"> -->
 
 <div id="app_console-container" class="" style="border: 1px dashed #000; ">
-    <div style="position: absolute; top: -160px; background-color: rgba(255, 255, 255, 0.6); border: 1px dashed #000; height: 160px; width: 100%; padding: 20px 10px; color: #000; text-align: left; z-index: -1;" class="text-sm">
+    <div style="position: absolute; display: none; top: -320px; background-color: #FFF; border: 1px dashed #000; height: 160px; width: 100%; padding: 20px 10px; color: #000; text-align: left; z-index: -1; text-align: center;" class="text-sm">
+    <h1>&lt;html&gt; &lt;head&gt;</h1>
+    <h2>&lt;meta&gt;, &lt;link&gt;, &lt;base&gt;,... &lt;/head&gt;</h2>
+    
+    <h1>body</h1>
+    <h2>&lt;p&gt;, &lt;pre&gt;, &lt;div&gt;,...</h2>
+    
+    To put language manual / langauge specifics <br />
+    langauge function paramters and related functions <br />
+    math functions / order-of-operation <br />
+    </div>
+    <div style="position: absolute; display: none; top: -160px; background-color: rgba(255, 255, 255, 0.6); border: 1px dashed #000; height: 160px; width: 100%; padding: 20px 10px; color: #000; text-align: left; z-index: -1;" class="text-sm">
       <div style="display: inline; float: left; background-color: #FFF; width: 50%; border: 1px dashed #000; ">
         <input type="checkbox" checked /> Interactive<br />
         <input type="checkbox" checked /> font-family: 'Courier New', Courier, monospace;
@@ -271,7 +282,7 @@ ob_start(); ?>
     </div>
 
     <div style="position: absolute; top: -24px; background-color: #FFA6A6; border: 1px dashed #000; border-right: none; z-index: -1;"><button style="padding: 0 4px 4px 4px; font-weight: bold;" class="text-xs">[Settings...]</button></div>
-        <div style="position: absolute; top: -24px; left: 73px; background-color: #FFA6A6; border: 1px dashed #000; border-left: none; z-index: -1;"> | <button style="border: 1px dashed #000; padding: 0 4px 2px 4px; border: 1px dashed #000; font-weight: bold; color: black;" class="text-xs">SQL Query</button> | <button style="border: 1px dashed #000; padding: 0 4px 2px 4px; font-weight: bold;" class="text-xs">PHP</button> | <button style="border: 1px dashed #000; padding: 0 4px 2px 4px; font-weight: bold;" class="text-xs">Perl</button> | <button style="border: 1px dashed #000; padding: 0 4px 2px 4px; font-weight: bold;" class="text-xs">Python</button> | <button style="border: 1px dashed #000; padding: 0 4px 2px 4px; font-weight: bold;" class="text-xs">JavaScript</button> | <button style="border: 1px dashed #000; padding: 0 4px 2px 4px; font-weight: bold;" class="text-xs">CSS</button> | <button style="border: 1px dashed #000; padding: 0 4px 2px 4px; font-weight: bold;" class="text-xs">HTML</button> | </div>
+        <div style="position: absolute; top: -24px; left: 73px; background-color: #FFA6A6; border: 1px dashed #000; border-left: none; z-index: -1;"><button style="border: 1px dashed #000; padding: 0 4px 2px 4px; font-weight: bold; color: black;" class="text-xs">Console</button> | <button style="border: 1px dashed #000; padding: 0 4px 2px 4px; border: 1px dashed #000; font-weight: bold;" class="text-xs">SQL Query</button> | <button style="border: 1px dashed #000; padding: 0 4px 2px 4px; font-weight: bold;" class="text-xs">PHP</button> | <button style="border: 1px dashed #000; padding: 0 4px 2px 4px; font-weight: bold;" class="text-xs">Perl</button> | <button style="border: 1px dashed #000; padding: 0 4px 2px 4px; font-weight: bold;" class="text-xs">Python</button> | <button style="border: 1px dashed #000; padding: 0 4px 2px 4px; font-weight: bold;" class="text-xs">JavaScript</button> | <button style="border: 1px dashed #000; padding: 0 4px 2px 4px; font-weight: bold;" class="text-xs">CSS</button> | <button style="border: 1px dashed #000; padding: 0 4px 2px 4px; font-weight: bold;" class="text-xs">HTML</button> </div>
     <div style="text-align: left; position: relative;">
 
         <div style="display: inline-block; margin: 5px 0px 0px 10px; float: left;">

@@ -143,6 +143,8 @@ if (in_array('Composer\Autoload\ClassLoader', $loadedLibraries)) {
 $vendors = [];
 
 // Print information about each package
+
+if (isset($installedPackages) && !empty($installedPackages)) {
 foreach ($installedPackages as $key => $package) { //
     if (preg_match('/([a-z0-9](?:[_.-]?[a-z0-9]+)*)\/([a-z0-9](?:(?:[_.]|-{1,2})?[a-z0-9]+)*)/', $package, $matches))
       $vendors[$key] = $matches[1];
@@ -157,7 +159,7 @@ foreach ($installedPackages as $key => $package) { //
 }
 
 define('COMPOSER_VENDORS', $uniqueVendors);
-
+}
 
 /* This code starts here */
 
@@ -293,13 +295,18 @@ if (!file_exists(APP_PATH . 'composer.phar')) {
   $error = exec('php composer-setup.php'); // php -d register_argc_argv=1
 
   $errors['COMPOSER-PHAR'] = 'Composer setup was executed and ' . (file_exists(APP_PATH.'composer.phar') ? 'does' : 'does not') . ' exist. version='.exec('php composer.phar -V') . '  error=' . $error;
+} else {
+
+if (preg_match('/Composer(?: version)? (\d+\.\d+\.\d+) (\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2})/', exec($bin = 'php composer.phar' . ' -V'), $matches))
+define('COMPOSER_BIN', ['bin' => $bin, 'version' => $matches[1], 'date' => $matches[2]]);
+
 }
 
 if (strtoupper(substr(PHP_OS, 0, 3)) === 'WIN') { // DO NOT REMOVE! { .. }
     if (file_exists('C:\ProgramData\ComposerSetup\bin\composer.phar')) {
-
-        define('COMPOSER_PHAR', 'C:\ProgramData\ComposerSetup\bin\composer.phar');
-        define('COMPOSER_BIN', /*'composer.exe'*/ NULL);
+      if (preg_match('/Composer(?: version)? (\d+\.\d+\.\d+) (\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2})/', exec($bin = 'php C:\ProgramData\ComposerSetup\bin\composer.phar' . ' -V'), $matches))
+        define('COMPOSER_PHAR', ['bin' => $bin, 'version' => $matches[1], 'date' => $matches[2]]);
+      !defined('COMPOSER_BIN') and define('COMPOSER_BIN', COMPOSER_PHAR);
     }
 } else {
 
@@ -360,7 +367,10 @@ if (strtoupper(substr(PHP_OS, 0, 3)) === 'WIN') { // DO NOT REMOVE! { .. }
 defined('COMPOSER_EXEC')
   or define('COMPOSER_EXEC', (isset($_GET['exec']) ? ($_GET['exec'] == 'phar' ? COMPOSER_PHAR : COMPOSER_BIN) : COMPOSER_BIN ?? COMPOSER_PHAR));
 
-define('COMPOSER_VERSION', COMPOSER_EXEC['version'] ?? COMPOSER_PHAR['version']);
+if (is_array(COMPOSER_EXEC))
+  define('COMPOSER_VERSION', COMPOSER_EXEC['version']);
+else
+  define('COMPOSER_VERSION', COMPOSER_PHAR['version']);
 
 $configJsonPath = COMPOSER_HOME . 'config.json';
 
@@ -427,7 +437,7 @@ APP_CLIENT / APP_PROJECT APP_ {key(APP_WORK)}
   [user]
 */
 
-if (APP_ENV == 'development') {
+if (defined('APP_ENV') and APP_ENV == 'development') {
   if (defined('APP_CLIENT') || defined('APP_PROJECT'))
     $$c_or_p = APP_CLIENT ?? APP_PROJECT;
   else {
@@ -449,8 +459,8 @@ if (APP_ENV == 'development') {
       or define('COMPOSER_INIT_PARAMS', /*<<<TEXT TEXT*/ ob_get_contents());
     ob_end_clean();
     
-  if (!is_dir($$c_or_p->path . 'vendor'))
-    $errors['COMPOSER_INIT-VENDOR'] = 'Failed to create the vendor/ directory. If you are seeing this. An error has occured.';
+    if (!is_dir($$c_or_p->path . 'vendor'))
+      $errors['COMPOSER_INIT-VENDOR'] = 'Failed to create the vendor/ directory. If you are seeing this. An error has occured.';
     
     //@mkdir($$c_or_p->path . 'vendor');
 
@@ -678,7 +688,7 @@ fclose($pipes[2]);
     $vendors = $dirs_diff = [];
 
 //$dirs = array_filter( glob( 'vendor/*'), 'is_dir');
-
+    if (defined('COMPOSER_VENDORS'))
     foreach (COMPOSER_VENDORS as $vendor => $packages) {
       if ($vendor == basename('bin')) continue;
       if ($vendor == 'barrydit') continue;
@@ -803,7 +813,7 @@ fclose($pipes[2]);
 //Deprecated:  strpos(): Passing null to parameter #1 ($haystack) of type string is deprecated
 
 defined('COMPOSER_JSON')
-    and define('COMPOSER', json_decode(file_get_contents(COMPOSER_JSON['path'])));
+    and define('COMPOSER', ['json' => json_decode(file_get_contents($path = COMPOSER_JSON['path'])), 'path' => $path]);
 
 if (isset(COMPOSER->{'require'}) && !empty(COMPOSER->{'require'}))
 foreach (COMPOSER->require as $key => $value) {
