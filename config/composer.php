@@ -92,8 +92,6 @@ if (in_array('Composer\Autoload\ClassLoader', $loadedLibraries)) {
     $installedPackages = \Composer\InstalledVersions::getInstalledPackages();
 }
 
-
-
 //dd();
 $vendors = [];
 
@@ -149,15 +147,15 @@ if (!file_exists(APP_PATH . 'composer.phar')) {
   $errors['COMPOSER-PHAR'] = 'Composer setup was executed and ' . (file_exists(APP_PATH.'composer.phar') ? 'does' : 'does not') . ' exist. version='.exec('php composer.phar -V') . '  error=' . $error;
 } else {
 
-if (preg_match('/Composer(?: version)? (\d+\.\d+\.\d+) (\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2})/', exec(($bin = 'php composer.phar') . ' -V'), $matches))
-define('COMPOSER_BIN', ['bin' => $bin, 'version' => $matches[1], 'date' => $matches[2]]);
+  if (preg_match('/Composer(?: version)? (\d+\.\d+\.\d+) (\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2})/', exec(($bin = 'php composer.phar') . ' -V'), $matches))
+    define('COMPOSER_PHAR', ['bin' => $bin, 'version' => $matches[1], 'date' => $matches[2]]);
 
 }
 
 if (strtoupper(substr(PHP_OS, 0, 3)) === 'WIN') { // DO NOT REMOVE! { .. }
     if (file_exists('C:\ProgramData\ComposerSetup\bin\composer.phar')) {
       if (preg_match('/Composer(?: version)? (\d+\.\d+\.\d+) (\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2})/', exec($bin = 'php C:\ProgramData\ComposerSetup\bin\composer.phar' . ' -V'), $matches))
-        define('COMPOSER_PHAR', ['bin' => $bin, 'version' => $matches[1], 'date' => $matches[2]]);
+        !defined('COMPOSER_PHAR') and define('COMPOSER_PHAR', ['bin' => $bin, 'version' => $matches[1], 'date' => $matches[2]]);
       !defined('COMPOSER_BIN') and define('COMPOSER_BIN', COMPOSER_PHAR);
     }
 } else {

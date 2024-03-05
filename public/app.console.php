@@ -40,8 +40,9 @@ $proc=proc_open('sudo ' . COMPOSER_EXEC['bin'] . ' ' . $match[1],
           //$output[] = $_POST['cmd'];
 
         } else if (preg_match('/^git\s+(:?(.*))/i', $_POST['cmd'], $match)) {
+
           $requireFile = function($file) { require_once($file); };
-          $requireFile('config/git.php');
+          $requireFile(APP_PATH . 'config/git.php');
           if (preg_match('/^git\s+(help)(:?\s+)?/i', $_POST['cmd'])) {
             $output[] = <<<END
 git reset filename   (unstage a specific file)
@@ -298,7 +299,7 @@ ob_start(); ?>
         </div>
         <div style="display: inline-block;">
         
-        <div style="position: relative; display: inline-block; margin: 5px 10px 0px 0px; width: 200px; float: right;">
+        <div style="position: relative; display: inline-block; margin: 5px 10px 0px 0px; width: 210px; float: right;">
             <div style="float: right;">
                 &nbsp;<button id="consoleAnykeyBind" class="text-xs" type="submit" style="border: 1px dashed #FFF; padding: 2px 4px;">Bind Any[key] </button>
                 <input id="app_ace_editor-auto_bind_anykey" type="checkbox" name="auto_bind_anykey" checked="">

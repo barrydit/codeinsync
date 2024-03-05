@@ -253,6 +253,9 @@ do {
 /** Loading Time: 4.95s **/
   //dd(null, true);
 /*  */
+  
+//  dd(get_required_files(), false);
+
   if ($path = (basename(getcwd()) == 'public')
       ? (is_file('app.timesheet.php') ? 'app.timesheet.php' : (is_file('../app.timesheet.php') ? '../app.timesheet.php' : (is_file('../config/app.timesheet.php') ? '../config/app.timesheet.php' : 'public/app.timesheet.php')))
       : (is_file('../app.timesheet.php') ? '../app.timesheet.php' : (is_file('public/app.timesheet.php') ? 'public/app.timesheet.php' : (is_file('config/app.timesheet.php') ? 'config/app.timesheet.php' : 'app.timesheet.php'))))
@@ -313,7 +316,8 @@ do {
     require_once($path); 
   else die(var_dump($path . ' was not found. file=app.console.php'));
 
-/** Loading Time: 12.2s **/
+//dd(null, true);
+/** Loading Time: 11.27s **/
   
   //dd(get_required_files(), true);
 /* Checkboxes hold their state under cache */
@@ -646,11 +650,9 @@ header("Pragma: no-cache"); ?>
                       echo '              <option value="' . $link . '" ' . (current($_GET) == $link ? 'selected' : '') . '>' . $link . '</option>' . "\n";
                   }
                   ?>
-              </select>/
+              </select> /
               </span>
             </form>
-
-            
             <?php if (!empty($_GET['client'])) {
               $dirs = array_filter(glob(dirname(__DIR__) . /*'../../'.*/ '/clientele/' . $_GET['client'] . '/*'), 'is_dir'); ?>            
             <form style="display: inline;" autocomplete="off" spellcheck="false" action="" method="GET">
@@ -687,7 +689,7 @@ header("Pragma: no-cache"); ?>
                   echo '              <option value="' . (isset($_GET['path']) ?  $_GET['path'] . DIRECTORY_SEPARATOR : '') . basename($dir) . '"' . (isset($_GET['path']) && $_GET['path'] == basename($dir) ? ' selected' : '' )  . '>' . basename($dir) . '/</option>' . "\n";
                 }
               ?>
-          </select>/
+          </select> /
           </span>
           </form>
 
@@ -1047,7 +1049,7 @@ header("Pragma: no-cache"); ?>
             </form>
           </div>
         </div>
-        <table width="" style="border: none;">
+        <table style="width: inherit; border: none;">
           <tr style=" border: none;">
             <?php
               //$paths = glob($path . '/*');
@@ -1449,9 +1451,8 @@ header("Pragma: no-cache"); ?>
           
           ob_start(); 
           
-          echo APP_PATH . APP_ROOT;
-          ?> 
-        <table width="" style="border: 0 solid #000;">
+          echo APP_PATH . APP_ROOT; ?> 
+        <table style="width: inherit; border: 0 solid #000;">
           <tr>
             <?php
               $paths = glob(APP_PATH . APP_ROOT . '/' . '{.[!.]*,*}', GLOB_BRACE | GLOB_MARK);

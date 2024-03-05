@@ -1,12 +1,6 @@
 <?php
 
-if (is_readable($path = ini_get('error_log')) && filesize($path) >= 0 ) {
-  $errors['ERROR_LOG'] = shell_exec('sudo tail ' . $path);
-  if (isset($_GET[$error_log = basename(ini_get('error_log'))]) && $_GET[$error_log] == 'unlink') {
-    unlink($path);
-    exit(); // header('Location: ' . APP_WWW)
-  }
-}
+
 /**This Program Should be Disabled by default ... for debugging purposes only!**/
 if (isset($_GET['src']) && is_readable($path = $_GET['src']) && filesize($path) > 0 ) {
   Shutdown::setEnabled(false)->setShutdownMessage(function() use($path) {
@@ -1042,7 +1036,7 @@ do {
             </form>
           </div>
         </div>
-        <table width="" style="border: none;">
+        <table style="width: inherit; border: none;">
           <tr style=" border: none;">
             <?php
               //$paths = glob($path . '/*');
@@ -1446,7 +1440,7 @@ do {
           
           echo APP_PATH . APP_ROOT;
           ?> 
-        <table width="" style="border: 0 solid #000;">
+        <table style="width: inherit; border: 0 solid #000;">
           <tr>
             <?php
               $paths = glob(APP_PATH . APP_ROOT . '/' . '{.[!.]*,*}', GLOB_BRACE | GLOB_MARK);

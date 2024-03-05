@@ -6,15 +6,16 @@ if (__FILE__ == get_required_files()[0])
     : (is_file('config.php') ? 'config.php' : (is_file('config/config.php') ? 'config/config.php' : null))) require_once($path); 
   else die(var_dump($path . ' path was not found. file=config.php'));
 else {
+/*
   if ($path = (is_file('config/git.php') ? 'config/git.php' : '') )
     require_once($path); 
   else die(var_dump($path . ' path was not found. file=git.php'));
+
   if ($path = (is_file('config/composer.php') ? 'config/composer.php' : '') )
     require_once($path); 
-  else die(var_dump($path . ' path was not found. file=git.php'));
+  else die(var_dump($path . ' path was not found. file=composer.php'));
+*/
 }
-
-// dd(get_included_files());
 
 /* https://stackoverflow.com/questions/73026623/how-to-ignore-or-permanently-block-the-files-which-contain-date-or-datetime-in */
 
@@ -233,7 +234,7 @@ ob_start();
           <div style="display: inline-block; width: 32%; text-align: center; border: 1px dashed #F05033; height: 44px; padding: 7px;">
             <select id="app_git-frameSelector">
               <!-- <option value="">---</option> -->
-              <option value="init" <?= (is_dir('.git') ? 'disabled' : 'selected' ); ?>>init</option>
+              <option value="init" <?= (is_dir(APP_PATH . APP_ROOT . '.git') ? 'disabled' : 'selected' ); ?>>init</option>
               <option value="status">status</option>
               <option value="config">config</option>
               <option value="commit">commit</option>

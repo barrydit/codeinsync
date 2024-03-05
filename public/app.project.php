@@ -1,9 +1,9 @@
 <?php
-if (__FILE__ == get_required_files()[0])
+
+if (__FILE__ == get_required_files()[0]) //die(getcwd());
   if ($path = (basename(getcwd()) == 'public')
-    ? (is_file('../config.php') ? '../config.php' : (is_file('../config/config.php') ? '../config/config.php' : null))
-    : (is_file('config.php') ? 'config.php' : (is_file('config/config.php') ? 'config/config.php' : null))) require_once($path);
-else die(var_dump($path . ' path was not found. file=config.php'));
+    ? (is_file('config.php') ? 'config.php' : '../config/config.php') : '') require_once($path);
+  else die(var_dump($path . ' path was not found. file=config.php'));
 
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
   if (isset($_GET['app']) && $_GET['app'] == 'project')
@@ -15,7 +15,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 
 ob_start(); ?>
 
-#app_project-container { position: absolute; height: auto; display: none; top: 50%; left: 50%; transform: translate(-50%, -50%); }
+#app_project-container { position: absolute; height: auto; display: none; top: 40%; left: 50%; transform: translate(-50%, -50%); }
 #app_project-container.selected { display: block; z-index: 1; 
   /* Add your desired styling for the selected container */
   /*

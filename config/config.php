@@ -9,6 +9,15 @@ ini_set('display_errors', 'true');
 ini_set('display_startup_errors', 'true');
 ini_set('error_log', (is_dir($path = dirname(__DIR__, 1) . DIRECTORY_SEPARATOR . 'config') ? dirname($path, 1) . DIRECTORY_SEPARATOR . 'error_log' : 'error_log'));
 ini_set('log_errors', 'true');
+
+if (is_readable($path = ini_get('error_log')) && filesize($path) >= 0 ) {
+  $errors['ERROR_LOG'] = shell_exec('sudo tail ' . $path);
+  if (isset($_GET[$error_log = basename(ini_get('error_log'))]) && $_GET[$error_log] == 'unlink') {
+    unlink($path);
+    exit('Error_log completely removed.'); // header('Location: ' . APP_WWW)
+  }
+}
+
 ini_set('xdebug.remote_enable', '0');
 ini_set('xdebug.profiler_enable', '0');
 ini_set('xdebug.default_enable', '0');
@@ -75,7 +84,7 @@ if (!empty($_GET['client']) && !empty($_GET['domain'])) {
       }
     }
     
-  if (!empty($_GET['path']) && is_dir(APP_PATH . $path . $_GET['path'])) $path .= $_GET['path'];
+  if (isset($_GET['path']) && is_dir(APP_PATH . $path . $_GET['path'])) $path .= $_GET['path'];
     //else 
       //exit(header('Location: http://localhost/clientele/' . $_GET['client']));    
     //$path = '?path=' . $path;
@@ -83,9 +92,9 @@ if (!empty($_GET['client']) && !empty($_GET['domain'])) {
   $path = 'projects' . DIRECTORY_SEPARATOR . $_GET['project'] . DIRECTORY_SEPARATOR;   
   //$dirs = array_filter(glob(dirname(__DIR__) . '/projects/' . $_GET['project'] . '/*'), 'is_dir');
 
-  if (!empty($_GET['path']) && is_dir(APP_PATH . $path . $_GET['path'])) $path .= $_GET['path'];
+  if (isset($_GET['path']) && is_dir(APP_PATH . $path . $_GET['path'])) $path .= $_GET['path'];
 
-} else { $path = ''; } 
+} else { if (isset($_GET['path']) && is_dir(APP_PATH . $_GET['path'])) $path = $_GET['path']; } 
 
 !defined('APP_ROOT') and define('APP_ROOT', $path = (realpath(APP_PATH . $path) ? $path : null )); // dirname(APP_SELF, (basename(getcwd()) != 'public' ?: 2))
 // Directory of this script
@@ -293,10 +302,10 @@ if (is_file(APP_ROOT . 'projects/project.php') && isset($_GET['project']) && $_G
 } elseif (!is_file(APP_ROOT . 'projects/project.php')) {
 file_put_contents(APP_ROOT . 'projects/project.php', '<?php ' . <<<END
 //if (__FILE__ != get_required_files()[0])
-\$require = function(\$path) { require_once(\$path); };
-if (\$path = (basename(getcwd()) == 'public')
-  ? (is_file('config.php') ? 'config.php' : '../config/config.php') : '') \$require(\$path);
-else die(var_dump(\$path . ' path was not found. file=config.php'));
+$require = function(\$path) { require_once($path); };
+if ($path = (basename(getcwd()) == 'public')
+  ? (is_file('config.php') ? 'config.php' : '../config/config.php') : '') $require($path);
+else die(var_dump($path . ' path was not found. file=config.php'));
 
 require_once(APP_PATH . 'vendor/autoload.php');
 
