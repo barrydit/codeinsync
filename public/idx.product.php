@@ -1513,7 +1513,7 @@ header("Pragma: no-cache"); ?>
                         . '<img src="resources/images/directory-git.png" width="50" height="32" /><br />' . basename($path) . '/</a>' . "\n";
                       elseif (basename($path) == 'applications')
                         echo '<div style="position: relative;">'
-                        . '<a href="#!" onclick="document.getElementById(\'app_application-container\').style.display=\'block\';"><img src="resources/images/directory-application.png" width="50" height="32" /></a><br />'
+                        . '<a href="?application" onclick="document.getElementById(\'app_application-container\').style.display=\'block\';"><img src="resources/images/directory-application.png" width="50" height="32" /></a><br />'
                         . '<a href="?path=' . basename($path) . '" onclick="">' . basename($path)  // "?path=' . basename($path) . '"         
                         . '/</a></div>' . "\n";
                       elseif (basename($path) == 'node_modules')
