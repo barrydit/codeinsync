@@ -21,12 +21,18 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         //else if (preg_match('/^edit\s+(:?(.*))/i', $_POST['cmd'], $match))
           //exec($_POST['cmd'], $output);
           //die(header('Location: ' . APP_URL_BASE . '?app=text_editor&filename='.$_POST['cmd']));
-        else if (preg_match('/^php\s+(:?(.*))/i', $_POST['cmd'], $match))
-          if (preg_match('/^php\s+(?:(-r))/i', $_POST['cmd']))
+        else if (preg_match('/^php\s+(:?(.*))/i', $_POST['cmd'], $match)) {
+          if (preg_match('/^php\s+(?!(-r))/i', $_POST['cmd'])) {
+            $match[1] = trim($match[1], '"');
+            $output[] = eval($match[1] . (substr($match[1], -1) != ';' ? ';' : ''));
+          } else if (preg_match('/^php\s+(?:(-r))\s+(:?(.*))/i', $_POST['cmd'], $match)) {
+            $match[2] = trim($match[2], '"');
+            $_POST['cmd'] = 'php -r "' . $match[2] . (substr($match[2], -1) != ';' ? ';' : '') . '"';
             exec($_POST['cmd'], $output);
-          if (preg_match('/^php\s+(?!(-r))/i', $_POST['cmd'])) 
-            $output[] = eval(trim($match[1], '"'));
-        else if (preg_match('/^composer\s+(:?(.*))/i', $_POST['cmd'], $match)) {
+            //$output[] = $_POST['cmd'];
+          }
+
+        } else if (preg_match('/^composer\s+(:?(.*))/i', $_POST['cmd'], $match)) {
           $output[] = 'sudo ' . COMPOSER_EXEC['bin'] . ' ' . $match[1];
 $proc=proc_open('sudo ' . COMPOSER_EXEC['bin'] . ' ' . $match[1],
   array(
@@ -63,8 +69,6 @@ END;
           // $GIT_DIR environment variable
           
           $output[] = 'GetCWD: ' . getcwd();
-          
-          $composerHome = 
 
           $output[] = $command = ((strtoupper(substr(PHP_OS, 0, 3)) === 'WIN') ? '' : 'sudo ') . GIT_EXEC . (is_dir($path = APP_PATH . APP_ROOT . '.git') || APP_PATH . APP_ROOT != APP_PATH ? ' --git-dir="' . $path . '" --work-tree="' . dirname($path) . '"': '' ) . ' ' . $match[1];
 $proc=proc_open($command,

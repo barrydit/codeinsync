@@ -520,7 +520,7 @@ header("Pragma: no-cache"); ?>
                 //$path .= 'davidraymant.ca/';
         
                 if (is_dir($dirs[$key].'/public/'))
-                  $path .= basename($dirs[$key]).'/public/';
+                  $path .= basename($dirs[$key]).'/public/login.php';
                 else 
                   $path .= basename($dirs[$key]);
                 break;
@@ -587,7 +587,7 @@ header("Pragma: no-cache"); ?>
         </div>
 
           
-          <div style="position: absolute; top: 40px; left: 0; z-index: 1;">
+          <div style="position: absolute; top: 40px; left: 0; z-index: 1; background-color: white; border: 1px solid #000;">
             <?php $path = realpath(APP_ROOT . (isset($_GET['path']) ? DIRECTORY_SEPARATOR . $_GET['path'] : '')) . DIRECTORY_SEPARATOR; // getcwd()
               if (isset($_GET['path'])) { ?>
             <!-- <input type="hidden" name="path" value="<?= $_GET['path']; ?>" /> -->
@@ -695,7 +695,7 @@ header("Pragma: no-cache"); ?>
 
 <?php } ?>
           </div>
-          <div style="position: absolute; width: 235px; top: 40px; right: -10px; border: 1px dashed green; height: 25px;">
+          <div style="position: absolute; width: auto; top: 40px; right: -10px; border: 1px dashed green; height: 25px;">
             <div id="clockTime"></div>
           </div>
           <div id="app_tools-container" style="position: absolute; display: none; width: 800px; margin: 0 auto; height: 500px; background-color: rgba(255, 255, 255, 0.9); overflow-x: scroll;">
@@ -707,9 +707,9 @@ header("Pragma: no-cache"); ?>
               
               https://stackoverflow.com/questions/12939928/make-a-link-open-a-new-window-not-tab
                -->
-            <div style="position: absolute; margin: 100px 165px; text-align: center;" class="text-sm"><a href="app.whiteboard.php" target="_blank" onclick="document.getElementById('app_whiteboard-container').style.display='block'; return false;"><img style="text-align: center;" src="<?= APP_BASE['resources'] . 'images/whiteboard.png' ?>" /></a><br /><a href="?app=ace_editor&path=&file=app.whiteboard.php" style="text-align: center;">Whiteboard</a></div>
+            <div style="position: absolute; margin: 100px 165px; text-align: center;" class="text-sm"><a href="#" target="_blank" onclick="toggleIframeUrl('app.whiteboard.php'); return false;"><img style="text-align: center;" src="<?= APP_BASE['resources'] . 'images/whiteboard.png' ?>" /></a><br /><a href="?app=ace_editor&path=&file=app.whiteboard.php" style="text-align: center;">Whiteboard</a></div>
             <div style="position: absolute; margin: 100px 260px; text-align: center;" class="text-sm"><a href="#!" onclick="document.getElementById('app_notes-container').style.display='block'; return false;"><img style="text-align: center;" src="<?= APP_BASE['resources'] . 'images/notes.png' ?>" /></a><br /><a href="?app=ace_editor&path=&file=app.notes.php" style="text-align: center;">Notes</a></div>
-            <div style="position: absolute; margin: 100px 350px; text-align: center;" class="text-sm"><a href="#!" onclick="document.getElementById('app_project-container').style.display='block'; return false;"><img style="text-align: center;" src="<?= APP_BASE['resources'] . 'images/project.png' ?>" /></a><br /><a href="?app=ace_editor&path=&file=app.project.php"><span style="text-align: center;">Project</span></a></div>
+            <div style="position: absolute; margin: 100px 350px; text-align: center;" class="text-sm"><a href="#!" onclick="document.getElementById('app_project-container').style.display='block'; document.getElementById('toggle-debug').checked = false; toggleSwitch(document.getElementById('toggle-debug')); return false;"><img style="text-align: center;" src="<?= APP_BASE['resources'] . 'images/project.png' ?>" /></a><br /><a href="?app=ace_editor&path=&file=app.project.php"><span style="text-align: center;">Project</span></a></div>
             <div style="position: absolute; margin: 100px 0 0 450px ; text-align: center;" class="text-sm"><a href="#!" onclick="document.getElementById('app_debug-container').style.display='block'; return false;"><img style="text-align: center;" src="<?= APP_BASE['resources'] . 'images/debug.png' ?>" /><br /><span style="text-align: center;">Debug</span></a></div>
             <div style="position: absolute; margin: 100px 0 0 540px; text-align: center;" class="text-sm"><a href="#!" onclick="document.getElementById('app_profile-container').style.display='block'; return false;"><img style="text-align: center;" src="<?= APP_BASE['resources'] . 'images/user.png' ?>" /><br /><span style="text-align: center;">Profile</span></a></div>
             <div style="position: absolute; margin: 100px 0 0 630px; text-align: center;" class="text-sm"><a href="#!" onclick="document.getElementById('app_browser-container').style.display='block'; return false;"><img style="text-align: center;" src="<?= APP_BASE['resources'] . 'images/browser.png' ?>" /><br /><span style="text-align: center;">Browser</span></a></div>
@@ -729,7 +729,7 @@ header("Pragma: no-cache"); ?>
                 </label>
               </form>
             </div>
-            <div style="position: absolute; margin: 200px 0 0 540px; text-align: center;" class="text-sm"><a href="#!" onclick="document.getElementById('app_pong-container').style.display='block'; return false;"><img style="text-align: center;" src="<?= APP_BASE['resources'] . 'images/pong.png' ?>" /><br /><span style="text-align: center;">Pong</span></a></div>
+            <div style="position: absolute; margin: 200px 0 0 540px; text-align: center;" class="text-sm"><a href="#!" onclick="toggleIframeUrl('app.pong.php'); return false;"><img style="text-align: center;" src="<?= APP_BASE['resources'] . 'images/pong.png' ?>" /><br /><span style="text-align: center;">Pong</span></a></div>
             <div style="position: absolute; margin: 200px 0 0 630px; text-align: center;" class="text-sm"><a href="#!" onclick="document.getElementById('app_browser-container').style.display='block'; return false;"><img style="text-align: center;" src="<?= APP_BASE['resources'] . 'images/regexp.png' ?>" /><br /><span style="text-align: center;">RegExp</span></a></div>
             <div style="position: absolute; margin: 300px 75px; text-align: center;" class="text-sm"><a href="#!" onclick="document.getElementById('app_browser-container').style.display='block'; return false;"><img style="text-align: center;" src="<?= APP_BASE['resources'] . 'images/chatgpt.png' ?>" /><br /><span style="text-align: center;">ChatGPT</span></a></div>
             <div style="position: absolute; margin: 300px 160px; text-align: center;" class="text-sm"><a href="#!" onclick="document.getElementById('app_browser-container').style.display='block'; return false;"><img style="text-align: center;" src="<?= APP_BASE['resources'] . 'images/stackoverflow.png' ?>" /><br /><span style="text-align: center;">Stackoverflow</span></a></div>
@@ -1865,6 +1865,16 @@ header("Pragma: no-cache"); ?>
       //$("#app_backup-container").hide("slide", { direction: "right" }, 1000);
       }
       }
+      
+      function toggleIframeUrl(uri_location) {
+            // Uncheck the checkbox
+            document.getElementById('toggle-debug').checked = false;
+            
+            toggleSwitch(document.getElementById('toggle-debug'));
+
+            // Set the src attribute of the iframe
+            document.getElementById('iWindow').src = uri_location;
+        }
       
       $(document).ready(function(){
         $( "#app_console-container").css('display', 'none');
