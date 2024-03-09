@@ -57,6 +57,18 @@ $errors = []; // (object)
 )) . DIRECTORY_SEPARATOR);
 
 
+class clientOrProj {
+    public $path;
+
+    public function __construct($path) {
+        $this->path = $path;
+    }
+
+    //public function getParam() {
+    //   return $this->param;
+    //}
+}
+
 if (!empty($_GET['client']) && !empty($_GET['domain'])) {
   $path = /*'../../'.*/ 'clientele/' . $_GET['client'] . '/';
   $dirs = array_filter(glob(dirname(__DIR__) . '/' . $path . '*'), 'is_dir');
@@ -76,21 +88,27 @@ if (!empty($_GET['client']) && !empty($_GET['domain'])) {
   if (!empty($_GET['domain']))
     foreach($dirs as $key => $dir) {
       if (basename($dir) == $_GET['domain']) {
-        //$path .= 'davidraymant.ca/';
         //if (is_dir($dirs[$key].'/public/'))
         //  $path .= basename($dirs[$key]).'/public/';
         $path .= basename($dirs[$key]) . DIRECTORY_SEPARATOR;
         break;
       }
     }
-    
+  
+  if (is_dir(APP_PATH . $path))
+    define('APP_CLIENT', new clientOrProj($path));
+  
   if (isset($_GET['path']) && is_dir(APP_PATH . $path . $_GET['path'])) $path .= $_GET['path'];
     //else 
       //exit(header('Location: http://localhost/clientele/' . $_GET['client']));    
     //$path = '?path=' . $path;
+
 } elseif (!empty($_GET['project'])) {
   $path = 'projects' . DIRECTORY_SEPARATOR . $_GET['project'] . DIRECTORY_SEPARATOR;   
   //$dirs = array_filter(glob(dirname(__DIR__) . '/projects/' . $_GET['project'] . '/*'), 'is_dir');
+  
+  if (is_dir(APP_PATH . $path))
+    define('APP_PROJECT', new clientOrProj($path));
 
   if (isset($_GET['path']) && is_dir(APP_PATH . $path . $_GET['path'])) $path .= $_GET['path'];
 
@@ -351,6 +369,7 @@ if (basename($dir = getcwd()) != 'config') {
   if (in_array(basename($dir), ['public', 'public_html']))
     chdir('../');
 
+  chdir(APP_PATH . APP_ROOT);
 //dd($dir);
 
   //else chdir('../'); //
@@ -405,11 +424,12 @@ if (basename($dir = getcwd()) != 'config') {
     $previousFilename = $currentFilename;
   }
 
+  chdir(APP_PATH);
+
+
+//dd(getcwd());
 
 // dd('loaded apps');
-
-
-  //dd(get_required_files());
 
 } elseif (basename(dirname(APP_SELF)) == 'public_html') { // basename(__DIR__) == 'public_html'
   $errors['APP_PUBLIC'] = 'The `public_html` scenario was detected.' . "\n";
@@ -688,6 +708,9 @@ $dotenv->safeLoad();
 define('APP_ERRORS', $errors ?? (($error = ob_get_contents()) == null ? null : 'ob_get_contents() maybe populated/defined/errors... error=' . $error ));
 ob_end_clean();
 
+
+
+  // dd(get_required_files());
 
 //var_dump(APP_ERRORS);
 

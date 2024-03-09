@@ -50,9 +50,14 @@
         exit(header('Location: ' . APP_WWW . '?' . $_GET['category']));
       } elseif (isset($_GET['category']) && empty($_GET['category']))
         exit(header('Location: ' . APP_WWW . '?path'));
+        
+      if (isset($_GET['path']) && !is_dir(APP_PATH . APP_ROOT . $_GET['path'])) {
+        //dd(APP_PATH . APP_ROOT . ' test');
+        die('Location: ' . APP_URL_BASE . APP_ROOT );
+      }
       break;
   }
-  
+  //dd(APP_PATH . APP_ROOT);
   /*
   switch ($_SERVER['REQUEST_METHOD']) {
     case 'POST':    

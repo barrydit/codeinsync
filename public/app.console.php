@@ -320,13 +320,6 @@ ob_start(); ?>
 
 //dd($errors);
 
-if (!empty($errors))
-  foreach($errors as $key => $error) {
-      if (!is_array($error))
-      echo /*$key . '=>' . */$error . ($key != end($errors) ? '' : "\n");
-      //else dd($error);
-  }
-
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
   //var_dump($output['results']);
   if (!empty($output['command'])) // echo join("\n$shell_prompt", $output['command']) . "\n";
@@ -337,9 +330,17 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
           foreach($result as $line) { echo $line . "\n"; }
       }
     }
-  else echo $shell_prompt;
+  else echo $shell_prompt . "\n";
 
-}?></textarea>
+}
+
+if (!empty($errors))
+  foreach($errors as $key => $error) {
+      if (!is_array($error))
+      echo /*$key . '=>' . */$error . ($key != end($errors) ? '' : "\n");
+      //else dd($error);
+  } ?>
+</textarea>
         
     </div>
 </div>
@@ -811,5 +812,5 @@ if (is_file($path . 'tailwindcss-3.3.5.js')) {
 ob_end_clean();
 
 //check if file is included or accessed directly
-if (__FILE__ == get_required_files()[0] || in_array(__FILE__, get_required_files()) && isset($_GET['app']) && $_GET['app'] == 'git' && APP_DEBUG)
+if (__FILE__ == get_required_files()[0] || in_array(__FILE__, get_required_files()) && isset($_GET['app']) && $_GET['app'] == 'console' && APP_DEBUG)
   die($appConsole['html']);

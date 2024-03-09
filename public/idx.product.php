@@ -1,10 +1,4 @@
 <?php
-
-  if (defined('APP_QUERY') && empty(APP_QUERY))
-    die(header('Location: ' . APP_URL_BASE . '?' . http_build_query(['client' => "000-Raymant, David", 'domain' => "davidraymant.ca"]) . '#'));
-  else
-    $_GET = array_merge($_GET, APP_QUERY);
-
   /*
   $_SERVER['REQUEST_SCHEME']
   
@@ -315,7 +309,12 @@ do {
       : (is_file('../app.console.php') ? '../app.console.php' : (is_file('public/app.console.php') ? 'public/app.console.php' : (is_file('config/app.console.php') ? 'config/app.console.php' : 'app.console.php'))))
     require_once($path); 
   else die(var_dump($path . ' was not found. file=app.console.php'));
-
+/*
+if (!empty($_GET['client']) && !empty($_GET['domain']))
+  chdir(APP_PATH . APP_CLIENT->path);
+elseif (!empty($_GET['project']))
+  chdir(APP_PATH . APP_PROJECT->path);
+*/  
 //dd(null, true);
 /** Loading Time: 11.27s **/
   
@@ -517,10 +516,8 @@ header("Pragma: no-cache"); ?>
           if (!empty($_GET['domain']))
             foreach($dirs as $key => $dir) {
               if (basename($dir) == $_GET['domain']) {
-                //$path .= 'davidraymant.ca/';
-        
                 if (is_dir($dirs[$key].'/public/'))
-                  $path .= basename($dirs[$key]).'/public/login.php';
+                  $path .= basename($dirs[$key]).'/public/';
                 else 
                   $path .= basename($dirs[$key]);
                 break;
@@ -557,7 +554,7 @@ header("Pragma: no-cache"); ?>
           </label>
           <!-- /form -->
         </div>
-        <div id="debug-content" class="absolute" style="position: absolute; display: none; right: 0; text-align: right; background-color: rgba(255, 255, 255, 0.8); border: 1px solid #000; width: 800px; z-index: 1;">
+        <div id="debug-content" class="absolute" style="position: absolute; display: none; right: 0; text-align: right; background-color: rgba(255, 255, 255, 0.8); border: 1px solid #000; width: 800px; z-index: 1; overflow: visible;">
           <div style="float: left; display: inline; margin: 5px;"><form style="display: inline;" action="/" method="POST">Stage: 
       <select name="environment" onchange="this.form.submit();">
         <option value="develop" <?= ( defined('APP_ENV') && APP_ENV == 'development' ? 'selected' : '') ?>>Development</option>
@@ -596,7 +593,7 @@ header("Pragma: no-cache"); ?>
               //APP_URL_BASE . /*basename(__FILE__) .*/ '?' . http_build_query(APP_QUERY /*+ array( 'app' => 'ace_editor')*/) . (defined('APP_ENV') && APP_ENV == 'development' ? '#!' : '') 
               
               /* $c_or_p . '=' . (empty($_GET[$c_or_p]) ? '' : $$c_or_p->name) . '&amp;app=composer' */ NULL; ?>
-            <?= '          <button id="displayDirectoryBtn" style="float: left; margin: 2px 5px 0 0;" type="">&#9660;</button> ' . "\n"; ?>
+            <?= '          <button id="displayDirectoryBtn" style="float: left; margin: 2px 5px 0 0;" type="">&nbsp;&#9660;</button> ' . "\n"; ?>
             <?php
               $main_cat = '        <form style="display: inline;" autocomplete="off" spellcheck="false" action="" method="GET">/'  . "\n"
               . '            <select name="category" onchange="this.form.submit();">' . "\n"
@@ -628,9 +625,7 @@ header("Pragma: no-cache"); ?>
                     if (is_dir(APP_PATH . /*'../../'.*/ 'projects/' . $link))
                       echo '              <option value="' . $link . '" ' . (current($_GET) == $link ? 'selected' : '') . '>' . $link . '</option>' . "\n";
                   } ?>
-              </select> /
-            </span>
-            </form>
+              </select> /</span></form>
 
             <?php
               } elseif (isset($_GET['client']) /*&& $_GET['client'] != ''*/ ) {
@@ -650,22 +645,13 @@ header("Pragma: no-cache"); ?>
                       echo '              <option value="' . $link . '" ' . (current($_GET) == $link ? 'selected' : '') . '>' . $link . '</option>' . "\n";
                   }
                   ?>
-              </select> /
-              </span>
-            </form>
-            <?php if (!empty($_GET['client'])) {
-              $dirs = array_filter(glob(dirname(__DIR__) . /*'../../'.*/ '/clientele/' . $_GET['client'] . '/*'), 'is_dir'); ?>            
-            <form style="display: inline;" autocomplete="off" spellcheck="false" action="" method="GET">
-              <?= (isset($_GET['client']) && !$_GET['client'] ? '' : '<input type="hidden" name="client" value="' . $_GET['client'] . '" / >') ?> 
-              <select id="domain" name="domain" onchange="this.form.submit();">
+              </select> /</span></form><?php if (!empty($_GET['client'])) {
+              $dirs = array_filter(glob(dirname(__DIR__) . /*'../../'.*/ '/clientele/' . $_GET['client'] . '/*'), 'is_dir'); ?><form style="display: inline;" autocomplete="off" spellcheck="false" action="" method="GET"><?= (isset($_GET['client']) && !$_GET['client'] ? '' : '<input type="hidden" name="client" value="' . $_GET['client'] . '" / >') ?><select id="domain" name="domain" onchange="this.form.submit();">
                 <option value="">---</option>
                 <?php foreach ($dirs as $dir) { ?>
                 <option <?= (isset($_GET['domain']) && $_GET['domain'] == basename($dir) ? 'selected' : '') ?>><?= basename($dir); ?></option>
                 <?php } ?>
-              </select>/
-
-
-            </form>
+              </select> /</form>
               <?php } ?>
 
           <?php } else {
@@ -826,7 +812,7 @@ header("Pragma: no-cache"); ?>
             <span style="">
               Domain: 
               <select>
-                <option>davidraymant.ca</option>
+                <option>example.com</option>
               </select>
             </span>
             <br />
@@ -1815,14 +1801,14 @@ header("Pragma: no-cache"); ?>
           // Animation complete.
       });
         console.log('hide');
-          displayDirectoryBtn.innerHTML = '&#9650;';
+          displayDirectoryBtn.innerHTML = '&nbsp;&#9650;';
       } else {
       
         $( '#app_directory-container' ).slideUp( "slow", function() {
           // Animation complete.
         });
       
-          displayDirectoryBtn.innerHTML = '&#9660;';  
+          displayDirectoryBtn.innerHTML = '&nbsp;&#9660;';  
         console.log('show');
       }
       //show_console();
@@ -1842,6 +1828,9 @@ header("Pragma: no-cache"); ?>
         $( '#app_console-container' ).slideDown( "slow", function() {
           // Animation complete.
         });
+        
+        
+        $("#debug-content").css('overflow', 'visible');
         
       $("#debug-content").show("slide", { direction: "left" }, 1000);
       
@@ -1883,7 +1872,15 @@ header("Pragma: no-cache"); ?>
           $( '#app_directory-container' ).slideDown( "slow", function() {
           // Animation complete.
           });
-      <?php } ?>
+      <?php } else if (isset($_GET['client'])) { // !$_GET['client'] ?>
+          //$( '#app_directory-container' ).slideDown( "slow", function() {
+          // Animation complete.
+          //});
+           <?php if (!isset($_GET['domain'])) { // !$_GET['client'] ?>
+          document.getElementById('toggle-debug').checked = true;
+            
+          toggleSwitch(document.getElementById('toggle-debug'));
+      <?php } } ?>
         }
       });
       
@@ -2069,6 +2066,7 @@ if (is_dir($path = APP_PATH . APP_BASE['resources'] . 'js/ace')) { ?>
   </body>
 </html>
 
-<?= NULL; /** Loading Time: 15.0s **/
+<?= 
+ NULL; /** Loading Time: 15.0s **/
 //  dd(get_required_files(), true); 
 ?>
