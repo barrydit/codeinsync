@@ -3,8 +3,6 @@
 //if ($path = realpath((basename(__DIR__) != 'config' ? NULL : __DIR__ . DIRECTORY_SEPARATOR) . 'config.php')) // is_file('config/config.php')) 
 //  require_once($path);
 
-define('DOMAIN_EXPR', '(?:[a-z]+\:\/\/)?(?:[a-z0-9\-]+\.)+[a-z]{2,6}(?:\/\S*)?'); // /(?:\.(?:([-a-z0-9]+){1,}?)?)?\.[a-z]{2,6}$/
-
 // Enable output buffering
 //ini_set('output_buffering', 'On');
 

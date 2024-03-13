@@ -1,4 +1,10 @@
 <?php
+
+  if (defined('APP_QUERY') && empty(APP_QUERY))
+    die(header('Location: ' . APP_URL_BASE . '?' . http_build_query(['client' => "000-Raymant, David", 'domain' => "davidraymant.ca"]) . '#'));
+  else
+    $_GET = array_merge($_GET, APP_QUERY);
+
   /*
   $_SERVER['REQUEST_SCHEME']
   
@@ -328,7 +334,7 @@ header("Pragma: no-cache"); ?>
   <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <base href="<?=(!is_array(APP_URL) ? APP_URL : APP_URL_BASE) . (APP_URL['query'] != '' ? '?'.APP_URL['query'] : '') . (defined('APP_ENV') && APP_ENV == 'development' ? '#!' : ''); ?>">
+    <base href="<?=(!is_array(APP_URL) ? APP_URL : APP_URL_BASE) . (APP_URL['query'] != '' ? '?' . APP_URL['query'] : '') . (defined('APP_ENV') && APP_ENV == 'development' ? '#!' : ''); ?>">
     <!-- link rel="stylesheet" href="//code.jquery.com/ui/1.12.1/themes/smoothness/jquery-ui.css" / -->
     
     <title>WebPortal</title>
@@ -503,7 +509,7 @@ header("Pragma: no-cache"); ?>
           if (count($dirs) == 1)
             foreach($dirs as $dir) {
               $dirs[0] = $dirs[array_key_first($dirs)];
-              if (preg_match(DOMAIN_EXP, strtolower(basename($dirs[0])))) {
+              if (preg_match(DOMAIN_EXPR, strtolower(basename($dirs[0])))) {
                 $_GET['domain'] = basename($dirs[0]);
                 break;
               }
@@ -541,7 +547,7 @@ header("Pragma: no-cache"); ?>
     <?= /* $appBackup['body'] */ NULL;?>
     <div style="position: relative; margin: 0px auto; width: 100%; border: 1px solid #000;">
       <div style="position: relative; margin: 0px auto; width: 800px;">
-        <div style="position: absolute; left: -130px; width: 150px; z-index: 3;">
+        <div style="position: absolute; <?= /* (empty($errors) ? 'display: none;' : '') */ NULL; ?>left: -130px; width: 150px; z-index: 3;">
           <!--form action="#!" method="GET">
             <?= (isset($_GET['debug']) && !$_GET['debug'] ? '' : '<input type="hidden" name="debug" value / >') ?> 
                   <input class="input" id="toggle-debug" type="checkbox" onchange="this.form.submit();" <?= (isset($_GET['debug']) || defined('APP_ENV') && APP_ENV == 'development'? 'checked' : '') ?> / -->
@@ -584,7 +590,7 @@ header("Pragma: no-cache"); ?>
         </div>
 
           
-          <div style="position: absolute; top: 40px; left: 0; z-index: 1; background-color: white; border: 1px solid #000;">
+          <div style="position: absolute; top: 40px; left: 0; z-index: 1; background-color: white; border: <?= ( defined('APP_ROOT') && APP_ROOT != '' || isset($_GET['path']) ? '2px dashed red' : '1px solid #000'); ?>;">
             <?php $path = realpath(APP_ROOT . (isset($_GET['path']) ? DIRECTORY_SEPARATOR . $_GET['path'] : '')) . DIRECTORY_SEPARATOR; // getcwd()
               if (isset($_GET['path'])) { ?>
             <!-- <input type="hidden" name="path" value="<?= $_GET['path']; ?>" /> -->
@@ -647,7 +653,7 @@ header("Pragma: no-cache"); ?>
                   ?>
               </select> /</span></form><?php if (!empty($_GET['client'])) {
               $dirs = array_filter(glob(dirname(__DIR__) . /*'../../'.*/ '/clientele/' . $_GET['client'] . '/*'), 'is_dir'); ?><form style="display: inline;" autocomplete="off" spellcheck="false" action="" method="GET"><?= (isset($_GET['client']) && !$_GET['client'] ? '' : '<input type="hidden" name="client" value="' . $_GET['client'] . '" / >') ?><select id="domain" name="domain" onchange="this.form.submit();">
-                <option value="">---</option>
+                <option value="" <?= (isset($_GET['domain']) && $_GET['domain'] == '' ? 'selected' : '') ?>>---</option>
                 <?php foreach ($dirs as $dir) { ?>
                 <option <?= (isset($_GET['domain']) && $_GET['domain'] == basename($dir) ? 'selected' : '') ?>><?= basename($dir); ?></option>
                 <?php } ?>

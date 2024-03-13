@@ -119,18 +119,18 @@ define('COMPOSER_VENDORS', $uniqueVendors);
 */
 
 $composerUser = 'barrydit';
-$componetPkg = basename(dirname(__DIR__));
+$componetPkg = 'composer_app';
 $composerHome = (strtoupper(substr(PHP_OS, 0, 3)) === 'WIN' ?
-  'C:/Users/' . (getenv('USERNAME') ?: getenv('USER')) . '/AppData/Roaming/Composer/' : 
-  ($user = (getenv('USERNAME') ?: getenv('USER')) == 'root' ?
-    '/' . (getenv('USERNAME') ?: getenv('USER')) . '/.composer/' :
-    '/home/' . (getenv('USERNAME') ?: getenv('USER')) . '/.composer/'  
+  'C:/Users/' . (getenv('USERNAME') ? getenv('USERNAME') : getenv('USER')) . '/AppData/Roaming/Composer/' : 
+  (($user = (getenv('USERNAME') ? getenv('USERNAME') : getenv('USER'))) == 'root' ?
+    '/' . $user . '/.composer/' :
+    '/home/' . $user . '/.composer/'  
   ) 
 );
 
 if (!realpath($composerHome)) {
   if (!mkdir($composerHome, 0755, true))
-    $errors['COMPOSER_HOME'] = $composerHome . ' does not exist';
+    $errors['COMPOSER_HOME'] = $composerHome . ' does not exist. Path: ' . $composerHome;
 } else define('COMPOSER_HOME', $composerHome);
 
 //dd($errors);
@@ -302,6 +302,7 @@ if (defined('APP_ENV') and APP_ENV == 'development') {
     $errors['COMPOSER_CLIENT-PROJECT'] = '$c_or_p is not set. No project or client was selected. Using APP as client.';
   else {
     //die('test');
+
     ob_start(); ?>
 <?= $composer_exec; ?> init --quiet --no-interaction --working-dir="<?= APP_PATH . APP_ROOT; ?>" --name="<?= $composerUser . '/' . $$c_or_p->name; ?>" --description="General Description" --author="Barry Dick <barryd.it@gmail.com>" --type="project" --homepage="https://github.com/<?= $composerUser . '/' . $$c_or_p->name; ?>"" --require="php:^7.4||^8.0" --require="composer/composer:^1.0" --require-dev="pds/skeleton:^1.0" --stability="dev" --license="WTFPL"
 <?php
@@ -384,11 +385,16 @@ else (@!touch($$c_or_p->path . '/composer.json')? define('COMPOSER_JSON', $$c_or
 defined('COMPOSER_JSON')
       or define('COMPOSER_JSON', ['json' => (is_file(APP_PATH . 'composer.json') ? file_get_contents(APP_PATH . 'composer.json') : '{}'), 'path' => APP_PATH . 'composer.json']);
 
+ob_start(); 
+
+$root = APP_ROOT ?? ''; ?>
+<?= $composer_exec; ?> init --quiet --no-interaction --working-dir="<?= APP_PATH . $root; ?>" --name="<?= $composerUser . '/' . str_replace('.', '_', basename($root) ?? $componetPkg); ?>" --description="General Description" --author="Barry Dick <barryd.it@gmail.com>" --type="project" --homepage="https://github.com/<?= $composerUser . '/' . str_replace('.', '_', basename($root) ?? $componetPkg); ?>" --require="php:^7.4||^8.0" --require="composer/composer:^1.0" --require-dev="pds/skeleton:^1.0" --stability="dev" --license="WTFPL"
+<?php
 defined('COMPOSER_INIT_PARAMS')
-  or define('COMPOSER_INIT_PARAMS', <<<TEXT
-{$composer_exec} init --quiet --no-interaction --working-dir="" --name="<vendor id>/{$componetPkg}" --description="General Description" --author="<name> <email@url.ext>" --type="project" --homepage="https://github.com/<vendor id>/{$componetPkg}" --require="php:^7.4||^8.0" --require="composer/composer:^1.0" --require-dev="pds/skeleton:^1.0" --stability="dev" --license="WTFPL"
-TEXT
-);
+  or define('COMPOSER_INIT_PARAMS', /*<<<TEXT TEXT*/ ob_get_contents());
+ob_end_clean();
+
+
 
 
 if (!realpath('vendor')) {

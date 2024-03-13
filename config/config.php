@@ -33,6 +33,9 @@ if (count(get_included_files()) == ((version_compare(PHP_VERSION, '5.0.0', '>=')
   exit('Direct access is not allowed.');
 endif;
 
+// Leave the forward slashes off
+define('DOMAIN_EXPR', '(?:[a-z]+\:\/\/)?(?:[a-z0-9\-]+\.)+[a-z]{2,6}(?:\/\S*)?'); // /(?:\.(?:([-a-z0-9]+){1,}?)?)?\.[a-z]{2,6}$/
+
 define('PHP_EXEC', '/usr/bin/php');
 
 $errors = []; // (object)
@@ -76,7 +79,7 @@ if (!empty($_GET['client']) && !empty($_GET['domain'])) {
   if (count($dirs) == 1)
   foreach($dirs as $dir) {
     $dirs[0] = $dirs[array_key_first($dirs)];
-    if (preg_match(DOMAIN_EXP, strtolower(basename($dirs[0])))) {
+    if (preg_match('/' . DOMAIN_EXPR . '/i', strtolower(basename($dirs[0])))) {
       $_GET['domain'] = basename($dirs[0]);
       break;
     } else unset($dirs[array_key_first($dirs)]);
@@ -370,11 +373,7 @@ if (basename($dir = getcwd()) != 'config') {
     chdir('../');
 
   chdir(APP_PATH . APP_ROOT);
-//dd($dir);
 
-  //else chdir('../'); //
-  //dd((__DIR__ . DIRECTORY_SEPARATOR . '*.php'));
-    //if (is_dir('config')) {}
   $previousFilename = '';
 
   $dirs = [
@@ -403,8 +402,6 @@ if (basename($dir = getcwd()) != 'config') {
     if (in_array($includeFile, get_required_files())) continue; // $includeFile == __FILE__
 
     if (basename($includeFile) === 'composer-setup.php') continue;
-
-    //echo basename($includeFile) . "<br />\n"; 
 
     if (!file_exists($includeFile)) {
       error_log("Failed to load a necessary file: " . $includeFile . PHP_EOL);

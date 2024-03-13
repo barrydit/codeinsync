@@ -53,7 +53,7 @@
         
       if (isset($_GET['path']) && !is_dir(APP_PATH . APP_ROOT . $_GET['path'])) {
         //dd(APP_PATH . APP_ROOT . ' test');
-        die('Location: ' . APP_URL_BASE . APP_ROOT );
+        die(header('Location: ' . APP_URL_BASE . APP_ROOT . $_GET['path']));
       }
       break;
   }

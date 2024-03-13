@@ -222,11 +222,12 @@ ob_start();
         <div style="display: block; margin: 10px auto; width: 100%; background-color: rgb(255,255,255,.75);">
         
           <div style="position: absolute; top: 25px; left: 10px;" class="text-xs">
-            <span style="color: red;">[Help]</span><br />Commands<br />
+            Git Commands<br />
             <code class="text-xs">
-            <a id="app_git-add-cmd" href="<?= (APP_URL['query'] != '' ? '?'.APP_URL['query'] : '') . (defined('APP_ENV') && APP_ENV == 'development' ? '#!' : '') ?>" onclick="">git add .</a><br />
-            <a id="app_git-remote-cmd" href="<?= (APP_URL['query'] != '' ? '?'.APP_URL['query'] : '') . (defined('APP_ENV') && APP_ENV == 'development' ? '#!' : '') ?>" onclick="">git remote -v</a><br />
-            <a id="app_git-commit-cmd" href="<?= (APP_URL['query'] != '' ? '?'.APP_URL['query'] : '') . (defined('APP_ENV') && APP_ENV == 'development' ? '#!' : '') ?>">git commit -am "&lt;detail message&gt;"</a>
+            <a id="app_git-help-cmd" href="<?= (APP_URL['query'] != '' ? '?'.APP_URL['query'] : '') . (defined('APP_ENV') && in_array(APP_ENV, ['development', 'production']) ? '#!' : '') ?>" onclick="">git <span style="color: red;">[Help]</span></a><br />
+            <a id="app_git-add-cmd" href="<?= (APP_URL['query'] != '' ? '?'.APP_URL['query'] : '') . (defined('APP_ENV') && in_array(APP_ENV, ['development', 'production']) ? '#!' : '') ?>" onclick="">git add .</a><br />
+            <a id="app_git-remote-cmd" href="<?= (APP_URL['query'] != '' ? '?'.APP_URL['query'] : '') . (defined('APP_ENV') && in_array(APP_ENV, ['development', 'production']) ? '#!' : '') ?>" onclick="">git remote -v</a><br />
+            <a id="app_git-commit-cmd" href="<?= (APP_URL['query'] != '' ? '?'.APP_URL['query'] : '') . (defined('APP_ENV') && in_array(APP_ENV, ['development', 'production']) ? '#!' : '') ?>">git commit -am "&lt;detail message&gt;"</a>
             </code>
           </div>
 

@@ -62,15 +62,8 @@ git commit -am "Default message"
 
 git checkout -b branchName
 END;
-          } //else {
+          $output[] = $command = ((strtoupper(substr(PHP_OS, 0, 3)) === 'WIN') ? '' : 'sudo ') . GIT_EXEC . (is_dir($path = APP_PATH . APP_ROOT . '.git') || APP_PATH . APP_ROOT != APP_PATH ? '' : '' ) . ' ' . $match[1];
 
-          // git --git-dir=/var/www/.git --work-tree=/var/www pull
-          
-          // $GIT_DIR environment variable
-          
-          $output[] = 'GetCWD: ' . getcwd();
-
-          $output[] = $command = ((strtoupper(substr(PHP_OS, 0, 3)) === 'WIN') ? '' : 'sudo ') . GIT_EXEC . (is_dir($path = APP_PATH . APP_ROOT . '.git') || APP_PATH . APP_ROOT != APP_PATH ? ' --git-dir="' . $path . '" --work-tree="' . dirname($path) . '"': '' ) . ' ' . $match[1];
 $proc=proc_open($command,
   array(
     array("pipe","r"),
@@ -79,10 +72,31 @@ $proc=proc_open($command,
   ),
   $pipes);
   
-            list($stdout, $stderr, $exitCode) = [stream_get_contents($pipes[1]), stream_get_contents($pipes[2]), proc_close($proc)];
+          list($stdout, $stderr, $exitCode) = [stream_get_contents($pipes[1]), stream_get_contents($pipes[2]), proc_close($proc)];
+          $output[] = (!isset($stdout) ? NULL : $stdout . (isset($stderr) && $stderr === '' ? NULL : (preg_match('/^To\s' . DOMAIN_EXPR . '/', $stderr) ? $stderr : 'Error: ' . $stderr) ) . (isset($exitCode) && $exitCode == 0 ? NULL : 'Exit Code: ' . $exitCode));
+          } else {
+
+          // git --git-dir=/var/www/.git --work-tree=/var/www pull
+          
+          // $GIT_DIR environment variable
+          if (preg_match('/^(init)(:?\s+)?/i', $match[1])) { if (!is_file($path = APP_PATH . APP_ROOT . '.gitignore')) touch($path); }
+          
+          $output[] = 'GetCWD: ' . getcwd();
+
+          $output[] = $command = ((strtoupper(substr(PHP_OS, 0, 3)) === 'WIN') ? '' : 'sudo ') . GIT_EXEC . (is_dir($path = APP_PATH . APP_ROOT . '.git') || APP_PATH . APP_ROOT != APP_PATH ? ' --git-dir="' . $path . '" --work-tree="' . dirname($path) . '"': '' ) . ' ' . $match[1];
+
+$proc=proc_open($command,
+  array(
+    array("pipe","r"),
+    array("pipe","w"),
+    array("pipe","w")
+  ),
+  $pipes);
+  
+          list($stdout, $stderr, $exitCode) = [stream_get_contents($pipes[1]), stream_get_contents($pipes[2]), proc_close($proc)];
           $output[] = (!isset($stdout) ? NULL : $stdout . (isset($stderr) && $stderr === '' ? NULL : (preg_match('/^To\s' . DOMAIN_EXPR . '/', $stderr) ? $stderr : 'Error: ' . $stderr) ) . (isset($exitCode) && $exitCode == 0 ? NULL : 'Exit Code: ' . $exitCode));
           //$output[] = $_POST['cmd'];
-          //}
+          }
   
 /*
  Error: To https://github.com/barrydit/composer_app.git
@@ -295,7 +309,7 @@ ob_start(); ?>
         <div style="display: inline-block; margin: 5px 0px 0px 10px; float: left;">
             <button id="requestSubmit" type="submit" style="border: 1px dashed #FFF; padding: 2px 4px;">Run</button>&nbsp;
 
-            <input list="commandHistory" id="requestInput" class="text-sm" style="font-family: 'Courier New', Courier, monospace;" type="text" size="54" name="requestInput" autocomplete="off" spellcheck="off" placeholder="php [-rn] &quot;echo 'hello world';&quot;" value="">
+            <input list="commandHistory" id="requestInput" class="text-sm" style="font-family: 'Courier New', Courier, monospace;" type="text" size="52" name="requestInput" autocomplete="off" spellcheck="off" placeholder="php [-rn] &quot;echo 'hello world';&quot;" value="">
             <datalist id="commandHistory">
                 <option value="Edge"></option>
             </datalist>
@@ -305,16 +319,17 @@ ob_start(); ?>
         
         <div style="position: relative; display: inline-block; margin: 5px 10px 0px 0px; width: 210px; float: right;">
             <div style="float: right;">
-                &nbsp;<button id="consoleAnykeyBind" class="text-xs" type="submit" style="border: 1px dashed #FFF; padding: 2px 4px;">Bind Any[key] </button>
+                &nbsp;<button id="consoleAnykeyBind" class="text-xs" type="submit" style="border: 1px dashed #FFF; padding: 2px 2px;">Bind Any[key] </button>
                 <input id="app_ace_editor-auto_bind_anykey" type="checkbox" name="auto_bind_anykey" checked="">
             </div>
             <div style="float: left;">
-                <button id="consoleCls" class="text-xs" type="submit" style="border: 1px dashed #FFF; padding: 2px 4px;">Clear (auto)</button>
+                <button id="consoleCls" class="text-xs" type="submit" style="border: 1px dashed #FFF; padding: 2px 2px;">Clear (auto)</button>
                 <input id="app_console-auto_clear" type="checkbox" name="auto_clear" <?= ($auto_clear ? 'checked="" ' : '') ?> />&nbsp;
             </div>
         </div>
+
         </div>
-        <button id="changePositionBtn" style="float: right; margin: 5px 10px 0 0;" type="submit">&#9650;</button>
+        <button id="changePositionBtn" style="float: right; margin: 5px 6px 0 0;" type="submit">&#9650;</button>
         <textarea id="responseConsole" spellcheck="false" rows="10" cols="85" name="responseConsole"><?php
 //$errors->{'CONSOLE'}  = 'wtf';
 
@@ -564,9 +579,9 @@ $(document).ready(function() {
       });
     });
 <?php if (defined('APP_PROJECT')) { ?>
-  //getDirectory('<?=(isset($_GET['project']) && !empty($_GET['project']) ? $projectRoot : '')?>', '<?=(isset($_GET['project'
-]) && !empty($_GET['project']) ? '' : $projectPath ) ?>');
-  console.log('Path: <?=$projectPath?>');
+  //getDirectory('<?=(isset($_GET['project']) && !empty($_GET['project']) ? basename(APP_PATH . APP_ROOT) : '') ?>', '<?=(isset($_GET['project'
+]) && !empty($_GET['project']) ? '' : APP_PATH ) ?>');
+  console.log('Path: <?=APP_PATH?>');
 <?php } ?>
 
   $("#requestInput").bind("keydown", {}, keypressInBox); //keypress
@@ -618,7 +633,16 @@ $(document).ready(function() {
     console.log('Drop Button Clicked!');
     show_console();
   });
-  
+    
+  $("#app_git-help-cmd").click(function() {
+    $('#requestInput').val('git help');
+    $('#requestSubmit').click();
+    console.log('wow');
+
+    if (!isFixed) isFixed = true;
+    show_console();
+  });
+
   $("#app_git-add-cmd").click(function() {
     $('#requestInput').val('git add .');
     $('#requestSubmit').click();
