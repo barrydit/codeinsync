@@ -202,13 +202,13 @@ ob_start();
         <!--<h3>Main Menu</h3> <h4>Update - Edit Config - Initalize - Install</h4> -->
         <div style="position: absolute; right: 10px; float: right; z-index: 1;">
           <div class="text-sm" style="display: inline-block; margin: 0 auto;">
-            <form id="app_git-push" action="<?= APP_URL_BASE . '?' . http_build_query(APP_QUERY + array( 'app' => 'git')) . (defined('APP_ENV') && APP_ENV == 'development' ? '#!' : '') /* $c_or_p . '=' . (empty($_GET[$c_or_p]) ? '' : $$c_or_p->name) . '&amp;app=git' */ ?>" method="POST">
+            <form class="app_git-push" action="<?= APP_URL_BASE . '?' . http_build_query(APP_QUERY + array( 'app' => 'git')) . (defined('APP_ENV') && in_array(APP_ENV, ['development', 'production']) ? '#!' : '') /* $c_or_p . '=' . (empty($_GET[$c_or_p]) ? '' : $$c_or_p->name) . '&amp;app=git' */ ?>" method="POST">
               <!-- <input type="hidden"  /> -->
               <button type="submit" name="cmd" value="push"><img src="resources/images/green_arrow.fw.png" width="20" height="25" style="cursor: pointer; margin-left: 6px;" /><br />Push</button>
             </form>
           </div>
           <div class="text-sm" style="display: inline-block; margin: 0 auto;">
-            <form id="app_git-pull" action="<?=APP_URL_BASE . '?' . http_build_query(APP_QUERY + array( 'app' => 'git')) . (defined('APP_ENV') && APP_ENV == 'development' ? '#!' : '') /* $c_or_p . '=' . (empty($_GET[$c_or_p]) ? '' : $$c_or_p->name) . '&amp;app=git' */ ?>" method="POST">
+            <form class="app_git-pull" action="<?=APP_URL_BASE . '?' . http_build_query(APP_QUERY + array( 'app' => 'git')) . (defined('APP_ENV') && in_array(APP_ENV, ['development', 'production']) ? '#!' : '') /* $c_or_p . '=' . (empty($_GET[$c_or_p]) ? '' : $$c_or_p->name) . '&amp;app=git' */ ?>" method="POST">
               <!-- <input type="hidden"  /> -->
               <button type="submit" name="cmd" value="pull"><img src="resources/images/red_arrow.fw.png" width="20" height="25" style="cursor: pointer; margin-left: 4px;" /><br />Pull</button>
             </form>
@@ -392,7 +392,10 @@ ob_end_clean();
 
 ob_start(); ?>
 
-document.getElementById('app_git-push').addEventListener('submit', function(event) {
+var appGitPushElements = document.getElementsByClassName('app_git-push'); // getElementById('app_git-push')
+for (var i = 0; i < appGitPushElements.length; i++) {
+    appGitPushElements[i].addEventListener('click', function() {
+
   // Prevent the default form submission
   event.preventDefault();
 
@@ -413,7 +416,40 @@ document.getElementById('app_git-push').addEventListener('submit', function(even
 
   // Dispatch the click event on the element
   requestSubmit.dispatchEvent(clickEvent);
-});
+
+    });
+}
+
+var appGitPullElements = document.getElementsByClassName('app_git-pull'); // getElementById('app_git-pull')
+for (var i = 0; i < appGitPullElements.length; i++) {
+    appGitPullElements[i].addEventListener('click', function() {
+
+  // Prevent the default form submission
+  event.preventDefault();
+
+  // For example, you can show an alert to indicate that the form submission is disabled
+  alert('Pull request was made made.');
+  
+  document.getElementById('requestInput').value = 'git pull';
+
+  // Get the element with the ID "requestSubmit"
+  var requestSubmit = document.getElementById('requestSubmit');
+
+  // Create a new click event
+  var clickEvent = new MouseEvent('click', {
+    bubbles: true,
+    cancelable: true,
+    view: window
+  });
+
+  // Dispatch the click event on the element
+  requestSubmit.dispatchEvent(clickEvent);
+  
+  //$("#requestSubmit").click();  
+
+    });
+}
+
 
 // git_icon_selected  app_git-cmd-selected
 document.getElementById('app_git-cmd-selected').addEventListener('submit', function(event) {
@@ -467,32 +503,6 @@ document.getElementById('app_git-cmd-selected').addEventListener('submit', funct
 
   // For example, you can show an alert to indicate that the form submission is disabled
   console.log(cmdSelect.value + ' was executed.');
-  
-});
-
-document.getElementById('app_git-pull').addEventListener('submit', function(event) {
-  // Prevent the default form submission
-  event.preventDefault();
-
-  // For example, you can show an alert to indicate that the form submission is disabled
-  alert('Pull request was made made.');
-  
-  document.getElementById('requestInput').value = 'git pull';
-
-  // Get the element with the ID "requestSubmit"
-  var requestSubmit = document.getElementById('requestSubmit');
-
-  // Create a new click event
-  var clickEvent = new MouseEvent('click', {
-    bubbles: true,
-    cancelable: true,
-    view: window
-  });
-
-  // Dispatch the click event on the element
-  requestSubmit.dispatchEvent(clickEvent);
-  
-  //$("#requestSubmit").click();  
   
 });
 
