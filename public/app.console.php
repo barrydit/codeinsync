@@ -319,7 +319,7 @@ ob_start(); ?>
         
         <div style="position: relative; display: inline-block; margin: 5px 10px 0px 0px; width: 210px; float: right;">
             <div style="float: right;">
-                &nbsp;<button id="consoleAnykeyBind" class="text-xs" type="submit" style="border: 1px dashed #FFF; padding: 2px 2px;">Bind Any[key] </button>
+                &nbsp;<button id="consoleAnykeyBind" class="text-xs" type="submit" style="border: 1px dashed #FFF; padding: 2px 2px;">Bind Any[key]</button>
                 <input id="app_ace_editor-auto_bind_anykey" type="checkbox" name="auto_bind_anykey" checked="">
             </div>
             <div style="float: left;">
@@ -329,7 +329,7 @@ ob_start(); ?>
         </div>
 
         </div>
-        <button id="changePositionBtn" style="float: right; margin: 5px 6px 0 0;" type="submit">&#9650;</button>
+        <button id="changePositionBtn" style="float: right; margin: 5px 10px 0 0;" type="submit">&#9650;</button>
         <textarea id="responseConsole" spellcheck="false" rows="10" cols="85" name="responseConsole"><?php
 //$errors->{'CONSOLE'}  = 'wtf';
 
