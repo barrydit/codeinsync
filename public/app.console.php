@@ -330,7 +330,7 @@ ob_start(); ?>
 
         </div>
         <button id="changePositionBtn" style="float: right; margin: 5px 10px 0 0;" type="submit">&#9650;</button>
-        <textarea id="responseConsole" spellcheck="false" rows="10" cols="85" name="responseConsole"><?php
+        <textarea id="responseConsole" spellcheck="false" rows="10" cols="85" name="responseConsole" readonly=""><?php
 //$errors->{'CONSOLE'}  = 'wtf';
 
 //dd($errors);

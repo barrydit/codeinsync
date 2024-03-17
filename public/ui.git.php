@@ -445,10 +445,7 @@ for (var i = 0; i < appGitPullElements.length; i++) {
   });
 
   // Dispatch the click event on the element
-  requestSubmit.dispatchEvent(clickEvent);
-  
-  //$("#requestSubmit").click();  
-
+  requestSubmit.dispatchEvent(clickEvent); //$("#requestSubmit").click();  
     });
 }
 

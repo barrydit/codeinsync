@@ -362,7 +362,7 @@ header("Pragma: no-cache"); ?>
           file_put_contents($path . 'tailwindcss-3.3.5.js', $js) or $errors['JS-TAILWIND'] = $url . ' returned empty.';
       }
       unset($path);
-      ?>
+    ?>
     <script src="<?= APP_BASE['resources'] . 'js/tailwindcss-3.3.5.js' ?? $url ?>"></script>
     <style type="text/tailwindcss">
       * {
@@ -1706,6 +1706,29 @@ header("Pragma: no-cache"); ?>
     <!-- You need to include jQueryUI for the extended easing options. -->
     <?php /* https://stackoverflow.com/questions/12592279/typeerror-p-easingthis-easing-is-not-a-function */ ?>
     <!-- script src="//code.jquery.com/jquery-1.12.4.js"></script -->
+    
+<?php
+      // (check_http_200('https://cdn.tailwindcss.com') ? 'https://cdn.tailwindcss.com' : APP_WWW . 'resources/js/tailwindcss-3.3.5.js')?
+      is_dir($path = APP_PATH . APP_BASE['resources'] . 'js/jquery-ui/') or mkdir($path, 0755, true);
+      if (is_file($path . 'jquery-ui-1.12.1.js')) {
+        if (ceil(abs((strtotime(date('Y-m-d')) - strtotime(date('Y-m-d',strtotime('+5 days',filemtime($path . 'jquery-ui-1.12.1.js'))))) / 86400)) <= 0 ) {
+          $url = 'https://code.jquery.com/ui/1.12.1/jquery-ui.js';
+          $handle = curl_init($url);
+          curl_setopt($handle, CURLOPT_RETURNTRANSFER, true);
+      
+          if (!empty($js = curl_exec($handle))) 
+            file_put_contents($path . 'jquery-ui-1.12.1.js', $js) or $errors['JS-JQUERY-UI'] = $url . ' returned empty.';
+        }
+      } else {
+        $url = 'https://code.jquery.com/ui/1.12.1/jquery-ui.js';
+        $handle = curl_init($url);
+        curl_setopt($handle, CURLOPT_RETURNTRANSFER, true);
+      
+        if (!empty($js = curl_exec($handle))) 
+          file_put_contents($path . 'jquery-ui-1.12.1.js', $js) or $errors['JS-JQUERY-UI'] = $url . ' returned empty.';
+      }
+      unset($path);
+?>
     <script src="<?= (check_http_200('https://code.jquery.com/ui/1.12.1/jquery-ui.js') ? '//code.jquery.com/ui/1.12.1/jquery-ui.js' : APP_BASE['resources'] . 'js/jquery-ui/' . 'jquery-ui-1.12.1.js') ?>"></script> <!-- Uncaught ReferenceError: jQuery is not defined -->
     <!-- For Text / Ace Editor -->
     <!-- <script src="https://unpkg.com/@popperjs/core@2" type="text/javascript" charset="utf-8"></script> -->
