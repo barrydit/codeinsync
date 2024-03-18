@@ -684,12 +684,14 @@ $(document).ready(function() {
     const autoClear = document.getElementById('app_console-auto_clear').checked;
     console.log('autoClear is ' + autoClear);
     
-    if ($('#app_console-container').css('position') == 'absolute') {
+    if ($('#app_console-container').css('position') != 'absolute') {
+      //window.isFixed = true;
+      if (!window.isFixed) window.isFixed = !window.isFixed;
       show_console();
       //$('#changePositionBtn').click();
     }
     const argv = $('#requestInput').val();
-    
+
     console.log('Argv: ' + argv);
     
     if (autoClear) $('#responseConsole').val('<?= $shell_prompt; ?>' + argv);
@@ -738,8 +740,6 @@ console.log = function() {
       console.log();
       console.log = originalLog;
       return false;
-    } else if (matches = argv.match(/^sudo\s+\/usr\/bin\/git.*push.*\n+Error:.(fatal: could not read Password for.+)\n+Exit Code:.([0-9]+)/)) {
-      $('#responseConsole').val("Wrong Password!" + "\n" + $('#responseConsole').val());
     } else if (matches = argv.match(/^edit\s+(\S+)$/)) { // argv == 'edit'
       if (matches) {
         const pathname = matches[1]; // "/path/to/file.txt"
@@ -761,25 +761,36 @@ console.log = function() {
     else if (argv == 'cls') $('#responseConsole').val('<?= $shell_prompt; ?>');
     else if (argv == 'reset') $('#responseConsole').val('>_');
     else
-    $.post("<?= basename(__FILE__) . '?' . $_SERVER['QUERY_STRING']  ; /*APP_URL_BASE; $projectRoot*/?>",
-    {
-      cmd: argv
-    },
-    function(data, status) {
-      console.log("Data: " + data + "Status: " + status);
+      $.post("<?= basename(__FILE__) . '?' . $_SERVER['QUERY_STRING']  ; /*APP_URL_BASE; $projectRoot*/?>",
+      {
+        cmd: argv
+      },
+      function(data, status) {
+        console.log("Data: " + data + "Status: " + status);
       
-      //data = data.trim(); // replace(/(\r\n|\n|\r)/gm, "")
+        //data = data.trim(); // replace(/(\r\n|\n|\r)/gm, "")
 
-      if (autoClear) {
-        $('#responseConsole').val(data + argv);
-        $('#responseConsole').val('<?= $shell_prompt; ?>' + argv + "\n" + data);
-      } else {
-        $('#responseConsole').val('<?= $shell_prompt; ?>' + argv + "\n" + data + "\n" + $('#responseConsole').val()) ; //  + 
-      }
-      $('#requestInput').val('');
+        if (matches = data.match(/sudo\s+\/usr\/bin\/git.*push.*\n+Error:.(fatal: could not read Password for.+)\n+Exit Code:.([0-9]+)/gm)) {
+          $('#responseConsole').val('<?= $shell_prompt; ?>Wrong Password!' + "\n" + data + "\n" + $('#responseConsole').val());
+        } else if (matches = data.match(/sudo.+\/usr\/bin\/git.*pull.*\nAlready up to date\./gm)) {
+          $('#responseConsole').val('<?= $shell_prompt; ?>Already up to date.' + "\n" + data + "\n" + $('#responseConsole').val());
+        } else {
+          $('#responseConsole').val(data + "\n" + $('#responseConsole').val());
+        }
+
+        if (autoClear) {
+          $('#responseConsole').val(data + argv);
+          $('#responseConsole').val('<?= $shell_prompt; ?>' + argv + "\n");
+        } else {
+          $('#responseConsole').val('<?= $shell_prompt; ?>' + argv + "\n" + $('#responseConsole').val());
+        }
+
+        //if (!autoClear) { $('#responseConsole').val("\n" + $('#responseConsole').val()); }
       
-      $('#responseConsole').scrollTop = $('#responseConsole').scrollHeight;
-    });
+        $('#requestInput').val('');
+      
+        $('#responseConsole').scrollTop = $('#responseConsole').scrollHeight;
+      });
   });
 });
 <?php $appConsole['script'] = ob_get_contents();
