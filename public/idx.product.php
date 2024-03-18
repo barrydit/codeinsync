@@ -550,16 +550,16 @@ header("Pragma: no-cache"); ?>
     <?= /* $appBackup['body'] */ NULL;?>
     <div style="position: relative; margin: 0px auto; width: 100%; border: 1px solid #000;">
       <div style="position: relative; margin: 0px auto; width: 800px;">
-        <div style="position: absolute; <?= /* (empty($errors) ? 'display: none;' : '') */ NULL; ?>left: -130px; width: 150px; z-index: 3;">
+        <div style="position: absolute; <?= /* (empty($errors) ? 'display: none;' : '') */ NULL; ?>left: -144px; width: 150px; z-index: 3;">
           <!--form action="#!" method="GET">
             <?= (isset($_GET['debug']) && !$_GET['debug'] ? '' : '<input type="hidden" name="debug" value / >') ?> 
                   <input class="input" id="toggle-debug" type="checkbox" onchange="this.form.submit();" <?= (isset($_GET['debug']) || defined('APP_ENV') && APP_ENV == 'development'? 'checked' : '') ?> / -->
           <input class="input" id="toggle-debug" type="checkbox" onchange="toggleSwitch(this); return null;" <?= (isset($_GET['debug']) || defined('APP_ENV') && APP_ENV == 'development' ? '' : '') ?> />
-          <label class="label" for="toggle-debug" style="margin-left: -6px;">
+          <label class="label" for="toggle-debug" style="margin-left: -10px;">
             <div class="switch">
               <span class="slider round"></span>
             </div>
-            <div class="right"> Update</div>
+            <div class="right" style="background-color: #0078D7; color: #FFF;"> &nbsp;<span style="background-color: #FFF; color: #0078D7;">&quot;Update&quot;</span>&nbsp;</div>
           </label>
           <!-- /form -->
         </div>
@@ -584,7 +584,8 @@ header("Pragma: no-cache"); ?>
               <button type="submit" name="cmd" value="push" disabled><img src="resources/images/green_arrow.fw.png" width="20" height="25" style="cursor: pointer; margin-left: 6px;" title="This feature is disabled." /><br />Push</button>
             </form>
           </div>
-          <div class="text-sm" style="display: inline-block; margin: 0 auto;">
+          <div class="text-sm" style="position: relative; display: inline-block; margin: 0 auto; border: 2px dashed #F00;">
+            <div style="position: absolute; left: 26px; top: 5px; width: 126px; background-color: #0078D7; color: #FFF; z-index: -1; font-variant-caps: all-small-caps;"><span style="background-color: #FFF; color: #0078D7;">&lt;- </span><span style="background-color: #FFF; color: red; margin-right: 2px;">Click to update&nbsp;</span></div>
             <form class="app_git-pull" action="<?=APP_URL_BASE . '?' . http_build_query(APP_QUERY + array( 'app' => 'git')) . (defined('APP_ENV') && APP_ENV == 'development' ? '#!' : '') /* $c_or_p . '=' . (empty($_GET[$c_or_p]) ? '' : $$c_or_p->name) . '&amp;app=git' */ ?>" method="POST">
               <!-- <input type="hidden"  /> -->
               <button type="submit" name="cmd" value="pull"><img src="resources/images/red_arrow.fw.png" width="20" height="25" style="cursor: pointer; margin-left: 4px;" /><br />Pull</button>
@@ -1708,7 +1709,7 @@ header("Pragma: no-cache"); ?>
     <!-- script src="//code.jquery.com/jquery-1.12.4.js"></script -->
     
 <?php
-      // (check_http_200('https://cdn.tailwindcss.com') ? 'https://cdn.tailwindcss.com' : APP_WWW . 'resources/js/tailwindcss-3.3.5.js')?
+      // (check_http_200('https://cdn.tailwindcss.com') ? 'https://cdn.tailwindcss.com' : APP_WWW . 'resources/js/tailwindcss-3.3.5.js')? [[jquery-ui]-[1.12.1].js]
       is_dir($path = APP_PATH . APP_BASE['resources'] . 'js/jquery-ui/') or mkdir($path, 0755, true);
       if (is_file($path . 'jquery-ui-1.12.1.js')) {
         if (ceil(abs((strtotime(date('Y-m-d')) - strtotime(date('Y-m-d',strtotime('+5 days',filemtime($path . 'jquery-ui-1.12.1.js'))))) / 86400)) <= 0 ) {
@@ -1729,7 +1730,8 @@ header("Pragma: no-cache"); ?>
       }
       unset($path);
 ?>
-    <script src="<?= (check_http_200('https://code.jquery.com/ui/1.12.1/jquery-ui.js') ? '//code.jquery.com/ui/1.12.1/jquery-ui.js' : APP_BASE['resources'] . 'js/jquery-ui/' . 'jquery-ui-1.12.1.js') ?>"></script> <!-- Uncaught ReferenceError: jQuery is not defined -->
+    <script src="<?= (realpath(APP_PATH . ($path = APP_BASE['resources'] . 'js/jquery-ui/jquery-ui-1.12.1.js')) ? $path : (check_http_200($url) ? substr($url, strpos($url, parse_url($url)['host']) + strlen(parse_url($url)['host'])) : '')) ?>"></script> <!-- Uncaught ReferenceError: jQuery is not defined -->
+    
     <!-- For Text / Ace Editor -->
     <!-- <script src="https://unpkg.com/@popperjs/core@2" type="text/javascript" charset="utf-8"></script> -->
     <?php

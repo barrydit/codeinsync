@@ -222,7 +222,7 @@ ob_start();
         <div style="display: block; margin: 10px auto; width: 100%; background-color: rgb(255,255,255,.75);">
         
           <div style="position: absolute; top: 25px; left: 10px; border: 1px dashed #000; height: 80px; overflow-x: auto;" class="text-xs">
-            Git Commands<br />
+            <div style="position: fixed; font-weight: bold; color: #FFF; background-color: #B0B0B0;">Git Commands</div><br />
             <code class="text-xs">
             <a id="app_git-help-cmd" href="<?= (APP_URL['query'] != '' ? '?'.APP_URL['query'] : '') . (defined('APP_ENV') && in_array(APP_ENV, ['development', 'production']) ? '#!' : '') ?>" onclick="">git <span style="color: red;">[Help]</span></a><br />
             <a id="app_git-add-cmd" href="<?= (APP_URL['query'] != '' ? '?'.APP_URL['query'] : '') . (defined('APP_ENV') && in_array(APP_ENV, ['development', 'production']) ? '#!' : '') ?>" onclick="">git add .</a><br />
@@ -402,7 +402,7 @@ for (var i = 0; i < appGitPushElements.length; i++) {
   event.preventDefault();
 
   // For example, you can show an alert to indicate that the form submission is disabled
-  alert('Push request was made made.');
+  alert('Push request was made.');
 
   document.getElementById('requestInput').value = 'git push https://<?= getenv('COMPOSER_TOKEN') ?>@github.com/barrydit/composer_app.git';
 
@@ -430,12 +430,14 @@ for (var i = 0; i < appGitPullElements.length; i++) {
   event.preventDefault();
 
   // For example, you can show an alert to indicate that the form submission is disabled
-  alert('Pull request was made made.');
+  alert('Pull request was made.');
   
   document.getElementById('requestInput').value = 'git pull';
 
   // Get the element with the ID "requestSubmit"
   var requestSubmit = document.getElementById('requestSubmit');
+  
+  document.getElementById('app_git-container').style.display='block';
 
   // Create a new click event
   var clickEvent = new MouseEvent('click', {

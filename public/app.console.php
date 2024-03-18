@@ -12,6 +12,8 @@ if (__FILE__ == get_required_files()[0])
     : (is_file('config.php') ? 'config.php' : (is_file('config/config.php') ? 'config/config.php' : null))) require_once($path); 
 else die(var_dump($path . ' path was not found. file=config.php'));
 
+//!function_exists('dd') ? die('dd is not defined') : dd();
+
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     if (isset($_POST['cmd'])) {
       chdir(APP_PATH . APP_ROOT);
@@ -176,8 +178,6 @@ else die(var_dump($path . ' path was not found. file=npm.php'));
 
 
 define('CONSOLE', true);
-
-
 
 ob_start(); ?>
 html, body {
@@ -738,6 +738,8 @@ console.log = function() {
       console.log();
       console.log = originalLog;
       return false;
+    } else if (matches = argv.match(/^sudo\s+\/usr\/bin\/git.*push.*\n+Error:.(fatal: could not read Password for.+)\n+Exit Code:.([0-9]+)/)) {
+      $('#responseConsole').val("Wrong Password!" + "\n" + $('#responseConsole').val());
     } else if (matches = argv.match(/^edit\s+(\S+)$/)) { // argv == 'edit'
       if (matches) {
         const pathname = matches[1]; // "/path/to/file.txt"
@@ -794,27 +796,31 @@ ob_start(); ?>
 
 <?php
 // (check_http_200('https://cdn.tailwindcss.com') ? 'https://cdn.tailwindcss.com' : APP_WWW . 'resources/js/tailwindcss-3.3.5.js')?
-is_dir($path = APP_PATH . APP_BASE['resources'] . 'js/') or mkdir($path, 0755, true);
-if (is_file($path . 'tailwindcss-3.3.5.js')) {
-  if (ceil(abs((strtotime(date('Y-m-d')) - strtotime(date('Y-m-d',strtotime('+5 days',filemtime($path . 'tailwindcss-3.3.5.js'))))) / 86400)) <= 0 ) {
-    $url = 'https://cdn.tailwindcss.com';
-    $handle = curl_init($url);
-    curl_setopt($handle, CURLOPT_RETURNTRANSFER, true);
+// Path to the JavaScript file
+$path = APP_PATH . APP_BASE['resources'] . 'js/tailwindcss-3.3.5.js';
 
-    if (!empty($js = curl_exec($handle))) 
-      file_put_contents($path . 'tailwindcss-3.3.5.js', $js) or $errors['JS-TAILWIND'] = $url . ' returned empty.';
-  }
-} else {
-  $url = 'https://cdn.tailwindcss.com';
+// Create the directory if it doesn't exist
+is_dir(dirname($path)) or mkdir(dirname($path), 0755, true);
+
+// URL for the CDN
+$url = 'https://cdn.tailwindcss.com';
+
+// Check if the file exists and if it needs to be updated
+if (!is_file($path) || (time() - filemtime($path)) > 5 * 24 * 60 * 60) { // ceil(abs((strtotime(date('Y-m-d')) - strtotime(date('Y-m-d',strtotime('+5 days',filemtime($path . 'tailwindcss-3.3.5.js'))))) / 86400)) <= 0 
+  // Download the file from the CDN
   $handle = curl_init($url);
   curl_setopt($handle, CURLOPT_RETURNTRANSFER, true);
-
-  if (!empty($js = curl_exec($handle))) 
-    file_put_contents($path . 'tailwindcss-3.3.5.js', $js) or $errors['JS-TAILWIND'] = $url . ' returned empty.';
+  $js = curl_exec($handle);
+  
+  // Check if the download was successful
+  if (!empty($js)) {
+    // Save the file
+    file_put_contents($path, $js) or $errors['JS-TAILWIND'] = $url . ' returned empty.';
+  }
 }
 ?>
 
-  <script src="<?= 'resources/js/tailwindcss-3.3.5.js' ?? $url ?>"></script>
+  <script src="<?= check_http_200($url) ? substr($url, strpos($url, parse_url($url)['host']) + strlen(parse_url($url)['host'])) : substr($path, strpos($path, dirname(APP_BASE['resources'] . 'js'))) ?>"></script>     
 
 <style type="text/tailwindcss">
 <?= $appConsole['style']; ?>
