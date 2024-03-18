@@ -110,7 +110,6 @@ $proc=proc_open($command,
 */
   // 
 
-
         } else if (preg_match('/^npm\s+(:?(.*))/i', $_POST['cmd'], $match)) {
           $output[] = 'sudo ' . NPM_EXEC . ' ' . $match[1];
 $proc=proc_open('sudo ' . NPM_EXEC . ' ' . $match[1],
@@ -771,7 +770,14 @@ console.log = function() {
         //data = data.trim(); // replace(/(\r\n|\n|\r)/gm, "")
 
         if (matches = data.match(/sudo\s+\/usr\/bin\/git.*push.*\n+Error:.(fatal: could not read Password for.+)\n+Exit Code:.([0-9]+)/gm)) {
-          $('#responseConsole').val('<?= $shell_prompt; ?>Wrong Password!' + "\n" + data + "\n" + $('#responseConsole').val());
+        
+          if (matches = data.match(/.*Error:.(fatal: could not read Password for.+)\n+Exit Code:.([0-9]+)/gm)) {
+            $('#responseConsole').val('<?= $shell_prompt; ?>Wrong Password!' + "\n" + data + "\n" + $('#responseConsole').val());
+          } else if (matches = data.match(/sudo\s+\/usr\/bin\/git.*push.*\n+To.*/gm)) {
+            $('#responseConsole').val('<?= $shell_prompt; ?>Push successful' + "\n" + data + "\n" + $('#responseConsole').val());
+          } else if (matches = data.match(/sudo\s+\/usr\/bin\/git.*push.*\n+Error: Everything up-to-date/gm)) {
+            $('#responseConsole').val('<?= $shell_prompt; ?>Everything up-to-date' + "\n" + data + "\n" + $('#responseConsole').val());
+          }
         } else if (matches = data.match(/sudo.+\/usr\/bin\/git.*pull.*\nAlready up to date\./gm)) {
           $('#responseConsole').val('<?= $shell_prompt; ?>Already up to date.' + "\n" + data + "\n" + $('#responseConsole').val());
         } else {
