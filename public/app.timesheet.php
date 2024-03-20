@@ -391,7 +391,7 @@ $totalHours[$rotationIndex][1] = new DateInterval("PT{$newHours}H{$newMinutes}M{
           $currentHour = (int) $timestamp->format('G');
 
           if ($rotationIndex === null) //{
-            $rotationIndex = $index - 1;
+            $rotationIndex = /*$index -*/ 1;
           else {
             $rotationIndex = ($rotationIndex < 0 ? 0 : ($rotationIndex > 3 ? 0 : $rotationIndex)) - 1;
           }
@@ -402,8 +402,8 @@ $totalHours[$rotationIndex][1] = new DateInterval("PT{$newHours}H{$newMinutes}M{
               break;
             }
           }
-          
-          if (preg_match('/^\d*\:\d*:\d*$/', $idleTime)) {
+          if (!is_array($idleTime)) {
+          if (preg_match('/^\d+\:\d+\:\d+$/', $idleTime)) {
             list($hrs, $min, $sec) = explode(':', $idleTime);
           } else {
             continue;
@@ -463,6 +463,7 @@ $newHours += $carryHours;
 // Create a new DateInterval
 $totalHours[$rotationIndex][2] = new DateInterval("PT{$newHours}H{$newMinutes}M{$newSeconds}S");
 
+          }
 
 //dd($rotationIndex);
 /*            

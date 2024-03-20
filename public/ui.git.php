@@ -220,7 +220,7 @@ ob_start();
           </div>
         </div>
         <div style="display: block; margin: 10px auto; width: 100%; background-color: rgb(255,255,255,.75);">
-        
+
           <div style="position: absolute; top: 25px; left: 10px; border: 1px dashed #000; height: 80px; overflow-x: auto;" class="text-xs">
             <div style="position: fixed; font-weight: bold; color: #FFF; background-color: #B0B0B0;">Git Commands</div><br />
             <code class="text-xs">
@@ -228,11 +228,18 @@ ob_start();
             <a id="app_git-add-cmd" href="<?= (APP_URL['query'] != '' ? '?'.APP_URL['query'] : '') . (defined('APP_ENV') && in_array(APP_ENV, ['development', 'production']) ? '#!' : '') ?>" onclick="">git add .</a><br />
             <a id="app_git-remote-cmd" href="<?= (APP_URL['query'] != '' ? '?'.APP_URL['query'] : '') . (defined('APP_ENV') && in_array(APP_ENV, ['development', 'production']) ? '#!' : '') ?>" onclick="">git remote -v</a><br />
             <a id="app_git-commit-cmd" href="<?= (APP_URL['query'] != '' ? '?'.APP_URL['query'] : '') . (defined('APP_ENV') && in_array(APP_ENV, ['development', 'production']) ? '#!' : '') ?>">git commit -am "&lt;detail message&gt;"</a><br />
-            <a>Testing</a><br />
+            <a id="app_git-clone-cmd" href="<?= (APP_URL['query'] != '' ? '?'.APP_URL['query'] : '') . (defined('APP_ENV') && in_array(APP_ENV, ['development', 'production']) ? '#!' : '') ?>">git clone &lt;URL&gt;</a><br />
             <a>Testing Again</a><br />
             </code>
           </div>
-
+        
+          <div id="app_git-clone-url" style="position: absolute; top: 30px; left: 20%; right: 50%; border: 1px solid #000;">
+            <div style="position: absolute; top: -20px; left: -20px; color: red; font-weight: bold;">
+              <a style="cursor: pointer; font-size: 13px;" onclick="document.getElementById('app_git-clone-url').style.display='none';">[X]</a>
+            </div>
+            <input id="app_git-clone-url-input" type="text" placeholder="https://github.com/barrydit/....git" size="26" />
+          </div>
+        
           <div style="display: inline-block; width: 32%; text-align: right;"><img src="resources/images/git.fw.png" width="52" height="37" style=" border: 1px dashed #F05033;" /></div>
           <div style="display: inline-block; width: 32%; text-align: center; border: 1px dashed #F05033; height: 44px; padding: 7px;">
             <select id="app_git-frameSelector">
@@ -404,7 +411,7 @@ for (var i = 0; i < appGitPushElements.length; i++) {
   // For example, you can show an alert to indicate that the form submission is disabled
   alert('Push request was made.');
 
-  document.getElementById('requestInput').value = 'git push https://<?= getenv('COMPOSER_TOKEN') ?>@github.com/barrydit/composer_app.git';
+  document.getElementById('requestInput').value = 'git push https://<?= getenv('COMPOSER_TOKEN') ?>@github.com/barrydit/<?= (isset($_GET['domain']) ? $_GET['domain']: (isset($_GET['project']) ? $_GET['project']: 'composer_app.git')) ?>';
 
   // Get the element with the ID "requestSubmit"
   var requestSubmit = document.getElementById('requestSubmit');
@@ -504,7 +511,6 @@ document.getElementById('app_git-cmd-selected').addEventListener('submit', funct
 
   // For example, you can show an alert to indicate that the form submission is disabled
   console.log(cmdSelect.value + ' was executed.');
-  
 });
 
 $(document).ready(function() {

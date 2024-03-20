@@ -76,12 +76,45 @@ $proc=proc_open($command,
   
           list($stdout, $stderr, $exitCode) = [stream_get_contents($pipes[1]), stream_get_contents($pipes[2]), proc_close($proc)];
           $output[] = (!isset($stdout) ? NULL : $stdout . (isset($stderr) && $stderr === '' ? NULL : (preg_match('/^To\s' . DOMAIN_EXPR . '/', $stderr) ? $stderr : 'Error: ' . $stderr) ) . (isset($exitCode) && $exitCode == 0 ? NULL : 'Exit Code: ' . $exitCode));
+          } else if (preg_match('/^git\s+(clone)(:?\s+)?/i', $_POST['cmd'])) {
+          
+            //$output[] = dd($_POST['cmd']);
+            $output[] = 'test'; 
+          
+            if (preg_match('/^git\s+(clone).+(https:\/\/github\.com\/[\w.-]+\/[\w.-]+\.git).+([\w.-])/', $_POST['cmd'], $github_repo)) {
+
+              if (realpath($github_repo[3])) $output[] = realpath($github_repo[3]);
+
+              //$output[] = dd($github_repo);
+              if (!is_dir('.git')) exec((strtoupper(substr(PHP_OS, 0, 3)) === 'WIN' ? '' : 'sudo ') . 'git init', $output);
+
+              exec('git branch -m master main', $output);
+
+              exec((strtoupper(substr(PHP_OS, 0, 3)) === 'WIN' ? '' : 'sudo ')  . 'git --git-dir="' . APP_PATH . APP_ROOT . '.git" --work-tree="' . APP_PATH . APP_ROOT . '" remote add origin ' . $github_repo[2], $output);
+
+              //exec('git remote add origin ' . $github_repo[2], $output);
+
+              exec((strtoupper(substr(PHP_OS, 0, 3)) === 'WIN' ? '' : 'sudo ')  . 'git config core.sparseCheckout true', $output);
+
+              //touch('.git/info/sparse-checkout');
+
+              file_put_contents('.git/info/sparse-checkout', '*'); /// exec('echo "*" >> .git/info/sparse-checkout', $output);
+
+              exec((strtoupper(substr(PHP_OS, 0, 3)) === 'WIN' ? '' : 'sudo ') . 'git pull origin main', $output);
+
+              //exec('sudo git init', $output);
+              //$output[] = dd($output);
+            }
+          
+            $output[] = 'This works ... ';
+          
           } else {
 
           // git --git-dir=/var/www/.git --work-tree=/var/www pull
           
           // $GIT_DIR environment variable
-          if (preg_match('/^(init)(:?\s+)?/i', $match[1])) { if (!is_file($path = APP_PATH . APP_ROOT . '.gitignore')) touch($path); }
+          if (preg_match('/^(init)(:?\s+)?/i', $match[1])) 
+            if (!is_file($path = APP_PATH . APP_ROOT . '.gitignore')) touch($path);
           
           $output[] = 'GetCWD: ' . getcwd();
 
@@ -662,6 +695,30 @@ $(document).ready(function() {
     //$('#requestSubmit').click();
   });
   
+  $("#app_git-clone-cmd").click(function() {
+    $('#requestInput').val('git clone ');  <!--  I need to get the URL -->
+    
+    document.getElementById('app_git-clone-url').style.display='block';
+
+    if (!isFixed) isFixed = true;
+    show_console();
+    //$('#requestSubmit').click();
+  });
+  
+  document.getElementById('app_git-clone-url').addEventListener("keydown", function(event) {
+  if (event.keyCode === 13) {
+    // Enter key was pressed
+    console.log("Enter key pressed");
+    
+    $('#requestInput').val('git clone ' + $("#app_git-clone-url-input").val() + ' .');
+    
+    document.getElementById('app_git-clone-url').style.display='none';
+    
+    $('#requestSubmit').click();
+  }
+});
+  
+  
   $("#app_php-error-log").click(function() {
     $('#requestInput').val('wget <?= APP_WWW ?>?error_log=unlink'); // unlink
     //show_console();
@@ -683,10 +740,17 @@ $(document).ready(function() {
     const autoClear = document.getElementById('app_console-auto_clear').checked;
     console.log('autoClear is ' + autoClear);
     
+    
+    if (!isFixed) isFixed = true;
+    show_console();
+
+    
     if ($('#app_console-container').css('position') != 'absolute') {
       //window.isFixed = true;
-      if (!window.isFixed) window.isFixed = !window.isFixed;
-      show_console();
+      //if (!window.isFixed) window.isFixed = !window.isFixed;
+      
+    if (!isFixed) isFixed = true;
+    show_console();
       //$('#changePositionBtn').click();
     }
     const argv = $('#requestInput').val();
@@ -766,17 +830,46 @@ console.log = function() {
       },
       function(data, status) {
         console.log("Data: " + data + "Status: " + status);
-      
+
         //data = data.trim(); // replace(/(\r\n|\n|\r)/gm, "")
 
-        if (matches = data.match(/sudo\s+\/usr\/bin\/git.*push.*\n+Error:.(fatal: could not read Password for.+)\n+Exit Code:.([0-9]+)/gm)) {
-        
-          if (matches = data.match(/.*Error:.(fatal: could not read Password for.+)\n+Exit Code:.([0-9]+)/gm)) {
+        if (matches = data.match(/sudo\s+\/usr\/bin\/git.*push.*\n+/gm)) {
+          if (matches = data.match(/.*Error:.+(fatal: could not read Password for.+)\n+Exit Code:.([0-9]+)/gm)) {
             $('#responseConsole').val('<?= $shell_prompt; ?>Wrong Password!' + "\n" + data + "\n" + $('#responseConsole').val());
           } else if (matches = data.match(/sudo\s+\/usr\/bin\/git.*push.*\n+To.*/gm)) {
+            if (matches = data.match(/sudo\s+\/usr\/bin\/git.*push.*\n+To.*\n.*!.*\[rejected\].+(\w+).+[->].+(\w+).\(fetch first\)/gm)) {
+              $('#responseConsole').val('<?= $shell_prompt; ?>Push unsuccessful. Fetch first ' + "\n" + data + "\n" + $('#responseConsole').val());
+              $('#requestInput').val('git fetch origin main');
+              $('#requestSubmit').click();
+              $('#requestInput').val('git merge origin/main');
+              $('#requestSubmit').click();
+              $('#requestInput').val('git commit');
+              $('#requestSubmit').click();
+              $('#requestInput').val('git push origin main');
+              $('#requestSubmit').click();
+            } else if (matches = data.match(/sudo\s+\/usr\/bin\/git.*push.*\n+To.*\n.*!.*\[rejected\].+(\w+).+[->].+(\w+).\(non-fast-forward\)/gm)) {
+              $('#responseConsole').val('<?= $shell_prompt; ?>Push unsuccessful. "non-fast-forward" error ' + "\n" + data + "\n" + $('#responseConsole').val());
+              $('#requestInput').val('git push --force origin main');
+              $('#requestSubmit').click();
+            } else {
             $('#responseConsole').val('<?= $shell_prompt; ?>Push successful' + "\n" + data + "\n" + $('#responseConsole').val());
+            }
           } else if (matches = data.match(/sudo\s+\/usr\/bin\/git.*push.*\n+Error: Everything up-to-date/gm)) {
             $('#responseConsole').val('<?= $shell_prompt; ?>Everything up-to-date' + "\n" + data + "\n" + $('#responseConsole').val());
+          }
+        } else if (matches = data.match(/sudo\s+\/usr\/bin\/git.*fetch.*\n+/gm)) {
+          if (matches = data.match(/.*Error:.+From.+\n.+\* branch.+(\w+).+[->].+(\w+)/gm)) {
+            $('#responseConsole').val('<?= $shell_prompt; ?>"non-fast-forward" error' + "\n" + data + "\n" + $('#responseConsole').val());
+              $('#requestInput').val('git fetch origin main');
+              $('#requestSubmit').click();
+              //$('#requestInput').val('git status');
+              //$('#requestSubmit').click();
+              $('#requestInput').val('git rebase origin/main');
+              $('#requestSubmit').click();
+              $('#requestInput').val('git rebase --continue');
+              $('#requestSubmit').click();
+              $('#requestInput').val('git push origin main');
+              $('#requestSubmit').click();
           }
         } else if (matches = data.match(/sudo.+\/usr\/bin\/git.*pull.*\nAlready up to date\./gm)) {
           $('#responseConsole').val('<?= $shell_prompt; ?>Already up to date.' + "\n" + data + "\n" + $('#responseConsole').val());
