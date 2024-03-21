@@ -36,7 +36,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 
         } else if (preg_match('/^composer\s+(:?(.*))/i', $_POST['cmd'], $match)) {
           $output[] = 'sudo ' . COMPOSER_EXEC['bin'] . ' ' . $match[1];
-$proc=proc_open('sudo ' . COMPOSER_EXEC['bin'] . ' ' . $match[1],
+$proc=proc_open((strtoupper(substr(PHP_OS, 0, 3)) === 'WIN' ? '' : 'sudo ') . COMPOSER_EXEC['bin'] . ' ' . $match[1],
   array(
     array("pipe","r"),
     array("pipe","w"),
@@ -145,7 +145,7 @@ $proc=proc_open($command,
 
         } else if (preg_match('/^npm\s+(:?(.*))/i', $_POST['cmd'], $match)) {
           $output[] = 'sudo ' . NPM_EXEC . ' ' . $match[1];
-$proc=proc_open('sudo ' . NPM_EXEC . ' ' . $match[1],
+$proc=proc_open((strtoupper(substr(PHP_OS, 0, 3)) === 'WIN' ? '' : 'sudo ') . NPM_EXEC . ' ' . $match[1],
   array(
     array("pipe","r"),
     array("pipe","w"),
@@ -168,7 +168,7 @@ $proc=proc_open('sudo ' . NPM_EXEC . ' ' . $match[1],
               //exec('sudo ' . $match[1] . ' ' . $match[2], $output); // $output[] = var_dump($match);
               
 $output[] = 'sudo ' . $match[1] . ' ' . $match[2];
-$proc=proc_open('sudo ' . $match[1] . ' ' . $match[2],
+$proc=proc_open((strtoupper(substr(PHP_OS, 0, 3)) === 'WIN' ? '' : 'sudo ') . $match[1] . ' ' . $match[2],
   array(
     array("pipe","r"),
     array("pipe","w"),

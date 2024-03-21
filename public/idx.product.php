@@ -508,7 +508,7 @@ header("Pragma: no-cache"); ?>
       <iframe id="iWindow" src="<?php if (!empty($_GET['client'])) {
           $path = /*'../../'.*/ 'clientele/' . $_GET['client'] . '/';
           $dirs = array_filter(glob(dirname(__DIR__) . '/' . $path . '*'), 'is_dir');
-          
+
           if (count($dirs) == 1)
             foreach($dirs as $dir) {
               $dirs[0] = $dirs[array_key_first($dirs)];
@@ -519,9 +519,9 @@ header("Pragma: no-cache"); ?>
               else unset($dirs[array_key_first($dirs)]);
               continue;
             }
-        
+
           $dirs = array_filter(glob(dirname(__DIR__) . '/' . $path . '*'), 'is_dir');
-        
+
           if (!empty($_GET['domain']))
             foreach($dirs as $key => $dir) {
               if (basename($dir) == $_GET['domain']) {

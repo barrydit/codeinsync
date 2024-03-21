@@ -232,14 +232,28 @@ ob_start();
             <a>Testing Again</a><br />
             </code>
           </div>
-        
-          <div id="app_git-clone-url" style="position: absolute; top: 30px; left: 20%; right: 50%; border: 1px solid #000;">
+
+          <div id="app_git-commit-msg" style="position: absolute; top: 30px; left: 20%; right: 50%; border: 1px solid #000;">
+            <div style="position: absolute; top: -20px; left: -20px; color: red; font-weight: bold;">
+              <a style="cursor: pointer; font-size: 13px;" onclick="document.getElementById('app_git-commit-msg').style.display='none';">[X]</a>
+            </div>
+            <textarea id="app_git-commit-input" type="text" placeholder="commit message" size="30"></textarea>
+          </div>
+
+          <div id="app_git-oauth" style="position: absolute; top: 30px; left: 20%; right: 50%; border: 1px solid #000;">
+            <div style="position: absolute; top: -20px; left: -20px; color: red; font-weight: bold;">
+              <a style="cursor: pointer; font-size: 13px;" onclick="document.getElementById('app_git-oauth').style.display='none';">[X]</a>
+            </div>
+            <input id="app_git-oauth-input" type="text" placeholder="ghp_54njbksadzi9jgf..." size="26" />
+          </div>
+
+          <div id="app_git-clone-url" style="position: absolute; top: 80px; left: 20%; right: 50%; border: 1px solid #000;">
             <div style="position: absolute; top: -20px; left: -20px; color: red; font-weight: bold;">
               <a style="cursor: pointer; font-size: 13px;" onclick="document.getElementById('app_git-clone-url').style.display='none';">[X]</a>
             </div>
             <input id="app_git-clone-url-input" type="text" placeholder="https://github.com/barrydit/....git" size="26" />
           </div>
-        
+
           <div style="display: inline-block; width: 32%; text-align: right;"><img src="resources/images/git.fw.png" width="52" height="37" style=" border: 1px dashed #F05033;" /></div>
           <div style="display: inline-block; width: 32%; text-align: center; border: 1px dashed #F05033; height: 44px; padding: 7px;">
             <select id="app_git-frameSelector">
