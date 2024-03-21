@@ -11,7 +11,11 @@ ini_set('error_log', (is_dir($path = dirname(__DIR__, 1) . DIRECTORY_SEPARATOR .
 ini_set('log_errors', 'true');
 
 if (is_readable($path = ini_get('error_log')) && filesize($path) >= 0 ) {
-  $errors['ERROR_LOG'] = shell_exec('sudo tail ' . $path);
+  if (strtoupper(substr(PHP_OS, 0, 3)) === 'WIN') {
+    $errors['ERROR_PATH'] = $path;
+    $errors['ERROR_LOG'] = shell_exec('Get-Content -Tail 10 ' . $path);
+  } else
+    $errors['ERROR_LOG'] = shell_exec('sudo tail ' . $path);
   if (isset($_GET[$error_log = basename(ini_get('error_log'))]) && $_GET[$error_log] == 'unlink') {
     unlink($path);
     exit('Error_log completely removed.'); // header('Location: ' . APP_WWW)
