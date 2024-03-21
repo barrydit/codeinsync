@@ -13,7 +13,7 @@ ini_set('log_errors', 'true');
 if (is_readable($path = ini_get('error_log')) && filesize($path) >= 0 ) {
   if (strtoupper(substr(PHP_OS, 0, 3)) === 'WIN') {
     $errors['ERROR_PATH'] = $path;
-    $errors['ERROR_LOG'] = shell_exec('Get-Content -Tail 10 ' . $path);
+    $errors['ERROR_LOG'] = shell_exec('powershell Get-Content -Tail 10 ' . $path);
   } else
     $errors['ERROR_LOG'] = shell_exec('sudo tail ' . $path);
   if (isset($_GET[$error_log = basename(ini_get('error_log'))]) && $_GET[$error_log] == 'unlink') {
