@@ -116,9 +116,7 @@ $proc=proc_open($command,
           if (preg_match('/^(init)(:?\s+)?/i', $match[1])) 
             if (!is_file($path = APP_PATH . APP_ROOT . '.gitignore')) touch($path);
           
-          $output[] = 'GetCWD: ' . getcwd();
-
-          $output[] = $command = ((strtoupper(substr(PHP_OS, 0, 3)) === 'WIN') ? '' : 'sudo ') . GIT_EXEC . (is_dir($path = APP_PATH . APP_ROOT . '.git') || APP_PATH . APP_ROOT != APP_PATH ? ' --git-dir="' . $path . '" --work-tree="' . dirname($path) . '"': '' ) . ' ' . $match[1];
+          $output[] = 'www-data@localhost:' . getcwd() . '# ' . $command = ((strtoupper(substr(PHP_OS, 0, 3)) === 'WIN') ? '' : 'sudo ') . GIT_EXEC . (is_dir($path = APP_PATH . APP_ROOT . '.git') || APP_PATH . APP_ROOT != APP_PATH ? ' --git-dir="' . $path . '" --work-tree="' . dirname($path) . '"': '' ) . ' ' . $match[1];
 
 $proc=proc_open($command,
   array(
@@ -749,8 +747,8 @@ $(document).ready(function() {
       //window.isFixed = true;
       //if (!window.isFixed) window.isFixed = !window.isFixed;
       
-    if (!isFixed) isFixed = true;
-    show_console();
+    //if (!isFixed) isFixed = true;
+    //show_console();
       //$('#changePositionBtn').click();
     }
     const argv = $('#requestInput').val();
@@ -762,7 +760,7 @@ $(document).ready(function() {
     if (argv == '') $('#responseConsole').val('<?= $shell_prompt; ?>' + "\n" + $('#responseConsole').val()) ; //  + 
     else if (matches = argv.match(/^(?:echo\s+)?(hello)\s+world/i)) { // argv == 'edit'
       if (matches) {
-        $('#responseConsole').val(matches[1] + ' ' + 'Barry' + "\n" + '<?= $shell_prompt; ?>' + argv + "\n" + $('#responseConsole').val());
+        $('#responseConsole').val(matches[1].charAt(0).toUpperCase() + matches[1].slice(1) + ' ' + 'Barry' + "\n" + '<?= $shell_prompt; ?>' + argv + "\n" + $('#responseConsole').val());
         return false;
       } else {
         console.log("Invalid input format.");
@@ -823,7 +821,15 @@ console.log = function() {
     } else if (argv == 'clear') $('#responseConsole').val('clear');
     else if (argv == 'cls') $('#responseConsole').val('<?= $shell_prompt; ?>');
     else if (argv == 'reset') $('#responseConsole').val('>_');
-    else
+    else {
+
+      if (autoClear) {
+        $('#responseConsole').val(data + argv);
+        $('#responseConsole').val('<?= $shell_prompt; ?>' + argv + "\n");
+      } else {
+        $('#responseConsole').val('<?= $shell_prompt; ?>' + argv + "\n" + $('#responseConsole').val());
+      }
+
       $.post("<?= basename(__FILE__) . '?' . $_SERVER['QUERY_STRING']  ; /*APP_URL_BASE; $projectRoot*/?>",
       {
         cmd: argv
@@ -877,19 +883,13 @@ console.log = function() {
           $('#responseConsole').val(data + "\n" + $('#responseConsole').val());
         }
 
-        if (autoClear) {
-          $('#responseConsole').val(data + argv);
-          $('#responseConsole').val('<?= $shell_prompt; ?>' + argv + "\n");
-        } else {
-          $('#responseConsole').val('<?= $shell_prompt; ?>' + argv + "\n" + $('#responseConsole').val());
-        }
-
         //if (!autoClear) { $('#responseConsole').val("\n" + $('#responseConsole').val()); }
       
         $('#requestInput').val('');
       
         $('#responseConsole').scrollTop = $('#responseConsole').scrollHeight;
       });
+    }
   });
 });
 <?php $appConsole['script'] = ob_get_contents();
