@@ -174,7 +174,7 @@ if (strtoupper(substr(PHP_OS, 0, 3)) === 'WIN') { // DO NOT REMOVE! { .. }
         !isset($composer) and $composer = array();
 
 /*//*/
-        $proc = proc_open('env COMPOSER_ALLOW_SUPERUSER=' . COMPOSER_ALLOW_SUPERUSER . '; sudo ' . $bin . ' --version;', array( array("pipe","r"), array("pipe","w"), array("pipe","w")), $pipes);
+        $proc = proc_open('env COMPOSER_ALLOW_SUPERUSER=' . COMPOSER_ALLOW_SUPERUSER . '; ' . (strtoupper(substr(PHP_OS, 0, 3)) === 'WIN' ? '' : 'sudo ') . $bin . ' --version;', array( array("pipe","r"), array("pipe","w"), array("pipe","w")), $pipes);
 
         $stdout = stream_get_contents($pipes[1]);
         $stderr = stream_get_contents($pipes[2]);
@@ -340,7 +340,7 @@ if (defined('APP_ENV') and APP_ENV == 'development') {
 
   // 'COMPOSER_BIN init' >> Symfony\Component\Console\Helper\...
 /*  This code would be used to create 
-  $proc = proc_open('env COMPOSER_ALLOW_SUPERUSER=' . COMPOSER_ALLOW_SUPERUSER . '; sudo ' . COMPOSER_INIT_PARAMS, array( array("pipe","r"), array("pipe","w"), array("pipe","w")), $pipes);
+  $proc = proc_open('env COMPOSER_ALLOW_SUPERUSER=' . COMPOSER_ALLOW_SUPERUSER . '; ' . (strtoupper(substr(PHP_OS, 0, 3)) === 'WIN' ? '' : 'sudo ') . COMPOSER_INIT_PARAMS, array( array("pipe","r"), array("pipe","w"), array("pipe","w")), $pipes);
 
   $stdout = stream_get_contents($pipes[1]);
   $stderr = stream_get_contents($pipes[2]);
@@ -399,8 +399,8 @@ ob_end_clean();
 if (!realpath('vendor')) {
   exec(COMPOSER_INIT_PARAMS);
 } elseif (!realpath('vendor/autoload.php')) {
-    exec('sudo composer update', $output, $returnCode) or $errors['COMPOSER-INIT-UPDATE'] = $output;
-    exec('sudo composer dump-autoload', $output, $returnCode) or $errors['COMPOSER-DUMP-AUTOLOAD'] = $output;
+    exec((strtoupper(substr(PHP_OS, 0, 3)) === 'WIN' ? '' : 'sudo ') . COMPOSER_EXEC['bin'] . ' update', $output, $returnCode) or $errors['COMPOSER-INIT-UPDATE'] = $output;
+    exec((strtoupper(substr(PHP_OS, 0, 3)) === 'WIN' ? '' : 'sudo ') . COMPOSER_EXEC['bin'] . ' dump-autoload', $output, $returnCode) or $errors['COMPOSER-DUMP-AUTOLOAD'] = $output;
   }
 
 // dd(getcwd());
@@ -613,7 +613,7 @@ if (defined('COMPOSER_VERSION') && defined('COMPOSER_LATEST') && defined('APP_DE
 //    unlink($path);
 
   if (version_compare(COMPOSER_LATEST, COMPOSER_VERSION, '>') != 0) {
-    $proc = proc_open('sudo ' . COMPOSER_EXEC['bin'] . ' self-update;', array( array("pipe","r"), array("pipe","w"), array("pipe","w")), $pipes);
+    $proc = proc_open((strtoupper(substr(PHP_OS, 0, 3)) === 'WIN' ? '' : 'sudo ') . COMPOSER_EXEC['bin'] . ' self-update;', array( array("pipe","r"), array("pipe","w"), array("pipe","w")), $pipes);
 
 /*
 //fwrite($pipes[0], "yes");
@@ -636,7 +636,7 @@ fclose($pipes[2]);
   }
 
   if (!is_dir('vendor') || !is_file('vendor/autoload.php'))
-    exec('sudo composer dump-autoload', $output, $returnCode) or $errors['COMPOSER-DUMP-AUTOLOAD'] = $output;
+    exec((strtoupper(substr(PHP_OS, 0, 3)) === 'WIN' ? '' : 'sudo ') . COMPOSER_EXEC['bin'] . ' dump-autoload', $output, $returnCode) or $errors['COMPOSER-DUMP-AUTOLOAD'] = $output;
   else
     if (!empty($composer_obj->{'require'}))
       foreach ($composer_obj->{'require'} as $package => $version) {
@@ -715,7 +715,7 @@ fclose($pipes[2]);
 //dd('composer timeout', false);
 
     if (!empty(array_diff($vendors, $dirs_diff)) ) {
-      $proc = proc_open('sudo ' . COMPOSER_EXEC['bin'] . ' update', array( array("pipe","r"), array("pipe","w"), array("pipe","w")), $pipes);
+      $proc = proc_open((strtoupper(substr(PHP_OS, 0, 3)) === 'WIN' ? '' : 'sudo ') . COMPOSER_EXEC['bin'] . ' update', array( array("pipe","r"), array("pipe","w"), array("pipe","w")), $pipes);
 
       list($stdout, $stderr, $exitCode) = [stream_get_contents($pipes[1]), stream_get_contents($pipes[2]), proc_close($proc)];
 
@@ -765,7 +765,7 @@ fclose($pipes[2]);
 /**
   Optimization
 **/
-    $proc = proc_open('sudo ' . COMPOSER_EXEC['bin'] . ' install -o', array( array("pipe","r"), array("pipe","w"), array("pipe","w")), $pipes);
+    $proc = proc_open((strtoupper(substr(PHP_OS, 0, 3)) === 'WIN' ? '' : 'sudo ') . COMPOSER_EXEC['bin'] . ' install -o', array( array("pipe","r"), array("pipe","w"), array("pipe","w")), $pipes);
 
     list($stdout, $stderr, $exitCode) = [stream_get_contents($pipes[1]), stream_get_contents($pipes[2]), proc_close($proc)];
 
@@ -776,12 +776,12 @@ fclose($pipes[2]);
       } else $errors['COMPOSER-INSTALL'] = $stdout;
   //else $debug['COMPOSER-INSTALL'] = '$stdout=' $stdout . "\n".  '$stderr = ' . $stderr;
 
-  //exec('sudo ' . COMPOSER_EXEC . ' install -o', $output, $returnCode) or $errors['COMPOSER-INSTALL'] = $output;
+  //exec((strtoupper(substr(PHP_OS, 0, 3)) === 'WIN' ? '' : 'sudo ') . COMPOSER_EXEC['bin'] . ' install -o', $output, $returnCode) or $errors['COMPOSER-INSTALL'] = $output;
   
   }
 
   // https://getcomposer.org/doc/03-cli.md
-//  $proc = proc_open('sudo ' . COMPOSER_EXEC['bin'] . ' validate --no-check-all --no-check-publish --no-check-version --strict', array( array("pipe","r"), array("pipe","w"), array("pipe","w")), $pipes); // $output = shell_exec("cd " . escapeshellarg(dirname(COMPOSER_JSON['path'])) . " && " . 'sudo ' . COMPOSER_EXEC . ' validate --no-check-all --no-check-publish --no-check-version');  dd($output);
+//  $proc = proc_open((strtoupper(substr(PHP_OS, 0, 3)) === 'WIN' ? '' : 'sudo ') . COMPOSER_EXEC['bin'] . ' validate --no-check-all --no-check-publish --no-check-version --strict', array( array("pipe","r"), array("pipe","w"), array("pipe","w")), $pipes); // $output = shell_exec("cd " . escapeshellarg(dirname(COMPOSER_JSON['path'])) . " && " . 'sudo ' . COMPOSER_EXEC . ' validate --no-check-all --no-check-publish --no-check-version');  dd($output);
 
   //  "./composer.json" does not match the expected JSON schema:  
   //  - NULL value found, but an object is required
