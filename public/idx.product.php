@@ -512,7 +512,7 @@ header("Pragma: no-cache"); ?>
           if (count($dirs) == 1)
             foreach($dirs as $dir) {
               $dirs[0] = $dirs[array_key_first($dirs)];
-              if (preg_match(DOMAIN_EXPR, strtolower(basename($dirs[0])))) {
+              if (preg_match('/'.DOMAIN_EXPR.'/i', strtolower(basename($dirs[0])))) {
                 $_GET['domain'] = basename($dirs[0]);
                 break;
               }

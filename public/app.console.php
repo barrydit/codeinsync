@@ -839,7 +839,13 @@ console.log = function() {
 
         //data = data.trim(); // replace(/(\r\n|\n|\r)/gm, "")
 
-        if (matches = data.match(/sudo\s+\/usr\/bin\/git.*push.*\n+/gm)) {
+        if (matches = data.match(/sudo.+\/usr\/bin\/git.*commit.*\nError: Author identity unknown\./gm)) {
+          $('#responseConsole').val('<?= $shell_prompt; ?>Author identity unknown' + "\n" + data + "\n" + $('#responseConsole').val());
+          $('#requestInput').val('git config --global user.email "barryd.it@gmail.com"');
+          $('#requestSubmit').click();
+          $('#requestInput').val('git config --global user.name "Barry Dick"');
+          $('#requestSubmit').click();
+        } else if (matches = data.match(/sudo\s+\/usr\/bin\/git.*push.*\n+/gm)) {
           if (matches = data.match(/.*Error:.+(fatal: could not read Password for.+)\n+Exit Code:.([0-9]+)/gm)) {
             $('#responseConsole').val('<?= $shell_prompt; ?>Wrong Password!' + "\n" + data + "\n" + $('#responseConsole').val());
           } else if (matches = data.match(/sudo\s+\/usr\/bin\/git.*push.*\n+To.*/gm)) {
