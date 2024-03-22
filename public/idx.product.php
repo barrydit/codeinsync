@@ -506,7 +506,7 @@ header("Pragma: no-cache"); ?>
     <div class="row-container" style="position: absolute; left: 0; top: 0;">
       <?php // https://stackoverflow.com/questions/86428/what-s-the-best-way-to-reload-refresh-an-iframe ?>
       <iframe id="iWindow" src="<?php if (!empty($_GET['client'])) {
-          $path = /*'../../'.*/ 'clientele/' . $_GET['client'] . '/';
+          $path = /*'../../'.*/ '/clientele/' . $_GET['client'] . '/';
           $dirs = array_filter(glob(dirname(__DIR__) . '/' . $path . '*'), 'is_dir');
 
           if (count($dirs) == 1)
