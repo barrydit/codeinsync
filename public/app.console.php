@@ -730,7 +730,6 @@ $(document).ready(function() {
     $('#requestSubmit').click();
   }
 
-  
 });
 
 
@@ -801,8 +800,7 @@ $(document).ready(function() {
       if (matches) {
         document.getElementById('app_project-container').style.display='block';
         $('#responseConsole').val('Barry, here you can begin editing your project.' + "\n" + '<?= $shell_prompt; ?>' + argv + "\n" + $('#responseConsole').val());
-        if (isFixed) isFixed = !isFixed;
-        show_console();
+        changePositionBtn.click();
         return false;
       } else {
         console.log("Invalid input format.");
