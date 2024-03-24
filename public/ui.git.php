@@ -220,8 +220,8 @@ ob_start();
           </div>
         </div>
         <div style="display: block; margin: 10px auto; width: 100%; background-color: rgb(255,255,255,.75);">
-
-          <div style="position: absolute; top: 25px; left: 10px; border: 1px dashed #000; height: 80px; overflow-x: auto;" class="text-xs">
+          <div style="position: absolute; top: 0; left: 10px;"><img src="resources/images/oauth-token.gif" style="cursor: pointer;" width="20" height="23" alt="Git token" onclick="document.getElementById('app_git-oauth').style.display='block';"/></div>
+          <div style="position: absolute; top: 28px; left: 10px; border: 1px dashed #000; height: 80px; overflow-x: auto;" class="text-xs">
             <div style="position: fixed; font-weight: bold; color: #FFF; background-color: #B0B0B0;">Git Commands</div><br />
             <code class="text-xs">
             <a id="app_git-help-cmd" href="<?= (APP_URL['query'] != '' ? '?'.APP_URL['query'] : '') . (defined('APP_ENV') && in_array(APP_ENV, ['development', 'production']) ? '#!' : '') ?>" onclick="">git <span style="color: red;">[Help]</span></a><br />
