@@ -693,17 +693,17 @@ fclose($pipes[2]);
 
 //$dirs = array_filter( glob( 'vendor/*'), 'is_dir');
     if (defined('COMPOSER_VENDORS'))
-    foreach (COMPOSER_VENDORS as $vendor => $packages) {
-      if ($vendor == basename('bin')) continue;
-      if ($vendor == 'barrydit') continue;
-      if (in_array(APP_ROOT . 'vendor/' . $vendor, array_filter(glob(APP_ROOT . 'vendor/' . $vendor . ''), 'is_dir'))) continue;
-      else $dirs_diff[] = basename($vendor);
+      foreach (COMPOSER_VENDORS as $vendor => $packages) {
+        if ($vendor == basename('bin')) continue;
+        if ($vendor == 'barrydit') continue;
+        if (in_array(APP_ROOT . 'vendor/' . $vendor, array_filter(glob(APP_ROOT . 'vendor/' . $vendor . ''), 'is_dir'))) continue;
+        else $dirs_diff[] = basename($vendor);
 
-      if (!isset($uniqueNames[$vendor])) {
+        if (!isset($uniqueNames[$vendor])) {
           $uniqueNames[$vendor] = true;
           $vendors[] = $vendor;
+        }
       }
-    }
 
     if (!isset($dirs_diff) && !empty($dirs_diff))
       dd($dirs_diff);

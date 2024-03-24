@@ -39,8 +39,9 @@
     case 'GET':
       //if (!empty($_GET['path']) && !isset($_GET['app'])) !!infinite loop
       //  exit(header('Location: ' . APP_WWW . $_GET['path']));
-
+// http://localhost/?app=composer&path=vendor
       if (isset($_GET['category']) && !empty($_GET['category'])) {
+        
         if ($_GET['category'] == 'projects')
           exit(header('Location: ' . APP_WWW . '?project='));
         if ($_GET['category'] == 'vendor')
@@ -51,9 +52,9 @@
       } elseif (isset($_GET['category']) && empty($_GET['category']))
         exit(header('Location: ' . APP_WWW . '?path'));
         
-      if (isset($_GET['path']) && !is_dir(APP_PATH . APP_ROOT . $_GET['path'])) {
+      if (isset($_GET['path']) && !is_dir(APP_PATH . APP_ROOT)) {
         //dd(APP_PATH . APP_ROOT . ' test');
-        die(header('Location: ' . APP_URL_BASE . APP_ROOT . $_GET['path']));
+        die(header('Location: ' . APP_URL_BASE));
       }
       break;
   }

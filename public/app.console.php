@@ -496,8 +496,8 @@ show_console();
                 console.log('activeElement');
             } else {
                 document.activeElement = null;
-                return false;
                 console.log('else');
+                return false;
             }
         }
   //isFixed = !isFixed; 
