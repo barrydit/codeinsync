@@ -1020,8 +1020,13 @@ ob_start(); ?>
     var time = new Date().toLocaleTimeString('en-US', { hour: '2-digit', hour12: true, minute: '2-digit', second: '2-digit'});
     var months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sept", "Oct", "Nov", "Dec"];
     var month = months[date.getMonth()];
-    
+
+if (typeof snd !== 'undefined') {
     snd.loop = true;
+} else {
+    // Variable snd is not defined
+    console.log('Variable snd is not defined');
+}
 
 function play_beep() {
     snd.play();
