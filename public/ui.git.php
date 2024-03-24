@@ -220,8 +220,8 @@ ob_start();
           </div>
         </div>
         <div style="display: block; margin: 10px auto; width: 100%; background-color: rgb(255,255,255,.75);">
-          <div style="position: absolute; top: 0; left: 10px;"><img src="resources/images/oauth-token.gif" style="cursor: pointer;" width="20" height="23" alt="Git token" onclick="document.getElementById('app_git-oauth').style.display='block';"/></div>
-          <div style="position: absolute; top: 28px; left: 10px; border: 1px dashed #000; height: 80px; overflow-x: auto;" class="text-xs">
+          <div style="position: absolute; top: 0; left: 10px;"><img src="resources/images/oauth-token.gif" style="cursor: pointer;" width="20" height="23" alt="Git token" title="OAuth Token" onclick="document.getElementById('app_git-oauth').style.display='block';"/></div>
+          <div style="position: absolute; top: 28px; left: 10px; border: 1px dashed #000; height: 84px; overflow-x: auto;" class="text-xs">
             <div style="position: fixed; font-weight: bold; color: #FFF; background-color: #B0B0B0;">Git Commands</div><br />
             <code class="text-xs">
             <a id="app_git-help-cmd" href="<?= (APP_URL['query'] != '' ? '?'.APP_URL['query'] : '') . (defined('APP_ENV') && in_array(APP_ENV, ['development', 'production']) ? '#!' : '') ?>" onclick="">git <span style="color: red;">[Help]</span></a><br />
@@ -233,21 +233,21 @@ ob_start();
             </code>
           </div>
 
-          <div id="app_git-commit-msg" style="position: absolute; top: 30px; left: 20%; right: 50%; border: 1px solid #000;">
+          <div id="app_git-commit-msg" style="position: absolute; display: none; top: 30px; left: 20%; right: 50%; border: 1px solid #000;">
             <div style="position: absolute; top: -20px; left: -20px; color: red; font-weight: bold;">
               <a style="cursor: pointer; font-size: 13px;" onclick="document.getElementById('app_git-commit-msg').style.display='none';">[X]</a>
             </div>
             <textarea id="app_git-commit-input" type="text" placeholder="commit message" size="30"></textarea>
           </div>
 
-          <div id="app_git-oauth" style="position: absolute; top: 30px; left: 20%; right: 50%; border: 1px solid #000;">
+          <div id="app_git-oauth" style="position: absolute; display: none; top: 30px; left: 20%; right: 50%; border: 1px solid #000;">
             <div style="position: absolute; top: -20px; left: -20px; color: red; font-weight: bold;">
               <a style="cursor: pointer; font-size: 13px;" onclick="document.getElementById('app_git-oauth').style.display='none';">[X]</a>
             </div>
-            <input id="app_git-oauth-input" type="text" placeholder="ghp_54njbksadzi9jgf..." size="26" />
+            <input id="app_git-oauth-input" type="text" placeholder="ghp_54nj8sA53dZi9jgf..." size="26" />
           </div>
 
-          <div id="app_git-clone-url" style="position: absolute; top: 80px; left: 20%; right: 50%; border: 1px solid #000;">
+          <div id="app_git-clone-url" style="position: absolute; display: none; top: 80px; left: 20%; right: 50%; border: 1px solid #000;">
             <div style="position: absolute; top: -20px; left: -20px; color: red; font-weight: bold;">
               <a style="cursor: pointer; font-size: 13px;" onclick="document.getElementById('app_git-clone-url').style.display='none';">[X]</a>
             </div>
@@ -332,7 +332,7 @@ ob_start();
         <label style="font-style: italic;">git config -l</label>
         <div style="float: right;">
           <input type="checkbox" name="gitIngoreFile" 1 /> <label style="font-style:italic;">.gitignore</label>
-          <input type="checkbox" name="gitConfigFile" 1/> <label style="font-style:italic;">.gitconfig</label>
+          <input type="checkbox" name="gitConfigFile" 1 /> <label style="font-style:italic;">.gitconfig</label>
         </div>
       </div>
       <div style="display: inline-block; width: 100%;">
