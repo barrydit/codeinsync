@@ -1214,13 +1214,18 @@ function stopInterval() {
                idlePenalty({idletime: {time:time,idle:null}}); // toTime(idleTime)['time']
                
           } else {
-            snd.pause();
+if (typeof snd !== 'undefined') {
+    snd.pause();
+}
+            
             $("#idleTime").html('<i style="color: blue;">[Idleing] for: '+ toTime(occupiedTime)['time'] + '</i>');
             $("#ts-status-light").attr('src', 'resources/images/timesheet-light-G.gif');
             occupiedTime = occupiedTime + 1;
           }
         } else {
-          snd.pause();
+if (typeof snd !== 'undefined') {
+    snd.pause();
+}
           $("#idleTime").html('<i style="color: green;">Working: '+ toTime(occupiedTime)['time'] + '</i>');
             $("#ts-status-light").attr('src', 'resources/images/timesheet-light-GG.gif');
           occupiedTime = occupiedTime + 1;
