@@ -387,7 +387,7 @@ header("Pragma: no-cache"); ?>
       <?= $appPackagist['style']; ?>
       <?= $appWhiteboard['style']; ?>
       <?= $appNotes['style']; ?> 
-      <?= $appPong['style']; ?>
+      <?= /*$appPong['style']*/ null; ?>
 
       <?= /*$appBackup['style']*/ NULL; ?>
       <?= $appConsole['style']; ?>
@@ -1657,7 +1657,7 @@ header("Pragma: no-cache"); ?>
     <?= $appWhiteboard['body']; ?>
     <?= $appNotes['body']; ?>
     <!-- https://pong-2.com/ -->
-    <?= $appPong['body']; ?>
+    <?= /*$appPong['body']*/ null; ?>
 
     </div>
     </div>
@@ -2011,7 +2011,7 @@ header("Pragma: no-cache"); ?>
       <?= /*$appBackup['script']*/ NULL; ?>
       
       
-      <?= $appPong['script']; ?>
+      <?= /*$appPong['script']*/ NULL; ?>
       
       /*
       require.config({
