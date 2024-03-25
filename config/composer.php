@@ -55,7 +55,7 @@ if (!function_exists('get_declared_classes')) {
       if (preg_match('/(ComposerAutoloaderInit[a-f0-9]+)/', $class, $matches)) 
         break;
       if ($class == end($classes))
-        $errors['COMPOSER-AutoloaderInit'] = 'ComposerAutloaderInit2 failed to be matched.';
+        $errors['COMPOSER-AutoloaderInit'] = 'ComposerAutloaderInit failed to be matched.' . "\n";
     }
 
 if (isset($matches[1])) {
@@ -188,8 +188,8 @@ if (strtoupper(substr(PHP_OS, 0, 3)) === 'WIN') { // DO NOT REMOVE! { .. }
         } else {
           if (empty($stdout)) {
             if (!empty($stderr))
-              $errors['COMPOSER_VERSION'] = '$stdout is empty. $stderr = ' . $stderr;
-          } // else $errors['COMPOSER_VERSION'] = $stdout . ' does not match $version'; }
+              $errors['COMPOSER_VERSION'] = $stderr;
+          } else $errors['COMPOSER_VERSION'] = $stdout; // else $errors['COMPOSER_VERSION'] = $stdout . ' does not match $version'; }
         }
     }
 
@@ -630,7 +630,7 @@ fclose($pipes[2]);
     
     if (empty($stdout)) {
       if (!empty($stderr))
-        $errors['COMPOSER_UPDATE'] = '$stdout is empty. $stderr = ' . $stderr;
+        $errors['COMPOSER_UPDATE'] = $stderr;
     } else $errors['COMPOSER_UPDATE'] = $stdout;
 
   }
@@ -722,7 +722,7 @@ fclose($pipes[2]);
       if ($exitCode !== 0)
         if (empty($stdout)) {
           if (!empty($stderr))
-            $errors['COMPOSER-UPDATE'] = '$stdout is empty. $stderr = ' . $stderr;
+            $errors['COMPOSER-UPDATE'] = $stderr;
         } else $errors['COMPOSER-UPDATE'] = $stdout;
     //else $debug['COMPOSER-UPDATE'] = '$stdout=' $stdout . "\n".  '$stderr = ' . $stderr;
     
@@ -772,7 +772,7 @@ fclose($pipes[2]);
     if ($exitCode !== 0)
       if (empty($stdout)) {
         if (!empty($stderr))
-          $errors['COMPOSER-INSTALL'] = '$stdout is empty. $stderr = ' . $stderr;
+          $errors['COMPOSER-INSTALL'] = $stderr;
       } else $errors['COMPOSER-INSTALL'] = $stdout;
   //else $debug['COMPOSER-INSTALL'] = '$stdout=' $stdout . "\n".  '$stderr = ' . $stderr;
 

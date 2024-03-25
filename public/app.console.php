@@ -708,9 +708,22 @@ $(document).ready(function() {
   if (event.keyCode === 13) {
     // Enter key was pressed
     console.log("Enter key pressed");
-    
-    $('#requestInput').val('git remote set-url origin ' + $("#app_git-oauth-input").val() + ' .');
-    
+
+<?php
+//dd(APP_PATH . APP_ROOT . '.git/config');
+$config = parse_ini_file(APP_PATH . APP_ROOT . '.git/config', true);
+
+if (isset($config['remote origin']['url']) && preg_match('/(?:[a-z]+\:\/\/)?([^\s]+@)?((?:[a-z0-9\-]+\.)+[a-z]{2,6}(?:\/\S*))/', $config['remote origin']['url'], $matches))
+  if (count($matches) >= 2) { ?>
+
+    $('#requestInput').val('git remote set-url origin https://' + $("#app_git-oauth-input").val() + '@<?= $matches[2] ?>');
+
+<?php } else { ?>
+
+    $('#requestInput').val('git remote set-url origin https://' + $("#app_git-oauth-input").val() + '@<?= $matches[1] ?>');
+
+<?php } ?>
+
     document.getElementById('app_git-clone-url').style.display='none';
     
     $('#requestSubmit').click();
