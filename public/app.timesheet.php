@@ -1127,7 +1127,10 @@ function stopInterval() {
 
     function idlePenalty(idletimeobj) {
       //console.log(idletimeobj);
-      snd.play();
+if (typeof snd !== 'undefined') {
+    snd.play();
+}
+      
       var jsonFile;
       date = new Date();
       time = date.toLocaleTimeString('en-US', { hour: '2-digit', hour12: false,  minute: '2-digit', second: '2-digit'}); // .replace(/AM|PM/,'')
@@ -1189,7 +1192,10 @@ function stopInterval() {
 
              try {
     // Attempt to play the media element
-      snd.play();
+if (typeof snd !== 'undefined') {
+    snd.play();
+}
+      
 } catch (error) {
     // Check if the error is a DOMException
     if (error instanceof DOMException && error.name === 'NotAllowedError') {
