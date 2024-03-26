@@ -378,7 +378,6 @@ if (basename($dir = getcwd()) != 'config') {
 
   chdir(APP_PATH . APP_ROOT);
   
-
 //dd(APP_PATH . APP_ROOT . '.git/config');
   $env = parse_ini_file(APP_PATH . APP_ROOT . '.env', true);
 

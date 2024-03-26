@@ -888,6 +888,12 @@ console.log = function() {
           $('#requestSubmit').click();
           $('#requestInput').val('git config --global user.name "Barry Dick"');
           $('#requestSubmit').click();
+        } else if (matches = data.match(/sudo\s+\/usr\/bin\/git.*remote\s-v.*\n+/gm)) {
+          if (matches = data.match(/.*origin\s+(?:[a-z]+\:\/\/)?([^\s]+@)?((?:[a-z0-9\-]+\.)+[a-z]{2,6}(?:\/\S*))\s+\((fetch|push)\)/gm)) {
+            // if (matches === undefined || array.matches == 0) {
+            // array empty or does not exist
+            // }
+          }
         } else if (matches = data.match(/sudo\s+\/usr\/bin\/git.*push.*\n+/gm)) {
           if (matches = data.match(/.*Error:.+(fatal: could not read Password for.+)\n+Exit Code:.([0-9]+)/gm)) {
             $('#responseConsole').val('<?= $shell_prompt; ?>Wrong Password!' + "\n" + data + "\n" + $('#responseConsole').val());

@@ -26,17 +26,29 @@
 
   switch ($_SERVER['REQUEST_METHOD']) {
     case 'POST':    
+      //dd(get_required_files(), false);
+      //dd($_ENV);
+      if (isset($_POST['environment'])) {
+        if ($_POST['environment'] == 'product')
+          define('APP_ENV', 'production');
+        elseif ($_POST['environment'] == 'develop')
+          define('APP_ENV', 'development');
+        elseif ($_POST['environment'] == 'math')
+          define('APP_ENV', 'math');
+        else
+          define('APP_ENV', 'production');
+        $_ENV['APP_ENV'] = APP_ENV;
+        $file = fopen('.env', 'w+');
+        if (isset($_ENV) && !empty($_ENV))
+          foreach($_ENV as $key => $env_var) {
+            fwrite($file, $key.'='.$env_var."\n");
+          }
+        fclose($file);
+      }
 
-      if (isset($_POST['environment']) && $_POST['environment'] == 'product')
-        define('APP_ENV', 'production');
-      elseif (isset($_POST['environment']) && $_POST['environment'] == 'develop')
-        define('APP_ENV', 'development');
-      elseif (isset($_POST['environment']) && $_POST['environment'] == 'math')
-        define('APP_ENV', 'math');
-      else
-        define('APP_ENV', 'production');
       break;
     case 'GET':
+      if (isset($_ENV['APP_ENV']) && !empty($_ENV)) define('APP_ENV', $_ENV['APP_ENV']);
       //if (!empty($_GET['path']) && !isset($_GET['app'])) !!infinite loop
       //  exit(header('Location: ' . APP_WWW . $_GET['path']));
 // http://localhost/?app=composer&path=vendor
@@ -96,6 +108,6 @@
  elseif (defined('APP_ENV') and APP_ENV == 'math')
    require_once('idx.math.php');
  else {
-   define('APP_ENV', 'production');
+   !defined('APP_ENV') and define('APP_ENV', 'production');
    require_once('idx.product.php');
  }
