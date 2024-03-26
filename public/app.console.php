@@ -496,8 +496,8 @@ show_console();
                 console.log('activeElement');
             } else {
                 document.activeElement = null;
-                return false;
                 console.log('else');
+                return false;
             }
         }
   //isFixed = !isFixed; 
@@ -687,6 +687,7 @@ $(document).ready(function() {
 
   $("#app_git-commit-cmd").click(function() {
     $('#requestInput').val('git commit -am "default message"');
+    document.getElementById('app_git-commit-msg').style.display='block';
 
     if (!isFixed) isFixed = true;
     show_console();
@@ -702,7 +703,50 @@ $(document).ready(function() {
     show_console();
     //$('#requestSubmit').click();
   });
-  
+
+  document.getElementById('app_git-oauth-input').addEventListener("keydown", function(event) {
+  if (event.keyCode === 13) {
+    // Enter key was pressed
+    console.log("Enter key pressed");
+
+<?php
+//dd(APP_PATH . APP_ROOT . '.git/config');
+$config = parse_ini_file(APP_PATH . APP_ROOT . '.git/config', true);
+
+if (isset($config['remote origin']['url']) && preg_match('/(?:[a-z]+\:\/\/)?([^\s]+@)?((?:[a-z0-9\-]+\.)+[a-z]{2,6}(?:\/\S*))/', $config['remote origin']['url'], $matches))
+  if (count($matches) >= 2) { ?>
+
+    $('#requestInput').val('git remote set-url origin https://' + $("#app_git-oauth-input").val() + '@<?= $matches[2] ?>');
+
+<?php } else { ?>
+
+    $('#requestInput').val('git remote set-url origin https://' + $("#app_git-oauth-input").val() + '@<?= $matches[1] ?>');
+
+<?php } ?>
+
+    document.getElementById('app_git-clone-url').style.display='none';
+    
+    $('#requestSubmit').click();
+  }
+
+});
+
+  document.getElementById('app_git-commit-input').addEventListener("keydown", function(event) {
+  if (event.keyCode === 13) {
+    // Enter key was pressed
+    console.log("Enter key pressed");
+    
+    $('#requestInput').val('git commit -am "' + $("#app_git-commit-input").val() + '"');
+    
+    document.getElementById('app_git-commit-msg').style.display='none';
+    
+    $('#requestSubmit').click();
+  }
+
+});
+
+
+
   document.getElementById('app_git-clone-url').addEventListener("keydown", function(event) {
   if (event.keyCode === 13) {
     // Enter key was pressed
@@ -769,8 +813,7 @@ $(document).ready(function() {
       if (matches) {
         document.getElementById('app_project-container').style.display='block';
         $('#responseConsole').val('Barry, here you can begin editing your project.' + "\n" + '<?= $shell_prompt; ?>' + argv + "\n" + $('#responseConsole').val());
-        if (isFixed) isFixed = !isFixed;
-        show_console();
+        changePositionBtn.click();
         return false;
       } else {
         console.log("Invalid input format.");
@@ -845,9 +888,19 @@ console.log = function() {
           $('#requestSubmit').click();
           $('#requestInput').val('git config --global user.name "Barry Dick"');
           $('#requestSubmit').click();
+        } else if (matches = data.match(/sudo\s+\/usr\/bin\/git.*remote\s-v.*\n+/gm)) {
+          if (matches = data.match(/.*origin\s+(?:[a-z]+\:\/\/)?([^\s]+@)?((?:[a-z0-9\-]+\.)+[a-z]{2,6}(?:\/\S*))\s+\((fetch|push)\)/gm)) {
+            // if (matches === undefined || array.matches == 0) {
+            // array empty or does not exist
+            // }
+          }
         } else if (matches = data.match(/sudo\s+\/usr\/bin\/git.*push.*\n+/gm)) {
           if (matches = data.match(/.*Error:.+(fatal: could not read Password for.+)\n+Exit Code:.([0-9]+)/gm)) {
             $('#responseConsole').val('<?= $shell_prompt; ?>Wrong Password!' + "\n" + data + "\n" + $('#responseConsole').val());
+            document.getElementById('app_git-container').style.display='block';
+            document.getElementById('app_git-oauth').style.display='block';
+            document.getElementById('app_git-clone-url').style.display='none';
+            document.getElementById('app_git-commit-msg').style.display='none';
           } else if (matches = data.match(/sudo\s+\/usr\/bin\/git.*push.*\n+To.*/gm)) {
             if (matches = data.match(/sudo\s+\/usr\/bin\/git.*push.*\n+To.*\n.*!.*\[rejected\].+(\w+).+[->].+(\w+).\(fetch first\)/gm)) {
               $('#responseConsole').val('<?= $shell_prompt; ?>Push unsuccessful. Fetch first ' + "\n" + data + "\n" + $('#responseConsole').val());

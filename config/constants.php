@@ -11,7 +11,12 @@
 
 /* This code sets up some basic configuration constants for a PHP application. */
 
+require_once('functions.php');
+
+define('APP_CONNECTIVITY', check_ping(/*'8.8.8.8'*/));
+
 define('APP_START', microtime(true));
+
 (defined('APP_START') && !is_float(APP_START)) and $errors['APP_START'] = APP_START;
 
 define('APP_DEBUG', (isset($_GET['debug']) ? TRUE : FALSE ));

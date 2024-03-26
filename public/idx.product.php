@@ -1906,15 +1906,37 @@ header("Pragma: no-cache"); ?>
           $( '#app_directory-container' ).slideDown( "slow", function() {
           // Animation complete.
           });
-      <?php } else if (isset($_GET['client'])) { // !$_GET['client'] ?>
-          //$( '#app_directory-container' ).slideDown( "slow", function() {
-          // Animation complete.
-          //});
-           <?php if (!isset($_GET['domain'])) { // !$_GET['client'] ?>
+      <?php } else if (isset($_GET['client'])) { // !$_GET['client'] 
+      
+        if ($_GET['client'] != '') { ?>
+          document.getElementById('toggle-debug').checked = true;
+
+          toggleSwitch(document.getElementById('toggle-debug'));
+
+          $( '#app_directory-container' ).slideDown( "slow", function() {
+           // Animation complete.
+          });
+
+        <?php } else { ?>
+      
+<?php if (!isset($_GET['domain'])) { // !$_GET['client'] ?>
+
           document.getElementById('toggle-debug').checked = true;
             
           toggleSwitch(document.getElementById('toggle-debug'));
-      <?php } } ?>
+      <?php } ?>
+if (confirm('Do you wish to display clients?')) {
+    // User clicked OK
+    console.log('User clicked OK');
+    $( '#app_directory-container' ).slideDown( "slow", function() {
+           // Animation complete.
+    });
+} else {
+    // User clicked Cancel
+    console.log('User clicked Cancel');
+}
+
+          <?php } } ?>
         }
       });
       

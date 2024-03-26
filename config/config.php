@@ -377,6 +377,14 @@ if (basename($dir = getcwd()) != 'config') {
     chdir('../');
 
   chdir(APP_PATH . APP_ROOT);
+  
+//dd(APP_PATH . APP_ROOT . '.git/config');
+  $env = parse_ini_file(APP_PATH . APP_ROOT . '.env', true);
+
+  if (!empty($env))
+    foreach($env as $key => $env_var) {
+      $_ENV[$key] = $env_var; // putenv($key.'='.$env_var);
+    }
 
   $previousFilename = '';
 
@@ -397,6 +405,10 @@ if (basename($dir = getcwd()) != 'config') {
     if (basename($a) === 'composer-setup.php')
         return 1; // $a comes after $b
     elseif (basename($b) === 'composer-setup.php')
+        return -1; // $a comes before $b
+    elseif (basename($a) === 'autoload.php')
+        return 1; // $a comes after $b
+    elseif (basename($b) === 'autoload.php')
         return -1; // $a comes before $b
     else 
         return strcmp(basename($a), basename($b)); // Compare other filenames alphabetically
@@ -688,7 +700,6 @@ if (is_array($errors) && !empty($errors)) { ?>
 <?php
   die();
 } */
-
 
 use vlucas\phpdotenv;
 
