@@ -890,7 +890,7 @@ console.log = function() {
               $('#requestSubmit').click();
               $('#requestInput').val('git config --global user.name "Barry Dick"');
               $('#requestSubmit').click();
-            else {
+            } else {
               if (confirm('Git Push?')) {
                 // User clicked OK
                 $('#requestInput').val('git push');
@@ -900,6 +900,7 @@ console.log = function() {
                 console.log('User clicked Cancel');
               }
             }
+            $('#responseConsole').val(data + "\n" + $('#responseConsole').val());
           } else if (matches = data.match(/.*status.*\n+/gm)) {
             if (matches = data.match(/.*On branch main\nYour branch is (ahead of|up to date with).*(:?by\s[0-9]+commits)?/gm)) {
               if (matches = data.match(/.*On branch main\nYour branch is up to date with.*\n+/gm)) {
