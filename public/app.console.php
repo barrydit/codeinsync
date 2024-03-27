@@ -883,13 +883,23 @@ console.log = function() {
         //data = data.trim(); // replace(/(\r\n|\n|\r)/gm, "")
         
         if (matches = data.match(/((:?sudo\s+)?(:?<?=str_replace('/', '\/', dirname(GIT_EXEC)); ?>)?<?= basename(GIT_EXEC); ?>.*)/gm)) {
-
-          if (matches = data.match(/.*commit.*\nError: Author identity unknown\./gm)) {
-            $('#responseConsole').val('<?= $shell_prompt; ?>Author identity unknown' + "\n" + data + "\n" + $('#responseConsole').val());
-            $('#requestInput').val('git config --global user.email "barryd.it@gmail.com"');
-            $('#requestSubmit').click();
-            $('#requestInput').val('git config --global user.name "Barry Dick"');
-            $('#requestSubmit').click();
+          if (matches = data.match(/.*commit.*\n/gm)) {
+            if (matches = data.match(/.*Error: Author identity unknown\./gm)) {
+              $('#responseConsole').val('<?= $shell_prompt; ?>Author identity unknown' + "\n" + data + "\n" + $('#responseConsole').val());
+              $('#requestInput').val('git config --global user.email "barryd.it@gmail.com"');
+              $('#requestSubmit').click();
+              $('#requestInput').val('git config --global user.name "Barry Dick"');
+              $('#requestSubmit').click();
+            else {
+              if (confirm('Git Push?')) {
+                // User clicked OK
+                $('#requestInput').val('git push');
+                $('#requestSubmit').click();
+              } else {
+                // User clicked Cancel
+                console.log('User clicked Cancel');
+              }
+            }
           } else if (matches = data.match(/.*status.*\n+/gm)) {
             if (matches = data.match(/.*On branch main\nYour branch is (ahead of|up to date with).*(:?by\s[0-9]+commits)?/gm)) {
               if (matches = data.match(/.*On branch main\nYour branch is up to date with.*\n+/gm)) {
@@ -903,8 +913,15 @@ console.log = function() {
               } else if (matches = data.match(/.*Changes not staged for commit:/gm)) {
                 $('#requestInput').val('git add .');
                 $('#requestSubmit').click();
-                $('#requestInput').val('git status');
-                //$('#requestSubmit').click();
+                if (confirm('(Re)Check Git Status?')) {
+                  // User clicked OK
+                  $('#requestInput').val('git status');
+                  $('#requestSubmit').click();
+                } else {
+                  // User clicked Cancel
+                  console.log('User clicked Cancel');
+                }
+                //
               } else if (matches = data.match(/.*Changes to be committed:/gm)) {
                 $('#requestInput').val('git commit -am "automatic <?= date('Y-m-d h:i:s'); ?> commit"');
                 //$('#requestSubmit').click();
