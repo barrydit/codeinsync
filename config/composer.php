@@ -831,6 +831,7 @@ foreach (COMPOSER['json']->require as $key => $value) {
     defined('VENDOR_JSON')
       or define('VENDOR_JSON', ['json' => (is_file(APP_PATH . APP_ROOT . 'vendor/' . $key . '/composer.json') ? file_get_contents(APP_PATH . APP_ROOT . 'vendor/' . $key . '/composer.json') : '{}'), 'path' => APP_PATH . APP_ROOT . 'vendor/' . $key . '/composer.json']);
 
+if (realpath(VENDOR_JSON['path']))
 defined('VENDOR_JSON')
     and define('VENDOR', json_decode(file_get_contents(VENDOR_JSON['path'])));
         break;

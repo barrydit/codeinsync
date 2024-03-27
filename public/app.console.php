@@ -891,11 +891,12 @@ console.log = function() {
             $('#requestInput').val('git config --global user.name "Barry Dick"');
             $('#requestSubmit').click();
           } else if (matches = data.match(/.*status.*\n+/gm)) {
-            if (matches = data.match(/.*On branch main\nYour branch is up to date with.*\n+/gm)) {
-              if (matches = data.match(/.*nothing to commit, working tree clean/gm)) {
-              //
-              } 
-            } else if (matches = data.match(/.*On branch main\nYour branch is ahead of.*(:?by\s[0-9]+commits)?/gm)) {
+            if (matches = data.match(/.*On branch main\nYour branch is (ahead of|up to date with).*(:?by\s[0-9]+commits)?/gm)) {
+              if (matches = data.match(/.*On branch main\nYour branch is up to date with.*\n+/gm)) {
+                if (matches = data.match(/.*nothing to commit, working tree clean/gm)) {
+                //
+                } 
+              }
               if (matches = data.match(/.*nothing to commit, working tree clean/gm)) {
                 $('#requestInput').val('git push');
                 $('#requestSubmit').click();
@@ -967,6 +968,8 @@ console.log = function() {
           } else {
             $('#responseConsole').val(data + "\n" + $('#responseConsole').val());
           }
+        } else {
+          $('#responseConsole').val(data + "\n" + $('#responseConsole').val());
         }
         //if (!autoClear) { $('#responseConsole').val("\n" + $('#responseConsole').val()); }
       
