@@ -90,7 +90,12 @@ function packagist_return_source($vendor, $package) {
 }
 
 
-function htmlsanitize($input = '') {
+function htmlsanitize(mixed $input = '') {
+
+    if (is_array($input)) $input = var_export($input, true);
+    
+    if (is_null($input)) return;
+
     // Convert HTML entities to their corresponding characters
     $decoded = html_entity_decode($input, ENT_QUOTES, 'UTF-8');
     

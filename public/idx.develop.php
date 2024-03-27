@@ -758,7 +758,7 @@ do {
     </div>
     */ ?>
     <div style="position: relative;">
-      <?php if (isset($_GET['client']) && $_GET['client'] != '') { ?>
+      <?php if (isset($_GET['client']) && $_GET['client'] != '' && isset($_GET['domain']) && $_GET['domain'] != '') { ?>
       <div id="app_client-container" style="position: relative; top: 100px; margin: 0 auto; width: 800px; height: 600px; background-color: rgba(255, 255, 255, 0.9); overflow-x: scroll;">
         <div style="display: inline;">
           <span style="background-color: #B0B0B0; color: white;">

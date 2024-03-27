@@ -881,50 +881,76 @@ console.log = function() {
         console.log("Data: " + data + "Status: " + status);
 
         //data = data.trim(); // replace(/(\r\n|\n|\r)/gm, "")
+        
+        if (matches = data.match(/((:?sudo\s+)?(:?<?=str_replace('/', '\/', dirname(GIT_EXEC)); ?>)?<?= basename(GIT_EXEC); ?>.*)/gm)) {
 
-        if (matches = data.match(/sudo.+\/usr\/bin\/git.*commit.*\nError: Author identity unknown\./gm)) {
-          $('#responseConsole').val('<?= $shell_prompt; ?>Author identity unknown' + "\n" + data + "\n" + $('#responseConsole').val());
-          $('#requestInput').val('git config --global user.email "barryd.it@gmail.com"');
-          $('#requestSubmit').click();
-          $('#requestInput').val('git config --global user.name "Barry Dick"');
-          $('#requestSubmit').click();
-        } else if (matches = data.match(/sudo\s+\/usr\/bin\/git.*remote\s-v.*\n+/gm)) {
-          if (matches = data.match(/.*origin\s+(?:[a-z]+\:\/\/)?([^\s]+@)?((?:[a-z0-9\-]+\.)+[a-z]{2,6}(?:\/\S*))\s+\((fetch|push)\)/gm)) {
-            // if (matches === undefined || array.matches == 0) {
-            // array empty or does not exist
-            // }
-          }
-        } else if (matches = data.match(/sudo\s+\/usr\/bin\/git.*push.*\n+/gm)) {
-          if (matches = data.match(/.*Error:.+(fatal: could not read Password for.+)\n+Exit Code:.([0-9]+)/gm)) {
-            $('#responseConsole').val('<?= $shell_prompt; ?>Wrong Password!' + "\n" + data + "\n" + $('#responseConsole').val());
-            document.getElementById('app_git-container').style.display='block';
-            document.getElementById('app_git-oauth').style.display='block';
-            document.getElementById('app_git-clone-url').style.display='none';
-            document.getElementById('app_git-commit-msg').style.display='none';
-          } else if (matches = data.match(/sudo\s+\/usr\/bin\/git.*push.*\n+To.*/gm)) {
-            if (matches = data.match(/sudo\s+\/usr\/bin\/git.*push.*\n+To.*\n.*!.*\[rejected\].+(\w+).+[->].+(\w+).\(fetch first\)/gm)) {
-              $('#responseConsole').val('<?= $shell_prompt; ?>Push unsuccessful. Fetch first ' + "\n" + data + "\n" + $('#responseConsole').val());
-              $('#requestInput').val('git fetch origin main');
-              $('#requestSubmit').click();
-              $('#requestInput').val('git merge origin/main');
-              $('#requestSubmit').click();
-              $('#requestInput').val('git commit');
-              $('#requestSubmit').click();
-              $('#requestInput').val('git push origin main');
-              $('#requestSubmit').click();
-            } else if (matches = data.match(/sudo\s+\/usr\/bin\/git.*push.*\n+To.*\n.*!.*\[rejected\].+(\w+).+[->].+(\w+).\(non-fast-forward\)/gm)) {
-              $('#responseConsole').val('<?= $shell_prompt; ?>Push unsuccessful. "non-fast-forward" error ' + "\n" + data + "\n" + $('#responseConsole').val());
-              $('#requestInput').val('git push --force origin main');
-              $('#requestSubmit').click();
-            } else {
-            $('#responseConsole').val('<?= $shell_prompt; ?>Push successful' + "\n" + data + "\n" + $('#responseConsole').val());
+          if (matches = data.match(/.*commit.*\nError: Author identity unknown\./gm)) {
+            $('#responseConsole').val('<?= $shell_prompt; ?>Author identity unknown' + "\n" + data + "\n" + $('#responseConsole').val());
+            $('#requestInput').val('git config --global user.email "barryd.it@gmail.com"');
+            $('#requestSubmit').click();
+            $('#requestInput').val('git config --global user.name "Barry Dick"');
+            $('#requestSubmit').click();
+          } else if (matches = data.match(/.*status.*\n+/gm)) {
+            if (matches = data.match(/.*On branch main\nYour branch is up to date with.*\n+/gm)) {
+              if (matches = data.match(/.*nothing to commit, working tree clean/gm)) {
+              //
+              } 
+            } else if (matches = data.match(/.*On branch main\nYour branch is ahead of.*(:?by\s[0-9]+commits)?/gm)) {
+              if (matches = data.match(/.*nothing to commit, working tree clean/gm)) {
+                $('#requestInput').val('git push');
+                $('#requestSubmit').click();
+              } else if (matches = data.match(/.*Changes not staged for commit:/gm)) {
+                $('#requestInput').val('git add .');
+                $('#requestSubmit').click();
+                $('#requestInput').val('git status');
+                //$('#requestSubmit').click();
+              } else if (matches = data.match(/.*Changes to be committed:/gm)) {
+                $('#requestInput').val('git commit -am "automatic <?= date('Y-m-d h:i:s'); ?> commit"');
+                //$('#requestSubmit').click();
+              } 
             }
-          } else if (matches = data.match(/sudo\s+\/usr\/bin\/git.*push.*\n+Error: Everything up-to-date/gm)) {
-            $('#responseConsole').val('<?= $shell_prompt; ?>Everything up-to-date' + "\n" + data + "\n" + $('#responseConsole').val());
-          }
-        } else if (matches = data.match(/sudo\s+\/usr\/bin\/git.*fetch.*\n+/gm)) {
-          if (matches = data.match(/.*Error:.+From.+\n.+\* branch.+(\w+).+[->].+(\w+)/gm)) {
-            $('#responseConsole').val('<?= $shell_prompt; ?>"non-fast-forward" error' + "\n" + data + "\n" + $('#responseConsole').val());
+            $('#responseConsole').val(data + "\n" + $('#responseConsole').val());
+          } else if (matches = data.match(/.*remote\s-v.*\n+/gm)) {
+            if (matches = data.match(/.*origin\s+(?:[a-z]+\:\/\/)?([^\s]+@)?((?:[a-z0-9\-]+\.)+[a-z]{2,6}(?:\/\S*))\s+\((fetch|push)\)/gm)) {
+              // if (matches === undefined || array.matches == 0) {
+              // array empty or does not exist
+              // }
+              $('#responseConsole').val(data + "\n" + $('#responseConsole').val());
+            } else {
+              $('#responseConsole').val(data + "\nNo URL were found." + $('#responseConsole').val());
+            }
+          
+          } else if (matches = data.match(/.*push.*\n+/gm)) {
+            if (matches = data.match(/.*Error:.+(fatal: could not read Password for.+)\n+Exit Code:.([0-9]+)/gm)) {
+              $('#responseConsole').val('<?= $shell_prompt; ?>Wrong Password!' + "\n" + data + "\n" + $('#responseConsole').val());
+              document.getElementById('app_git-container').style.display='block';
+              document.getElementById('app_git-oauth').style.display='block';
+              document.getElementById('app_git-clone-url').style.display='none';
+              document.getElementById('app_git-commit-msg').style.display='none';
+            } else if (matches = data.match(/.*push.*\n+To.*/gm)) {
+              if (matches = data.match(/.*push.*\n+To.*\n.*!.*\[rejected\].+(\w+).+[->].+(\w+).\(fetch first\)/gm)) {
+                $('#responseConsole').val('<?= $shell_prompt; ?>Push unsuccessful. Fetch first ' + "\n" + data + "\n" + $('#responseConsole').val());
+                $('#requestInput').val('git fetch origin main');
+                $('#requestSubmit').click();
+                $('#requestInput').val('git merge origin/main');
+                $('#requestSubmit').click();
+                $('#requestInput').val('git commit');
+                $('#requestSubmit').click();
+                $('#requestInput').val('git push origin main');
+                $('#requestSubmit').click();
+              } else if (matches = data.match(/.*push.*\n+To.*\n.*!.*\[rejected\].+(\w+).+[->].+(\w+).\(non-fast-forward\)/gm)) {
+                $('#responseConsole').val('<?= $shell_prompt; ?>Push unsuccessful. "non-fast-forward" error ' + "\n" + data + "\n" + $('#responseConsole').val());
+                $('#requestInput').val('git push --force origin main');
+                $('#requestSubmit').click();
+              } else {
+              $('#responseConsole').val('<?= $shell_prompt; ?>Push successful' + "\n" + data + "\n" + $('#responseConsole').val());
+              }
+            } else if (matches = data.match(/.*push.*\n+Error: Everything up-to-date/gm)) {
+              $('#responseConsole').val('<?= $shell_prompt; ?>Everything up-to-date' + "\n" + data + "\n" + $('#responseConsole').val());
+            }
+          } else if (matches = data.match(/.*fetch.*\n+/gm)) {
+            if (matches = data.match(/.*Error:.+From.+\n.+\* branch.+(\w+).+[->].+(\w+)/gm)) {
+              $('#responseConsole').val('<?= $shell_prompt; ?>"non-fast-forward" error' + "\n" + data + "\n" + $('#responseConsole').val());
               $('#requestInput').val('git fetch origin main');
               $('#requestSubmit').click();
               //$('#requestInput').val('git status');
@@ -935,16 +961,16 @@ console.log = function() {
               $('#requestSubmit').click();
               $('#requestInput').val('git push origin main');
               $('#requestSubmit').click();
+            }
+          } else if (matches = data.match(/.*pull.*\nAlready up to date\./gm)) {
+            $('#responseConsole').val('<?= $shell_prompt; ?>Already up to date.' + "\n" + data + "\n" + $('#responseConsole').val());
+          } else {
+            $('#responseConsole').val(data + "\n" + $('#responseConsole').val());
           }
-        } else if (matches = data.match(/sudo.+\/usr\/bin\/git.*pull.*\nAlready up to date\./gm)) {
-          $('#responseConsole').val('<?= $shell_prompt; ?>Already up to date.' + "\n" + data + "\n" + $('#responseConsole').val());
-        } else {
-          $('#responseConsole').val(data + "\n" + $('#responseConsole').val());
         }
-
         //if (!autoClear) { $('#responseConsole').val("\n" + $('#responseConsole').val()); }
       
-        $('#requestInput').val('');
+        //$('#requestInput').val('');
       
         $('#responseConsole').scrollTop = $('#responseConsole').scrollHeight;
       });

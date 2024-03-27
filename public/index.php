@@ -6,10 +6,10 @@
 
   if ($path = (basename(getcwd()) == 'public') ? (is_file('../config/config.php') ? '../config/config.php' : 'config.php') : (is_file('config.php') ? 'config.php' : 'config/config.php'))
 
-      //? (is_file('../config.php') ? '../config.php' : 'config.php')
-      //: (is_file('config.php') ? 'config.php' : (is_file('config/config.php') ? 'config/config.php' : null)))
+    //? (is_file('../config.php') ? '../config.php' : 'config.php')
+    //: (is_file('config.php') ? 'config.php' : (is_file('config/config.php') ? 'config/config.php' : null)))
 
-      require_once($path);
+    require_once($path);
   else die(var_dump($path . ' was not found. file=config.php'));
 
 

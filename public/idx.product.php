@@ -1027,7 +1027,7 @@ header("Pragma: no-cache"); ?>
       </div>
       <?php } ?>
       <div id="app_directory-container" style="position: absolute; display: <?= ( isset($_GET['debug']) || isset($_GET['project']) || isset($_GET['path'])  ? /*'block'*/ 'none' : 'none'); ?>; background-color: white; height: 580px; position: absolute; top: 100px; margin-left: auto; margin-right: auto; left: 0; right: 0; width: 700px;">
-        <?php if (isset($_GET['path']) && preg_match('/^vendor/', $_GET['path'])) { ?>
+        <?php if (isset($_GET['path']) && preg_match('/^vendor/', $_GET['path']) && APP_ROOT == '') { ?>
         <!-- iframe src="composer_pkg.php" style="height: 500px; width: 700px;"></iframe -->
         <div style="width: 700px;">
           <div style="display: inline-block; width: 350px;">Composers Vendor Packages [Installed] List</div>
@@ -1047,7 +1047,7 @@ header("Pragma: no-cache"); ?>
         </div>
         <table style="width: inherit; border: none;">
           <tr style=" border: none;">
-            <?php
+<?php
               //$paths = glob($path . '/*');
               $paths = COMPOSER_VENDORS;
               
@@ -1239,7 +1239,7 @@ header("Pragma: no-cache"); ?>
             <!-- /tr -->
         </table>
         <?php } elseif (isset($_GET['project']) && empty($_GET['project'])) { ?> 
-        <?php if (readlinkToEnd('/var/www/projects') == '/mnt/c/www/projects') {  ?>
+        <?php if (readlinkToEnd('/var/www/projects') == '/mnt/c/www/projects') { ?>
         <div style="text-align: center; border: none;" class="text-xs">
           <a class="pkg_dir" href="#" onclick="document.getElementById('app_project-container').style.display='block';">
           <img src="resources/images/project-icon.png" width="50" height="32" style="" /></a><br /><a href="?project">./project/</a>

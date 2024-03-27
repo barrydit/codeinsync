@@ -108,9 +108,9 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     if (!is_dir($path = APP_PATH . 'project'))
       (@!mkdir($path, 0755, true) ?: $errors['COMPOSER-PROJECT'] = 'project/ could not be created.' );
     if ($matches[1] == 'laravel' && $matches[2] == 'laravel')  
-      exec('sudo composer create-project ' . $_POST['composer']['package'] . ' project/laravel', $output, $returnCode) or $errors['COMPOSER-PROJECT-LARAVEL'] = $output;
+      exec((strtoupper(substr(PHP_OS, 0, 3)) === 'WIN' ? '' : 'sudo ') . 'composer create-project ' . $_POST['composer']['package'] . ' project/laravel', $output, $returnCode) or $errors['COMPOSER-PROJECT-LARAVEL'] = $output;
     elseif ($matches[1] == 'symfony' && $matches[2] == 'skeleton')  
-      exec('sudo composer create-project ' . $_POST['composer']['package'] . ' project/symfony', $output, $returnCode) or $errors['COMPOSER-PROJECT-SYMFONY'] = $output;
+      exec((strtoupper(substr(PHP_OS, 0, 3)) === 'WIN' ? '' : 'sudo ') . 'composer create-project ' . $_POST['composer']['package'] . ' project/symfony', $output, $returnCode) or $errors['COMPOSER-PROJECT-SYMFONY'] = $output;
 
     unset($_POST['composer']['package']);
     unset($_POST['composer']['create-project']);
@@ -146,8 +146,8 @@ END
 );
 
           if (isset($_POST['composer']['install'])) {
-            exec('sudo composer require ' . $_POST['composer']['package'], $output, $returnCode) or $errors['COMPOSER-REQUIRE'] = $output;
-            exec('sudo composer update ' . $_POST['composer']['package'], $output, $returnCode) or $errors['COMPOSER-UPDATE'] = $output;
+            exec((strtoupper(substr(PHP_OS, 0, 3)) === 'WIN' ? '' : 'sudo ') . 'composer require ' . $_POST['composer']['package'], $output, $returnCode) or $errors['COMPOSER-REQUIRE'] = $output;
+            exec((strtoupper(substr(PHP_OS, 0, 3)) === 'WIN' ? '' : 'sudo ') . 'composer update ' . $_POST['composer']['package'], $output, $returnCode) or $errors['COMPOSER-UPDATE'] = $output;
           }
 
       exit(header('Location: ' . APP_URL_BASE . '?' . http_build_query(APP_QUERY))); // , '', '&amp;'
@@ -239,7 +239,7 @@ END
     }
 
     if (isset($_POST['composer']['init']) && !empty($_POST['composer']['init'])) {
-      $proc = proc_open('env COMPOSER_ALLOW_SUPERUSER=' . COMPOSER_ALLOW_SUPERUSER . '; sudo ' . str_replace(array("\r\n", "\r", "\n"), ' ', $_POST['composer']['init']) . '; sudo ' . COMPOSER_EXEC['bin'] . ' update;', array( array("pipe","r"), array("pipe","w"), array("pipe","w")), $pipes);
+      $proc = proc_open('env COMPOSER_ALLOW_SUPERUSER=' . COMPOSER_ALLOW_SUPERUSER . '; ' . (strtoupper(substr(PHP_OS, 0, 3)) === 'WIN' ? '' : 'sudo ')  . str_replace(array("\r\n", "\r", "\n"), ' ', $_POST['composer']['init']) . '; ' . (strtoupper(substr(PHP_OS, 0, 3)) === 'WIN' ? '' : 'sudo ') . COMPOSER_EXEC['bin'] . ' update;', array( array("pipe","r"), array("pipe","w"), array("pipe","w")), $pipes);
 
       list($stdout, $stderr, $exitCode) = [stream_get_contents($pipes[1]), stream_get_contents($pipes[2]), proc_close($proc)];
 
@@ -250,7 +250,7 @@ END
 
       //dd($errors);
     }
-    //dd('env COMPOSER_ALLOW_SUPERUSER=' . COMPOSER_ALLOW_SUPERUSER . '; sudo ' . COMPOSER_EXEC . ' install ' . (isset($_POST['composer']['config']) ? '-o' : (isset($_POST['composer']['optimize-classes']) ? '-o': '')) . ';');
+    //dd('env COMPOSER_ALLOW_SUPERUSER=' . COMPOSER_ALLOW_SUPERUSER . '; ' . (strtoupper(substr(PHP_OS, 0, 3)) === 'WIN' ? '' : 'sudo ') . COMPOSER_EXEC . ' install ' . (isset($_POST['composer']['config']) ? '-o' : (isset($_POST['composer']['optimize-classes']) ? '-o': '')) . ';');
     
     isset($_POST['composer']['lock'])
       and unlink(APP_PATH . 'composer.lock');
@@ -258,7 +258,7 @@ END
 // https://stackoverflow.com/questions/33052195/what-are-the-differences-between-composer-update-and-composer-install
     
     if (isset($_POST['composer']['install'])) {
-      $proc = proc_open('env COMPOSER_ALLOW_SUPERUSER=' . COMPOSER_ALLOW_SUPERUSER . '; sudo ' . COMPOSER_EXEC['bin'] . ' install ' . (isset($_POST['composer']['config']) ? '-o' : (isset($_POST['composer']['optimize-classes']) ? '-o': '')) . ';', array( array("pipe","r"), array("pipe","w"), array("pipe","w")), $pipes);
+      $proc = proc_open('env COMPOSER_ALLOW_SUPERUSER=' . COMPOSER_ALLOW_SUPERUSER . '; ' . (strtoupper(substr(PHP_OS, 0, 3)) === 'WIN' ? '' : 'sudo ') . COMPOSER_EXEC['bin'] . ' install ' . (isset($_POST['composer']['config']) ? '-o' : (isset($_POST['composer']['optimize-classes']) ? '-o': '')) . ';', array( array("pipe","r"), array("pipe","w"), array("pipe","w")), $pipes);
 
       list($stdout, $stderr, $exitCode) = [stream_get_contents($pipes[1]), stream_get_contents($pipes[2]), proc_close($proc)];
 
@@ -286,7 +286,7 @@ update [--with WITH] [--prefer-source] [--prefer-dist] [--prefer-install PREFER-
         exec('php composer-setup.php');
       }
       // If this process isn't working, its because you have an invalid composer.json file
-      $proc = proc_open('env COMPOSER_ALLOW_SUPERUSER=' . COMPOSER_ALLOW_SUPERUSER . '; sudo ' . COMPOSER_EXEC['bin'] . ' update'  , array( array("pipe","r"), array("pipe","w"), array("pipe","w")), $pipes);
+      $proc = proc_open('env COMPOSER_ALLOW_SUPERUSER=' . COMPOSER_ALLOW_SUPERUSER . '; ' . (strtoupper(substr(PHP_OS, 0, 3)) === 'WIN' ? '' : 'sudo ') . COMPOSER_EXEC['bin'] . ' update'  , array( array("pipe","r"), array("pipe","w"), array("pipe","w")), $pipes);
 
       list($stdout, $stderr, $exitCode) = [stream_get_contents($pipes[1]), stream_get_contents($pipes[2]), proc_close($proc)];
 
@@ -297,7 +297,7 @@ update [--with WITH] [--prefer-source] [--prefer-dist] [--prefer-install PREFER-
 
       if (defined('COMPOSER_VERSION') && defined('COMPOSER_LATEST'))
         if (version_compare(COMPOSER_LATEST, COMPOSER_VERSION, '>') != 0) {
-          $proc = proc_open('env COMPOSER_ALLOW_SUPERUSER=' . COMPOSER_ALLOW_SUPERUSER . '; sudo ' . COMPOSER_EXEC['bin'] . ' self-update;', array( array("pipe","r"), array("pipe","w"), array("pipe","w")), $pipes);
+          $proc = proc_open('env COMPOSER_ALLOW_SUPERUSER=' . COMPOSER_ALLOW_SUPERUSER . '; ' . (strtoupper(substr(PHP_OS, 0, 3)) === 'WIN' ? '' : 'sudo ') . COMPOSER_EXEC['bin'] . ' self-update;', array( array("pipe","r"), array("pipe","w"), array("pipe","w")), $pipes);
     
           list($stdout, $stderr, $exitCode) = [stream_get_contents($pipes[1]), stream_get_contents($pipes[2]), proc_close($proc)];
     
@@ -521,8 +521,8 @@ ob_start(); ?>
 <?php
 
 $count = 0;
-if (defined('COMPOSER') && isset(COMPOSER->require))
-  foreach (COMPOSER->require as $key => $require) {
+if (defined('COMPOSER') && isset(COMPOSER['json']->require))
+  foreach (COMPOSER['json']->require as $key => $require) {
     if (preg_match('/.*\/.*:.*/', $key . ':' . $require)) 
       if (preg_match('/(.*)\/.*/', $key, $match))
         if (!empty($match) && !is_dir('vendor/'.$match[1].'/')) $count++;
@@ -576,7 +576,7 @@ if (defined('COMPOSER') && isset(COMPOSER->require))
         <textarea style="width: 100%" cols="40" rows="5" name="composer[cmd]">php -r "copy('https://getcomposer.org/installer', 'composer-setup.php');"
 php composer-setup.php
 php composer.phar -v
-sudo composer self-update</textarea>
+<?= (strtoupper(substr(PHP_OS, 0, 3)) === 'WIN' ? '' : 'sudo ') ?>composer self-update</textarea>
       </div>
     </form>
     </div>
@@ -674,10 +674,10 @@ ob_end_clean(); ?>
       <div style="display: inline-block; width: 100%;"><span <?= (isset(VENDOR->{'name'}) && VENDOR->{'name'} !== '' ? '' : 'style="background-color: #fff; color: red;" title="Either Vendor or Package is missing"') ?>>Vendor/Package:</span>
         <div style="position: relative; float: right;"><?php
 
-$keys = array_keys(get_object_vars(COMPOSER->{'require'}));
+$keys = array_keys(get_object_vars(COMPOSER['json']->{'require'}));
 
-if (!empty(get_object_vars(COMPOSER->{'require-dev'})))
-  $keys = array_merge($keys, array_keys(get_object_vars(COMPOSER->{'require-dev'})));
+if (!empty(get_object_vars(COMPOSER['json']->{'require-dev'})))
+  $keys = array_merge($keys, array_keys(get_object_vars(COMPOSER['json']->{'require-dev'})));
 
 ?>
           <select onselect="selectPackage()">
@@ -685,7 +685,7 @@ if (!empty(get_object_vars(COMPOSER->{'require-dev'})))
 <?php 
   foreach($keys as $package) {
     if ($package == 'php') continue;
-    elseif (isset(COMPOSER->{'require'}->{$package}))
+    elseif (isset(COMPOSER['json']->{'require'}->{$package}))
       echo '<option selected>' . $package . '</option>';
     else echo '<option>' . $package . '</option>';
   }
@@ -886,7 +886,7 @@ if (!empty(get_object_vars(COMPOSER->{'require-dev'})))
       <div id="appComposerJsonForm" style="position: relative; display: inline-block; overflow-x: hidden; overflow-y: auto; height: auto; padding: 10px; background-color: rgb(235,216,186,.80); border: 1px dashed #0078D7;">
 <?php if (defined('COMPOSER_JSON') && realpath(COMPOSER_JSON['path'])) { ?>
       <div style="display: inline-block; width: 100%; margin-bottom: 10px;">
-        <div class="text-xs" style="display: inline-block; float: left; background-color: #0078D7; color: white;">Last Update: <span <?= (isset(COMPOSER->time) && COMPOSER->time === '' ? 'style="background-color: white; color: red;"' : 'style="background-color: white; color: #0078D7;"') ?>><?= (isset(COMPOSER->time) && COMPOSER->time !== '' ? COMPOSER->{'time'} : date('Y-m-d H:i:s')) ?></span></div>
+        <div class="text-xs" style="display: inline-block; float: left; background-color: #0078D7; color: white;">Last Update: <span <?= (isset(COMPOSER['json']->time) && COMPOSER['json']->time === '' ? 'style="background-color: white; color: red;"' : 'style="background-color: white; color: #0078D7;"') ?>><?= (isset(COMPOSER['json']->time) && COMPOSER['json']->time !== '' ? COMPOSER['json']->{'time'} : date('Y-m-d H:i:s')) ?></span></div>
         
         
         <div class="text-xs" style="display: inline-block; float: right;">
@@ -895,31 +895,31 @@ if (!empty(get_object_vars(COMPOSER->{'require-dev'})))
         </div>
       </div>
 <?php } ?>
-      <div style="display: inline-block; width: 100%;"><span <?= (isset(COMPOSER->{'name'}) && COMPOSER->{'name'} !== '' ? '' : 'style="background-color: #fff; color: red;" title="Either Vendor or Package is missing"') ?>>Name:</span>
+      <div style="display: inline-block; width: 100%;"><span <?= (isset(COMPOSER['json']->{'name'}) && COMPOSER['json']->{'name'} !== '' ? '' : 'style="background-color: #fff; color: red;" title="Either Vendor or Package is missing"') ?>>Name:</span>
         <div style="position: relative; float: right;">
           <div class="absolute font-bold" style="position: absolute; top: -8px; left: 5px; font-size: 10px; z-index: 1;">Vendor</div>
-          <input type="text" id="tst" name="composer[config][name][vendor]" placeholder="vendor" value="<?= (defined('COMPOSER') && isset(COMPOSER->name) ? explode('/', COMPOSER->name)[0] : ''); ?>" size="13"> / <div class="absolute font-bold" style="position: absolute; top: -8px; right: 82px; font-size: 10px; z-index: 1;">Package</div> <input type="text" id="tst" name="composer[config][name][package]" placeholder="package" value="<?= (defined('COMPOSER') && isset(COMPOSER->name)? explode('/', COMPOSER->name)[1] : ''); ?>" size="13" />   
+          <input type="text" id="tst" name="composer[config][name][vendor]" placeholder="vendor" value="<?= (defined('COMPOSER') && isset(COMPOSER['json']->name) ? explode('/', COMPOSER['json']->name)[0] : ''); ?>" size="13"> / <div class="absolute font-bold" style="position: absolute; top: -8px; right: 82px; font-size: 10px; z-index: 1;">Package</div> <input type="text" id="tst" name="composer[config][name][package]" placeholder="package" value="<?= (defined('COMPOSER') && isset(COMPOSER['json']->name)? explode('/', COMPOSER['json']->name)[1] : ''); ?>" size="13" />   
         </div>
       </div>
-      <div style="display: inline-block; width: 100%;"><label for="composer-description" <?= (isset(COMPOSER->{'description'}) && COMPOSER->{'description'} !== '' ? '' : 'style="background-color: #fff; color: red; cursor: pointer;" title="Description is missing"') ?>>Description:</label>
+      <div style="display: inline-block; width: 100%;"><label for="composer-description" <?= (isset(COMPOSER['json']->{'description'}) && COMPOSER['json']->{'description'} !== '' ? '' : 'style="background-color: #fff; color: red; cursor: pointer;" title="Description is missing"') ?>>Description:</label>
         <div style="float: right;">
-          <input id="composer-description" type="text" name="composer[config][description]" placeholder="Details" value="<?= (defined('COMPOSER') && isset(COMPOSER->description)? COMPOSER->description : ''); ?>">
+          <input id="composer-description" type="text" name="composer[config][description]" placeholder="Details" value="<?= (defined('COMPOSER') && isset(COMPOSER['json']->description)? COMPOSER['json']->description : ''); ?>">
         </div>
       </div>
       
       <!-- version -->
-      <div style="display: inline-block; width: 100%;"><label for="composer-version" <?= (isset(COMPOSER->{'version'}) && preg_match(COMPOSER_EXPR_VER, COMPOSER->{'version'}) ? '' : 'style="background-color: #fff; color: red; cursor: pointer;" title="Version must follow this format: ' . COMPOSER_EXPR_VER . '"') ?>>Version:</label>
+      <div style="display: inline-block; width: 100%;"><label for="composer-version" <?= (isset(COMPOSER['json']->{'version'}) && preg_match(COMPOSER_EXPR_VER, COMPOSER['json']->{'version'}) ? '' : 'style="background-color: #fff; color: red; cursor: pointer;" title="Version must follow this format: ' . COMPOSER_EXPR_VER . '"') ?>>Version:</label>
         <div style="float: right;">
-          <input id="composer-version" type="text" name="composer[config][version]" size="10" placeholder="(Version) 1.2.3" style="text-align: right;" pattern="(\d+\.\d+(?:\.\d+)?)" value="<?= (defined('COMPOSER') && isset(COMPOSER->version) ? COMPOSER->version : ''); ?>">
+          <input id="composer-version" type="text" name="composer[config][version]" size="10" placeholder="(Version) 1.2.3" style="text-align: right;" pattern="(\d+\.\d+(?:\.\d+)?)" value="<?= (defined('COMPOSER') && isset(COMPOSER['json']->version) ? COMPOSER['json']->version : ''); ?>">
         </div>
       </div>
       <!-- type -->
       <div style="display: inline-block; width: 100%;">Type:
         <div style="float: right;">
           <select name="composer[config][type]">
-            <option label="" <?= (defined('COMPOSER') && isset(COMPOSER->license) ? '' : 'selected=""');?>></option>
+            <option label="" <?= (defined('COMPOSER') && isset(COMPOSER['json']->license) ? '' : 'selected=""');?>></option>
 <?php foreach (['library', 'project', 'metapackage', 'composer-plugin'] as $type) { ?>
-            <option<?= (defined('COMPOSER') && isset(COMPOSER->type) && COMPOSER->type == $type ? ' selected=""' : '' ); ?>><?= $type; ?></option>
+            <option<?= (defined('COMPOSER') && isset(COMPOSER['json']->type) && COMPOSER['json']->type == $type ? ' selected=""' : '' ); ?>><?= $type; ?></option>
 <?php } ?>
           </select>
         </div>
@@ -929,8 +929,8 @@ if (!empty(get_object_vars(COMPOSER->{'require-dev'})))
           <input id="composerKeywordAdd" type="text" placeholder="Keywords" value="" onselect="add_keyword()">
         </div>
         <div class="clearfix"></div>
-        <div id="composerAppendKeyword" style="padding: 10px 0 10px 0; display: <?= (defined('COMPOSER') && isset(COMPOSER->keywords) && !empty(COMPOSER->keywords) ? 'block' : 'none') ?>; width: 100%;">
-<?php if (defined('COMPOSER') && isset(COMPOSER->keywords)) foreach (COMPOSER->keywords as $key => $keyword) { ?>
+        <div id="composerAppendKeyword" style="padding: 10px 0 10px 0; display: <?= (defined('COMPOSER') && isset(COMPOSER['json']->keywords) && !empty(COMPOSER['json']->keywords) ? 'block' : 'none') ?>; width: 100%;">
+<?php if (defined('COMPOSER') && isset(COMPOSER['json']->keywords)) foreach (COMPOSER['json']->keywords as $key => $keyword) { ?>
           <label for="keyword_<?= $key; ?>"><sup onclick="rm_keyword(\'keyword_<?= $key; ?>\');">[x]</sup><?= $keyword; ?></label><input type="hidden" id="keyword_<?= $key; ?>" name="composer[config][keywords][]" value="<?= $keyword; ?>" />&nbsp;
 <?php } ?>
         </div>
@@ -942,9 +942,9 @@ if (!empty(get_object_vars(COMPOSER->{'require-dev'})))
       <div style="display: inline-block; width: 100%;">License:
         <div style="float: right;">
           <select name="composer[config][license]">
-            <option label=""<?= (defined('COMPOSER') && isset(COMPOSER->license) ? '' : ' selected=""' );?>></option>
+            <option label=""<?= (defined('COMPOSER') && isset(COMPOSER['json']->license) ? '' : ' selected=""' );?>></option>
 <?php foreach (['WTFPL', 'GPL-3.0', 'MIT'] as $license) { ?>
-            <option<?= (defined('COMPOSER') && isset(COMPOSER->license) && COMPOSER->license == $license ? ' selected=""' : '' ); ?>><?= $license; ?></option>
+            <option<?= (defined('COMPOSER') && isset(COMPOSER['json']->license) && COMPOSER['json']->license == $license ? ' selected=""' : '' ); ?>><?= $license; ?></option>
 <?php } ?>
           </select>
         </div>
@@ -952,7 +952,7 @@ if (!empty(get_object_vars(COMPOSER->{'require-dev'})))
       <!-- authors -->
       <div style="display: inline-block; width: 100%;">Authors:<br />
 
-<?php if (defined('COMPOSER') && isset(COMPOSER->authors)) foreach (COMPOSER->authors as $key => $author) { ?>
+<?php if (defined('COMPOSER') && isset(COMPOSER['json']->authors)) foreach (COMPOSER['json']->authors as $key => $author) { ?>
         <div style="position: relative; float: left;">
           <div class="absolute font-bold" style="position: absolute; top: -8px; left: 10px; font-size: 10px;">Name</div>
           <input type="text" id="tst" name="composer[config][authors][<?= $key ?>][name]" placeholder="name" value="<?= $author->{'name'} ?>" size="10"> /
@@ -989,7 +989,7 @@ if (!empty(get_object_vars(COMPOSER->{'require-dev'})))
 <!--
           <select name="composerAuthorRole">
 <?php foreach (['Backend', 'Designer', 'Developer', 'Programmer'] as $role) { ?>
-            <option<?= (defined('COMPOSER') && isset(COMPOSER->authors) && COMPOSER->authors->role ? 'value="' . $role . '"' : '') && (defined('COMPOSER') && isset(COMPOSER->authors) && COMPOSER->authors->role == $role ? ' selected=""' : '' ); ?>><?= $role; ?></option>
+            <option<?= (defined('COMPOSER') && isset(COMPOSER['json']->authors) && COMPOSER['json']->authors->role ? 'value="' . $role . '"' : '') && (defined('COMPOSER') && isset(COMPOSER['json']->authors) && COMPOSER['json']->authors->role == $role ? ' selected=""' : '' ); ?>><?= $role; ?></option>
 <?php } ?>
           </select>
 -->
@@ -1026,16 +1026,16 @@ if (!empty(get_object_vars(COMPOSER->{'require-dev'})))
             <option value=""></option>
           </datalist>
         </div>
-        <div id="composerAppendRequire" style="padding: 10px; display: <?= (defined('COMPOSER') && !isset(COMPOSER->{'require'}) ? 'none' : 'block') ?>;">
+        <div id="composerAppendRequire" style="padding: 10px; display: <?= (defined('COMPOSER') && !isset(COMPOSER['json']->{'require'}) ? 'none' : 'block') ?>;">
           <datalist id="composerReqVersResults">
             <option value=""></option>
           </datalist>
-<?php $i = 0; if (defined('COMPOSER') && isset(COMPOSER->{'require'})) {
-  if (!isset(COMPOSER->{'require'}->{'php'})) { ?>
+<?php $i = 0; if (defined('COMPOSER') && isset(COMPOSER['json']->{'require'})) {
+  if (!isset(COMPOSER['json']->{'require'}->{'php'})) { ?>
           <input type="checkbox" checked="" onchange="this.indeterminate = !this.checked; document.getElementById('pkg_<?= $i; ?>').disabled = !this.checked">
           <input type="text" id="pkg_<?= $i; ?>" name="composer[config][require][]" value="<?= 'php:^' . PHP_VERSION ?>" list="composerReqVersResults" size="30" onselect="get_version('pkg_<?= $i; ?>')">
           <label for="pkg_<?= $i; ?>"></label><br />
-<?php $i++; } foreach (COMPOSER->{'require'} as $key => $require) { ?>
+<?php $i++; } foreach (COMPOSER['json']->{'require'} as $key => $require) { ?>
           <input type="checkbox" checked="" onchange="this.indeterminate = !this.checked; document.getElementById('pkg_<?= $i; ?>').disabled = !this.checked">
           <input type="text" id="pkg_<?= $i; ?>" name="composer[config][require][]" value="<?= $key . ':' . $require ?>" list="composerReqVersResults" size="30" onselect="get_version('pkg_<?= $i; ?>')">
           <label for="pkg_<?= $i; ?>"></label><br />
@@ -1053,11 +1053,11 @@ if (!empty(get_object_vars(COMPOSER->{'require-dev'})))
             <option value=""></option>
           </datalist>
         </div>
-        <div id="composerAppendRequire-dev" style="padding: 10px; display: <?= (defined('COMPOSER') && !isset(COMPOSER->{'require-dev'}) ? 'none' : 'block') ?>;">
+        <div id="composerAppendRequire-dev" style="padding: 10px; display: <?= (defined('COMPOSER') && !isset(COMPOSER['json']->{'require-dev'}) ? 'none' : 'block') ?>;">
           <datalist id="composerReq-devVersResults">
             <option value=""></option>
           </datalist>
-<?php $i = 0; if (defined('COMPOSER') && isset(COMPOSER->{'require-dev'})) foreach (COMPOSER->{'require-dev'} as $key => $require) { ?>
+<?php $i = 0; if (defined('COMPOSER') && isset(COMPOSER['json']->{'require-dev'})) foreach (COMPOSER['json']->{'require-dev'} as $key => $require) { ?>
           <input type="checkbox" checked="" onchange="this.indeterminate = !this.checked; document.getElementById('pkg-dev_<?= $i; ?>').disabled = !this.checked">
           <input type="text" id="pkg-dev_<?= $i; ?>" name="composer[config][require-dev][]" value="<?= $key . ':' . $require ?>" list="composerReqVersResults" size="30" onselect="get_version('pkg-dev_<?= $i; ?>')">
           <label for="pkg-dev_<?= $i; ?>"></label><br />
@@ -1080,7 +1080,7 @@ if (!empty(get_object_vars(COMPOSER->{'require-dev'})))
         <div style="float: right;">
           <select name="composer[config][minimum-stability]">
 <?php if (defined('COMPOSER')) foreach (['stable', 'rc', 'beta', 'alpha', 'dev'] as $ms) { ?>
-            <option value="<?= $ms ?>"<?= (isset(COMPOSER->{'minimum-stability'}) && COMPOSER->{'minimum-stability'} == $ms ? ' selected=""' : '' )?>><?= $ms ?></option>
+            <option value="<?= $ms ?>"<?= (isset(COMPOSER['json']->{'minimum-stability'}) && COMPOSER['json']->{'minimum-stability'} == $ms ? ' selected=""' : '' )?>><?= $ms ?></option>
 <?php } ?>
           </select>
         </div>
@@ -1095,8 +1095,8 @@ if (!empty(get_object_vars(COMPOSER->{'require-dev'})))
 
 <?php
 $count = 0;
-if (defined('COMPOSER') && isset(COMPOSER->require))
-  foreach (COMPOSER->require as $key => $require)
+if (defined('COMPOSER') && isset(COMPOSER['json']->require))
+  foreach (COMPOSER['json']->require as $key => $require)
     if (preg_match('/.*\/.*:.*/', $key . ':' . $require)) 
       if (preg_match('/(.*\/.*)/', $key, $match))
         if (!empty($match) && !is_dir('vendor/'.$match[1].'/')) $count++;
@@ -1122,7 +1122,7 @@ if (defined('COMPOSER') && isset(COMPOSER->require))
         <span >
         <ul style="padding-left: 10px;">
 <?php
-foreach (COMPOSER->require as $key => $require) {
+foreach (COMPOSER['json']->require as $key => $require) {
   if (preg_match('/.*\/.*:.*/', $key . ':' . $require)) 
     if (preg_match('/(.*\/.*)/', $key, $match))
       if (!empty($match) && !is_dir('vendor/'.$match[1].'/')) echo '<li style="color: red;"><code class="text-sm">' . $match[1] . ':' . '<span style="float: right">' . $require . '</span>' . "</code></li>\n";

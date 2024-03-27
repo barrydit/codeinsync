@@ -105,7 +105,7 @@ if (!empty($_GET['client']) && !empty($_GET['domain'])) {
   if (is_dir(APP_PATH . $path))
     define('APP_CLIENT', new clientOrProj($path));
   
-  if (isset($_GET['path']) && is_dir(APP_PATH . $path . $_GET['path'])) $path .= $_GET['path'];
+  //if (isset($_GET['path']) && is_dir(APP_PATH . $path . $_GET['path'])) $path .= $_GET['path'];
     //else 
       //exit(header('Location: http://localhost/clientele/' . $_GET['client']));    
     //$path = '?path=' . $path;
@@ -117,9 +117,9 @@ if (!empty($_GET['client']) && !empty($_GET['domain'])) {
   if (is_dir(APP_PATH . $path))
     define('APP_PROJECT', new clientOrProj($path));
 
-  if (isset($_GET['path']) && is_dir(APP_PATH . $path . $_GET['path'])) $path .= $_GET['path'];
+  //if (isset($_GET['path']) && is_dir(APP_PATH . $path . $_GET['path'])) $path .= $_GET['path'];
 
-} else { if (isset($_GET['path']) && is_dir(APP_PATH . $_GET['path'])) $path = $_GET['path']; } 
+} // else { if (isset($_GET['path']) && is_dir(APP_PATH . $_GET['path'])) $path = $_GET['path']; } 
 
 !defined('APP_ROOT') and define('APP_ROOT', $path = (realpath(APP_PATH . $path) ? $path : null )); // dirname(APP_SELF, (basename(getcwd()) != 'public' ?: 2))
 // Directory of this script
@@ -406,10 +406,10 @@ if (basename($dir = getcwd()) != 'config') {
         return 1; // $a comes after $b
     elseif (basename($b) === 'composer-setup.php')
         return -1; // $a comes before $b
-    elseif (basename($a) === 'autoload.php')
-        return 1; // $a comes after $b
-    elseif (basename($b) === 'autoload.php')
-        return -1; // $a comes before $b
+    //elseif (basename($a) === 'autoload.php')
+    //    return 1; // $a comes after $b
+    //elseif (basename($b) === 'autoload.php')
+    //    return -1; // $a comes before $b
     else 
         return strcmp(basename($a), basename($b)); // Compare other filenames alphabetically
   });
