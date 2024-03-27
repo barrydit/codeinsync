@@ -883,25 +883,7 @@ console.log = function() {
         //data = data.trim(); // replace(/(\r\n|\n|\r)/gm, "")
         
         if (matches = data.match(/((:?sudo\s+)?(:?<?=str_replace('/', '\/', dirname(GIT_EXEC)); ?>)?<?= basename(GIT_EXEC); ?>.*)/gm)) {
-          if (matches = data.match(/.*commit.*\n/gm)) {
-            if (matches = data.match(/.*Error: Author identity unknown\./gm)) {
-              $('#responseConsole').val('<?= $shell_prompt; ?>Author identity unknown' + "\n" + data + "\n" + $('#responseConsole').val());
-              $('#requestInput').val('git config --global user.email "barryd.it@gmail.com"');
-              $('#requestSubmit').click();
-              $('#requestInput').val('git config --global user.name "Barry Dick"');
-              $('#requestSubmit').click();
-            } else {
-              if (confirm('Git Push?')) {
-                // User clicked OK
-                $('#requestInput').val('git push');
-                $('#requestSubmit').click();
-              } else {
-                // User clicked Cancel
-                console.log('User clicked Cancel');
-              }
-            }
-            $('#responseConsole').val(data + "\n" + $('#responseConsole').val());
-          } else if (matches = data.match(/.*status.*\n+/gm)) {
+          if (matches = data.match(/.*status.*\n+/gm)) {
             if (matches = data.match(/.*On branch main\nYour branch is (ahead of|up to date with).*(:?by\s[0-9]+commits)?/gm)) {
               if (matches = data.match(/.*On branch main\nYour branch is up to date with.*\n+/gm)) {
                 if (matches = data.match(/.*nothing to commit, working tree clean/gm)) {
@@ -938,7 +920,6 @@ console.log = function() {
             } else {
               $('#responseConsole').val(data + "\nNo URL were found." + $('#responseConsole').val());
             }
-          
           } else if (matches = data.match(/.*push.*\n+/gm)) {
             if (matches = data.match(/.*Error:.+(fatal: could not read Password for.+)\n+Exit Code:.([0-9]+)/gm)) {
               $('#responseConsole').val('<?= $shell_prompt; ?>Wrong Password!' + "\n" + data + "\n" + $('#responseConsole').val());
@@ -972,8 +953,14 @@ console.log = function() {
               $('#responseConsole').val('<?= $shell_prompt; ?>"non-fast-forward" error' + "\n" + data + "\n" + $('#responseConsole').val());
               $('#requestInput').val('git fetch origin main');
               $('#requestSubmit').click();
-              //$('#requestInput').val('git status');
-              //$('#requestSubmit').click();
+              if (confirm('(Re)Check Git Status?')) {
+                // User clicked OK
+                $('#requestInput').val('git status');
+                $('#requestSubmit').click();
+              } else {
+                // User clicked Cancel
+                console.log('User clicked Cancel');
+              }
               $('#requestInput').val('git rebase origin/main');
               $('#requestSubmit').click();
               $('#requestInput').val('git rebase --continue');
@@ -983,6 +970,24 @@ console.log = function() {
             }
           } else if (matches = data.match(/.*pull.*\nAlready up to date\./gm)) {
             $('#responseConsole').val('<?= $shell_prompt; ?>Already up to date.' + "\n" + data + "\n" + $('#responseConsole').val());
+          } else if (matches = data.match(/.*(:?<?=str_replace('/', '\/', dirname(GIT_EXEC)); ?>)?<?= basename(GIT_EXEC); ?>.*commit.*\n/gm)) {
+            if (matches = data.match(/.*Error: Author identity unknown\./gm)) {
+              $('#responseConsole').val('<?= $shell_prompt; ?>Author identity unknown' + "\n" + data + "\n" + $('#responseConsole').val());
+              $('#requestInput').val('git config --global user.email "barryd.it@gmail.com"');
+              $('#requestSubmit').click();
+              $('#requestInput').val('git config --global user.name "Barry Dick"');
+              $('#requestSubmit').click();
+            } else {
+              if (confirm('Git Push?')) {
+                // User clicked OK
+                $('#requestInput').val('git push');
+                $('#requestSubmit').click();
+              } else {
+                // User clicked Cancel
+                console.log('User clicked Cancel');
+              }
+            }
+            $('#responseConsole').val(data + "\n" + $('#responseConsole').val());
           } else {
             $('#responseConsole').val(data + "\n" + $('#responseConsole').val());
           }
