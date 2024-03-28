@@ -339,7 +339,7 @@ ob_start(); ?>
         <div style="display: inline-block; margin: 5px 0px 0px 10px; float: left;">
             <button id="requestSubmit" type="submit" style="border: 1px dashed #FFF; padding: 2px 4px;">Run</button>&nbsp;
 
-            <input list="commandHistory" id="requestInput" class="text-sm" style="font-family: 'Courier New', Courier, monospace;" type="text" size="52" name="requestInput" autocomplete="off" spellcheck="off" placeholder="php [-rn] &quot;echo 'hello world';&quot;" value="">
+            <input list="commandHistory" id="requestInput" class="text-sm" style="font-family: 'Courier New', Courier, monospace;" type="text" size="46" name="requestInput" autocomplete="off" spellcheck="off" placeholder="php [-rn] &quot;echo 'hello world';&quot;" value="">
             <datalist id="commandHistory">
                 <option value="Edge"></option>
             </datalist>
@@ -971,8 +971,13 @@ console.log = function() {
               $('#requestInput').val('git push origin main');
               $('#requestSubmit').click();
             }
-          } else if (matches = data.match(/.*pull.*\nAlready up to date\./gm)) {
-            $('#responseConsole').val('<?= $shell_prompt; ?>Already up to date.' + "\n" + data + "\n" + $('#responseConsole').val());
+          } else if (matches = data.match(/.*pull.*\n/gm)) {
+            if (matches = data.match(/.*Already up to date\./gm))
+              $('#responseConsole').val('<?= $shell_prompt; ?>Already up to date.' + "\n" + data + "\n" + $('#responseConsole').val());
+            else if (confirm('(Re)load Window?')) {
+              // User clicked OK
+              window.location.reload();  // window.location.href = window.location.href;
+            }
           } else if (matches = data.match(/.*(:?<?=str_replace('/', '\/', dirname(GIT_EXEC)); ?>)?<?= basename(GIT_EXEC); ?>.*commit.*\n/gm)) {
             if (matches = data.match(/.*Error: Author identity unknown\./gm)) {
               $('#responseConsole').val('<?= $shell_prompt; ?>Author identity unknown' + "\n" + data + "\n" + $('#responseConsole').val());
