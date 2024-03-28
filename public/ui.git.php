@@ -415,6 +415,31 @@ ob_end_clean();
 
 ob_start(); ?>
 
+// Select the element
+const element = document.getElementById('app_git-container');
+
+// Create a MutationObserver instance
+const observer = new MutationObserver((mutationsList, observer) => {
+    for(const mutation of mutationsList) {
+        if (mutation.attributeName === 'style') {
+            const display = element.style.display;
+            if (display === 'block') {
+                // Trigger your action here
+                if (confirm('Check Git Status?')) {
+                    // User clicked OK
+                    $('#requestInput').val('git status');
+                    $('#requestSubmit').click();
+                }
+                console.log('Element is displayed');
+            }
+        }
+    }
+});
+
+// Start observing the target node for configured mutations
+observer.observe(element, { attributes: true });
+
+
 var appGitPushElements = document.getElementsByClassName('app_git-push'); // getElementById('app_git-push')
 for (var i = 0; i < appGitPushElements.length; i++) {
     appGitPushElements[i].addEventListener('click', function() {
