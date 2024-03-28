@@ -103,6 +103,10 @@ else die(var_dump($path . ' path was not found. file=app.console.php'));
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 
   // consider creating a visual aspect for the lock file
+  
+  //dd($_POST);
+  
+  chdir(APP_PATH . APP_ROOT);
 
   if (isset($_POST['composer']['create-project']) && preg_match(COMPOSER_EXPR_NAME, $_POST['composer']['package'], $matches)) {
     if (!is_dir($path = APP_PATH . 'project'))
@@ -259,6 +263,7 @@ END
 // https://stackoverflow.com/questions/33052195/what-are-the-differences-between-composer-update-and-composer-install
     
   if (isset($_POST['composer']['install'])) {
+
     $proc = proc_open('env COMPOSER_ALLOW_SUPERUSER=' . COMPOSER_ALLOW_SUPERUSER . '; ' . (strtoupper(substr(PHP_OS, 0, 3)) === 'WIN' ? '' : 'sudo ') . COMPOSER_EXEC['bin'] . ' install ' . (isset($_POST['composer']['config']) ? '-o' : (isset($_POST['composer']['optimize-classes']) ? '-o': '')) . ';', array( array("pipe","r"), array("pipe","w"), array("pipe","w")), $pipes);
 
     list($stdout, $stderr, $exitCode) = [stream_get_contents($pipes[1]), stream_get_contents($pipes[2]), proc_close($proc)];
@@ -310,7 +315,7 @@ update [--with WITH] [--prefer-source] [--prefer-dist] [--prefer-install PREFER-
     // $_POST['composer']['cmd'];
   }
 
-  exit(header('Location: ' . APP_URL_BASE));
+  exit(header('Location: ' . APP_URL_BASE . '?' . http_build_query(APP_QUERY)));
 }
 
 /** Loading Time: 4.99s **/
@@ -603,7 +608,7 @@ ob_end_clean(); ?>
       </div>
 
       <div id="app_composer-frameConf" class="app_composer-frame-container absolute <?= (!defined('COMPOSER') && is_file(APP_PATH . 'composer.json') ? 'selected' : ''); ?>" style="overflow-x: hidden; overflow-y: auto; height: 230px;">
-    <form autocomplete="off" spellcheck="false" action="<?= APP_URL_BASE . '?' . http_build_query(APP_QUERY + array('app' => 'composer')) . (defined('APP_ENV') && APP_ENV == 'development' ? '#!' : '') /* $c_or_p . '=' . (empty($_GET[$c_or_p]) ? '' : $$c_or_p->name) . '&amp;app=composer' */ ?>" method="POST">
+    <form autocomplete="off" spellcheck="false" action="<?= (!defined('APP_URL_BASE') ? '//' . APP_DOMAIN . APP_URL_PATH . '?' . http_build_query(APP_QUERY, '', '&amp;') : APP_URL_BASE . '?' . http_build_query(APP_QUERY + array('app' => 'composer'), '', '&amp;')) . (defined('APP_ENV') && APP_ENV == 'development' ? '#!' : '') ?>" method="POST">
       <input type="hidden" name="composer[config]" value="" />
 
       <div style="position: absolute; right: 0; float: right; text-align: center; z-index: 2;">

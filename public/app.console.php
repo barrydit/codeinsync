@@ -711,6 +711,9 @@ $(document).ready(function() {
 
 <?php
 //dd(APP_PATH . APP_ROOT . '.git/config');
+
+if (is_file(APP_PATH . APP_ROOT . '.git/config')) {
+
 $config = parse_ini_file(APP_PATH . APP_ROOT . '.git/config', true);
 
 if (isset($config['remote origin']['url']) && preg_match('/(?:[a-z]+\:\/\/)?([^\s]+@)?((?:[a-z0-9\-]+\.)+[a-z]{2,6}(?:\/\S*))/', $config['remote origin']['url'], $matches))
@@ -722,7 +725,7 @@ if (isset($config['remote origin']['url']) && preg_match('/(?:[a-z]+\:\/\/)?([^\
 
     $('#requestInput').val('git remote set-url origin https://' + $("#app_git-oauth-input").val() + '@<?= $matches[1] ?>');
 
-<?php } ?>
+<?php } } ?>
 
     document.getElementById('app_git-clone-url').style.display='none';
     

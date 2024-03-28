@@ -320,17 +320,17 @@ if (isset($_GET['app']) && $_GET['app'] == 'project') require_once('app.project.
 header("Cache-Control: no-store, no-cache, must-revalidate, max-age=0");
 header("Pragma: no-cache");
 
-if (is_file(APP_ROOT . 'projects/project.php') && isset($_GET['project']) && $_GET['project'] == 'show') {
+if (is_file(APP_PATH . 'projects/project.php') && isset($_GET['project']) && $_GET['project'] == 'show') {
   Shutdown::setEnabled(false)->setShutdownMessage(function() {
-      return eval('?>' . file_get_contents(APP_PATH . APP_ROOT . 'projects/project.php')); // -wow
+      return eval('?>' . file_get_contents(APP_PATH . 'projects/project.php')); // -wow
     })->shutdown(); // die();
-} elseif (!is_file(APP_ROOT . 'projects/project.php')) {
-file_put_contents(APP_ROOT . 'projects/project.php', '<?php ' . <<<END
+} elseif (!is_file(APP_PATH . 'projects/project.php')) {
+file_put_contents(APP_PATH . 'projects/project.php', '<?php ' . <<<END
 //if (__FILE__ != get_required_files()[0])
-$require = function(\$path) { require_once($path); };
-if ($path = (basename(getcwd()) == 'public')
-  ? (is_file('config.php') ? 'config.php' : '../config/config.php') : '') $require($path);
-else die(var_dump($path . ' path was not found. file=config.php'));
+\$require = function(\$path) { require_once(\$path); };
+if (\$path = (basename(getcwd()) == 'public')
+  ? (is_file('config.php') ? 'config.php' : '../config/config.php') : '') \$require(\$path);
+else die(var_dump(\$path . ' path was not found. file=config.php'));
 
 require_once(APP_PATH . 'vendor/autoload.php');
 
@@ -379,22 +379,23 @@ if (basename($dir = getcwd()) != 'config') {
   chdir(APP_PATH . APP_ROOT);
   
 //dd(APP_PATH . APP_ROOT . '.git/config');
+if (is_file(APP_PATH . APP_ROOT . '.env')) {
   $env = parse_ini_file(APP_PATH . APP_ROOT . '.env', true);
 
   if (!empty($env))
     foreach($env as $key => $env_var) {
       $_ENV[$key] = $env_var; // putenv($key.'='.$env_var);
     }
-
+}
   $previousFilename = '';
 
   $dirs = [
-    0 => APP_PATH . APP_BASE['config'] . 'composer.php',
-    1 => APP_PATH . 'composer-setup.php',
+    0 => APP_PATH . APP_BASE['config'] . 'git.php',
+    1 => APP_PATH . APP_BASE['config'] . 'composer.php',
+    2 => APP_PATH . 'composer-setup.php',
     //1 => APP_PATH . 'config.php',
     //1 => APP_PATH . 'constants.php',
     //2 => APP_PATH . 'functions.php',
-    2 => APP_PATH . APP_BASE['config'] . 'git.php',
     3 => APP_PATH . APP_BASE['config'] . 'npm.php',
     4 => APP_PATH . APP_BASE['vendor'] . 'autoload.php',
 
@@ -406,10 +407,10 @@ if (basename($dir = getcwd()) != 'config') {
         return 1; // $a comes after $b
     elseif (basename($b) === 'composer-setup.php')
         return -1; // $a comes before $b
-    //elseif (basename($a) === 'autoload.php')
-    //    return 1; // $a comes after $b
-    //elseif (basename($b) === 'autoload.php')
-    //    return -1; // $a comes before $b
+    elseif (basename($a) === 'git.php')
+        return -1; // $a comes after $b
+    elseif (basename($b) === 'git.php')
+        return 1; // $a comes before $b
     else 
         return strcmp(basename($a), basename($b)); // Compare other filenames alphabetically
   });

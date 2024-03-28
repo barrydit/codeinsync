@@ -263,7 +263,7 @@ if (realpath($authJsonPath)) {
 
 putenv('COMPOSER_TOKEN=' . (COMPOSER_AUTH['token'] ?? 'static token')); // <GITHUB_ACCESS_TOKEN>
 
-putenv('PWD=' . APP_PATH);
+putenv('PWD=' . APP_PATH . APP_ROOT);
 
 //dd(file_get_contents($authJsonPath)); // json_decode(getenv('COMPOSER_AUTH') ?? file_get_contents($authJsonPath) /*, true */)
 
@@ -846,9 +846,10 @@ defined('VENDOR_JSON')
   }
 }
 
+//dd(COMPOSER['json']->{'require'}->{'php'}); 
 
-if (!defined('VENDOR_JSON') && isset(COMPOSER['json']->{'require'}[1]))
-  define('VENDOR_JSON', ['json' => (is_file(APP_PATH . APP_ROOT . 'vendor/' . COMPOSER['json']->{'require'}[1] . '/composer.json') ? file_get_contents(APP_PATH . APP_ROOT .'vendor/' . COMPOSER['json']->{'require'}[1] . '/composer.json') : '{}'), 'path' => APP_PATH . APP_ROOT . 'vendor/' . COMPOSER['json']->{'require'}[1] . '/composer.json']);
+if (!defined('VENDOR_JSON') && isset(COMPOSER['json']->{'require'}->{'composer'}))
+  define('VENDOR_JSON', ['json' => (is_file(APP_PATH . APP_ROOT . 'vendor/composer/composer.json') ? file_get_contents(APP_PATH . APP_ROOT .'vendor/composer/composer.json') : '{}'), 'path' => APP_PATH . APP_ROOT . 'vendor/composer/composer.json']);
 
 //dd(COMPOSER);
 //dd(COMPOSER);
@@ -858,6 +859,7 @@ if (!defined('VENDOR_JSON') && isset(COMPOSER['json']->{'require'}[1]))
 
 //dd(get_defined_constants(true)['user']);
 //dd(COMPOSER_EXEC . '  ' . COMPOSER_VERSION);
+
 
 if (basename(dirname(APP_SELF)) == __DIR__ . DIRECTORY_SEPARATOR . 'public')
   if ($path = realpath((basename(__DIR__) != 'config' ? NULL : __DIR__ . DIRECTORY_SEPARATOR) . 'ui.composer.php')) // is_file('config/composer_app.php')) 
