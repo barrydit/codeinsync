@@ -972,12 +972,15 @@ console.log = function() {
               $('#requestSubmit').click();
             }
           } else if (matches = data.match(/.*pull.*\n/gm)) {
+            $('#responseConsole').val(data + "\n" + $('#responseConsole').val());
             if (matches = data.match(/.*Already up to date\./gm))
-              $('#responseConsole').val('<?= $shell_prompt; ?>Already up to date.' + "\n" + data + "\n" + $('#responseConsole').val());
+              $('#responseConsole').val('<?= $shell_prompt; ?>Already up to date.' + "\n" + $('#responseConsole').val());
             else if (confirm('(Re)load Window?')) {
               // User clicked OK
+              $('#responseConsole').val('<?= $shell_prompt; ?>Reloading page (User Prompt).' + "\n" + $('#responseConsole').val());
               window.location.reload();  // window.location.href = window.location.href;
             }
+
           } else if (matches = data.match(/.*(:?<?=str_replace('/', '\/', dirname(GIT_EXEC)); ?>)?<?= basename(GIT_EXEC); ?>.*commit.*\n/gm)) {
             if (matches = data.match(/.*Error: Author identity unknown\./gm)) {
               $('#responseConsole').val('<?= $shell_prompt; ?>Author identity unknown' + "\n" + data + "\n" + $('#responseConsole').val());
