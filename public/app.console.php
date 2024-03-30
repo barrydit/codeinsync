@@ -946,7 +946,7 @@ console.log = function() {
                 $('#requestInput').val('git push --force origin main');
                 $('#requestSubmit').click();
               } else {
-              $('#responseConsole').val('<?= $shell_prompt; ?>Push successful' + "\n" + data + "\n" + $('#responseConsole').val());
+                $('#responseConsole').val('<?= $shell_prompt; ?>Push successful' + "\n" + data + "\n" + $('#responseConsole').val());
               }
             } else if (matches = data.match(/.*push.*\n+Error: Everything up-to-date/gm)) {
               $('#responseConsole').val('<?= $shell_prompt; ?>Everything up-to-date' + "\n" + data + "\n" + $('#responseConsole').val());
