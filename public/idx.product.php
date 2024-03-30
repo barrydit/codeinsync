@@ -1600,17 +1600,15 @@ header("Pragma: no-cache");
                           echo '<img src="resources/images/phar_file.png" width="40" height="50" /><br />' . basename($path)
               /*            . (is_readable($path = ini_get('error_log')) && filesize($path) > 0 ? '<div style="position: absolute; right: 8px; bottom: -6px; color: red; font-weight: bold;">[1]</div>' : '' ) */
                         . '</a></div>' . "\n";
-              
                         else
                           echo '<img src="resources/images/composer_php_file.gif" width="40" height="50" /><br />' . basename($path)
                           . '</a></div>' . "\n";
                       } elseif (preg_match('/.*\.js$/', basename($path))) {
-                      
                         if  (basename($path) == 'webpack.config.js')
                           echo '<a href="?app=ace_editor&path=' . (basename(dirname($path)) == basename(parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH) ? 'failed' : basename(dirname($path)))) . '&file=' . basename($path) . '"><img src="resources/images/webpack_config_js_file.png" width="40" height="50" /><br />' . basename($path) . '</a>';
                         else
                           echo '<a href="?app=ace_editor&path=' . (basename(dirname($path)) == basename(parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH) ? 'failed' : basename(dirname($path)))) . '&file=' . basename($path) . '"><img src="resources/images/js_file.png" width="40" height="50" /><br />' . basename($path) . '</a>';
-              
+
                       } elseif (preg_match('/.*\.md$/', basename($path))) {
                         echo '<a href="?app=ace_editor&path=' . (basename(dirname($path)) == basename(parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH) ? 'failed' : basename(dirname($path)))) . '&file=' . basename($path) . '"><img src="resources/images/md_file.png" width="40" height="50" /><br />' . basename($path) . '</a>';
               
@@ -1780,19 +1778,22 @@ header("Pragma: no-cache");
     <script src="<?= !empty($reels = glob(APP_PATH . 'resources/reels/*.js')) ? APP_BASE['resources'] . 'reels/' . basename(array_rand(array_flip(array_filter($reels, 'is_file')), 1)) : ''; /* APP_BASE['resources'] */?>" type="text/javascript" charset="utf-8"></script>
     <?php } ?>
     <script type="text/javascript" charset="utf-8">
+
+      let isDragging = false;
       function makeDraggable(windowId) {
         const windowElement = document.getElementById(windowId);
         const headerElement = windowElement.querySelector('.ui-widget-header');
-      
-        let isDragging = false;
+
         let offsetX, offsetY;
       
         headerElement.addEventListener('mousedown', function(event) {
-          // Bring the clicked window to the front
-          document.body.appendChild(windowElement);
-          offsetX = event.clientX - windowElement.getBoundingClientRect().left;
-          offsetY = event.clientY - windowElement.getBoundingClientRect().top;
-          isDragging = true;
+          if (!isDragging) { // Add this line to check if the window is already being dragged
+            // Bring the clicked window to the front
+            document.body.appendChild(windowElement);
+            offsetX = event.clientX - windowElement.getBoundingClientRect().left;
+            offsetY = event.clientY - windowElement.getBoundingClientRect().top;
+            isDragging = true;
+          }
         });
       
         document.addEventListener('mousemove', function(event) {

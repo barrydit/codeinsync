@@ -423,11 +423,20 @@ const observer = new MutationObserver((mutationsList, observer) => {
     for(const mutation of mutationsList) {
         if (mutation.attributeName === 'style') {
             const display = element.style.display;
-            if (display === 'block') {
+            if (display === 'block' && !isDragging) {
                 // Trigger your action here
-                if (confirm('Check Git Status?')) {
+
+                // Get the <select> element
+                const selectElement = document.getElementById('app_git-frameSelector');
+
+                // Get the selected value
+                const selectedValue = selectElement.value;
+
+                // Log the selected value to the console
+                console.log('Selected value:', selectedValue);
+                if (confirm('Run Git ' + selectedValue.charAt(0).toUpperCase() + selectedValue.slice(1) + '?')) {
                     // User clicked OK
-                    $('#requestInput').val('git status');
+                    $('#requestInput').val('git ' + selectedValue );
                     $('#requestSubmit').click();
                 }
                 console.log('Element is displayed');
