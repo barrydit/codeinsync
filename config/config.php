@@ -400,9 +400,11 @@ if (is_file(APP_PATH . APP_ROOT . '.env')) {
       $_ENV[$key] = $env_var; // putenv($key.'='.$env_var);
     }
 }
+
   $previousFilename = '';
 
   $dirs = [
+
     0 => APP_PATH . APP_BASE['config'] . 'git.php',
     1 => APP_PATH . APP_BASE['config'] . 'composer.php',
     2 => APP_PATH . 'composer-setup.php',
@@ -419,7 +421,13 @@ if (is_file(APP_PATH . APP_ROOT . '.env')) {
     if (basename($a) === 'composer-setup.php')
         return 1; // $a comes after $b
     elseif (basename($b) === 'composer-setup.php')
-        return -1; // $a comes before $b
+        return -1; // $a comes before $b/
+/*
+    elseif (basename($a) === 'composer.php')
+        return -1; // $a comes after $b
+    elseif (basename($b) === 'composer.php')
+        return 1; // $a comes before $b
+*/
     elseif (basename($a) === 'git.php')
         return -1; // $a comes after $b
     elseif (basename($b) === 'git.php')
