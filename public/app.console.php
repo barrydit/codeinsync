@@ -12,7 +12,7 @@ if (__FILE__ == get_required_files()[0])
     : (is_file('config.php') ? 'config.php' : (is_file('config/config.php') ? 'config/config.php' : null))) require_once($path); 
 else die(var_dump($path . ' path was not found. file=config.php'));
 
-!function_exists('dd') ? die('dd is not defined') : dd(COMPOSER_EXEC);
+//!function_exists('dd') ? die('dd is not defined') : dd(COMPOSER_EXEC);
 
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     if (isset($_POST['cmd'])) {
