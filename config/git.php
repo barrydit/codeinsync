@@ -42,7 +42,7 @@ if ($latest_local_commit_sha !== $_ENV['GITHUB_REMOTE_SHA']) {
     if ($latest_local_commit_sha !== $latest_remote_commit_sha) {
       $errors['GIT_UPDATE'] =  $errors['GIT_UPDATE'] . $latest_local_commit_sha . '  ' . $latest_remote_commit_sha;
     } else {
-      $errors[] = $errors['GIT_UPDATE'] . 'Remote SHA ($_ENV[\'GITHUB_REMOTE_SHA\']) was updated.' . "\n";
+      $errors[] = 'Remote SHA ($_ENV[\'GITHUB_REMOTE_SHA\']) was updated.' . "\n" . $errors['GIT_UPDATE'];
       $_ENV['GITHUB_REMOTE_SHA'] = $latest_remote_commit_sha;
       unset($errors['GIT_UPDATE']);
     }

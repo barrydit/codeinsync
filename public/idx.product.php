@@ -1,7 +1,7 @@
 <?php
 
   if (defined('APP_QUERY') && empty(APP_QUERY))
-    die(header('Location: ' . APP_URL_BASE . '?' . http_build_query(['client' => "000-Raymant, David", 'domain' => "davidraymant.ca"]) . '#'));
+    die(header('Location: ' . APP_URL_BASE . '?' . http_build_query(['client' => $_ENV['DEFAULT_CLIENT'], 'domain' => $_ENV['DEFAULT_DOMAIN']]) . '#'));
   else
     $_GET = array_merge($_GET, APP_QUERY);
 
