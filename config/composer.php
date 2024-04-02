@@ -17,6 +17,17 @@ define('COMPOSER_EXPR_VER', '/v?\d+(?:\.\d+){0,3}|dev-.*/'); // version
 
 // php -dxdebug.mode=debug -dxdebug.output_dir=. public/ui_complete.php
 
+
+
+foreach ($array = preg_split("/\r\n|\n|\r/", exec('sudo /usr/local/bin/composer diagnose')) as $key => $diag_line) {
+  dd($diag_line, false);
+}
+
+
+
+
+// '(win) set VARIABLE / (linux/macos) export VARIABLE '
+
 define('COMPOSER_ALLOW_SUPERUSER', true);
 putenv('COMPOSER_ALLOW_SUPERUSER=' . (int) COMPOSER_ALLOW_SUPERUSER);
 
