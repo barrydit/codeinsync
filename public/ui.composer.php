@@ -469,7 +469,7 @@ ob_start(); ?>
           <div class="text-xs" style="display: inline-block;">
           + 960 <a href="https://github.com/composer/composer/graphs/contributors">contributors</a>
           <br />
-          <a style="color: blue; text-decoration-line: underline; text-decoration-style: solid;" href="http://getcomposer.org/">http://getcomposer.org/</a>
+          <a style="color: blue; text-decoration-line: underline; text-decoration-style: solid;" href="http://getcomposer.org/" target="_blank">http://getcomposer.org/</a>
           </div>
 <!--
           <select id="frameSelector">

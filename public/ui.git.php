@@ -178,7 +178,7 @@ ob_start();
           <div class="text-xs" style="display: inline-block;">
           + 1626 <a href="https://github.com/git/git/graphs/contributors">contributors</a>
           <br /><a href="http://github.com/git"><img src="resources/images/github.fw.png" title="http://github.com/git" width="18" height="18" /></a>
-          <a style="color: blue; text-decoration-line: underline; text-decoration-style: solid;" href="http://git-scm.com/" title="http://git-scm.com/">http://git-scm.com/</a>
+          <a style="color: blue; text-decoration-line: underline; text-decoration-style: solid;" href="http://git-scm.com/" title="http://git-scm.com/" target="_blank">http://git-scm.com/</a>
           </div>
         </div>
         <div style="clear: both;"></div>
