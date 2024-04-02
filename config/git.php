@@ -42,9 +42,9 @@ if ($latest_local_commit_sha !== $_ENV['GITHUB_REMOTE_SHA']) {
     if ($latest_local_commit_sha !== $latest_remote_commit_sha) {
       $errors['GIT_UPDATE'] =  $errors['GIT_UPDATE'] . $latest_local_commit_sha . '  ' . $latest_remote_commit_sha;
     } else {
-      $errors['GIT_UPDATE'] =  $errors['GIT_UPDATE'] . 'Remote sha ($_ENV) was updated.';
+      $errors[] = $errors['GIT_UPDATE'] . 'Remote SHA ($_ENV[\'GITHUB_REMOTE_SHA\']) was updated.' . "\n";
       $_ENV['GITHUB_REMOTE_SHA'] = $latest_remote_commit_sha;
-
+      unset($errors['GIT_UPDATE']);
     }
   } else {
     echo 'Failed to retrieve commit information.';
