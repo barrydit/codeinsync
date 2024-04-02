@@ -459,6 +459,13 @@ if (is_file(APP_PATH . APP_ROOT . '.env')) {
     $previousFilename = $currentFilename;
   }
 
+  $file = fopen(APP_PATH . APP_ROOT . '.env', 'w+');
+  if (isset($_ENV) && !empty($_ENV))
+    foreach($_ENV as $key => $env_var) {
+      fwrite($file, $key.'='.$env_var."\n");
+    }
+  fclose($file);
+  
   chdir(APP_PATH);
 
 

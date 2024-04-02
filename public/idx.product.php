@@ -1779,43 +1779,46 @@ header("Pragma: no-cache");
     <?php } ?>
     <script type="text/javascript" charset="utf-8">
 
-      let isDragging = false;
-      function makeDraggable(windowId) {
-        const windowElement = document.getElementById(windowId);
-        const headerElement = windowElement.querySelector('.ui-widget-header');
+let isDragging = false;
+let activeWindow = null;
 
-        let offsetX, offsetY;
-      
-        headerElement.addEventListener('mousedown', function(event) {
-          if (!isDragging) { // Add this line to check if the window is already being dragged
+function makeDraggable(windowId) {
+    const windowElement = document.getElementById(windowId);
+    const headerElement = windowElement.querySelector('.ui-widget-header');
+    let offsetX, offsetY;
+
+    headerElement.addEventListener('mousedown', function(event) {
+        if (!isDragging) {
             // Bring the clicked window to the front
             document.body.appendChild(windowElement);
             offsetX = event.clientX - windowElement.getBoundingClientRect().left;
             offsetY = event.clientY - windowElement.getBoundingClientRect().top;
             isDragging = true;
-          }
-        });
-      
-        document.addEventListener('mousemove', function(event) {
-          if (isDragging) {
+            activeWindow = windowElement;
+        }
+    });
+
+    document.addEventListener('mousemove', function(event) {
+        if (isDragging && activeWindow === windowElement) {
             const left = event.clientX - offsetX;
             const top = event.clientY - offsetY;
-            //windowElement.style.left = `${left}px`;
-            //windowElement.style.top = `${top}px`;
-      
+
             // Boundary restrictions
             const maxX = window.innerWidth - windowElement.clientWidth - 100;
             const maxY = window.innerHeight - windowElement.clientHeight;
-      
+
             windowElement.style.left = `${Math.max(-200, Math.min(left, maxX))}px`;
             windowElement.style.top = `${Math.max(0, Math.min(top, maxY))}px`;
-          }
-        });
-      
-        document.addEventListener('mouseup', function() {
-          isDragging = false;
-        });
-      }
+        }
+    });
+
+    document.addEventListener('mouseup', function() {
+        if (activeWindow === windowElement) {
+            isDragging = false;
+            activeWindow = null;
+        }
+    });
+}
       
       makeDraggable('app_ace_editor-container');
       makeDraggable('app_composer-container');
@@ -1910,7 +1913,7 @@ header("Pragma: no-cache");
           $( '#app_directory-container' ).slideDown( "slow", function() {
           // Animation complete.
           });
-      <?php } else if (isset($_GET['client'])) { // !$_GET['client'] 
+      <?php } else if (defined('APP_ROOT') && APP_ROOT != '' && isset($errors['GIT_UPDATE'])) { //  isset($_GET['client'])  !$_GET['client'] 
       
         if ($_GET['client'] != '') { ?>
           document.getElementById('toggle-debug').checked = true;

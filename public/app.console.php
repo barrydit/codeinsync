@@ -64,7 +64,7 @@ git commit -am "Default message"
 
 git checkout -b branchName
 END;
-          $output[] = $command = ((strtoupper(substr(PHP_OS, 0, 3)) === 'WIN') ? '' : 'sudo ') . GIT_EXEC . (is_dir($path = APP_PATH . APP_ROOT . '.git') || APP_PATH . APP_ROOT != APP_PATH ? '' : '' ) . ' ' . $match[1];
+          $output[] = $command = ((strtoupper(substr(PHP_OS, 0, 3)) === 'WIN') ? '' : 'sudo ') . (defined('GIT_EXEC') ? GIT_EXEC : 'git' ) . (is_dir($path = APP_PATH . APP_ROOT . '.git') || APP_PATH . APP_ROOT != APP_PATH ? '' : '' ) . ' ' . $match[1];
 
 $proc=proc_open($command,
   array(
@@ -80,17 +80,19 @@ $proc=proc_open($command,
           
             //$output[] = dd($_POST['cmd']);
             $output[] = 'test'; 
-          
-            if (preg_match('/^git\s+(clone).+(https:\/\/github\.com\/[\w.-]+\/[\w.-]+\.git).+([\w.-])/', $_POST['cmd'], $github_repo)) {
 
+if (preg_match('/^git\s+clone\s+(http(?:s)?:\/\/([^@\s]+)@github\.com\/[\w.-]+\/[\w.-]+\.git)(?:\s*([\w.-]+))?/', $_POST['cmd'], $github_repo)) { // matches with token
+
+   // (?:(?=(.*?[^@\s]+))[^@\s]+@)?
+
+} else if (preg_match('/^git\s+clone\s+(http(?:s)?:\/\/github\.com\/[\w.-]+\/[\w.-]+\.git)(?:\s*([\w.-]+))?/', $_POST['cmd'], $github_repo)) { // matches without token
+/*
               if (realpath($github_repo[3])) $output[] = realpath($github_repo[3]);
 
               //$output[] = dd($github_repo);
               if (!is_dir('.git')) exec((strtoupper(substr(PHP_OS, 0, 3)) === 'WIN' ? '' : 'sudo ') . 'git init', $output);
 
               exec('git branch -m master main', $output);
-
-              exec((strtoupper(substr(PHP_OS, 0, 3)) === 'WIN' ? '' : 'sudo ')  . 'git --git-dir="' . APP_PATH . APP_ROOT . '.git" --work-tree="' . APP_PATH . APP_ROOT . '" remote add origin ' . $github_repo[2], $output);
 
               //exec('git remote add origin ' . $github_repo[2], $output);
 
@@ -104,10 +106,30 @@ $proc=proc_open($command,
 
               //exec('sudo git init', $output);
               //$output[] = dd($output);
-            }
-          
             $output[] = 'This works ... ';
-          
+*/
+}
+
+$output[] = $command = $_POST['cmd'] . ' --git-dir="' . APP_PATH . APP_ROOT . '.git" --work-tree="' . APP_PATH . APP_ROOT . '"';
+
+/**/
+if (isset($github_repo) && !empty($github_repo)) {
+
+  $proc = proc_open($command,
+  array(
+    array("pipe","r"),
+    array("pipe","w"),
+    array("pipe","w")
+  ),
+  $pipes);
+  
+  list($stdout, $stderr, $exitCode) = [stream_get_contents($pipes[1]), stream_get_contents($pipes[2]), proc_close($proc)];
+  $output[] = (!isset($stdout) ? NULL : $stdout . (isset($stderr) && $stderr === '' ? NULL : (isset($exitCode) && $exitCode == 0 ? NULL : 'Exit Code: ' . $exitCode)));
+
+}
+
+  // exec((strtoupper(substr(PHP_OS, 0, 3)) === 'WIN' ? '' : 'sudo ')  . 'git --git-dir="' . APP_PATH . APP_ROOT . '.git" --work-tree="' . APP_PATH . APP_ROOT . '" remote add origin ' . $github_repo[2], $output);
+
           } else {
 
           // git --git-dir=/var/www/.git --work-tree=/var/www pull
@@ -116,7 +138,7 @@ $proc=proc_open($command,
           if (preg_match('/^(init)(:?\s+)?/i', $match[1])) 
             if (!is_file($path = APP_PATH . APP_ROOT . '.gitignore')) touch($path);
           
-          $output[] = 'www-data@localhost:' . getcwd() . '# ' . $command = ((strtoupper(substr(PHP_OS, 0, 3)) === 'WIN') ? '' : 'sudo ') . GIT_EXEC . (is_dir($path = APP_PATH . APP_ROOT . '.git') || APP_PATH . APP_ROOT != APP_PATH ? ' --git-dir="' . $path . '" --work-tree="' . dirname($path) . '"': '' ) . ' ' . $match[1];
+          $output[] = 'www-data@localhost:' . getcwd() . '# ' . $command = ((strtoupper(substr(PHP_OS, 0, 3)) === 'WIN') ? '' : 'sudo ') . (defined('GIT_EXEC') ? GIT_EXEC : 'git' ) . (is_dir($path = APP_PATH . APP_ROOT . '.git') || APP_PATH . APP_ROOT != APP_PATH ? ' --git-dir="' . $path . '" --work-tree="' . dirname($path) . '"': '' ) . ' ' . $match[1];
 
 $proc=proc_open($command,
   array(
@@ -885,7 +907,7 @@ console.log = function() {
 
         //data = data.trim(); // replace(/(\r\n|\n|\r)/gm, "")
         
-        if (matches = data.match(/((:?sudo\s+)?(:?<?=str_replace('/', '\/', dirname(GIT_EXEC)); ?>)?<?= basename(GIT_EXEC); ?>.*)/gm)) {
+        if (matches = data.match(/((:?sudo\s+)?(:?<?=str_replace('/', '\/', (defined('GIT_EXEC') ? dirname(GIT_EXEC) : '')); ?>)?<?= (defined('GIT_EXEC') ? basename(GIT_EXEC) : ''); ?>.*)/gm)) {
           if (matches = data.match(/.*status.*\n+/gm)) {
             if (matches = data.match(/.*On branch main\nYour branch is (ahead of|up to date with).*(:?by\s[0-9]+commits)?/gm)) {
               if (matches = data.match(/.*On branch main\nYour branch is up to date with.*\n+/gm)) {
@@ -940,16 +962,26 @@ console.log = function() {
                 $('#requestInput').val('git commit');
                 $('#requestSubmit').click();
                 $('#requestInput').val('git push origin main');
-                $('#requestSubmit').click();
+                if (confirm('git push origin main?')) {
+                  $('#requestSubmit').click();
+                } 
               } else if (matches = data.match(/.*push.*\n+To.*\n.*!.*\[rejected\].+(\w+).+[->].+(\w+).\(non-fast-forward\)/gm)) {
                 $('#responseConsole').val('<?= $shell_prompt; ?>Push unsuccessful. "non-fast-forward" error ' + "\n" + data + "\n" + $('#responseConsole').val());
                 $('#requestInput').val('git push --force origin main');
-                $('#requestSubmit').click();
+                if (confirm('(Force) git push origin main?')) {
+                  $('#requestSubmit').click();
+                } 
               } else {
                 $('#responseConsole').val('<?= $shell_prompt; ?>Push successful' + "\n" + data + "\n" + $('#responseConsole').val());
               }
             } else if (matches = data.match(/.*push.*\n+Error: Everything up-to-date/gm)) {
               $('#responseConsole').val('<?= $shell_prompt; ?>Everything up-to-date' + "\n" + data + "\n" + $('#responseConsole').val());
+            } else {
+              $('#responseConsole').val('<?= $shell_prompt; ?>' + data + "\n" + $('#responseConsole').val());
+
+              if (matches = data.match(/.*push.*\n+To.*\n.*!.*\[.*rejected\].+/gm)) {
+                $('#responseConsole').val('<?= $shell_prompt; ?> Error: ... secret password may have been found.' + "\n" + $('#responseConsole').val());
+              }
             }
           } else if (matches = data.match(/.*fetch.*\n+/gm)) {
             if (matches = data.match(/.*Error:.+From.+\n.+\* branch.+(\w+).+[->].+(\w+)/gm)) {
@@ -981,7 +1013,7 @@ console.log = function() {
               window.location.reload();  // window.location.href = window.location.href;
             }
 
-          } else if (matches = data.match(/.*(:?<?=str_replace('/', '\/', dirname(GIT_EXEC)); ?>)?<?= basename(GIT_EXEC); ?>.*commit.*\n/gm)) {
+          } else if (matches = data.match(/.*(:?<?=str_replace('/', '\/', (defined('GIT_EXEC') ? dirname(GIT_EXEC) : '')); ?>)?<?= (defined('GIT_EXEC') ? basename(GIT_EXEC) : ''); ?>.*commit.*\n/gm)) {
             if (matches = data.match(/.*Error: Author identity unknown\./gm)) {
               $('#responseConsole').val('<?= $shell_prompt; ?>Author identity unknown' + "\n" + data + "\n" + $('#responseConsole').val());
               $('#requestInput').val('git config --global user.email "barryd.it@gmail.com"');

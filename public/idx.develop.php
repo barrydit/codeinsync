@@ -1,6 +1,5 @@
 <?php
 
-
 /**This Program Should be Disabled by default ... for debugging purposes only!**/
 if (isset($_GET['src']) && is_readable($path = $_GET['src']) && filesize($path) > 0 ) {
   Shutdown::setEnabled(false)->setShutdownMessage(function() use($path) {
