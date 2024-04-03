@@ -7,11 +7,15 @@ npm WARN EBADENGINE   current: { node: 'v12.22.12', npm: '7.5.2' }
 npm WARN EBADENGINE }
 */
 
-define('NODE_ENV', (!defined('APP_ENV') ?:APP_ENV) ?? 'production');
+define('NODE_ENV', (!defined('APP_ENV') ? 'production' : APP_ENV));
 putenv('NODE_ENV=' . (string) NODE_ENV);
 
-define('NODE_EXEC', '/usr/bin/node');
-$proc = proc_open('sudo ' . NODE_EXEC . ' --version', array( array("pipe","r"), array("pipe","w"), array("pipe","w")), $pipes);
+if (strtoupper(substr(PHP_OS, 0, 3)) === 'WIN')
+  define('NODE_EXEC', 'node.exe');
+else
+  define('NODE_EXEC', '/usr/bin/node');
+
+$proc = proc_open((strtoupper(substr(PHP_OS, 0, 3)) === 'WIN' ? '' : 'sudo ') . NODE_EXEC . ' --version', array( array("pipe","r"), array("pipe","w"), array("pipe","w")), $pipes);
 
 $stdout = stream_get_contents($pipes[1]);
 $stderr = stream_get_contents($pipes[2]);
@@ -23,7 +27,7 @@ if (preg_match('/v(\d+\.\d+\.\d+)/', $stdout, $matches))
 else
   if (empty($stdout)) {
     if (!empty($stderr))
-      $errors['NODE_VERSION'] = '$stdout is empty. $stderr = ' . $stderr;
+      $errors['NODE_VERSION'] = '$stderr = ' . $stderr;
   } // else $errors['NODE_VERSION'] = $stdout . ' does not match $version'; }
 
 
@@ -31,7 +35,7 @@ define('NODE_MODULES_PATH', APP_PATH . 'node_modules/');
 
 define('NPM_EXEC', '/usr/bin/npm');
 
-$proc = proc_open('sudo ' . NPM_EXEC . ' --version', array( array("pipe","r"), array("pipe","w"), array("pipe","w")), $pipes);
+$proc = proc_open((strtoupper(substr(PHP_OS, 0, 3)) === 'WIN' ? '' : 'sudo ') . NPM_EXEC . ' --version', array( array("pipe","r"), array("pipe","w"), array("pipe","w")), $pipes);
 
 $stdout = stream_get_contents($pipes[1]);
 $stderr = stream_get_contents($pipes[2]);
@@ -43,7 +47,7 @@ if (preg_match('/(\d+\.\d+\.\d+)/', $stdout, $matches))
 else
   if (empty($stdout)) {
     if (!empty($stderr))
-      $errors['NPM_VERSION'] = '$stdout is empty. $stderr = ' . $stderr;
+      $errors['NPM_VERSION'] = '$stderr = ' . $stderr;
   } // else $errors['NPM_VERSION'] = $stdout . ' does not match $version'; }
 
 if (!is_file(APP_PATH . 'package.json'))
@@ -59,7 +63,7 @@ END
 );
 
 if (!is_dir(NODE_MODULES_PATH)) {
-  $proc=proc_open('sudo ' . NPM_EXEC . ' install',
+  $proc=proc_open((strtoupper(substr(PHP_OS, 0, 3)) === 'WIN' ? '' : 'sudo ') . NPM_EXEC . ' install',
   array(
     array("pipe","r"),
     array("pipe","w"),
@@ -69,7 +73,7 @@ if (!is_dir(NODE_MODULES_PATH)) {
   list($stdout, $stderr, $exitCode) = [stream_get_contents($pipes[1]), stream_get_contents($pipes[2]), proc_close($proc)];
   $errors['NPM-INSTALL']= (!isset($stdout) ? NULL : $stdout . (isset($stderr) && $stderr === '' ? NULL : ' Error: ' . $stderr) . (isset($exitCode) && $exitCode == 0 ? NULL : 'Exit Code: ' . $exitCode));
   
-  $proc=proc_open('sudo ' . NPM_EXEC . ' install -g npm',
+  $proc=proc_open((strtoupper(substr(PHP_OS, 0, 3)) === 'WIN' ? '' : 'sudo ') . NPM_EXEC . ' install -g npm',
   array(
     array("pipe","r"),
     array("pipe","w"),
@@ -81,7 +85,7 @@ if (!is_dir(NODE_MODULES_PATH)) {
 } else {
 /*
 
-  $proc=proc_open('sudo ' . NPM_EXEC . ' --force update',
+  $proc=proc_open((strtoupper(substr(PHP_OS, 0, 3)) === 'WIN' ? '' : 'sudo ') . NPM_EXEC . ' --force update',
   array(
     array("pipe","r"),
     array("pipe","w"),
@@ -94,7 +98,7 @@ if (!is_dir(NODE_MODULES_PATH)) {
    // Error: npm WARN using --force Recommended protections disabled.
 */
 
-  $proc=proc_open('sudo ' . NPM_EXEC . ' cache clean -f',
+  $proc=proc_open((strtoupper(substr(PHP_OS, 0, 3)) === 'WIN' ? '' : 'sudo ') . NPM_EXEC . ' cache clean -f',
   array(
     array("pipe","r"),
     array("pipe","w"),
@@ -109,7 +113,7 @@ if (!is_dir(NODE_MODULES_PATH)) {
   // Error: npm WARN using --force Recommended protections disabled.
 
   if (!is_dir(NODE_MODULES_PATH . 'jquery') ) {
-    $proc=proc_open('sudo ' . NPM_EXEC . ' install jquery@3.7.1',
+    $proc=proc_open((strtoupper(substr(PHP_OS, 0, 3)) === 'WIN' ? '' : 'sudo ') . NPM_EXEC . ' install jquery@3.7.1',
       array(
         array("pipe","r"),
         array("pipe","w"),
@@ -122,7 +126,7 @@ if (!is_dir(NODE_MODULES_PATH)) {
 
   //webpack - Packs CommonJs/AMD modules for the browser
   
-  $proc=proc_open('sudo webpack --version', // Prints out System, Binaries, Packages
+  $proc=proc_open((strtoupper(substr(PHP_OS, 0, 3)) === 'WIN' ? '' : 'sudo ') . 'webpack --version', // Prints out System, Binaries, Packages
       array(
         array("pipe","r"),
         array("pipe","w"),
@@ -135,7 +139,7 @@ if (!is_dir(NODE_MODULES_PATH)) {
     if (!isset($errors['NPM-WEBPACK']) && !empty($errors['NPM-WEBPACK'])) {
     
   if (!is_dir(NODE_MODULES_PATH . 'webpack') || !is_dir(NODE_MODULES_PATH . 'webpack-cli') ) {
-    $proc=proc_open('sudo ' . NPM_EXEC . ' install webpack webpack-cli --save-dev',
+    $proc=proc_open((strtoupper(substr(PHP_OS, 0, 3)) === 'WIN' ? '' : 'sudo ') . NPM_EXEC . ' install webpack webpack-cli --save-dev',
       array(
         array("pipe","r"),
         array("pipe","w"),
@@ -177,7 +181,7 @@ END
     }
 
     if (!is_dir(NODE_MODULES_PATH . 'babel-loader') ) {
-      $proc=proc_open('sudo ' . NPM_EXEC . ' install babel-loader @babel/core @babel/preset-env --save-dev',
+      $proc=proc_open((strtoupper(substr(PHP_OS, 0, 3)) === 'WIN' ? '' : 'sudo ') . NPM_EXEC . ' install babel-loader @babel/core @babel/preset-env --save-dev',
         array(
           array("pipe","r"),
           array("pipe","w"),
@@ -208,7 +212,7 @@ END
     }
 
     if (!is_file(APP_PATH . 'dist/bundle.js')) {
-      $proc=proc_open('sudo ' . NPM_EXEC . ' run build',
+      $proc=proc_open((strtoupper(substr(PHP_OS, 0, 3)) === 'WIN' ? '' : 'sudo ') . NPM_EXEC . ' run build',
         array(
           array("pipe","r"),
           array("pipe","w"),
