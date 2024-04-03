@@ -18,13 +18,11 @@ define('COMPOSER_EXPR_VER', '/v?\d+(?:\.\d+){0,3}|dev-.*/'); // version
 // php -dxdebug.mode=debug -dxdebug.output_dir=. public/ui_complete.php
 
 
-
+/*
 foreach ($array = preg_split("/\r\n|\n|\r/", exec('sudo /usr/local/bin/composer diagnose')) as $key => $diag_line) {
   dd($diag_line, false);
 }
-
-
-
+*/
 
 // '(win) set VARIABLE / (linux/macos) export VARIABLE '
 
@@ -406,9 +404,6 @@ $root = APP_ROOT ?? ''; ?>
 defined('COMPOSER_INIT_PARAMS')
   or define('COMPOSER_INIT_PARAMS', /*<<<TEXT TEXT*/ ob_get_contents());
 ob_end_clean();
-
-
-
 
 if (!realpath('vendor')) {
   exec(COMPOSER_INIT_PARAMS);

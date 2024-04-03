@@ -250,7 +250,7 @@ END
 
     if (empty($stdout)) {
       if (!empty($stderr))
-        $errors['COMPOSER_INIT'] = '$stdout is empty. $stderr = ' . $stderr;
+        $errors['COMPOSER_INIT'] = '$stderr = ' . $stderr;
     } else $errors['COMPOSER_INIT'] = $stdout;
 
       //dd($errors);
@@ -270,7 +270,7 @@ END
 
     if (empty($stdout)) {
       if (!empty($stderr))
-        $errors['COMPOSER_INSTALL'] = '$stdout is empty. $stderr = ' . $stderr;
+        $errors['COMPOSER_INSTALL'] = '$stderr = ' . $stderr;
     } else $errors['COMPOSER_INSTALL'] = $stdout;
 
       //$composer = json_decode(COMPOSER_JSON['json'], true);   dd($composer);
@@ -298,7 +298,7 @@ update [--with WITH] [--prefer-source] [--prefer-dist] [--prefer-install PREFER-
 
     if (empty($stdout)) {
       if (!empty($stderr))
-        $errors['COMPOSER_UPDATE'] = '$stdout is empty. $stderr = ' . $stderr;
+        $errors['COMPOSER_UPDATE'] = '$stderr = ' . $stderr;
     } else $errors['COMPOSER_UPDATE'] = $stdout;
 
     if (defined('COMPOSER_VERSION') && defined('COMPOSER_LATEST'))
@@ -309,7 +309,7 @@ update [--with WITH] [--prefer-source] [--prefer-dist] [--prefer-install PREFER-
     
         if (empty($stdout)) {
           if (!empty($stderr))
-            $errors['COMPOSER_UPDATE'] = '$stdout is empty. $stderr = ' . $stderr;
+            $errors['COMPOSER_UPDATE'] = '$stderr = ' . $stderr;
         } else $errors['COMPOSER_UPDATE'] = $stdout;
       }
     // $_POST['composer']['cmd'];
