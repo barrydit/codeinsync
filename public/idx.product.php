@@ -1075,8 +1075,8 @@ header("Pragma: no-cache");
                   return strcasecmp($a, $b);
               });
               */
-              
-              $handle = fopen(APP_PATH . 'projects/project.php', 'r');
+              if (is_file(APP_PATH . 'projects/project.php'))
+                $handle = fopen(APP_PATH . 'projects/project.php', 'r');
               $pkgs_matched = [];
               
               if ($handle) {

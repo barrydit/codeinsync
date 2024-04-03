@@ -361,7 +361,7 @@ ob_start(); ?>
         <div style="display: inline-block; margin: 5px 0px 0px 10px; float: left;">
             <button id="requestSubmit" type="submit" style="border: 1px dashed #FFF; padding: 2px 4px;">Run</button>&nbsp;
 
-            <input list="commandHistory" id="requestInput" class="text-sm" style="font-family: 'Courier New', Courier, monospace;" type="text" size="46" name="requestInput" autocomplete="off" spellcheck="off" placeholder="php [-rn] &quot;echo 'hello world';&quot;" value="">
+            <input list="commandHistory" id="requestInput" class="text-sm" style="font-family: 'Courier New', Courier, monospace;" type="text" size="43" name="requestInput" autocomplete="off" spellcheck="off" placeholder="php [-rn] &quot;echo 'hello world';&quot;" value="">
             <datalist id="commandHistory">
                 <option value="Edge"></option>
             </datalist>

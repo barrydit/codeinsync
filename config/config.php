@@ -333,28 +333,67 @@ if (isset($_GET['app']) && $_GET['app'] == 'project') require_once('app.project.
 header("Cache-Control: no-store, no-cache, must-revalidate, max-age=0");
 header("Pragma: no-cache");
 
-if (is_file(APP_PATH . 'projects/project.php') && isset($_GET['project']) && $_GET['project'] == 'show') {
-  Shutdown::setEnabled(false)->setShutdownMessage(function() {
-      return eval('?>' . file_get_contents(APP_PATH . 'projects/project.php')); // -wow
-    })->shutdown(); // die();
-} elseif (!is_file(APP_PATH . 'projects/project.php')) {
-file_put_contents(APP_PATH . 'projects/project.php', '<?php ' . <<<END
+
+$errors['projects'] = 'projects/ directory does not exist.';
+$errors['project.php'] = 'project.php does not exist.';
+
+
+if (!is_dir(APP_PATH . APP_ROOT . 'projects')) 
+  mkdir(APP_PATH . APP_ROOT . 'projects');
+
+if (!is_file(APP_PATH . APP_ROOT . 'projects/project.php')) {
+  file_put_contents(APP_PATH . APP_ROOT . 'projects/project.php', '<?php ' . <<<END
+
 //if (__FILE__ != get_required_files()[0])
 \$require = function(\$path) { require_once(\$path); };
 if (\$path = (basename(getcwd()) == 'public')
   ? (is_file('config.php') ? 'config.php' : '../config/config.php') : '') \$require(\$path);
-else die(var_dump(\$path . ' path was not found. file=config.php'));
+else die(var_dump(\$path)); //die(var_dump(\$path . ' path was not found. file=config.php'));
 
 require_once(APP_PATH . 'vendor/autoload.php');
+ob_start(); // dd('Break/test the dd();');
+use noximo\PHPColoredAsciiLinechart\Settings;
+use noximo\PHPColoredAsciiLinechart\Linechart;
+use noximo\PHPColoredAsciiLinechart\Colorizers\HTMLColorizer;
 
-ob_start();
-// Dump the variable
+\$linechart = new Linechart();
+\$settings = new Settings();  // Settings are needed in this case
+\$settings->setColorizer(new HTMLColorizer());  // Here you need to set up HTMLColorizer
 
-echo 'Hello World!';
+\$lineA = [];
+for (\$i = 0; \$i < +120; \$i++) {
+    \$lineA[] = 5 * sin(\$i * ((M_PI * 4) / 120));
+}
+
+\$linechart->addLine(0, ['color:white'], Linechart::FULL_LINE);  // Use css styles instead of ascii color codes
+\$linechart->addMarkers(\$lineA, ['color: green'], ['color: red']);
+\$linechart->setSettings(\$settings);
+
+echo \$linechart->chart();
+?>
+
+<div class="table-container">
+<table border="1" style="">
+<tr><td>Create</td><td>a</td><td>table</td><td>columns</td></tr>
+<tr><td>A</td><td>new</td><td>row</td></tr>
+<tr><td>And</td><td>some</td><td>more</td><td>rows</td></tr>
+</table>
+
+<table border="1" style="">
+<tr><td>Create New</td><td>a</td><td>table</td><td>columns</td></tr>
+<tr><td>A</td><td>new</td><td>row</td></tr>
+<tr><td>And</td><td>some</td><td>more</td><td>rows</td></tr>
+</table>
+</div>
+<div style="clear: both;"></div>
+
+<?php
 
 // Capture the output into a variable
 \$output = ob_get_clean();
 ob_end_clean();
+
+\$output = (\$output == '' ? ' ' : \$output);
 
 return <<<END
 <!DOCTYPE html>
@@ -363,27 +402,46 @@ return <<<END
   <title></title>
 
 <style>
-code { 
-    background: hsl(220, 80%, 90%);
-    display:block;
-    white-space:pre-wrap;
-}
-
+/* * { border: 1px dashed red; } */
 pre {
     white-space: pre-wrap;
-    background: hsl(30,80%,90%);
+    background: hsl(220, 80%, 90%);
 }
+    .table-container {
+      width: 100%;
+      margin: 10px 0; /* Adjust margin as needed */
+    }
+
+    .table-container table {
+      float: left;
+      width: 45%; /* Adjust width as needed */
+      margin-right: 5%; /* Adjust margin as needed */
+      border-collapse: collapse;
+    }
+
+    .table-container table:last-child {
+      margin-right: 0; /* Remove margin for the last table */
+    }
+
 </style>
 
 </head>
 <body style="background-color: #fff;">
-<pre><code>{\$output}</code></pre>
+<pre style="text-align: center;"><code>|||| Demonstrational Purposes ||||<br />--[Save] to Update--</code></pre>
+{$output}
 </body>
 </html>
 END
 );
 }
 }
+
+if (is_file(APP_PATH . 'projects/project.php') && isset($_GET['project']) && $_GET['project'] == 'show') {
+  Shutdown::setEnabled(false)->setShutdownMessage(function() {
+      return eval('?>' . file_get_contents(APP_PATH . 'projects/project.php')); // -wow
+    })->shutdown(); // die();
+} elseif (!is_dir(APP_PATH . 'projects')) { }
+
 
 if (basename($dir = getcwd()) != 'config') {
   if (in_array(basename($dir), ['public', 'public_html']))
