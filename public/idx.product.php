@@ -1079,7 +1079,7 @@ header("Pragma: no-cache");
                 $handle = fopen(APP_PATH . 'projects/project.php', 'r');
               $pkgs_matched = [];
               
-              if ($handle) {
+              if (@$handle) {
                   while (($line = fgets($handle)) !== false) {
                       if (preg_match('/^use\s+(.+?);/', $line, $matches)) {
                           $pkgs_matched[] = addslashes($matches[1]);
@@ -1087,7 +1087,7 @@ header("Pragma: no-cache");
                   }
                   fclose($handle);
               } else {
-                  echo "Error opening the file.";
+                  echo "Error opening the project.php file.";
               }
               
               
