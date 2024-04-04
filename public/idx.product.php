@@ -1763,13 +1763,13 @@ header("Pragma: no-cache");
 
 <?php if (is_dir($path = APP_PATH . APP_BASE['resources'] . 'js/ace')) { ?>
 
-    <script src="resources/js/ace/src/ace.js" type="text/javascript" charset="utf-8"></script> <!-- -->
-    <script src="resources/js/ace/src/ext-language_tools.js" type="text/javascript" charset="utf-8"></script>
+    <script src="/resources/js/ace/src/ace.js" type="text/javascript" charset="utf-8"></script> <!-- -->
+    <script src="/resources/js/ace/src/ext-language_tools.js" type="text/javascript" charset="utf-8"></script>
 <?php } ?>
     <!-- <script src="https://cdnjs.cloudflare.com/ajax/libs/ace/1.4.12/ext-language_tools.js"></script>
-      <script src="resources/js/ace/src/mode-php.js" type="text/javascript" charset="utf-8"></script>
+      <script src="/resources/js/ace/src/mode-php.js" type="text/javascript" charset="utf-8"></script>
       
-      <script src="resources/js/ace/src/theme-dracula.js" type="text/javascript" charset="utf-8"></script> -->
+      <script src="/resources/js/ace/src/theme-dracula.js" type="text/javascript" charset="utf-8"></script> -->
     <!--   <script src="dist/bundle.js" type="text/javascript" charset="utf-8"></script> -->
     <!-- End: For Text / Ace Editor -->
     <!-- <script src="resources/js/jquery/jquery.min.js"></script> -->
@@ -2051,13 +2051,13 @@ if (confirm('Do you wish to display clients?')) {
       + window.location.pathname.split("/").slice(0, -1).join("/"),
       
       paths: {
-        jquery: 'resources/js/jquery/jquery.min',
-        domReady: 'resources/js/domReady',
-        bootstrap: 'resources/js/bootstrap/dist/js/bootstrap',
-        ace: 'resources/js/ace/src/ace',
-        'lib/dom': 'resources/js/ace/src/lib/dom',
-        useragent: 'resources/js/ace/src/lib/useragent',
-        exports: 'resources/js/ace/src/lib/',
+        jquery: '/resources/js/jquery/jquery.min',
+        domReady: '/resources/js/domReady',
+        bootstrap: '/resources/js/bootstrap/dist/js/bootstrap',
+        ace: '/resources/js/ace/src/ace',
+        'lib/dom': '/resources/js/ace/src/lib/dom',
+        useragent: '/resources/js/ace/src/lib/useragent',
+        exports: '/resources/js/ace/src/lib/',
         
         //'../snippets': 'resources/js/ace/lib/ace/snippets',
         //'./lib/oop': 'resources/js/ace/src/lib'
@@ -2072,7 +2072,7 @@ if (is_dir($path = APP_PATH . APP_BASE['resources'] . 'js/ace')) { ?>
           baseUrl: window.location.protocol + "//" + window.location.host
           + window.location.pathname.split("/").slice(0, -1).join("/"),
           paths: {
-            ace: "resources/js/ace/src"
+            ace: "/resources/js/ace/src"
           }
         });
         
@@ -2080,7 +2080,7 @@ if (is_dir($path = APP_PATH . APP_BASE['resources'] . 'js/ace')) { ?>
                 //console.log(langtools);
       
       <?= UI_ACE_EDITOR['script']; ?>
-                //require(["resources/js/requirejs/require-2.3.6!ace/ace"], function(e){
+                //require(["/resources/js/requirejs/require-2.3.6!ace/ace"], function(e){
                     //editor.setValue(e);
                 //})
                 
