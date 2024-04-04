@@ -1350,7 +1350,7 @@ header("Pragma: no-cache");
           $links = array_filter(glob(APP_PATH . 'node_modules/*'), 'is_dir'); ?>
         <div style="display: inline-block; width: 350px;">Node Modules [Installed] List</div>
         <div style="display: inline-block; text-align: right; width: 300px; ">
-          <form action="http://localhost/composer-src/?app=composer&amp;path=vendor" method="POST">
+          <form action="<?= APP_URL_BASE . '?' . http_build_query(APP_QUERY + array( 'app' => 'composer', 'path' => 'vendor'))  ?>" method="POST">
             <input id="RequirePkg" type="text" title="Enter Text and onSelect" list="RequirePkgs" placeholder="[vendor]/[package]" name="composer[package]" value="" onselect="get_package(this);" autocomplete="off" style=" margin-top: 4px;">
             <button type="submit" style="border: 1px solid #000; margin-top: 4px;"> Add </button>
             <div style="display: inline-block; float: right; text-align: left; margin-left: 10px;" class="text-xs">
@@ -1927,14 +1927,21 @@ function makeDraggable(windowId) {
            // Animation complete.
           });
 
-        <?php } else { ?>
-      
-<?php if (!isset($_GET['domain'])) { // !$_GET['client'] ?>
+        <?php } else if (!empty($_GET)) { ?>
 
           document.getElementById('toggle-debug').checked = true;
             
           toggleSwitch(document.getElementById('toggle-debug'));
-      <?php } ?>
+          
+          <?php } else { ?>
+      
+      <?php if (!isset($_GET['domain'])) { // !$_GET['client'] ?>
+
+          document.getElementById('toggle-debug').checked = true;
+            
+          toggleSwitch(document.getElementById('toggle-debug'));
+          
+      <?php }  ?>
 if (confirm('Do you wish to display clients?')) {
     // User clicked OK
     console.log('User clicked OK');
@@ -1946,7 +1953,7 @@ if (confirm('Do you wish to display clients?')) {
     console.log('User clicked Cancel');
 }
 
-          <?php } } ?>
+          <?php }  } ?>
         }
       });
       
