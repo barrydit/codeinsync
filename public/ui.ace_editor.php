@@ -86,11 +86,11 @@ $proc=proc_open('sudo ' . GIT_EXEC . ' ' . $match[1],
 
 if (defined('GIT_EXEC'))
 if (is_dir($path = APP_PATH . APP_BASE['resources'] . 'js/ace') && empty(glob($path)))
-    exec('sudo ' . GIT_EXEC . ' clone https://github.com/ajaxorg/ace-builds.git ../resources/js/ace', $output, $returnCode) or $errors['GIT-CLONE-ACE'] = $output;
+    exec((strtoupper(substr(PHP_OS, 0, 3)) === 'WIN' ? '' : 'sudo ') . GIT_EXEC . ' clone https://github.com/ajaxorg/ace-builds.git resources/js/ace', $output, $returnCode) or $errors['GIT-CLONE-ACE'] = $output;
 elseif (!is_dir($path)) {
     if (!mkdir($path, 0755, true))
-        $errors['GIT-CLONE-ACE'] = ' ../resources/js/ace does not exist.';
-    exec('sudo ' . GIT_EXEC . ' clone https://github.com/ajaxorg/ace-builds.git ../resources/js/ace', $output, $returnCode) or $errors['GIT-CLONE-ACE'] = $output;
+        $errors['GIT-CLONE-ACE'] = ' resources/js/ace does not exist.';
+    exec((strtoupper(substr(PHP_OS, 0, 3)) === 'WIN' ? '' : 'sudo ') . GIT_EXEC . ' clone https://github.com/ajaxorg/ace-builds.git resources/js/ace', $output, $returnCode) or $errors['GIT-CLONE-ACE'] = $output;
 }
 
 ob_start(); ?>
