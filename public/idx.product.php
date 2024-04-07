@@ -555,7 +555,7 @@ header("Pragma: no-cache");
     <?= /* $appBackup['body'] */ NULL;?>
     <div style="position: relative; margin: 0px auto; width: 100%; border: 1px solid #000;">
       <div style="position: relative; margin: 0px auto; width: 800px;">
-        <div style="position: absolute; <?= /* (empty($errors) ? 'display: none;' : '') */ NULL; ?>left: -144px; width: 150px; z-index: 3;">
+        <div style="position: absolute; <?= /* (empty($errors) ? 'display: none;' : '') */ NULL; ?>left: -144px; /*width: 150px;*/ z-index: 3;">
           <!--form action="#!" method="GET">
             <?= (isset($_GET['debug']) && !$_GET['debug'] ? '' : '<input type="hidden" name="debug" value / >') ?> 
                   <input class="input" id="toggle-debug" type="checkbox" onchange="this.form.submit();" <?= (isset($_GET['debug']) || defined('APP_ENV') && APP_ENV == 'development'? 'checked' : '') ?> / -->
@@ -1707,6 +1707,10 @@ header("Pragma: no-cache");
       <span>IP Address: </span><br />
       <span>App Path: <?= APP_PATH; ?></span><br />
     </div>
+    
+    <div id="adhd_song-container" style="position: fixed; display: none; bottom: 0; right: 0; z-index: 1;">
+      <img src="/resources/reels/adhd_song.gif" />
+    </div>
     <script src="<?= (check_http_200('https://code.jquery.com/jquery-3.7.1.min.js') ? 'https://code.jquery.com/jquery-3.7.1.min.js' : APP_BASE['resources'] . 'js/jquery/' . 'jquery-3.7.1.min.js') ?>"></script>
     <!-- You need to include jQueryUI for the extended easing options. -->
     <?php /* https://stackoverflow.com/questions/12592279/typeerror-p-easingthis-easing-is-not-a-function */ ?>
@@ -1778,7 +1782,7 @@ header("Pragma: no-cache");
     <?php } elseif (date(/*Y-*/ 'm-d') == /*1976-*/ '03-20' ?? /*2017-*/ '07-20') { ?>
     <script src="/resources/reels/leave-a-light-on.js" type="text/javascript" charset="utf-8"></script>
     <?php } else {  // array_rand() can't be empty ?>
-    <script src="<?= !empty($reels = glob(APP_PATH . 'resources/reels/*.js')) ? APP_BASE['resources'] . 'reels/' . basename(array_rand(array_flip(array_filter($reels, 'is_file')), 1)) : ''; /* APP_BASE['resources'] */?>" type="text/javascript" charset="utf-8"></script>
+    <script src="/<?= APP_BASE['resources'] . 'reels/' . 'adhd_song.js'; /* !empty($reels = glob(APP_PATH . 'resources/reels/*.js')) ? APP_BASE['resources'] . 'reels/' . basename(array_rand(array_flip(array_filter($reels, 'is_file')), 1)) : ''; APP_BASE['resources'] */?>" type="text/javascript" charset="utf-8"></script>
     <?php } ?>
     <script type="text/javascript" charset="utf-8">
 
@@ -1922,11 +1926,11 @@ function makeDraggable(windowId) {
           document.getElementById('toggle-debug').checked = true;
 
           toggleSwitch(document.getElementById('toggle-debug'));
-
+/*
           $( '#app_directory-container' ).slideDown( "slow", function() {
            // Animation complete.
           });
-
+*/
         <?php } else if (!empty($_GET)) { ?>
 
           document.getElementById('toggle-debug').checked = true;
@@ -1941,7 +1945,32 @@ function makeDraggable(windowId) {
             
           toggleSwitch(document.getElementById('toggle-debug'));
           
-      <?php }  ?>
+      <?php }  }  } else { if (isset($_GET['client']) && $_GET['client'] != '') {
+            if (!isset($_GET['domain'])) { // !$_GET['client'] ?>
+
+          document.getElementById('toggle-debug').checked = true;
+            
+          toggleSwitch(document.getElementById('toggle-debug'));
+          
+      <?php } else {?>
+/*
+          document.getElementById('toggle-debug').checked = true;
+
+          toggleSwitch(document.getElementById('toggle-debug'));
+
+          $( '#app_directory-container' ).slideDown( "slow", function() {
+           // Animation complete.
+          });
+*/
+        <?php } } else if (isset($_GET['client']) && !$_GET['client']) { ?>
+          document.getElementById('toggle-debug').checked = true;
+
+          toggleSwitch(document.getElementById('toggle-debug'));
+
+          $( '#app_directory-container' ).slideDown( "slow", function() {
+           // Animation complete.
+          });
+
 if (confirm('Do you wish to display clients?')) {
     // User clicked OK
     console.log('User clicked OK');
@@ -1952,8 +1981,7 @@ if (confirm('Do you wish to display clients?')) {
     // User clicked Cancel
     console.log('User clicked Cancel');
 }
-
-          <?php }  } ?>
+          <?php } } ?>
         }
       });
       

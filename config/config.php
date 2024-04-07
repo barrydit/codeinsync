@@ -449,15 +449,15 @@ if (basename($dir = getcwd()) != 'config') {
 
   chdir(APP_PATH . APP_ROOT);
   
-//dd(APP_PATH . APP_ROOT . '.git/config');
-if (is_file(APP_PATH . APP_ROOT . '.env')) {
-  $env = parse_ini_file(APP_PATH . APP_ROOT . '.env', true);
+  //dd(APP_PATH . APP_ROOT . '.git/config');
+  if (is_file(APP_PATH . APP_ROOT . '.env')) {
+    $env = parse_ini_file(APP_PATH . APP_ROOT . '.env', true);
 
-  if (!empty($env))
-    foreach($env as $key => $env_var) {
-      $_ENV[$key] = $env_var; // putenv($key.'='.$env_var);
-    }
-}
+    if (!empty($env))
+      foreach($env as $key => $env_var) {
+        $_ENV[$key] = $env_var; // putenv($key.'='.$env_var);
+      }
+  }
 
   $previousFilename = '';
 
@@ -517,7 +517,7 @@ if (is_file(APP_PATH . APP_ROOT . '.env')) {
     $previousFilename = $currentFilename;
   }
 
-  $file = fopen(APP_PATH . APP_ROOT . '.env', 'w+');
+  $file = fopen(APP_PATH . APP_ROOT . '.env', 'w');
   if (isset($_ENV) && !empty($_ENV))
     foreach($_ENV as $key => $env_var) {
       fwrite($file, $key.'='.$env_var."\n");

@@ -886,8 +886,7 @@ ob_end_clean(); ?>
         <div style="position: relative; float: right;"><?php
 
 $keys = array_keys(get_object_vars(COMPOSER['json']->{'require'}));
-
-if (!empty(get_object_vars(COMPOSER['json']->{'require-dev'})))
+if (defined('COMPOSER') && isset(COMPOSER['json']->{'require-dev'}) && !empty(get_object_vars(COMPOSER['json']->{'require-dev'})))
   $keys = array_merge($keys, array_keys(get_object_vars(COMPOSER['json']->{'require-dev'})));
 
 ?>

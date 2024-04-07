@@ -1130,7 +1130,9 @@ function stopInterval() {
 if (typeof snd !== 'undefined') {
     snd.play();
 }
-      
+    console.log('Current snd current time: ' + snd.currentTime);
+    document.getElementById('adhd_song-container').style.display='block';
+    
       var jsonFile;
       date = new Date();
       time = date.toLocaleTimeString('en-US', { hour: '2-digit', hour12: false,  minute: '2-digit', second: '2-digit'}); // .replace(/AM|PM/,'')
@@ -1232,6 +1234,7 @@ if (typeof snd !== 'undefined') {
 if (typeof snd !== 'undefined') {
     snd.pause();
 }
+        document.getElementById('adhd_song-container').style.display='none';
           $("#idleTime").html('<i style="color: green;">Working: '+ toTime(occupiedTime)['time'] + '</i>');
             $("#ts-status-light").attr('src', 'resources/images/timesheet-light-GG.gif');
           occupiedTime = occupiedTime + 1;

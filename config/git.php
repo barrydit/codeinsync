@@ -40,7 +40,36 @@ if ($latest_local_commit_sha !== $_ENV['GITHUB_REMOTE_SHA']) {
 
     // Compare the two commit SHAs
     if ($latest_local_commit_sha !== $latest_remote_commit_sha) {
-      $errors['GIT_UPDATE'] =  $errors['GIT_UPDATE'] . $latest_local_commit_sha . '  ' . $latest_remote_commit_sha;
+      $errors['GIT_UPDATE'] =  $errors['GIT_UPDATE'] . $latest_local_commit_sha . '  ' . $latest_remote_commit_sha  . "\n"; 
+    } else {
+      $errors[] = 'Remote SHA ($_ENV[\'GITHUB_REMOTE_SHA\']) was updated.' . "\n" . $errors['GIT_UPDATE'] . "\n";
+      $_ENV['GITHUB_REMOTE_SHA'] = $latest_remote_commit_sha;
+      unset($errors['GIT_UPDATE']);
+    }
+  } else {
+    echo 'Failed to retrieve commit information.';
+  }
+} else if (date('Y-m-d', filemtime(APP_PATH . APP_ROOT . '.env')) != date('Y-m-d')) {
+  $errors['GIT_UPDATE'] = 'Local main branch is not up-to-date with origin/main' . "\n";
+  $options = [
+    'http' => [
+        'method' => 'GET',
+        'header' => 'Authorization: token ' . $_ENV['GITHUB_OAUTH'] . "\r\n" . 
+          "User-Agent: My-App\r\n",
+    ],
+  ];
+  $context = stream_context_create($options);
+
+  // Make the request
+  $response = file_get_contents($latest_remote_commit_url, false, $context);
+  $data = json_decode($response, true);
+
+  if ($data && isset($data['object']['sha'])) {
+    $latest_remote_commit_sha = $data['object']['sha'];
+
+    // Compare the two commit SHAs
+    if ($latest_local_commit_sha !== $latest_remote_commit_sha) {
+      $errors['GIT_UPDATE'] =  $errors['GIT_UPDATE'] . $latest_local_commit_sha . '  ' . $latest_remote_commit_sha  . "\n"; 
     } else {
       $errors[] = 'Remote SHA ($_ENV[\'GITHUB_REMOTE_SHA\']) was updated.' . "\n" . $errors['GIT_UPDATE'] . "\n";
       $_ENV['GITHUB_REMOTE_SHA'] = $latest_remote_commit_sha;
@@ -50,6 +79,7 @@ if ($latest_local_commit_sha !== $_ENV['GITHUB_REMOTE_SHA']) {
     echo 'Failed to retrieve commit information.';
   }
 }
+
 
 // file has to exists first
 is_dir(APP_PATH . APP_BASE['var']) or mkdir(APP_PATH . APP_BASE['var'], 0755);
