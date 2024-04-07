@@ -33,7 +33,11 @@ else
 
 define('NODE_MODULES_PATH', APP_PATH . 'node_modules/');
 
-define('NPM_EXEC', '/usr/bin/npm');
+
+if (strtoupper(substr(PHP_OS, 0, 3)) === 'WIN')
+  define('NPM_EXEC', 'npm' /*.'.cmd'*/);
+else
+  define('NPM_EXEC', '/usr/bin/npm');
 
 $proc = proc_open((strtoupper(substr(PHP_OS, 0, 3)) === 'WIN' ? '' : 'sudo ') . NPM_EXEC . ' --version', array( array("pipe","r"), array("pipe","w"), array("pipe","w")), $pipes);
 
