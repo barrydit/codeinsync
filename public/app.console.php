@@ -95,6 +95,7 @@ if (preg_match('/^git\s+clone\s+(http(?:s)?:\/\/([^@\s]+)@github\.com\/[\w.-]+\/
               exec('git branch -m master main', $output);
 
               //exec('git remote add origin ' . $github_repo[2], $output);
+              //...git remote set-url origin http://...@github.com/barrydit/
 
               exec((strtoupper(substr(PHP_OS, 0, 3)) === 'WIN' ? '' : 'sudo ')  . 'git config core.sparseCheckout true', $output);
 
@@ -164,8 +165,8 @@ $proc=proc_open($command,
   // 
 
         } else if (preg_match('/^npm\s+(:?(.*))/i', $_POST['cmd'], $match)) {
-          $output[] = 'sudo ' . NPM_EXEC . ' ' . $match[1];
-$proc=proc_open((strtoupper(substr(PHP_OS, 0, 3)) === 'WIN' ? '' : 'sudo ') . NPM_EXEC . ' ' . $match[1],
+          $output[] = $command = (strtoupper(substr(PHP_OS, 0, 3)) === 'WIN' ? '' : 'sudo ') . NPM_EXEC . ' ' . $match[1];
+$proc=proc_open($command,
   array(
     array("pipe","r"),
     array("pipe","w"),

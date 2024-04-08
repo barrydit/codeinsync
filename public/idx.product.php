@@ -48,7 +48,6 @@
   dd();
   */
 
-
 /** Loading Time: 4.77s **/
   
   // dd(null, true);
@@ -123,7 +122,7 @@
     //dd('wtf');
   }
 
-//dd(__DIR__ . DIRECTORY_SEPARATOR); 
+//dd(__DIR__ . DIRECTORY_SEPARATOR);
 
 $globPaths = array_filter(glob(__DIR__ . DIRECTORY_SEPARATOR . 'ui.*.php'), 'is_file'); // public/
 $globPaths[] = __DIR__ . DIRECTORY_SEPARATOR . 'app.console.php';
@@ -321,6 +320,7 @@ do {
       : (is_file('../app.console.php') ? '../app.console.php' : (is_file('public/app.console.php') ? 'public/app.console.php' : (is_file('config/app.console.php') ? 'config/app.console.php' : 'app.console.php'))))
     require_once($path); 
   else die(var_dump($path . ' was not found. file=app.console.php'));
+
 /*
 if (!empty($_GET['client']) && !empty($_GET['domain']))
   chdir(APP_PATH . APP_CLIENT->path);
@@ -599,7 +599,7 @@ header("Pragma: no-cache");
           </div>
         </div>
 
-          
+          <div style="position: absolute; left: -95px; top: 40px; background-color: white; color: red; font-variant-caps: all-small-caps;">[<a href="?hide=update-notice">Hide Notice</a>]</div>
           <div style="position: absolute; top: 40px; left: 0; z-index: 1; background-color: white; border: <?= ( defined('APP_ROOT') && APP_ROOT != '' || isset($_GET['path']) ? '2px dashed red' : '1px solid #000'); ?>;">
             <?php $path = realpath(APP_ROOT . (isset($_GET['path']) ? DIRECTORY_SEPARATOR . $_GET['path'] : '')) . DIRECTORY_SEPARATOR; // getcwd()
               if (isset($_GET['path'])) { ?>
@@ -1920,7 +1920,7 @@ function makeDraggable(windowId) {
           $( '#app_directory-container' ).slideDown( "slow", function() {
           // Animation complete.
           });
-      <?php } else if (defined('APP_ROOT') && APP_ROOT != '' && isset($errors['GIT_UPDATE'])) { //  isset($_GET['client'])  !$_GET['client'] 
+      <?php } else if (defined('APP_ROOT') && APP_ROOT != '' && isset($errors['GIT_UPDATE']) && $_ENV['HIDE_UPDATE_NOTICE'] != true ) { //  isset($_GET['client'])  !$_GET['client'] 
       
         if ($_GET['client'] != '') { ?>
           document.getElementById('toggle-debug').checked = true;

@@ -462,7 +462,6 @@ if (basename($dir = getcwd()) != 'config') {
   $previousFilename = '';
 
   $dirs = [
-
     0 => APP_PATH . APP_BASE['config'] . 'git.php',
     1 => APP_PATH . APP_BASE['config'] . 'composer.php',
     2 => APP_PATH . 'composer-setup.php',
@@ -517,10 +516,11 @@ if (basename($dir = getcwd()) != 'config') {
     $previousFilename = $currentFilename;
   }
 
+
   $file = fopen(APP_PATH . APP_ROOT . '.env', 'w');
   if (isset($_ENV) && !empty($_ENV))
     foreach($_ENV as $key => $env_var) {
-      fwrite($file, $key.'='.$env_var."\n");
+      fwrite($file, $key.'='.(string) $env_var."\n");
     }
   fclose($file);
   

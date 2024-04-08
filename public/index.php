@@ -38,7 +38,7 @@
         else
           define('APP_ENV', 'production');
         $_ENV['APP_ENV'] = APP_ENV;
-        $file = fopen('.env', 'w+');
+        $file = fopen(APP_PATH . APP_ROOT . '.env', 'w');
         if (isset($_ENV) && !empty($_ENV))
           foreach($_ENV as $key => $env_var) {
             fwrite($file, $key.'='.$env_var."\n");
@@ -52,6 +52,19 @@
       //if (!empty($_GET['path']) && !isset($_GET['app'])) !!infinite loop
       //  exit(header('Location: ' . APP_WWW . $_GET['path']));
 // http://localhost/?app=composer&path=vendor
+
+      if (isset($_GET['hide']) && $_GET['hide'] == 'update-notice') {
+        $_ENV['HIDE_UPDATE_NOTICE'] = true;
+        $file = fopen(APP_PATH . APP_ROOT . '.env', 'w');
+        if (isset($_ENV) && !empty($_ENV))
+          foreach($_ENV as $key => $env_var) {
+            fwrite($file, $key.'='.(string) $env_var."\n");
+          }
+        fclose($file);
+        exit(header('Location: ' . APP_WWW . ''));
+      }
+        
+
       if (isset($_GET['category']) && !empty($_GET['category'])) {
         
         if ($_GET['category'] == 'projects')

@@ -32,7 +32,7 @@ if ($latest_local_commit_sha !== $_ENV['GITHUB_REMOTE_SHA']) {
   $context = stream_context_create($options);
 
   // Make the request
-  $response = file_get_contents($latest_remote_commit_url, false, $context);
+  $response = (APP_CONNECTIVITY ? file_get_contents($latest_remote_commit_url, false, $context) : '{}' );
   $data = json_decode($response, true);
 
   if ($data && isset($data['object']['sha'])) {
@@ -42,12 +42,13 @@ if ($latest_local_commit_sha !== $_ENV['GITHUB_REMOTE_SHA']) {
     if ($latest_local_commit_sha !== $latest_remote_commit_sha) {
       $errors['GIT_UPDATE'] =  $errors['GIT_UPDATE'] . $latest_local_commit_sha . '  ' . $latest_remote_commit_sha  . "\n"; 
     } else {
+      $_ENV['HIDE_UPDATE_NOTICE'] = false;
       $errors[] = 'Remote SHA ($_ENV[\'GITHUB_REMOTE_SHA\']) was updated.' . "\n" . $errors['GIT_UPDATE'] . "\n";
       $_ENV['GITHUB_REMOTE_SHA'] = $latest_remote_commit_sha;
       unset($errors['GIT_UPDATE']);
     }
   } else {
-    echo 'Failed to retrieve commit information.';
+    $errors['GIT_UPDATE'] .= 'Failed to retrieve commit information.' . "\n";
   }
 } else if (date('Y-m-d', filemtime(APP_PATH . APP_ROOT . '.env')) != date('Y-m-d')) {
   $errors['GIT_UPDATE'] = 'Local main branch is not up-to-date with origin/main' . "\n";
@@ -61,7 +62,7 @@ if ($latest_local_commit_sha !== $_ENV['GITHUB_REMOTE_SHA']) {
   $context = stream_context_create($options);
 
   // Make the request
-  $response = file_get_contents($latest_remote_commit_url, false, $context);
+  $response = (APP_CONNECTIVITY ? file_get_contents($latest_remote_commit_url, false, $context) : '{}' );
   $data = json_decode($response, true);
 
   if ($data && isset($data['object']['sha'])) {
@@ -71,12 +72,13 @@ if ($latest_local_commit_sha !== $_ENV['GITHUB_REMOTE_SHA']) {
     if ($latest_local_commit_sha !== $latest_remote_commit_sha) {
       $errors['GIT_UPDATE'] =  $errors['GIT_UPDATE'] . $latest_local_commit_sha . '  ' . $latest_remote_commit_sha  . "\n"; 
     } else {
+      $_ENV['HIDE_UPDATE_NOTICE'] = false;
       $errors[] = 'Remote SHA ($_ENV[\'GITHUB_REMOTE_SHA\']) was updated.' . "\n" . $errors['GIT_UPDATE'] . "\n";
       $_ENV['GITHUB_REMOTE_SHA'] = $latest_remote_commit_sha;
       unset($errors['GIT_UPDATE']);
     }
   } else {
-    echo 'Failed to retrieve commit information.';
+    $errors['GIT_UPDATE'] .= 'Failed to retrieve commit information.' . "\n";
   }
 }
 
