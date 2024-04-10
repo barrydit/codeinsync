@@ -563,6 +563,8 @@ header("Pragma: no-cache");
           <label class="label" for="toggle-debug" style="margin-left: -10px;">
             <div class="switch">
               <span class="slider round"></span>
+              
+              <div id="hide_notice-container" style="position: absolute; display: <?= (isset($errors['GIT_UPDATE']) ? 'block' : 'none') ?>; left: -20px; top: 40px; width: 100px; background-color: white; color: red; font-variant-caps: all-small-caps; text-align: center;">[<a onclick="getElementById('toggle-debug').click(); /*toggleSwitch(this);*/ return null;" href="#hide=update-notice">Hide Notice</a>]</div>
             </div>
 
             <div class="right" style="background-color: #0078D7; display: <?= (isset($errors['GIT_UPDATE']) ? 'inline-block' : 'none') ?>; color: #FFF;"> &nbsp;<span style="background-color: #FFF; color: #0078D7;">&quot;Update&quot;</span>&nbsp;</div>
@@ -599,7 +601,7 @@ header("Pragma: no-cache");
           </div>
         </div>
 
-          <div style="position: absolute; left: -95px; top: 40px; background-color: white; color: red; font-variant-caps: all-small-caps;">[<a href="?hide=update-notice">Hide Notice</a>]</div>
+          
           <div style="position: absolute; top: 40px; left: 0; z-index: 1; background-color: white; border: <?= ( defined('APP_ROOT') && APP_ROOT != '' || isset($_GET['path']) ? '2px dashed red' : '1px solid #000'); ?>;">
             <?php $path = realpath(APP_ROOT . (isset($_GET['path']) ? DIRECTORY_SEPARATOR . $_GET['path'] : '')) . DIRECTORY_SEPARATOR; // getcwd()
               if (isset($_GET['path'])) { ?>
@@ -726,7 +728,7 @@ header("Pragma: no-cache");
                 <input class="input" id="toggle-project" type="checkbox" onchange="toggleSwitch(this); this.form.submit();" <?= (isset($_GET['project']) ? 'checked' : '') ?> />
                 <label class="label" for="toggle-project" style="margin-left: -6px;">
                   <div class="left"> Client </div>
-                  <div class="switch"><span class="slider round"></span></div>
+                  <div class="switch" style="position: relative;"><span class="slider round"></span></div>
                   <div class="right"> Project </div>
                 </label>
               </form>
@@ -1767,20 +1769,20 @@ header("Pragma: no-cache");
 
 <?php if (is_dir($path = APP_PATH . APP_BASE['resources'] . 'js/ace')) { ?>
 
-    <script src="/resources/js/ace/src/ace.js" type="text/javascript" charset="utf-8"></script> <!-- -->
-    <script src="/resources/js/ace/src/ext-language_tools.js" type="text/javascript" charset="utf-8"></script>
+    <script src="resources/js/ace/src/ace.js" type="text/javascript" charset="utf-8"></script> <!-- -->
+    <script src="resources/js/ace/src/ext-language_tools.js" type="text/javascript" charset="utf-8"></script>
 <?php } ?>
     <!-- <script src="https://cdnjs.cloudflare.com/ajax/libs/ace/1.4.12/ext-language_tools.js"></script>
-      <script src="/resources/js/ace/src/mode-php.js" type="text/javascript" charset="utf-8"></script>
+      <script src="resources/js/ace/src/mode-php.js" type="text/javascript" charset="utf-8"></script>
       
-      <script src="/resources/js/ace/src/theme-dracula.js" type="text/javascript" charset="utf-8"></script> -->
+      <script src="resources/js/ace/src/theme-dracula.js" type="text/javascript" charset="utf-8"></script> -->
     <!--   <script src="dist/bundle.js" type="text/javascript" charset="utf-8"></script> -->
     <!-- End: For Text / Ace Editor -->
     <!-- <script src="resources/js/jquery/jquery.min.js"></script> -->
     <?php if (date(/*Y-*/ 'm-d') == /*1928-*/ '08-07' ?? /*2023-*/ '03-30') { ?>
-    <script src="/resources/reels/leave-a-light-on.js" type="text/javascript" charset="utf-8"></script>
+    <script src="resources/reels/leave-a-light-on.js" type="text/javascript" charset="utf-8"></script>
     <?php } elseif (date(/*Y-*/ 'm-d') == /*1976-*/ '03-20' ?? /*2017-*/ '07-20') { ?>
-    <script src="/resources/reels/leave-a-light-on.js" type="text/javascript" charset="utf-8"></script>
+    <script src="resources/reels/leave-a-light-on.js" type="text/javascript" charset="utf-8"></script>
     <?php } else {  // array_rand() can't be empty ?>
     <script src="/<?= APP_BASE['resources'] . 'reels/' . 'adhd_song.js'; /* !empty($reels = glob(APP_PATH . 'resources/reels/*.js')) ? APP_BASE['resources'] . 'reels/' . basename(array_rand(array_flip(array_filter($reels, 'is_file')), 1)) : ''; APP_BASE['resources'] */?>" type="text/javascript" charset="utf-8"></script>
     <?php } ?>
@@ -1872,6 +1874,16 @@ function makeDraggable(windowId) {
         // Third option is selected
         // Add your logic here
         console.log('checked');
+
+        //getElementById('hide_notice-container');
+        
+        
+        
+        <?php if (isset($errors['GIT_UPDATE'])) { ?> 
+        $( '#hide_notice-container' ).slideDown( "slow", function() {
+          // Animation complete.
+        });
+        <?php } ?>
       
         $( '#app_console-container' ).slideDown( "slow", function() {
           // Animation complete.
@@ -1880,11 +1892,16 @@ function makeDraggable(windowId) {
         
         $("#debug-content").css('overflow', 'visible');
         
-      $("#debug-content").show("slide", { direction: "left" }, 1000);
+      $("#debug-content").show("slide", { direction: "up" }, 1000);
       
       //$("#app_backup-container").show("slide", { direction: "right" }, 1000);
       
       } else {
+
+        $( '#hide_notice-container' ).slideUp( "slow", function() {
+          // Animation complete.
+        });
+        
         // Third option is not selected
         // Add your logic here
         console.log('(not) checked');
@@ -1897,7 +1914,7 @@ function makeDraggable(windowId) {
 
         $('#requestInput').attr('autofocus', true);
             
-      $("#debug-content").hide("slide", { direction: "left" }, 1000);
+      $("#debug-content").hide("slide", { direction: "up" }, 1000);
       
       //$("#app_backup-container").hide("slide", { direction: "right" }, 1000);
       }
@@ -1920,7 +1937,7 @@ function makeDraggable(windowId) {
           $( '#app_directory-container' ).slideDown( "slow", function() {
           // Animation complete.
           });
-      <?php } else if (defined('APP_ROOT') && APP_ROOT != '' && isset($errors['GIT_UPDATE']) && $_ENV['HIDE_UPDATE_NOTICE'] != true ) { //  isset($_GET['client'])  !$_GET['client'] 
+      <?php } else if (defined('APP_ROOT') && APP_ROOT != '' && isset($errors['GIT_UPDATE']) && isset($_ENV['HIDE_UPDATE_NOTICE']) && $_ENV['HIDE_UPDATE_NOTICE'] != true ) { //  isset($_GET['client'])  !$_GET['client'] 
       
         if ($_GET['client'] != '') { ?>
           document.getElementById('toggle-debug').checked = true;
@@ -2086,13 +2103,13 @@ if (confirm('Do you wish to display clients?')) {
       + window.location.pathname.split("/").slice(0, -1).join("/"),
       
       paths: {
-        jquery: '/resources/js/jquery/jquery.min',
-        domReady: '/resources/js/domReady',
-        bootstrap: '/resources/js/bootstrap/dist/js/bootstrap',
-        ace: '/resources/js/ace/src/ace',
-        'lib/dom': '/resources/js/ace/src/lib/dom',
-        useragent: '/resources/js/ace/src/lib/useragent',
-        exports: '/resources/js/ace/src/lib/',
+        jquery: 'resources/js/jquery/jquery.min',
+        domReady: 'resources/js/domReady',
+        bootstrap: 'resources/js/bootstrap/dist/js/bootstrap',
+        ace: 'resources/js/ace/src/ace',
+        'lib/dom': 'resources/js/ace/src/lib/dom',
+        useragent: 'resources/js/ace/src/lib/useragent',
+        exports: 'resources/js/ace/src/lib/',
         
         //'../snippets': 'resources/js/ace/lib/ace/snippets',
         //'./lib/oop': 'resources/js/ace/src/lib'
@@ -2107,7 +2124,7 @@ if (is_dir($path = APP_PATH . APP_BASE['resources'] . 'js/ace')) { ?>
           baseUrl: window.location.protocol + "//" + window.location.host
           + window.location.pathname.split("/").slice(0, -1).join("/"),
           paths: {
-            ace: "/resources/js/ace/src"
+            ace: "resources/js/ace/src"
           }
         });
         
@@ -2115,7 +2132,7 @@ if (is_dir($path = APP_PATH . APP_BASE['resources'] . 'js/ace')) { ?>
                 //console.log(langtools);
       
       <?= UI_ACE_EDITOR['script']; ?>
-                //require(["/resources/js/requirejs/require-2.3.6!ace/ace"], function(e){
+                //require(["resources/js/requirejs/require-2.3.6!ace/ace"], function(e){
                     //editor.setValue(e);
                 //})
                 
