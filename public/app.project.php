@@ -117,7 +117,8 @@ ob_start(); ?>
             <iframe id="app_project-iframe" src="<?= basename(/*'?project=show'*/ 'project.php') ?>" style="height: 100%; width: 100%;"></iframe>
           </div>
           <form id="app_project-saveForm" method="POST">
-          <div id="separator" style="height: 25px; text-align: center;"><pre style="display: inline;">---Drag Bar---</pre>
+          <div id="separator" style="height: 25px; text-align: center;">
+            <pre style="display: inline;">---Drag Bar---</pre>
 
             <div style="display: inline; float: right; z-index: 1000;">
 
