@@ -105,7 +105,7 @@ if (!empty($_GET['client']) && !empty($_GET['domain'])) {
   if (is_dir(APP_PATH . $path)) {
     define('APP_CLIENT', new clientOrProj($path));
     
-    $latest_remote_commit_url = 'https://api.github.com/repos/barrydit/' . $_GET['domain'] . '/git/ref/heads/main';
+    $latest_remote_commit_url = 'https://api.github.com/repos/barrydit/' . $_GET['domain'] . '/git/refs/heads/main';
   }
   //if (isset($_GET['path']) && is_dir(APP_PATH . $path . $_GET['path'])) $path .= $_GET['path'];
     //else 
@@ -119,13 +119,13 @@ if (!empty($_GET['client']) && !empty($_GET['domain'])) {
   if (is_dir(APP_PATH . $path)) {
     define('APP_PROJECT', new clientOrProj($path));
 
-    $latest_remote_commit_url = 'https://api.github.com/repos/barrydit/' . $_GET['project'] . '/git/ref/heads/main';
+    $latest_remote_commit_url = 'https://api.github.com/repos/barrydit/' . $_GET['project'] . '/git/refs/heads/main';
   }
   //if (isset($_GET['path']) && is_dir(APP_PATH . $path . $_GET['path'])) $path .= $_GET['path'];
 
 } else {
 
-  $latest_remote_commit_url = 'https://api.github.com/repos/barrydit/composer_app/git/ref/heads/main';
+  $latest_remote_commit_url = 'https://api.github.com/repos/barrydit/composer_app/git/refs/heads/main';
 
 }// else { if (isset($_GET['path']) && is_dir(APP_PATH . $_GET['path'])) $path = $_GET['path']; } 
 

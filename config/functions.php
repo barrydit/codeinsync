@@ -35,7 +35,7 @@ function check_ping($ip = '8.8.8.8') {
   else
     exec('sudo /bin/ping -c2 -w2 ' /*-c 1 -W 1*/ . $ip ?? '8.8.8.8' . ' 2>&1', $output, $status); // var_dump(\$status)
 
-  return ($status == 0 ? true : false);
+  return ($status == 0 ? false : true);
 }
 
 /* HTTP status of a URL and the network connectivity using ping */

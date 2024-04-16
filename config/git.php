@@ -19,6 +19,8 @@ $latest_remote_commit_sha = $latest_remote_commit_data['object']['sha']; */
 
 $latest_local_commit_sha = exec(GIT_EXEC . ' --git-dir="' . APP_PATH . APP_ROOT . '.git" --work-tree="' . dirname(__DIR__) . '" rev-parse main');
 
+//dd($latest_remote_commit_url);
+
 if ($latest_local_commit_sha !== $_ENV['GITHUB_REMOTE_SHA']) {
   $errors['GIT_UPDATE'] = 'Local main branch is not up-to-date with origin/main' . "\n";
 
@@ -32,9 +34,9 @@ if ($latest_local_commit_sha !== $_ENV['GITHUB_REMOTE_SHA']) {
   $context = stream_context_create($options);
 
   // Make the request
-  $response = (APP_CONNECTIVITY && check_http_200($latest_remote_commit_url) ? file_get_contents($latest_remote_commit_url, false, $context) : '{}' );
+  $response = (APP_CONNECTIVITY /*&& check_http_200($latest_remote_commit_url)*/ ? file_get_contents($latest_remote_commit_url, false, $context) : '{}' );
   $data = json_decode($response, true);
-
+dd($response);
   if ($data && isset($data['object']['sha'])) {
     $latest_remote_commit_sha = $data['object']['sha'];
 
