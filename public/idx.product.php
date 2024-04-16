@@ -1,5 +1,11 @@
 <?php
 
+  if (!isset($_ENV['DEFAULT_CLIENT']))
+    $_ENV['DEFAULT_CLIENT'] = '';
+  if (!isset($_ENV['DEFAULT_DOMAIN']))
+    $_ENV['DEFAULT_DOMAIN'] = '';
+    
+
   if (defined('APP_QUERY') && empty(APP_QUERY))
     die(header('Location: ' . APP_URL_BASE . '?' . http_build_query([
         'client' => $_ENV['DEFAULT_CLIENT'],
@@ -554,6 +560,7 @@ header("Pragma: no-cache");
     </div>
     <?= /* $appBackup['body'] */ NULL;?>
     <div style="position: relative; margin: 0px auto; width: 100%; border: 1px solid #000;">
+
       <div style="position: relative; margin: 0px auto; width: 800px;">
         <div style="position: absolute; <?= /* (empty($errors) ? 'display: none;' : '') */ NULL; ?>left: -144px; /*width: 150px;*/ z-index: 3;">
           <!--form action="#!" method="GET">
@@ -602,7 +609,8 @@ header("Pragma: no-cache");
         </div>
 
           
-          <div style="position: absolute; top: 40px; left: 0; z-index: 1; background-color: white; border: <?= ( defined('APP_ROOT') && APP_ROOT != '' || isset($_GET['path']) ? '2px dashed red' : '1px solid #000'); ?>;">
+          <div style="position: absolute; top: 40px; left: -15px; z-index: 1; background-color: white; border: <?= ( defined('APP_ROOT') && APP_ROOT != '' || isset($_GET['path']) ? '2px dashed red' : '1px solid #000'); ?>;">
+            <div style="display: inline; margin-top: -7px; float: left; "><a style="font-size: 18pt; font-weight: bold; padding-left: 4px;" href="?path">&#8962; </a></div>
             <?php $path = realpath(APP_ROOT . (isset($_GET['path']) ? DIRECTORY_SEPARATOR . $_GET['path'] : '')) . DIRECTORY_SEPARATOR; // getcwd()
               if (isset($_GET['path'])) { ?>
             <!-- <input type="hidden" name="path" value="<?= $_GET['path']; ?>" /> -->
@@ -611,7 +619,7 @@ header("Pragma: no-cache");
               //APP_URL_BASE . /*basename(__FILE__) .*/ '?' . http_build_query(APP_QUERY /*+ array( 'app' => 'ace_editor')*/) . (defined('APP_ENV') && APP_ENV == 'development' ? '#!' : '') 
               
               /* $c_or_p . '=' . (empty($_GET[$c_or_p]) ? '' : $$c_or_p->name) . '&amp;app=composer' */ NULL; ?>
-            <?= '          <button id="displayDirectoryBtn" style="float: left; margin: 2px 5px 0 0;" type="">&nbsp;&#9660;</button> ' . "\n"; ?>
+            <?= '          <button id="displayDirectoryBtn" style="margin: 2px 5px 0 0;" type="">&nbsp;&#9660;</button> ' . "\n"; ?>
             <?php
               $main_cat = '        <form style="display: inline;" autocomplete="off" spellcheck="false" action="" method="GET">/'  . "\n"
               . '            <select name="category" onchange="this.form.submit();">' . "\n"
@@ -1676,7 +1684,7 @@ header("Pragma: no-cache");
     <?= (defined('UI_ACE_EDITOR') ? UI_ACE_EDITOR['body'] : null); ?>
     
     <?= $appProject['body']; ?>
-
+    
     <?= $appConsole['body']; ?>
     <!-- https://cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.min.js -->
     <!-- https://code.jquery.com/jquery-3.7.1.min.js -->
@@ -1765,6 +1773,7 @@ header("Pragma: no-cache");
       }
       unset($path);
       ?>
+
     <script src="<?= APP_BASE['resources'] . 'js/requirejs/require-2.3.6.js' ?? $url ?>" type="text/javascript" charset="utf-8"></script>
 
 <?php if (is_dir($path = APP_PATH . APP_BASE['resources'] . 'js/ace')) { ?>
@@ -1784,7 +1793,7 @@ header("Pragma: no-cache");
     <?php } elseif (date(/*Y-*/ 'm-d') == /*1976-*/ '03-20' ?? /*2017-*/ '07-20') { ?>
     <script src="resources/reels/leave-a-light-on.js" type="text/javascript" charset="utf-8"></script>
     <?php } else {  // array_rand() can't be empty ?>
-    <script src="/<?= APP_BASE['resources'] . 'reels/' . 'adhd_song.js'; /* !empty($reels = glob(APP_PATH . 'resources/reels/*.js')) ? APP_BASE['resources'] . 'reels/' . basename(array_rand(array_flip(array_filter($reels, 'is_file')), 1)) : ''; APP_BASE['resources'] */?>" type="text/javascript" charset="utf-8"></script>
+    <script src="<?= APP_BASE['resources'] . 'reels/' . 'adhd_song.js'; /* !empty($reels = glob(APP_PATH . 'resources/reels/*.js')) ? APP_BASE['resources'] . 'reels/' . basename(array_rand(array_flip(array_filter($reels, 'is_file')), 1)) : ''; APP_BASE['resources'] */?>" type="text/javascript" charset="utf-8"></script>
     <?php } ?>
     <script type="text/javascript" charset="utf-8">
 

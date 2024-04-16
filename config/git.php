@@ -32,7 +32,7 @@ if ($latest_local_commit_sha !== $_ENV['GITHUB_REMOTE_SHA']) {
   $context = stream_context_create($options);
 
   // Make the request
-  $response = (APP_CONNECTIVITY && check_http_200($latest_remote_commit_url) ? file_get_contents($latest_remote_commit_url, false, $context) : '{}' );
+  $response = (APP_CONNECTIVITY /*&& check_http_200($latest_remote_commit_url)*/ ? file_get_contents($latest_remote_commit_url, false, $context) : '{}' );
   $data = json_decode($response, true);
 
   if ($data && isset($data['object']['sha'])) {
