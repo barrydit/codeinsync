@@ -419,7 +419,7 @@ ob_start(); ?>
 const element = document.getElementById('app_git-container');
 
 // Create a MutationObserver instance
-const observer = new MutationObserver((mutationsList, observer) => {
+const mutation_observer = new MutationObserver((mutationsList, observer) => {
     for(const mutation of mutationsList) {
         if (mutation.attributeName === 'style') {
             const display = element.style.display;
@@ -446,7 +446,7 @@ const observer = new MutationObserver((mutationsList, observer) => {
 });
 
 // Start observing the target node for configured mutations
-observer.observe(element, { attributes: true });
+mutation_observer.observe(element, { attributes: true });
 
 
 var appGitPushElements = document.getElementsByClassName('app_git-push'); // getElementById('app_git-push')

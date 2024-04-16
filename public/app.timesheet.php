@@ -680,6 +680,10 @@ td, tr {
   border: none;
 }
 
+.hidden {
+  display: none;
+}
+
 
 <?php $appTimesheet['style'] = ob_get_contents();
 ob_end_clean();
@@ -1071,6 +1075,9 @@ function stopInterval() {
         console.log('Interval is not active.');
     }
 }
+        
+        
+var typedInstances = [];
 
     $(document).ready(function () {
     
@@ -1106,7 +1113,9 @@ function stopInterval() {
             idleTime = -1;
         });
         //$("#idleTime").text(month + ' ' + date.getDate() + ' ' + date.getFullYear() + '  '  + time);
-    });
+
+
+   });
 
     /* https://stackoverflow.com/questions/69264746/how-to-convert-seconds-to-time-in-javascript */
     function toTime(duration) {
@@ -1126,10 +1135,39 @@ function stopInterval() {
     }
 
     function idlePenalty(idletimeobj) {
-      //console.log(idletimeobj);
+      console.log(snd);
+
 if (typeof snd !== 'undefined') {
     snd.play();
-}
+} 
+
+/*
+    var lyricIds = ['#lyric-1', '#lyric-2', '#lyric-3', '#lyric-4', '#lyric-5', '#lyric-6', '#lyric-7', '#lyric-8', '#lyric-9', '#lyric-10', '#lyric-11'];
+
+    function startTyped(index) {
+        if (index < lyricIds.length) {
+            var currentId = lyricIds[index];
+            var nextId = lyricIds[index + 1];
+
+            new Typed(currentId, {
+                strings: [document.querySelector(currentId).textContent],
+                typeSpeed: 10,
+                backSpeed: 0,
+                loop: false,
+                onComplete: function (self) {
+                    startTyped(index + 1);
+                }
+            });
+        }
+    }
+    startTyped(0);
+*/
+
+
+
+
+
+
     console.log('Current snd current time: ' + snd.currentTime);
     document.getElementById('adhd_song-container').style.display='block';
     
@@ -1151,7 +1189,7 @@ if (typeof snd !== 'undefined') {
             Object.keys(json_decode).forEach(key=>{ Object.keys(json_decode[key]).forEach(key1=>{ count_idle += 1; }); });
         
             console.log(count_idle);
-        
+            snd.stop();
             $("#stats").html('Idle: [' + count_idle + '] ' + '&nbsp;&nbsp;' + '' + ' <span style="color: red;">01:00:00');
 
             function myFunction(item, index, arr) {
@@ -1239,8 +1277,9 @@ if (typeof snd !== 'undefined') {
             $("#ts-status-light").attr('src', 'resources/images/timesheet-light-GG.gif');
           occupiedTime = occupiedTime + 1;
         }
-
     }
+
+
 <?php $appTimesheet['script'] = ob_get_contents();
 ob_end_clean();
 
