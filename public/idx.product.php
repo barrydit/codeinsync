@@ -610,7 +610,7 @@ header("Pragma: no-cache");
 
           
           <div style="position: absolute; top: 40px; left: -15px; z-index: 1; background-color: white; border: <?= ( defined('APP_ROOT') && APP_ROOT != '' || isset($_GET['path']) ? '2px dashed red' : '1px solid #000'); ?>;">
-            <div style="display: inline; margin-top: -7px; float: left; "><a style="font-size: 18pt; font-weight: bold; padding-left: 4px;" href="?path">&#8962; </a></div>
+            <div style="display: inline; margin-top: -7px; float: left; "><a style="font-size: 18pt; font-weight: bold; padding: 0 3px;" href="?path">&#8962; </a></div>
             <?php $path = realpath(APP_ROOT . (isset($_GET['path']) ? DIRECTORY_SEPARATOR . $_GET['path'] : '')) . DIRECTORY_SEPARATOR; // getcwd()
               if (isset($_GET['path'])) { ?>
             <!-- <input type="hidden" name="path" value="<?= $_GET['path']; ?>" /> -->

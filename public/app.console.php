@@ -331,6 +331,13 @@ ob_start(); ?>
 <!-- <div class="container" style="border: 1px solid #000;"> -->
 
 <div id="app_console-container" class="" style="border: 1px dashed #000; ">
+    <div style="position: absolute; left: -100px; width: 100px; height: 200px; background-color: #FFA6A6;">
+    
+      <div style="width: 80px; height: 20px; background-color: #000; margin: 0 auto;">test</div>    
+      <div style="width: 80px; height: 20px; background-color: #000; margin: 0 auto;">test</div>    
+      <div style="width: 80px; height: 20px; background-color: #000; margin: 0 auto;">test</div>
+
+    </div>
     <div style="position: absolute; display: none; top: -320px; background-color: #FFF; border: 1px dashed #000; height: 160px; width: 100%; padding: 20px 10px; color: #000; text-align: left; z-index: -1; text-align: center;" class="text-sm">
     <h1>&lt;html&gt; &lt;head&gt;</h1>
     <h2>&lt;meta&gt;, &lt;link&gt;, &lt;base&gt;,... &lt;/head&gt;</h2>
