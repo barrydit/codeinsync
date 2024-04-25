@@ -1,16 +1,16 @@
 <?php
 
 /*
-    realpath — Returns canonicalized absolute pathname
-    is_writable — Tells whether the filename is writable
-    unlink — Deletes a file
+    realpath ï¿½ Returns canonicalized absolute pathname
+    is_writable ï¿½ Tells whether the filename is writable
+    unlink ï¿½ Deletes a file
 */
 
 if (__FILE__ == get_required_files()[0])
   if ($path = (basename(getcwd()) == 'public')
     ? (is_file('../config.php') ? '../config.php' : (is_file('../config/config.php') ? '../config/config.php' : null))
-    : (is_file('config.php') ? 'config.php' : (is_file('config/config.php') ? 'config/config.php' : null))) require_once($path); 
-else die(var_dump($path . ' path was not found. file=config.php'));
+    : (is_file('config.php') ? 'config.php' : (is_file('config/config.php') ? 'config/config.php' : null))) require_once $path; 
+else die(var_dump("$path path was not found. file=config.php"));
 
 //!function_exists('dd') ? die('dd is not defined') : dd(COMPOSER_EXEC);
 
@@ -19,7 +19,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
       chdir(APP_PATH . APP_ROOT);
       if ($_POST['cmd'] && $_POST['cmd'] != '') 
         if (preg_match('/^install/i', $_POST['cmd']))
-          include('templates/' . preg_split("/^install (\s*+)/i", $_POST['cmd'])[1] . '.php');
+          include 'templates/' . preg_split("/^install (\s*+)/i", $_POST['cmd'])[1] . '.php';
         //else if (preg_match('/^edit\s+(:?(.*))/i', $_POST['cmd'], $match))
           //exec($_POST['cmd'], $output);
           //die(header('Location: ' . APP_URL_BASE . '?app=text_editor&filename='.$_POST['cmd']));
@@ -197,7 +197,7 @@ $proc=proc_open((strtoupper(substr(PHP_OS, 0, 3)) === 'WIN' ? '' : 'sudo ') . $m
   ),
   $pipes);
           list($stdout, $stderr, $exitCode) = [stream_get_contents($pipes[1]), stream_get_contents($pipes[2]), proc_close($proc)];
-          $output[] = (!isset($stdout) ? NULL : $stdout . (isset($stderr) && $stderr === '' ? NULL : ' Error: ' . $stderr) . (isset($exitCode) && $exitCode == 0 ? NULL : 'Exit Code: ' . $exitCode));
+          $output[] = !isset($stdout) ? NULL : $stdout . (isset($stderr) && $stderr === '' ? NULL : ' Error: ' . $stderr) . (isset($exitCode) && $exitCode == 0 ? NULL : 'Exit Code: ' . $exitCode);
               
 }
           //$output[] = $_POST['cmd'] . "\n";
@@ -230,7 +230,7 @@ else die(var_dump($path . ' path was not found. file=npm.php'));
 */
 
 
-define('CONSOLE', true);
+const CONSOLE = true;
 
 ob_start(); ?>
 html, body {
@@ -333,9 +333,17 @@ ob_start(); ?>
 <div id="app_console-container" class="" style="border: 1px dashed #000; ">
     <div style="position: absolute; left: -100px; width: 100px; height: 200px; background-color: #FFA6A6;">
     
-      <div style="width: 80px; height: 20px; background-color: #000; margin: 0 auto;">test</div>    
-      <div style="width: 80px; height: 20px; background-color: #000; margin: 0 auto;">test</div>    
-      <div style="width: 80px; height: 20px; background-color: #000; margin: 0 auto;">test</div>
+      <div style="position: relative; width: 80px; height: 20px; background-color: #000; margin: 0 auto;">
+        <div style="border: 1px solid red; margin: auto; position: absolute; top: 50%; left: 30%; right: 50%; -ms-transform: translateY(-50%); transform: translateY(-50%);">
+        Testing
+        </div>
+      </div>    
+      <div style="position: relative; width: 80px; height: 20px; background-color: #000; margin: 0 auto;">
+      test
+      </div>    
+      <div style="position: relative; width: 80px; height: 20px; background-color: #000; margin: 0 auto;">
+      test
+      </div>
 
     </div>
     <div style="position: absolute; display: none; top: -320px; background-color: #FFF; border: 1px dashed #000; height: 160px; width: 100%; padding: 20px 10px; color: #000; text-align: left; z-index: -1; text-align: center;" class="text-sm">

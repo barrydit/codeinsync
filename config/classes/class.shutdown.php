@@ -1,5 +1,7 @@
 <?php
-
+/*
+ *
+ */
 class Shutdown {
     private static $instance = false;
     private $functions;
@@ -7,9 +9,9 @@ class Shutdown {
     private $shutdownMessage;
 
     public function __construct() {
-        $this->functions = array();
+        $this->functions = [];
         defined('APP_END') or define('APP_END', microtime(true));
-        register_shutdown_function(array($this, 'onShutdown'));
+        register_shutdown_function([$this, 'onShutdown']);
     }
 
     public static function instance() {
@@ -26,8 +28,8 @@ class Shutdown {
             //if (defined('APP_INSTALL') && APP_INSTALL && $path = APP_PATH . 'install.php') // is_file('config/constants.php')) 
             //    require_once($path);
 
-    //include('checksum_md5.php'); // your_logger(get_included_files());
-    //unset($pdo);
+            //include('checksum_md5.php'); // your_logger(get_included_files());
+            //unset($pdo);
             return;
         }
 
@@ -35,11 +37,6 @@ class Shutdown {
             $fnc($this->shutdownMessage);
         }
         exit('');
-    }
-
-    public static function setEnabled($enabled) {
-        self::$enabled = (bool)$enabled;
-        return isset(self::$instance) ? static::instance() : $this; // $this Return an instance of Shutdown class
     }
 
     public static function getEnabled() {
@@ -62,17 +59,38 @@ class Shutdown {
                 $fnc($this->shutdownMessage);
             }
         }
-        if (is_callable($this->shutdownMessage)) {
-            $message = call_user_func($this->shutdownMessage);
-        } else {
-            $message = $this->shutdownMessage;
-        }
+        $message = (is_callable($this->shutdownMessage)) ? call_user_func($this->shutdownMessage) : $this->shutdownMessage;
         if ($die == true)
             exit($message);
     }
 
     public static function create() {
         return new self();
+    }
+
+    /**
+     * @param mixed $instance 
+     */
+    public static function setInstance($instance) {
+        self::$instance = $instance;
+        return;
+    }
+
+    /**
+     * @param mixed $functions 
+     * @return self
+     */
+    public function setFunctions($functions): self {
+        $this->functions = $functions;
+        return $this;
+    }
+
+    /**
+     * @param mixed $enabled 
+     */
+    public static function setEnabled($enabled) {
+        self::$enabled = $enabled;
+        return isset(self::$instance) ? static::instance() : self::instance();
     }
 }
 

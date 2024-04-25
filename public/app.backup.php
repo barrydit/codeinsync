@@ -3,8 +3,8 @@
 if (__FILE__ == get_required_files()[0])
   if ($path = (basename(getcwd()) == 'public')
     ? (is_file('../config.php') ? '../config.php' : (is_file('../config/config.php') ? '../config/config.php' : null))
-    : (is_file('config.php') ? 'config.php' : (is_file('config/config.php') ? 'config/config.php' : null))) require_once($path);
-else die(var_dump($path . ' path was not found. file=config.php'));
+    : (is_file('config.php') ? 'config.php' : (is_file('config/config.php') ? 'config/config.php' : null))) require_once $path;
+else die(var_dump("$path path was not found. file=config.php"));
 
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
   if (isset($_GET['app']) && $_GET['app'] == 'backup')
@@ -13,7 +13,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 
 }
 
-define('APP_BACKUP_PATH', '/var/www/backup/'); // symlink(/mnt/d)
+const APP_BACKUP_PATH = '/var/www/backup/'; // symlink(/mnt/d)
 
 ob_start();
 ?>

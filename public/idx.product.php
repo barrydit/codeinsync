@@ -387,11 +387,11 @@ header("Pragma: no-cache");
         background-color: #FFF;
       }
       .row-container { display: flex; width: 100%; height: 100%; flex-direction: column; overflow: hidden; }
-      <?= (defined('UI_GIT') ? UI_GIT['style'] : null); ?>
-      <?= (defined('UI_PHP') ? UI_PHP['style'] : null); /* print(...) */ ?>
-      <?= (defined('UI_COMPOSER') ? UI_COMPOSER['style'] : null); /* (isset($appComposer) ? $appComposer['script'] : null); */ ?>
-      <?= (defined('UI_NPM') ? UI_NPM['style'] : null); ?>
-      <?= (defined('UI_ACE_EDITOR') ? UI_ACE_EDITOR['style'] : null); ?>
+      <?= defined('UI_GIT') ? UI_GIT['style'] : null; ?>
+      <?= defined('UI_PHP') ? UI_PHP['style'] : null; /* print(...) */ ?>
+      <?= defined('UI_COMPOSER') ? UI_COMPOSER['style'] : null; /* (isset($appComposer) ? $appComposer['script'] : null); */ ?>
+      <?= defined('UI_NPM') ? UI_NPM['style'] : null; ?>
+      <?= defined('UI_ACE_EDITOR') ? UI_ACE_EDITOR['style'] : null; ?>
 
       <?= $appBrowser['style']; ?>
       <?= $appGithub['style']; ?>

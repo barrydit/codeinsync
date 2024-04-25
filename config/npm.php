@@ -7,7 +7,7 @@ npm WARN EBADENGINE   current: { node: 'v12.22.12', npm: '7.5.2' }
 npm WARN EBADENGINE }
 */
 
-define('NODE_ENV', (!defined('APP_ENV') ? 'production' : APP_ENV));
+define('NODE_ENV', !defined('APP_ENV') ? 'production' : APP_ENV);
 putenv('NODE_ENV=' . (string) NODE_ENV);
 
 if (strtoupper(substr(PHP_OS, 0, 3)) === 'WIN')
@@ -15,7 +15,7 @@ if (strtoupper(substr(PHP_OS, 0, 3)) === 'WIN')
 else
   define('NODE_EXEC', '/usr/bin/node');
 
-$proc = proc_open((strtoupper(substr(PHP_OS, 0, 3)) === 'WIN' ? '' : 'sudo ') . NODE_EXEC . ' --version', array( array("pipe","r"), array("pipe","w"), array("pipe","w")), $pipes);
+$proc = proc_open((strtoupper(substr(PHP_OS, 0, 3)) === 'WIN' ? '' : 'sudo ') . NODE_EXEC . ' --version', [ array("pipe","r"), array("pipe","w"), array("pipe","w")], $pipes);
 
 $stdout = stream_get_contents($pipes[1]);
 $stderr = stream_get_contents($pipes[2]);
@@ -27,7 +27,7 @@ if (preg_match('/v(\d+\.\d+\.\d+)/', $stdout, $matches))
 else
   if (empty($stdout)) {
     if (!empty($stderr))
-      $errors['NODE_VERSION'] = '$stderr = ' . $stderr;
+      $errors['NODE_VERSION'] = "\$stderr = $stderr";
   } // else $errors['NODE_VERSION'] = $stdout . ' does not match $version'; }
 
 
@@ -39,7 +39,7 @@ if (strtoupper(substr(PHP_OS, 0, 3)) === 'WIN')
 else
   define('NPM_EXEC', '/usr/bin/npm');
 
-$proc = proc_open((strtoupper(substr(PHP_OS, 0, 3)) === 'WIN' ? '' : 'sudo ') . NPM_EXEC . ' --version', array( array("pipe","r"), array("pipe","w"), array("pipe","w")), $pipes);
+$proc = proc_open((strtoupper(substr(PHP_OS, 0, 3)) === 'WIN' ? '' : 'sudo ') . NPM_EXEC . ' --version', [ array("pipe","r"), array("pipe","w"), array("pipe","w")], $pipes);
 
 $stdout = stream_get_contents($pipes[1]);
 $stderr = stream_get_contents($pipes[2]);
@@ -51,7 +51,7 @@ if (preg_match('/(\d+\.\d+\.\d+)/', $stdout, $matches))
 else
   if (empty($stdout)) {
     if (!empty($stderr))
-      $errors['NPM_VERSION'] = '$stderr = ' . $stderr;
+      $errors['NPM_VERSION'] = "\$stderr = $stderr";
   } // else $errors['NPM_VERSION'] = $stdout . ' does not match $version'; }
 
 if (!is_file(APP_PATH . 'package.json'))

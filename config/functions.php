@@ -1,5 +1,7 @@
 <?php
-
+/**
+ * 
+*/
 function dd(mixed $param = null, $die = true, $debug = true) {
     $output = ($debug == true && !defined('APP_END') ? 
           'Execution time: <b>'  . round(microtime(true) - APP_START, 3) . '</b> secs' : 
@@ -31,11 +33,11 @@ function check_ping($ip = '8.8.8.8') {
   $status = null;
   // Ping the host to check network connectivity
   if (strtoupper(substr(PHP_OS, 0, 3)) === 'WIN')
-    exec('ping -n 1 -w 1 -W 20 ' . $ip ?? '8.8.8.8', $output, $status);  // parse_url($ip, PHP_URL_HOST)
+    exec("ping -n 1 -w 1 -W 20 $ip" ?? '8.8.8.8', $output, $status);  // parse_url($ip, PHP_URL_HOST)
   else
-    exec('sudo /bin/ping -c2 -w2 ' /*-c 1 -W 1*/ . $ip ?? '8.8.8.8' . ' 2>&1', $output, $status); // var_dump(\$status)
+    exec("sudo /bin/ping -c2 -w2 $ip" ?? "8.8.8.8 2>&1", $output, $status); // var_dump(\$status)
 
-  return ($status == 0 ? false : true);
+  return $status == 0 ? false : true;
 }
 
 /* HTTP status of a URL and the network connectivity using ping */
@@ -43,7 +45,7 @@ function check_http_200($url = 'http://8.8.8.8') {
   if (APP_CONNECTIVITY === true) { // check_ping() was 2 == fail | 0 == success
     if ($url !== 'http://8.8.8.8') {
       $headers = get_headers($url);
-      return (strpos($headers[0], '200') !== false ? false : true );
+      return strpos($headers[0], '200') !== false ? false : true;
     } else
       return true; // Special case for the default URL
   }
@@ -51,7 +53,7 @@ function check_http_200($url = 'http://8.8.8.8') {
 }
 
 function packagist_return_source($vendor, $package) {
-  $url = 'https://packagist.org/packages/' . $vendor . '/' . $package;
+  $url = "https://packagist.org/packages/$vendor/$package";
   $initial_url = '';
   
   libxml_use_internal_errors(true); // Prevent HTML errors from displaying
@@ -126,18 +128,18 @@ Finally, it returns the relative path by joining the remaining elements in the p
 * 
 * Remember: All paths have to start from "/" or "\" this is not Windows compatible.
 * 
-* @param   String   $base   A base path used to construct relative path. For example /website
-* @param   String   $path   A full path to file or directory used to construct relative path. For example /website/store/library.php
+* @param   string   $base   A base path used to construct relative path. For example /website
+* @param   string   $path   A full path to file or directory used to construct relative path. For example /website/store/library.php
 * 
-* @return  String
+* @return  string
 */
 function getRelativePath($base, $path) {
   // Detect directory separator
-  $separator = substr($base, 0, 1);
-  $base = array_slice(explode($separator, rtrim($base,$separator)),1);
-  $path = array_slice(explode($separator, rtrim($path,$separator)),1);
+  $separator = substr((string)$base, 0, 1);
+  $base = array_slice(explode($separator, rtrim((string)$base,$separator)),1);
+  $path = array_slice(explode($separator, rtrim((string)$path,$separator)),1);
 
-  return $separator.implode($separator, array_slice($path, count($base)));
+  return $separator . (string)implode($separator, array_slice($path, count($base)));
 }
 
 
@@ -146,8 +148,7 @@ function readlinkToEnd($linkFilename) {
   $final = $linkFilename;
   while(true) {
     $target = readlink($final);
-    if(substr($target, 0, 1)=='/') $final = $target;
-    else $final = dirname($final).'/'.$target;
+    $final = (substr($target, 0, 1) == '/') ? $target : dirname($final) . '/' . $target;
     if(substr($final, 0, 2)=='./') $final = substr($final, 2);
     if(!is_link($final)) return $final;
   }
@@ -165,22 +166,25 @@ function truepath($path){
     if(strpos($path,':')===false && $unipath)
         $path=getcwd().DIRECTORY_SEPARATOR.$path;
     // resolve path parts (single dot, double dot and double delimiters)
-    $path = str_replace(array('/', '\\'), DIRECTORY_SEPARATOR, $path);
+    $path = str_replace(['/', '\\'], DIRECTORY_SEPARATOR, $path);
     $parts = array_filter(explode(DIRECTORY_SEPARATOR, $path), 'strlen');
     $absolutes = array();
     foreach ($parts as $part) {
         if ('.'  == $part) continue;
-        if ('..' == $part) {
-            array_pop($absolutes);
-        } else {
-            $absolutes[] = $part;
-        }
+    switch ('..') {
+      case $part:
+        array_pop($absolutes);
+        break;
+      default:
+        $absolutes[] = $part;
+        break;
+    }
     }
     $path=implode(DIRECTORY_SEPARATOR, $absolutes);
     // resolve any symlinks
     if(file_exists($path) && linkinfo($path)>0)$path=readlink($path);
     // put initial separator that could have been lost
-    $path=!$unipath ? '/'.$path : $path;
+    $path = !$unipath ? "/$path" : $path;
     return $path;
 }
 
@@ -196,9 +200,9 @@ function formatSizeUnits($bytes)
   elseif ($bytes >= 1024)
     $bytes = number_format($bytes / 1024, 2) . ' KB';
   elseif ($bytes > 1)
-    $bytes = $bytes . ' bytes';
+    $bytes = "$bytes bytes";
   elseif ($bytes == 1)
-    $bytes = $bytes . ' byte';
+    $bytes .= ' byte';
   else
     $bytes = '0 bytes';
   return $bytes;
@@ -206,7 +210,7 @@ function formatSizeUnits($bytes)
 
 function convertToBytes($value) {
     $unit = strtolower(substr($value, -1, 1));
-    return (int) $value * pow(1024, array_search($unit, array(1 =>'k','m','g')));
+    return (int) $value * pow(1024, array_search($unit, [1 => 'k', 'm', 'g']));
 }
 
 /**
@@ -256,7 +260,7 @@ function FileSizeConvert($bytes)
 }
 
 function getElementsByClass(&$parentNode, $tagName, $className) {
-    $nodes=array();
+    $nodes= [];
 
     $childNodeList = $parentNode->getElementsByTagName($tagName);
     for ($i = 0; $i < $childNodeList->length; $i++) {

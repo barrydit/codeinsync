@@ -29,7 +29,7 @@ if (defined('APP_ERRORS') && APP_ERRORS && defined('APP_DEBUG') && APP_DEBUG == 
 foreach ( array_merge(glob(APP_PATH . '*.php'), glob(APP_PATH . '**/*.php', GLOB_BRACE | GLOB_NOSORT)) as $filename) {
     if ($filename == APP_SELF) continue;
     if ($filename == APP_PATH . 'composer-setup.php') continue;
-    $files[] = array('path' => $filename, 'filesize' => filesize($filename), 'filemtime' => filemtime($filename));
+    $files[] = ['path' => $filename, 'filesize' => filesize($filename), 'filemtime' => filemtime($filename)];
 }
 
 //dd($files);
@@ -115,11 +115,7 @@ ob_end_clean();
 ob_start();
 $loaded_lines = 0;
 
-if ($total_lines != 0) {
-    $percentage = abs(round((1 - $sql_lines / $total_lines) * 100 - 100, 2));
-} else {
-    $percentage = 0; // or any default value you want to use when $total_lines is 0
-}
+$percentage = ($total_lines != 0) ? abs(round((1 - $sql_lines / $total_lines) * 100 - 100, 2)) : 0;
 
 echo '			{y: ' . $percentage . ', label: "[sql schema]"},' . "\n";
 
@@ -139,11 +135,7 @@ foreach(get_required_files() as $requireFile) {
     $lines = count(file($requireFile));
   $loaded_lines += $lines;
 
-if ($total_lines != 0) {
-    $percentage = abs(round((1 - $lines / $total_lines) * 100 - 100, 2));
-} else {
-    $percentage = 0; // or any default value you want to use when $total_lines is 0
-}
+  $percentage = ($total_lines != 0) ? abs(round((1 - $lines / $total_lines) * 100 - 100, 2)) : 0;
 
   echo '			{y: ' . $percentage . ', label: "' . (basename(dirname($requireFile, 1)) == 'public' ? 'public' : pathinfo(basename($requireFile), PATHINFO_FILENAME)) . '"},' . "\n";
 }

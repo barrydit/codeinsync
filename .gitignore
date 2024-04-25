@@ -22,4 +22,5 @@ error_log
 main.js
 notes.txt
 package-lock.json
+settings.json
 *.config.js

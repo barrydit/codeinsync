@@ -67,8 +67,7 @@ $output[] = $_POST['cmd'];
 */
 //}
 
-if (!file_exists($path = APP_PATH . APP_BASE['database'].'notes.json'))
-  $data = json_decode(<<<'JSON'
+$data = (!file_exists($path = APP_PATH . APP_BASE['database'] . 'notes.json')) ? json_decode(<<<'JSON'
 [{
   "language":"PHP",
   "category":"String Manipulation",
@@ -82,9 +81,9 @@ if (!file_exists($path = APP_PATH . APP_BASE['database'].'notes.json'))
   }]
 }]
 JSON
-, true);
-else
-  $data = json_decode(file_get_contents($path), true);
+  ,
+  true
+) : json_decode(file_get_contents($path), true);
 
 $categories = ['String Manipulation', 'Array Manipulation', 'Regular Expressions', 'Error Handling', 'File Handling', 'Database Operations', 'Form Handling', 'Date and Time', 'Image Manipulation', 'Email Handling', 'Encryption and Security', 'API Integration', 'Performance Optimization', 'Session Management', 'Authentication and Authorization', 'File Upload and Download', 'Templating', 'Caching', 'Logging and Debugging', 'Web Scraping', 'PDF Generation', 'XML and JSON Manipulation', '(CLI) Applications', 'Web Services and RESTful APIs', 'Internationalization and Localization', 'Error Reporting and Logging', 'HTML and Markup Generation', 'Server-Side Rendering', 'Image Processing and Manipulation', 'Data Validation and Sanitization', 'Networking and HTTP Requests', 'Templating Engines', 'Testing and Test Frameworks'];
 
@@ -96,11 +95,11 @@ foreach($data as $key => $sample) {
 }
 
 if ($_SERVER['REQUEST_METHOD'] == 'GET') {
-  $id = explode('-', (!isset($_GET['id']) ? '0-0' : $_GET['id']));
+  $id = explode('-', !isset($_GET['id']) ? '0-0' : $_GET['id']);
 
   if (isset($_GET['id'])) {
     header('Content-type: application/json');
-    $json = array();
+    $json = [];
     foreach($data as $key1 => $sample) {
       if (isset($id[0]) && $id[0] == $key1) {
         $json['language'] = $sample['language'];
@@ -126,7 +125,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'GET') {
 }
 
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
-  $id = explode('-', (!isset($_POST['id']) ? '0-0' : $_POST['id']));
+  $id = explode('-', !isset($_POST['id']) ? '0-0' : $_POST['id']);
   if (count($id) == 2)
     $id = [0 => (int) $id[0], 1 => (int) $id[1]];
   elseif (count($id) <= 1)
@@ -164,18 +163,22 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 
     $snippets = $data[$id[0]]['snippets'];
     $counter = 0;
-    
-    if (count($id) == 2)
-      $data[$id[0]]['snippets'][$id[1]] = array('title' => $_POST['title'], 'description' => $_POST['description'], 'stackoverflow' => array('url' => $_POST['so-url'], 'title' => ''), 'code' => $code);
-    else
-      foreach ($snippets as $snippet) {
-        if ($counter == 0) {
-          $data[$id[0]]['snippets'] = array();
-          $data[$id[0]]['snippets'][] = array('title' => $_POST['title'], 'description' => $_POST['description'], 'stackoverflow' => array('url' => $_POST['so-url'], 'title' => ''), 'code' => $code);
+
+    switch (count($id)) {
+      case 2:
+        $data[$id[0]]['snippets'][$id[1]] = ['title' => $_POST['title'], 'description' => $_POST['description'], 'stackoverflow' => ['url' => $_POST['so-url'], 'title' => ''], 'code' => $code];
+        break;
+      default:
+        foreach ($snippets as $snippet) {
+          if ($counter == 0) {
+            $data[$id[0]]['snippets'] = [];
+            $data[$id[0]]['snippets'][] = ['title' => $_POST['title'], 'description' => $_POST['description'], 'stackoverflow' => ['url' => $_POST['so-url'], 'title' => ''], 'code' => $code];
+          }
+          $data[$id[0]]['snippets'][] = $snippet;
+          $counter += 1;
         }
-        $data[$id[0]]['snippets'][] = $snippet;
-        $counter += 1;
-      }
+        break;
+    }
     file_put_contents($path, json_encode($data), LOCK_EX);
   }
 }
@@ -250,14 +253,14 @@ ob_start();
 <?php
 // (check_http_200('https://cdn.tailwindcss.com') ? 'https://cdn.tailwindcss.com' : APP_WWW . 'resources/js/tailwindcss-3.3.5.js')?
 is_dir($path = APP_PATH . APP_BASE['resources'] . 'js/') or mkdir($path, 0755, true);
-if (is_file($path . 'tailwindcss-3.3.5.js')) {
-  if (ceil(abs((strtotime(date('Y-m-d')) - strtotime(date('Y-m-d',strtotime('+5 days',filemtime($path . 'tailwindcss-3.3.5.js'))))) / 86400)) <= 0 ) {
+if (is_file("{$path}tailwindcss-3.3.5.js")) {
+  if (ceil(abs(strtotime(date('Y-m-d')) - strtotime(date('Y-m-d', strtotime('+5 days', filemtime("{$path}tailwindcss-3.3.5.js")))) / 86400) <= 0 )) {
     $url = 'https://cdn.tailwindcss.com';
     $handle = curl_init($url);
     curl_setopt($handle, CURLOPT_RETURNTRANSFER, true);
 
     if (!empty($js = curl_exec($handle))) 
-      file_put_contents($path . 'tailwindcss-3.3.5.js', $js) or $errors['JS-TAILWIND'] = $url . ' returned empty.';
+      file_put_contents("{$path}tailwindcss-3.3.5.js", $js) or $errors['JS-TAILWIND'] = "$url returned empty.";
   }
 } else {
   $url = 'https://cdn.tailwindcss.com';
@@ -265,7 +268,7 @@ if (is_file($path . 'tailwindcss-3.3.5.js')) {
   curl_setopt($handle, CURLOPT_RETURNTRANSFER, true);
 
   if (!empty($js = curl_exec($handle))) 
-    file_put_contents($path . 'tailwindcss-3.3.5.js', $js) or $errors['JS-TAILWIND'] = $url . ' returned empty.';
+    file_put_contents("{$path}tailwindcss-3.3.5.js", $js) or $errors['JS-TAILWIND'] = "$url returned empty.";
 }
 ?>
 

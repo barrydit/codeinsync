@@ -10,17 +10,17 @@ ini_set('display_startup_errors', 'true');
 ini_set('error_log', (is_dir($path = dirname(__DIR__, 1) . DIRECTORY_SEPARATOR . 'config') ? dirname($path, 1) . DIRECTORY_SEPARATOR . 'error_log' : 'error_log'));
 ini_set('log_errors', 'true');
 
-if (is_readable($path = ini_get('error_log')) && filesize($path) >= 0 ) {
+if (is_readable($path = ini_get('error_log')) && filesize($path) >= 0 ) 
   if (strtoupper(substr(PHP_OS, 0, 3)) === 'WIN') {
     $errors['ERROR_PATH'] = $path;
-    $errors['ERROR_LOG'] = shell_exec('powershell Get-Content -Tail 10 ' . $path);
+    $errors['ERROR_LOG'] = shell_exec("powershell Get-Content -Tail 10 $path");
   } else
-    $errors['ERROR_LOG'] = shell_exec('sudo tail ' . $path);
+    $errors['ERROR_LOG'] = shell_exec("sudo tail $path");
   if (isset($_GET[$error_log = basename(ini_get('error_log'))]) && $_GET[$error_log] == 'unlink') {
     unlink($path);
-    exit('Error_log completely removed.'); // header('Location: ' . APP_WWW)
+    exit("Error_log completely removed."); // header('Location: ' . APP_WWW)
   }
-}
+
 
 ini_set('xdebug.remote_enable', '0');
 ini_set('xdebug.profiler_enable', '0');
@@ -38,13 +38,11 @@ if (count(get_included_files()) == ((version_compare(PHP_VERSION, '5.0.0', '>=')
 endif;
 
 // Leave the forward slashes off
-define('DOMAIN_EXPR', '(?:[a-z]+\:\/\/)?(?:[a-z0-9\-]+\.)+[a-z]{2,6}(?:\/\S*)?'); // /(?:\.(?:([-a-z0-9]+){1,}?)?)?\.[a-z]{2,6}$/
+const DOMAIN_EXPR = '(?:[a-z]+\:\/\/)?(?:[a-z0-9\-]+\.)+[a-z]{2,6}(?:\/\S*)?'; // /(?:\.(?:([-a-z0-9]+){1,}?)?)?\.[a-z]{2,6}$/';
 
 define('PHP_EXEC', '/usr/bin/php');
 
 $errors = []; // (object)
-
-  // file_get_contents($path)
 
 //die(var_dump($_SERVER['PHP_SELF'] . DIRECTORY_SEPARATOR . basename($_SERVER['PHP_SELF'])));
 
@@ -129,7 +127,7 @@ if (!empty($_GET['client']) && !empty($_GET['domain'])) {
 
 }// else { if (isset($_GET['path']) && is_dir(APP_PATH . $_GET['path'])) $path = $_GET['path']; } 
 
-!defined('APP_ROOT') and define('APP_ROOT', $path = (realpath(APP_PATH . $path) ? $path : null )); // dirname(APP_SELF, (basename(getcwd()) != 'public' ?: 2))
+!defined('APP_ROOT') and define('APP_ROOT', $path = realpath(APP_PATH . $path) ? $path : null); // dirname(APP_SELF, (basename(getcwd()) != 'public' ?: 2))
 
 //if (APP_ROOT != '') {}
 
@@ -142,15 +140,19 @@ $paths = array_merge(array_filter(glob(__DIR__ . DIRECTORY_SEPARATOR . 'classes/
 
 while ($path = array_shift($paths)) {
   if ($path = realpath($path))
-    require_once($path);
+    require_once $path;
   else die(var_dump(basename($path) . ' was not found. file=classes/' . basename($path)));
 }
 
-if ($path = (is_file(__DIR__ . DIRECTORY_SEPARATOR . 'functions.php') ? __DIR__ . DIRECTORY_SEPARATOR . 'functions.php' : (is_file('config/functions.php') ? 'config/functions.php' : 'functions.php'))) // is_file('config/constants.php')) 
-  require_once($path);
-else die(var_dump($path . ' was not found. file=functions.php'));
+if ($path = is_file(__DIR__ . DIRECTORY_SEPARATOR . 'functions.php') ? __DIR__ . DIRECTORY_SEPARATOR . 'functions.php' : (is_file('config/functions.php') ? 'config/functions.php' : 'functions.php')) {
+  require_once $path;
+} else {
+  die(var_dump("$path was not found. file=functions.php"));
+}
 
-!function_exists('dd') and $errors['FUNCTIONS'] = 'functions.php failed to load. Therefor dd() does not exist.';
+if (!function_exists('dd')) {
+  $errors['FUNCTIONS'] = 'functions.php failed to load. Therefore dd() does not exist.';
+}
 //else dd('test');
 
 // dd(getenv('PATH') . ' -> ' . PATH_SEPARATOR);   
@@ -328,7 +330,7 @@ if (isset($_GET['project'])) {
   //require_once('composer.php');
   //require_once('project.php');
 
-if (isset($_GET['app']) && $_GET['app'] == 'project') require_once('app.project.php');
+if (isset($_GET['app']) && $_GET['app'] == 'project') require_once 'app.project.php';
 
 header("Cache-Control: no-store, no-cache, must-revalidate, max-age=0");
 header("Pragma: no-cache");
@@ -393,7 +395,7 @@ echo \$linechart->chart();
 \$output = ob_get_clean();
 ob_end_clean();
 
-\$output = (\$output == '' ? ' ' : \$output);
+\$output = (\$output == '' ? 'ï¿½' : \$output);
 
 return <<<END
 <!DOCTYPE html>
@@ -448,15 +450,24 @@ if (basename($dir = getcwd()) != 'config') {
     chdir('../');
 
   chdir(APP_PATH . APP_ROOT);
-  
-  //dd(APP_PATH . APP_ROOT . '.git/config');
-  if (is_file(APP_PATH . APP_ROOT . '.env')) {
-    $env = parse_ini_file(APP_PATH . APP_ROOT . '.env', true);
 
+  //dd(APP_PATH . APP_ROOT . '.git/config');
+  if (is_file($file = APP_PATH . APP_ROOT . '.env')) {
+    $env = parse_ini_file(APP_PATH . APP_ROOT . '.env', true);
+    $iniString = '';
     if (!empty($env))
-      foreach($env as $key => $env_var) {
-        $_ENV[$key] = $env_var; // putenv($key.'='.$env_var);
+      foreach($env as $key => $value) {
+        $_ENV[$key] = $value; // putenv($key.'='.$env_var);
+        if (is_array($value)) {
+          $iniString .= "[$key]\n";
+          foreach ($value as $nestedKey => $nestedValue) {
+              $iniString .= "$nestedKey = $nestedValue\n";
+          }
+        } else {
+          $iniString .= "$key = $value\n";
+        }
       }
+      file_put_contents($file, $iniString);
   }
 
   $previousFilename = '';
@@ -505,7 +516,7 @@ if (basename($dir = getcwd()) != 'config') {
 
     $currentFilename = substr(basename($includeFile), 0, -4);
     
-      //$pattern = '/^' . preg_quote($previousFilename, '/')  . /*_[a-zA-Z0-9-]*/'(_\.+)?\.php$/'; // preg_match($pattern, $currentFilename)
+    // $pattern = '/^' . preg_quote($previousFilename, '/')  . /*_[a-zA-Z0-9-]*/'(_\.+)?\.php$/'; // preg_match($pattern, $currentFilename)
 
     if (!empty($previousFilename) && strpos($currentFilename, $previousFilename) !== false) continue;
 
@@ -517,12 +528,26 @@ if (basename($dir = getcwd()) != 'config') {
   }
 
 
-  $file = fopen(APP_PATH . APP_ROOT . '.env', 'w');
-  if (isset($_ENV) && !empty($_ENV))
-    foreach($_ENV as $key => $env_var) {
-      fwrite($file, $key.'='.(string) $env_var."\n");
-    }
-  fclose($file);
+  $iniString = '';
+  if (is_file($file = APP_PATH . APP_ROOT . '.env')) {
+    $env = parse_ini_file($file, true);
+    $iniString = '';
+    if (isset($_ENV) && !empty($env))
+      foreach($env as $key => $value) {
+        $_ENV[$key] = $value; // putenv($key.'='.$env_var);
+        if (is_array($value)) {
+          $iniString .= "[$key]\n";
+          foreach ($value as $nestedKey => $nestedValue) {
+            $iniString .= "$nestedKey = $nestedValue\n";
+          }
+        } else {
+          $iniString .= "$key = $value\n";
+        }
+      }
+    file_put_contents($file, $iniString);
+  }
+  
+  file_put_contents($file, $iniString);
   
   chdir(APP_PATH);
 
@@ -630,19 +655,21 @@ END
         if (!file_exists($includeFile)) {
           error_log("Failed to load a necessary file: " . $includeFile . PHP_EOL);
           break;
-        }
-
-        $currentFilename = substr(basename($includeFile), 0, -4);
+        } else {
+          $currentFilename = substr(basename($includeFile), 0, -4);
     
-        //$pattern = '/^' . preg_quote($previousFilename, '/')  . /*_[a-zA-Z0-9-]*/'(_\.+)?\.php$/'; // preg_match($pattern, $currentFilename)
+          //$pattern = '/^' . preg_quote($previousFilename, '/')  . /*_[a-zA-Z0-9-]*/'(_\.+)?\.php$/'; // preg_match($pattern, $currentFilename)
 
-        if (!empty($previousFilename) && strpos($currentFilename, $previousFilename) !== false) {
+          if (!empty($previousFilename) && strpos($currentFilename, $previousFilename) !== false) {
             continue;
+          } else {
+            // dd('file:'.$currentFilename,false);
+
+            require_once $includeFile;
+
+            $previousFilename = $currentFilename;
+          }
         }
-
-        require_once $includeFile;
-
-        $previousFilename = $currentFilename;
       }
 
     } else if (!in_array($path = realpath('config.php'), get_required_files())) {
@@ -804,7 +831,7 @@ $dotenv->safeLoad();
 $dotenv = Dotenv\Dotenv::createImmutable(dirname(__DIR__, 1));
 $dotenv->safeLoad();
 */
-define('APP_ERRORS', $errors ?? (($error = ob_get_contents()) == null ? null : 'ob_get_contents() maybe populated/defined/errors... error=' . $error ));
+define('APP_ERRORS', $errors ?? (($error = ob_get_contents()) == null ? null : "ob_get_contents() maybe populated/defined/errors... error=$error" ));
 ob_end_clean();
 
 

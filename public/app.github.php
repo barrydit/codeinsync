@@ -301,10 +301,11 @@ $dom->appendChild($elm);
 //$dom->saveHTML($dom->documentElement);
  
 //echo 
+$dom = '';
 
 //check if file is included or accessed directly
 if (__FILE__ == get_required_files()[0] || in_array(__FILE__, get_required_files()) && isset($_GET['app']) && $_GET['app'] == 'php' && APP_DEBUG)
   Shutdown::setEnabled(false)->setShutdownMessage(function() use($dom) {
 
-      return $dom->saveHTML() ?? file_get_contents("https://github.com/barrydit/composer_app"); // $dom->saveHTML(); /* eval('? >' . $project_code); // -wow */
+      return file_get_contents("https://github.com/barrydit/composer_app") ?? $dom->saveHTML() ; // $dom->saveHTML(); /* eval('? >' . $project_code); // -wow */
     })->shutdown(); // die();

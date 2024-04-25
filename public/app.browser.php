@@ -3,8 +3,8 @@
 if (__FILE__ == get_required_files()[0])
   if ($path = (basename(getcwd()) == 'public')
     ? (is_file('../config.php') ? '../config.php' : (is_file('../config/config.php') ? '../config/config.php' : null))
-    : (is_file('config.php') ? 'config.php' : (is_file('config/config.php') ? 'config/config.php' : null))) require_once($path); 
-else die(var_dump($path . ' path was not found. file=config.php'));
+    : (is_file('config.php') ? 'config.php' : (is_file('config/config.php') ? 'config/config.php' : null))) require_once $path; 
+else die(var_dump("$path path was not found. file=config.php"));
 
 // dd(APP_PATH . '  ' . APP_ROOT);
 // PHP_URL_SCHEME, PHP_URL_HOST, PHP_URL_PORT, PHP_URL_USER, PHP_URL_PASS, PHP_URL_PATH, PHP_URL_QUERY or PHP_URL_FRAGMENT
@@ -171,7 +171,7 @@ if (is_file(APP_PATH . APP_BASE['var'] . 'github.com.html')) {
     curl_setopt($handle, CURLOPT_RETURNTRANSFER, true);
 
     if (!empty($html = curl_exec($handle))) 
-      file_put_contents(APP_PATH . APP_BASE['var'] . 'github.com.html', $html) or $errors['COMPOSER_LATEST'] = $url . ' returned empty.';
+      file_put_contents(APP_PATH . APP_BASE['var'] . 'github.com.html', $html) or $errors['COMPOSER_LATEST'] = "$url returned empty.";
   }
 } else {
   $url = 'https://github.com/barrydit/composer_app';
@@ -179,7 +179,7 @@ if (is_file(APP_PATH . APP_BASE['var'] . 'github.com.html')) {
   curl_setopt($handle, CURLOPT_RETURNTRANSFER, true);
 
   if (!empty($html = curl_exec($handle))) 
-    file_put_contents(APP_PATH . APP_BASE['var'] . 'github.com.html', $html) or $errors['COMPOSER_LATEST'] = $url . ' returned empty.';
+    file_put_contents(APP_PATH . APP_BASE['var'] . 'github.com.html', $html) or $errors['COMPOSER_LATEST'] = "$url returned empty.";
 }
 
 /*

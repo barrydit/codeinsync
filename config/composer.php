@@ -1,7 +1,8 @@
 <?php
+use Composer\InstalledVersions;
 
-define('COMPOSER_EXPR_NAME', '/([a-z0-9](?:[_.-]?[a-z0-9]+)*)\/([a-z0-9](?:(?:[_.]|-{1,2})?[a-z0-9]+)*)/'); // name
-define('COMPOSER_EXPR_VER', '/v?\d+(?:\.\d+){0,3}|dev-.*/'); // version
+const COMPOSER_EXPR_NAME = '/([a-z0-9](?:[_.-]?[a-z0-9]+)*)\/([a-z0-9](?:(?:[_.]|-{1,2})?[a-z0-9]+)*)/'; // name
+const COMPOSER_EXPR_VER = '/v?\d+(?:\.\d+){0,3}|dev-.*/'; // version
 
 //composer config --global --auth --unset github-oauth.github.com
 //composer config --global github-oauth.github.com __TOKEN__
@@ -26,15 +27,96 @@ foreach ($array = preg_split("/\r\n|\n|\r/", exec('sudo /usr/local/bin/composer 
 
 // '(win) set VARIABLE / (linux/macos) export VARIABLE '
 
-define('COMPOSER_ALLOW_SUPERUSER', true);
+const COMPOSER_ALLOW_SUPERUSER = true;
 putenv('COMPOSER_ALLOW_SUPERUSER=' . (int) COMPOSER_ALLOW_SUPERUSER);
 
-define('COMPOSER_ALLOW_XDEBUG', false); // didn't work
+const COMPOSER_ALLOW_XDEBUG = false; // didn't work
 putenv('COMPOSER_ALLOW_XDEBUG=' . (int) COMPOSER_ALLOW_XDEBUG);
 
 putenv('COMPOSER_DISABLE_XDEBUG_WARN=' . (int) true);
 
 //dd(getenv('COMPOSER_ALLOW_SUPERUSER'));
+
+class ComposerConfig {
+  private $name;
+  private $version;
+  private $description;
+  // Add more properties as needed
+  
+  public function __construct($config) {
+      $this->name = $config['name'];
+      $this->version = $config['version'];
+      $this->description = $config['description'];
+      // Assign more properties from the config array
+
+      foreach(['name', 'version', 'description', 'type', 'keywords', 'homepage', 'readme', 'time', 'license', 'authors', 'repositories', 'require', 'require-dev', 'autoload', 'autoload-dev', 'minimum-stability', 'prefer-stable', 'config'] as $property) {
+          if (!isset($this->{$property})) {
+              // throw new Exception("Missing property: $property");
+              __set($property, '');
+
+              if ($property == 'require' || $property == 'require-dev') {
+                $this->{$property} = new stdClass();
+              } elseif ($property == 'autoload' || $property == 'autoload-dev') {
+                $this->{$property} = new stdClass();
+              } elseif ($property == 'repositories') {
+                $this->{$property} = new stdClass();
+              } elseif ($property == 'authors') {
+                $this->{$property} = new stdClass();
+                $this->{$property}[] = new stdClass();
+                $lastAuthor = end($this->{$property});
+                $lastAuthor->name = $_ENV['COMPOSER']['AUTHOR'];
+                $lastAuthor->email = $_ENV['COMPOSER']['EMAIL'];
+              } elseif ($property == 'config') {
+                $this->{$property} = new stdClass();
+                $this->{$property}->{'platform-check'} = false;
+                $this->{$property}->{'platform'} = new stdClass();
+                $this->{$property}->{'platform'}->{'php'} = '7.4.0';
+              } else {
+                $this->{$property} = '';
+              }
+          }
+      }
+  }
+  
+  // Add getter methods for each property
+  
+  public function getName() {
+      return $this->name;
+  }
+  
+  public function getVersion() {
+      return $this->version;
+  }
+  
+  public function getDescription() {
+      return $this->description;
+  }
+  
+  // Add more getter methods for other properties
+  
+  // Add setter methods if needed
+  
+  // Add other methods as needed
+  
+  public function __get($property) {
+      $property = str_replace('-', '_', $property);
+      $method = 'get' . ucfirst($property);
+      if (method_exists($this, $method)) {
+          return $this->$method();
+      }
+      return null;
+  }
+  
+  public function __set($property, $value) {
+      $property = str_replace('-', '_', $property);
+      $method = 'set' . ucfirst($property);
+      if (method_exists($this, $method)) {
+          $this->$method($value);
+      }
+  }
+}
+
+
 
 class composerSchema {
   public $name;
@@ -52,6 +134,11 @@ class composerSchema {
 //public $require_dev;  // using {'require-dev'}
   public $autoload;
 //public $autoload_dev;  // using {'autoload-dev'}
+
+  /**
+   */
+  public function __construct() {
+  }
 }
 
 //dd(getcwd());
@@ -67,7 +154,7 @@ if (!function_exists('get_declared_classes')) {
       if (preg_match('/(ComposerAutoloaderInit[a-f0-9]+)/', $class, $matches)) 
         break;
       if ($class == end($classes))
-        $errors['COMPOSER-AutoloaderInit'] = 'ComposerAutloaderInit2 failed to be matched.' . "\n";
+        $errors['COMPOSER-AutoloaderInit'] = "ComposerAutloaderInit2 failed to be matched.\n";
     }
 
 if (isset($matches[1])) {
@@ -91,17 +178,17 @@ if (isset($matches[1])) {
 $loadedLibraries = [];
 
 // Load a library
-if (class_exists('Composer\Autoload\ClassLoader')) {
+if (class_exists(Composer\Autoload\ClassLoader::class)) {
     $loadedLibraries[] = 'Composer\Autoload\ClassLoader';
 }
 
 // Check if a library is loaded
-if (in_array('Composer\Autoload\ClassLoader', $loadedLibraries)) {
+if (in_array(Composer\Autoload\ClassLoader::class, $loadedLibraries)) {
     // The library is loaded
 //  echo 'Library found.';
     //$loadedLibraries;
     
-    $installedPackages = \Composer\InstalledVersions::getInstalledPackages();
+    $installedPackages = InstalledVersions::getInstalledPackages();
 }
 
 //dd();

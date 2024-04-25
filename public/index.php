@@ -29,25 +29,31 @@
       //dd(get_required_files(), false);
       //dd($_ENV);
       if (isset($_POST['environment'])) {
-        if ($_POST['environment'] == 'product')
+      switch ($_POST['environment']) {
+        case 'product':
           define('APP_ENV', 'production');
-        elseif ($_POST['environment'] == 'develop')
+          break;
+        case 'develop':
           define('APP_ENV', 'development');
-        elseif ($_POST['environment'] == 'math')
+          break;
+        case 'math':
           define('APP_ENV', 'math');
-        else
+          break;
+        default:
           define('APP_ENV', 'production');
+          break;
+      }
         $_ENV['APP_ENV'] = APP_ENV;
         $file = fopen(APP_PATH . APP_ROOT . '.env', 'w');
         if (isset($_ENV) && !empty($_ENV))
           foreach($_ENV as $key => $env_var) {
-            fwrite($file, $key.'='.$env_var."\n");
+            fwrite($file, "$key=$env_var\n");
           }
         fclose($file);
       }
 
-      break;
-    case 'GET':
+    break;
+  case 'GET':
       if (isset($_ENV['APP_ENV']) && !empty($_ENV)) define('APP_ENV', $_ENV['APP_ENV']);
       //if (!empty($_GET['path']) && !isset($_GET['app'])) !!infinite loop
       //  exit(header('Location: ' . APP_WWW . $_GET['path']));
@@ -115,12 +121,12 @@
   /**/
 
  if (defined('APP_ENV') and APP_ENV == 'production' )
-   require_once('idx.product.php');
+   require_once 'idx.product.php';
  elseif (defined('APP_ENV') and APP_ENV == 'development')
-   require_once('idx.develop.php');
+   require_once 'idx.develop.php';
  elseif (defined('APP_ENV') and APP_ENV == 'math')
-   require_once('idx.math.php');
+   require_once 'idx.math.php';
  else {
    !defined('APP_ENV') and define('APP_ENV', 'production');
-   require_once('idx.product.php');
+   require_once 'idx.product.php';
  }
