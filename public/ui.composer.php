@@ -1,15 +1,18 @@
 <?php
 
+
 if (__FILE__ == get_required_files()[0])
   if ($path = (basename(getcwd()) == 'public')
-    ? (is_file('../config.php') ? '../config.php' : (is_file('../config/config.php') ? '../config/config.php' : null))
-    : (is_file('config.php') ? 'config.php' : (is_file('config/config.php') ? 'config/config.php' : null))) require_once($path); 
-  else die(var_dump($path . ' path was not found. file=config.php'));
-else {
-  if ($path = (is_file('config/composer.php') ? 'config/composer.php' : '') )
-    require_once($path); 
-  else die(var_dump($path . ' path was not found. file=composer.php'));
-}
+    ? (is_file('config.php') ? 'config.php' : '../config/config.php') : '') require_once $path;
+  else die(var_dump("$path path was not found. file=config.php"));
+else 
+  if (is_file($path = 'config/composer.php') ? $path : '' )
+    require_once $path; 
+  else die(var_dump("$path path was not found. file=composer.php"));
+
+
+
+// dd(get_required_files());
 // require 'vendor/autoload.php'; // Include Composer's autoloader
 
 // dd(get_required_files());
@@ -159,7 +162,7 @@ END
 
   } elseif (isset($_POST['composer']['config']) && !empty($_POST['composer']['config'])) {
 
-    $composer = new composerSchema;
+    $composer = new composerConfig();
 
 /*
       if (isset($_POST['composer']['config']['version']) && preg_match(COMPOSER_EXPR_VER, $_POST['composer']['config']['version']))
@@ -525,7 +528,7 @@ if (defined('COMPOSER') && isset(COMPOSER['json']->require))
   foreach (COMPOSER['json']->require as $key => $require) {
     if (preg_match('/.*\/.*:.*/', $key . ':' . $require)) 
       if (preg_match('/(.*)\/.*/', $key, $match))
-        if (!empty($match) && !is_dir('vendor/'.$match[1].'/')) $count++;
+        if (!empty($match) && !is_dir(APP_PATH . APP_BASE['vendor'] . $match[1].'/')) $count++;
   }
 ?>      
       <div id="app_composer-frameMenu" class="app_composer-frame-container <?=($count >= 1 ? '' : 'selected' ); ?> absolute" style="background-color: rgb(225,196,151,.75); margin-top: 8px;">

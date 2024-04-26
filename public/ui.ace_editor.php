@@ -6,12 +6,10 @@
 
 //$errors->{'TEXT_MANAGER'} = $path . "\n" . 'File Modified:    Rights:    Date of creation: ';
 
-
 if (__FILE__ == get_required_files()[0])
   if ($path = (basename(getcwd()) == 'public')
-    ? (is_file('../config.php') ? '../config.php' : (is_file('../config/config.php') ? '../config/config.php' : null))
-    : (is_file('config.php') ? 'config.php' : (is_file('config/config.php') ? 'config/config.php' : null))) require_once($path); 
-else die(var_dump($path . ' path was not found. file=config.php'));
+    ? (is_file('config.php') ? 'config.php' : '../config/config.php') : '') require_once $path;
+  else die(var_dump("$path path was not found. file=config.php"));
 
 //dd($_GET);
 

@@ -2,8 +2,8 @@
 
 if (__FILE__ == get_required_files()[0]) //die(getcwd());
   if ($path = (basename(getcwd()) == 'public')
-    ? (is_file('config.php') ? 'config.php' : '../config/config.php') : '') require_once($path);
-  else die(var_dump($path . ' path was not found. file=config.php'));
+    ? (is_file('config.php') ? 'config.php' : '../config/config.php') : '') require_once $path;
+  else die(var_dump("$path path was not found. file=config.php"));
 
 if ($path = realpath(APP_PATH . APP_ROOT . 'projects/project.php')) {
   // file_put_contents($path, $_POST['contents']);

@@ -2,11 +2,10 @@
 
 //require_once('session.php');
 
-if (__FILE__ == get_required_files()[0])
+if (__FILE__ == get_required_files()[0]) //die(getcwd());
   if ($path = (basename(getcwd()) == 'public')
-    ? (is_file('../config.php') ? '../config.php' : (is_file('../config/config.php') ? '../config/config.php' : null))
-    : (is_file('config.php') ? 'config.php' : (is_file('config/config.php') ? 'config/config.php' : null))) require_once($path); 
-else die(var_dump($path . ' path was not found. file=config.php'));
+    ? (is_file('config.php') ? 'config.php' : '../config/config.php') : '') require_once $path;
+  else die(var_dump("$path path was not found. file=config.php"));
 
 $path = $_SERVER['DOCUMENT_ROOT'] . parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH);
 

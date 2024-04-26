@@ -7,7 +7,11 @@
 phpinfo();
 
 die();
-require('config/config.php');
+
+if (__FILE__ == get_required_files()[0])
+  if ($path = (basename(getcwd()) == 'public')
+    ? (is_file('config.php') ? 'config.php' : '../config/config.php') : '') require_once $path;
+  else die(var_dump("$path path was not found. file=config.php"));
 
 function calculateSum($a, $b) {
     return $a + $b;

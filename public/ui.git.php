@@ -2,18 +2,13 @@
 
 switch (__FILE__) {
   case get_required_files()[0]:
-    if (
-      $path = (basename(getcwd()) == 'public')
-      ? (is_file('../config.php') ? '../config.php' : (is_file('../config/config.php') ? '../config/config.php' : null))
-      : (is_file('config.php') ? 'config.php' : (is_file('config/config.php') ? 'config/config.php' : null))
-    )
-      require_once $path;
-    else
-      die(var_dump("$path path was not found. file=config.php"));
+    if ($path = (basename(getcwd()) == 'public') ? (is_file('config.php') ? 'config.php' : '../config/config.php') : '') require_once $path;
+    else die(var_dump("$path path was not found. file=config.php"));
     break;
   default:
     break;
 }
+
 
 /* https://stackoverflow.com/questions/73026623/how-to-ignore-or-permanently-block-the-files-which-contain-date-or-datetime-in */
 

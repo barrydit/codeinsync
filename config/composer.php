@@ -43,7 +43,7 @@ class ComposerConfig {
   private $description;
   // Add more properties as needed
   
-  public function __construct($config) {
+  public function __construct($config = []) {
       $this->name = $config['name'];
       $this->version = $config['version'];
       $this->description = $config['description'];
@@ -143,10 +143,13 @@ class composerSchema {
 
 //dd(getcwd());
 
-// require_once(APP_PATH . APP_ROOT . 'vendor/autoload.php');
+// require_once(APP_PATH . APP_ROOT . APP_BASE['vendor'] . 'autoload.php');
+
+if (!defined('APP_CONFIG') || !in_array(APP_CONFIG, get_required_files()))
+  die(APP_CONFIG . ' is missing. Presumed that this file was opened on its own.');
 
 if (!function_exists('get_declared_classes')) {
-  $autoloadContent = file_get_contents('vendor/autoload.php');
+  $autoloadContent = file_get_contents(APP_ROOT . APP_BASE['vendor'] . 'autoload.php');
   if (!preg_match('/class\s+ComposerAutoloaderInit([a-f0-9]+)/', $autoloadContent, $matches))
     $errors['COMPOSER-AutoloaderInit'] = 'ComposerAutoloaderInit failed to be matched.';
 } else if (!empty($classes = get_declared_classes()))
@@ -481,7 +484,7 @@ else (@!touch($$c_or_p->path . '/composer.json')? define('COMPOSER_JSON', $$c_or
 } // else { }
 
 defined('COMPOSER_JSON')
-      or define('COMPOSER_JSON', ['json' => (is_file(APP_PATH . APP_ROOT . 'composer.json') ? file_get_contents(APP_PATH . APP_ROOT . 'composer.json') : '{}'), 'path' => APP_PATH . APP_ROOT . 'composer.json']);
+      or define('COMPOSER_JSON', ['json' => (is_file(APP_ROOT . 'composer.json') ? file_get_contents(APP_ROOT . 'composer.json') : '{}'), 'path' => APP_PATH . APP_ROOT . 'composer.json']);
 
 ob_start(); 
 
@@ -492,9 +495,9 @@ defined('COMPOSER_INIT_PARAMS')
   or define('COMPOSER_INIT_PARAMS', /*<<<TEXT TEXT*/ ob_get_contents());
 ob_end_clean();
 
-if (!realpath('vendor')) {
+if (!realpath(APP_PATH . APP_ROOT . APP_BASE['vendor'])) {
   exec(COMPOSER_INIT_PARAMS);
-} elseif (!realpath('vendor/autoload.php')) {
+} elseif (!realpath(APP_PATH . APP_ROOT . APP_BASE['vendor'] . 'autoload.php')) {
     exec((strtoupper(substr(PHP_OS, 0, 3)) === 'WIN' ? '' : 'sudo ') . COMPOSER_EXEC['bin'] . ' update', $output, $returnCode) or $errors['COMPOSER-INIT-UPDATE'] = $output;
     exec((strtoupper(substr(PHP_OS, 0, 3)) === 'WIN' ? '' : 'sudo ') . COMPOSER_EXEC['bin'] . ' dump-autoload', $output, $returnCode) or $errors['COMPOSER-DUMP-AUTOLOAD'] = $output;
   }
@@ -695,7 +698,7 @@ if (preg_match($pattern, $node[0]->nodeValue, $matches)) {
 if (defined('COMPOSER_JSON') && !empty(COMPOSER_JSON['json']))
   $composer_obj = json_decode(COMPOSER_JSON['json']);
 else {
-  $composer_obj = json_decode(json_encode(new composerSchema(), true)); 
+  $composer_obj = json_decode(json_encode(new composerConfig(), true)); 
   $composer_obj->{'require'} = new stdClass(); //(array) ['php' => '7.4||8.1'];
   $composer_obj->{'require'}->{'php'} = '7.4||8.1';
   $composer_obj->{'require-dev'} = new stdClass();
@@ -731,7 +734,7 @@ fclose($pipes[2]);
 
   }
 
-  if (!is_dir('vendor') || !is_file('vendor/autoload.php'))
+  if (!is_dir(APP_PATH . APP_ROOT . APP_BASE['vendor']) || !is_file(APP_PATH . APP_ROOT . APP_BASE['vendor'] . 'autoload.php'))
     exec((strtoupper(substr(PHP_OS, 0, 3)) === 'WIN' ? '' : 'sudo ') . COMPOSER_EXEC['bin'] . ' dump-autoload', $output, $returnCode) or $errors['COMPOSER-DUMP-AUTOLOAD'] = $output;
   else
     if (!empty($composer_obj->{'require'}))
@@ -746,17 +749,17 @@ fclose($pipes[2]);
           exec("composer show $package", $output, $returnCode);
 
           if ($returnCode !== 0) {
-            if (isset($composer_obj->{'require'}->{$package}) && is_dir('vendor/'.$package)) continue;
+            if (isset($composer_obj->{'require'}->{$package}) && is_dir(APP_PATH . APP_ROOT . APP_BASE['vendor'] . $package)) continue;
             if (!empty($composer_obj->{'repositories'}))
               foreach ($composer_obj->{'repositories'} as $key => $repo) { //unset($composer_obj->{'repositories'});
-                if (!is_dir('vendor/'.$package)) continue; // future: consider type->path and/or checking locally and unsetting.
+                if (!is_dir(APP_PATH . APP_ROOT . APP_BASE['vendor'] .$package)) continue; // future: consider type->path and/or checking locally and unsetting.
                 //strcmp("git.php", basename($package) !== 0);
-                if (!in_array('vendor/' . $package, array_filter(glob('vendor/' . dirname($package) . '/*'), 'is_dir')))
-                  if ($oldpath = preg_grep('/^vendor\/' . preg_quote($package, '/') . '/i', glob('vendor/' . dirname($package) . '/*'))[0])
-                    rename($oldpath, 'vendor/' . $package) or $errors['COMPOSER-INSTALL'] = $package . ' has a vendor/package installed, but the letter case spelling did not pass.';
+                if (!in_array(APP_PATH . APP_ROOT . APP_BASE['vendor'] . $package, array_filter(glob(APP_PATH . APP_ROOT . APP_BASE['vendor'] . dirname($package) . '/*'), 'is_dir')))
+                  if ($oldpath = preg_grep('/^vendor\/' . preg_quote($package, '/') . '/i', glob(APP_PATH . APP_ROOT . APP_BASE['vendor'] . dirname($package) . '/*'))[0])
+                    rename($oldpath, APP_PATH . APP_ROOT . APP_BASE['vendor'] . $package) or $errors['COMPOSER-INSTALL'] = $package . ' has a vendor/package installed, but the letter case spelling did not pass.';
                 $repository = new stdClass();
                 $repository->type = 'path';
-                $repository->url = 'vendor/' . $package;
+                $repository->url = APP_BASE['vendor'] . $package;
                 if ($repository == $repo) continue;
                 else if (!is_dir($repo->url)) unset($composer_obj->{'repositories'}[$key]);
                 else $composer_obj->repositories[] = $repository;
@@ -764,7 +767,7 @@ fclose($pipes[2]);
             else {
               $repository = new stdClass();
               $repository->type = 'path';
-              $repository->url = 'vendor/' . $package;
+              $repository->url = APP_BASE['vendor'] . $package;
               if (is_dir($repository->url)) $composer_obj->repositories[] = $repository;
             }
           } // else { }
@@ -787,12 +790,12 @@ fclose($pipes[2]);
 
     $vendors = $dirs_diff = [];
 
-//$dirs = array_filter( glob( 'vendor/*'), 'is_dir');
+//$dirs = array_filter( glob( APP_BASE['vendor'] . '*'), 'is_dir');
     if (defined('COMPOSER_VENDORS'))
       foreach (COMPOSER_VENDORS as $vendor => $packages) {
         if ($vendor == basename('bin')) continue;
         if ($vendor == 'barrydit') continue;
-        if (in_array(APP_ROOT . 'vendor/' . $vendor, array_filter(glob(APP_ROOT . 'vendor/' . $vendor . ''), 'is_dir'))) continue;
+        if (in_array(APP_ROOT . APP_BASE['vendor'] . $vendor, array_filter(glob(APP_ROOT . APP_BASE['vendor'] . $vendor . ''), 'is_dir'))) continue;
         else $dirs_diff[] = basename($vendor);
 
         if (!isset($uniqueNames[$vendor])) {
@@ -922,7 +925,7 @@ foreach (COMPOSER['json']->require as $key => $value) {
     if (isset(COMPOSER['json']->require->{'composer/composer'}) && $value === COMPOSER['json']->require->{'composer/composer'}) {
         //echo "The key is: $key";
     defined('VENDOR_JSON')
-      or define('VENDOR_JSON', ['json' => (is_file(APP_PATH . APP_ROOT . 'vendor/' . $key . '/composer.json') ? file_get_contents(APP_PATH . APP_ROOT . 'vendor/' . $key . '/composer.json') : '{}'), 'path' => APP_PATH . APP_ROOT . 'vendor/' . $key . '/composer.json']);
+      or define('VENDOR_JSON', ['json' => (is_file(APP_PATH . APP_ROOT . APP_BASE['vendor'] . $key . '/composer.json') ? file_get_contents(APP_PATH . APP_ROOT . APP_BASE['vendor'] . $key . '/composer.json') : '{}'), 'path' => APP_PATH . APP_ROOT . APP_BASE['vendor'] . $key . '/composer.json']);
 
 if (realpath(VENDOR_JSON['path']))
 defined('VENDOR_JSON')
@@ -942,7 +945,7 @@ defined('VENDOR_JSON')
 //dd(COMPOSER['json']->{'require'}->{'php'}); 
 
 if (!defined('VENDOR_JSON') && isset(COMPOSER['json']->{'require'}->{'composer'}))
-  define('VENDOR_JSON', ['json' => (is_file(APP_PATH . APP_ROOT . 'vendor/composer/composer.json') ? file_get_contents(APP_PATH . APP_ROOT .'vendor/composer/composer.json') : '{}'), 'path' => APP_PATH . APP_ROOT . 'vendor/composer/composer.json']);
+  define('VENDOR_JSON', ['json' => (is_file(APP_PATH . APP_ROOT . APP_BASE['vendor'] . 'composer/composer.json') ? file_get_contents(APP_PATH . APP_ROOT . APP_BASE['vendor'] . 'composer/composer.json') : '{}'), 'path' => APP_PATH . APP_ROOT . APP_BASE['vendor'] . 'composer/composer.json']);
 
 //dd(COMPOSER);
 //dd(COMPOSER);
