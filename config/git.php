@@ -53,7 +53,7 @@ if (isset($_ENV['GITHUB']['REMOTE_SHA']) && $latest_local_commit_sha !== $_ENV['
   } else {
     $errors['GIT_UPDATE'] .= "Failed to retrieve commit information.\n";
   }
-} else if (date('Y-m-d', filemtime(APP_PATH . APP_ROOT . '.env')) != date('Y-m-d')) {
+} else if (is_file($file = APP_PATH . APP_ROOT . '.env') && date('Y-m-d', filemtime($file)) != date('Y-m-d')) {
   $errors['GIT_UPDATE'] = "Local main branch is not up-to-date with origin/main\n";
   $options = [
     'http' => [

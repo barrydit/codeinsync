@@ -749,9 +749,9 @@ $(document).ready(function() {
 <?php
 //dd(APP_PATH . APP_ROOT . '.git/config');
 
-if (is_file(APP_PATH . APP_ROOT . '.git/config')) {
+if (is_file($file = APP_PATH . APP_ROOT . '.git/config')) {
 
-$config = parse_ini_file(APP_PATH . APP_ROOT . '.git/config', true);
+$config = parse_ini_file($file, true);
 
 if (isset($config['remote origin']['url']) && preg_match('/(?:[a-z]+\:\/\/)?([^\s]+@)?((?:[a-z0-9\-]+\.)+[a-z]{2,6}(?:\/\S*))/', $config['remote origin']['url'], $matches))
   if (count($matches) >= 2) { ?>

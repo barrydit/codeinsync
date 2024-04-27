@@ -251,9 +251,9 @@ RewriteRule ^resources/(.*)$ ../resources/$1 [L]
 END
 );
 } elseif (dirname(APP_SELF) == __DIR__) {
-  if (!is_file(APP_PATH . '.htaccess'))
-    if (@touch(APP_PATH . '.htaccess'))
-      file_put_contents(APP_PATH. '.htaccess', <<<END
+  if (!is_file($file = APP_PATH . '.htaccess'))
+    if (@touch($file))
+      file_put_contents($file, <<<END
 RewriteEngine On
 
 # Check if the request is for an existing file in the resources/ directory
@@ -266,9 +266,9 @@ RewriteRule ^(.*)$ ./resources/$1 [L]
 END
 );
   
-  if (!is_file(APP_PATH . '.gitignore'))
-    if (@touch(APP_PATH . '.gitignore'))
-      file_put_contents(APP_PATH . '.gitignore', <<<END
+  if (!is_file($file = APP_PATH . '.gitignore'))
+    if (@touch($file))
+      file_put_contents($file, <<<END
 /var
 .env.*
 error_log
@@ -277,12 +277,12 @@ composer-setup.php
 END
 );
 
-  if (!is_file(APP_PATH . 'LICENSE'))
-    if (@touch(APP_PATH . 'LICENSE'))
+  if (!is_file($file = APP_PATH . 'LICENSE'))
+    if (@touch($file))
       if (check_http_200('http://www.wtfpl.net/txt/copying'))
-        file_put_contents(APP_PATH . 'LICENSE', file_get_contents('http://www.wtfpl.net/txt/copying'));
+        file_put_contents($file, file_get_contents('http://www.wtfpl.net/txt/copying'));
       else 
-        file_put_contents(APP_PATH . 'LICENSE', <<<END
+        file_put_contents($file, <<<END
 This is free and unencumbered software released into the public domain.
 
 Anyone is free to copy, modify, publish, use, compile, sell, or
@@ -335,16 +335,15 @@ if (isset($_GET['app']) && $_GET['app'] == 'project') require_once 'app.project.
 header("Cache-Control: no-store, no-cache, must-revalidate, max-age=0");
 header("Pragma: no-cache");
 
+if (!is_dir($path = APP_PATH . 'projects')) {
+  $errors['projects'] = 'projects/ directory does not exist.' . "\n";
+  mkdir($path, 0777, true);
+}
 
-$errors['projects'] = 'projects/ directory does not exist.';
-$errors['project.php'] = 'project.php does not exist.';
+if (!is_file($file = APP_PATH . 'projects/project.php')) {
+  $errors['project.php'] = 'project.php does not exist.';
 
-
-if (!is_dir(APP_PATH . APP_ROOT . 'projects')) 
-  mkdir(APP_PATH . APP_ROOT . 'projects');
-
-if (!is_file(APP_PATH . APP_ROOT . 'projects/project.php')) {
-  file_put_contents(APP_PATH . APP_ROOT . 'projects/project.php', '<?php ' . <<<END
+  file_put_contents($file, '<?php ' . <<<END
 
 //if (__FILE__ != get_required_files()[0])
 \$require = function(\$path) { require_once(\$path); };
@@ -451,23 +450,21 @@ if (basename($dir = getcwd()) != 'config') {
 
   chdir(APP_PATH . APP_ROOT);
 
-  //dd(APP_PATH . APP_ROOT . '.git/config');
+/*  
+  $file = fopen(APP_PATH . APP_ROOT . '.env', 'w');
+  if (isset($_ENV) && !empty($_ENV))
+    foreach($_ENV as $key => $env_var) {
+      fwrite($file, "$key=$env_var\n");
+    }
+  fclose($file);
+*/
+
   if (is_file($file = APP_PATH . APP_ROOT . '.env')) {
-    $env = parse_ini_file(APP_PATH . APP_ROOT . '.env', true);
-    $iniString = '';
+    $env = parse_ini_file($file, true);
     if (!empty($env))
       foreach($env as $key => $value) {
         $_ENV[$key] = $value; // putenv($key.'='.$env_var);
-        if (is_array($value)) {
-          $iniString .= "[$key]\n";
-          foreach ($value as $nestedKey => $nestedValue) {
-              $iniString .= "$nestedKey = $nestedValue\n";
-          }
-        } else {
-          $iniString .= "$key = $value\n";
-        }
       }
-      file_put_contents($file, $iniString);
   }
 
   $previousFilename = '';
@@ -526,28 +523,6 @@ if (basename($dir = getcwd()) != 'config') {
 
     $previousFilename = $currentFilename;
   }
-
-
-  $iniString = '';
-  if (is_file($file = APP_PATH . APP_ROOT . '.env')) {
-    $env = parse_ini_file($file, true);
-    $iniString = '';
-    if (isset($_ENV) && !empty($env))
-      foreach($env as $key => $value) {
-        $_ENV[$key] = $value; // putenv($key.'='.$env_var);
-        if (is_array($value)) {
-          $iniString .= "[$key]\n";
-          foreach ($value as $nestedKey => $nestedValue) {
-            $iniString .= "$nestedKey = $nestedValue\n";
-          }
-        } else {
-          $iniString .= "$key = $value\n";
-        }
-      }
-    file_put_contents($file, $iniString);
-  }
-  
-  file_put_contents($file, $iniString);
   
   chdir(APP_PATH);
 
@@ -836,37 +811,8 @@ ob_end_clean();
 
 
 
-  // dd(get_required_files());
-
-//var_dump(APP_ERRORS);
-
-
-
-
-//Shutdown::setEnabled(false)->setShutdownMessage(function() {
-//echo 'hello world';
-//})->shutdown();
-
 //(defined('APP_DEBUG') && APP_DEBUG) and $errors['APP_DEBUG'] = (bool) var_export(APP_DEBUG, APP_DEBUG); // print('Debug (Mode): ' . var_export(APP_DEBUG, true) . "\n");
-/*
-Shutdown::setEnabled(false)->setShutdownMessage(function() {
-      global $pdo, $session_save;
-      //if (defined('APP_INSTALL') && APP_INSTALL && $path = APP_PATH . 'install.php') // is_file('config/constants.php')) 
-      //    require_once($path);
 
-      defined('APP_END') or define('APP_END', microtime(true));
-      //include('checksum_md5.php'); // your_logger(get_included_files());
-      //unset($pdo);
-    
-      //echo "Executing shutdown function...\n";
-    })->shutdown();
-
-*/
-
-//Shutdown::create()->setEnabled(true)->shutdown();
-
-//$shutdown = new Shutdown();
-//$shutdown->setEnabled(true)->shutdown();
 
 
 

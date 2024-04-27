@@ -256,7 +256,7 @@ ob_start(); ?>
 ob_end_clean();
 
 //check if file is included or accessed directly
-if (__FILE__ == get_required_files()[0] || in_array(__FILE__, get_required_files()) && isset($_GET['app']) && $_GET['app'] == 'project' && APP_DEBUG)
+if (__FILE__ == get_required_files()[0] || in_array(__FILE__, get_required_files()) && isset($_GET['app']) && $_GET['app'] == 'backup' && APP_DEBUG)
   Shutdown::setEnabled(false)->setShutdownMessage(function() {
-      return eval('?>' . file_get_contents('project.php')); // -wow */
+      return '<!DOCTYPE html>'; // -wow */
     })->shutdown(); // die();ob_start(); ?>

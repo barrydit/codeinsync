@@ -11,6 +11,25 @@ class Shutdown {
     public function __construct() {
         $this->functions = [];
         defined('APP_END') or define('APP_END', microtime(true));
+
+        $iniString = '';
+        if (is_file($file = APP_PATH . APP_ROOT . '.env')) {
+          $env = parse_ini_file($file, true);
+          if (isset($_ENV) && !empty($env))
+            foreach($env as $key => $value) {
+              $_ENV[$key] = $value; // putenv($key.'='.$env_var);
+              if (is_array($value)) {
+                $iniString .= "[$key]\n";
+                foreach ($value as $nestedKey => $nestedValue) {
+                  $iniString .= "$nestedKey = $nestedValue\n";
+                }
+              } else {
+                $iniString .= "$key = $value\n";
+              }
+            }
+          file_put_contents($file, $iniString);
+        } else file_put_contents($file, $iniString);
+
         register_shutdown_function([$this, 'onShutdown']);
     }
 
@@ -36,7 +55,7 @@ class Shutdown {
         foreach ($this->functions as $fnc) {
             $fnc($this->shutdownMessage);
         }
-        exit('');
+        self::shutdown();
     }
 
     public static function getEnabled() {
@@ -93,6 +112,24 @@ class Shutdown {
         return isset(self::$instance) ? static::instance() : self::instance();
     }
 }
+
+/* Shutdown::setEnabled(false)->setShutdownMessage(function() {
+      global $pdo, $session_save;
+      //if (defined('APP_INSTALL') && APP_INSTALL && $path = APP_PATH . 'install.php') // is_file('config/constants.php')) 
+      //    require_once($path);
+
+      defined('APP_END') or define('APP_END', microtime(true));
+      //include('checksum_md5.php'); // your_logger(get_included_files());
+      //unset($pdo);
+    
+      //echo "Executing shutdown function...\n";
+    })->shutdown(); */
+
+//Shutdown::create()->setEnabled(true)->shutdown();
+
+//$shutdown = new Shutdown();
+//$shutdown->setEnabled(true)->shutdown();
+
 
 
 /*

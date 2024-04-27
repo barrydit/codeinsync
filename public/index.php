@@ -29,27 +29,21 @@
       //dd(get_required_files(), false);
       //dd($_ENV);
       if (isset($_POST['environment'])) {
-      switch ($_POST['environment']) {
-        case 'product':
-          define('APP_ENV', 'production');
-          break;
-        case 'develop':
-          define('APP_ENV', 'development');
-          break;
-        case 'math':
-          define('APP_ENV', 'math');
-          break;
-        default:
-          define('APP_ENV', 'production');
-          break;
-      }
+        switch ($_POST['environment']) {
+          case 'product':
+            define('APP_ENV', 'production');
+            break;
+          case 'develop':
+            define('APP_ENV', 'development');
+            break;
+          case 'math':
+            define('APP_ENV', 'math');
+            break;
+          default:
+            define('APP_ENV', 'production');
+            break;
+        }
         $_ENV['APP_ENV'] = APP_ENV;
-        $file = fopen(APP_PATH . APP_ROOT . '.env', 'w');
-        if (isset($_ENV) && !empty($_ENV))
-          foreach($_ENV as $key => $env_var) {
-            fwrite($file, "$key=$env_var\n");
-          }
-        fclose($file);
       }
 
     break;
@@ -60,14 +54,10 @@
 // http://localhost/?app=composer&path=vendor
 
       if (isset($_GET['hide']) && $_GET['hide'] == 'update-notice') {
-        $_ENV['HIDE_UPDATE_NOTICE'] = true;
-        $file = fopen(APP_PATH . APP_ROOT . '.env', 'w');
-        if (isset($_ENV) && !empty($_ENV))
-          foreach($_ENV as $key => $env_var) {
-            fwrite($file, $key.'='.(string) $env_var."\n");
-          }
-        fclose($file);
-        exit(header('Location: ' . APP_WWW . ''));
+        Shutdown::setEnabled(false)->setShutdownMessage(function() {
+          $_ENV['HIDE_UPDATE_NOTICE'] = true;
+          return header('Location: ' . APP_WWW); // -wow
+        })->shutdown();
       }
         
 
