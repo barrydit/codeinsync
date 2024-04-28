@@ -219,4 +219,3 @@ class CustomDotenv extends Dotenv
         return $existingEnv;
     }
 }
-?>

@@ -14,10 +14,8 @@ class Shutdown {
 
         $iniString = '';
         if (is_file($file = APP_PATH . APP_ROOT . '.env')) {
-          $env = parse_ini_file($file, true);
-          if (isset($_ENV) && !empty($env))
-            foreach($env as $key => $value) {
-              $_ENV[$key] = $value; // putenv($key.'='.$env_var);
+          if (isset($_ENV) && !empty($_ENV))
+            foreach($_ENV as $key => $value) {
               if (is_array($value)) {
                 $iniString .= "[$key]\n";
                 foreach ($value as $nestedKey => $nestedValue) {
@@ -29,6 +27,15 @@ class Shutdown {
             }
           file_put_contents($file, $iniString);
         } else file_put_contents($file, $iniString);
+        
+/*  
+        $file = fopen(APP_PATH . APP_ROOT . '.env', 'w');
+        if (isset($_ENV) && !empty($_ENV))
+          foreach($_ENV as $key => $env_var) {
+            fwrite($file, "$key=$env_var\n");
+        }
+        fclose($file);
+*/
 
         register_shutdown_function([$this, 'onShutdown']);
     }
@@ -56,10 +63,6 @@ class Shutdown {
             $fnc($this->shutdownMessage);
         }
         self::shutdown();
-    }
-
-    public static function getEnabled() {
-        return self::$enabled;
     }
 
     public function registerFunction(callable $fnc) {
@@ -102,6 +105,10 @@ class Shutdown {
     public function setFunctions($functions): self {
         $this->functions = $functions;
         return $this;
+    }
+
+    public static function getEnabled() {
+        return self::$enabled;
     }
 
     /**

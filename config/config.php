@@ -450,18 +450,8 @@ if (basename($dir = getcwd()) != 'config') {
 
   chdir(APP_PATH . APP_ROOT);
 
-/*  
-  $file = fopen(APP_PATH . APP_ROOT . '.env', 'w');
-  if (isset($_ENV) && !empty($_ENV))
-    foreach($_ENV as $key => $env_var) {
-      fwrite($file, "$key=$env_var\n");
-    }
-  fclose($file);
-*/
-
   if (is_file($file = APP_PATH . APP_ROOT . '.env')) {
-    $env = parse_ini_file($file, true);
-    if (!empty($env))
+    if (!empty($env = parse_ini_file($file, true)))
       foreach($env as $key => $value) {
         $_ENV[$key] = $value; // putenv($key.'='.$env_var);
       }
