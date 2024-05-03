@@ -44,6 +44,9 @@
             break;
         }
         $_ENV['APP_ENV'] = APP_ENV;
+        Shutdown::setEnabled(false)->setShutdownMessage(function() {
+          return header('Location: ' . APP_WWW); // -wow
+        })->shutdown();
       }
 
     break;
@@ -54,8 +57,8 @@
 // http://localhost/?app=composer&path=vendor
 
       if (isset($_GET['hide']) && $_GET['hide'] == 'update-notice') {
-        Shutdown::setEnabled(false)->setShutdownMessage(function() {
-          $_ENV['HIDE_UPDATE_NOTICE'] = true;
+        $_ENV['HIDE_UPDATE_NOTICE'] = true; // var_export(true, true); // true
+        Shutdown::setEnabled(true)->setShutdownMessage(function() {
           return header('Location: ' . APP_WWW); // -wow
         })->shutdown();
       }

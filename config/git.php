@@ -45,7 +45,7 @@ if (isset($_ENV['GITHUB']['REMOTE_SHA']) && $latest_local_commit_sha !== $_ENV['
     if ($latest_local_commit_sha !== $latest_remote_commit_sha) {
       $errors['GIT_UPDATE'] =  $errors['GIT_UPDATE'] . $latest_local_commit_sha . '  ' . $latest_remote_commit_sha  . "\n"; 
     } else {
-      $_ENV['HIDE_UPDATE_NOTICE'] = false;
+      // $_ENV['HIDE_UPDATE_NOTICE'] = var_export(false, true);
       $errors[] = 'Remote SHA ($_ENV[\'GITHUB\'][\'_REMOTE_SHA\']) was updated.' . "\n" . $errors['GIT_UPDATE'] . "\n";
       $_ENV['GITHUB']['REMOTE_SHA'] = $latest_remote_commit_sha;
       unset($errors['GIT_UPDATE']);
@@ -75,7 +75,7 @@ if (isset($_ENV['GITHUB']['REMOTE_SHA']) && $latest_local_commit_sha !== $_ENV['
     if ($latest_local_commit_sha !== $latest_remote_commit_sha) {
       $errors['GIT_UPDATE'] =  $errors['GIT_UPDATE'] . $latest_local_commit_sha . '  ' . $latest_remote_commit_sha  . "\n"; 
     } else {
-      $_ENV['HIDE_UPDATE_NOTICE'] = false;
+      // $_ENV['HIDE_UPDATE_NOTICE'] = var_export(false, true);
       $errors[] = 'Remote SHA ($_ENV[\'GITHUB\'][\'REMOTE_SHA\']) was updated.' . "\n" . $errors['GIT_UPDATE'] . "\n";
       $_ENV['GITHUB']['REMOTE_SHA'] = $latest_remote_commit_sha;
       unset($errors['GIT_UPDATE']);

@@ -449,13 +449,39 @@ if (basename($dir = getcwd()) != 'config') {
     chdir('../');
 
   chdir(APP_PATH . APP_ROOT);
-
   if (is_file($file = APP_PATH . APP_ROOT . '.env')) {
-    if (!empty($env = parse_ini_file($file, true)))
-      foreach($env as $key => $value) {
-        $_ENV[$key] = $value; // putenv($key.'='.$env_var);
-      }
+    if (!empty($env = parse_ini_file($file, true, INI_SCANNER_TYPED /*INI_SCANNER_NORMAL*/))) {
+      foreach ($env as $key => $value) {
+        if (is_array($value)) {
+            foreach ($value as $k => $v) {
+                $env[$key][$k] = str_replace(['\'', '"'], '', var_export($v, true));
+            }
+        } else {
+            // Check if the value is boolean true, and replace it with the string 'true'
+            if ($value === true) {
+                $env[$key] = 'true';
+            } else {
+                $env[$key] = str_replace(['\'', '"'], '', var_export($value, true));
+            }
+        }
+    }
+    $_ENV = $env;
+
+/*
+        foreach($env as $key => $value) {
+            if (is_array($value)) {
+                foreach($value as $k => $v) {
+                    // Convert boolean values to strings
+                    $_ENV[$key][$k] = is_bool($v) ? ($v ? 'true' : 'false') : (string) $v;
+                }
+            } else {
+                // Convert boolean values to strings
+                $_ENV[$key] = is_bool($value) ? ($value ? 'true' : 'false') : (string) $value; // putenv($key.'='.$env_var);
+            }
+        }*/
+    }
   }
+
 
   $previousFilename = '';
 

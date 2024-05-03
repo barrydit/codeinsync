@@ -10,11 +10,10 @@ function dd(mixed $param = null, $die = true, $debug = true) {
           ) . "<br />\n";
     if ($die)
       Shutdown::setEnabled(false)->setShutdownMessage(function() use ($param, $output) {
-        return '<pre><code>' . var_export($param, true) . '</code></pre>' . $output; //.  // var_dump
+        return '<pre><code>' . str_replace(['\'', '"'], '', var_export($param, true)) . '</code></pre>' . $output; //.  // var_dump
       })->shutdown();
     else
-      return var_dump('<pre><code>' . var_export($param, true) . '</code></pre>' . $output); // If you want to return the parameter after printing it
-
+      return var_dump('<pre><code>' . str_replace(['\'', '"'], '', var_export($param, true)) . '</code></pre>' . $output); // If you want to return the parameter after printing it
 }
 /*
         $curl = curl_init($url);

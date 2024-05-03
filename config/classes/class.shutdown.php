@@ -14,20 +14,32 @@ class Shutdown {
 
         $iniString = '';
         if (is_file($file = APP_PATH . APP_ROOT . '.env')) {
-          if (isset($_ENV) && !empty($_ENV))
-            foreach($_ENV as $key => $value) {
-              if (is_array($value)) {
-                $iniString .= "[$key]\n";
-                foreach ($value as $nestedKey => $nestedValue) {
-                  $iniString .= "$nestedKey = $nestedValue\n";
+
+            foreach ($_ENV as $key => $value) {
+                // Convert boolean values to strings
+                if ($value === true || $value === false || is_bool($value)) {
+                    $value = (string) $value ? 'true' : 'false';
+
+                    //die(var_dump($_ENV));
                 }
-              } else {
-                $iniString .= "$key = $value\n";
-              }
+        
+                if (is_array($value)) {
+                    // Process nested arrays
+                    $iniString .= "[$key]\n";
+                    foreach ($value as $nestedKey => $nestedValue) {
+                        $iniString .= "$nestedKey = $nestedValue\n";
+                    }
+                } else {
+                    // Append the key-value pair as a string to $iniString
+                    $iniString .= "$key = $value\n";
+                }
             }
+          //file_put_contents(APP_PATH . 'env_writes.log', var_export($_ENV));
+          //die();
+          //dd($iniString);
           file_put_contents($file, $iniString);
         } else file_put_contents($file, $iniString);
-        
+        //
 /*  
         $file = fopen(APP_PATH . APP_ROOT . '.env', 'w');
         if (isset($_ENV) && !empty($_ENV))

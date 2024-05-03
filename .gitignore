@@ -5,6 +5,8 @@
 /database/weekly-timesheet-????-??.json
 /node_modules
 #/public
+/public/example.php
+/public/example?.php
 /project?
 /resources/js
 /resources/reels

@@ -53,13 +53,48 @@
   }
   dd();
   */
+  $className = '\stdClass'; // Default value
 
-/** Loading Time: 4.77s **/
+  if (is_dir(APP_PATH . APP_ROOT . APP_BASE['vendor'] . ($className = 'phpWhois' . DIRECTORY_SEPARATOR . 'Whois'))) {
+      $obj = new $className(); // Change value based on condition
+  }
+// Instantiate the class using the $className variable
+
+/*
+// Create a unique alias for the class
+if (!class_exists('MyAliasClassName')) {
+  class_alias($className, 'MyAliasClassName');
+}
+
+// Use the aliased class
+use MyAliasClassName;
+
+$obj = new MyAliasClassName();
+*/
+
+/*
+  $class = new class() use ($className) {
+      // Use the $className variable inside this anonymous class
+      public function __construct() {
+          // Instantiate the class using the variable
+          $obj = new $className();
+          // Proceed with using $obj
+      }
+  };
+*/
+  //$className = '\stdClass'; // Default value
+
+  //if ($condition) {
+  //    $className = 'phpWhois\Whois'; // Change value based on condition
+  //}
   
+  //use $className; // Use the variable containing the namespace or class name
+  
+/** Loading Time: 4.77s **/
+
+
   // dd(null, true);
 
-
-  use phpWhois\Whois;
   /*
   $whois = new Whois(); // Domain lookup / nserver (Domain lookup)
   $query = 'example.com';
@@ -340,9 +375,7 @@ elseif (!empty($_GET['project']))
 /* Checkboxes hold their state under cache */
 header("Content-Type: text/html");
 header("Cache-Control: no-store, no-cache, must-revalidate, max-age=0");
-header("Pragma: no-cache");
-
-?>
+header("Pragma: no-cache"); ?>
 <!DOCTYPE html>
 <html>
   <head>
@@ -377,14 +410,22 @@ header("Pragma: no-cache");
     <script src="<?= APP_BASE['resources'] . 'js/tailwindcss-3.3.5.js' ?? $url ?>"></script>
     <style type="text/tailwindcss">
       * {
+        margin: 0;
+	      padding: 0;
+	      box-sizing: border-box;
 <?php if (isset($_GET['debug'])) { ?>
         border: 1px dashed #FF0000;
 <?php } else { ?> 
         /* border: 1px dashed #FF0000; */
 <?php } ?>
       }
+      *:focus {
+	      outline: none;
+      }
+
       body {
         background-color: #FFF;
+        overflow-x: hidden;
       }
       .row-container { display: flex; width: 100%; height: 100%; flex-direction: column; overflow: hidden; }
       <?= defined('UI_GIT') ? UI_GIT['style'] : null; ?>
@@ -571,7 +612,7 @@ header("Pragma: no-cache");
             <div class="switch">
               <span class="slider round"></span>
               
-              <div id="hide_notice-container" style="position: absolute; display: <?= (isset($errors['GIT_UPDATE']) ? 'block' : 'none') ?>; left: -20px; top: 40px; width: 100px; background-color: white; color: red; font-variant-caps: all-small-caps; text-align: center;">[<a onclick="getElementById('toggle-debug').click(); /*toggleSwitch(this);*/ return null;" href="#hide=update-notice">Hide Notice</a>]</div>
+              <div id="hide_notice-container" style="position: absolute; display: <?= (isset($errors['GIT_UPDATE']) ? 'block' : 'none') ?>; left: -20px; top: 40px; width: 100px; background-color: white; color: red; font-variant-caps: all-small-caps; text-align: center;">[<a onclick="getElementById('toggle-debug').click(); /*toggleSwitch(this);*/ return null;" href="?hide=update-notice">Hide Notice</a>]</div>
             </div>
 
             <div class="right" style="background-color: #0078D7; display: <?= (isset($errors['GIT_UPDATE']) ? 'inline-block' : 'none') ?>; color: #FFF;"> &nbsp;<span style="background-color: #FFF; color: #0078D7;">&quot;Update&quot;</span>&nbsp;</div>
@@ -847,7 +888,7 @@ header("Pragma: no-cache");
               <?php
                 $result = [];
                 
-                if (check_http_200()) {
+                if (check_http_200() && class_exists('Whois')) {
                   $whois = new Whois();
                   $query = 'example.com';
                   $result = $whois->lookup($query,false);
