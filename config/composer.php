@@ -238,7 +238,7 @@ if (!realpath($composerHome)) {
 //dd($errors);
 //dd('Composer Home: ' . $composerHome, 0);
 
-putenv('COMPOSER_HOME=' . $composerHome ?? '/var/www/.composer/');
+putenv('COMPOSER_HOME=' . $composerHome ?? $_SERVER['HOME'] . '/.composer/');
 
 if (!file_exists(APP_PATH . 'composer.phar')) {
   if (!file_exists(APP_PATH . 'composer-setup.php'))
