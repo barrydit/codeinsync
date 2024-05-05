@@ -191,7 +191,12 @@ if (in_array(Composer\Autoload\ClassLoader::class, $loadedLibraries)) {
 //  echo 'Library found.';
     //$loadedLibraries;
     
-    $installedPackages = InstalledVersions::getInstalledPackages();
+  if (class_exists("Composer\\InstalledVersions")) {
+      $installedPackages = Composer\InstalledVersions::getInstalledPackages();
+      // Process $installedPackages as needed
+  } else {
+      $errors['COMPOSER_INSTALLEDVERSIONS'] = "The class Composer\\InstalledVersions is not found. Please check your Composer setup.";
+  }
 }
 
 //dd();
