@@ -1442,7 +1442,7 @@ header("Pragma: no-cache"); ?>
               ?>
         </table>
         <?php } elseif(isset($_GET['client']) && empty($_GET['client'])) { ?> 
-        <?php if (readlinkToEnd('/var/www/clientele') == '/mnt/c/www/clientele') { ?>
+        <?php if (readlinkToEnd('/var/www/clientele') == '/mnt/c/www/clientele' || realpath(APP_PATH . 'clientele')) { ?>
 
 <?php     foreach(['000', '100', '200', '300', '400'] as $key => $status) {
           
