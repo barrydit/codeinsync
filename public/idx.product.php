@@ -1296,7 +1296,7 @@ header("Pragma: no-cache"); ?>
             <!-- /tr -->
         </table>
         <?php } elseif (isset($_GET['project']) && empty($_GET['project'])) { ?> 
-        <?php if (readlinkToEnd($_SERVER['HOME'] . '/projects') == '/mnt/c/www/projects' || realpath(APP_PATH . '/projects')) { ?>
+        <?php if (readlinkToEnd($_SERVER['HOME'] . '/projects') == '/mnt/c/www/projects' || realpath(APP_PATH . 'projects')) { ?>
         <div style="text-align: center; border: none;" class="text-xs">
           <a class="pkg_dir" href="#" onclick="document.getElementById('app_project-container').style.display='block';">
           <img src="resources/images/project-icon.png" width="50" height="32" style="" /></a><br /><a href="?project">./project/</a>
@@ -1335,7 +1335,7 @@ header("Pragma: no-cache"); ?>
         </table>
         <!--
           <li>
-          <?php if (readlinkToEnd('/var/www/projects') == '/mnt/c/www/projects') { ?>
+          <?php if (readlinkToEnd('/var/www/projects') == '/mnt/c/www/projects' || realpath(APP_PATH . 'projects')) { ?>
           <a href="projects/">project/</a>
             <ul style="padding-left: 10px;">
               <form action method="GET">
