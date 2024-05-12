@@ -146,7 +146,7 @@ ob_start(); ?>
       </div>
     </div>
   </div>
-<?php $appProject['body'] = ob_get_contents();
+<?php ob_start(); $appProject['body'] = ob_get_contents();
 ob_end_clean();
 
 ob_start(); ?>

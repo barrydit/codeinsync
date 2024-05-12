@@ -14,10 +14,10 @@
 require_once 'functions.php';
 
 define('APP_CONNECTIVITY', check_ping(/*'8.8.8.8'*/));
+!defined('APP_CONNECTIVITY') or $errors['APP_CONNECTIVITY'] = 'Connectivity: ' . var_export(APP_CONNECTIVITY, true) . "\n"; // print('Connectivity: ' . APP_CONNECTIVITY . "\n");
 
 define('APP_START', microtime(true));
-
-(defined('APP_START') && !is_float(APP_START)) and $errors['APP_START'] = APP_START;
+!defined('APP_START') || is_float(APP_START) ?: $errors['APP_START'] = 'APP_START is not a valid float value.';
 
 define('APP_DEBUG', isset($_GET['debug']) ? TRUE : FALSE);
 
@@ -25,21 +25,23 @@ define('APP_DEBUG', isset($_GET['debug']) ? TRUE : FALSE);
 
 // Application configuration
 
-define('APP_VERSION',   number_format(1.0, 1) . '.0');
-(version_compare(APP_VERSION, '1.0.0', '>=') == 0)
+define('APP_VERSION', number_format(1.0, 1) . '.0');
+version_compare(APP_VERSION, '1.0.0', '>=') == 0
   and $errors['APP_VERSION'] = 'APP_VERSION is not a valid version (' . APP_VERSION . ').';
 
 const APP_NAME = 'Dashboard';
-(!is_string(APP_NAME))
+!is_string(APP_NAME)
   and $errors['APP_NAME'] = 'APP_NAME is not a string => ' . var_export(APP_NAME, true); // print('Name: ' . APP_NAME  . ' v' . APP_VERSION . "\n");
 
 //define('APP_HOURS', ['open' => '08:00', 'closed' => '17:00']);
 //if (defined('APP_HOURS')) echo 'Hours of Operation: ' . APP_HOURS['open'] . ' -> ' . APP_HOURS['closed']  . "\n";
 
-define('APP_DOMAIN', $_SERVER['HTTP_HOST'] ?? isset($_SERVER['SERVER_NAME']) ? $_SERVER['SERVER_NAME'] : 'localhost');
-(!is_string(APP_DOMAIN)) and $errors['APP_DOMAIN'] = 'APP_DOMAIN is not valid. (' . APP_DOMAIN . ')' . "\n";
 
-(isset($_SERVER['HTTPS']) === true && $_SERVER['HTTPS'] == 'on') // strtolower(substr($_SERVER["SERVER_PROTOCOL"],0,5))=='https'
+define('APP_DOMAIN', array_key_exists('domain', parse_url($domain = $_SERVER['HTTP_HOST'] ?? $_SERVER['SERVER_NAME'])) ? $domain : 'localhost');
+!is_string(APP_DOMAIN) and $errors['APP_DOMAIN'] = 'APP_DOMAIN is not valid. (' . APP_DOMAIN . ')' . "\n";
+
+// Check if the request is using HTTPS
+(isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] == 'on') // strtolower(substr($_SERVER["SERVER_PROTOCOL"],0,5))=='https'
   and define('APP_HTTPS', TRUE);
 (defined('APP_HTTPS') && APP_HTTPS) and $errors['APP_HTTPS'] = (bool) var_export(APP_HTTPS, APP_HTTPS); // print("\t" . 'Http(S)://' . APP_DOMAIN . '/' . '... ' .  var_export(defined('APP_HTTPS'), true) . "\n");
 
@@ -121,21 +123,31 @@ define('APP_PUBLIC',  str_replace(APP_PATH, '', basename(dirname(APP_SELF)) == '
   and $_SERVER['REQUEST_URI'] = substr($_SERVER['PHP_SELF'], 0) . ((isset($_SERVER['QUERY_STRING']) && $_SERVER['QUERY_STRING'] != "") AND '?' . $_SERVER['QUERY_STRING']);
 
 // substr( str_replace('\\', '/', __FILE__), strlen($_SERVER['DOCUMENT_ROOT']), strrpos(str_replace('\\', '/', __FILE__), '/') - strlen($_SERVER['DOCUMENT_ROOT']) + 1 )
-
 !is_array(APP_BASE) ?
   substr($_SERVER['REQUEST_URI'], 0, strrpos($_SERVER['REQUEST_URI'], '/') + 1) == '/' // $_SERVER['DOCUMENT_ROOT']
     and define('APP_URL', 'http' . (defined('APP_HTTPS') ? 's':'') . '://' . APP_DOMAIN . substr($_SERVER['REQUEST_URI'], 0, strrpos($_SERVER['REQUEST_URI'], '/') + 1)) :
   define('APP_URL', [
     'scheme' => 'http' . (defined('APP_HTTPS') && APP_HTTPS ? 's': ''), // ($_SERVER['HTTPS'] == 'on', (isset($_SERVER['HTTPS']) === true ? 'https' : 'http')
+    'user' => (!isset($_SERVER['PHP_AUTH_USER']) ? NULL : $_SERVER['PHP_AUTH_USER']),
+    'pass' => (!isset($_SERVER['PHP_AUTH_PW']) ? NULL : $_SERVER['PHP_AUTH_PW']),
     'host' => APP_DOMAIN,
     'port' => (int) ($_SERVER['SERVER_PORT'] ?? 80),
     /* https://www.php.net/manual/en/features.http-auth.php */
-    'user' => (!isset($_SERVER['PHP_AUTH_USER']) ? NULL : $_SERVER['PHP_AUTH_USER']),
-    'pass' => (!isset($_SERVER['PHP_AUTH_PW']) ? NULL : $_SERVER['PHP_AUTH_PW']),
+
     'path' => substr($_SERVER['REQUEST_URI'], 0, strrpos($_SERVER['REQUEST_URI'], '/') + 1), // https://stackoverflow.com/questions/7921065/manipulate-url-serverrequest-uri
-    'query' => ($_SERVER['QUERY_STRING'] ?? ''), // array( key($_REQUEST) => current($_REQUEST) )
-    'fregment' => '',
+    'query' => $_SERVER['QUERY_STRING'] ?? '', // array( key($_REQUEST) => current($_REQUEST) )
+    'fragment' => parse_url($_SERVER['REQUEST_URI'], PHP_URL_FRAGMENT),
   ]);
+
+/* var_dump(parse_url(APP_URL));
+var_dump(parse_url(APP_URL, PHP_URL_SCHEME));
+var_dump(parse_url(APP_URL, PHP_URL_USER));
+var_dump(parse_url(APP_URL, PHP_URL_PASS));
+var_dump(parse_url(APP_URL, PHP_URL_HOST));
+var_dump(parse_url(APP_URL, PHP_URL_PORT));
+var_dump(parse_url(APP_URL, PHP_URL_PATH));
+var_dump(parse_url(APP_URL, PHP_URL_QUERY));
+var_dump(parse_url(APP_URL, PHP_URL_FRAGMENT)); */
 
 // APP_BASE_URL
 !is_array(APP_URL) ? define('APP_URL_BASE', APP_URL) :
