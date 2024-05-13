@@ -35,7 +35,7 @@ if (isset($_ENV['GITHUB']['REMOTE_SHA']) && $latest_local_commit_sha !== $_ENV['
 
 
   // Make the request
-  $response = APP_CONNECTIVITY /*&& check_http_200($latest_remote_commit_url)*/ ? file_get_contents($latest_remote_commit_url, false, $context) : '{}';
+  $response = APP_CONNECTED || check_http_200($_ENV['GITHUB']['ORIGIN_URL']) ? file_get_contents($_ENV['GITHUB']['ORIGIN_URL'], false, $context) : '{}';
   $data = json_decode($response, true);
 //dd($response);
   if ($data && isset($data['object']['sha'])) {

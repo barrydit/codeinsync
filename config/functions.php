@@ -1,4 +1,6 @@
 <?php
+
+require_once('constants.php');
 /**
  * 
 */
@@ -28,27 +30,38 @@ function dd(mixed $param = null, $die = true, $debug = true) {
         return ($http_status == 200 ? true : false);
 */
 
-function check_ping($ip = '8.8.8.8') {
+function check_ip($ip = '') {
+  return filter_var($ip, FILTER_VALIDATE_IP) ? true : false;
+}
+
+function check_internet_connection($ip = '8.8.8.8') {
   $status = null;
+
   // Ping the host to check network connectivity
   if (strtoupper(substr(PHP_OS, 0, 3)) === 'WIN')
-    exec("ping -n 1 -w 1 -W 20 $ip" ?? '8.8.8.8', $output, $status);  // parse_url($ip, PHP_URL_HOST)
+      exec("ping -n 1 -w 1 -W 20 " . escapeshellarg($ip), $output, $status);  // parse_url($ip, PHP_URL_HOST)
   else
-    exec("sudo /bin/ping -c2 -w2 $ip" ?? "8.8.8.8 2>&1", $output, $status); // var_dump(\$status)
+      exec(APP_SUDO . "/bin/ping -c 1 -W 1 " . escapeshellarg($ip), $output, $status); // var_dump(\$status)
+  return $status === 0;
+}
 
-  return $status == 0 ? false : true;
+// die(var_dump(check_internet_connection()) ? true : false);
+
+function resolve_host_to_ip($host) {
+  $ip = gethostbyname($host);
+  return $ip !== $host ? $ip : false;
 }
 
 /* HTTP status of a URL and the network connectivity using ping */
 function check_http_200($url = 'http://8.8.8.8') {
-  if (APP_CONNECTIVITY === true) { // check_ping() was 2 == fail | 0 == success
+  if (APP_CONNECTED) { // check_ping() was 2 == fail | 0 == success
     if ($url !== 'http://8.8.8.8') {
       $headers = get_headers($url);
       return strpos($headers[0], '200') !== false ? false : true;
     } else
       return true; // Special case for the default URL
   }
-  return false; // Ping or HTTP request failed //$connected = @fsockopen("www.google.com", 80); //fclose($connected);
+  //return false; // Ping or HTTP request failed //$connected = @fsockopen("www.google.com", 80); //fclose($connected);
 }
 
 function packagist_return_source($vendor, $package) {

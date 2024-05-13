@@ -10,14 +10,28 @@
 //ini_set('max_execution_time', 60);
 
 /* This code sets up some basic configuration constants for a PHP application. */
+define('APP_SUDO', 'sudo ');
+define('APP_START', microtime(true));
+!defined('APP_START') || is_float(APP_START) ?: $errors['APP_START'] = 'APP_START is not a valid float value.';
 
 require_once 'functions.php';
 
-define('APP_CONNECTIVITY', check_ping(/*'8.8.8.8'*/));
-!defined('APP_CONNECTIVITY') or $errors['APP_CONNECTIVITY'] = 'Connectivity: ' . var_export(APP_CONNECTIVITY, true) . "\n"; // print('Connectivity: ' . APP_CONNECTIVITY . "\n");
 
-define('APP_START', microtime(true));
-!defined('APP_START') || is_float(APP_START) ?: $errors['APP_START'] = 'APP_START is not a valid float value.';
+// Example usage
+$host = 'example.com'; // parse_url($ip, PHP_URL_HOST)
+$ip = resolve_host_to_ip($host);
+if ($ip) {
+  if (check_internet_connection($ip)) {
+      //echo "Connected to the internet.";
+      define('APP_CONNECTED', true);
+  } else {
+      define('APP_CONNECTIVITY', "Not connected to the internet.");
+  }
+} else {
+  define('APP_CONNECTIVITY', "Failed to resolve host to IP.");
+}
+
+!defined('APP_CONNECTED') and $errors['APP_CONNECTIVITY'] = 'APP Connect(ed): ' . var_export(APP_CONNECTIVITY, true) . "\n"; // print('Connectivity: ' . APP_CONNECTIVITY . "\n");
 
 define('APP_DEBUG', isset($_GET['debug']) ? TRUE : FALSE);
 
@@ -128,12 +142,11 @@ define('APP_PUBLIC',  str_replace(APP_PATH, '', basename(dirname(APP_SELF)) == '
     and define('APP_URL', 'http' . (defined('APP_HTTPS') ? 's':'') . '://' . APP_DOMAIN . substr($_SERVER['REQUEST_URI'], 0, strrpos($_SERVER['REQUEST_URI'], '/') + 1)) :
   define('APP_URL', [
     'scheme' => 'http' . (defined('APP_HTTPS') && APP_HTTPS ? 's': ''), // ($_SERVER['HTTPS'] == 'on', (isset($_SERVER['HTTPS']) === true ? 'https' : 'http')
+    /* https://www.php.net/manual/en/features.http-auth.php */
     'user' => (!isset($_SERVER['PHP_AUTH_USER']) ? NULL : $_SERVER['PHP_AUTH_USER']),
     'pass' => (!isset($_SERVER['PHP_AUTH_PW']) ? NULL : $_SERVER['PHP_AUTH_PW']),
     'host' => APP_DOMAIN,
     'port' => (int) ($_SERVER['SERVER_PORT'] ?? 80),
-    /* https://www.php.net/manual/en/features.http-auth.php */
-
     'path' => substr($_SERVER['REQUEST_URI'], 0, strrpos($_SERVER['REQUEST_URI'], '/') + 1), // https://stackoverflow.com/questions/7921065/manipulate-url-serverrequest-uri
     'query' => $_SERVER['QUERY_STRING'] ?? '', // array( key($_REQUEST) => current($_REQUEST) )
     'fragment' => parse_url($_SERVER['REQUEST_URI'], PHP_URL_FRAGMENT),

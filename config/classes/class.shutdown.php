@@ -13,8 +13,8 @@ class Shutdown {
         defined('APP_END') or define('APP_END', microtime(true));
 
         $iniString = '';
-        if (is_file($file = APP_PATH . APP_ROOT . '.env')) {
-
+        if (is_file($file = APP_PATH . APP_ROOT . '.env')){
+          if (isset($_ENV) && !empty($_ENV))
             foreach ($_ENV as $key => $value) {
                 // Convert boolean values to strings
                 if ($value === true || $value === false || is_bool($value)) {
@@ -37,7 +37,7 @@ class Shutdown {
           //file_put_contents(APP_PATH . 'env_writes.log', var_export($_ENV));
           //die();
           //dd($iniString);
-          file_put_contents($file, $iniString);
+          if ($iniString !== '') file_put_contents($file, $iniString);
         } else file_put_contents($file, $iniString);
         //
 /*  
