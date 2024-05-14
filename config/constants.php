@@ -10,7 +10,7 @@
 //ini_set('max_execution_time', 60);
 
 /* This code sets up some basic configuration constants for a PHP application. */
-define('APP_SUDO', 'sudo ');
+
 define('APP_START', microtime(true));
 !defined('APP_START') || is_float(APP_START) ?: $errors['APP_START'] = 'APP_START is not a valid float value.';
 

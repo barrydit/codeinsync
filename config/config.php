@@ -4,18 +4,19 @@ declare(strict_types=1); // First Line Only!
 error_reporting(E_ALL/*E_STRICT |*/);
 
 date_default_timezone_set('America/Vancouver');
-
 ini_set('display_errors', 'true');
 ini_set('display_startup_errors', 'true');
-ini_set('error_log', (is_dir($path = dirname(__DIR__, 1) . DIRECTORY_SEPARATOR . 'config') ? dirname($path, 1) . DIRECTORY_SEPARATOR . 'error_log' : 'error_log'));
+ini_set('error_log', is_dir($path = dirname(__DIR__, 1) . DIRECTORY_SEPARATOR . 'config') ? dirname($path, 1) . DIRECTORY_SEPARATOR . 'error_log' : 'error_log');
 ini_set('log_errors', 'true');
+
+define('APP_SUDO', 'sudo ');
 
 if (is_readable($path = ini_get('error_log')) && filesize($path) >= 0 ) 
   if (strtoupper(substr(PHP_OS, 0, 3)) === 'WIN') {
     $errors['ERROR_PATH'] = $path;
     $errors['ERROR_LOG'] = shell_exec("powershell Get-Content -Tail 10 $path");
   } else
-    $errors['ERROR_LOG'] = shell_exec("sudo tail $path");
+    $errors['ERROR_LOG'] = shell_exec(APP_SUDO . " tail $path");
   if (isset($_GET[$error_log = basename(ini_get('error_log'))]) && $_GET[$error_log] == 'unlink') {
     unlink($path);
     exit("Error_log completely removed."); // header('Location: ' . APP_WWW)
@@ -26,7 +27,7 @@ ini_set('xdebug.remote_enable', '0');
 ini_set('xdebug.profiler_enable', '0');
 ini_set('xdebug.default_enable', '0');
 
-putenv('XDEBUG_MODE=' . 'off');
+putenv("XDEBUG_MODE=off");
 
 // Enable output buffering
 ini_set('output_buffering', 'On');
@@ -40,7 +41,7 @@ endif;
 // Leave the forward slashes off
 const DOMAIN_EXPR = '(?:[a-z]+\:\/\/)?(?:[a-z0-9\-]+\.)+[a-z]{2,6}(?:\/\S*)?'; // /(?:\.(?:([-a-z0-9]+){1,}?)?)?\.[a-z]{2,6}$/';
 
-define('PHP_EXEC', '/usr/bin/php');
+const PHP_EXEC = '/usr/bin/php';
 
 $errors = []; // (object)
 
@@ -55,7 +56,6 @@ $errors = []; // (object)
 !defined('APP_SELF') and define('APP_SELF', get_included_files()[0] ?? __FILE__); // get_included_files()[0] | str_replace($_SERVER['DOCUMENT_ROOT'], '', $_SERVER['SCRIPT_FILENAME']) | $_SERVER['PHP_SELF']
 
 //var_dump(get_defined_constants(true)['user']);
-
 !defined('APP_PATH') and define('APP_PATH', implode(DIRECTORY_SEPARATOR, array_intersect_assoc(
   explode(DIRECTORY_SEPARATOR, __DIR__),
   explode(DIRECTORY_SEPARATOR, dirname(APP_SELF))
@@ -78,14 +78,17 @@ if (!empty($_GET['client']) && !empty($_GET['domain'])) {
   $path = /*'../../'.*/ 'clientele/' . $_GET['client'] . '/';
   $dirs = array_filter(glob(dirname(__DIR__) . '/' . $path . '*'), 'is_dir');
 
-  if (count($dirs) == 1)
-  foreach($dirs as $dir) {
-    $dirs[0] = $dirs[array_key_first($dirs)];
-    if (preg_match('/' . DOMAIN_EXPR . '/i', strtolower(basename($dirs[0])))) {
-      $_GET['domain'] = basename($dirs[0]);
-      break;
-    } else unset($dirs[array_key_first($dirs)]);
-    continue;
+  if (count($dirs) == 1) {
+    foreach($dirs as $dir) {
+      $dirs[0] = $dirs[array_key_first($dirs)];
+      if (preg_match('/' . DOMAIN_EXPR . '/i', strtolower(basename($dirs[0])))) {
+        $_GET['domain'] = basename($dirs[0]);
+        break;
+      } else {
+        unset($dirs[array_key_first($dirs)]);
+        continue;
+      }
+    }
   }
 
   $dirs = array_filter(glob(dirname(__DIR__) . '/' . $path . '*'), 'is_dir');
@@ -93,8 +96,7 @@ if (!empty($_GET['client']) && !empty($_GET['domain'])) {
   if (!empty($_GET['domain']))
     foreach($dirs as $key => $dir) {
       if (basename($dir) == $_GET['domain']) {
-        //if (is_dir($dirs[$key].'/public/'))
-        //  $path .= basename($dirs[$key]).'/public/';
+        //if (is_dir($dirs[$key].'/public/')) $path .= basename($dirs[$key]).'/public/';
         $path .= basename($dirs[$key]) . DIRECTORY_SEPARATOR;
         break;
       }
@@ -122,10 +124,11 @@ if (!empty($_GET['client']) && !empty($_GET['domain'])) {
   //if (isset($_GET['path']) && is_dir(APP_PATH . $path . $_GET['path'])) $path .= $_GET['path'];
 
 } else {
-  if (isset($_ENV['COMPOSER']) && !empty($_ENV['COMPOSER']))
+  if (isset($_ENV['COMPOSER']) && !empty($_ENV['COMPOSER'])) {
     $latest_remote_commit_url = 'https://api.github.com/repos/barrydit/' . $_ENV['COMPOSER']['PACKAGE'] . '/git/refs/heads/main';
-
-}// else { if (isset($_GET['path']) && is_dir(APP_PATH . $_GET['path'])) $path = $_GET['path']; } 
+  }
+}
+// else { if (isset($_GET['path']) && is_dir(APP_PATH . $_GET['path'])) $path = $_GET['path']; }
 
 !defined('APP_ROOT') and define('APP_ROOT', $path = realpath(APP_PATH . $path) ? $path : null); // dirname(APP_SELF, (basename(getcwd()) != 'public' ?: 2))
 
@@ -241,8 +244,8 @@ END
 }
 */
 if (basename(dirname(APP_SELF)) == 'public') {
-  if (!is_file('.htaccess'))
-    if (@touch('.htaccess'))
+  if (!is_file('.htaccess')) {
+    if (@touch('.htaccess')) {
       file_put_contents('.htaccess', <<<END
 RewriteEngine On
 
@@ -250,9 +253,48 @@ RewriteEngine On
 RewriteRule ^resources/(.*)$ ../resources/$1 [L]
 END
 );
+    }
+  }
 } elseif (dirname(APP_SELF) == __DIR__) {
-  if (!is_file($file = APP_PATH . '.htaccess'))
-    if (@touch($file))
+  if (!is_file($file = APP_PATH . '.env')) {
+    if (@touch($file)) {
+      file_put_contents($file, <<<END
+APP_ENV=production
+APP_DEBUG=false
+CACHE_DRIVER=file
+SESSION_DRIVER=file
+DB_HOST=localhost
+DB_NAME= 
+DB_UNAME=root
+DB_PWORD= 
+DB_PORT=3306
+DEFAULT_CLIENT=
+DEFAULT_DOMAIN=
+DEFAULT_PROJECT=123
+ERROR_LOG_FILE=error_log
+ERROR_REPORTING_LEVEL=E_ALL
+HIDE_UPDATE_NOTICE=true
+MAIL_DRIVER=smtp
+MAIL_HOST=smtp.mailtrap.io
+MAIL_PORT=2525
+MAIL_USERNAME=your_username
+MAIL_PASSWORD=your_password
+MAIL_ENCRYPTION=tls
+[COMPOSER]
+VENDOR=barrydit
+PACKAGE=composer_app
+AUTHOR=Barry Dick
+EMAIL=barryd.it@gmail.com
+[GITHUB]
+ORIGIN_URL=http://github.com/barrydit/composer_app
+OAUTH_TOKEN=
+REMOTE_SHA=
+END
+);
+    }
+  }
+  if (!is_file($file = APP_PATH . '.htaccess')) {
+    if (@touch($file)) {
       file_put_contents($file, <<<END
 RewriteEngine On
 
@@ -265,23 +307,50 @@ RewriteRule ^(.*)$ ./resources/$1 [L]
 #RewriteRule ^ index.php [L]
 END
 );
+    }
+  }
   
-  if (!is_file($file = APP_PATH . '.gitignore'))
-    if (@touch($file))
+  if (!is_file($file = APP_PATH . '.gitignore')) {
+    if (@touch($file)) {
       file_put_contents($file, <<<END
-/var
-.env.*
-error_log
+#/config
+/applications
+/clientele
+/dist
+/database/weekly-timesheet-????-??.json
+/node_modules
+#/public
+/public/example.php
+/public/example?.php
+/project?
+/resources/js
+/resources/reels
+/vendor
+/var/*.html
+/var/*.php
+.env*
+.htaccess
+*.old
+auth.json
+composer.lock
 composer.phar
 composer-setup.php
+error_log
+main.js
+notes.txt
+package-lock.json
+settings.json
+*.config.js
 END
 );
+    }
+  }
 
-  if (!is_file($file = APP_PATH . 'LICENSE'))
-    if (@touch($file))
-      if (check_http_200('http://www.wtfpl.net/txt/copying'))
+  if (!is_file($file = APP_PATH . 'LICENSE')) {
+    if (@touch($file)) {
+      if (check_http_200('http://www.wtfpl.net/txt/copying')) {
         file_put_contents($file, file_get_contents('http://www.wtfpl.net/txt/copying'));
-      else 
+      } else {
         file_put_contents($file, <<<END
 This is free and unencumbered software released into the public domain.
 
@@ -309,7 +378,9 @@ OTHER DEALINGS IN THE SOFTWARE.
 For more information, please refer to <https://unlicense.org>
 END
 );
-
+      }
+    }
+  }
 }
 
 ob_start();
@@ -336,7 +407,7 @@ header("Cache-Control: no-store, no-cache, must-revalidate, max-age=0");
 header("Pragma: no-cache");
 
 if (!is_dir($path = APP_PATH . 'projects')) {
-  $errors['projects'] = 'projects/ directory does not exist.' . "\n";
+  $errors['projects'] = "projects/ directory does not exist.\n";
   mkdir($path, 0777, true);
 }
 
@@ -441,7 +512,7 @@ if (is_file(APP_PATH . 'projects/project.php') && isset($_GET['project']) && $_G
   Shutdown::setEnabled(false)->setShutdownMessage(function() {
       return eval('?>' . file_get_contents(APP_PATH . 'projects/project.php')); // -wow
     })->shutdown(); // die();
-} elseif (!is_dir(APP_PATH . 'projects')) { }
+} //elseif (!is_dir(APP_PATH . 'projects')) { }
 
 
 if (basename($dir = getcwd()) != 'config') {
@@ -541,12 +612,6 @@ if (basename($dir = getcwd()) != 'config') {
   }
   
   chdir(APP_PATH);
-
-
-//dd(getcwd());
-
-// dd('loaded apps');
-
 } elseif (basename(dirname(APP_SELF)) == 'public_html') { // basename(__DIR__) == 'public_html'
   $errors['APP_PUBLIC'] = 'The `public_html` scenario was detected.' . "\n";
   
@@ -824,7 +889,6 @@ $dotenv->safeLoad();
 */
 define('APP_ERRORS', $errors ?? (($error = ob_get_contents()) == null ? null : "ob_get_contents() maybe populated/defined/errors... error=$error" ));
 ob_end_clean();
-
 
 
 //(defined('APP_DEBUG') && APP_DEBUG) and $errors['APP_DEBUG'] = (bool) var_export(APP_DEBUG, APP_DEBUG); // print('Debug (Mode): ' . var_export(APP_DEBUG, true) . "\n");

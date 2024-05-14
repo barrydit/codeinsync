@@ -144,8 +144,8 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         else if (preg_match('/^php(:?(.*))/i', $_POST['cmd'], $match))
           exec($_POST['cmd'], $output);
         else if (preg_match('/^composer(:?(.*))/i', $_POST['cmd'], $match)) {
-        $output[] = 'env COMPOSER_ALLOW_SUPERUSER=' . COMPOSER_ALLOW_SUPERUSER . '; sudo ' . COMPOSER_EXEC . ' ' . $match[1];
-$proc=proc_open('env COMPOSER_ALLOW_SUPERUSER=' . COMPOSER_ALLOW_SUPERUSER . '; sudo ' . COMPOSER_EXEC . ' ' . $match[1],
+        $output[] = 'env COMPOSER_ALLOW_SUPERUSER=' . COMPOSER_ALLOW_SUPERUSER . '; ' . APP_SUDO . COMPOSER_EXEC . ' ' . $match[1];
+$proc=proc_open('env COMPOSER_ALLOW_SUPERUSER=' . COMPOSER_ALLOW_SUPERUSER . '; ' . APP_SUDO . COMPOSER_EXEC . ' ' . $match[1],
   array(
     array("pipe","r"),
     array("pipe","w"),
@@ -157,8 +157,8 @@ $output[] = 'Composer: ' . (!isset($stdout) ? NULL : $stdout . (!isset($stderr) 
 $output[] = $_POST['cmd'];
 
         } else if (preg_match('/^git(:?(.*))/i', $_POST['cmd'], $match)) {
-        $output[] = 'sudo ' . GIT_EXEC . ' ' . $match[1];
-$proc=proc_open('sudo ' . GIT_EXEC . ' ' . $match[1],
+        $output[] = APP_SUDO . GIT_EXEC . ' ' . $match[1];
+$proc=proc_open(APP_SUDO . GIT_EXEC . ' ' . $match[1],
   array(
     array("pipe","r"),
     array("pipe","w"),

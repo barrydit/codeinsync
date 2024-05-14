@@ -34,8 +34,8 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
           }
 
         } else if (preg_match('/^composer\s+(:?(.*))/i', $_POST['cmd'], $match)) {
-          $output[] = 'sudo ' . COMPOSER_EXEC['bin'] . ' ' . $match[1];
-$proc=proc_open((strtoupper(substr(PHP_OS, 0, 3)) === 'WIN' ? '' : 'sudo ') . COMPOSER_EXEC['bin'] . ' ' . $match[1],
+          $output[] = APP_SUDO . COMPOSER_EXEC['bin'] . ' ' . $match[1];
+$proc=proc_open((strtoupper(substr(PHP_OS, 0, 3)) === 'WIN' ? '' : APP_SUDO) . COMPOSER_EXEC['bin'] . ' ' . $match[1],
   array(
     array("pipe","r"),
     array("pipe","w"),
@@ -63,7 +63,7 @@ git commit -am "Default message"
 
 git checkout -b branchName
 END;
-          $output[] = $command = ((strtoupper(substr(PHP_OS, 0, 3)) === 'WIN') ? '' : 'sudo ') . (defined('GIT_EXEC') ? GIT_EXEC : 'git' ) . (is_dir($path = APP_PATH . APP_ROOT . '.git') || APP_PATH . APP_ROOT != APP_PATH ? '' : '' ) . ' ' . $match[1];
+          $output[] = $command = ((strtoupper(substr(PHP_OS, 0, 3)) === 'WIN') ? '' : APP_SUDO) . (defined('GIT_EXEC') ? GIT_EXEC : 'git' ) . (is_dir($path = APP_PATH . APP_ROOT . '.git') || APP_PATH . APP_ROOT != APP_PATH ? '' : '' ) . ' ' . $match[1];
 
 $proc=proc_open($command,
   array(
@@ -89,22 +89,22 @@ if (preg_match('/^git\s+clone\s+(http(?:s)?:\/\/([^@\s]+)@github\.com\/[\w.-]+\/
               if (realpath($github_repo[3])) $output[] = realpath($github_repo[3]);
 
               //$output[] = dd($github_repo);
-              if (!is_dir('.git')) exec((strtoupper(substr(PHP_OS, 0, 3)) === 'WIN' ? '' : 'sudo ') . 'git init', $output);
+              if (!is_dir('.git')) exec((strtoupper(substr(PHP_OS, 0, 3)) === 'WIN' ? '' : APP_SUDO) . 'git init', $output);
 
               exec('git branch -m master main', $output);
 
               //exec('git remote add origin ' . $github_repo[2], $output);
               //...git remote set-url origin http://...@github.com/barrydit/
 
-              exec((strtoupper(substr(PHP_OS, 0, 3)) === 'WIN' ? '' : 'sudo ')  . 'git config core.sparseCheckout true', $output);
+              exec((strtoupper(substr(PHP_OS, 0, 3)) === 'WIN' ? '' : APP_SUDO)  . 'git config core.sparseCheckout true', $output);
 
               //touch('.git/info/sparse-checkout');
 
               file_put_contents('.git/info/sparse-checkout', '*'); /// exec('echo "*" >> .git/info/sparse-checkout', $output);
 
-              exec((strtoupper(substr(PHP_OS, 0, 3)) === 'WIN' ? '' : 'sudo ') . 'git pull origin main', $output);
+              exec((strtoupper(substr(PHP_OS, 0, 3)) === 'WIN' ? '' : APP_SUDO) . 'git pull origin main', $output);
 
-              //exec('sudo git init', $output);
+              //exec(APP_SUDO . ' git init', $output);
               //$output[] = dd($output);
             $output[] = 'This works ... ';
 */
@@ -128,7 +128,7 @@ if (isset($github_repo) && !empty($github_repo)) {
 
 }
 
-  // exec((strtoupper(substr(PHP_OS, 0, 3)) === 'WIN' ? '' : 'sudo ')  . 'git --git-dir="' . APP_PATH . APP_ROOT . '.git" --work-tree="' . APP_PATH . APP_ROOT . '" remote add origin ' . $github_repo[2], $output);
+  // exec((strtoupper(substr(PHP_OS, 0, 3)) === 'WIN' ? '' : APP_SUDO)  . 'git --git-dir="' . APP_PATH . APP_ROOT . '.git" --work-tree="' . APP_PATH . APP_ROOT . '" remote add origin ' . $github_repo[2], $output);
 
           } else {
 
@@ -138,7 +138,7 @@ if (isset($github_repo) && !empty($github_repo)) {
           if (preg_match('/^(init)(:?\s+)?/i', $match[1])) 
             if (!is_file($path = APP_PATH . APP_ROOT . '.gitignore')) touch($path);
           
-          $output[] = 'www-data@localhost:' . getcwd() . '# ' . $command = ((strtoupper(substr(PHP_OS, 0, 3)) === 'WIN') ? '' : 'sudo ') . (defined('GIT_EXEC') ? GIT_EXEC : 'git' ) . (is_dir($path = APP_PATH . APP_ROOT . '.git') || APP_PATH . APP_ROOT != APP_PATH ? ' --git-dir="' . $path . '" --work-tree="' . dirname($path) . '"': '' ) . ' ' . $match[1];
+          $output[] = 'www-data@localhost:' . getcwd() . '# ' . $command = ((strtoupper(substr(PHP_OS, 0, 3)) === 'WIN') ? '' : APP_SUDO) . (defined('GIT_EXEC') ? GIT_EXEC : 'git' ) . (is_dir($path = APP_PATH . APP_ROOT . '.git') || APP_PATH . APP_ROOT != APP_PATH ? ' --git-dir="' . $path . '" --work-tree="' . dirname($path) . '"': '' ) . ' ' . $match[1];
 
 $proc=proc_open($command,
   array(
@@ -164,7 +164,7 @@ $proc=proc_open($command,
   // 
 
         } else if (preg_match('/^npm\s+(:?(.*))/i', $_POST['cmd'], $match)) {
-          $output[] = $command = (strtoupper(substr(PHP_OS, 0, 3)) === 'WIN' ? '' : 'sudo ') . NPM_EXEC . ' ' . $match[1];
+          $output[] = $command = (strtoupper(substr(PHP_OS, 0, 3)) === 'WIN' ? '' : APP_SUDO) . NPM_EXEC . ' ' . $match[1];
 $proc=proc_open($command,
   array(
     array("pipe","r"),
@@ -185,10 +185,10 @@ $proc=proc_open($command,
         else {
           if (preg_match('/^(\w+)\s+(:?(.*))/i', $_POST['cmd'], $match))
             if (isset($match[1]) && in_array($match[1], ['tail', 'cat', 'echo', 'env', 'sudo', 'whoami'])) {
-              //exec('sudo ' . $match[1] . ' ' . $match[2], $output); // $output[] = var_dump($match);
+              //exec(APP_SUDO . $match[1] . ' ' . $match[2], $output); // $output[] = var_dump($match);
               
-$output[] = 'sudo ' . $match[1] . ' ' . $match[2];
-$proc=proc_open((strtoupper(substr(PHP_OS, 0, 3)) === 'WIN' ? '' : 'sudo ') . $match[1] . ' ' . $match[2],
+$output[] = APP_SUDO . $match[1] . ' ' . $match[2];
+$proc=proc_open((strtoupper(substr(PHP_OS, 0, 3)) === 'WIN' ? '' : APP_SUDO) . $match[1] . ' ' . $match[2],
   array(
     array("pipe","r"),
     array("pipe","w"),
