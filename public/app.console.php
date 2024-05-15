@@ -323,7 +323,11 @@ ob_end_clean();
 
 $auto_clear = false;
 
-$shell_prompt = 'www-data@localhost:~$ '; // '$ >'
+// Check if $homePath is a subdirectory of $docRootPath
+if (($homePath = realpath($_SERVER['HOME'])) !== false && ($docRootPath = realpath($_SERVER['DOCUMENT_ROOT'])) !== false && strpos($homePath, $docRootPath) === 0) {
+  $shell_prompt = $_SERVER['USER'] . '@' . $_SERVER['SERVER_NAME'] . ':' . ($homePath == getcwd() ? '~': $homePath) . '$ '; // '$ >'
+} else
+  $shell_prompt = $_SERVER['USER'] . '@' . $_SERVER['SERVER_NAME'] . ':' . ($homePath == getcwd() ? '~': $homePath) . '$ ';
 
 ob_start(); ?>
 
@@ -384,14 +388,18 @@ ob_start(); ?>
         </div>
         <div style="display: inline-block;">
         
-        <div style="position: relative; display: inline-block; margin: 5px 10px 0px 0px; width: 210px; float: right;">
-            <div style="float: right;">
-                &nbsp;<button id="consoleAnykeyBind" class="text-xs" type="submit" style="border: 1px dashed #FFF; padding: 2px 2px;">Bind Any[key]</button>
-                <input id="app_ace_editor-auto_bind_anykey" type="checkbox" name="auto_bind_anykey" checked="">
+        <div style="position: relative; display: inline-block; margin: 5px 15px 0px 15px; float: right;">
+            <div style="float: left;">
+                <button id="consoleCls" class="text-xs" type="submit" style="border: 1px dashed #FFF; padding: 2px 2px; color: black; background-color: yellow;">Clear (auto)</button>
+                <input id="app_console-auto_clear" type="checkbox" name="auto_clear" <?= ($auto_clear ? 'checked="" ' : '') ?> />&nbsp;
             </div>
             <div style="float: left;">
-                <button id="consoleCls" class="text-xs" type="submit" style="border: 1px dashed #FFF; padding: 2px 2px;">Clear (auto)</button>
-                <input id="app_console-auto_clear" type="checkbox" name="auto_clear" <?= ($auto_clear ? 'checked="" ' : '') ?> />&nbsp;
+                <button id="consoleSudo" class="text-xs" type="submit" style="border: 1px dashed #FFF; padding: 2px 2px; background-color: red;">sudo</button>
+                <input id="app_console-sudo" type="checkbox" name="auto_sudo" <?= (defined('APP_SUDO') ? 'checked="" ' : '') ?> />&nbsp;
+            </div>
+            <div style="float: right;">
+                &nbsp;<button id="consoleAnykeyBind" class="text-xs" type="submit" style="border: 1px dashed #FFF; padding: 2px 2px; background-color: green;">Bind Any[key]</button>
+                <input id="app_ace_editor-auto_bind_anykey" type="checkbox" name="auto_bind_anykey" checked="">
             </div>
         </div>
 
@@ -555,7 +563,7 @@ show_console();
     consoleContainer.style.textAlign = 'center';
     consoleContainer.style.zIndex = '999';
 
-    respCon.style.height = '60px';
+    respCon.style.height = '80px';
 
     changePositionBtn.innerHTML = '&#9650;';
 
@@ -575,7 +583,7 @@ show_console();
     consoleContainer.style.transform = 'translate(-50%, -50%)';
     consoleContainer.style.zIndex = '999';
 
-    respCon.style.height = '20%';
+    respCon.style.height = '165px';
 
     changePositionBtn.innerHTML = '&#9660;';
   }

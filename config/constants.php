@@ -16,7 +16,6 @@ define('APP_START', microtime(true));
 
 require_once 'functions.php';
 
-
 // Example usage
 $host = 'example.com'; // parse_url($ip, PHP_URL_HOST)
 $ip = resolve_host_to_ip($host);

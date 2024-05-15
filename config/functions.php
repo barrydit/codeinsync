@@ -54,7 +54,7 @@ function resolve_host_to_ip($host) {
 
 /* HTTP status of a URL and the network connectivity using ping */
 function check_http_200($url = 'http://8.8.8.8') {
-  if (APP_CONNECTED) { // check_ping() was 2 == fail | 0 == success
+  if (defined('APP_CONNECTED')) { // check_ping() was 2 == fail | 0 == success
     if ($url !== 'http://8.8.8.8') {
       $headers = get_headers($url);
       return strpos($headers[0], '200') !== false ? false : true;
