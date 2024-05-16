@@ -17,11 +17,9 @@ define('GIT_VERSION', preg_match("/(?:version|v)\s*((?:[0-9]+\.?)+)/i", exec(GIT
 $latest_remote_commit_data = json_decode($latest_remote_commit_response, true);
 $latest_remote_commit_sha = $latest_remote_commit_data['object']['sha']; */
 
-$latest_local_commit_sha = exec(GIT_EXEC . ' --git-dir="' . APP_PATH . APP_ROOT . '.git" --work-tree="' . dirname(__DIR__) . '" rev-parse main');
-
-//dd($latest_remote_commit_url);
-
-if (isset($_ENV['GITHUB']['REMOTE_SHA']) && $latest_local_commit_sha !== $_ENV['GITHUB']['REMOTE_SHA']) {
+function git_origin_sha_update() {
+  global $errors;
+  $latest_local_commit_sha = exec(GIT_EXEC . ' --git-dir="' . APP_PATH . APP_ROOT . '.git" --work-tree="' . dirname(__DIR__) . '" rev-parse main');
   $errors['GIT_UPDATE'] = "Local main branch is not up-to-date with origin/main\n";
 
   $options = [
@@ -37,22 +35,30 @@ if (isset($_ENV['GITHUB']['REMOTE_SHA']) && $latest_local_commit_sha !== $_ENV['
   // Make the request
   $response = defined('APP_CONNECTED') || check_http_200($_ENV['GITHUB']['ORIGIN_URL']) ? file_get_contents($_ENV['GITHUB']['ORIGIN_URL'], false, $context) : '{}';
   $data = json_decode($response, true);
-//dd($response);
+//$output = dd($response);
   if ($data && isset($data['object']['sha'])) {
     $latest_remote_commit_sha = $data['object']['sha'];
 
     // Compare the two commit SHAs
     if ($latest_local_commit_sha !== $latest_remote_commit_sha) {
-      $errors['GIT_UPDATE'] =  $errors['GIT_UPDATE'] . $latest_local_commit_sha . '  ' . $latest_remote_commit_sha  . "\n"; 
+      $errors['GIT_UPDATE'] = $errors['GIT_UPDATE'] . $latest_local_commit_sha . '  ' . $latest_remote_commit_sha  . "\n"; 
     } else {
       // $_ENV['HIDE_UPDATE_NOTICE'] = var_export(false, true);
-      $errors[] = 'Remote SHA ($_ENV[\'GITHUB\'][\'_REMOTE_SHA\']) was updated.' . "\n" . $errors['GIT_UPDATE'] . "\n";
+      $errors[] = 'Remote SHA ($_ENV[\'GITHUB\'][\'REMOTE_SHA\']) was updated.' . "\n" . $errors['GIT_UPDATE'] . "\n";
       $_ENV['GITHUB']['REMOTE_SHA'] = $latest_remote_commit_sha;
       unset($errors['GIT_UPDATE']);
     }
   } else {
     $errors['GIT_UPDATE'] .= "Failed to retrieve commit information.\n";
   }
+  return $_ENV['GITHUB']['REMOTE_SHA'] = $latest_local_commit_sha;
+}
+//dd($latest_remote_commit_url);
+
+if (isset($_ENV['GITHUB']['REMOTE_SHA']) && git_origin_sha_update() !== $_ENV['GITHUB']['REMOTE_SHA']) {
+
+  echo '';
+  
 } else if (is_file($file = APP_PATH . APP_ROOT . '.env') && date('Y-m-d', filemtime($file)) != date('Y-m-d')) {
   $errors['GIT_UPDATE'] = "Local main branch is not up-to-date with origin/main\n";
   $options = [

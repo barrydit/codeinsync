@@ -75,6 +75,9 @@ $proc=proc_open($command,
   
           list($stdout, $stderr, $exitCode) = [stream_get_contents($pipes[1]), stream_get_contents($pipes[2]), proc_close($proc)];
           $output[] = (!isset($stdout) ? NULL : $stdout . (isset($stderr) && $stderr === '' ? NULL : (preg_match('/^To\s' . DOMAIN_EXPR . '/', $stderr) ? $stderr : 'Error: ' . $stderr) ) . (isset($exitCode) && $exitCode == 0 ? NULL : 'Exit Code: ' . $exitCode));
+          } else if (preg_match('/^git\s+(update)(:?\s+)?/i', $_POST['cmd'])) {
+            $output[] = git_origin_sha_update();
+
           } else if (preg_match('/^git\s+(clone)(:?\s+)?/i', $_POST['cmd'])) {
           
             //$output[] = dd($_POST['cmd']);
