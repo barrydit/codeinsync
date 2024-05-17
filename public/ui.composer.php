@@ -470,7 +470,7 @@ ob_start(); ?>
         </div>
         <div class="absolute" style="position: absolute; display: inline-block; top: 4px; text-align: right; width: 264px; ">
           <div class="text-xs" style="display: inline-block;">
-          + 960 <a href="https://github.com/composer/composer/graphs/contributors">contributors</a>
+          + 987 <a href="https://github.com/composer/composer/graphs/contributors">contributors</a>
           <br />
           <a style="color: blue; text-decoration-line: underline; text-decoration-style: solid;" href="http://getcomposer.org/" target="_blank">http://getcomposer.org/</a>
           </div>

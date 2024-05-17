@@ -17,7 +17,9 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     if (isset($_POST['cmd'])) {
       chdir(APP_PATH . APP_ROOT);
       if ($_POST['cmd'] && $_POST['cmd'] != '') 
-        if (preg_match('/^install/i', $_POST['cmd']))
+        if (preg_match('/^help/i', $_POST['cmd']))
+          $output[] = implode(', ', array('install', 'php', 'composer', 'git', 'npm', 'whoami', 'wget', 'tail', 'cat', 'echo', 'env', 'sudo', 'whoami'));
+        else if (preg_match('/^install/i', $_POST['cmd']))
           include 'templates/' . preg_split("/^install (\s*+)/i", $_POST['cmd'])[1] . '.php';
         //else if (preg_match('/^edit\s+(:?(.*))/i', $_POST['cmd'], $match))
           //exec($_POST['cmd'], $output);
@@ -869,6 +871,9 @@ if (isset($config['remote origin']['url']) && preg_match('/(?:[a-z]+\:\/\/)?([^\
       } else {
         console.log("Invalid input format.");
       }
+    } else if (matches = argv.match(/^(?:h(?:elp)?\s+)?(\S+)$/)) {
+      $('#requestInput').val('help');
+      $('#requestSubmit').click();
     } else if (matches = argv.match(/^(?:j(?:ava)?s(?:cript)?\s+)?(\S+)$/)) {
 // Save the original console.log function
 var originalLog = console.log;

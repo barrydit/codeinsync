@@ -584,6 +584,14 @@ header("Pragma: no-cache"); ?>
                 break;
               }
             }
+          else if (!isset($_GET['domain']) && count($dirs) >= 1) {
+            $path .= basename($_GET['domain'] = array_values($dirs)[0]) . DIRECTORY_SEPARATOR;
+
+            if (is_dir(dirname(__DIR__) . $path . 'public/')) {
+              $path .= 'public/';
+            }
+            //die(var_dump($path));
+          }
             //else 
             //exit(header('Location: http://localhost/clientele/' . $_GET['client']));    
         
@@ -592,12 +600,11 @@ header("Pragma: no-cache"); ?>
           $path = '/projects/' . $_GET['project'] . '/';   
           //$dirs = array_filter(glob(dirname(__DIR__) . '/projects/' . $_GET['project'] . '/*'), 'is_dir');
           
-        } else { $path = ''; } 
-        
+        } else { $path = ''; }  
         //if (empty(APP_URL['query'])) echo 'developer.php';
         //else
-        echo $path; // developer.php
-        ?>" style="height: 100%;"></iframe>
+        // developer.php
+        ?><?= $path; ?>" style="height: 100%;"></iframe>
     </div>
     <?= /* $appBackup['body'] */ NULL;?>
     <div style="position: relative; margin: 0px auto; width: 100%; border: 1px solid #000;">

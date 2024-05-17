@@ -11,17 +11,20 @@ ini_set('log_errors', 'true');
 
 define('APP_SUDO', 'sudo ');
 
-if (is_readable($path = ini_get('error_log')) && filesize($path) >= 0 ) 
+$errors = []; // (object)
+
+if (is_readable($path = ini_get('error_log')) && filesize($path) >= 0 ) {
   if (strtoupper(substr(PHP_OS, 0, 3)) === 'WIN') {
     $errors['ERROR_PATH'] = $path;
     $errors['ERROR_LOG'] = shell_exec("powershell Get-Content -Tail 10 $path");
-  } else
+  } else {
     $errors['ERROR_LOG'] = shell_exec(APP_SUDO . " tail $path");
+  }
   if (isset($_GET[$error_log = basename(ini_get('error_log'))]) && $_GET[$error_log] == 'unlink') {
     unlink($path);
     exit("Error_log completely removed."); // header('Location: ' . APP_WWW)
   }
-
+}
 
 ini_set('xdebug.remote_enable', '0');
 ini_set('xdebug.profiler_enable', '0');
@@ -43,7 +46,6 @@ const DOMAIN_EXPR = '(?:[a-z]+\:\/\/)?(?:[a-z0-9\-]+\.)+[a-z]{2,6}(?:\/\S*)?'; /
 
 const PHP_EXEC = '/usr/bin/php';
 
-$errors = []; // (object)
 
 //die(var_dump($_SERVER['PHP_SELF'] . DIRECTORY_SEPARATOR . basename($_SERVER['PHP_SELF'])));
 
@@ -74,7 +76,7 @@ class clientOrProj {
     //}
 }
 
-if (!empty($_GET['client']) && !empty($_GET['domain'])) {
+if (!empty($_GET['client']) || !empty($_GET['domain'])) {
   $path = /*'../../'.*/ 'clientele/' . $_GET['client'] . '/';
   $dirs = array_filter(glob(dirname(__DIR__) . '/' . $path . '*'), 'is_dir');
 
@@ -101,7 +103,12 @@ if (!empty($_GET['client']) && !empty($_GET['domain'])) {
         break;
       }
     }
-  
+  else if (!isset($_GET['domain']) && count($dirs) >= 1) {
+    $path .= ($_GET['domain'] = basename(array_values($dirs)[0])) . DIRECTORY_SEPARATOR;
+  //die(var_dump($path));
+
+  }
+
   if (is_dir(APP_PATH . $path)) {
     define('APP_CLIENT', new clientOrProj($path));
     
