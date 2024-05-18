@@ -31,13 +31,39 @@ function git_origin_sha_update() {
   ];
   $context = stream_context_create($options);
 
+  if (!empty($_GET['client']) || !empty($_GET['domain'])) {
+
+    $latest_remote_commit_url = 'https://api.github.com/repos/barrydit/' . $_GET['domain'] . '/git/refs/heads/main';
+
+  //if (isset($_GET['path']) && is_dir(APP_PATH . $path . $_GET['path'])) $path .= $_GET['path'];
+    //else 
+      //exit(header('Location: http://localhost/clientele/' . $_GET['client']));    
+    //$path = '?path=' . $path;
+
+  } elseif (!empty($_GET['project'])) {
+    $path = 'projects' . DIRECTORY_SEPARATOR . $_GET['project'] . DIRECTORY_SEPARATOR;   
+  //$dirs = array_filter(glob(dirname(__DIR__) . '/projects/' . $_GET['project'] . '/*'), 'is_dir');
+  
+  if (is_dir(APP_PATH . $path)) {
+    define('APP_PROJECT', new clientOrProj($path));
+
+    $latest_remote_commit_url = 'https://api.github.com/repos/barrydit/' . $_GET['project'] . '/git/refs/heads/main';
+  }
+  //if (isset($_GET['path']) && is_dir(APP_PATH . $path . $_GET['path'])) $path .= $_GET['path'];
+
+} else {
+  if (isset($_ENV['COMPOSER']) && !empty($_ENV['COMPOSER'])) {
+    $latest_remote_commit_url = 'https://api.github.com/repos/barrydit/' . $_ENV['COMPOSER']['PACKAGE'] . '/git/refs/heads/main'; // commits/main
+  }
+}
 
   // Make the request
-  $response = defined('APP_CONNECTED') || check_http_200($_ENV['GITHUB']['ORIGIN_URL']) ? file_get_contents('https://api.github.com/repos/barrydit/composer_app/commits/main', false, $context) : '{}';
+  $response = defined('APP_CONNECTED') || check_http_200($_ENV['GITHUB']['ORIGIN_URL']) ? file_get_contents($latest_remote_commit_url, false, $context) : '{}';
   $data = json_decode($response, true);
+
   //$errors['GIT_STATUS'] = var_dump($data);
-  if ($data && isset($data['sha'])) {
-    $latest_remote_commit_sha = $data['sha'];
+  if ($data && isset($data['object']['sha'])) {
+    $latest_remote_commit_sha = $data['object']['sha'];
 
     // Compare the two commit SHAs
     if ($latest_local_commit_sha !== $latest_remote_commit_sha) {

@@ -11,6 +11,8 @@ ini_set('log_errors', 'true');
 
 define('APP_SUDO', 'sudo ');
 
+defined('PHP_ZTS') and $errors['PHP_ZTS'] = 'PHP was built with ZTS enabled.';
+
 $errors = []; // (object)
 
 if (is_readable($path = ini_get('error_log')) && filesize($path) >= 0 ) {
@@ -104,35 +106,20 @@ if (!empty($_GET['client']) || !empty($_GET['domain'])) {
       }
     }
   else if (!isset($_GET['domain']) && count($dirs) >= 1) {
-    $path .= ($_GET['domain'] = basename(array_values($dirs)[0])) . DIRECTORY_SEPARATOR;
+
+    if (preg_match('/' . DOMAIN_EXPR . '/i', strtolower(basename(array_values($dirs)[0])))) {
+      $_GET['domain'] = basename(array_values($dirs)[0]);
+      $path .= basename(array_values($dirs)[0]) . DIRECTORY_SEPARATOR;
+    } else {
+      $path .= ($_GET['domain'] = basename(array_values($dirs)[0])) . DIRECTORY_SEPARATOR;
+    }
+
   //die(var_dump($path));
 
   }
-
   if (is_dir(APP_PATH . $path)) {
     define('APP_CLIENT', new clientOrProj($path));
-    
-    $latest_remote_commit_url = 'https://api.github.com/repos/barrydit/' . $_GET['domain'] . '/git/refs/heads/main';
-  }
-  //if (isset($_GET['path']) && is_dir(APP_PATH . $path . $_GET['path'])) $path .= $_GET['path'];
-    //else 
-      //exit(header('Location: http://localhost/clientele/' . $_GET['client']));    
-    //$path = '?path=' . $path;
 
-} elseif (!empty($_GET['project'])) {
-  $path = 'projects' . DIRECTORY_SEPARATOR . $_GET['project'] . DIRECTORY_SEPARATOR;   
-  //$dirs = array_filter(glob(dirname(__DIR__) . '/projects/' . $_GET['project'] . '/*'), 'is_dir');
-  
-  if (is_dir(APP_PATH . $path)) {
-    define('APP_PROJECT', new clientOrProj($path));
-
-    $latest_remote_commit_url = 'https://api.github.com/repos/barrydit/' . $_GET['project'] . '/git/refs/heads/main';
-  }
-  //if (isset($_GET['path']) && is_dir(APP_PATH . $path . $_GET['path'])) $path .= $_GET['path'];
-
-} else {
-  if (isset($_ENV['COMPOSER']) && !empty($_ENV['COMPOSER'])) {
-    $latest_remote_commit_url = 'https://api.github.com/repos/barrydit/' . $_ENV['COMPOSER']['PACKAGE'] . '/git/refs/heads/main';
   }
 }
 // else { if (isset($_GET['path']) && is_dir(APP_PATH . $_GET['path'])) $path = $_GET['path']; }
@@ -393,7 +380,7 @@ END
 ob_start();
 // write content
 
-// defined('PHP_ZTS') and $errors['PHP_ZTS'] = 'PHP was built with ZTS enabled.';
+// 
 
 //echo APP_SELF;
 
@@ -890,7 +877,6 @@ $dotenv->safeLoad();
 
 
 /*
-
 $dotenv = Dotenv\Dotenv::createImmutable(dirname(__DIR__, 1));
 $dotenv->safeLoad();
 */

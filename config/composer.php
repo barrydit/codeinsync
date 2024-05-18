@@ -937,12 +937,10 @@ defined('VENDOR_JSON')
     and define('VENDOR', json_decode(file_get_contents(VENDOR_JSON['path'])));
         break;
     } else {
-
-defined('VENDOR_JSON')
-      or define('VENDOR_JSON', ['json' => '{}', 'path' => '']);
-      
-defined('VENDOR_JSON')
-    and define('VENDOR', json_decode('{}'));
+      if (defined('VENDOR_JSON'))
+        define('VENDOR_JSON', ['json' => '{}', 'path' => '']);
+      else 
+        define('VENDOR_JSON', json_decode('{}'));
     }
   }
 }
