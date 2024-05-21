@@ -325,15 +325,6 @@ input {
 <?php $appConsole['style'] = ob_get_contents();
 ob_end_clean();
 
-
-$auto_clear = false;
-
-// Check if $homePath is a subdirectory of $docRootPath
-if (($homePath = realpath($_SERVER['HOME'])) !== false && ($docRootPath = realpath($_SERVER['DOCUMENT_ROOT'])) !== false && strpos($homePath, $docRootPath) === 0) {
-  $shell_prompt = $_SERVER['USER'] . '@' . $_SERVER['SERVER_NAME'] . ':' . ($homePath == getcwd() ? '~': $homePath) . '$ '; // '$ >'
-} else
-  $shell_prompt = $_SERVER['USER'] . '@' . $_SERVER['SERVER_NAME'] . ':' . ($homePath == getcwd() ? '~': $homePath) . '$ ';
-
 ob_start(); ?>
 
 <!-- <div class="container" style="border: 1px solid #000;"> -->

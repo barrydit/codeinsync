@@ -15,19 +15,6 @@ defined('PHP_ZTS') and $errors['PHP_ZTS'] = 'PHP was built with ZTS enabled.';
 
 $errors = []; // (object)
 
-if (is_readable($path = ini_get('error_log')) && filesize($path) >= 0 ) {
-  if (strtoupper(substr(PHP_OS, 0, 3)) === 'WIN') {
-    $errors['ERROR_PATH'] = $path;
-    $errors['ERROR_LOG'] = shell_exec("powershell Get-Content -Tail 10 $path");
-  } else {
-    $errors['ERROR_LOG'] = shell_exec(APP_SUDO . " tail $path");
-  }
-  if (isset($_GET[$error_log = basename(ini_get('error_log'))]) && $_GET[$error_log] == 'unlink') {
-    unlink($path);
-    exit("Error_log completely removed."); // header('Location: ' . APP_WWW)
-  }
-}
-
 ini_set('xdebug.remote_enable', '0');
 ini_set('xdebug.profiler_enable', '0');
 ini_set('xdebug.default_enable', '0');
@@ -121,6 +108,22 @@ if (!empty($_GET['client']) || !empty($_GET['domain'])) {
     define('APP_CLIENT', new clientOrProj($path));
 
   }
+} else if (!empty($_GET['project']) && is_dir(APP_PATH . 'projects/' . $_GET['project'])) {
+  $path = /*'../../'.*/ 'projects/' . $_GET['project'] . '/';
+  //$dirs = array_filter(glob(dirname(__DIR__) . '/' . $path . '*'), 'is_dir');
+/*
+  if (count($dirs) == 1) {
+    foreach($dirs as $dir) {
+      $dirs[0] = $dirs[array_key_first($dirs)];
+      if (preg_match('/' . DOMAIN_EXPR . '/i', strtolower(basename($dirs[0])))) {
+        $_GET['domain'] = basename($dirs[0]);
+        break;
+      } else {
+        unset($dirs[array_key_first($dirs)]);
+        continue;
+      }
+    }
+  }*/
 }
 // else { if (isset($_GET['path']) && is_dir(APP_PATH . $_GET['path'])) $path = $_GET['path']; }
 
@@ -135,6 +138,23 @@ if (!empty($_GET['client']) || !empty($_GET['domain'])) {
 $additionalPaths = [__DIR__ . DIRECTORY_SEPARATOR . 'constants.php']; //require('constants.php'); 
 $paths = array_merge(array_filter(glob(__DIR__ . DIRECTORY_SEPARATOR . 'classes/*.php'), 'is_file'), $additionalPaths);
 
+
+if (is_readable($path = ini_get('error_log')) && filesize($path) >= 0 ) {
+  if (strtoupper(substr(PHP_OS, 0, 3)) === 'WIN') {
+    $errors['ERROR_PATH'] = $path;
+    $errors['ERROR_LOG'] = shell_exec("powershell Get-Content -Tail 10 $path");
+  } else {
+    $errors['ERROR_LOG'] = shell_exec(APP_SUDO . " tail $path");
+  }
+  if (isset($_GET[$error_log = basename(ini_get('error_log'))]) && $_GET[$error_log] == 'unlink') {
+    unlink($path);
+    $errors['ERROR_LOG'] = $shell_prompt . (!is_file($path) ? 'Error_log was completely removed.' : 'Error_log failed to be removed completely.') . "\n"; // header('Location: ' . APP_WWW)
+  }
+}
+
+
+
+
 while ($path = array_shift($paths)) {
   if ($path = realpath($path))
     require_once $path;
@@ -148,7 +168,7 @@ if ($path = is_file(__DIR__ . DIRECTORY_SEPARATOR . 'functions.php') ? __DIR__ .
 }
 
 if (!function_exists('dd')) {
-  $errors['FUNCTIONS'] = 'functions.php failed to load. Therefore dd() does not exist.';
+  $errors['FUNCTIONS'] = 'functions.php failed to load. Therefore function dd() does not exist (yet).';
 }
 //else dd('test');
 

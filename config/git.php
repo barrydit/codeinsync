@@ -53,7 +53,7 @@ function git_origin_sha_update() {
 
 } else {
   if (isset($_ENV['COMPOSER']) && !empty($_ENV['COMPOSER'])) {
-    $latest_remote_commit_url = 'https://api.github.com/repos/barrydit/' . $_ENV['COMPOSER']['PACKAGE'] . '/git/refs/heads/main'; // commits/main
+    $latest_remote_commit_url = 'https://api.github.com/repos/barrydit/' . $_ENV['COMPOSER']['PACKAGE'] . '/git/refs/heads/main'; // commits/main | sha
   }
 }
 
@@ -80,13 +80,10 @@ function git_origin_sha_update() {
   return $_ENV['GITHUB']['REMOTE_SHA'] = $latest_local_commit_sha;
 }
 //dd($latest_remote_commit_url);
-
-if (isset($_ENV['GITHUB']['REMOTE_SHA']) && git_origin_sha_update() !== $_ENV['GITHUB']['REMOTE_SHA']) {
-
-  echo '';
-  
-} else if (is_file($file = APP_PATH . APP_ROOT . '.env') && date('Y-m-d', filemtime($file)) != date('Y-m-d')) {
-  git_origin_sha_update();
+ if (is_file($file = APP_PATH . APP_ROOT . '.env') && date('Y-m-d', filemtime($file)) != date('Y-m-d')) {
+    if (isset($_ENV['GITHUB']['REMOTE_SHA']) && git_origin_sha_update() !== $_ENV['GITHUB']['REMOTE_SHA']) {
+      //
+    }
 }
 
 

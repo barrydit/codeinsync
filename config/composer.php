@@ -924,26 +924,23 @@ defined('COMPOSER_JSON')
     and define('COMPOSER', ['json' => json_decode(file_get_contents($path = COMPOSER_JSON['path'])), 'path' => $path]);
 
 if (isset(COMPOSER['json']->{'require'}) && !empty(COMPOSER['json']->{'require'}))
-foreach (COMPOSER['json']->require as $key => $value) {
-  if ($key == 'php') continue;
-  else {
-    if (isset(COMPOSER['json']->require->{'composer/composer'}) && $value === COMPOSER['json']->require->{'composer/composer'}) {
-        //echo "The key is: $key";
-    defined('VENDOR_JSON')
-      or define('VENDOR_JSON', ['json' => (is_file(APP_PATH . APP_ROOT . APP_BASE['vendor'] . $key . '/composer.json') ? file_get_contents(APP_PATH . APP_ROOT . APP_BASE['vendor'] . $key . '/composer.json') : '{}'), 'path' => APP_PATH . APP_ROOT . APP_BASE['vendor'] . $key . '/composer.json']);
+  foreach (COMPOSER['json']->require as $key => $value) {
+    if ($key == 'php') continue;
+    else {
+      if (isset(COMPOSER['json']->require->{'composer/composer'}) && $value === COMPOSER['json']->require->{'composer/composer'}) {
+          //echo "The key is: $key";
+        defined('VENDOR_JSON')
+          or define('VENDOR_JSON', ['json' => (is_file(APP_PATH . APP_ROOT . APP_BASE['vendor'] . $key . '/composer.json') ? file_get_contents(APP_PATH . APP_ROOT . APP_BASE['vendor'] . $key . '/composer.json') : '{}'), 'path' => APP_PATH . APP_ROOT . APP_BASE['vendor'] . $key . '/composer.json']);
 
-if (realpath(VENDOR_JSON['path']))
-defined('VENDOR_JSON')
-    and define('VENDOR', json_decode(file_get_contents(VENDOR_JSON['path'])));
+        if (realpath(VENDOR_JSON['path']))
+          defined('VENDOR_JSON')
+            and define('VENDOR', json_decode(file_get_contents(VENDOR_JSON['path'])));
         break;
-    } else {
-      if (defined('VENDOR_JSON'))
-        define('VENDOR_JSON', ['json' => '{}', 'path' => '']);
-      else 
-        define('VENDOR_JSON', json_decode('{}'));
+      } else {
+        defined('VENDOR_JSON') or define('VENDOR_JSON', ['json' => '{}', 'path' => '']);
+      }
     }
   }
-}
 
 //dd(COMPOSER['json']->{'require'}->{'php'}); 
 

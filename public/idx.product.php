@@ -1490,8 +1490,7 @@ header("Pragma: no-cache"); ?>
                 if (isset($count) && $count >= 6) $count = 1;
                 else $count++;
               }
-              }
-              ?>
+            } ?>
         </table>
         <?php } else { ?>
 
@@ -1511,7 +1510,7 @@ header("Pragma: no-cache"); ?>
           
           ob_start(); 
           
-          echo APP_PATH . APP_ROOT; ?> 
+          echo APP_PATH . APP_ROOT ?>
         <table style="width: inherit; border: 0 solid #000;">
           <tr>
             <?php
@@ -1903,14 +1902,35 @@ function makeDraggable(windowId) {
       const displayDirectoryBtn = document.getElementById('displayDirectoryBtn');
       
       console.log('state : ' + appDirectoryContainer.style.display );
-      if (appDirectoryContainer.style.display == 'none') {
+
+
+
+/**/
+      if (appDirectoryContainer.style.display == 'none') {   
+
+<?php if (isset($_GET['client']) && !$_GET['client']) { ?>
+      if (confirm('Do you wish to display clients?')) {
+    // User clicked OK
+    console.log('User clicked OK');
+    $( '#app_directory-container' ).slideDown( "slow", function() {
+           // Animation complete.
+    });
+} else {
+    // User clicked Cancel
+    console.log('User clicked Cancel');
+    $( '#app_directory-container' ).slideUp( "slow", function() {
+           // Animation complete.
+    });
+}<?php } else { ?>
       $( '#app_directory-container' ).slideDown( "slow", function() {
           // Animation complete.
-      });
+     });
+     <?php } ?>
         console.log('hide');
           displayDirectoryBtn.innerHTML = '&nbsp;&#9650;';
       } else {
-      
+ 
+
         $( '#app_directory-container' ).slideUp( "slow", function() {
           // Animation complete.
         });
@@ -1918,6 +1938,7 @@ function makeDraggable(windowId) {
           displayDirectoryBtn.innerHTML = '&nbsp;&#9660;';  
         console.log('show');
       }
+
       //show_console();
       
       });
@@ -1945,7 +1966,13 @@ function makeDraggable(windowId) {
         $( '#app_console-container' ).slideDown( "slow", function() {
           // Animation complete.
         });
-        
+
+        <?php if (isset($_GET['client']) && $_GET['client'] != '') { ?>
+          $( '#app_directory-container' ).slideDown( "slow", function() {
+          // Animation complete.
+          });
+         <?php } ?>
+
         
         $("#debug-content").css('overflow', 'visible');
         
@@ -1957,6 +1984,10 @@ function makeDraggable(windowId) {
 
         $( '#hide_notice-container' ).slideUp( "slow", function() {
           // Animation complete.
+        });
+        
+        $( '#app_directory-container' ).slideUp( "slow", function() {
+         // Animation complete.
         });
         
         // Third option is not selected
@@ -1994,9 +2025,28 @@ function makeDraggable(windowId) {
           $( '#app_directory-container' ).slideDown( "slow", function() {
           // Animation complete.
           });
+      <?php } else if (isset($_GET['path'])) { ?>
+        document.getElementById('toggle-debug').checked = true;
+
+        toggleSwitch(document.getElementById('toggle-debug'));
+/**/
+        $( '#app_directory-container' ).slideDown( "slow", function() {
+         // Animation complete.
+        });
+
+      <?php } else if (isset($_GET['project'])) { ?>
+        document.getElementById('toggle-debug').checked = true;
+
+        toggleSwitch(document.getElementById('toggle-debug'));
+/**/
+        $( '#app_directory-container' ).slideDown( "slow", function() {
+         // Animation complete.
+        });
+
       <?php } else if (defined('APP_ROOT') && APP_ROOT != '' && isset($errors['GIT_UPDATE']) && isset($_ENV['HIDE_UPDATE_NOTICE']) && $_ENV['HIDE_UPDATE_NOTICE'] != true ) { //  isset($_GET['client'])  !$_GET['client'] 
       
-        if ($_GET['client'] != '') { ?>
+        
+      if ($_GET['client'] != '') { ?>
           document.getElementById('toggle-debug').checked = true;
 
           toggleSwitch(document.getElementById('toggle-debug'));
@@ -2019,8 +2069,26 @@ function makeDraggable(windowId) {
             
           toggleSwitch(document.getElementById('toggle-debug'));
           
-      <?php }  }  } else { if (isset($_GET['client']) && $_GET['client'] != '') {
-            if (!isset($_GET['domain'])) { // !$_GET['client'] ?>
+      <?php }  }  } else { if (isset($_GET['client']) && !$_GET['client']) { ?>
+
+
+        if (confirm('Do you wish to display clients?')) {
+// User clicked OK
+console.log('User clicked OK');
+$( '#app_directory-container' ).slideDown( "slow", function() {
+       // Animation complete.
+});
+} else {
+// User clicked Cancel
+console.log('User clicked Cancel');
+$( '#app_directory-container' ).slideUp( "slow", function() {
+       // Animation complete.
+});
+}
+
+
+
+          <?php  if (!isset($_GET['domain'])) { // !$_GET['client'] ?>
 
           document.getElementById('toggle-debug').checked = true;
             
@@ -2036,25 +2104,16 @@ function makeDraggable(windowId) {
            // Animation complete.
           });
 */
-        <?php } } else if (isset($_GET['client']) && !$_GET['client']) { ?>
-          document.getElementById('toggle-debug').checked = true;
+        <?php } } else if (isset($_GET['client']) && $_GET['client'] != '') { ?>
+          document.getElementById('toggle-debug').checked = false;
 
-          toggleSwitch(document.getElementById('toggle-debug'));
 
-          $( '#app_directory-container' ).slideDown( "slow", function() {
+          //toggleSwitch(document.getElementById('toggle-debug'));
+
+          //$( '#app_directory-container' ).slideDown( "slow", function() {
            // Animation complete.
-          });
+          //});
 
-if (confirm('Do you wish to display clients?')) {
-    // User clicked OK
-    console.log('User clicked OK');
-    $( '#app_directory-container' ).slideDown( "slow", function() {
-           // Animation complete.
-    });
-} else {
-    // User clicked Cancel
-    console.log('User clicked Cancel');
-}
           <?php } } ?>
         }
       });

@@ -42,6 +42,14 @@ define('APP_VERSION', number_format(1.0, 1) . '.0');
 version_compare(APP_VERSION, '1.0.0', '>=') == 0
   and $errors['APP_VERSION'] = 'APP_VERSION is not a valid version (' . APP_VERSION . ').';
 
+$auto_clear = false;
+
+// Check if $homePath is a subdirectory of $docRootPath
+if (($homePath = realpath($_SERVER['HOME'])) !== false && ($docRootPath = realpath($_SERVER['DOCUMENT_ROOT'])) !== false && strpos($homePath, $docRootPath) === 0) {
+  $shell_prompt = $_SERVER['USER'] . '@' . $_SERVER['SERVER_NAME'] . ':' . ($homePath == getcwd() ? '~': $homePath) . '$ '; // '$ >'
+} else
+  $shell_prompt = $_SERVER['USER'] . '@' . $_SERVER['SERVER_NAME'] . ':' . ($homePath == getcwd() ? '~': $homePath) . '$ ';
+
 const APP_NAME = 'Dashboard';
 !is_string(APP_NAME)
   and $errors['APP_NAME'] = 'APP_NAME is not a string => ' . var_export(APP_NAME, true); // print('Name: ' . APP_NAME  . ' v' . APP_VERSION . "\n");

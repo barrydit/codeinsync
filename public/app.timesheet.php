@@ -618,7 +618,7 @@ switch ($_SERVER['REQUEST_METHOD']) {
                   continue 2;
                 }
               }
-              if ($json_decode[$weekday_key][$idletime_key] !== $_POST['idletime']['time']) // $Now->format('H:i:s')
+              if (isset($json_decode[$weekday_key][$idletime_key]) && $json_decode[$weekday_key][$idletime_key] !== $_POST['idletime']['time']) // $Now->format('H:i:s')
                 if (!isset($json_decode[$weekday_key][$_POST['idletime']['time']])) // $Now->format('H:i:s')
                   $json_decode[$weekday_key][$_POST['idletime']['time']] = (isset($_POST['idletime']['idle']) ? $_POST['idletime']['idle'] : NULL);  // $Now->format('H:i:s')
             } else {
