@@ -108,22 +108,21 @@ if (!is_dir(NODE_MODULES_PATH)) {
   
    // Error: npm WARN using --force Recommended protections disabled.
 */
-if (strtoupper(substr(PHP_OS, 0, 3)) !== 'WIN')
+if (strtoupper(substr(PHP_OS, 0, 3)) !== 'WIN') {
   $npmExecPath = shell_exec('which ' . NPM_EXEC);
   if ($npmExecPath !== false) {
+    $proc=proc_open(APP_SUDO . NPM_EXEC . ' cache clean -f',
+    array(
+      array("pipe","r"),
+      array("pipe","w"),
+      array("pipe","w")
+    ),
+    $pipes);
+    list($stdout, $stderr, $exitCode) = [stream_get_contents($pipes[1]), stream_get_contents($pipes[2]), proc_close($proc)];
 
-  $proc=proc_open(APP_SUDO . NPM_EXEC . ' cache clean -f',
-  array(
-    array("pipe","r"),
-    array("pipe","w"),
-    array("pipe","w")
-  ),
-  $pipes);
-  list($stdout, $stderr, $exitCode) = [stream_get_contents($pipes[1]), stream_get_contents($pipes[2]), proc_close($proc)];
-
-  if (!preg_match('/npm\sWARN\susing\s--force\sRecommended\sprotections\sdisabled./', $stderr))
-    $errors['NPM-CACHE-CLEAN-F'] = (!isset($stdout) ? NULL : $stdout . (isset($stderr) && $stderr === '' ? NULL : (preg_match('/npm\sWARN\susing\s--force\sRecommended\sprotections\sdisabled./', $stderr) ? $stderr : ' Error: ' . $stderr)) . (isset($exitCode) && $exitCode == 0 ? NULL : 'Exit Code: ' . $exitCode));
-  
+    if (!preg_match('/npm\sWARN\susing\s--force\sRecommended\sprotections\sdisabled./', $stderr))
+      $errors['NPM-CACHE-CLEAN-F'] = (!isset($stdout) ? NULL : $stdout . (isset($stderr) && $stderr === '' ? NULL : (preg_match('/npm\sWARN\susing\s--force\sRecommended\sprotections\sdisabled./', $stderr) ? $stderr : ' Error: ' . $stderr)) . (isset($exitCode) && $exitCode == 0 ? NULL : 'Exit Code: ' . $exitCode));
+  }
 }
 
   // Error: npm WARN using --force Recommended protections disabled.
