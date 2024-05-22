@@ -113,6 +113,8 @@
   //}
   /**/
 
+ register_shutdown_function([new Shutdown(), 'onShutdown']);
+ 
  if (defined('APP_ENV') and APP_ENV == 'production' )
    require_once 'idx.product.php';
  elseif (defined('APP_ENV') and APP_ENV == 'development')

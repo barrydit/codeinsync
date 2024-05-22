@@ -79,7 +79,6 @@ $proc=proc_open($command,
           $output[] = (!isset($stdout) ? NULL : $stdout . (isset($stderr) && $stderr === '' ? NULL : (preg_match('/^To\s' . DOMAIN_EXPR . '/', $stderr) ? $stderr : 'Error: ' . $stderr) ) . (isset($exitCode) && $exitCode == 0 ? NULL : 'Exit Code: ' . $exitCode));
           } else if (preg_match('/^git\s+(update)(:?\s+)?/i', $_POST['cmd'])) {
             $output[] = git_origin_sha_update();
-
           } else if (preg_match('/^git\s+(clone)(:?\s+)?/i', $_POST['cmd'])) {
           
             //$output[] = dd($_POST['cmd']);
@@ -213,7 +212,8 @@ $proc=proc_open((strtoupper(substr(PHP_OS, 0, 3)) === 'WIN' ? '' : APP_SUDO) . $
         else echo join("\n", $output); // . "\n"
         //$output[] = 'post: ' . var_dump($_POST);
       //else var_dump(get_class_methods($repo));
-      exit();
+      Shutdown::setEnabled(false)->setShutdownMessage()->shutdown(function () {});
+      //exit();
     }
 }
 /*

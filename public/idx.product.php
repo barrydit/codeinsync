@@ -1,10 +1,11 @@
 <?php
 
+if (!defined('APP_ROOT')) {
+
   if (!isset($_ENV['DEFAULT_CLIENT']))
     $_ENV['DEFAULT_CLIENT'] = '';
   if (!isset($_ENV['DEFAULT_DOMAIN']))
     $_ENV['DEFAULT_DOMAIN'] = '';
-    
 
   if (defined('APP_QUERY') && empty(APP_QUERY))
     die(header('Location: ' . APP_URL_BASE . '?' . http_build_query([
@@ -13,6 +14,8 @@
     ]) . '#'));
   else
     $_GET = array_merge($_GET, APP_QUERY);
+
+}
 
   /*
   $_SERVER['REQUEST_SCHEME']

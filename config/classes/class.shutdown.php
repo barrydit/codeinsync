@@ -12,6 +12,8 @@ class Shutdown {
         $this->functions = [];
         defined('APP_END') or define('APP_END', microtime(true));
 
+        //die(var_dump($_ENV));
+
         $iniString = '';
         if (is_file($file = APP_PATH . APP_ROOT . '.env')){
           if (isset($_ENV) && !empty($_ENV))
@@ -62,6 +64,7 @@ class Shutdown {
 
     public function onShutdown() {
         if (!self::$enabled) { // $this->enabled
+            //die(var_dump($_ENV));
             // global $pdo, $session_save;
             //if (defined('APP_INSTALL') && APP_INSTALL && $path = APP_PATH . 'install.php') // is_file('config/constants.php')) 
             //    require_once($path);

@@ -77,7 +77,7 @@ function git_origin_sha_update() {
   } else {
     $errors['GIT_UPDATE'] .= "Failed to retrieve commit information.\n";
   }
-  return $_ENV['GITHUB']['REMOTE_SHA'] = $latest_local_commit_sha;
+  return ($_ENV['GITHUB']['REMOTE_SHA'] = $latest_local_commit_sha);
 }
 //dd($latest_remote_commit_url);
  if (is_file($file = APP_PATH . APP_ROOT . '.env') && date('Y-m-d', filemtime($file)) != date('Y-m-d')) {

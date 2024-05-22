@@ -153,8 +153,6 @@ if (is_readable($path = ini_get('error_log')) && filesize($path) >= 0 ) {
 }
 
 
-
-
 while ($path = array_shift($paths)) {
   if ($path = realpath($path))
     require_once $path;
