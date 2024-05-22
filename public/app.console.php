@@ -212,7 +212,7 @@ $proc=proc_open((strtoupper(substr(PHP_OS, 0, 3)) === 'WIN' ? '' : APP_SUDO) . $
         else echo join("\n", $output); // . "\n"
         //$output[] = 'post: ' . var_dump($_POST);
       //else var_dump(get_class_methods($repo));
-      Shutdown::setEnabled(false)->setShutdownMessage()->shutdown(function () {});
+      Shutdown::setEnabled(false)->setShutdownMessage(function () {})->shutdown();
       //exit();
     }
 }

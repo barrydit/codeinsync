@@ -36,15 +36,23 @@ define('NODE_MODULES_PATH', APP_PATH . 'node_modules/');
 
 if (strtoupper(substr(PHP_OS, 0, 3)) === 'WIN')
   define('NPM_EXEC', 'npm' /*.'.cmd'*/);
-else
+else {
   define('NPM_EXEC', '/usr/bin/npm');
 
-$proc = proc_open((strtoupper(substr(PHP_OS, 0, 3)) === 'WIN' ? '' : APP_SUDO) . NPM_EXEC . ' --version', [ array("pipe","r"), array("pipe","w"), array("pipe","w")], $pipes);
+  $npmExecPath = shell_exec('which ' . NPM_EXEC);
+  if ($npmExecPath !== false) {
+    // npm_exec not found
+    // handle the error here
+  
+$proc = proc_open((strtoupper(substr(PHP_OS, 0, 3)) === 'WIN' ? '' : APP_SUDO) . NPM_EXEC . ' --version', [array("pipe","r"), array("pipe","w"), array("pipe","w")], $pipes);
 
 $stdout = stream_get_contents($pipes[1]);
 $stderr = stream_get_contents($pipes[2]);
 
 $exitCode = proc_close($proc);
+    
+  }
+}
 
 if (preg_match('/(\d+\.\d+\.\d+)/', $stdout, $matches))
   define('NPM_VERSION', $matches[1]);
