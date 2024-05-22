@@ -503,9 +503,11 @@ ob_end_clean();
 if (!realpath(APP_PATH . APP_ROOT . APP_BASE['vendor'])) {
   exec(COMPOSER_INIT_PARAMS);
 } elseif (!realpath(APP_PATH . APP_ROOT . APP_BASE['vendor'] . 'autoload.php')) {
-    exec((strtoupper(substr(PHP_OS, 0, 3)) === 'WIN' ? '' : APP_SUDO) . COMPOSER_EXEC['bin'] . ' update', $output, $returnCode) or $errors['COMPOSER-INIT-UPDATE'] = $output;
-    exec((strtoupper(substr(PHP_OS, 0, 3)) === 'WIN' ? '' : APP_SUDO) . COMPOSER_EXEC['bin'] . ' dump-autoload', $output, $returnCode) or $errors['COMPOSER-DUMP-AUTOLOAD'] = $output;
-  }
+  exec((strtoupper(substr(PHP_OS, 0, 3)) === 'WIN' ? '' : APP_SUDO) . COMPOSER_EXEC['bin'] . ' update', $output, $returnCode) or $errors['COMPOSER-INIT-UPDATE'] = $output;
+  exec((strtoupper(substr(PHP_OS, 0, 3)) === 'WIN' ? '' : APP_SUDO) . COMPOSER_EXEC['bin'] . ' dump-autoload', $output, $returnCode) or $errors['COMPOSER-DUMP-AUTOLOAD'] = $output;
+}
+/* Consider writing a gui that would handle the composer traffic ... */
+
 
 // dd(getcwd());
 

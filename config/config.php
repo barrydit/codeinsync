@@ -140,8 +140,8 @@ $paths = array_merge(array_filter(glob(__DIR__ . DIRECTORY_SEPARATOR . 'classes/
 
 
 if (is_readable($path = ini_get('error_log')) && filesize($path) >= 0 ) {
+  $errors['ERROR_PATH'] = $path . "\n";
   if (strtoupper(substr(PHP_OS, 0, 3)) === 'WIN') {
-    $errors['ERROR_PATH'] = $path;
     $errors['ERROR_LOG'] = shell_exec("powershell Get-Content -Tail 10 $path");
   } else {
     $errors['ERROR_LOG'] = shell_exec(APP_SUDO . " tail $path");
