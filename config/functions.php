@@ -39,7 +39,7 @@ function check_internet_connection($ip = '8.8.8.8') {
 
   // Ping the host to check network connectivity
   if (strtoupper(substr(PHP_OS, 0, 3)) === 'WIN')
-      exec("ping -n 1 -w 1 -W 20 " . escapeshellarg($ip), $output, $status);  // parse_url($ip, PHP_URL_HOST)
+      exec("ping -n 1 -w 1 " . /*-W 20 */ escapeshellarg($ip), $output, $status);  // parse_url($ip, PHP_URL_HOST)
   else
       exec(APP_SUDO . "/bin/ping -c 1 -W 1 " . escapeshellarg($ip), $output, $status); // var_dump(\$status)
   return $status === 0;
