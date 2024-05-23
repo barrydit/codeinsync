@@ -1,11 +1,10 @@
 <?php
 
-if (!defined('APP_ROOT')) {
+if (isset($_GET['CLIENT']) || isset($_GET['DOMAIN']) && !defined('APP_ROOT')) {
 
-  if (!isset($_ENV['DEFAULT_CLIENT']))
-    $_ENV['DEFAULT_CLIENT'] = '';
-  if (!isset($_ENV['DEFAULT_DOMAIN']))
-    $_ENV['DEFAULT_DOMAIN'] = '';
+  if (!isset($_ENV['DEFAULT_CLIENT'])) $_ENV['DEFAULT_CLIENT'] = $_GET['CLIENT'];
+
+  if (!isset($_ENV['DEFAULT_DOMAIN'])) $_ENV['DEFAULT_DOMAIN'] = $_GET['DOMAIN'];
 
   if (defined('APP_QUERY') && empty(APP_QUERY))
     die(header('Location: ' . APP_URL_BASE . '?' . http_build_query([

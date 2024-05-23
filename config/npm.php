@@ -123,7 +123,7 @@ if (strtoupper(substr(PHP_OS, 0, 3)) !== 'WIN') {
     if (!preg_match('/npm\sWARN\susing\s--force\sRecommended\sprotections\sdisabled./', $stderr))
       $errors['NPM-CACHE-CLEAN-F'] = (!isset($stdout) ? NULL : $stdout . (isset($stderr) && $stderr === '' ? NULL : (preg_match('/npm\sWARN\susing\s--force\sRecommended\sprotections\sdisabled./', $stderr) ? $stderr : ' Error: ' . $stderr)) . (isset($exitCode) && $exitCode == 0 ? NULL : 'Exit Code: ' . $exitCode));
   }
-}
+
 
   // Error: npm WARN using --force Recommended protections disabled.
 
@@ -237,6 +237,8 @@ END
       list($stdout, $stderr, $exitCode) = [stream_get_contents($pipes[1]), stream_get_contents($pipes[2]), proc_close($proc)];
       $errors['NPM-RUN-BUILD[bundle.js]'] = (!isset($stdout) ? NULL : $stdout . (isset($stderr) && $stderr === '' ? NULL : ' Error: ' . $stderr) . (isset($exitCode) && $exitCode == 0 ? NULL : 'Exit Code: ' . $exitCode));
     }
-  }
+  }  
+
+    }
   }
 }

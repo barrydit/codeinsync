@@ -139,14 +139,14 @@ $additionalPaths = [__DIR__ . DIRECTORY_SEPARATOR . 'constants.php']; //require(
 $paths = array_merge(array_filter(glob(__DIR__ . DIRECTORY_SEPARATOR . 'classes/*.php'), 'is_file'), $additionalPaths);
 
 
-if (is_readable($path = ini_get('error_log')) && filesize($path) >= 0 ) {
+if (is_readable($path = APP_PATH . APP_ROOT . 'error_log') && filesize($path) >= 0 ) {
   $errors['ERROR_PATH'] = $path . "\n";
   if (strtoupper(substr(PHP_OS, 0, 3)) === 'WIN') {
     $errors['ERROR_LOG'] = shell_exec("powershell Get-Content -Tail 10 $path");
   } else {
     $errors['ERROR_LOG'] = shell_exec(APP_SUDO . " tail $path");
   }
-  if (isset($_GET[$error_log = basename(ini_get('error_log'))]) && $_GET[$error_log] == 'unlink') {
+  if (isset($_GET[$error_log = basename($path)]) && $_GET[$error_log] == 'unlink') {
     unlink($path);
     $errors['ERROR_LOG'] = $shell_prompt . (!is_file($path) ? 'Error_log was completely removed.' : 'Error_log failed to be removed completely.') . "\n"; // header('Location: ' . APP_WWW)
   }
