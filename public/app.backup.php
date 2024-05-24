@@ -12,7 +12,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 
 }
 
-const APP_BACKUP_PATH = $_SERVER['HOME'] . '/backup/'; // symlink(/mnt/d)
+define('APP_BACKUP_PATH', (isset($_SERVER['HOME']) ? $_SERVER['HOME'] : $_SERVER['DOCUMENT_ROOT']) . '/backup/'); // symlink(/mnt/d)
 
 ob_start();
 ?>
