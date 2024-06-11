@@ -1,4 +1,8 @@
 <?php
+
+if (is_file($include = APP_PATH . APP_ROOT . APP_BASE['vendor'] . 'autoload.php'))
+  require_once($include);
+
 use Composer\InstalledVersions;
 
 const COMPOSER_EXPR_NAME = '/([a-z0-9](?:[_.-]?[a-z0-9]+)*)\/([a-z0-9](?:(?:[_.]|-{1,2})?[a-z0-9]+)*)/'; // name
@@ -17,7 +21,6 @@ const COMPOSER_EXPR_VER = '/v?\d+(?:\.\d+){0,3}|dev-.*/'; // version
 // -d xdebug.default_enable=0
 
 // php -dxdebug.mode=debug -dxdebug.output_dir=. public/ui_complete.php
-
 
 /*
 foreach ($array = preg_split("/\r\n|\n|\r/", exec(APP_SUDO . ' /usr/local/bin/composer diagnose')) as $key => $diag_line) {
@@ -43,7 +46,7 @@ class ComposerConfig {
   private $description;
   // Add more properties as needed
   
-  public function __construct($config = []) {
+  public function __construct($config = ['name' => 'default', 'version' => '1.0.0', 'description' => 'Default description']) {
       $this->name = $config['name'];
       $this->version = $config['version'];
       $this->description = $config['description'];
@@ -79,7 +82,6 @@ class ComposerConfig {
   }
   
   // Add getter methods for each property
-  
   public function getName() {
       return $this->name;
   }
@@ -115,8 +117,6 @@ class ComposerConfig {
       }
   }
 }
-
-
 
 class composerSchema {
   public $name;

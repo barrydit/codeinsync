@@ -169,30 +169,31 @@ ob_start(); ?>
         </div>
         <div class="absolute" style="position: absolute; display: inline-block; top: 4px; text-align: right; width: 272px; ">
           <div class="text-xs" style="display: inline-block;">
-          + 3357 <a href="https://github.com/nodejs/node/graphs/contributors">contributors</a>
-          <br /><a href="https://github.com/nodejs"><img src="resources/images/node.js.png" title="https://github.com/nodejs" width="18" height="18" /></a>
-          <a style="color: blue; text-decoration-line: underline; text-decoration-style: solid;" href="https://nodejs.org/" title="https://nodejs.org/">https://nodejs.org/</a>
+          + 478 <a href="https://github.com/ajaxorg/ace/graphs/contributors">contributors</a>
+          <br /><a href="https://github.com/ajaxorg"><img src="resources/images/node.js.png" title="https://github.com/nodejs" width="18" height="18" /></a>
+          <a style="color: blue; text-decoration-line: underline; text-decoration-style: solid;" href="https://ace.c9.io/" title="https://ace.c9.io/">https://ace.c9.io/</a>
           </div>
         </div>
         <div style="clear: both;"></div>
       </div>
-
+<!--
       <div class="" style="position: absolute; top: 0; left: 0; right: 0; margin: 10px auto; opacity: 1.0; text-align: center; cursor: pointer; z-index: 1;">
         <img class="npm-menu" src="resources/images/node_npm.fw.png" style="margin-top: 45px;" width="150" height="198" />
       </div>
-
+-->
 
 <div style="position: relative; overflow: hidden; width: 398px; height: 256px;">
-
+<!--
       <div id="app_ace_editor-frameMenu" class="app_ace_editor-frame-container absolute selected" style="background-color: rgb(225,196,151,.75); margin-top: 8px; height: 100%;">
-
+-->
 
     <div style="position: relative; display: inline-block; width: auto; padding-left: 10px;">
+ <!--
       <form style="display: inline;" autocomplete="off" spellcheck="false" action="<?= APP_URL_BASE . /*basename(__FILE__) .*/ '?' . http_build_query(APP_QUERY /*+ array( 'app' => 'ace_editor')*/) . (defined('APP_ENV') && APP_ENV == 'development' ? '#!' : '') /* $c_or_p . '=' . (empty($_GET[$c_or_p]) ? '' : $$c_or_p->name) . '&amp;app=composer' */ ?>" method="GET">
         <input type="hidden" name="app" value="ace_editor" />
       <?php $path = realpath(getcwd() . (isset($_GET['path']) ? DIRECTORY_SEPARATOR . $_GET['path'] : '')) . DIRECTORY_SEPARATOR;
       if (isset($_GET['path'])) { ?>
-        <!-- <input type="hidden" name="path" value="<?= $_GET['path']; ?>" /> -->
+       <input type="hidden" name="path" value="<?= $_GET['path']; ?>" /> 
       <?php } echo '<span title="' . $path . '">' . parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH) . '</span>'; /* $path; */ ?>
         <select name="path" onchange="this.form.submit();">
           <option value>.</option>
@@ -205,7 +206,8 @@ if ($path)
 ?>
         </select>
       </form>
- /<!--<input type="text" name="file" value="index.php" />-->
+ / <input type="text" name="file" value="index.php" /> 
+
       <form style="display: inline;" autocomplete="off" spellcheck="false" action="<?= APP_URL_BASE . /*basename(__FILE__) .*/ '?' . http_build_query(APP_QUERY /*+ array( 'app' => 'ace_editor')*/) . (defined('APP_ENV') && APP_ENV == 'development' ? '#!' : '') /* $c_or_p . '=' . (empty($_GET[$c_or_p]) ? '' : $$c_or_p->name) . '&amp;app=composer' */ ?>" method="GET">
       <input type="hidden" name="app" value="ace_editor" />
 
@@ -221,18 +223,24 @@ foreach (array_filter( glob($path . DIRECTORY_SEPARATOR . '*.php'), 'is_file') a
 ?>
         </select>
       </form>
-      </div>
+      </div> -->
+
 
       <form style="position: relative; display: inline;" action="<?= APP_URL_BASE . '?' . http_build_query(APP_QUERY + array( 'app' => 'ace_editor')) . (defined('APP_ENV') && APP_ENV == 'development' ? '#!' : '') /* $c_or_p . '=' . (empty($_GET[$c_or_p]) ? '' : $$c_or_p->name) . '&amp;app=composer' */ ?>" method="POST">
         <input type="hidden" name="path" value="<?= APP_PATH /*. APP_BASE['public'];*/ ?>" />
         <div style="display: inline-block; width: auto; text-align: right; float: right;">
           <input type="submit" value="Save" class="btn" style="margin: -5px 5px 5px 0;" onclick="document.getElementsByClassName('ace_text-input')[0].value = globalEditor.getSession().getValue(); document.getElementsByClassName('ace_text-input')[0].name = 'editor';"/>
         </div>
-        <!-- A (<?= $path ?>) future note: keep ace-editor nice and tight ... no spaces, as it interferes with the content window. -->
+<!--   A (<?= $path ?>) future note: keep ace-editor nice and tight ... no spaces, as it interferes with the content window.
+ https://scribbled.space/ace-editor-setup-usage/-->
 
-<!-- https://scribbled.space/ace-editor-setup-usage/ -->
+        <div id="ui_ace_editor" class="ace_editor" style="display: <?= (isset($_GET['file']) && isset($_GET['path']) && is_file($_GET['path'] . $_GET['file']) ? 'block': 'block')?>; width: 700px; height: 400px; z-index: 1;"><textarea name="contents" class="ace_text-input" autocorrect="off" autocapitalize="none" spellcheck="false" style="opacity: 0; font-size: 1px; height: 1px; width: 1px; top: 28px; left: 86px;" wrap="off"><?= (isset($_GET['file']) && is_file($path . $_GET['file']) ? htmlsanitize(file_get_contents($path . $_GET['file'])) : /* (isset($_GET['project']) ? htmlsanitize(file_get_contents($path . 'projects/project.php')) : '')*/ '' ); /*   'clientele/' . $_GET['client'] . '/' . $_GET['domain'] . '/' .  */ ?><?= htmlsanitize("<?php
 
-        <!-- div id="ace-editor" class="ace_editor" style="display: <?= (isset($_GET['file']) && isset($_GET['path']) && is_file($_GET['path'] . $_GET['file']) ? 'block': 'block')?>; width: 700px; height: 400px; z-index: 1;"><textarea name="contents" class="ace_text-input" autocorrect="off" autocapitalize="none" spellcheck="false" style="opacity: 0; font-size: 1px; height: 1px; width: 1px; top: 28px; left: 86px;" wrap="off"><?= (isset($_GET['file']) && is_file($path . $_GET['file']) ? htmlsanitize(file_get_contents($path . $_GET['file'])) : (isset($_GET['project']) ? htmlsanitize(file_get_contents($path . 'projects/project.php')) : '') ); /*   'clientele/' . $_GET['client'] . '/' . $_GET['domain'] . '/' .  */ ?></textarea></div -->
+/* This is an example of ACE Editor working */
+
+require(__DIR__ . 'config/config.php');
+
+"); ?></textarea></div>
 <?= /*
         <div class="containerTbl" style="background-ground: #fff; border: 1px solid #000; display: <?= (isset($_GET['file']) && isset($_GET['path']) && is_file($_GET['path'] . $_GET['file']) ? 'none': 'block' ) ?>;">
 <table width="" style="border: 1px solid #000;">
@@ -276,12 +284,13 @@ if (!empty($paths))
         </div>
 */ NULL; ?>
       </form>
-      
+-->
       <!-- <pre id="ace-editor" class="ace_editor"></pre> -->
 
       </div>
 
       <div id="app_ace_editor-frameInit" class="app_ace_editor-frame-container absolute" style="overflow: hidden; height: 270px;">
+<!--
     <form autocomplete="off" spellcheck="false" action="?app=git#!" method="POST">
       <div style="position: absolute; right: 0; float: right; text-align: center;">
         <input id="gitInitSubmit" class="btn" type="submit" value="Init/Run">
@@ -296,6 +305,7 @@ if (!empty($paths))
         <textarea cols="40" rows="2" name="git[init]">git init</textarea>
       </div>
     </form>
+-->
       </div>
 
 
@@ -308,25 +318,26 @@ ob_end_clean();
 
 ob_start(); ?>
 
-
 <?php //if (isset($_GET['client']) && $_GET['client'] != '') { 
 //if (isset($_GET['domain']) && $_GET['domain'] != '') {
 if (is_dir($path = APP_PATH . APP_BASE['resources'] . 'js/ace')) {
 ?>
+
 //var ace = require("resources/js/ace/src/ace.js"); // ext/language_tools
-var editor = ace.edit("ace-editor");
-editor.setTheme("ace/theme/dracula");
+var appEditor = ace.edit("app-ace-editor");
+appEditor.setTheme("ace/theme/dracula");
 
 //var JavaScriptMode = ace.require("ace/mode/javascript").Mode;
-editor.session.setMode("ace/mode/php");
-editor.setAutoScrollEditorIntoView(true);
-editor.setShowPrintMargin(false);
-editor.setOptions({
+appEditor.session.setMode("ace/mode/php");
+appEditor.setAutoScrollEditorIntoView(true);
+appEditor.setShowPrintMargin(false);
+appEditor.setOptions({
     //  resize: "both"
   enableBasicAutocompletion: true,
   enableLiveAutocompletion: true,
   enableSnippets: true
 });
+
 <?php } //}
 ?>
 
@@ -394,8 +405,10 @@ unset($path);
 </script>
 </body>
 </html>
-<?php return ob_get_contents(); 
+<?php 
+  $return_contents = ob_get_contents(); 
   ob_end_clean();
+  return $return_contents;
 } else { 
   return $app;
 }

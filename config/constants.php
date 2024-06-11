@@ -11,6 +11,8 @@
 
 /* This code sets up some basic configuration constants for a PHP application. */
 
+define('APP_SUDO', 'sudo ');
+
 define('APP_START', microtime(true));
 !defined('APP_START') || is_float(APP_START) ?: $errors['APP_START'] = 'APP_START is not a valid float value.';
 
@@ -138,7 +140,7 @@ if (defined('APP_BASE'))
     }
   }
 
-define('APP_PUBLIC',  str_replace(APP_PATH, '', basename(dirname(APP_SELF)) == 'public' ? APP_PATH . APP_BASE['public'] . basename(APP_SELF) : basename(APP_SELF)) );
+define('APP_PUBLIC', APP_PATH . APP_BASE['public'] . str_replace(APP_PATH, '', APP_BASE['public'] . dirname(basename(APP_SELF)) == 'public' ? basename(APP_SELF) : 'index.php')); // 
 
 //var_dump(APP_PATH . basename(dirname(__DIR__, 2)) . '/' . basename(dirname(__DIR__, 1)));
 

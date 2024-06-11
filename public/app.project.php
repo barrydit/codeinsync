@@ -133,7 +133,7 @@ ob_start(); ?>
           <div id="second">
 
 <?php $path = realpath(getcwd() . (isset($_GET['path']) ? DIRECTORY_SEPARATOR . $_GET['path'] : '')) . DIRECTORY_SEPARATOR; ?>
-            <div id="ace-editor" class="ace_editor" style="display: <?= (isset($_GET['file']) && isset($_GET['path']) && is_file($_GET['path'] . $_GET['file']) ? 'block': 'block'); ?>; width: 778px; height: 287px; z-index: 2;"><textarea name="contents" class="ace_text-input" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" style="opacity: 0; font-size: 1px; height: 1px; width: 1px; top: 28px; left: 86px;" wrap="off"><?= htmlsanitize((is_file('projects/project.php') ? file_get_contents('projects/project.php') : '') ) /*   'clientele/' . $_GET['client'] . '/' . $_GET['domain'] . '/' .  */ ?></textarea></div>
+            <div id="app_project_editor" class="editor" style="display: <?= (isset($_GET['file']) && isset($_GET['path']) && is_file($_GET['path'] . $_GET['file']) ? 'block': 'block'); ?>; width: 778px; height: 287px; z-index: 2;"><textarea name="contents" class="ace_text-input" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" style="opacity: 0; font-size: 1px; height: 1px; width: 1px; top: 28px; left: 86px;" wrap="off"><?= htmlsanitize((is_file('projects/project.php') ? file_get_contents('projects/project.php') : '') ) /*   'clientele/' . $_GET['client'] . '/' . $_GET['domain'] . '/' .  */ ?></textarea></div>
           </div>
         </form>
       </div>
@@ -204,7 +204,7 @@ document.getElementById('app_project-saveForm').addEventListener('submit', funct
 
   //document.getElementsByClassName('ace_text-input')[0].value = globalEditor.getSession().getValue();
   //document.getElementsByClassName('ace_text-input')[0].name = 'editor';
-
+  //var globalEditor = editor2;
   console.log(globalEditor.getSession().getValue());
 
       $.ajax({
@@ -278,7 +278,27 @@ if (is_file($path . 'tailwindcss-3.3.5.js')) {
   <!-- script src="//code.jquery.com/jquery-1.12.4.js"></script -->
   <script src="//code.jquery.com/ui/1.12.1/jquery-ui.js"></script> <!-- Uncaught ReferenceError: jQuery is not defined -->
 
-<script>
+
+  <script src="resources/js/ace/src/ace.js" type="text/javascript" charset="utf-8"></script> 
+    <script src="resources/js/ace/src/ext-language_tools.js" type="text/javascript" charset="utf-8"></script>
+    
+    <script>
+    document.addEventListener("DOMContentLoaded", function() {
+        var editor = ace.edit("app_project_editor");
+        editor.setTheme("ace/theme/dracula");
+        // (file_ext .js = javascript, .php = php)
+        editor.session.setMode("ace/mode/php");
+        editor.setAutoScrollEditorIntoView(true);
+        editor.setShowPrintMargin(false);
+        editor.setOptions({
+            //  resize: "both"
+            enableBasicAutocompletion: true,
+            enableLiveAutocompletion: true,
+            enableSnippets: true
+        });
+
+    });
+
 <?= $appProject['script']; ?>
 </script>
 </body>

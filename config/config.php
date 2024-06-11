@@ -9,8 +9,6 @@ ini_set('display_startup_errors', 'true');
 ini_set('error_log', is_dir($path = dirname(__DIR__, 1) . DIRECTORY_SEPARATOR . 'config') ? dirname($path, 1) . DIRECTORY_SEPARATOR . 'error_log' : 'error_log');
 ini_set('log_errors', 'true');
 
-define('APP_SUDO', 'sudo ');
-
 defined('PHP_ZTS') and $errors['PHP_ZTS'] = 'PHP was built with ZTS enabled.';
 
 $errors = []; // (object)
@@ -125,6 +123,7 @@ if (!empty($_GET['client']) || !empty($_GET['domain'])) {
     }
   }*/
 }
+unset($dirs);
 // else { if (isset($_GET['path']) && is_dir(APP_PATH . $_GET['path'])) $path = $_GET['path']; }
 
 !defined('APP_ROOT') and define('APP_ROOT', $path = realpath(APP_PATH . $path) ? $path : null); // dirname(APP_SELF, (basename(getcwd()) != 'public' ?: 2))
@@ -136,8 +135,20 @@ if (!empty($_GET['client']) || !empty($_GET['domain'])) {
 // Directory of this script
 
 $additionalPaths = [__DIR__ . DIRECTORY_SEPARATOR . 'constants.php']; //require('constants.php'); 
+
+is_file($path = __DIR__ . DIRECTORY_SEPARATOR . 'functions.php') ? 
+  $additionalPaths[] =  $path : 
+    (is_file($path = 'config/functions.php') ? 
+      $additionalPaths[] = $path :
+      $additionalPaths[] = 'functions.php') or die(var_dump("$path was not found. file=" . $path));
+
 $paths = array_merge(array_filter(glob(__DIR__ . DIRECTORY_SEPARATOR . 'classes/*.php'), 'is_file'), $additionalPaths);
 
+while ($path = array_shift($paths)) {
+  if ($path = realpath($path))
+    require_once $path;
+  else die(var_dump(basename($path) . ' was not found. file=' . basename($path)));
+}
 
 if (is_readable($path = APP_PATH . APP_ROOT . 'error_log') && filesize($path) >= 0 ) {
   $errors['ERROR_PATH'] = $path . "\n";
@@ -150,19 +161,6 @@ if (is_readable($path = APP_PATH . APP_ROOT . 'error_log') && filesize($path) >=
     unlink($path);
     $errors['ERROR_LOG'] = $shell_prompt . (!is_file($path) ? 'Error_log was completely removed.' : 'Error_log failed to be removed completely.') . "\n"; // header('Location: ' . APP_WWW)
   }
-}
-
-
-while ($path = array_shift($paths)) {
-  if ($path = realpath($path))
-    require_once $path;
-  else die(var_dump(basename($path) . ' was not found. file=classes/' . basename($path)));
-}
-
-if ($path = is_file(__DIR__ . DIRECTORY_SEPARATOR . 'functions.php') ? __DIR__ . DIRECTORY_SEPARATOR . 'functions.php' : (is_file('config/functions.php') ? 'config/functions.php' : 'functions.php')) {
-  require_once $path;
-} else {
-  die(var_dump("$path was not found. file=functions.php"));
 }
 
 if (!function_exists('dd')) {
@@ -568,17 +566,27 @@ if (basename($dir = getcwd()) != 'config') {
 
   $previousFilename = '';
 
-  $dirs = [
-    0 => APP_PATH . APP_BASE['config'] . 'git.php',
-    1 => APP_PATH . APP_BASE['config'] . 'composer.php',
-    2 => APP_PATH . 'composer-setup.php',
+!isset($_GET['app']) || $_GET['app'] != 'git' ? 
+  (APP_SELF == APP_PUBLIC ? (!defined('APP_ROOT') || empty(APP_ROOT) ?: $dirs[] = APP_PATH . APP_BASE['config'] . 'git.php') :
+    $dirs[] = APP_PATH . APP_BASE['config'] . 'git.php') :
+  $dirs[] = APP_PATH . APP_BASE['config'] . 'git.php';
+
+!isset($_GET['app']) || $_GET['app'] != 'composer' ? (APP_SELF == APP_PUBLIC ? (!defined('APP_ROOT') || empty(APP_ROOT) ? $dirs[] = APP_PATH . APP_BASE['vendor'] . 'autoload.php' : $dirs[] = APP_PATH . APP_BASE['config'] . 'composer.php') : '') :
+  $dirs[] = APP_PATH . APP_BASE['config'] . 'composer.php';
+
+
+$dirs[] = APP_PATH . APP_BASE['config'] . 'npm.php';
+
+  //$dirs = [
+    //0 => APP_PATH . APP_BASE['config'] . 'git.php',
+    //1 => APP_PATH . APP_BASE['config'] . 'composer.php',
+    //2 => APP_PATH . APP_BASE['config'] . 'npm.php',
+    //2 => APP_PATH . 'composer-setup.php',
     //1 => APP_PATH . 'config.php',
     //1 => APP_PATH . 'constants.php',
     //2 => APP_PATH . 'functions.php',
-    3 => APP_PATH . APP_BASE['config'] . 'npm.php',
-    4 => APP_PATH . APP_BASE['vendor'] . 'autoload.php',
-
-  ]; // array_filter(glob(__DIR__ . DIRECTORY_SEPARATOR . '*.php'), 'is_file');
+    //4 => APP_PATH . APP_BASE['vendor'] . 'autoload.php',
+  //]; // array_filter(glob(__DIR__ . DIRECTORY_SEPARATOR . '*.php'), 'is_file');
 
   usort($dirs, function ($a, $b) {
       // Define your sorting criteria here
@@ -599,6 +607,7 @@ if (basename($dir = getcwd()) != 'config') {
     else 
         return strcmp(basename($a), basename($b)); // Compare other filenames alphabetically
   });
+
 
   foreach ($dirs as $includeFile) {
     if (in_array($includeFile, get_required_files())) continue; // $includeFile == __FILE__

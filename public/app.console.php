@@ -279,6 +279,39 @@ input {
   color: black;
 }
 
+    .process-list {
+      position: absolute;
+      background-color: #FFA6A6;
+      left: -150px;
+      width: 150px;
+      height: 150px;
+      border: 2px solid #000;
+      overflow: hidden;
+      display: block;
+    }
+
+    .process {
+      border: 1px solid #000;
+      color: #fff;
+      padding: 10px;
+      margin: 5px 0;
+      display: block;
+      position: relative;
+      white-space: nowrap; /* Prevent wrapping of the text */
+      width: fit-content; /* Set the width to fit the content */
+      clear: both; /* Ensure each process starts on a new line */
+      overflow: hidden;
+    }
+
+    @keyframes scroll {
+      0% { transform: translateX(15%); }
+      100% { transform: translateX(-75%); }
+    }
+
+    .scrolling {
+      animation: scroll 10s linear infinite;
+    }
+
     .vert-slider-container {
       position: relative;
       float: right;
@@ -322,6 +355,12 @@ input {
       cursor: pointer;
     }
 
+
+    @keyframes scroll {
+            0% { transform: translateX(100%); }
+            100% { transform: translateX(-100%); }
+        }
+
 <?php $appConsole['style'] = ob_get_contents();
 ob_end_clean();
 
@@ -330,20 +369,20 @@ ob_start(); ?>
 <!-- <div class="container" style="border: 1px solid #000;"> -->
 
 <div id="app_console-container" class="" style="border: 1px dashed #000; ">
-    <div style="position: absolute; left: -100px; width: 100px; height: 200px; background-color: #FFA6A6;">
-    
+    <div id="process-list" class="process-list" onmouseout="stopScroll()">
+<!--
       <div style="position: relative; width: 80px; height: 20px; background-color: #000; margin: 0 auto;">
-        <div style="border: 1px solid red; margin: auto; position: absolute; top: 50%; left: 30%; right: 50%; -ms-transform: translateY(-50%); transform: translateY(-50%);">
+        <div class="scroll-text" style="animation: none; border: 1px solid red; margin: auto; position: absolute; top: 50%; left: 30%; right: 50%; -ms-transform: translateY(-50%); transform: translateY(-50%);">
         Testing
         </div>
       </div>    
-      <div style="position: relative; width: 80px; height: 20px; background-color: #000; margin: 0 auto;">
+      <div class="scroll-text" style="animation: none; position: relative; width: 80px; height: 20px; background-color: #000; margin: 0 auto;">
       test
       </div>    
-      <div style="position: relative; width: 80px; height: 20px; background-color: #000; margin: 0 auto;">
+      <div class="scroll-text" style="animation: none; position: relative; width: 80px; height: 20px; background-color: #000; margin: 0 auto;">
       test
       </div>
-
+      -->
     </div>
     <div style="position: absolute; display: none; top: -320px; background-color: #FFF; border: 1px dashed #000; height: 160px; width: 100%; padding: 20px 10px; color: #000; text-align: left; z-index: -1; text-align: center;" class="text-sm">
     <h1>&lt;html&gt; &lt;head&gt;</h1>
@@ -437,6 +476,28 @@ if (!empty($errors))
 ob_end_clean();
 
 ob_start(); ?>
+
+
+
+function deleteProcess(link) {
+      const process = link.parentNode;
+      process.parentNode.removeChild(process);
+    }
+
+    function startScroll(element) {
+      const processList = document.getElementById('process-list');
+      const duration = processList.offsetWidth / 75; // Adjust the speed by changing the divisor value
+      element.style.animationDuration = `${duration}s`;
+      element.classList.add('scrolling');
+    }
+
+    function stopScroll() {
+      const processList = document.getElementById('process-list');
+      const processes = processList.getElementsByClassName('process');
+      for (const process of processes) {
+        process.classList.remove('scrolling');
+      }
+    }
 
 var slider = document.getElementById("mySlider");
 
@@ -821,6 +882,7 @@ if (isset($config['remote origin']['url']) && preg_match('/(?:[a-z]+\:\/\/)?([^\
     $('#requestInput').val('');
   });
 
+
   $('#requestSubmit').click(function() {
     let matches = null;
     const autoClear = document.getElementById('app_console-auto_clear').checked;
@@ -839,10 +901,37 @@ if (isset($config['remote origin']['url']) && preg_match('/(?:[a-z]+\:\/\/)?([^\
     //show_console();
       //$('#changePositionBtn').click();
     }
-    const argv = $('#requestInput').val();
+    const argv = $('#requestInput').val().trim();
+
+    if (argv === '') return;
+
+const processList = document.getElementById('process-list');
+const newProcess = document.createElement('div');
+newProcess.classList.add('process');
+newProcess.innerHTML = `<a href="#" onclick="deleteProcess(this)">[X]</a> ${argv}`;
+
+// Add mouseover event
+newProcess.onmouseover = function() {
+  setTimeout(() => { startScroll(newProcess); }, 3000);
+};
+
+setTimeout(() => {
+  if (newProcess.parentNode) { // Check if process still exists
+    newProcess.textContent = argv;
+    newProcess.onmouseover = function() {
+      startScroll(newProcess);
+    };
+    // Send post request
+    $.post('<?= APP_URL_BASE; /*$projectRoot*/?>', { cmd: argv });
+  }
+}, 3000);
+
+processList.prepend(newProcess);
+
 
     console.log('Argv: ' + argv);
-    
+
+
     if (autoClear) $('#responseConsole').val('<?= $shell_prompt; ?>' + argv);
     
     if (argv == '') $('#responseConsole').val('<?= $shell_prompt; ?>' + "\n" + $('#responseConsole').val()) ; //  + 
@@ -853,7 +942,8 @@ if (isset($config['remote origin']['url']) && preg_match('/(?:[a-z]+\:\/\/)?([^\
       } else {
         console.log("Invalid input format.");
       }
-    } else if (matches = argv.match(/^project/i)) { // argv == 'edit'
+    }     
+     else if (matches = argv.match(/^project/i)) { // argv == 'edit'
       if (matches) {
         document.getElementById('app_project-container').style.display='block';
         $('#responseConsole').val('Barry, here you can begin editing your project.' + "\n" + '<?= $shell_prompt; ?>' + argv + "\n" + $('#responseConsole').val());
@@ -862,10 +952,10 @@ if (isset($config['remote origin']['url']) && preg_match('/(?:[a-z]+\:\/\/)?([^\
       } else {
         console.log("Invalid input format.");
       }
-    } else if (matches = argv.match(/^(?:h(?:elp)?\s+)?(\S+)$/)) {
-      $('#requestInput').val('help');
-      $('#requestSubmit').click();
-    } else if (matches = argv.match(/^(?:j(?:ava)?s(?:cript)?\s+)?(\S+)$/)) {
+    } else if (matches = argv.match(/^h(?:elp)?\s+?(\S+)$/)) {
+      //$('#requestInput').val('help');
+      //$('#requestSubmit').click();
+    } else if (matches = argv.match(/^j(?:ava)?s(?:cript)?\s+?(\S+)$/)) {
 // Save the original console.log function
 var originalLog = console.log;
 
@@ -920,7 +1010,7 @@ console.log = function() {
         $('#responseConsole').val('<?= $shell_prompt; ?>' + argv + "\n" + $('#responseConsole').val());
       }
 
-      $.post("<?= basename(__FILE__) . '?' . $_SERVER['QUERY_STRING']  ; /*APP_URL_BASE; $projectRoot*/?>",
+      $.post("<?= basename(__FILE__) . '?' . $_SERVER['QUERY_STRING']  ; //APP_URL_BASE; $projectRoot ?>",
       {
         cmd: argv
       },
@@ -1066,6 +1156,7 @@ console.log = function() {
         $('#responseConsole').scrollTop = $('#responseConsole').scrollHeight;
       });
     }
+
   });
 });
 <?php $appConsole['script'] = ob_get_contents();

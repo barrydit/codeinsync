@@ -2,17 +2,31 @@
 
 //require_once('session.php');
 
-if (__FILE__ == get_required_files()[0]) //die(getcwd());
+// dd(get_required_files());
+//dd( dirname(__DIR__) . '/config/config.php');
+
+if (!in_array($path = dirname(__DIR__) . '/config/config.php', get_required_files()))
+  require_once($path);
+elseif (__FILE__ == get_required_files()[0]) //die(getcwd());
   if ($path = (basename(getcwd()) == 'public')
     ? (is_file('config.php') ? 'config.php' : '../config/config.php') : '') require_once $path;
   else die(var_dump("$path path was not found. file=config.php"));
 
 $path = $_SERVER['DOCUMENT_ROOT'] . parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH);
 
+
+require_once(dirname(__DIR__) . '/public/index.php');
 //dd( realpath($path) == realpath(APP_PATH) );
 
-if (defined('APP_ERRORS') && APP_ERRORS && defined('APP_DEBUG') && APP_DEBUG == true) // is_array($ob_content)
-  $report_errors = true; /// dd(APP_ERRORS); // get_defined_constants(true)['user']'
+//dd(APP_ERRORS);
+
+//dd($_ENV);
+
+if (APP_ENV == 'development' && defined('APP_ERRORS') && APP_ERRORS && defined('APP_DEBUG') && APP_DEBUG == $report_errors = true) NULL;
+elseif (APP_ENV == 'development' && APP_DEBUG == false)
+  die(header('Location: ' . (!defined('APP_URL_BASE') and 'http://' . APP_DOMAIN . APP_URL_PATH) .  '?debug'));
+// is_array($ob_content)
+  //$report_errors = true; /// dd(APP_ERRORS); // get_defined_constants(true)['user']'
 
  // realpath($path) == "/mnt/c/www/public/composer" ... $path == "[/var/www/public]/composer/" == $_SERVER['DOCUMENT_ROOT'] . parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH)
 
@@ -136,7 +150,7 @@ foreach(get_required_files() as $requireFile) {
 
   $percentage = ($total_lines != 0) ? abs(round((1 - $lines / $total_lines) * 100 - 100, 2)) : 0;
 
-  echo '			{y: ' . $percentage . ', label: "' . (basename(dirname($requireFile, 1)) == 'public' ? 'public' : pathinfo(basename($requireFile), PATHINFO_FILENAME)) . '"},' . "\n";
+  echo '			{y: ' . $percentage . ', label: "' . (basename(dirname($requireFile, 1)) == 'public' ? pathinfo(basename($requireFile), PATHINFO_FILENAME) : pathinfo(basename($requireFile), PATHINFO_FILENAME)) . '"},' . "\n";
 }
 $output = ob_get_contents();
 ob_end_clean();
@@ -168,7 +182,20 @@ chart2.render();
 SCRIPT;
   echo <<<HTML
 </head>
+
+
+
+
 <body>
+
+  <form style="display: inline;" action="" method="POST">
+      Environemnt: <select name="environment" onchange="this.form.submit();">
+        <option value="develop">Development</option>
+        <option value="product">Production</option>
+        <option value="math" selected="">Math</option>
+      </select>
+  </form>
+<br />
 HTML;
   defined('APP_END') or define('APP_END', microtime(true));
   echo '<div style="display: block;" title="APP_START - APP_END"><em>Execution time: <b>'  . round(APP_END - APP_START, 6) . '</b> secs ' . "<br />\n" . 'Mem: ' . formatSizeUnits(memory_get_usage()) . "<br />\n" . ' Max: ' . formatSizeUnits(convertToBytes(ini_get('memory_limit'))) . '</em></div>' . "\n";
@@ -370,4 +397,4 @@ if (basename($_SERVER['PHP_SELF']) == basename(__FILE__)) { // ($_SERVER["SCRIPT
     <script src="<?=(!defined('APP_URL_BASE') and '//' . APP_DOMAIN . APP_URL_PATH)?>assets/vendor/jquery/jquery-3.5.1.min.js"></script>
   </body>
 </html>
-<?php } else die(header('Location: ' . (!defined('APP_URL_BASE') and 'http://' . APP_DOMAIN . APP_URL_PATH) .  '?debug'));
+<?php } ?>
