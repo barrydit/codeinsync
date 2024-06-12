@@ -73,12 +73,12 @@ if (in_array(APP_PATH . APP_BASE['public'] . 'app.install.php', $appPaths))
 $uiPaths = array_filter(glob(__DIR__ . DIRECTORY_SEPARATOR . '{ui}.*.php', GLOB_BRACE), 'is_file');
 
 
-
+/*
 if (in_array(APP_PATH . APP_BASE['public'] . 'ui.composer.php', $uiPaths))
   foreach ($uiPaths as $key => $file)
     if (basename($file) === 'ui.composer.php')
       unset($uiPaths[$key]);
-
+*/
 
 // If you want to reset the array keys to be numeric (optional)
 $paths = array_values(array_unique(array_merge($uiPaths, $appPaths)));
@@ -1765,7 +1765,7 @@ function makeDraggable(windowId) {
 }
       
       makeDraggable('app_ace_editor-container');
-      //makeDraggable('app_composer-container');
+      makeDraggable('app_composer-container');
       // makeDraggable('app_project-container');
       makeDraggable('app_git-container');
       makeDraggable('app_npm-container');
