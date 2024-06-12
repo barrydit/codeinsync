@@ -1765,7 +1765,7 @@ function makeDraggable(windowId) {
 }
       
       makeDraggable('app_ace_editor-container');
-      makeDraggable('app_composer-container');
+      //makeDraggable('app_composer-container');
       // makeDraggable('app_project-container');
       makeDraggable('app_git-container');
       makeDraggable('app_npm-container');

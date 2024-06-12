@@ -11,7 +11,7 @@
 
 /* This code sets up some basic configuration constants for a PHP application. */
 
-define('APP_SUDO', 'sudo ');
+define('APP_SUDO', 'echo ' . escapeshellarg(''/*'password'*/) . ' | sudo -S -u www-data ');
 
 define('APP_START', microtime(true));
 !defined('APP_START') || is_float(APP_START) ?: $errors['APP_START'] = 'APP_START is not a valid float value.';
@@ -19,7 +19,7 @@ define('APP_START', microtime(true));
 require_once 'functions.php';
 
 // Example usage
-$host = 'example.com'; // parse_url($ip, PHP_URL_HOST)
+$host = 'google.com'; // parse_url($ip, PHP_URL_HOST)
 $ip = resolve_host_to_ip($host);
 if ($ip) {
   if (check_internet_connection($ip)) {

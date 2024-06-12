@@ -5,9 +5,9 @@ if (__FILE__ == get_required_files()[0]) //die(getcwd());
     ? (is_file('config.php') ? 'config.php' : '../config/config.php') : '') require_once $path;
   else die(var_dump("$path path was not found. file=config.php"));
 
-if ($path = realpath(APP_PATH . APP_ROOT . 'projects/project.php')) {
+if (!$path = realpath(APP_PATH . 'projects/project.php')) {
   // file_put_contents($path, $_POST['contents']);
-  $errors['project.php'] = 'projects/project.php was missing. Using template.';
+  $errors['project.php'] = 'projects/project.php was missing. Using template.' . "\n";
 }
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
   if (isset($_GET['app']) && $_GET['app'] == 'project')
