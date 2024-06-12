@@ -49,10 +49,12 @@ $auto_clear = false;
 if (strtoupper(substr(PHP_OS, 0, 3)) === 'WIN')
   $shell_prompt = 'www-data' . '@' . $_SERVER['SERVER_NAME'] . ':' . (($homePath = realpath($_SERVER['DOCUMENT_ROOT'])) === getcwd() ? '~': $homePath) . '$ ';
 // Check if $homePath is a subdirectory of $docRootPath
-else if (($homePath = realpath($_SERVER['HOME'])) !== false && ($docRootPath = realpath($_SERVER['DOCUMENT_ROOT'])) !== false && strpos($homePath, $docRootPath) === 0) {
+else if (isset($_SERVER['HOME']) && ($homePath = realpath($_SERVER['HOME'])) !== false && ($docRootPath = realpath($_SERVER['DOCUMENT_ROOT'])) !== false && strpos($homePath, $docRootPath) === 0) {
   $shell_prompt = $_SERVER['USER'] . '@' . $_SERVER['SERVER_NAME'] . ':' . ($homePath == getcwd() ? '~': $homePath) . '$ '; // '$ >'
-} else
+} elseif (isset($_SERVER['USER']))
   $shell_prompt = $_SERVER['USER'] . '@' . $_SERVER['SERVER_NAME'] . ':' . ($homePath == getcwd() ? '~': $homePath) . '$ ';
+else
+  $shell_prompt = 'www-data' . '@' . $_SERVER['SERVER_NAME'] . ':' . (getcwd() == '/var/www' ? '~': getcwd()) . '$ ';
 
 const APP_NAME = 'Dashboard';
 !is_string(APP_NAME)

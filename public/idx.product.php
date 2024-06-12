@@ -72,6 +72,14 @@ if (in_array(APP_PATH . APP_BASE['public'] . 'app.install.php', $appPaths))
 
 $uiPaths = array_filter(glob(__DIR__ . DIRECTORY_SEPARATOR . '{ui}.*.php', GLOB_BRACE), 'is_file');
 
+
+
+if (in_array(APP_PATH . APP_BASE['public'] . 'ui.composer.php', $uiPaths))
+  foreach ($uiPaths as $key => $file)
+    if (basename($file) === 'ui.composer.php')
+      unset($uiPaths[$key]);
+
+
 // If you want to reset the array keys to be numeric (optional)
 $paths = array_values(array_unique(array_merge($uiPaths, $appPaths)));
 
@@ -1573,9 +1581,10 @@ $(document).ready(function() {
 <?php
 
 // (check_http_200('https://cdn.tailwindcss.com') ? 'https://cdn.tailwindcss.com' : APP_WWW . 'resources/js/tailwindcss-3.3.5.js')?
-// is_dir($path = APP_PATH . APP_BASE['resources'] . 'js/') or mkdir($path, 0755, true);
+//!is_dir($path = APP_PATH . APP_BASE['resources'] . 'js/') or mkdir($path, 0755, true);
 
 if (!is_file($path = APP_PATH . APP_BASE['resources'] . 'js/requirejs/require.js') || ceil(abs((strtotime(date('Y-m-d')) - strtotime(date('Y-m-d',strtotime('+5 days',filemtime($path))))) / 86400)) <= 0  ) {
+  !is_dir($path = APP_PATH . APP_BASE['resources'] . 'js/requirejs') or mkdir($path, 0755, true);
     $url = 'https://requirejs.org/docs/release/2.3.6/minified/require.js';
     $handle = curl_init($url);
     curl_setopt($handle, CURLOPT_RETURNTRANSFER, true);
@@ -1584,7 +1593,7 @@ if (!is_file($path = APP_PATH . APP_BASE['resources'] . 'js/requirejs/require.js
         file_put_contents($path, $js) or $errors['JS-TAILWIND'] = $url . ' returned empty.';
 }
 
-if (is_file($path)) { ?>
+if (!is_file($path)) { ?>
   
     <script src="<?= APP_BASE['resources']; ?>js/requirejs/require.js" type="text/javascript" charset="utf-8"></script>
 

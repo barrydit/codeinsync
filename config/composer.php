@@ -225,15 +225,16 @@ define('COMPOSER_VENDORS', $uniqueVendors);
   Must be defined before the composer-setup.php can be preformed.
 */
 
-$composerUser = 'barrydit';
+$composerUser = 'lorraine';  
 $componetPkg = 'composer_app';
-$composerHome = (strtoupper(substr(PHP_OS, 0, 3)) === 'WIN' ?
-  'C:/Users/' . (getenv('USERNAME') ? getenv('USERNAME') : getenv('USER')) . '/AppData/Roaming/Composer/' : 
-  (($user = (getenv('USERNAME') ? getenv('USERNAME') : getenv('USER'))) == 'root' ?
-    '/' . $user . '/.composer/' :
-    '/home/' . $user . '/.composer/'  
-  ) 
-);
+$user = getenv('USERNAME') ?: (getenv('APACHE_RUN_USER') ?: getenv('USER') ?: '');
+
+// Determine the Composer home path based on the OS and user
+if (strtoupper(substr(PHP_OS, 0, 3)) === 'WIN') {
+    $composerHome = 'C:/Users/' . $user . '/AppData/Roaming/Composer/';
+} else {
+    $composerHome = ($user === 'root' ? '/root/.composer/' : '/home/' . $user . '/.composer/');
+}
 
 if (!realpath($composerHome)) {
   if (!mkdir($composerHome, 0755, true))
@@ -277,10 +278,11 @@ if (strtoupper(substr(PHP_OS, 0, 3)) === 'WIN') { // DO NOT REMOVE! { .. }
     define('COMPOSER_BIN', '/usr/local/bin/composer');
   }
 */
-    foreach(array('/usr/local/bin/composer', 'php ' . APP_PATH . 'composer.phar', '/usr/bin/composer') as $key => $bin) {
+    foreach(array( /*'/usr/local/bin/composer',*/ 'php ' . APP_PATH . 'composer.phar', '/usr/bin/composer') as $key => $bin) {
         !isset($composer) and $composer = array();
 
 /*//*/
+        //dd($bin);
         $proc = proc_open('env COMPOSER_ALLOW_SUPERUSER=' . COMPOSER_ALLOW_SUPERUSER . '; ' . (strtoupper(substr(PHP_OS, 0, 3)) === 'WIN' ? '' : APP_SUDO ) . $bin . ' --version;', array( array("pipe","r"), array("pipe","w"), array("pipe","w")), $pipes);
 
         $stdout = stream_get_contents($pipes[1]);
@@ -304,6 +306,7 @@ if (strtoupper(substr(PHP_OS, 0, 3)) === 'WIN') { // DO NOT REMOVE! { .. }
         return version_compare($b['version'], $a['version']); // Sort in descending order based on version
     });
 
+
     if (empty($composer)) $errors['COMPOSER-BIN'] = 'There are no composer binaries.';
     else 
       foreach ($composer as $key => $exec) {
@@ -321,7 +324,7 @@ if (strtoupper(substr(PHP_OS, 0, 3)) === 'WIN') { // DO NOT REMOVE! { .. }
 // dd(COMPOSER_BIN, 0);
 
 defined('COMPOSER_EXEC')
-  or define('COMPOSER_EXEC', (isset($_GET['exec']) ? ($_GET['exec'] == 'phar' ? COMPOSER_PHAR : COMPOSER_BIN) : COMPOSER_BIN ?? COMPOSER_PHAR));
+  or define('COMPOSER_EXEC', (isset($_GET['exec']) && $_GET['exec'] == 'phar' ? COMPOSER_PHAR : (!defined('COMPOSER_BIN') ? ['bin' => '/usr/bin/composer', 'version' => '']: COMPOSER_BIN) ?? COMPOSER_PHAR));
 
 if (is_array(COMPOSER_EXEC))
   define('COMPOSER_VERSION', COMPOSER_EXEC['version']);
