@@ -465,7 +465,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 
         //if ($vendor == 'nesbot' && $package == 'carbon') {
 
-        if (preg_match('/' . DOMAIN_EXPR . '/', packagist_return_source($vendor, $package), $matches))
+        if (preg_match(DOMAIN_EXPR, packagist_return_source($vendor, $package), $matches))
 $raw_url = $initial_url = $matches[0];
         else $raw_url = '';
     

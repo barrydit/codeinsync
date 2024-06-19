@@ -28,11 +28,16 @@ if (count(get_included_files()) == ((version_compare(PHP_VERSION, '5.0.0', '>=')
   exit('Direct access is not allowed.');
 endif;
 
-// Leave the forward slashes off
-const DOMAIN_EXPR = '(?:[a-z]+\:\/\/)?(?:[a-z0-9\-]+\.)+[a-z]{2,6}(?:\/\S*)?'; // /(?:\.(?:([-a-z0-9]+){1,}?)?)?\.[a-z]{2,6}$/';
+if (isset($_ENV['SHELL']['EXPR_DOMAIN']) && !defined('DOMAIN_EXPR'))
+  define('DOMAIN_EXPR', $_ENV['SHELL']['EXPR_DOMAIN']); // const DOMAIN_EXPR = 'string only/non-block/ternary';
+elseif(!defined('DOMAIN_EXPR'))
+  define('DOMAIN_EXPR', '/(?:[a-z]+\:\/\/)?(?:[a-z0-9\-]+\.)+[a-z]{2,6}(?:\/\S*)?/i'); // /(?:\.(?:([-a-z0-9]+){1,}?)?)?\.[a-z]{2,6}$/';
 
-const PHP_EXEC = '/usr/bin/php';
 
+if (isset($_ENV['SHELL']['PHP_EXEC']) && !defined('PHP_EXEC'))
+  define('PHP_EXEC', ['SHELL']['PHP_EXEC']); // const DOMAIN_EXPR = 'string only/non-block/ternary';
+elseif (!defined('PHP_EXEC'))
+  define('PHP_EXEC', '/usr/bin/php'); // /(?:\.(?:([-a-z0-9]+){1,}?)?)?\.[a-z]{2,6}$/';
 
 //die(var_dump($_SERVER['PHP_SELF'] . DIRECTORY_SEPARATOR . basename($_SERVER['PHP_SELF'])));
 
@@ -50,83 +55,6 @@ const PHP_EXEC = '/usr/bin/php';
   explode(DIRECTORY_SEPARATOR, dirname(APP_SELF))
 )) . DIRECTORY_SEPARATOR);
 
-
-class clientOrProj {
-    public $path;
-
-    public function __construct($path) {
-        $this->path = $path;
-    }
-
-    //public function getParam() {
-    //   return $this->param;
-    //}
-}
-
-if (!empty($_GET['client']) || !empty($_GET['domain'])) {
-  $path = /*'../../'.*/ 'clientele/' . $_GET['client'] . '/';
-  $dirs = array_filter(glob(dirname(__DIR__) . '/' . $path . '*'), 'is_dir');
-
-  if (count($dirs) == 1) {
-    foreach($dirs as $dir) {
-      $dirs[0] = $dirs[array_key_first($dirs)];
-      if (preg_match('/' . DOMAIN_EXPR . '/i', strtolower(basename($dirs[0])))) {
-        $_GET['domain'] = basename($dirs[0]);
-        break;
-      } else {
-        unset($dirs[array_key_first($dirs)]);
-        continue;
-      }
-    }
-  }
-
-  $dirs = array_filter(glob(dirname(__DIR__) . '/' . $path . '*'), 'is_dir');
-
-  if (!empty($_GET['domain']))
-    foreach($dirs as $key => $dir) {
-      if (basename($dir) == $_GET['domain']) {
-        //if (is_dir($dirs[$key].'/public/')) $path .= basename($dirs[$key]).'/public/';
-        $path .= basename($dirs[$key]) . DIRECTORY_SEPARATOR;
-        break;
-      }
-    }
-  else if (!isset($_GET['domain']) && count($dirs) >= 1) {
-
-    if (preg_match('/' . DOMAIN_EXPR . '/i', strtolower(basename(array_values($dirs)[0])))) {
-      $_GET['domain'] = basename(array_values($dirs)[0]);
-      $path .= basename(array_values($dirs)[0]) . DIRECTORY_SEPARATOR;
-    } else {
-      $path .= ($_GET['domain'] = basename(array_values($dirs)[0])) . DIRECTORY_SEPARATOR;
-    }
-
-  //die(var_dump($path));
-
-  }
-  if (is_dir(APP_PATH . $path)) {
-    define('APP_CLIENT', new clientOrProj($path));
-
-  }
-} else if (!empty($_GET['project']) && is_dir(APP_PATH . 'projects/' . $_GET['project'])) {
-  $path = /*'../../'.*/ 'projects/' . $_GET['project'] . '/';
-  //$dirs = array_filter(glob(dirname(__DIR__) . '/' . $path . '*'), 'is_dir');
-/*
-  if (count($dirs) == 1) {
-    foreach($dirs as $dir) {
-      $dirs[0] = $dirs[array_key_first($dirs)];
-      if (preg_match('/' . DOMAIN_EXPR . '/i', strtolower(basename($dirs[0])))) {
-        $_GET['domain'] = basename($dirs[0]);
-        break;
-      } else {
-        unset($dirs[array_key_first($dirs)]);
-        continue;
-      }
-    }
-  }*/
-}
-unset($dirs);
-// else { if (isset($_GET['path']) && is_dir(APP_PATH . $_GET['path'])) $path = $_GET['path']; }
-
-!defined('APP_ROOT') and define('APP_ROOT', $path = realpath(APP_PATH . $path) ? $path : null); // dirname(APP_SELF, (basename(getcwd()) != 'public' ?: 2))
 
 //if (APP_ROOT != '') {}
 
@@ -149,6 +77,71 @@ while ($path = array_shift($paths)) {
     require_once $path;
   else die(var_dump(basename($path) . ' was not found. file=' . basename($path)));
 }
+
+if (!empty($_GET['client']) || !empty($_GET['domain'])) {
+  $path = /*'../../'.*/ 'clientele/' . $_GET['client'] . '/';
+  $dirs = array_filter(glob(dirname(__DIR__) . '/' . $path . '*'), 'is_dir');
+
+  if (count($dirs) == 1) {
+    foreach($dirs as $dir) {
+      $dirs[0] = $dirs[array_key_first($dirs)];
+      if (preg_match(DOMAIN_EXPR, strtolower(basename($dirs[0])))) {
+        $_GET['domain'] = basename($dirs[0]);
+        break;
+      } else {
+        unset($dirs[array_key_first($dirs)]);
+        continue;
+      }
+    }
+  }
+
+  $dirs = array_filter(glob(dirname(__DIR__) . '/' . $path . '*'), 'is_dir');
+
+  if (!empty($_GET['domain']))
+    foreach($dirs as $key => $dir) {
+      if (basename($dir) == $_GET['domain']) {
+        //if (is_dir($dirs[$key].'/public/')) $path .= basename($dirs[$key]).'/public/';
+        $path .= basename($dirs[$key]) . DIRECTORY_SEPARATOR;
+        break;
+      }
+    }
+  else if (!isset($_GET['domain']) && count($dirs) >= 1) {
+
+    if (preg_match(DOMAIN_EXPR, strtolower(basename(array_values($dirs)[0])))) {
+      $_GET['domain'] = basename(array_values($dirs)[0]);
+      $path .= basename(array_values($dirs)[0]) . DIRECTORY_SEPARATOR;
+    } else {
+      $path .= ($_GET['domain'] = basename(array_values($dirs)[0])) . DIRECTORY_SEPARATOR;
+    }
+
+  //die(var_dump($path));
+
+  }
+  if (is_dir(APP_PATH . $path)) {
+    (defined('APP_CLIENT') ?: define('APP_CLIENT', new clientOrProj($path)));
+
+  }
+} else if (!empty($_GET['project']) && is_dir(APP_PATH . 'projects/' . $_GET['project'])) {
+  $path = /*'../../'.*/ 'projects/' . $_GET['project'] . '/';
+  //$dirs = array_filter(glob(dirname(__DIR__) . '/' . $path . '*'), 'is_dir');
+/*
+  if (count($dirs) == 1) {
+    foreach($dirs as $dir) {
+      $dirs[0] = $dirs[array_key_first($dirs)];
+      if (preg_match(DOMAIN_EXPR, strtolower(basename($dirs[0])))) {
+        $_GET['domain'] = basename($dirs[0]);
+        break;
+      } else {
+        unset($dirs[array_key_first($dirs)]);
+        continue;
+      }
+    }
+  }*/
+}
+unset($dirs);
+// else { if (isset($_GET['path']) && is_dir(APP_PATH . $_GET['path'])) $path = $_GET['path']; }
+
+!defined('APP_ROOT') and define('APP_ROOT', $path = realpath(APP_PATH . $path) ? $path : null); // dirname(APP_SELF, (basename(getcwd()) != 'public' ?: 2))
 
 if (is_readable($path = APP_PATH . APP_ROOT . 'error_log') && filesize($path) >= 0 ) {
   $errors['ERROR_PATH'] = $path . "\n";
@@ -524,6 +517,7 @@ if (is_file(APP_PATH . 'projects/project.php') && isset($_GET['project']) && $_G
     })->shutdown(); // die();
 } //elseif (!is_dir(APP_PATH . 'projects')) { }
 
+$_ENV = parse_ini_file_multi(APP_PATH . '.env');
 
 if (basename($dir = getcwd()) != 'config') {
   if (in_array(basename($dir), ['public', 'public_html']))
@@ -531,23 +525,8 @@ if (basename($dir = getcwd()) != 'config') {
 
   chdir(APP_PATH . APP_ROOT);
   if (is_file($file = APP_PATH . APP_ROOT . '.env')) {
-    if (!empty($env = parse_ini_file($file, true, INI_SCANNER_TYPED /*INI_SCANNER_NORMAL*/))) {
-      foreach ($env as $key => $value) {
-        if (is_array($value)) {
-            foreach ($value as $k => $v) {
-                $env[$key][$k] = str_replace(['\'', '"'], '', var_export($v, true));
-            }
-        } else {
-            // Check if the value is boolean true, and replace it with the string 'true'
-            if ($value === true) {
-                $env[$key] = 'true';
-            } else {
-                $env[$key] = str_replace(['\'', '"'], '', var_export($value, true));
-            }
-        }
-    }
-    $_ENV = $env;
-
+    $env = parse_ini_file_multi(APP_PATH . APP_ROOT . '.env');
+    $_ENV = array_merge_recursive_distinct($_ENV, $env);
 /*
         foreach($env as $key => $value) {
             if (is_array($value)) {
@@ -560,7 +539,7 @@ if (basename($dir = getcwd()) != 'config') {
                 $_ENV[$key] = is_bool($value) ? ($value ? 'true' : 'false') : (string) $value; // putenv($key.'='.$env_var);
             }
         }*/
-    }
+    //}
   }
 
 
@@ -571,9 +550,8 @@ if (basename($dir = getcwd()) != 'config') {
     $dirs[] = APP_PATH . APP_BASE['config'] . 'git.php') :
   $dirs[] = APP_PATH . APP_BASE['config'] . 'git.php';
 
-!isset($_GET['app']) || $_GET['app'] != 'composer' ? (APP_SELF == APP_PUBLIC ? (!defined('APP_ROOT') || empty(APP_ROOT) ? $dirs[] = APP_PATH . APP_BASE['vendor'] . 'autoload.php' : $dirs[] = APP_PATH . APP_BASE['config'] . 'composer.php') : '') :
+!isset($_GET['app']) || $_GET['app'] != 'composer' ? (APP_SELF == APP_PUBLIC ? (!defined('APP_ROOT') || empty(APP_ROOT) ? $dirs[] = APP_PATH . APP_BASE['vendor'] . 'autoload.php' : $dirs[] = APP_PATH . APP_BASE['config'] . 'composer.php') : $dirs[] = APP_PATH . APP_BASE['config'] . 'composer.php') :
   $dirs[] = APP_PATH . APP_BASE['config'] . 'composer.php';
-
 
 $dirs[] = APP_PATH . APP_BASE['config'] . 'npm.php';
 
@@ -610,6 +588,8 @@ $dirs[] = APP_PATH . APP_BASE['config'] . 'npm.php';
 
 
   foreach ($dirs as $includeFile) {
+    $path = dirname($includeFile);
+
     if (in_array($includeFile, get_required_files())) continue; // $includeFile == __FILE__
 
     if (basename($includeFile) === 'composer-setup.php') continue;

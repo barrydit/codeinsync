@@ -49,7 +49,7 @@ ob_start(); ?>
         <div style="display: inline-block; text-align: left; width: 125px;">
           <div class="npm-menu text-sm" style="cursor: pointer; font-weight: bold; padding-left: 25px; border: 1px solid #000;">Main Menu</div>
           <div class="text-xs" style="display: inline-block; border: 1px solid #000;">
-            <a class="text-sm" id="app_npm-frameMenuPrev" href="<?= (!empty(APP_QUERY) ? '?' . http_build_query(APP_QUERY) : '') . (defined('APP_ENV') && APP_ENV == 'development' ? '#!' : '') ?>"> &lt; Menu</a> | <a class="text-sm" id="app_npm-frameMenuNext" href="<?= (!empty(APP_QUERY) ? '?' . http_build_query(APP_QUERY) : '') . (defined('APP_ENV') && APP_ENV == 'development' ? '#!' : '') ?>">Init &gt;</a>
+            <a class="text-sm" id="app_npm-frameMenuPrev" href="<?= (!empty(APP_QUERY) ? '?' . http_build_query(APP_QUERY) : '') . (defined('APP_ENV') && APP_ENV == 'development' ? '#!' : '#') ?>"> &lt; Menu</a> | <a class="text-sm" id="app_npm-frameMenuNext" href="<?= (!empty(APP_QUERY) ? '?' . http_build_query(APP_QUERY) : '') . (defined('APP_ENV') && APP_ENV == 'development' ? '#!' : '#') ?>">Init &gt;</a>
           </div>
         </div>
         <div class="absolute" style="position: absolute; display: inline-block; top: 4px; text-align: right; width: 272px; ">
@@ -347,8 +347,10 @@ if (is_file($path . 'tailwindcss-3.3.5.js')) {
 </script>
 </body>
 </html>
-<?php return ob_get_contents(); 
+<?php $contents = ob_get_contents(); 
   ob_end_clean(); 
+  return $contents;
+
 } else {
   return $app;
 }

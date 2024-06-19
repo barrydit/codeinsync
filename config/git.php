@@ -9,7 +9,7 @@ if ($path = realpath((basename(__DIR__) != 'config' ? NULL : __DIR__ . DIRECTORY
 if (strtoupper(substr(PHP_OS, 0, 3)) === 'WIN')
   define('GIT_EXEC', 'git.exe');
 else
-  define('GIT_EXEC', '/usr/bin/git');
+  define('GIT_EXEC', '/usr/local/bin/git');
 
 define('GIT_VERSION', preg_match("/(?:version|v)\s*((?:[0-9]+\.?)+)/i", exec(GIT_EXEC . ' --version'), $match) ? rtrim($match[1], '.') : '');
 

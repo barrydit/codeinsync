@@ -6,7 +6,7 @@ if (__FILE__ == get_required_files()[0])
     ? (is_file('config.php') ? 'config.php' : '../config/config.php') : '') require_once $path;
   else die(var_dump("$path path was not found. file=config.php"));
 else 
-  if (is_file($path = 'config/composer.php') ? $path : '' )
+  if (is_file($path = APP_PATH . APP_BASE['config'] . 'composer.php') ? $path : '' )
     require_once $path; 
   else die(var_dump("$path path was not found. file=composer.php"));
 
@@ -131,7 +131,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 
       //if ($vendor == 'nesbot' && $package == 'carbon') {
 
-      if (preg_match('/' . DOMAIN_EXPR . '/', packagist_return_source($vendor, $package), $matches))
+      if (preg_match(DOMAIN_EXPR, packagist_return_source($vendor, $package), $matches))
 $raw_url = $initial_url = $matches[0];
       else $raw_url = '';
     
@@ -465,7 +465,7 @@ ob_start(); ?>
         <div style="display: inline-block; text-align: left; width: 130px;">
           <div class="composer-menu text-sm" style="cursor: pointer; font-weight: bold; padding-left: 40px; border: 1px solid #000;">Main Menu</div>
           <div class="text-xs" style="display: inline-block; border: 1px solid #000;">
-            <a class="text-sm" id="app_composer-frameMenuPrev" href="<?= (!empty(APP_QUERY) ? '?' . http_build_query(APP_QUERY) : '') . (defined('APP_ENV') && APP_ENV == 'development' ? '#!' : '') ?>"> &lt; Menu</a> | <a class="text-sm" id="app_composer-frameMenuNext" href="<?= (!empty(APP_QUERY) ? '?' . http_build_query(APP_QUERY) : '') . (defined('APP_ENV') && APP_ENV == 'development' ? '#!' : '') ?>">Init &gt;</a>
+            <a class="text-sm" id="app_composer-frameMenuPrev" href="<?= (!empty(APP_QUERY) ? '?' . http_build_query(APP_QUERY) : '') . (defined('APP_ENV') && APP_ENV == 'development' ? '#!' : '#') ?>"> &lt; Menu</a> | <a class="text-sm" id="app_composer-frameMenuNext" href="<?= (!empty(APP_QUERY) ? '?' . http_build_query(APP_QUERY) : '') . (defined('APP_ENV') && APP_ENV == 'development' ? '#!' : '#') ?>">Init &gt;</a>
           </div>
         </div>
         <div class="absolute" style="position: absolute; display: inline-block; top: 4px; text-align: right; width: 264px; ">

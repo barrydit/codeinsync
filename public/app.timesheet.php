@@ -695,7 +695,7 @@ ob_start(); ?>
       <div style="display: inline; float: right; text-align: center;">[<a style="cursor: pointer; font-size: 13px;" onclick="document.getElementById('app_timesheet-container').style.display='none';">X</a>]</div> 
     </div>
 <div style=" overflow-x: scroll;">
-    <form style="display: inline;" action="<?= APP_URL_BASE . basename(APP_SELF) . '?' . http_build_query(APP_QUERY + array( 'app' => 'php')) . (defined('APP_ENV') && APP_ENV == 'development' ? '#!' : '') /*  $c_or_p . '=' . (empty($_GET[$c_or_p]) ? '' : $$c_or_p->name) . '&amp;app=composer' */ ?>" method="GET">
+    <form style="display: inline;" action="<?= APP_URL_BASE . basename(APP_SELF) . '?' . http_build_query(APP_QUERY + array( 'app' => 'php')) . (defined('APP_ENV') && APP_ENV == 'development' ? '#!' : '#') /*  $c_or_p . '=' . (empty($_GET[$c_or_p]) ? '' : $$c_or_p->name) . '&amp;app=composer' */ ?>" method="GET">
       <div style="font-size: 12px;">
         <div style="float: left;">NAME OF EMPLOYEE<br />
         <input type="text" style="width: 300px;" />

@@ -15,8 +15,11 @@ class Shutdown {
         //die(var_dump($_ENV));
 
         $iniString = '';
-        if (is_file($file = APP_PATH . APP_ROOT . '.env')){
+
+        if (is_file($file = APP_PATH . APP_ROOT . '.env')) {
+          $_ENV = array_intersect_key_recursive($_ENV, parse_ini_file_multi($file));
           if (isset($_ENV) && !empty($_ENV))
+/*
             foreach ($_ENV as $key => $value) {
                 // Convert boolean values to strings
                 if ($value === true || $value === false || is_bool($value)) {
@@ -32,6 +35,94 @@ class Shutdown {
                         $iniString .= "$nestedKey = $nestedValue\n";
                     }
                 } else {
+                    // Append the key-value pair as a string to $iniString
+                    $iniString .= "$key = $value\n";
+                }
+            }
+
+            foreach ($_ENV as $key => $value) {
+                // Convert boolean values to strings
+                if ($value === true || $value === false || is_bool($value)) {
+                    $value = $value ? 'true' : 'false';
+                }
+
+                if (is_array($value)) {
+                    // Process nested arrays
+                    $iniString .= "[$key]\n";
+                    foreach ($value as $nestedKey => $nestedValue) {
+                        if (is_string($nestedValue) && preg_match('/^\/.*\/\w*$/', $nestedValue)) {
+                            $nestedValue = '"' . $nestedValue . '"';
+                        }
+                        $iniString .= "$nestedKey = $nestedValue\n";
+                    }
+                } else {
+                    if (is_string($value) && preg_match('/^\/.*\/\w*$/', $value)) {
+                        $value = '"' . $value . '"';
+                    }
+                    // Append the key-value pair as a string to $iniString
+                    $iniString .= "$key = $value\n";
+                }
+            }
+
+            foreach ($_ENV as $key => $value) {
+                // Convert boolean values to strings
+                if ($value === true || $value === false || is_bool($value)) {
+                    $value = $value ? 'true' : 'false';
+                }
+
+                if (is_array($value)) {
+                    // Process nested arrays
+                    $iniString .= "[$key]\n";
+                    foreach ($value as $nestedKey => $nestedValue) {
+                        if (is_string($nestedValue) && preg_match('/^\/.*\/[a-z]*$/i', $nestedValue)) {
+                            $nestedValue = '"' . $nestedValue . '"';
+                        } else {
+                            $nestedValue = addslashes($nestedValue);
+                        }
+                        $iniString .= "$nestedKey = $nestedValue\n";
+                    }
+                } else {
+                    if (is_string($value) && preg_match('/^\/.*\/[a-z]*$/i', $value)) {
+                        $value = '"' . $value . '"';
+                    } else {
+                        $value = addslashes($value);
+                    }
+                    // Append the key-value pair as a string to $iniString
+                    $iniString .= "$key = $value\n";
+                }
+            }
+*/
+            foreach ($_ENV as $key => $value) {
+                // Convert boolean values to strings
+                if ($value === true || $value === false || is_bool($value)) {
+                    $value = $value ? 'true' : 'false';
+                }
+
+                if (is_array($value)) {
+                    // Process nested arrays
+                    $iniString .= "[$key]\n";
+                    foreach ($value as $nestedKey => $nestedValue) {
+                        if (is_string($nestedValue) && preg_match('/^\/.*\/[a-z]*$/i', $nestedValue)) {
+                            $nestedValue = '"' . $nestedValue . '"';
+                        } else {
+                            if (is_bool($nestedValue)) {
+                                $nestedValue = $nestedValue ? 'true' : 'false';
+                            } else {
+                                $nestedValue = addslashes($nestedValue);
+                            }
+                        }
+                        $iniString .= "$nestedKey = $nestedValue\n";
+                    }
+                } else {
+                    if (is_string($value) && preg_match('/^\/.*\/[a-z]*$/i', $value)) {
+                        $value = '"' . $value . '"';
+                    } else {
+                        if (is_bool($value)) {
+                            $value = $value ? 'true' : 'false';
+                        } else {
+                            $value = addslashes($value);
+                        }
+                    }
                     // Append the key-value pair as a string to $iniString
                     $iniString .= "$key = $value\n";
                 }

@@ -341,7 +341,7 @@ unset($path);
       if (count($dirs) == 1)
         foreach($dirs as $dir) {
           $dirs[0] = $dirs[array_key_first($dirs)];
-          if (preg_match('/'.DOMAIN_EXPR.'/i', strtolower(basename($dirs[0])))) {
+          if (preg_match(DOMAIN_EXPR, strtolower(basename($dirs[0])))) {
             $_GET['domain'] = basename($dirs[0]);
             break;
           }
@@ -1372,7 +1372,7 @@ $output = 'Invalid Input';
                   elseif (basename($path) == 'vendor')
                     echo '<div style="position: relative;">'
                     . '<a href="#!" onclick="document.getElementById(\'app_composer-container\').style.display=\'block\';"><img src="resources/images/directory-composer.png" width="50" height="32" /></a><br />'
-                    . '<a href="?' . (APP_ROOT != '' ? array_key_first($_GET) . '=' . $_GET[array_key_first($_GET)] . '&' : '') . 'app=composer&path=' . basename($path) . '" onclick="">' . basename($path)  // "?path=' . basename($path) . '"         
+                    . '<a href="?' . (APP_ROOT != '' ? array_key_first($_GET) . '=' . $_GET[array_key_first($_GET)] . '&domain=' . basename(APP_ROOT) . '&' : '') . 'app=composer&path=' . basename($path) . '" onclick="">' . basename($path)  // "?path=' . basename($path) . '"         
                     . '/</a></div>' . "\n";
                   else
                     echo '<a href="?' . (!defined('APP_ROOT') || empty(APP_ROOT) ? '' : 'client=' . $_GET['client'] . '&') . 'path=' . (!isset($_GET['path']) ? '' : $_GET['path'] ) . basename($path) . '">'
@@ -1584,13 +1584,14 @@ $(document).ready(function() {
 //!is_dir($path = APP_PATH . APP_BASE['resources'] . 'js/') or mkdir($path, 0755, true);
 
 if (!is_file($path = APP_PATH . APP_BASE['resources'] . 'js/requirejs/require.js') || ceil(abs((strtotime(date('Y-m-d')) - strtotime(date('Y-m-d',strtotime('+5 days',filemtime($path))))) / 86400)) <= 0  ) {
-  !is_dir($path = APP_PATH . APP_BASE['resources'] . 'js/requirejs') or mkdir($path, 0755, true);
-    $url = 'https://requirejs.org/docs/release/2.3.6/minified/require.js';
-    $handle = curl_init($url);
-    curl_setopt($handle, CURLOPT_RETURNTRANSFER, true);
+  !is_dir($path = APP_PATH . APP_BASE['resources'] . 'js/requirejs') or @mkdir($path, 0755, true);
+  !is_dir($path) and $errors['JS-REQUIREJS'] = 'JS-REQUIREJS - Failed to create directory: ' . $path;
+  $url = 'https://requirejs.org/docs/release/2.3.6/minified/require.js';
+  $handle = curl_init($url);
+  curl_setopt($handle, CURLOPT_RETURNTRANSFER, true);
 
-    if (!empty($js = curl_exec($handle)))
-        file_put_contents($path, $js) or $errors['JS-TAILWIND'] = $url . ' returned empty.';
+  if (!empty($js = curl_exec($handle)))
+    file_put_contents($path, $js) or $errors['JS-REQUIREJS'] = $url . ' returned empty.';
 }
 
 if (!is_file($path)) { ?>

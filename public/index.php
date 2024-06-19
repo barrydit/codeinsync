@@ -3,8 +3,9 @@
   //die(var_dump($_GET));
 
   // if ($path = (basename(getcwd()) == 'public') chdir('..');
-
-  if ($path = (basename(getcwd()) == 'public') ? (is_file('../config/config.php') ? '../config/config.php' : 'config.php') : (is_file('config.php') ? 'config.php' : 'config/config.php'))
+//APP_PATH == dirname(APP_PUBLIC) 
+  if ($path = (basename(getcwd()) == 'public') ? (is_file('../config/config.php') ? '../config/config.php' : 'config.php') :
+    (is_file('config.php') ? 'config.php' : APP_PATH . APP_BASE['config'] . 'config.php' ))
 
     //? (is_file('../config.php') ? '../config.php' : 'config.php')
     //: (is_file('config.php') ? 'config.php' : (is_file('config/config.php') ? 'config/config.php' : null)))

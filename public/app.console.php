@@ -18,7 +18,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
       chdir(APP_PATH . APP_ROOT);
       if ($_POST['cmd'] && $_POST['cmd'] != '') 
         if (preg_match('/^help/i', $_POST['cmd']))
-          $output[] = implode(', ', array('install', 'php', 'composer', 'git', 'npm', 'whoami', 'wget', 'tail', 'cat', 'echo', 'env', 'sudo', 'whoami'));
+          $output[] = implode(', ', array('install', 'php', 'composer', 'git', 'npm', 'whoami', 'wget', 'tail', 'cat', 'echo', 'env', 'sudo'));
         else if (preg_match('/^install/i', $_POST['cmd']))
           include 'templates/' . preg_split("/^install (\s*+)/i", $_POST['cmd'])[1] . '.php';
         //else if (preg_match('/^edit\s+(:?(.*))/i', $_POST['cmd'], $match))
@@ -36,6 +36,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
           }
 
         } else if (preg_match('/^composer\s+(:?(.*))/i', $_POST['cmd'], $match)) {
+          $output[] = dd(COMPOSER_EXEC);
           $output[] = APP_SUDO . COMPOSER_EXEC['bin'] . ' ' . $match[1];
 $proc=proc_open((strtoupper(substr(PHP_OS, 0, 3)) === 'WIN' ? '' : APP_SUDO) . COMPOSER_EXEC['bin'] . ' ' . $match[1],
   array(
@@ -76,7 +77,8 @@ $proc=proc_open($command,
   $pipes);
   
           list($stdout, $stderr, $exitCode) = [stream_get_contents($pipes[1]), stream_get_contents($pipes[2]), proc_close($proc)];
-          $output[] = (!isset($stdout) ? NULL : $stdout . (isset($stderr) && $stderr === '' ? NULL : (preg_match('/^To\s' . DOMAIN_EXPR . '/', $stderr) ? $stderr : 'Error: ' . $stderr) ) . (isset($exitCode) && $exitCode == 0 ? NULL : 'Exit Code: ' . $exitCode));
+          preg_match('/\/(.*)\//', DOMAIN_EXPR, $matches);   
+          $output[] = (!isset($stdout) ? NULL : $stdout . (isset($stderr) && $stderr === '' ? NULL : (preg_match('/^To\s' . $matches[1] . '/', $stderr) ? $stderr : 'Error: ' . $stderr) ) . (isset($exitCode) && $exitCode == 0 ? NULL : 'Exit Code: ' . $exitCode));
           } else if (preg_match('/^git\s+(update)(:?\s+)?/i', $_POST['cmd'])) {
             $output[] = git_origin_sha_update();
           } else if (preg_match('/^git\s+(clone)(:?\s+)?/i', $_POST['cmd'])) {
@@ -153,7 +155,8 @@ $proc=proc_open($command,
   $pipes);
   
           list($stdout, $stderr, $exitCode) = [stream_get_contents($pipes[1]), stream_get_contents($pipes[2]), proc_close($proc)];
-          $output[] = (!isset($stdout) ? NULL : $stdout . (isset($stderr) && $stderr === '' ? NULL : (preg_match('/^To\s' . DOMAIN_EXPR . '/', $stderr) ? $stderr : 'Error: ' . $stderr) ) . (isset($exitCode) && $exitCode == 0 ? NULL : 'Exit Code: ' . $exitCode));
+          preg_match('/\/(.*)\//', DOMAIN_EXPR, $matches);  
+          $output[] = (!isset($stdout) ? NULL : $stdout . (isset($stderr) && $stderr === '' ? NULL : (preg_match('/^To\s' . $matches[1] . '/', $stderr) ? $stderr : 'Error: ' . $stderr) ) . (isset($exitCode) && $exitCode == 0 ? NULL : 'Exit Code: ' . $exitCode));
           //$output[] = $_POST['cmd'];
           }
   
@@ -458,7 +461,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
   else echo $shell_prompt . "\n";
 
 }
-
+//dd($errors);
 if (!empty($errors))
   foreach($errors as $key => $error) {
       if (!is_array($error))

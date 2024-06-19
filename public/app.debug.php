@@ -75,7 +75,7 @@ window.onload = function() {
 var chart = new CanvasJS.Chart("chartContainer", {
 	animationEnabled: true,
 	title: {
-		text: "Used vs Unused Memory"
+		text: "Used and vs Unused Memory"
 	},
 	data: [{
 		type: "pie",

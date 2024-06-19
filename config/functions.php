@@ -103,7 +103,6 @@ function packagist_return_source($vendor, $package) {
   return $initial_url;
 }
 
-
 function htmlsanitize(mixed $input = '') {
 
     if (is_array($input)) $input = var_export($input, true);
@@ -165,6 +164,204 @@ function readlinkToEnd($linkFilename) {
     if(!is_link($final)) return $final;
   }
 }
+
+
+/* function parse_ini_file_multi($file) {
+  // parse_ini_string(file_get_contents($file), true, INI_SCANNER_NORMAL))) 
+  $data = parse_ini_file($file, true, INI_SCANNER_TYPED); 
+  $output = [];
+  foreach($data as $key => $value) {
+    $keys = explode('.', $key);
+    $temp = &$output;
+    foreach($keys as $key) {
+      $temp = &$temp[$key];
+    }
+    $temp = $value;
+  }
+  return $output;
+}
+function parse_ini_file_multi($file) {
+  $data = parse_ini_file($file, true, INI_SCANNER_TYPED);
+  $output = [];
+
+  foreach($data as $section => $values) {
+    if (is_array($values)) {
+      foreach($values as $key => $value) {
+        $keys = explode('.', $key);
+        $temp = &$output[$section];
+        foreach($keys as $key_part) {
+          $temp = &$temp[$key_part];
+        }
+        $temp = $value;
+      }
+    } else {
+      $keys = explode('.', $section);
+      $temp = &$output;
+      foreach($keys as $key_part) {
+        $temp = &$temp[$key_part];
+      }
+      $temp = $values;
+    }
+  }
+  
+  return $output;
+}
+function parse_ini_file_multi($file) {
+  $data = parse_ini_file($file, true, INI_SCANNER_TYPED);
+  $output = [];
+
+  foreach ($data as $section => $values) {
+    if (is_array($values)) {
+      $output[$section] = [];
+      foreach ($values as $key => $value) {
+        $output[$section][$key] = str_replace(['\'', '"'], '', var_export($value, true));
+      }
+    } else {
+      $output[$section] = str_replace(['\'', '"'], '', var_export($values, true));
+    }
+  }
+
+  return $output;
+}
+
+function parse_ini_file_multi($file) {
+  $data = parse_ini_file($file, true, INI_SCANNER_TYPED);
+  $output = [];
+
+  foreach ($data as $section => $values) {
+      if (is_array($values)) {
+          $output[$section] = [];
+          foreach ($values as $key => $value) {
+              // Check if the value is a regular expression
+              if (preg_match('/^\/.*\/$/', $value)) {
+                  $output[$section][$key] = $value;
+              } else {
+                  // If not a regular expression, add slashes to escape special characters
+                  $output[$section][$key] = addcslashes($value, '"\\');
+              }
+          }
+      } else {
+          // Add slashes to non-array values
+          $output[$section] = addcslashes($values, '"\\');
+      }
+  }
+
+  return $output;
+}
+
+function parse_ini_file_multi($file) {
+  $data = parse_ini_file($file, true, INI_SCANNER_TYPED);
+  $output = [];
+
+  foreach ($data as $section => $values) {
+      if (is_array($values)) {
+          $output[$section] = [];
+          foreach ($values as $key => $value) {
+              // Do not escape regular expressions
+              if (preg_match('/^\/.*\/[a-z]*$/i', $value)) {
+                  $output[$section][$key] = $value;
+              } else {
+                  // Escape only non-regular expression values
+                  $output[$section][$key] = addcslashes($value, '"\\');
+              }
+          }
+      } else {
+          // Escape only non-regular expression values
+          if (preg_match('/^\/.*\/[a-z]*$/i', $values)) {
+              $output[$section] = $values;
+          } else {
+              $output[$section] = addcslashes($values, '"\\');
+          }
+      }
+  }
+
+  return $output;
+} */
+
+function parse_ini_file_multi($file) {
+  $data = parse_ini_file($file, true, INI_SCANNER_TYPED);
+  $output = [];
+
+  foreach ($data as $section => $values) {
+      if (is_array($values)) {
+          $output[$section] = [];
+          foreach ($values as $key => $value) {
+              // Do not escape regular expressions
+              if (preg_match('/^\/.*\/[a-z]*$/i', $value)) {
+                  $output[$section][$key] = $value;
+              } else {
+                  // Handle boolean values explicitly
+                  if (is_bool($value)) {
+                      $output[$section][$key] = $value ? 'true' : 'false';
+                  } else {
+                      $output[$section][$key] = addcslashes($value, '"\\');
+                  }
+              }
+          }
+      } else {
+          // Do not escape regular expressions
+          if (preg_match('/^\/.*\/[a-z]*$/i', $values)) {
+              $output[$section] = $values;
+          } else {
+              // Handle boolean values explicitly
+              if (is_bool($values)) {
+                  $output[$section] = $values ? 'true' : 'false';
+              } else {
+                  $output[$section] = addcslashes($values, '"\\');
+              }
+          }
+      }
+  }
+
+  return $output;
+}
+
+
+function array_merge_recursive_distinct(array &$array1, array &$array2) {
+  $merged = $array1;
+
+  foreach ($array2 as $key => &$value) {
+    if (is_array($value) && isset($merged[$key]) && is_array($merged[$key])) {
+      $merged[$key] = array_merge_recursive_distinct($merged[$key], $value);
+    } else {
+      $merged[$key] = $value;
+    }
+  }
+
+  return $merged;
+}
+
+function array_intersect_key_recursive(array $array1, array $array2) {
+  $result = [];
+  foreach ($array1 as $key => $value) {
+    if (array_key_exists($key, $array2)) {
+      if (is_array($value) && is_array($array2[$key])) {
+        $result[$key] = array_intersect_key_recursive($value, $array2[$key]);
+      } else {
+        $result[$key] = $value;
+      }
+    }
+  }
+  return $result;
+}
+/*
+if (!empty($env_arr = parse_ini_file($file, true, INI_SCANNER_TYPED ))) {
+foreach ($env_arr as $key => $value) {
+
+  if (is_array($value)) {
+      foreach ($value as $k => $v) {
+        $env_arr[$key][$k] = str_replace(['\'', '"'], '', var_export($v, true));
+      }
+  } else {
+      // Check if the value is boolean true, and replace it with the string 'true'
+      if ($value === true) {
+        $env_arr[$key] = 'true';
+      } else {
+        $env_arr[$key] = str_replace(['\'', '"'], '', var_export($value, true));
+      }
+  }
+}
+*/
 
 /**
  * This function is to replace PHP's extremely buggy realpath().
