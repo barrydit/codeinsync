@@ -156,9 +156,9 @@ if (is_readable($path = APP_PATH . APP_ROOT . 'error_log') && filesize($path) >=
   }
 }
 
-if (!function_exists('dd')) {
-  $errors['FUNCTIONS'] = 'functions.php failed to load. Therefore function dd() does not exist (yet).';
-}
+(!function_exists('dd'))
+  and $errors['FUNCTIONS'] = 'functions.php failed to load. Therefore function dd() does not exist (yet).';
+
 //else dd('test');
 
 // dd(getenv('PATH') . ' -> ' . PATH_SEPARATOR);   

@@ -66,8 +66,16 @@ const APP_NAME = 'Dashboard';
 //if (defined('APP_HOURS')) echo 'Hours of Operation: ' . APP_HOURS['open'] . ' -> ' . APP_HOURS['closed']  . "\n";
 
 
-define('APP_DOMAIN', array_key_exists('domain', parse_url($domain = $_SERVER['HTTP_HOST'] ?? $_SERVER['SERVER_NAME'])) ? $domain : 'localhost');
+define('APP_DOMAIN', array_key_exists('domain', parse_url($domain = $_SERVER['HTTP_HOST'] ?? $_SERVER['SERVER_NAME']) ?? '') ? $domain : 'localhost');
 !is_string(APP_DOMAIN) and $errors['APP_DOMAIN'] = 'APP_DOMAIN is not valid. (' . APP_DOMAIN . ')' . "\n";
+
+define('APP_IP', gethostbyname(APP_DOMAIN));
+!is_string(APP_IP) and $errors['APP_IP'] = 'APP_IP is not valid. (' . APP_IP . ')' . "\n";
+
+!defined('APP_SERVER') and define('APP_SERVER', APP_IP . ':12345'); // print('Server: ' . APP_SERVER . "\n");
+
+(!$_SERVER['socket'] = @fsockopen(APP_IP, 12345, $errno, $errstr, 5))
+  and $errors['APP_CONNECTIVITY'] = 'No server connection. Err: ' . $errno . "\n" . $errstr;
 
 // Check if the request is using HTTPS
 (isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] == 'on') // strtolower(substr($_SERVER["SERVER_PROTOCOL"],0,5))=='https'

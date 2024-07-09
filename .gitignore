@@ -10,6 +10,7 @@
 /project?
 /resources/js
 /resources/reels
+/resources/project
 /vendor
 /var/*.html
 /var/*.php

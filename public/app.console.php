@@ -411,8 +411,10 @@ ob_start(); ?>
       </div>
     </div>
 
-    <div style="position: absolute; top: -24px; background-color: #FFA6A6; border: 1px dashed #000; border-right: none; z-index: -1;"><button style="padding: 0 4px 4px 4px; font-weight: bold;" class="text-xs">[Settings...]</button></div>
-        <div style="position: absolute; top: -24px; left: 73px; background-color: #FFA6A6; border: 1px dashed #000; border-left: none; z-index: -1;"><button style="border: 1px dashed #000; padding: 0 4px 2px 4px; font-weight: bold; color: black;" class="text-xs">Console</button> | <button style="border: 1px dashed #000; padding: 0 4px 2px 4px; border: 1px dashed #000; font-weight: bold;" class="text-xs">SQL Query</button> | <button style="border: 1px dashed #000; padding: 0 4px 2px 4px; font-weight: bold;" class="text-xs">PHP</button> | <button style="border: 1px dashed #000; padding: 0 4px 2px 4px; font-weight: bold;" class="text-xs">Perl</button> | <button style="border: 1px dashed #000; padding: 0 4px 2px 4px; font-weight: bold;" class="text-xs">Python</button> | <button style="border: 1px dashed #000; padding: 0 4px 2px 4px; font-weight: bold;" class="text-xs">JavaScript</button> | <button style="border: 1px dashed #000; padding: 0 4px 2px 4px; font-weight: bold;" class="text-xs">CSS</button> | <button style="border: 1px dashed #000; padding: 0 4px 2px 4px; font-weight: bold;" class="text-xs">HTML</button> </div>
+    <div style="position: absolute; top: -24px; background-color: #FFA6A6; border: 1px dashed #000; border-right: none; z-index: -1;"><button id="console-settings-btn" style="padding: 0 4px 4px 4px; font-weight: bold;" class="text-xs">[Settings...]</button></div>
+
+    
+    <div style="position: absolute; top: -24px; left: 73px; background-color: #FFA6A6; border: 1px dashed #000; border-left: none; z-index: -1;"><button style="border: 1px dashed #000; padding: 0 4px 2px 4px; font-weight: bold; color: black;" class="text-xs">Console</button> | <button style="border: 1px dashed #000; padding: 0 4px 2px 4px; border: 1px dashed #000; font-weight: bold;" class="text-xs">SQL Query</button> | <button style="border: 1px dashed #000; padding: 0 4px 2px 4px; font-weight: bold;" class="text-xs">PHP</button> | <button style="border: 1px dashed #000; padding: 0 4px 2px 4px; font-weight: bold;" class="text-xs">Perl</button> | <button style="border: 1px dashed #000; padding: 0 4px 2px 4px; font-weight: bold;" class="text-xs">Python</button> | <button style="border: 1px dashed #000; padding: 0 4px 2px 4px; font-weight: bold;" class="text-xs">JavaScript</button> | <button style="border: 1px dashed #000; padding: 0 4px 2px 4px; font-weight: bold;" class="text-xs">CSS</button> | <button style="border: 1px dashed #000; padding: 0 4px 2px 4px; font-weight: bold;" class="text-xs">HTML</button> </div>
     <div style="text-align: left; position: relative;">
 
         <div style="display: inline-block; margin: 5px 0px 0px 10px; float: left;">
@@ -546,6 +548,8 @@ const changePositionBtn = document.getElementById('changePositionBtn');
 <?php if (defined('COMPOSER')) { ?>
 const initSubmit = document.getElementById('app_composer-init-submit');
 <?php } ?>
+
+
 let isFixed = false; // Store the current position state
 
 var requestInput = document.getElementById('requestInput');
@@ -669,6 +673,8 @@ show_console();
         isFixed = true;
         show_console();
     });
+
+
 <?php if (defined('COMPOSER')) { ?>
 initSubmit.addEventListener('click', () => {
   show_console();

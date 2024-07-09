@@ -290,7 +290,7 @@ if (strtoupper(substr(PHP_OS, 0, 3)) === 'WIN') { // DO NOT REMOVE! { .. }
     define('COMPOSER_BIN', '/usr/local/bin/composer');
   }
 */
-    foreach(array( /*'/usr/local/bin/composer',*/ 'php ' . APP_PATH . 'composer.phar', '/usr/bin/composer') as $key => $bin) {
+    foreach(array( /*'/usr/local/bin/composer',*/ 'php ' . APP_PATH . 'composer.phar', '/usr/local/bin/composer') as $key => $bin) {
       !isset($composer) and $composer = array();
 
 /*//*/
@@ -846,24 +846,126 @@ fclose($pipes[2]);
 //dd('composer timeout', false);
 
     if (!empty(array_diff($vendors, $dirs_diff)) ) {
-      $proc = proc_open((strtoupper(substr(PHP_OS, 0, 3)) === 'WIN' ? '' : APP_SUDO) . COMPOSER_EXEC['bin'] . ' update', array( array("pipe","r"), array("pipe","w"), array("pipe","w")), $pipes);
 
-      list($stdout, $stderr, $exitCode) = [stream_get_contents($pipes[1]), stream_get_contents($pipes[2]), proc_close($proc)];
+      if (!$_SERVER['socket']) {
 
-      if ($exitCode !== 0)
-        if (empty($stdout)) {
-          if (!empty($stderr))
-            $errors['COMPOSER-UPDATE'] = $stderr;
-        } else $errors['COMPOSER-UPDATE'] = $stdout;
-    //else $debug['COMPOSER-UPDATE'] = '$stdout=' $stdout . "\n".  '$stderr = ' . $stderr;
+        $proc = proc_open((strtoupper(substr(PHP_OS, 0, 3)) === 'WIN' ? '' : APP_SUDO) . COMPOSER_EXEC['bin'] . ' update', array( array("pipe","r"), array("pipe","w"), array("pipe","w")), $pipes);
+
+        list($stdout, $stderr, $exitCode) = [stream_get_contents($pipes[1]), stream_get_contents($pipes[2]), proc_close($proc)];
+
+        if ($exitCode !== 0)
+          if (empty($stdout)) {
+            if (!empty($stderr))
+              $errors['COMPOSER-UPDATE'] = $stderr;
+          } else $errors['COMPOSER-UPDATE'] = $stdout;
+      //else $debug['COMPOSER-UPDATE'] = '$stdout=' $stdout . "\n".  '$stderr = ' . $stderr;
     
-      if (preg_match('/^.*Composer is operating significantly slower than normal because you do not have the PHP curl extension enabled./m', $stdout)) {
-        $errors['composer-curl-error'] = 'PHP cURL needs to be installed and enabled.';
+        if (preg_match('/^.*Composer is operating significantly slower than normal because you do not have the PHP curl extension enabled./m', $stdout))
+          $errors['ext/curl'] = 'PHP cURL needs to be installed and enabled.';
+
+      } else {
+        list($server, $port) = explode(':', APP_SERVER); // 127.0.0.1:12345
+        $errors['server-1'] = "Connected to $server on port $port\n";
+    
+        // Send a message to the server
+        $message = "cmd: composer update\n";
+        fwrite($_SERVER['socket'], $message);
+    
+        // Read response from the server
+        while (!feof($_SERVER['socket'])) {
+            $response = fgets($_SERVER['socket'], 1024);
+            $errors['server-2'] = "Server says: $response\n";
+            if (!empty($response)) break;
+        }
+    
+        // Close the connection
+        fclose($_SERVER['socket']);
       }
+
 
     }
 
   if (!empty($errors) && isset($errors['COMPOSER-UPDATE'])) {
+
+    $problems = [];
+    if (preg_match_all('/Problem \d+.*?(?=\r?\nProblem \d+|\r?\n$)/s', $errors['COMPOSER-UPDATE'], $matches)) {
+      foreach ($matches[0] as $problem) {
+          // Extract problem ID
+          preg_match('/Problem (\d+)/', $problem, $idMatch);
+          $problemId = $idMatch[1];
+  
+          // Extract items under the problem, excluding paths
+          preg_match_all('/- (?!\/etc\/php\/\d+\.\d+\/cli\/.*\.ini)(.*?)(?=\r?\n(?!\s*- )|\r?\n)/s', $problem, $itemMatches); // --$
+          $items = array_map('trim', $itemMatches[1]);
+  
+          // Store the problem ID and its items
+          $problems = $items;
+      }
+  
+      // Count of problems
+      $problemCount = count($problems);
+  
+      // Display the results
+      $errors['COMPOSER-PROBLEMS'] = "Total Problems: $problemCount\n";
+      $errors['COMPOSER-PROBARRAY'] = var_export($problems, true);
+    } else {
+      $errors['COMPOSER-PROBLEMS'] = "No problems found.\n";
+    }
+
+    if (empty($problems) && preg_match_all('/Problem \d+.*?(?=\r?\n)$/s', $errors['COMPOSER-UPDATE'], $matches)) {
+      $problems = [];
+      foreach ($matches[0] as $problem) {
+          // Extract problem ID
+          preg_match('/Problem (\d+)/', $problem, $idMatch);
+          $problemId = $idMatch[1];
+  
+          // Extract items under the problem, excluding paths
+          preg_match_all('/- (?!\/etc\/php\/\d+\.\d+\/cli\/.*\.ini)(.*?)(?=\r?\n(?!\s*- )|\r?\n)/s', $problem, $itemMatches); // --$
+          $items = array_map('trim', $itemMatches[1]);
+  
+          // Store the problem ID and its items
+          $problems = $items;
+      }
+  
+      // Count of problems
+      $problemCount = count($problems);
+  
+      // Display the results
+      $errors['COMPOSER-PROBLEMS'] = "Total Problems: $problemCount\n";
+      $errors['COMPOSER-PROBARRAY'] = var_export($problems, true);
+    } else {
+      $errors['COMPOSER-PROBLEMS'] = "No problems found.\n";
+    }
+
+    if (preg_match_all('/To enable extensions, verify that they are enabled in your \.ini files:.*?(?=\r?\n$)/s', $errors['COMPOSER-UPDATE'], $matches)) {
+      $ini_files = [];
+      foreach ($matches[0] as $ini_file) {
+
+          // Extract items under the problem, excluding paths
+          preg_match_all('/(?=\/etc\/php\/\d+\.\d+\/cli\/.*\.ini)(.*?)(?=\r?\n(?!\s*- )|\r?\n)/s', $ini_file, $itemMatches); // --$
+          $items = array_map('trim', $itemMatches[0]);
+  
+          // Store the problem ID and its items
+          $ini_files = $items;
+      }
+
+      $base_names = array_map(function($path) {
+        // Extract the filename without the extension
+        $filename = preg_replace('/\.ini$/', '', basename($path));
+        return preg_replace('/^\d+-/', '', $filename);
+      }, $ini_files);
+
+      // Count of problems
+      $ini_files_count = count($base_names);
+  
+      // Display the results
+      $errors['COMPOSER-INI-FILES'] = "Total Ini Files: $ini_files_count\n";
+      $errors['COMPOSER-INIARRAY'] = var_export($base_names, true);
+    } else {
+      $errors['COMPOSER-INI-FILES'] = "No Ini Files found.\n";
+    }
+
+
     if (preg_match('/^.*Problem \d*(\r?\n)*.*- Root composer\.json requires ([a-z0-9](?:[_.-]?[a-z0-9]+)*\/[a-z0-9](?:(?:[_.]|-{1,2})?[a-z0-9]+)) (\^v?\d+(?:\.\d+){0,3}|^dev-.*), it is satisfiable by (?:[a-z0-9](?:[_.-]?[a-z0-9]+)*\/[a-z0-9](?:(?:[_.]|-{1,2})?[a-z0-9]+))\[\d+(?:\.\d+){0,3}\] from composer repo \((?:[a-z]+\:\/\/)?(?:[a-z0-9\-]+\.)+[a-z]{2,6}(?:\/\S*)?\) but (?:[a-z0-9](?:[_.-]?[a-z0-9]+)*\/[a-z0-9](?:(?:[_.]|-{1,2})?[a-z0-9]+))\[(.*)\]/m', $errors['COMPOSER-UPDATE'], $matches)) {
       if (preg_match('/(v?\d+(?:\.\d+){0,3})/', $matches[4]))      
         $composer_obj->require->{$matches[2]} = '^' . $matches[4];

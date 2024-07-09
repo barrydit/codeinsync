@@ -1372,10 +1372,10 @@ $output = 'Invalid Input';
                   elseif (basename($path) == 'vendor')
                     echo '<div style="position: relative;">'
                     . '<a href="#!" onclick="document.getElementById(\'app_composer-container\').style.display=\'block\';"><img src="resources/images/directory-composer.png" width="50" height="32" /></a><br />'
-                    . '<a href="?' . (APP_ROOT != '' ? array_key_first($_GET) . '=' . $_GET[array_key_first($_GET)] . '&domain=' . basename(APP_ROOT) . '&' : '') . 'app=composer&path=' . basename($path) . '" onclick="">' . basename($path)  // "?path=' . basename($path) . '"         
+                    . '<a href="?' . (APP_ROOT != '' ? array_key_first($_GET) . '=' . $_GET[array_key_first($_GET)] . (array_key_first($_GET) == 'client' ? '&domain=' . $_GET['domain'] . '&' : '' ) : '') . 'app=composer&path=' . basename($path) . '" onclick="">' . basename($path)  // "?path=' . basename($path) . '"         
                     . '/</a></div>' . "\n";
                   else
-                    echo '<a href="?' . (!defined('APP_ROOT') || empty(APP_ROOT) ? '' : 'client=' . $_GET['client'] . '&') . 'path=' . (!isset($_GET['path']) ? '' : $_GET['path'] ) . basename($path) . '">'
+                    echo '<a href="?' . (!defined('APP_ROOT') || empty(APP_ROOT) ? '' : (array_key_first($_GET) == 'client' ? 'client=' . $_GET['client'] . '&' :  (array_key_first($_GET) == 'project' ? 'project=' . $_GET['project'] . '&' : ''))) . 'path=' . (!isset($_GET['path']) ? '' : $_GET['path'] ) . basename($path) . '">'
                     . '<img src="resources/images/directory.png" width="50" height="32" /><br />' . basename($path) . '/</a>';
                 elseif (is_file($path)) {
           
@@ -1720,7 +1720,7 @@ unset($path);
     <?php } elseif (date(/*Y-*/ 'm-d') == /*1976-*/ '03-20' ?? /*2017-*/ '07-20') { ?>
     <script src="resources/reels/leave-a-light-on.js" type="text/javascript" charset="utf-8"></script>
     <?php } else {  // array_rand() can't be empty ?>
-    <script src="<?= APP_BASE['resources'] . 'reels/' . 'adhd_song.js'; /* !empty($reels = glob(APP_PATH . 'resources/reels/*.js')) ? APP_BASE['resources'] . 'reels/' . basename(array_rand(array_flip(array_filter($reels, 'is_file')), 1)) : ''; APP_BASE['resources'] */?>" type="text/javascript" charset="utf-8"></script>
+    <script src="<?= APP_BASE['resources'] . 'reels/' . 'disturbed_-_it_wasnt_me.js'; /* adhd_song.js !empty($reels = glob(APP_PATH . 'resources/reels/*.js')) ? APP_BASE['resources'] . 'reels/' . basename(array_rand(array_flip(array_filter($reels, 'is_file')), 1)) : ''; APP_BASE['resources'] */?>" type="text/javascript" charset="utf-8"></script>
     <?php } ?>
     <script type="text/javascript" charset="utf-8">
 
@@ -1771,6 +1771,7 @@ function makeDraggable(windowId) {
       makeDraggable('app_git-container');
       makeDraggable('app_npm-container');
       makeDraggable('app_php-container');
+      //makeDraggable('console-settings');
       
       
       displayDirectoryBtn.addEventListener('click', () => {

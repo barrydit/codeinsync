@@ -57,10 +57,10 @@ function git_origin_sha_update() {
   }
 }
 
-$response = (defined('APP_CONNECTED') || check_http_200($_ENV['GITHUB']['ORIGIN_URL']) ? file_get_contents($latest_remote_commit_url, false, $context): '{}' );
+$response = (defined('APP_CONNECTED') && check_http_200($_ENV['GITHUB']['ORIGIN_URL'] && check_http_200($latest_remote_commit_url)) ? file_get_contents($latest_remote_commit_url, false, $context): '{}' );
   $errorDetails = error_get_last();
   if (isset($http_response_header) && strpos($http_response_header[0], '401') !== false) {
-    $errors['git-unauthorized'] = 'You are not authorized. The token may have expired.';
+    $errors['git-unauthorized'] = '[git] You are not authorized. The token may have expired.' . "\n";
   } elseif (isset($errorDetails['message'])) {
     $errors['other'] = 'An error occurred: ' . $errorDetails['message'];
   }
