@@ -467,7 +467,8 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 if (!empty($errors))
   foreach($errors as $key => $error) {
       if (!is_array($error))
-      echo /*$key . '=>' . */$error . ($key != end($errors) ? '' : "\n");
+        echo /*$key . '=>' . */$error . ($key != end($errors) ? '' : "\n");
+      else echo var_export($error, true); // foreach($error as $err) echo $err . "\n";
       //else dd($error);
   } ?>
 </textarea>

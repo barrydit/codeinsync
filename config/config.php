@@ -1,21 +1,68 @@
 <?php
 declare(strict_types=1); // First Line Only!
 
-error_reporting(E_ALL/*E_STRICT |*/);
+define('APP_DEBUG', isset($_GET['debug']) ? TRUE : FALSE);
 
 date_default_timezone_set('America/Vancouver');
-ini_set('display_errors', 'true');
-ini_set('display_startup_errors', 'true');
-ini_set('error_log', is_dir($path = dirname(__DIR__, 1) . DIRECTORY_SEPARATOR . 'config') ? dirname($path, 1) . DIRECTORY_SEPARATOR . 'error_log' : 'error_log');
-ini_set('log_errors', 'true');
-
-defined('PHP_ZTS') and $errors['PHP_ZTS'] = 'PHP was built with ZTS enabled.';
 
 $errors = []; // (object)
 
-ini_set('xdebug.remote_enable', '0');
-ini_set('xdebug.profiler_enable', '0');
-ini_set('xdebug.default_enable', '0');
+// Custom error handler
+function customErrorHandler($errno, $errstr, $errfile, $errline) {
+    global $errors;
+    !defined('APP_ERROR') and define('APP_ERROR', true); // $hasErrors = true;
+    foreach([
+        E_ERROR => 'Error',
+        E_WARNING => 'Warning',
+        E_PARSE => 'Parse Error',
+        E_NOTICE => 'Notice',
+        E_CORE_ERROR => 'Core Error',
+        E_CORE_WARNING => 'Core Warning',
+        E_COMPILE_ERROR => 'Compile Error',
+        E_COMPILE_WARNING => 'Compile Warning',
+        E_USER_ERROR => 'User Error',
+        E_USER_WARNING => 'User Warning',
+        E_USER_NOTICE => 'User Notice',
+        E_STRICT => 'Strict Notice',
+        E_RECOVERABLE_ERROR => 'Recoverable Error',
+        E_DEPRECATED => 'Deprecated',
+        E_USER_DEPRECATED => 'User Deprecated',
+    ] as $key => $value) {
+        if ($errno == $key) {
+            $errors[$key] = $key . ' => ' . $value . "\n";
+            $errors[] = $value . ': ' . $errstr . ' in ' . $errfile . ' on line ' . $errline . "\n";
+            break;
+        }
+    }
+    return false;
+}
+
+// Set the custom error handler
+set_error_handler("customErrorHandler");
+
+!defined('APP_ERROR') and define('APP_ERROR', false);
+
+if (APP_DEBUG || APP_ERROR) {
+    $errors['APP_DEBUG'] = 'Debugging is enabled.';
+    $errors['APP_ERROR'] = 'Error handling is enabled.';
+    ini_set('display_errors', 1);
+    ini_set('display_startup_errors', 1);
+    error_reporting(E_ALL/*E_STRICT |*/);
+} else {
+    ini_set('display_errors', 0);
+    ini_set('display_startup_errors', 0);
+    error_reporting(0);
+}
+
+ini_set('error_log', is_dir($path = dirname(__DIR__, 1) . DIRECTORY_SEPARATOR . 'config') ? dirname($path, 1) . DIRECTORY_SEPARATOR . 'error_log' : 'error_log');
+ini_set('log_errors', 'true');
+
+defined('PHP_ZTS') and $errors['PHP_ZTS'] = "PHP was built with ZTS enabled.\n";
+
+
+ini_set('xdebug.debug', '0'); // remote_enable
+ini_set('xdebug.mode', 'develop'); // default_enable mode=develop,coverage,debug,gcstats,profile,trace
+//ini_set('xdebug.mode', 'profile'); // profiler_enable
 
 putenv("XDEBUG_MODE=off");
 

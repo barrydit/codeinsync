@@ -257,14 +257,13 @@ if (!realpath($composerHome)) {
 
 putenv('COMPOSER_HOME=' . $composerHome ?? $_SERVER['HOME'] . '/.composer/');
 
-
 if (!file_exists(APP_PATH . 'composer.phar')) {
-  if (!file_exists(APP_PATH . 'composer-setup.php'))
-    copy('https://getcomposer.org/installer', 'composer-setup.php');
+  (!file_exists(APP_PATH . 'composer-setup.php'))
+    and copy('https://getcomposer.org/installer', 'composer-setup.php');
   
-  $error = exec('php composer-setup.php'); // php -d register_argc_argv=1
+  $error = shell_exec('php composer-setup.php'); // php -d register_argc_argv=1
 
-  $errors['COMPOSER-PHAR'] = 'Composer setup was executed and ' . (file_exists(APP_PATH.'composer.phar') ? 'does' : 'does not') . ' exist. version='.exec('php composer.phar -V') . '  error=' . $error;
+  $errors['COMPOSER-PHAR'] = 'Composer setup was executed and ' . (file_exists(APP_PATH.'composer.phar') ? 'does' : 'does not') . ' exist. version='.shell_exec('php composer.phar -V') . '  error=' . $error;
 } else {
 
   if (preg_match('/Composer(?: version)? (\d+\.\d+\.\d+) (\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2})/', exec(($bin = 'php composer.phar') . ' -V'), $matches))
@@ -290,7 +289,9 @@ if (strtoupper(substr(PHP_OS, 0, 3)) === 'WIN') { // DO NOT REMOVE! { .. }
     define('COMPOSER_BIN', '/usr/local/bin/composer');
   }
 */
-    foreach(array( /*'/usr/local/bin/composer',*/ 'php ' . APP_PATH . 'composer.phar', '/usr/local/bin/composer') as $key => $bin) {
+    (realpath($composer_which = trim(shell_exec(APP_SUDO . 'which composer')))) or $errors['COMPOSER-WHICH'] = 'which did not find composer. Err=' . $composer_which;
+
+    foreach(array( /*'/usr/local/bin/composer',*/ 'php ' . APP_PATH . 'composer.phar', $composer_which) as $key => $bin) {
       !isset($composer) and $composer = array();
 
 /*//*/
@@ -339,13 +340,16 @@ if (strtoupper(substr(PHP_OS, 0, 3)) === 'WIN') { // DO NOT REMOVE! { .. }
 
 //
 //exec('whoami', $output, $returnCode); // or $errors['COMPOSER-WHOAMI'] = $output;
-exec(APP_SUDO . '-u www-data which composer', $output, $returnCode) or $errors['COMPOSER-WHICH'] = $output;
-exec(APP_SUDO . '-u www-data composer --version', $output, $returnCode) or $errors['COMPOSER-VERSION'] = $output;
+//if (APP_DEBUG) {
+
+(realpath($output[0] = trim(shell_exec(APP_SUDO . 'which composer')))) or $output[0] = (strtoupper(substr(PHP_OS, 0, 3)) === 'LIN' ? '/usr/local/bin/composer' : COMPOSER_BIN['bin']); 
+$output[1] = shell_exec(APP_SUDO . 'composer --version') or $errors['COMPOSER-VERSION'] = $output[1];
 
 preg_match('/Composer(?: version)? (\d+\.\d+\.\d+) (\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2})/', $output[1], $matches) or $errors['COMPOSER-VERSION'] = $output[1];
 
 defined('COMPOSER_EXEC')
-  or define('COMPOSER_EXEC', (isset($_GET['exec']) && $_GET['exec'] == 'phar' ? COMPOSER_PHAR : (!defined('COMPOSER_BIN') || $output[0] != COMPOSER_BIN['bin'] ? ['bin' => basename($output[0]), 'version' => $matches[1]] : COMPOSER_BIN)) ?? COMPOSER_PHAR);
+  or define('COMPOSER_EXEC', (isset($_GET['exec']) && $_GET['exec'] == 'phar' ? COMPOSER_PHAR : (!defined('COMPOSER_BIN') || $output[0] != COMPOSER_BIN['bin'] ? ['bin' => basename($output[0]), 'version' => 
+  (isset($matches[1]) ? $matches[1] : '')] : COMPOSER_BIN)) ?? COMPOSER_PHAR);
 
 if (is_array(COMPOSER_EXEC))
   define('COMPOSER_VERSION', COMPOSER_EXEC['version']);
@@ -847,7 +851,7 @@ fclose($pipes[2]);
 
     if (!empty(array_diff($vendors, $dirs_diff)) ) {
 
-      if (!$_SERVER['socket']) {
+      if (!$_SERVER['SOCKET']) {
 
         $proc = proc_open((strtoupper(substr(PHP_OS, 0, 3)) === 'WIN' ? '' : APP_SUDO) . COMPOSER_EXEC['bin'] . ' update', array( array("pipe","r"), array("pipe","w"), array("pipe","w")), $pipes);
 
@@ -860,8 +864,8 @@ fclose($pipes[2]);
           } else $errors['COMPOSER-UPDATE'] = $stdout;
       //else $debug['COMPOSER-UPDATE'] = '$stdout=' $stdout . "\n".  '$stderr = ' . $stderr;
     
-        if (preg_match('/^.*Composer is operating significantly slower than normal because you do not have the PHP curl extension enabled./m', $stdout))
-          $errors['ext/curl'] = 'PHP cURL needs to be installed and enabled.';
+        (preg_match('/Composer is operating significantly slower than normal because you do not have the PHP curl extension enabled./m', $stdout))
+          and $errors['ext/curl'] = 'PHP cURL needs to be installed and enabled.';
 
       } else {
         list($server, $port) = explode(':', APP_SERVER); // 127.0.0.1:12345
@@ -869,17 +873,17 @@ fclose($pipes[2]);
     
         // Send a message to the server
         $message = "cmd: composer update\n";
-        fwrite($_SERVER['socket'], $message);
+        fwrite($_SERVER['SOCKET'], $message);
     
         // Read response from the server
-        while (!feof($_SERVER['socket'])) {
-            $response = fgets($_SERVER['socket'], 1024);
+        while (!feof($_SERVER['SOCKET'])) {
+            $response = fgets($_SERVER['SOCKET'], 1024);
             $errors['server-2'] = "Server says: $response\n";
             if (!empty($response)) break;
         }
     
         // Close the connection
-        fclose($_SERVER['socket']);
+        fclose($_SERVER['SOCKET']);
       }
 
 
@@ -1096,3 +1100,5 @@ if (basename(dirname(APP_SELF)) == __DIR__ . DIRECTORY_SEPARATOR . 'public')
     require_once($path);
 
 if (APP_SELF == __FILE__ || defined(APP_DEBUG) && isset($_GET['app']) && $_GET['app'] == 'composer') die($appComposer['html']);
+
+unset($output);

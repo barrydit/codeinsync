@@ -13,12 +13,22 @@
 $user = ''; // www-data
 $password = ''; // password
 
-define('APP_SUDO', 'echo ' . escapeshellarg((isset($password) && $password == '' ? '' : $password)) . ' | sudo -S ' . (isset($user) && $user == '' ? '' : '-u ' . $user) . ' '); // 
-
 define('APP_START', microtime(true));
 !defined('APP_START') || is_float(APP_START) ?: $errors['APP_START'] = 'APP_START is not a valid float value.';
 
-require_once 'functions.php';
+if (strtoupper(substr(PHP_OS, 0, 3)) === 'WIN') {
+  // define('APP_SUDO', 'runas /user:Administrator "cmd /c" ');
+} else // 'su -c'
+  define('APP_SUDO', 'echo ' . escapeshellarg((isset($password) && $password == '' ? '' : $password)) . ' | sudo -S ' . (isset($user) && $user == '' ? '' : '-u ' . $user) . ' '); // 
+
+
+$require = function(string $file, bool $once = true) {
+  if (!in_array(realpath($file), get_required_files()))
+    if ($once) require_once($file);
+    else require($file);
+};
+
+$require('functions.php');
 
 // Example usage
 $host = 'google.com'; // parse_url($ip, PHP_URL_HOST)
@@ -36,27 +46,34 @@ if ($ip) {
 
 !defined('APP_CONNECTED') and $errors['APP_CONNECTIVITY'] = 'APP Connect(ed): ' . var_export(APP_CONNECTIVITY, true) . "\n"; // print('Connectivity: ' . APP_CONNECTIVITY . "\n");
 
-define('APP_DEBUG', isset($_GET['debug']) ? TRUE : FALSE);
-
 //echo 'Checking Constants: ' . "\n\n";
 
 // Application configuration
 
 define('APP_VERSION', number_format(1.0, 1) . '.0');
-version_compare(APP_VERSION, '1.0.0', '>=') == 0
+(version_compare(APP_VERSION, '1.0.0', '>=') == 0)
   and $errors['APP_VERSION'] = 'APP_VERSION is not a valid version (' . APP_VERSION . ').';
 
 $auto_clear = false;
 
+if (isset($_SERVER['SERVER_NAME']))
+  $domain = $_SERVER['SERVER_NAME'];
+else if (isset($_SERVER['HTTP_HOST']))
+  $domain = $_SERVER['HTTP_HOST'];
+else if (isset($_SERVER['SERVER_ADDR']))
+  $domain = $_SERVER['SERVER_ADDR'];
+else
+  $domain = 'localhost';
+
 if (strtoupper(substr(PHP_OS, 0, 3)) === 'WIN')
-  $shell_prompt = 'www-data' . '@' . $_SERVER['SERVER_NAME'] . ':' . (($homePath = realpath($_SERVER['DOCUMENT_ROOT'])) === getcwd() ? '~': $homePath) . '$ ';
+  $shell_prompt = 'www-data' . '@' . $domain . ':' . (($homePath = realpath($_SERVER['DOCUMENT_ROOT'])) === getcwd() ? '~': $homePath) . '$ ';
 // Check if $homePath is a subdirectory of $docRootPath
 else if (isset($_SERVER['HOME']) && ($homePath = realpath($_SERVER['HOME'])) !== false && ($docRootPath = realpath($_SERVER['DOCUMENT_ROOT'])) !== false && strpos($homePath, $docRootPath) === 0) {
-  $shell_prompt = $_SERVER['USER'] . '@' . $_SERVER['SERVER_NAME'] . ':' . ($homePath == getcwd() ? '~': $homePath) . '$ '; // '$ >'
+  $shell_prompt = $_SERVER['USER'] . '@' . $domain . ':' . ($homePath == getcwd() ? '~': $homePath) . '$ '; // '$ >'
 } elseif (isset($_SERVER['USER']))
-  $shell_prompt = $_SERVER['USER'] . '@' . $_SERVER['SERVER_NAME'] . ':' . ($homePath == getcwd() ? '~': $homePath) . '$ ';
+  $shell_prompt = $_SERVER['USER'] . '@' . $domain . ':' . ($homePath == getcwd() ? '~': $homePath) . '$ ';
 else
-  $shell_prompt = 'www-data' . '@' . $_SERVER['SERVER_NAME'] . ':' . (getcwd() == '/var/www' ? '~': getcwd()) . '$ ';
+  $shell_prompt = 'www-data' . '@' . $domain . ':' . (getcwd() == '/var/www' ? '~' : getcwd()) . '$ ';
 
 const APP_NAME = 'Dashboard';
 !is_string(APP_NAME)
@@ -65,8 +82,7 @@ const APP_NAME = 'Dashboard';
 //define('APP_HOURS', ['open' => '08:00', 'closed' => '17:00']);
 //if (defined('APP_HOURS')) echo 'Hours of Operation: ' . APP_HOURS['open'] . ' -> ' . APP_HOURS['closed']  . "\n";
 
-
-define('APP_DOMAIN', array_key_exists('domain', parse_url($domain = $_SERVER['HTTP_HOST'] ?? $_SERVER['SERVER_NAME']) ?? '') ? $domain : 'localhost');
+define('APP_DOMAIN', array_key_exists('domain', parse_url($domain ?? '')) ? $domain : 'localhost');
 !is_string(APP_DOMAIN) and $errors['APP_DOMAIN'] = 'APP_DOMAIN is not valid. (' . APP_DOMAIN . ')' . "\n";
 
 define('APP_IP', gethostbyname(APP_DOMAIN));
@@ -74,7 +90,7 @@ define('APP_IP', gethostbyname(APP_DOMAIN));
 
 !defined('APP_SERVER') and define('APP_SERVER', APP_IP . ':12345'); // print('Server: ' . APP_SERVER . "\n");
 
-(!$_SERVER['socket'] = @fsockopen(APP_IP, 12345, $errno, $errstr, 5))
+(!$_SERVER['SOCKET'] = @fsockopen(APP_IP, 12345, $errno, $errstr, 5))
   and $errors['APP_CONNECTIVITY'] = 'No server connection. Err: ' . $errno . "\n" . $errstr;
 
 // Check if the request is using HTTPS

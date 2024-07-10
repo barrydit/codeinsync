@@ -2,17 +2,35 @@
 
 require('config/config.php');
 
-// Create a TCP/IP server socket
-(!$server = stream_socket_server('tcp://' . ($host = '0.0.0.0') . ':' . ($port = 12345), $errno, $errstr))
-   and die("Error: Unable to create server socket: $errstr ($errno)\n");
+$address = '0.0.0.0';
+$port = 12345;
 
-// ps aux | grep server.php
-// kill -SIGTERM <PID>
+function clientInputHandler($input) {
+    if (preg_match('/cmd:\s(.*)?(?=\r?\n$)/s', $input, $matches)) { // cmd: composer update
+        $cmd = $matches[1];
+        $output = shell_exec(/*$cmd*/ 'echo $PWD');
+        $output .= ' cmd: ' . $cmd;
+    } else {
+        // Process the request and send a response
+        $output = "Hello, client! You said: " . $input . "\n";
+    }
+    return $output;
+  }
 
-$running = true;
+// Check if the stream wrapper for TCP is available
+if (in_array('tcp', stream_get_wrappers())) {
 
-// Signal handler to gracefully shutdown
-function signalHandler($signal) {
+  // Create a TCP/IP server socket
+  (!$server = stream_socket_server('tcp://' . $address . ':' . $port, $errno, $errstr))
+    and die("Error: Unable to create server socket: $errstr ($errno)\n");
+
+  // ps aux | grep server.php
+  // kill -SIGTERM <PID>
+
+  $running = true;
+
+  // Signal handler to gracefully shutdown
+  function signalHandler($signal) {
     global $running, $server;
     switch ($signal) {
         case SIGTERM:
@@ -22,32 +40,19 @@ function signalHandler($signal) {
             fclose($server);
             exit;
     }
-}
+  }
+  // Register signal handler
+  pcntl_signal(SIGTERM, 'signalHandler');
+  pcntl_signal(SIGINT, 'signalHandler');
 
-// Register signal handler
-pcntl_signal(SIGTERM, 'signalHandler');
-pcntl_signal(SIGINT, 'signalHandler');
-
-while ($running) {
+  while ($running) {
     $client = @stream_socket_accept($server, -1);
 
     if ($client) {
         // Read data from the client
-        $request = fread($client, 1024);
-        //echo "Received request: $request\n";
+        $response = clientInputHandler(fread($client, 1024));
 
-        if (preg_match('/cmd:\s(.*)?(?=\r?\n$)/s', $request, $matches)) { // cmd: composer update
-            $cmd = $matches[1];
-        $output = shell_exec(/*$cmd*/ 'echo $PWD');
-            fwrite($client, $output . ' cmd: ' . $cmd);
-        } else {
-
-            // Process the request and send a response
-            $response = "Hello, client! You said: " . $request . "\n";
-            fwrite($client, $response);
-
-        }
-
+        fwrite($client, $response);
         // Close the client connection
         fclose($client);
     }
@@ -57,6 +62,21 @@ while ($running) {
 
     // Sleep for 1 second
     sleep(1);
+  }
+} else if (extension_loaded('sockets')) {
+    // Using Sockets Extension for creating server socket.
+    $sock = socket_create(AF_INET, SOCK_STREAM, SOL_TCP);
+    socket_bind($sock, $address, $port);
+    socket_listen($sock);
+    //echo "Server started on $address:$port\n";
+
+    while ($running) {
+        $client = socket_accept($sock);
+        $response = clientInputHandler(socket_read($client, 1024));
+        socket_write($client, $response);
+        socket_close($client);
+    }
+    socket_close($sock);
 }
 
 /*
