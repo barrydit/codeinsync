@@ -129,24 +129,27 @@ try {
 
 }
 
-(!$_SERVER['SOCKET'] = openSocket(APP_IP, 12345) ?: $errors['APP_CONNECTIVITY'] = 'No server connection.' . "\n");
+if (!$_SERVER['SOCKET'] = openSocket(APP_IP, 12345)) {
+  $errors['APP_CONNECTIVITY'] = 'No server connection.' . "\n";
+} else {
+  $errors['server-1'] = "Connected to " . APP_IP . " on port 12345\n";
 
-        $errors['server-1'] = "Connected to " . APP_IP . " on port 12345\n";
-    
-        // Send a message to the server
-        $errors['server-2'] = 'Client request: ' . $message = "cmd: composer update " . rand(5, 15) . "\n";
+  // Send a message to the server
+  $errors['server-2'] = 'Client request: ' . $message = "cmd: composer update " . rand(5, 15) . "\n";
 
-        fwrite($_SERVER['SOCKET'], $message);
-    
-        // Read response from the server
-        while (!feof($_SERVER['SOCKET'])) {
-            $response = fgets($_SERVER['SOCKET'], 1024);
-            $errors['server-3'] = "Server responce: $response\n";
-            if (!empty($response)) break;
-        }
-    
-        // Close the connection
-        fclose($_SERVER['SOCKET']);
+  fwrite($_SERVER['SOCKET'], $message);
+
+  // Read response from the server
+  while (!feof($_SERVER['SOCKET'])) {
+      $response = fgets($_SERVER['SOCKET'], 1024);
+      $errors['server-3'] = "Server responce: $response\n";
+      if (!empty($response)) break;
+  }
+
+  // Close the connection
+  //fclose($_SERVER['SOCKET']);
+
+  }
 
 
 // Check if the request is using HTTPS

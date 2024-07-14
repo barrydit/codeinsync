@@ -26,5 +26,6 @@ error_log
 main.js
 notes.txt
 package-lock.json
+server.pid
 settings.json
 *.config.js
