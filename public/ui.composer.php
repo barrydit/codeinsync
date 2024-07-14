@@ -1,16 +1,19 @@
 <?php
 
-
 if (__FILE__ == get_required_files()[0])
   if ($path = (basename(getcwd()) == 'public')
     ? (is_file('config.php') ? 'config.php' : '../config/config.php') : '') require_once $path;
   else die(var_dump("$path path was not found. file=config.php"));
-else 
-  if (is_file($path = APP_PATH . APP_BASE['config'] . 'composer.php') ? $path : '' )
+/*
+else {
+  $path = APP_PATH . APP_BASE['config'] . 'composer.php';
+dd($path);
+  if (is_file($path))
+dd(get_included_files(), false);
     require_once $path; 
-  else die(var_dump("$path path was not found. file=composer.php"));
-
-
+  else
+    die(var_dump("$path path was not found. file=composer.php"));
+}*/
 
 // dd(get_required_files());
 // require 'vendor/autoload.php'; // Include Composer's autoloader
@@ -93,6 +96,8 @@ if ($path = (basename(getcwd()) == 'public')
     ? (is_file('app.console.php') ? 'app.console.php' : (is_file('../config/app.console.php') ? '../config/app.console.php' : null))
     : (is_file('app.console.php') ? 'app.console.php' : (is_file('public/app.console.php') ? 'public/app.console.php' : 'app.console.php'))) require_once($path); 
 else die(var_dump($path . ' path was not found. file=app.console.php'));
+
+
 
 /*  ...
     "autoload": {
@@ -321,6 +326,7 @@ update [--with WITH] [--prefer-source] [--prefer-dist] [--prefer-install PREFER-
   exit(header('Location: ' . APP_URL_BASE . '?' . http_build_query(APP_QUERY)));
 }
 
+
 /** Loading Time: 4.99s **/
   
   //dd(get_required_files(), true);
@@ -331,6 +337,7 @@ update [--with WITH] [--prefer-source] [--prefer-dist] [--prefer-install PREFER-
 <HTML ...>
 <?php $app['css'] = ob_get_contents(); ?>
 */ 
+
 
 ob_start(); ?>
 

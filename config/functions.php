@@ -43,7 +43,7 @@ function check_internet_connection($ip = '8.8.8.8') {
   else
       exec(APP_SUDO . "/bin/ping -c 1 -W 1 " . escapeshellarg($ip), $output, $status); // var_dump(\$status)
   if ($status !== 0)
-    @fsockopen('www.google.com', 80, $errno, $errstr, 5) ?: $errors['APP_CONNECTIVITY'] = 'No internet connection.';
+    @fsockopen('www.google.com', 80, $errno, $errstr, 10) ?: $errors['APP_CONNECTIVITY'] = 'No internet connection.';
 
   return $status === 0;
 }

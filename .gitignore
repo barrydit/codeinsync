@@ -1,5 +1,6 @@
 #/config
 /applications
+/bin
 /clientele
 /dist
 /database/weekly-timesheet-????-??.json
