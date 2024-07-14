@@ -1,6 +1,6 @@
 <?php
 
-define('PID_FILE', /*getcwd() . */'C:\xampp\htdocs\server.pid'); 
+define('PID_FILE', /*getcwd() . */__DIR__ . DIRECTORY_SEPARATOR . 'server.pid');
 
 if (file_exists(PID_FILE)) {
   $pid = file_get_contents(PID_FILE);
