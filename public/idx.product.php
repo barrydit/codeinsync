@@ -1,6 +1,6 @@
 <?php
 
-if (!in_array($path = dirname(__DIR__) . '/config/config.php', get_required_files()))
+if (!in_array($path = dirname(__DIR__) . DIRECTORY_SEPARATOR . 'config' . DIRECTORY_SEPARATOR . 'config.php', get_required_files()))
   require_once($path);
 
 if (isset($_GET['CLIENT']) || isset($_GET['DOMAIN']) && !defined('APP_ROOT')) {
@@ -83,9 +83,6 @@ if (in_array(APP_PATH . APP_BASE['public'] . 'ui.composer.php', $uiPaths))
 // If you want to reset the array keys to be numeric (optional)
 $paths = array_values(array_unique(array_merge($uiPaths, $appPaths)));
 
-//dd($paths);
-
-
 //$paths = array_values(array_unique(array_merge($globPaths, $additionalPaths)));
 
 /*9.4
@@ -112,11 +109,16 @@ do {
 */
 // dd(get_defined_vars(), true);
 
+//$path = '';
+
 do {
+
+//dd($path, false);
+
     // Check if $paths is not empty
     if (!empty($paths)) {
         // Shift the first path from the array
-        $path = array_shift($paths);
+        //;
 
         // Check if the path exists
         if ($realpath = realpath($path)) {
@@ -125,7 +127,9 @@ do {
 //            $requireFile = function($file) /*use ($apps)*/ { global $apps; }; */
 
             // Include the file using the function
-            $returnedValue = require_once $realpath;
+            $returnedValue = require_once($realpath);
+
+//dd($returnedValue, false);
 
             // Check the type of the returned value
             if (is_array($returnedValue)) {
@@ -144,9 +148,12 @@ do {
             echo basename($path) . ' was not found. file=public/' . basename($path) . PHP_EOL;
         }
     }
+
+
     // Unset $paths if it is empty
-    if (empty($paths)) unset($paths);
-} while (isset($paths) && !empty($paths));
+    //if (empty($paths)) unset($paths);
+
+} while ($path = array_shift($paths)); // isset($paths) && !empty($paths)
 
 header("Content-Type: text/html");
 header("Cache-Control: no-store, no-cache, must-revalidate, max-age=0");

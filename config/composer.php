@@ -168,6 +168,12 @@ if (!function_exists('get_declared_classes')) {
         break;
       if ($class == end($classes))
         $errors['COMPOSER-AutoloaderInit'] = "ComposerAutloaderInit2 failed to be matched.\n";
+/*
+Check oauth github
+Check vendor folder exists and/or empty
+composer/InstalledVersions.php
+*/
+
     }
 
 if (isset($matches[1])) {
@@ -274,7 +280,7 @@ if (strtoupper(substr(PHP_OS, 0, 3)) === 'WIN') { // DO NOT REMOVE! { .. }
     if (file_exists('C:\ProgramData\ComposerSetup\bin\composer.phar')) {
       if (preg_match('/Composer(?: version)? (\d+\.\d+\.\d+) (\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2})/', exec($bin = 'php C:\ProgramData\ComposerSetup\bin\composer.phar' . ' -V'), $matches))
         !defined('COMPOSER_PHAR') and define('COMPOSER_PHAR', ['bin' => $bin, 'version' => $matches[1], 'date' => $matches[2]]);
-      !defined('COMPOSER_BIN') and define('COMPOSER_BIN', COMPOSER_PHAR);
+      !defined('COMPOSER_BIN') && defined('COMPOSER_PHAR') and define('COMPOSER_BIN', COMPOSER_PHAR);
     }
 } else {
 
@@ -342,13 +348,13 @@ if (strtoupper(substr(PHP_OS, 0, 3)) === 'WIN') { // DO NOT REMOVE! { .. }
 //exec('whoami', $output, $returnCode); // or $errors['COMPOSER-WHOAMI'] = $output;
 //if (APP_DEBUG) {
 
-(realpath($output[0] = trim(shell_exec(APP_SUDO . 'which composer')))) or $output[0] = (strtoupper(substr(PHP_OS, 0, 3)) === 'LIN' ? '/usr/local/bin/composer' : COMPOSER_BIN['bin']); 
+(strtoupper(substr(PHP_OS, 0, 3)) === 'WIN' ?: realpath($output[0] = shell_exec(APP_SUDO . 'which composer'))) or $output[0] = (strtoupper(substr(PHP_OS, 0, 3)) === 'LIN' ? '/usr/local/bin/composer' : COMPOSER_BIN['bin']); 
 $output[1] = shell_exec(APP_SUDO . 'composer --version') or $errors['COMPOSER-VERSION'] = $output[1];
 
-preg_match('/Composer(?: version)? (\d+\.\d+\.\d+) (\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2})/', $output[1], $matches) or $errors['COMPOSER-VERSION'] = $output[1];
+(strtoupper(substr(PHP_OS, 0, 3)) === 'WIN' ?: preg_match('/Composer(?: version)? (\d+\.\d+\.\d+) (\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2})/', $output[1], $matches) or $errors['COMPOSER-VERSION'] = $output[1]);
 
 defined('COMPOSER_EXEC')
-  or define('COMPOSER_EXEC', (isset($_GET['exec']) && $_GET['exec'] == 'phar' ? COMPOSER_PHAR : (!defined('COMPOSER_BIN') || $output[0] != COMPOSER_BIN['bin'] ? ['bin' => basename($output[0]), 'version' => 
+  or define('COMPOSER_EXEC', (isset($_GET['exec']) && $_GET['exec'] == 'phar' ? COMPOSER_PHAR : (defined('COMPOSER_BIN') ? ['bin' => basename(COMPOSER_BIN['bin']), 'version' => 
   (isset($matches[1]) ? $matches[1] : '')] : COMPOSER_BIN)) ?? COMPOSER_PHAR);
 
 if (is_array(COMPOSER_EXEC))
@@ -845,9 +851,6 @@ fclose($pipes[2]);
     else $dirs_diff = [];
 
 //dd($vendors);
-
-
-//dd('composer timeout', false);
 
     if (!empty(array_diff($vendors, $dirs_diff)) ) {
 

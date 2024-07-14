@@ -49,9 +49,9 @@ if (APP_DEBUG || APP_ERROR) {
     ini_set('display_startup_errors', 1);
     error_reporting(E_ALL/*E_STRICT |*/);
 } else {
-    ini_set('display_errors', 0);
-    ini_set('display_startup_errors', 0);
-    error_reporting(0);
+    ini_set('display_errors', 1);
+    ini_set('display_startup_errors', 1);
+    error_reporting(E_ALL/*E_STRICT |*/);
 }
 
 ini_set('error_log', is_dir($path = dirname(__DIR__, 1) . DIRECTORY_SEPARATOR . 'config') ? dirname($path, 1) . DIRECTORY_SEPARATOR . 'error_log' : 'error_log');
@@ -633,8 +633,8 @@ $dirs[] = APP_PATH . APP_BASE['config'] . 'npm.php';
         return strcmp(basename($a), basename($b)); // Compare other filenames alphabetically
   });
 
-
   foreach ($dirs as $includeFile) {
+    dd('Trying file: ' . basename($includeFile), false);
     $path = dirname($includeFile);
 
     if (in_array($includeFile, get_required_files())) continue; // $includeFile == __FILE__
@@ -658,8 +658,10 @@ $dirs[] = APP_PATH . APP_BASE['config'] . 'npm.php';
 
     $previousFilename = $currentFilename;
   }
-  
+
   chdir(APP_PATH);
+
+  
 } elseif (basename(dirname(APP_SELF)) == 'public_html') { // basename(__DIR__) == 'public_html'
   $errors['APP_PUBLIC'] = 'The `public_html` scenario was detected.' . "\n";
   
@@ -701,6 +703,7 @@ if (\$_SERVER['REQUEST_METHOD'] == 'POST') {
 
 header("Cache-Control: no-store, no-cache, must-revalidate, max-age=0");
 header("Pragma: no-cache");
+
 ?>
 
 <!DOCTYPE html>
@@ -784,6 +787,7 @@ END
     if (defined('APP_PROJECT')) require_once('public/install.php');
 }
 
+
 /*
 if ($path = realpath((basename(__DIR__) != 'config' ? NULL : __DIR__ . DIRECTORY_SEPARATOR ) . 'constants.php')) // is_file('config/constants.php')) 
   if (!in_array($path, get_required_files()))
@@ -844,8 +848,6 @@ if ($installNeeded) {
 }
 
 */
-
-
 
 /* Install code ...
 
@@ -939,7 +941,3 @@ ob_end_clean();
 
 
 //(defined('APP_DEBUG') && APP_DEBUG) and $errors['APP_DEBUG'] = (bool) var_export(APP_DEBUG, APP_DEBUG); // print('Debug (Mode): ' . var_export(APP_DEBUG, true) . "\n");
-
-
-
-

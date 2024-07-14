@@ -17,15 +17,15 @@ define('APP_START', microtime(true));
 !defined('APP_START') || is_float(APP_START) ?: $errors['APP_START'] = 'APP_START is not a valid float value.';
 
 if (strtoupper(substr(PHP_OS, 0, 3)) === 'WIN') {
-  // define('APP_SUDO', 'runas /user:Administrator "cmd /c" ');
+  define('APP_SUDO', ''); // 'runas /user:Administrator "cmd /c" '
 } else // 'su -c'
   define('APP_SUDO', 'echo ' . escapeshellarg((isset($password) && $password == '' ? '' : $password)) . ' | sudo -S ' . (isset($user) && $user == '' ? '' : '-u ' . $user) . ' '); // 
 
 
 $require = function(string $file, bool $once = true) {
   if (!in_array(realpath($file), get_required_files()))
-    if ($once) require_once($file);
-    else require($file);
+    if ($once) return require_once($file);
+    else return require($file);
 };
 
 $require('functions.php');
@@ -90,8 +90,64 @@ define('APP_IP', gethostbyname(APP_DOMAIN));
 
 !defined('APP_SERVER') and define('APP_SERVER', APP_IP . ':12345'); // print('Server: ' . APP_SERVER . "\n");
 
-(!$_SERVER['SOCKET'] = @fsockopen(APP_IP, 12345, $errno, $errstr, 5))
-  and $errors['APP_CONNECTIVITY'] = 'No server connection. Err: ' . $errno . "\n" . $errstr;
+class SocketException extends Exception {}
+
+function openSocket($hostname, $port, $timeout = 5) {
+  global $_SERVER, $errors;
+  $errno = 0;
+  $errstr = '';
+  $_SERVER['SOCKET'] = @fsockopen($hostname, $port, $errno, $errstr, $timeout);
+
+  if (!$_SERVER['SOCKET']) {
+  //  throw new SocketException("Unable to open socket: $errstr", $errno);
+    $errors['SOCKET'] = 'Socket is unable to connect.';
+  }
+  return $_SERVER['SOCKET'];
+}
+
+try {
+  if (!$socket = openSocket(APP_IP, 12345)) {
+    if (strtoupper(substr(PHP_OS, 0, 3)) === 'WIN') {
+      if (file_exists(APP_PATH . 'server.pid')) {
+        $pid = file_get_contents(APP_PATH . 'server.pid');
+        exec("tasklist /FI \"PID eq $pid\" 2>NUL | find /I \"$pid\" >NUL", $output, $status);
+        if ($status !== 0) {
+          shell_exec('taskkill /PID ' . $pid . ' /F');
+          unlink(APP_PATH . 'server.pid');
+        }
+      }
+      //die(shell_exec('cd'));
+      //shell_exec('start "" cmd /c "C:\xampp\php\php.exe -f ' . APP_PATH . 'server.php"'); // start /B /MIN 
+      pclose(popen(APP_PATH . 'bin/psexec.exe -d C:\xampp\php\php.exe -f ' . APP_PATH . 'server.php' /*' > C:\\xampp\\htdocs\\server.log 2>&1'*/, "r"));
+    } elseif (stripos(PHP_OS, 'LIN') === 0)
+      shell_exec('nohup php server.php > /dev/null 2>&1 &');
+    //sleep(3);
+  } else
+    fclose($socket);
+} catch (SocketException $e) {
+  //echo 'Error: ' . $e->getMessage();
+
+}
+
+(!$_SERVER['SOCKET'] = openSocket(APP_IP, 12345) ?: $errors['APP_CONNECTIVITY'] = 'No server connection.' . "\n");
+
+        $errors['server-1'] = "Connected to " . APP_IP . " on port 12345\n";
+    
+        // Send a message to the server
+        $errors['server-2'] = 'Client request: ' . $message = "cmd: composer update " . rand(5, 15) . "\n";
+
+        fwrite($_SERVER['SOCKET'], $message);
+    
+        // Read response from the server
+        while (!feof($_SERVER['SOCKET'])) {
+            $response = fgets($_SERVER['SOCKET'], 1024);
+            $errors['server-3'] = "Server responce: $response\n";
+            if (!empty($response)) break;
+        }
+    
+        // Close the connection
+        fclose($_SERVER['SOCKET']);
+
 
 // Check if the request is using HTTPS
 (isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] == 'on') // strtolower(substr($_SERVER["SERVER_PROTOCOL"],0,5))=='https'

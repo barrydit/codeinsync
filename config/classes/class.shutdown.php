@@ -16,7 +16,7 @@ class Shutdown {
 
         $iniString = '';
 
-        if (is_file($file = APP_PATH . APP_ROOT . '.env')) {
+        if (is_file($file = APP_PATH . (!defined('APP_ROOT') ? '' : APP_ROOT ) . '.env')) {
           $_ENV = array_intersect_key_recursive($_ENV, parse_ini_file_multi($file));
           if (isset($_ENV) && !empty($_ENV))
 /*

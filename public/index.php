@@ -13,7 +13,6 @@
     require_once($path);
   else die(var_dump($path . ' was not found. file=config.php'));
 
-
 //dd(get_defined_constants(true)['user']);
 
 
