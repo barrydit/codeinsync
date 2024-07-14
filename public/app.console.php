@@ -116,7 +116,7 @@ if (preg_match('/^git\s+clone\s+(http(?:s)?:\/\/([^@\s]+)@github\.com\/[\w.-]+\/
 */
 }
 
-$output[] = $command = $_POST['cmd'] . ' --git-dir="' . APP_PATH . APP_ROOT . '.git" --work-tree="' . APP_PATH . APP_ROOT . '" https://' . $_ENV['GITHUB']['OAUTH_TOKEN'] .'@github.com/barrydit/composer_app.git';
+$output[] = $command = $_POST['cmd'] . ' --git-dir="' . APP_PATH . APP_ROOT . '.git" --work-tree="' . APP_PATH . APP_ROOT . '" https://' . $_ENV['GITHUB']['OAUTH_TOKEN'] .'@github.com/barrydit/CodeHub.git';
 
 /**/
 if (isset($github_repo) && !empty($github_repo)) {
@@ -161,7 +161,7 @@ $proc=proc_open($command,
           }
   
 /*
- Error: To https://github.com/barrydit/composer_app.git
+ Error: To https://github.com/barrydit/CodeHub.git
    5fbad5b..29f689e  main -> main
    
 ^To\s(?:[a-z]+\:\/\/)?(?:[a-z0-9\\-]+\.)+[a-z]{2,6}(?:\/\S*)?
