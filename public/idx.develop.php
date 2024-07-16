@@ -1060,7 +1060,7 @@ do {
               });
               */
               
-              $handle = fopen(APP_PATH . 'projects/project.php', 'r');
+              $handle = fopen(APP_PATH . 'projects/index.php', 'r');
               $pkgs_matched = [];
               
               if ($handle) {

@@ -1,14 +1,15 @@
-#/config
+!/config
 /applications
 /bin
 /clientele
 /dist
 /database/weekly-timesheet-????-??.json
 /node_modules
-#/public
+!/public
 /public/example.php
 /public/example*.php
-/project?
+/project?/*
+!/project?/index.php
 /resources/js
 /resources/reels
 /resources/project
@@ -26,6 +27,8 @@ error_log
 main.js
 notes.txt
 package-lock.json
+server.log
 server.pid
+!server.php
 settings.json
 *.config.js

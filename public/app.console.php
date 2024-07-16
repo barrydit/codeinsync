@@ -5,12 +5,24 @@
     is_writable � Tells whether the filename is writable
     unlink � Deletes a file
 */
-
-if (__FILE__ == get_required_files()[0]) //die(getcwd());
-  if ($path = (basename(getcwd()) == 'public')
-    ? (is_file('config.php') ? 'config.php' : '../config/config.php') : '') require_once $path;
-  else die(var_dump("$path path was not found. file=config.php"));
-
+if (__FILE__ == get_required_files()[0] && __FILE__ == realpath($_SERVER["SCRIPT_FILENAME"])) {
+  if ($path = basename(dirname(get_required_files()[0])) == 'public') { // (basename(getcwd())
+    if (is_file($path = realpath('../config/config.php'))) {
+      require_once $path;
+    }
+  } elseif (is_file($path = realpath('config/config.php'))) {
+    require_once $path;
+  } else {
+    die(var_dump("Path was not found. file=$path"));
+  }
+} else {
+  //if (__FILE__ == $_SERVER["SCRIPT_FILENAME"]) {
+  //  echo "called directly";
+  //} else {
+  //  echo "included/required";
+  //}
+}
+  //dd(__FILE__, false);
 //!function_exists('dd') ? die('dd is not defined') : dd(COMPOSER_EXEC);
 
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
@@ -31,7 +43,24 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
           } else if (preg_match('/^php\s+(?:(-r))\s+(:?(.*))/i', $_POST['cmd'], $match)) {
             $match[2] = trim($match[2], '"');
             $_POST['cmd'] = 'php -r "' . $match[2] . (substr($match[2], -1) != ';' ? ';' : '') . '"';
-            exec($_POST['cmd'], $output);
+
+            if (!$_SERVER['SOCKET']) {
+              exec($_POST['cmd'], $output);
+            } else {
+              $errors['server-1'] = "Connected to " . APP_IP . " on port 12345\n";
+
+              // Send a message to the server
+              $errors['server-2'] = 'Client request: ' . $message = "cmd: " . $_POST['cmd'] . "\n";
+            
+              fwrite($_SERVER['SOCKET'], $message);
+            
+              // Read response from the server
+              while (!feof($_SERVER['SOCKET'])) {
+                  $response = fgets($_SERVER['SOCKET'], 1024);
+                  $errors['server-3'] = "Server responce: $response\n";
+                  if (!empty($response)) break;
+              }
+            }
             //$output[] = $_POST['cmd'];
           }
 

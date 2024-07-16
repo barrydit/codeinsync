@@ -128,7 +128,7 @@ do {
 
             // Include the file using the function
             $returnedValue = require_once($realpath);
-
+            //dd(get_required_files(), false);
 //dd($returnedValue, false);
 
             // Check the type of the returned value
@@ -917,8 +917,8 @@ $output = 'Invalid Input';
               return strcasecmp($a, $b);
           });
           */
-          if (is_file(APP_PATH . 'projects/project.php'))
-            $handle = fopen(APP_PATH . 'projects/project.php', 'r');
+          if (is_file(APP_PATH . 'projects/index.php'))
+            $handle = fopen(APP_PATH . 'projects/index.php', 'r');
           $pkgs_matched = [];
           
           if (@$handle) {
@@ -929,7 +929,7 @@ $output = 'Invalid Input';
               }
               fclose($handle);
           } else {
-              echo "Error opening the project.php file.";
+              echo "Error opening the projects/index.php file.";
           }
           
           

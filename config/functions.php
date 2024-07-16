@@ -1,22 +1,16 @@
 <?php
+$paths = array_filter(glob(__DIR__ . DIRECTORY_SEPARATOR . 'classes/*.php'), 'is_file');
+//$paths[] = __DIR__ . DIRECTORY_SEPARATOR . 'constants.php';
 
-require_once('constants.php');
-/**
- * 
-*/
-function dd(mixed $param = null, $die = true, $debug = true) {
-    $output = ($debug == true && !defined('APP_END') ? 
-          'Execution time: <b>'  . round(microtime(true) - APP_START, 3) . '</b> secs' : 
-          //APP_END . ' == APP_END'
-          'Execution time: <b>'  . round(APP_END - APP_START, 3) . '</b> secs'
-          ) . "<br />\n";
-    if ($die)
-      Shutdown::setEnabled(false)->setShutdownMessage(function() use ($param, $output) {
-        return '<pre><code>' . str_replace(['\'', '"'], '', var_export($param, true)) . '</code></pre>' . $output; //.  // var_dump
-      })->shutdown();
-    else
-      return var_dump('<pre><code>' . str_replace(['\'', '"'], '', var_export($param, true)) . '</code></pre>' . $output); // If you want to return the parameter after printing it
+while ($path = array_shift($paths)) {
+  if ($path = realpath($path))
+    require_once $path;
+  else die(var_dump(basename($path) . ' was not found. file=' . $path));
 }
+
+
+require(__DIR__ . DIRECTORY_SEPARATOR . 'constants.php'); 
+
 /*
         $curl = curl_init($url);
         curl_setopt($curl, CURLOPT_RETURNTRANSFER, true);
@@ -29,6 +23,11 @@ function dd(mixed $param = null, $die = true, $debug = true) {
         curl_close($curl);
         return ($http_status == 200 ? true : false);
 */
+
+function custom_log($message)
+{
+    file_put_contents(ini_get('error_log'), date('Y-m-d H:i:s') . ' - ' . $message . PHP_EOL, FILE_APPEND);
+}
 
 function check_ip($ip = '') {
   return filter_var($ip, FILTER_VALIDATE_IP) ? true : false;

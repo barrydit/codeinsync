@@ -1,17 +1,28 @@
 <?php
+declare(strict_types=1); // First Line Only!
+
+require_once(realpath('config/config.php'));
+
+//die(var_dump(get_required_files()));
+
+ini_set('error_log', is_dir(dirname($path = __DIR__ . DIRECTORY_SEPARATOR . 'server.log')) ? $path : 'server.log');
+ini_set('log_errors', 'true');
 
 define('PID_FILE', /*getcwd() . */__DIR__ . DIRECTORY_SEPARATOR . 'server.pid');
 
 if (file_exists(PID_FILE)) {
-  $pid = file_get_contents(PID_FILE);
+  $pid = (int) file_get_contents(PID_FILE);
+  //unlink(PID_FILE);
   if (strpos(PHP_OS, 'WIN') === 0) {
     exec("tasklist /FI \"PID eq $pid\" 2>NUL | find /I \"$pid\" >NUL", $output, $status);
     if ($status === 0) {
+      error_log("Server is already running with PID $pid\n");
       echo "Server is already running with PID $pid\n";
       exit(1);
     }
   } else {
     if (posix_kill($pid, 0)) {
+      error_log("Server is already running with PID $pid\n");
       echo "Server is already running with PID $pid\n";
       exit(1);
     }
@@ -22,25 +33,34 @@ file_put_contents(PID_FILE, getmypid());
 
 set_time_limit(0);
 
-// 
+// dd(get_required_files());
 
 $address = '0.0.0.0';
 $port = 12345;
 
 function clientInputHandler($input) {
-    $input = trim($input);
-    echo 'Client [Input]: ' . $input . "\n";
+    error_log('Client [Input]: ' . trim($input));
+    echo 'Client [Input]: ' . trim($input) . "\n";
+    //$input = trim($input);
+    $output = '';
     if (preg_match('/cmd:\s(.*)?(?=\r?\n$)/s', $input, $matches)) { // cmd: composer update
         $cmd = $matches[1];
-        $output = shell_exec(/*$cmd*/ 'echo $PWD');
+        $output = trim(shell_exec(/*$cmd*/ 'echo $PWD'));
         $output .= ' cmd: ' . $cmd;
+    } elseif (preg_match('/^(date|what\s+is\s+the\s+date)?(?=\?)$/si', $input, $matches)) { 
+      $output = 'The date is: ' . date('Y-m-d') . "\n";
     } else {
         // Process the request and send a response
         $output = 'Hello, client!' . "\n";
     }
-    echo 'Client [Output]: ' . $output;
+
+    //$_POST['cmd'] = $cmd;
+
+    //require_once('public/app.console.php');
+    error_log('Client [Output]: ' . $output);
+    echo 'Client [Output]: ' . $output . "\n";
     return $output;
-  }
+}
 
 //die(var_dump(stream_get_wrappers()));
 

@@ -1,8 +1,6 @@
 <?php
 declare(strict_types=1); // First Line Only!
 
-define('APP_DEBUG', isset($_GET['debug']) ? TRUE : FALSE);
-
 date_default_timezone_set('America/Vancouver');
 
 $errors = []; // (object)
@@ -11,6 +9,8 @@ $errors = []; // (object)
 function customErrorHandler($errno, $errstr, $errfile, $errline) {
     global $errors;
     !defined('APP_ERROR') and define('APP_ERROR', true); // $hasErrors = true;
+    !defined('APP_DEBUG') and define('APP_DEBUG', APP_ERROR);
+
     foreach([
         E_ERROR => 'Error',
         E_WARNING => 'Warning',
@@ -41,6 +41,7 @@ function customErrorHandler($errno, $errstr, $errfile, $errline) {
 set_error_handler("customErrorHandler");
 
 !defined('APP_ERROR') and define('APP_ERROR', false);
+!defined('APP_DEBUG') and define('APP_DEBUG', isset($_GET['debug']) ? TRUE : FALSE);
 
 if (APP_DEBUG || APP_ERROR) {
     $errors['APP_DEBUG'] = 'Debugging is enabled.';
@@ -109,21 +110,22 @@ elseif (!defined('PHP_EXEC'))
 
 // Directory of this script
 
-$additionalPaths = [__DIR__ . DIRECTORY_SEPARATOR . 'constants.php']; //require('constants.php'); 
-
 is_file($path = __DIR__ . DIRECTORY_SEPARATOR . 'functions.php') ? 
-  $additionalPaths[] =  $path : 
+  $paths[] = $path : 
     (is_file($path = 'config/functions.php') ? 
-      $additionalPaths[] = $path :
-      $additionalPaths[] = 'functions.php') or die(var_dump("$path was not found. file=" . $path));
+      $paths[] = $path :
+      $paths[] = 'functions.php') or die(var_dump("$path was not found. file=" . $path));
 
-$paths = array_merge(array_filter(glob(__DIR__ . DIRECTORY_SEPARATOR . 'classes/*.php'), 'is_file'), $additionalPaths);
+//$paths[] = __DIR__ . DIRECTORY_SEPARATOR . 'constants.php'; //require('constants.php'); 
 
 while ($path = array_shift($paths)) {
-  if ($path = realpath($path))
-    require_once $path;
-  else die(var_dump(basename($path) . ' was not found. file=' . basename($path)));
+  if (is_file($path = realpath($path))) require $path;
+  else die(var_dump(basename($path) . ' was not found. file=' . $path));
+  
 }
+
+//die(var_dump(get_required_files()));
+
 
 if (!empty($_GET['client']) || !empty($_GET['domain'])) {
   $path = /*'../../'.*/ 'clientele/' . $_GET['client'] . '/';
@@ -461,8 +463,8 @@ if (!is_dir($path = APP_PATH . 'projects')) {
   mkdir($path, 0777, true);
 }
 
-if (!is_file($file = APP_PATH . 'projects/project.php')) {
-  $errors['project.php'] = 'project.php does not exist.';
+if (!is_file($file = APP_PATH . 'projects/index.php')) {
+  $errors['project.php'] = 'projects/index.php does not exist.';
 
   file_put_contents($file, '<?php ' . <<<END
 
@@ -558,9 +560,9 @@ END
 }
 }
 
-if (is_file(APP_PATH . 'projects/project.php') && isset($_GET['project']) && $_GET['project'] == 'show') {
+if (is_file(APP_PATH . 'projects/index.php') && isset($_GET['project']) && $_GET['project'] == 'show') {
   Shutdown::setEnabled(false)->setShutdownMessage(function() {
-      return eval('?>' . file_get_contents(APP_PATH . 'projects/project.php')); // -wow
+      return eval('?>' . file_get_contents(APP_PATH . 'projects/index.php')); // -wow
     })->shutdown(); // die();
 } //elseif (!is_dir(APP_PATH . 'projects')) { }
 

@@ -1,13 +1,20 @@
 <?php
 
-if (__FILE__ == get_required_files()[0]) //die(getcwd());
-  if ($path = (basename(getcwd()) == 'public')
-    ? (is_file('config.php') ? 'config.php' : '../config/config.php') : '') require_once $path;
-  else die(var_dump("$path path was not found. file=config.php"));
+if (__FILE__ == get_required_files()[0] && __FILE__ == realpath($_SERVER["SCRIPT_FILENAME"])) {
+  if ($path = basename(dirname(get_required_files()[0])) == 'public') { // (basename(getcwd())
+    if (is_file($path = realpath('../config/config.php'))) {
+      require_once $path;
+    }
+  } elseif (is_file($path = realpath('config/config.php'))) {
+    require_once $path;
+  } else {
+    die(var_dump("Path was not found. file=$path"));
+  }
+}
 
 if (!realpath($path = APP_BASE['resources'] . 'js/pong/'))
   (@!mkdir(APP_PATH . $path, 0755, true) ?: $errors['APP_PONG'] = "$path could not be created." );
-  
+
 if ($path) {
   if (!is_file($file = $path . 'ball.js'))
     if (@touch($file))
@@ -474,5 +481,5 @@ html, body { width: 100%; height: 100%; <?= ($_SERVER['SCRIPT_FILENAME'] == __FI
 ob_end_clean();
 
 //check if file is included or accessed directly
-if (__FILE__ == get_required_files()[0] || in_array(__FILE__, get_required_files()) && isset($_GET['app']) && $_GET['app'] == 'php' && APP_DEBUG)
+if (__FILE__ == realpath($_SERVER["SCRIPT_FILENAME"]) || in_array(__FILE__, get_required_files()) && isset($_GET['app']) && $_GET['app'] == 'php' && APP_DEBUG )
   die($appPong['html']);

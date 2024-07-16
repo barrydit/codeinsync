@@ -1,9 +1,16 @@
 <?php
 
-if (__FILE__ == get_required_files()[0]) //die(getcwd());
-  if ($path = (basename(getcwd()) == 'public')
-    ? (is_file('config.php') ? 'config.php' : '../config/config.php') : '') require_once $path;
-  else die(var_dump("$path path was not found. file=config.php"));
+if (__FILE__ != get_required_files()[0]) {
+  if ($path = basename(dirname(get_required_files()[0])) == 'public') { // (basename(getcwd())
+    if (is_file($path = realpath('../config/config.php'))) {
+      require_once $path;
+    }
+  } elseif (is_file($path = realpath('config/config.php'))) {
+    require_once $path;
+  } else {
+    die(var_dump("Path was not found. file=$path"));
+  }
+}
 
 // dd(APP_PATH . '  ' . APP_ROOT);
 // PHP_URL_SCHEME, PHP_URL_HOST, PHP_URL_PORT, PHP_URL_USER, PHP_URL_PASS, PHP_URL_PATH, PHP_URL_QUERY or PHP_URL_FRAGMENT

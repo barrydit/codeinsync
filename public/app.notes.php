@@ -1,9 +1,17 @@
 <?php
 
-if (__FILE__ == get_required_files()[0]) //die(getcwd());
-  if ($path = (basename(getcwd()) == 'public')
-    ? (is_file('config.php') ? 'config.php' : '../config/config.php') : '') require_once $path;
-  else die(var_dump("$path path was not found. file=config.php"));
+if (__FILE__ != get_required_files()[0]) {
+  if ($path = basename(dirname(get_required_files()[0])) == 'public') { // (basename(getcwd())
+    if (is_file($path = realpath('../config/config.php'))) {
+      require_once $path;
+    }
+  } elseif (is_file($path = realpath('config/config.php'))) {
+    require_once $path;
+  } else {
+    die(var_dump("Path was not found. file=$path"));
+  }
+}
+
 /*
 if ($path = (basename(getcwd()) == 'public')
     ? (is_file('../console_app.php') ? '../console_app.php' : (is_file('../config/console_app.php') ? '../config/console_app.php' : 'console_app.php'))

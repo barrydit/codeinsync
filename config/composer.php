@@ -2,9 +2,8 @@
 
 if (is_file($include = APP_PATH . APP_ROOT . APP_BASE['vendor'] . 'autoload.php'))
   if (APP_SELF == APP_PUBLIC)
-    require_once($include);
-  elseif (isset($_ENV['COMPOSER']['AUTOLOAD']) && (bool) $_ENV['COMPOSER']['AUTOLOAD'] === true)
-    require_once($include);
+    if (isset($_ENV['COMPOSER']['AUTOLOAD']) && (bool) $_ENV['COMPOSER']['AUTOLOAD'] === true)
+      require_once($include);
 
 use Composer\InstalledVersions;
 
@@ -854,8 +853,29 @@ fclose($pipes[2]);
 
     if (!empty(array_diff($vendors, $dirs_diff)) ) {
 
-      if (!$_SERVER['SOCKET']) {
+      //if (!$_SERVER['SOCKET']) $_SERVER['SOCKET'] = openSocket(APP_IP, 12345); // 
+//dd($_SERVER['SOCKET']);
+      if (isset($_SERVER['SOCKET']) && $_SERVER['SOCKET'] !== false) {
 
+list($server, $port) = explode(':', APP_SERVER); // 127.0.0.1:12345
+$errors['server-1'] = "Connected to Server: " . $server . ':' . $port . "\n"; // APP_SERVER || APP_IP
+
+// Send a message to the server
+$errors['server-2'] = 'Client request: ' . $message = "cmd: composer update " . "\n";
+
+fwrite($_SERVER['SOCKET'], $message);
+
+// Read response from the server
+while (!feof($_SERVER['SOCKET'])) {
+    $response = fgets($_SERVER['SOCKET'], 1024);
+    $errors['server-3'] = "Server response [2]: $response\n";
+    if (!empty($response)) break;
+}
+
+// Close the connection
+//fclose($_SERVER['SOCKET']);
+
+      } else {
         $proc = proc_open((strtoupper(substr(PHP_OS, 0, 3)) === 'WIN' ? '' : APP_SUDO) . COMPOSER_EXEC['bin'] . ' update', array( array("pipe","r"), array("pipe","w"), array("pipe","w")), $pipes);
 
         list($stdout, $stderr, $exitCode) = [stream_get_contents($pipes[1]), stream_get_contents($pipes[2]), proc_close($proc)];
@@ -869,26 +889,7 @@ fclose($pipes[2]);
     
         (preg_match('/Composer is operating significantly slower than normal because you do not have the PHP curl extension enabled./m', $stdout))
           and $errors['ext/curl'] = 'PHP cURL needs to be installed and enabled.';
-
-      } else {
-        list($server, $port) = explode(':', APP_SERVER); // 127.0.0.1:12345
-        $errors['server-1'] = "Connected to $server on port $port\n";
-    
-        // Send a message to the server
-        $message = "cmd: composer update\n";
-        fwrite($_SERVER['SOCKET'], $message);
-    
-        // Read response from the server
-        while (!feof($_SERVER['SOCKET'])) {
-            $response = fgets($_SERVER['SOCKET'], 1024);
-            $errors['server-2'] = "Server says: $response\n";
-            if (!empty($response)) break;
-        }
-    
-        // Close the connection
-        fclose($_SERVER['SOCKET']);
       }
-
 
     }
 
