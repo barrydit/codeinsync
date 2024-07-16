@@ -219,23 +219,46 @@ $proc=proc_open($command,
           /* https://stackoverflow.com/questions/9691367/how-do-i-request-a-file-but-not-save-it-with-wget */
           exec('wget -qO- ' . $match[1] . ' &> /dev/null', $output);
         else {
-          if (preg_match('/^(\w+)\s+(:?(.*))/i', $_POST['cmd'], $match))
-            if (isset($match[1]) && in_array($match[1], ['tail', 'cat', 'echo', 'env', 'sudo', 'whoami'])) {
-              //exec(APP_SUDO . $match[1] . ' ' . $match[2], $output); // $output[] = var_dump($match);
-              
-$output[] = APP_SUDO . $match[1] . ' ' . $match[2];
-$proc=proc_open((strtoupper(substr(PHP_OS, 0, 3)) === 'WIN' ? '' : APP_SUDO) . $match[1] . ' ' . $match[2],
-  array(
-    array("pipe","r"),
-    array("pipe","w"),
-    array("pipe","w")
-  ),
-  $pipes);
-          list($stdout, $stderr, $exitCode) = [stream_get_contents($pipes[1]), stream_get_contents($pipes[2]), proc_close($proc)];
-          $output[] = !isset($stdout) ? NULL : $stdout . (isset($stderr) && $stderr === '' ? NULL : ' Error: ' . $stderr) . (isset($exitCode) && $exitCode == 0 ? NULL : 'Exit Code: ' . $exitCode);
-              
-}
-          //$output[] = $_POST['cmd'] . "\n";
+
+            if (!$_SERVER['SOCKET']) {
+              //exec($_POST['cmd'], $output);
+              if (preg_match('/^(\w+)\s+(:?(.*))/i', $_POST['cmd'], $match))
+              if (isset($match[1]) && in_array($match[1], ['tail', 'cat', 'echo', 'env', 'sudo', 'whoami'])) {
+                //exec(APP_SUDO . $match[1] . ' ' . $match[2], $output); // $output[] = var_dump($match);
+                
+  $output[] = APP_SUDO . $match[1] . ' ' . $match[2];
+  $proc=proc_open((strtoupper(substr(PHP_OS, 0, 3)) === 'WIN' ? '' : APP_SUDO) . $match[1] . ' ' . $match[2],
+    array(
+      array("pipe","r"),
+      array("pipe","w"),
+      array("pipe","w")
+    ),
+    $pipes);
+            list($stdout, $stderr, $exitCode) = [stream_get_contents($pipes[1]), stream_get_contents($pipes[2]), proc_close($proc)];
+            $output[] = !isset($stdout) ? NULL : $stdout . (isset($stderr) && $stderr === '' ? NULL : ' Error: ' . $stderr) . (isset($exitCode) && $exitCode == 0 ? NULL : 'Exit Code: ' . $exitCode);
+                
+            } else {
+              $output[] = 'Command not found: ' . $_POST['cmd'];
+            }
+            } else {
+              $errors['server-1'] = "Connected to " . APP_IP . " on port 12345\n";
+
+              // Send a message to the server
+              $errors['server-2'] = 'Client request: ' . $message = "cmd: " . $_POST['cmd'] . "\n";
+            
+              fwrite($_SERVER['SOCKET'], $message);
+            
+              // Read response from the server
+              while (!feof($_SERVER['SOCKET'])) {
+                  $response = fgets($_SERVER['SOCKET'], 1024);
+                  $errors['server-3'] = "Server responce: $response\n";
+                  if (!empty($response)) break;
+              }
+              $output[] = $_POST['cmd'] . ': ' . var_dump($response);
+            }
+
+
+          //
       
         }
       //else var_dump(NULL); // eval('echo $repo->status();')
@@ -1186,7 +1209,9 @@ console.log = function() {
             $('#responseConsole').val(data + "\n" + $('#responseConsole').val());
           }
         } else {
-          $('#responseConsole').val(data + "\n" + $('#responseConsole').val());
+          $('#requestInput').val(argv);
+          $('#requestSubmit').click();
+          //$('#responseConsole').val(data + "\n" + $('#responseConsole').val());
         }
         //if (!autoClear) { $('#responseConsole').val("\n" + $('#responseConsole').val()); }
       

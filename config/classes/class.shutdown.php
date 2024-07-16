@@ -3,14 +3,14 @@
 class Shutdown
 {
     private static $instance = false;
-    private $functions;
+    private static $functions;
     private static $enabled = true;
-    private $shutdownMessage = null;
+    private static $shutdownMessage = null;
 
     public function __construct()
     {
         error_log("Shutdown constructor called."); // Log message to error log
-        $this->functions = [];
+        self::$functions = [];
         defined('APP_END') or define('APP_END', microtime(true));
         $this->initializeEnv();
     }
@@ -72,15 +72,19 @@ class Shutdown
         return self::$instance;
     }
 
-    public function onShutdown()
+    public static function onShutdown()
     {
-        if (!self::$enabled) {
-            foreach ($this->functions as $fnc) {
-                $fnc($this->shutdownMessage);
+        if (self::$enabled && self::$shutdownMessage !== null) {
+            if (is_callable(self::$shutdownMessage)) {
+                echo call_user_func(self::$shutdownMessage);
+            } else {
+                echo self::$shutdownMessage;
+            }
+        } elseif (!self::$enabled) {
+            foreach (self::$functions as $fnc) {
+                $fnc(self::$shutdownMessage);
             }
         }
-        $message = is_callable($this->shutdownMessage) ? call_user_func($this->shutdownMessage) : $this->shutdownMessage;
-        exit($message);
     }
 
     public static function create()
@@ -95,7 +99,7 @@ class Shutdown
 
     public function setFunctions($functions): self
     {
-        $this->functions = $functions;
+        self::$functions = $functions;
         return $this;
     }
 
@@ -110,26 +114,49 @@ class Shutdown
         return isset(self::$instance) ? static::instance() : self::instance();
     }
 
-    public function setShutdownMessage($message): self
+    public static function setShutdownMessage($message): self
     {
-        $this->shutdownMessage = $message;
-        return $this;
+        self::$shutdownMessage = $message;
+        return isset(self::$instance) ? static::instance() : self::instance(); //$this;
     }
     
     public function shutdown($die = true) {
         if (!self::$enabled) {
-            foreach ($this->functions as $fnc) {
-                $fnc($this->shutdownMessage);
+            foreach (self::$functions as $fnc) {
+                $fnc(self::$shutdownMessage);
             }
         }
-        $message = (is_callable($this->shutdownMessage)) ? call_user_func($this->shutdownMessage) : $this->shutdownMessage;
+        $message = (is_callable(self::$shutdownMessage) ? call_user_func(self::$shutdownMessage) : self::$shutdownMessage);
         if ($die == true) {
             exit($message);
         }
     }
+
+
+    public static function handleError($errno, $errstr, $errfile, $errline)
+    {
+        self::triggerShutdown("Error: [$errno] $errstr - $errfile:$errline");
+        return true; // To prevent PHP's internal error handler from running
+    }
+
+    public static function handleException($exception)
+    {
+        self::triggerShutdown("Exception: " . $exception->getMessage());
+    }
+
+    public static function handleParseError()
+    {
+        $error = error_get_last();
+        if ($error !== null) {
+            self::triggerShutdown("Fatal error: " . $error['message']);
+        }
+    }
 }
 
-register_shutdown_function([new Shutdown(), 'onShutdown']);
+// Register custom error and exception handlers
+set_error_handler([Shutdown::class, 'handleError']);
+set_exception_handler([Shutdown::class, 'handleException']);
+register_shutdown_function([Shutdown::class, 'handleParseError']);
 
 function dd(mixed $param = null, $die = true, $debug = true)
 {

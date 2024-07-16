@@ -119,33 +119,6 @@ try {
 
 }
 
-if (isset($_SERVER['SOCKET']) && APP_SELF !== realpath(dirname(__DIR__) . DIRECTORY_SEPARATOR . 'server.php'))
-  if ($_SERVER['SOCKET'] === false) dd('Have you checked your server.php file lately?');
-  elseif ($_SERVER['SOCKET'] !== false) {
-    $errors['server-1'] = "Connected to Server: " . APP_SERVER . "\n"; // APP_IP
-
-    // Send a message to the server
-    $errors['server-2'] = 'Client request: ' . $message = "cmd: composer update " . $_SERVER["SCRIPT_FILENAME"] . "\n";
-
-    fwrite($_SERVER['SOCKET'], $message);
-
-    // Read response from the server
-    while (!feof($_SERVER['SOCKET'])) {
-      $response = fgets($_SERVER['SOCKET'], 1024);
-      $errors['server-3'] = "Server response [1]: $response\n";
-      if (!empty($response)) break;
-    }
-
-    // Close the connection
-    //fclose($_SERVER['SOCKET']);
-  } else {
-    $errors['APP_SERVER'] = ($_SERVER['SOCKET'] ?: 'Socket is unable to connect: ') . 'No server connection.' . "\n";
-  }
-else {
-  $errors['APP_SERVER'] = 'Socket is not being created: ' . 'Define $_SERVER[\'SOCKET\']' . "\n";
-}
-
-
 // Check if the request is using HTTPS
 (isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] == 'on') // strtolower(substr($_SERVER["SERVER_PROTOCOL"],0,5))=='https'
   and define('APP_HTTPS', TRUE);
@@ -222,6 +195,33 @@ if (defined('APP_BASE'))
   }
 
 define('APP_PUBLIC', (defined('APP_PATH') ? APP_PATH : __DIR__ . DIRECTORY_SEPARATOR)  . APP_BASE['public'] . str_replace((defined('APP_PATH') ? APP_PATH : __DIR__ . DIRECTORY_SEPARATOR) , '', APP_BASE['public'] . dirname(basename(APP_SELF)) == 'public' ? basename(APP_SELF) : 'index.php')); // 
+
+if (isset($_SERVER['SOCKET']) && APP_SELF === APP_PUBLIC) // realpath(dirname(__DIR__) . DIRECTORY_SEPARATOR . 'server.php')
+  if ($_SERVER['SOCKET'] === false) dd('Have you checked your server.php file lately?');
+  elseif ($_SERVER['SOCKET'] !== false) {
+    $errors['server-1'] = "Connected to Server: " . APP_SERVER . "\n"; // APP_IP
+
+    // Send a message to the server
+    $errors['server-2'] = 'Client request: ' . $message = "cmd: composer update 123 " . $_SERVER["SCRIPT_FILENAME"] . "\n";
+
+    fwrite($_SERVER['SOCKET'], $message);
+
+    // Read response from the server
+    while (!feof($_SERVER['SOCKET'])) {
+      $response = fgets($_SERVER['SOCKET'], 1024);
+      $errors['server-3'] = "Server response [1]: $response\n";
+      if (!empty($response)) break;
+    }
+
+    // Close the connection
+    //fclose($_SERVER['SOCKET']);
+  } else {
+    $errors['APP_SERVER'] = ($_SERVER['SOCKET'] ?: 'Socket is unable to connect: ') . 'No server connection.' . "\n";
+  }
+else {
+  $errors['APP_SERVER'] = 'Socket is not being created: ' . 'Define $_SERVER[\'SOCKET\']' . "\n";
+}
+
 
 //var_dump(APP_PATH . basename(dirname(__DIR__, 2)) . '/' . basename(dirname(__DIR__, 1)));
 
