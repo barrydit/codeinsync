@@ -53,12 +53,13 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
               $errors['server-2'] = 'Client request: ' . $message = "cmd: " . $_POST['cmd'] . "\n";
             
               fwrite($_SERVER['SOCKET'], $message);
-            
+              $output[] = $_POST['cmd'] . ': ';
               // Read response from the server
               while (!feof($_SERVER['SOCKET'])) {
                   $response = fgets($_SERVER['SOCKET'], 1024);
                   $errors['server-3'] = "Server responce: $response\n";
-                  if (!empty($response)) break;
+                  $output[end($output)] .= trim($response) . "\n";
+                  //if (!empty($response)) break;
               }
             }
             //$output[] = $_POST['cmd'];
@@ -247,14 +248,15 @@ $proc=proc_open($command,
               $errors['server-2'] = 'Client request: ' . $message = "cmd: " . $_POST['cmd'] . "\n";
             
               fwrite($_SERVER['SOCKET'], $message);
-            
+              $output[] = $_POST['cmd'] . ': ';
               // Read response from the server
               while (!feof($_SERVER['SOCKET'])) {
                   $response = fgets($_SERVER['SOCKET'], 1024);
                   $errors['server-3'] = "Server responce: $response\n";
-                  if (!empty($response)) break;
+                  $output[end($output)] .= trim($response) . "\n";
+                  //if (!empty($response)) break;
               }
-              $output[] = $_POST['cmd'] . ': ' . var_dump($response);
+
             }
 
 
@@ -1209,9 +1211,9 @@ console.log = function() {
             $('#responseConsole').val(data + "\n" + $('#responseConsole').val());
           }
         } else {
-          $('#requestInput').val(argv);
-          $('#requestSubmit').click();
-          //$('#responseConsole').val(data + "\n" + $('#responseConsole').val());
+          //$('#requestInput').val(argv);
+          //$('#requestSubmit').click();
+          $('#responseConsole').val(data + "\n" + $('#responseConsole').val());
         }
         //if (!autoClear) { $('#responseConsole').val("\n" + $('#responseConsole').val()); }
       

@@ -3,7 +3,7 @@ declare(strict_types=1); // First Line Only!
 
 require_once realpath(__DIR__ . DIRECTORY_SEPARATOR . 'config' . DIRECTORY_SEPARATOR . 'config.php');
 
-//die(var_dump(get_required_files()));
+//dd('test');
 
 ini_set('error_log', is_dir(dirname($path = __DIR__ . DIRECTORY_SEPARATOR . 'server.log')) ? $path : 'server.log');
 ini_set('log_errors', 'true');
@@ -49,7 +49,6 @@ function clientInputHandler($input) {
       $output = var_export(get_defined_constants(), true);
     } elseif (preg_match('/^cmd:\s*(get\s+(required|included)\s+files)?(?=\r?\n$)/si', $input, $matches)) { 
       $output = var_export(get_required_files(), true);
-      dd($output, false);
     } elseif (preg_match('/cmd:\s(.*)?(?=\r?\n$)/s', $input, $matches)) { // cmd: composer update
         $cmd = $matches[1];
         $output = trim(shell_exec(/*$cmd*/ 'echo $PWD'));

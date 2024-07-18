@@ -17,6 +17,9 @@ if (realpath($_SERVER["SCRIPT_FILENAME"]) == get_required_files()[0] && in_array
   //require_once(realpath('../config/constants.php')); 
 }
 
+if (isset($_ENV['COMPOSER']['AUTOLOAD']) && (bool) $_ENV['COMPOSER']['AUTOLOAD'] === true)
+require_once($include);
+
 //require_once APP_PATH . 'vendor/autoload.php';
 ob_start(); // dd('Break/test the dd();');
 use noximo\PHPColoredAsciiLinechart\Settings;
