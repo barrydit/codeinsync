@@ -599,7 +599,7 @@ if (basename($dir = getcwd()) != 'config') {
     $dirs[] = APP_PATH . APP_BASE['config'] . 'git.php') :
   $dirs[] = APP_PATH . APP_BASE['config'] . 'git.php';
 
-!isset($_GET['app']) || $_GET['app'] != 'composer' ? (APP_SELF == APP_PUBLIC ? (!defined('APP_ROOT') || empty(APP_ROOT) ? (!is_file($autoload = APP_PATH . APP_BASE['vendor'] . 'autoload.php') ?: $dirs[] = $autoload) : $dirs[] = APP_PATH . APP_BASE['config'] . 'composer.php') : $dirs[] = APP_PATH . APP_BASE['config'] . 'composer.php') :
+!isset($_GET['app']) || $_GET['app'] != 'composer' ? (APP_SELF == APP_PUBLIC ? (!defined('APP_ROOT') || empty(APP_ROOT) ? (!is_file($autoload = APP_PATH . APP_BASE['vendor'] . 'autoload.php') ?: $dirs[] = $autoload) : $dirs[] = APP_PATH . APP_ROOT . APP_BASE['vendor'] . 'autoload.php') : $dirs[] = APP_PATH . APP_BASE['config'] . 'composer.php') :
   $dirs[] = APP_PATH . APP_BASE['config'] . 'composer.php';
 
 $dirs[] = APP_PATH . APP_BASE['config'] . 'npm.php';

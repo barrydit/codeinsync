@@ -100,7 +100,7 @@ ob_end_clean();
 
 ob_start(); ?>
 
-  <div id="app_backup-container" class="<?= (APP_SELF == __FILE__ || isset($_GET['client']) && $_GET['client'] || (isset($_GET['app']) && $_GET['app'] == 'backup')  ? 'selected' : '') ?>" style="position: absolute; <?= (isset($_GET['client']) && $_GET['client'] ? 'display: block;':'' ) ?> border: 1px solid #000; right: 0; top: 0; z-index: 1;">
+  <div id="app_backup-container" class="<?= (APP_SELF == __FILE__ || isset($_GET['client']) && $_GET['client'] || (isset($_GET['app']) && $_GET['app'] == 'backup')  ? 'selected' : '') ?>" style="position: absolute; <?= (isset($_GET['client']) && $_GET['client'] ? 'display: block;' : '' ) ?> border: 1px solid #000; right: 0; top: 0; z-index: 1;">
 
 <?php
 if (isset($_GET['client']) && $_GET['client']) {

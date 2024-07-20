@@ -2,6 +2,16 @@
 $paths = array_filter(glob(__DIR__ . DIRECTORY_SEPARATOR . 'classes/*.php'), 'is_file');
 //$paths[] = __DIR__ . DIRECTORY_SEPARATOR . 'constants.php';
 
+// Remove 'class.websocketserver.php' from $paths
+$paths = array_filter($paths, function ($path) {
+  return basename($path) !== 'class.websocketserver.php';
+});
+
+usort($paths, function ($a, $b) {
+  // Define your sorting criteria here
+  return strcmp(basename($a), basename($b)); // Compare filenames alphabetically
+});
+
 while ($path = array_shift($paths)) {
   if ($path = realpath($path))
     require_once $path;
@@ -58,6 +68,7 @@ function resolve_host_to_ip($host) {
 function check_http_200($url = 'http://8.8.8.8') {
   if (defined('APP_CONNECTED')) { // check_ping() was 2 == fail | 0 == success
     if ($url !== 'http://8.8.8.8') {
+      $errors[123] = 'check ' . $url;
       if (!empty($headers = get_headers($url)))
         return strpos($headers[0], '200') !== false ? false : true;
     } else
@@ -374,7 +385,7 @@ function truepath($path){
     // whether $path is unix or not
     $unipath=strlen($path)==0 || $path[0]!='/';
     // attempts to detect if path is relative in which case, add cwd
-    if(strpos($path,':')===false && $unipath)
+    if(strpos($path,PATH_SEPARATOR)===false && $unipath)
         $path=getcwd().DIRECTORY_SEPARATOR.$path;
     // resolve path parts (single dot, double dot and double delimiters)
     $path = str_replace(['/', '\\'], DIRECTORY_SEPARATOR, $path);

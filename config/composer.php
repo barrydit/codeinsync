@@ -827,7 +827,7 @@ fclose($pipes[2]);
 
 /* Previous unlink('composer.lock') location */
 
-  if (check_http_200()) {
+  //if (check_http_200()) {
 
     $vendors = $dirs_diff = [];
 
@@ -853,12 +853,12 @@ fclose($pipes[2]);
 
     if (!empty(array_diff($vendors, $dirs_diff)) ) {
 
-      //if (!$_SERVER['SOCKET']) $_SERVER['SOCKET'] = openSocket(APP_IP, 12345); // 
+      //if (!$_SERVER['SOCKET']) $_SERVER['SOCKET'] = openSocket(APP_HOST, 12345); // 
 //dd($_SERVER['SOCKET']);
       if (isset($_SERVER['SOCKET']) && $_SERVER['SOCKET'] !== false) {
-
-list($server, $port) = explode(':', APP_SERVER); // 127.0.0.1:12345
-$errors['server-1'] = "Connected to Server: " . $server . ':' . $port . "\n"; // APP_SERVER || APP_IP
+/*
+list($server, $port) = explode(PATH_SEPARATOR, APP_HOST . PATH_SEPARATOR . APP_PORT); // 127.0.0.1:12345   
+$errors['server-1'] = "Connected to Server: " . $server . PATH_SEPARATOR . $port . "\n"; // APP_SERVER || APP_HOST
 
 // Send a message to the server
 $errors['server-2'] = 'Client request: ' . $message = "cmd: composer update " . "\n";
@@ -874,7 +874,7 @@ while (!feof($_SERVER['SOCKET'])) {
 
 // Close the connection
 //fclose($_SERVER['SOCKET']);
-
+*/
       } else {
         $proc = proc_open((strtoupper(substr(PHP_OS, 0, 3)) === 'WIN' ? '' : APP_SUDO) . COMPOSER_EXEC['bin'] . ' update', array( array("pipe","r"), array("pipe","w"), array("pipe","w")), $pipes);
 
@@ -998,7 +998,7 @@ while (!feof($_SERVER['SOCKET'])) {
       unset($errors['COMPOSER-UPDATE']);
     }
   }
-  }
+  //}
 
 //     while() { $errors['COMPOSER-UPDATE'] } // loop for 5 attempts to fix a problem 
 

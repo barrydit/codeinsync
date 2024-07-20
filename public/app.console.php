@@ -47,7 +47,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             if (!$_SERVER['SOCKET']) {
               exec($_POST['cmd'], $output);
             } else {
-              $errors['server-1'] = "Connected to " . APP_IP . " on port 12345\n";
+              $errors['server-1'] = "Connected to " . APP_HOST . " on port " . APP_PORT . "\n";
 
               // Send a message to the server
               $errors['server-2'] = 'Client request: ' . $message = "cmd: " . $_POST['cmd'] . "\n";
@@ -55,10 +55,11 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
               fwrite($_SERVER['SOCKET'], $message);
               $output[] = $_POST['cmd'] . ': ';
               // Read response from the server
+              $errors['server-3'] = "Server responce: ";
               while (!feof($_SERVER['SOCKET'])) {
                   $response = fgets($_SERVER['SOCKET'], 1024);
-                  $errors['server-3'] = "Server responce: $response\n";
-                  $output[end($output)] .= trim($response) . "\n";
+                  $errors['server-3'] .= "$response\n";
+                  $output[key($output)] .= trim($response) . "\n";
                   //if (!empty($response)) break;
               }
             }
@@ -242,21 +243,22 @@ $proc=proc_open($command,
               $output[] = 'Command not found: ' . $_POST['cmd'];
             }
             } else {
-              $errors['server-1'] = "Connected to " . APP_IP . " on port 12345\n";
+              $errors['server-1'] = "Connected to " . APP_HOST . " on port " . APP_PORT . "\n";
 
               // Send a message to the server
               $errors['server-2'] = 'Client request: ' . $message = "cmd: " . $_POST['cmd'] . "\n";
             
               fwrite($_SERVER['SOCKET'], $message);
               $output[] = $_POST['cmd'] . ': ';
+
               // Read response from the server
               while (!feof($_SERVER['SOCKET'])) {
                   $response = fgets($_SERVER['SOCKET'], 1024);
                   $errors['server-3'] = "Server responce: $response\n";
-                  $output[end($output)] .= trim($response) . "\n";
+                  $output[key($output)] .= trim($response) . "\n";
                   //if (!empty($response)) break;
               }
-
+              //dd($output);
             }
 
 
@@ -634,10 +636,12 @@ function show_console(event) {
             if (document.activeElement !== requestInput) {
                 // Replace the following line with your desired function
                 // If it's currently absolute, change to fixed
-                if (!isFixed)
+                if (!isFixed) {
+                    requestInput.value = '';
                     requestInput.focus();
+                }
                 event.preventDefault();
-                show_console();
+                //show_console();
             } else {
                 document.activeElement = null;
                 return false;

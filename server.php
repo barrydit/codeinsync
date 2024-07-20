@@ -35,10 +35,11 @@ set_time_limit(0);
 
 //dd(get_defined_constants()); // get_required_files()
 
-$address = '0.0.0.0';
-$port = 12345;
+$address = APP_HOST ?? '0.0.0.0';
+$port = APP_PORT ?? 8080;
 
 function clientInputHandler($input) {
+    if ($input == '') return;
     error_log('Client [Input]: ' . trim($input));
     echo 'Client [Input]: ' . trim($input) . "\n";
     //$input = trim($input);
@@ -46,7 +47,7 @@ function clientInputHandler($input) {
     if (preg_match('/^cmd:\s*(date(\?|)|what\s+is\s+the\s+date(\?|))?(?=\r?\n$)/si', $input, $matches)) { 
       $output = 'The date is: ' . date('Y-m-d');
     } elseif (preg_match('/^cmd:\s*(get\s+defined\s+constants)?(?=\r?\n$)/si', $input, $matches)) { 
-      $output = var_export(get_defined_constants(), true);
+      $output = var_export(get_defined_constants(true)['user'], true);
     } elseif (preg_match('/^cmd:\s*(get\s+(required|included)\s+files)?(?=\r?\n$)/si', $input, $matches)) { 
       $output = var_export(get_required_files(), true);
     } elseif (preg_match('/cmd:\s(.*)?(?=\r?\n$)/s', $input, $matches)) { // cmd: composer update
@@ -70,13 +71,20 @@ function clientInputHandler($input) {
 
 $running = true;
 
-//use Logger;
+//use Logger; // use when not using composer
 //use Shutdown;
 
 Logger::init();
 
   // ps aux | grep server.php
   // kill -SIGTERM <PID>
+  // kill -SIGINT <PID>
+  // kill -SIGSTOP <PID>
+  // kill -SIGCONT <PID>
+  
+  // [1]+  Stopped                 php server.php
+  // kill -SIGKILL / -9 <PID>
+  // [1]+  Killed                  php server.php
 
   // Signal handler to gracefully shutdown
 function signalHandler($signal) {
@@ -86,7 +94,7 @@ function signalHandler($signal) {
     case SIGINT:
       echo "Shutting down server...\n";
       $running = false;
-      fclose($server);
+      //fclose($server);
       unlink(PID_FILE);
       exit(1);
   }
@@ -95,24 +103,64 @@ function signalHandler($signal) {
 pcntl_signal(SIGTERM, 'signalHandler');
 pcntl_signal(SIGINT, 'signalHandler');
 
-try {
-  // Check if the stream wrapper for TCP is available
-  if (in_array('tcp', stream_get_wrappers())) {
+// Define some example notification functions
+function notifyUser1()
+{
+    echo "Notifying user 1...\n";
+}
 
+//function notifyUser2()
+//{
+//    echo "Notifying user 2...\n";
+//}
+
+// Create Notification objects
+$notification1 = new Notification('notifyUser1', true, 300); // Repeatable every 5 minutes
+//$notification2 = new Notification('notifyUser2', false); // One-time notification
+
+// Create NotificationManager and add notifications
+$manager = new NotificationManager();
+$manager->addNotification($notification1);
+//$manager->addNotification($notification2);
+
+
+// server.php
+// composer require cboden/ratchet
+// Exception: Interface "Ratchet\MessageComponentInterface" not found
+
+//get_included_files()[0] == 
+if (is_dir(__DIR__ . '/vendor/cboden/ratchet') && !empty(glob(__DIR__ . '/vendor/cboden/ratchet/')) && file_exists(__DIR__ . '/vendor/autoload.php')) {
+  (file_exists(__DIR__ . '/vendor/autoload.php'))
+    and require __DIR__ . '/vendor/autoload.php';
+  require_once realpath(__DIR__ . DIRECTORY_SEPARATOR . 'config' . DIRECTORY_SEPARATOR . 'classes' . DIRECTORY_SEPARATOR . 'class.websocketserver.php');
+} else
+  try {
+  // Check if the stream wrapper for TCP is available
+  //if (in_array('tcp', stream_get_wrappers())) {
   // Create a TCP/IP server socket
-    if (!$socket = @stream_socket_server('tcp://' . $address . ':' . $port, $errno, $errstr)) {
+    if (!$socket = @stream_socket_server('tcp://' . $address . PATH_SEPARATOR . $port, $errno, $errstr)) {
       echo "Error: Unable to create server socket: $errstr ($errno)\n";
       unlink(PID_FILE);
       throw new Exception("Could not create server socket: $errstr ($errno)");
     }
+    
+    // Set the socket to non-blocking mode
+    stream_set_blocking($socket, false);
+    echo 'TCP was '. (in_array('tcp', stream_get_wrappers()) ? '' : 'NOT ') . 'found in stream_get_wrappers()' . "\n";
+    echo "(Stream) Server started on $address:$port\n";
 
     while ($running) {
-      $client = @stream_socket_accept($socket, -1);
+      $manager->checkNotifications();
+      ($client = @stream_socket_accept($socket, -1))
+        and print 'Client Connected: ' . "\n";
   
       if ($client) {
           // Read data from the client
           $response = clientInputHandler(fread($client, 1024));
   
+        // Append notification output to the response
+        $response .= "\n" . $manager->getNotificationsOutput();
+
           fwrite($client, $response);
           // Close the client connection
           fclose($client);
@@ -121,10 +169,11 @@ try {
       // Dispatch signals
       pcntl_signal_dispatch();
   
-      // Sleep for 1 second
-      sleep(1);
+
+      // Sleep for a short time to prevent busy-waiting
+      usleep(100000); // 100 ms = 0.1 s | sleep(1);
     }
-  } else if (extension_loaded('sockets')) {
+  if (extension_loaded('sockets')) {
     // Using Sockets Extension for creating server socket.
     if (!$socket = @socket_create(AF_INET, SOCK_STREAM, SOL_TCP)) {
       echo "Error: Unable to create server socket: \n";
@@ -138,13 +187,22 @@ try {
       throw new Exception("Could not listen on socket: " . socket_strerror(socket_last_error()));
     }
 
-    echo "Server started on $address:$port\n";
+    // Set the socket to non-blocking mode
+    socket_set_nonblock($socket);
+
+    echo "(Socket) Server started on $address:$port\n";
 
     while ($running) {
-      $client = @socket_accept($socket);
+      $manager->checkNotifications();
+      ($client = @socket_accept($socket))
+        and print 'Client Connected: ' . "\n";
+
       if ($client) {
         // Handle client requests here
         $response = clientInputHandler(socket_read($client, 1024));
+        // Append notification output to the response
+        $response .= "\n" . $manager->getNotificationsOutput();
+
         @socket_write($client, $response);
         @socket_close($client);
       }
@@ -152,8 +210,9 @@ try {
       // Dispatch signals
       pcntl_signal_dispatch();
   
-      // Sleep for 1 second
-      sleep(1);
+
+      // Sleep for a short time to prevent busy-waiting
+      usleep(100000); // 100 ms = 0.1 s | sleep(1);
     }
 
     socket_close($socket);
@@ -162,10 +221,11 @@ try {
     unlink(PID_FILE);
     exit(1);
   }
-} catch (Exception $e) {
+
+  } catch (Exception $e) {
     Logger::error($e->getMessage());
     Shutdown::triggerShutdown($e->getMessage());
-} finally {
+  } finally {
     if (isset($socket)) {
         if (is_resource($socket)) {
             if (get_resource_type($socket) == 'stream') {
@@ -175,7 +235,7 @@ try {
             }
         }
     }
-}
+  }
 
 
 unlink(PID_FILE);

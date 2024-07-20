@@ -56,14 +56,14 @@ else
   $domain = 'localhost';
 
 if (strtoupper(substr(PHP_OS, 0, 3)) === 'WIN')
-  $shell_prompt = 'www-data' . '@' . $domain . ':' . (($homePath = realpath($_SERVER['DOCUMENT_ROOT'])) === getcwd() ? '~': $homePath) . '$ ';
+  $shell_prompt = 'www-data' . '@' . $domain . PATH_SEPARATOR . (($homePath = realpath($_SERVER['DOCUMENT_ROOT'])) === getcwd() ? '~': $homePath) . '$ ';
 // Check if $homePath is a subdirectory of $docRootPath
 else if (isset($_SERVER['HOME']) && ($homePath = realpath($_SERVER['HOME'])) !== false && ($docRootPath = realpath($_SERVER['DOCUMENT_ROOT'])) !== false && strpos($homePath, $docRootPath) === 0) {
-  $shell_prompt = $_SERVER['USER'] . '@' . $domain . ':' . ($homePath == getcwd() ? '~': $homePath) . '$ '; // '$ >'
+  $shell_prompt = $_SERVER['USER'] . '@' . $domain . PATH_SEPARATOR . ($homePath == getcwd() ? '~': $homePath) . '$ '; // '$ >'
 } elseif (isset($_SERVER['USER']))
-  $shell_prompt = $_SERVER['USER'] . '@' . $domain . ':' . ($homePath == getcwd() ? '~': $homePath) . '$ ';
+  $shell_prompt = $_SERVER['USER'] . '@' . $domain . PATH_SEPARATOR . ($homePath == getcwd() ? '~': $homePath) . '$ ';
 else
-  $shell_prompt = 'www-data' . '@' . $domain . ':' . (getcwd() == '/var/www' ? '~' : getcwd()) . '$ ';
+  $shell_prompt = 'www-data' . '@' . $domain . PATH_SEPARATOR . (getcwd() == '/var/www' ? '~' : getcwd()) . '$ ';
 
 const APP_NAME = 'Dashboard';
 !is_string(APP_NAME)
@@ -75,56 +75,20 @@ const APP_NAME = 'Dashboard';
 define('APP_DOMAIN', array_key_exists('domain', parse_url($domain ?? '')) ? $domain : 'localhost');
 !is_string(APP_DOMAIN) and $errors['APP_DOMAIN'] = 'APP_DOMAIN is not valid. (' . APP_DOMAIN . ')' . "\n";
 
-define('APP_IP', gethostbyname(APP_DOMAIN));
-!is_string(APP_IP) and $errors['APP_IP'] = 'APP_IP is not valid. (' . APP_IP . ')' . "\n";
+define('APP_HOST', gethostbyname(APP_DOMAIN));
+!is_string(APP_HOST) and $errors['APP_HOST'] = 'APP_HOST is not valid. (' . APP_HOST . ')' . "\n";
 
-!defined('APP_SERVER') and define('APP_SERVER', APP_IP . ':12345'); // print('Server: ' . APP_SERVER . "\n");
+define('APP_PORT', 8080);
+!is_int(APP_PORT) and $errors['APP_PORT'] = 'APP_PORT is not valid. (' . APP_PORT . ')' . "\n";
 
-class SocketException extends Exception {}
-
-function openSocket($hostname, $port, $timeout = 5) {
-  global $_SERVER, $errors;
-  $errno = 0;
-  $errstr = '';
-
-  //if () {
-  //  throw new SocketException("Unable to open socket: $errstr", $errno);
-  return $_SERVER['SOCKET'] = @fsockopen($hostname, $port, $errno, $errstr, $timeout);
-  //} else {
-    //$errors['SOCKET'] = "Unable to open socket: $errstr ($errno)\n";
-  //  return false;
-  //}
-}
-
-try {
-  if (!isset($_SERVER['SOCKET']) && !$socket = openSocket(APP_IP, 12345)) {
-    if (strtoupper(substr(PHP_OS, 0, 3)) === 'WIN') {
-      if (file_exists((defined('APP_PATH') ? APP_PATH : dirname(__DIR__)  . DIRECTORY_SEPARATOR) . 'server.pid')) {
-        $pid = file_get_contents((defined('APP_PATH') ? APP_PATH : dirname(__DIR__)  . DIRECTORY_SEPARATOR)  . 'server.pid');
-        exec("tasklist /FI \"PID eq $pid\" 2>NUL | find /I \"$pid\" >NUL", $output, $status);
-        if ($status !== 0) {
-          shell_exec('taskkill /PID ' . $pid . ' /F');
-          unlink((defined('APP_PATH') ? APP_PATH : dirname(__DIR__)  . DIRECTORY_SEPARATOR)  . 'server.pid');
-        }
-      }
-      //die(shell_exec('cd'));
-      //shell_exec('start "" cmd /c "C:\xampp\php\php.exe -f ' . APP_PATH . 'server.php"'); // start /B /MIN 
-      pclose(popen((defined('APP_PATH') ? APP_PATH : dirname(__DIR__)  . DIRECTORY_SEPARATOR)  . 'bin/psexec.exe -d C:\xampp\php\php.exe -f ' . APP_PATH . 'server.php' /*' > C:\\xampp\\htdocs\\server.log 2>&1'*/, "r"));
-    } // elseif (stripos(PHP_OS, 'LIN') === 0) shell_exec('nohup php server.php > /dev/null 2>&1 &');
-    //sleep(3);
-  } 
-  //if (isset($errors['SOCKET']) && $socket) fclose($socket); // do not use!
-} catch (SocketException $e) {
-  //echo 'Error: ' . $e->getMessage();
-
-}
+!defined('APP_SERVER') and define('APP_SERVER', (defined('APP_PATH') ? APP_PATH : __DIR__ . DIRECTORY_SEPARATOR)  . str_replace((defined('APP_PATH') ? APP_PATH : __DIR__ . DIRECTORY_SEPARATOR) , '', dirname(basename(APP_SELF)) == 'public' ? basename(APP_SELF) : 'server.php')); // 
 
 // Check if the request is using HTTPS
 (isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] == 'on') // strtolower(substr($_SERVER["SERVER_PROTOCOL"],0,5))=='https'
   and define('APP_HTTPS', TRUE);
 (defined('APP_HTTPS') && APP_HTTPS) and $errors['APP_HTTPS'] = (bool) var_export(APP_HTTPS, APP_HTTPS); // print("\t" . 'Http(S)://' . APP_DOMAIN . '/' . '... ' .  var_export(defined('APP_HTTPS'), true) . "\n");
 
-define('APP_WWW', 'http' . (defined('APP_HTTPS') ? 's':'') . '://' . APP_DOMAIN . parse_url(isset($_SERVER['SERVER_NAME']) ? $_SERVER['REQUEST_URI'] : '' , PHP_URL_PATH));
+define('APP_WWW', 'http' . (defined('APP_HTTPS') ? 's' : '') . '://' . APP_DOMAIN . parse_url(isset($_SERVER['SERVER_NAME']) ? $_SERVER['REQUEST_URI'] : '' , PHP_URL_PATH));
 
 define('APP_TIMEOUT',   strtotime("1970-01-01 08:00:00GMT"));
 (defined('APP_TIMEOUT') && !is_int(APP_TIMEOUT)) and $errors['APP_TIMEOUT'] = APP_TIMEOUT; // print('Timeout: ' . APP_TIMEOUT . "\n");
@@ -196,10 +160,99 @@ if (defined('APP_BASE'))
 
 define('APP_PUBLIC', (defined('APP_PATH') ? APP_PATH : __DIR__ . DIRECTORY_SEPARATOR)  . APP_BASE['public'] . str_replace((defined('APP_PATH') ? APP_PATH : __DIR__ . DIRECTORY_SEPARATOR) , '', APP_BASE['public'] . dirname(basename(APP_SELF)) == 'public' ? basename(APP_SELF) : 'index.php')); // 
 
+
+class SocketException extends Exception {}
+
+function openSocket($hostname, $port, $timeout = 5) {
+  global $_SERVER, $errors;
+  $errno = 0;
+  $errstr = '';
+
+  //if () {
+  //  throw new SocketException("Unable to open socket: $errstr", $errno);
+  return @fsockopen($hostname, $port, $errno, $errstr, $timeout);
+  //} else {
+    //$errors['SOCKET'] = "Unable to open socket: $errstr ($errno)\n";
+  //  return false;
+  //}
+}
+
+try {
+  if (!isset($_SERVER['SOCKET']) && !$_SERVER['SOCKET'] = openSocket(APP_HOST, APP_PORT)) {
+    if (strtoupper(substr(PHP_OS, 0, 3)) === 'WIN') {
+      if (file_exists((defined('APP_PATH') ? APP_PATH : dirname(__DIR__)  . DIRECTORY_SEPARATOR) . 'server.pid')) {
+        $pid = file_get_contents((defined('APP_PATH') ? APP_PATH : dirname(__DIR__)  . DIRECTORY_SEPARATOR)  . 'server.pid');
+        exec("tasklist /FI \"PID eq $pid\" 2>NUL | find /I \"$pid\" >NUL", $output, $status);
+        if ($status !== 0) {
+          shell_exec('taskkill /PID ' . $pid . ' /F');
+          unlink((defined('APP_PATH') ? APP_PATH : dirname(__DIR__)  . DIRECTORY_SEPARATOR)  . 'server.pid');
+        }
+      }
+      //die(shell_exec('cd'));
+      //shell_exec('start "" cmd /c "C:\xampp\php\php.exe -f ' . APP_PATH . 'server.php"'); // start /B /MIN 
+      pclose(popen((defined('APP_PATH') ? APP_PATH : dirname(__DIR__)  . DIRECTORY_SEPARATOR)  . 'bin/psexec.exe -d C:\xampp\php\php.exe -f ' . APP_PATH . 'server.php' /*' > C:\\xampp\\htdocs\\server.log 2>&1'*/, "r"));
+    } // elseif (stripos(PHP_OS, 'LIN') === 0) shell_exec('nohup php server.php > /dev/null 2>&1 &');
+    //sleep(3);
+  } elseif (APP_SELF === APP_PUBLIC) {
+    $errors['server-1'] = "Connected to Server: " . APP_HOST . "\n";
+
+    // Send a message to the server
+    $errors['server-2'] = 'Client request: ' . $message = "cmd: " . $_SERVER["SCRIPT_FILENAME"] . "\n";
+
+    fwrite($_SERVER['SOCKET'], $message);
+    $output[] = $_POST['cmd'] . ': ';
+    // Read response from the server
+    while (!feof($_SERVER['SOCKET'])) {
+        $response = fgets($_SERVER['SOCKET'], 1024);
+        $errors['server-3'] = "Server responce: $response\n";
+        $output[end($output)] .= trim($response);
+        //if (!empty($response)) break;
+    }
+
+    // Close the connection
+    //fclose($_SERVER['SOCKET']);
+  } else {
+/*
+    $errors['server-1'] = "Connected to Server: " . APP_HOST . "\n";
+
+    // Send a message to the server
+    $errors['server-2'] = 'Client request: ' . $message = "cmd: " . $_SERVER["SCRIPT_FILENAME"] . "\n";
+
+    fwrite($_SERVER['SOCKET'], $message);
+    $output[] = $_POST['cmd'] . ': ';
+    // Read response from the server
+    while (!feof($_SERVER['SOCKET'])) {
+        $response = fgets($_SERVER['SOCKET'], 1024);
+        $errors['server-3'] = "Server responce: $response\n";
+        $output[end($output)] .= trim($response);
+        //if (!empty($response)) break;
+    }
+*/
+  }
+  //if (isset($errors['SOCKET']) && $socket) fclose($socket); // do not use!
+} catch (SocketException $e) {
+  //echo 'Error: ' . $e->getMessage();
+  Logger::error($e->getMessage());
+  Shutdown::triggerShutdown($e->getMessage());
+} finally {
+/*
+  if (isset($_SERVER['SOCKET'])) {
+      if (is_resource($_SERVER['SOCKET'])) {
+          if (get_resource_type($_SERVER['SOCKET']) == 'stream') {
+              fclose($_SERVER['SOCKET']);
+          } else {
+              socket_close($_SERVER['SOCKET']);
+          }
+      }
+  }
+*/
+}
+
 if (isset($_SERVER['SOCKET']) && APP_SELF === APP_PUBLIC) // realpath(dirname(__DIR__) . DIRECTORY_SEPARATOR . 'server.php')
   if ($_SERVER['SOCKET'] === false) dd('Have you checked your server.php file lately?');
   elseif ($_SERVER['SOCKET'] !== false) {
-    $errors['server-1'] = "Connected to Server: " . APP_SERVER . "\n"; // APP_IP
+/*
+    $errors['server-1'] = "Connected to Server: " . APP_HOST . "\n";
 
     // Send a message to the server
     $errors['server-2'] = 'Client request: ' . $message = "cmd: composer update 123 " . $_SERVER["SCRIPT_FILENAME"] . "\n";
@@ -215,12 +268,11 @@ if (isset($_SERVER['SOCKET']) && APP_SELF === APP_PUBLIC) // realpath(dirname(__
 
     // Close the connection
     //fclose($_SERVER['SOCKET']);
-  } else {
-    $errors['APP_SERVER'] = ($_SERVER['SOCKET'] ?: 'Socket is unable to connect: ') . 'No server connection.' . "\n";
-  }
-else {
-  $errors['APP_SERVER'] = 'Socket is not being created: ' . 'Define $_SERVER[\'SOCKET\']' . "\n";
-}
+*/
+  } else
+    $errors['APP_HOST'] = ($_SERVER['SOCKET'] ?: 'Socket is unable to connect: ') . 'No server connection.' . "\n";
+else
+  $errors['APP_HOST'] = 'Socket is not being created: ' . 'Define $_SERVER[\'SOCKET\']' . "\n";
 
 
 //var_dump(APP_PATH . basename(dirname(__DIR__, 2)) . '/' . basename(dirname(__DIR__, 1)));
@@ -231,9 +283,9 @@ else {
 // substr( str_replace('\\', '/', __FILE__), strlen($_SERVER['DOCUMENT_ROOT']), strrpos(str_replace('\\', '/', __FILE__), '/') - strlen($_SERVER['DOCUMENT_ROOT']) + 1 )
 !is_array(APP_BASE) ?
   substr($_SERVER['REQUEST_URI'], 0, strrpos($_SERVER['REQUEST_URI'], '/') + 1) == '/' // $_SERVER['DOCUMENT_ROOT']
-    and define('APP_URL', 'http' . (defined('APP_HTTPS') ? 's':'') . '://' . APP_DOMAIN . substr($_SERVER['REQUEST_URI'], 0, strrpos($_SERVER['REQUEST_URI'], '/') + 1)) :
+    and define('APP_URL', 'http' . (defined('APP_HTTPS') ? 's' : '') . '://' . APP_DOMAIN . substr($_SERVER['REQUEST_URI'], 0, strrpos($_SERVER['REQUEST_URI'], '/') + 1)) :
   define('APP_URL', [
-    'scheme' => 'http' . (defined('APP_HTTPS') && APP_HTTPS ? 's': ''), // ($_SERVER['HTTPS'] == 'on', (isset($_SERVER['HTTPS']) === true ? 'https' : 'http')
+    'scheme' => 'http' . (defined('APP_HTTPS') && APP_HTTPS ? 's' : ''), // ($_SERVER['HTTPS'] == 'on', (isset($_SERVER['HTTPS']) === true ? 'https' : 'http')
     /* https://www.php.net/manual/en/features.http-auth.php */
     'user' => (!isset($_SERVER['PHP_AUTH_USER']) ? NULL : $_SERVER['PHP_AUTH_USER']),
     'pass' => (!isset($_SERVER['PHP_AUTH_PW']) ? NULL : $_SERVER['PHP_AUTH_PW']),
@@ -267,7 +319,7 @@ define('APP_QUERY', !empty(parse_url($_SERVER['REQUEST_URI'])['query']) ? (parse
   or define('APP_URI',   // BASEURL
     preg_replace('!([^:])(//)!', "$1/",
       str_replace('\\', '/',
-        htmlspecialchars(APP_URL['scheme'] . '://' . (isset($_SERVER['PHP_AUTH_USER']) ? APP_URL['user'] . ':' . APP_URL['pass'] . '@' : '') . APP_URL['host'] . (APP_URL['port'] !== '80' ? ':' . APP_URL['port'] : '') . APP_URL['path'] . (!basename($_SERVER["SCRIPT_NAME"]) ? '' : basename($_SERVER["SCRIPT_NAME"])) . (!empty(APP_QUERY) ? '?' . http_build_query(APP_QUERY) : '')) // dirname($_SERVER['PHP_SELF'])  dirname($_SERVER['REQUEST_URI'])
+        htmlspecialchars(APP_URL['scheme'] . '://' . (isset($_SERVER['PHP_AUTH_USER']) ? APP_URL['user'] . PATH_SEPARATOR . APP_URL['pass'] . '@' : '') . APP_URL['host'] . (APP_URL['port'] !== '80' ? PATH_SEPARATOR . APP_URL['port'] : '') . APP_URL['path'] . (!basename($_SERVER["SCRIPT_NAME"]) ? '' : basename($_SERVER["SCRIPT_NAME"])) . (!empty(APP_QUERY) ? '?' . http_build_query(APP_QUERY) : '')) // dirname($_SERVER['PHP_SELF'])  dirname($_SERVER['REQUEST_URI'])
       )
     )
   );
