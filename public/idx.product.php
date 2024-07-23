@@ -1,7 +1,7 @@
 <?php
 
 if (!in_array($path = dirname(__DIR__) . DIRECTORY_SEPARATOR . 'config' . DIRECTORY_SEPARATOR . 'config.php', get_required_files()))
-  require_once($path);
+  require_once $path;
 
 if (isset($_GET['CLIENT']) || isset($_GET['DOMAIN']) && !defined('APP_ROOT')) {
 
@@ -95,7 +95,7 @@ do {
         // Check if the path exists
         if ($realpath = realpath($path)) {
             // Require the file
-            require_once($realpath);
+            require_once $realpath;
         } else {
             // Output a message if the file was not found
             echo basename($path) . ' was not found. file=public/' . basename($path) . PHP_EOL;
@@ -127,7 +127,7 @@ do {
 //            $requireFile = function($file) /*use ($apps)*/ { global $apps; }; */
 
             // Include the file using the function
-            $returnedValue = require_once($realpath);
+            $returnedValue = require_once $realpath;
             //dd(get_required_files(), false);
 //dd($returnedValue, false);
 
@@ -533,7 +533,7 @@ unset($path);
               echo '              <option value="' . (isset($_GET['path']) ?  $_GET['path'] . DIRECTORY_SEPARATOR : '') . basename($dir) . '"' . (isset($_GET['path']) && $_GET['path'] == basename($dir) ? ' selected' : '' )  . '>' . basename($dir) . '/</option>' . "\n";
             }
           ?>
-      </select> /
+      </select> / <a href="#test">+</a>
       </span>
       </form>
 

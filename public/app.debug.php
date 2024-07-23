@@ -6,7 +6,7 @@
 //dd( dirname(__DIR__) . '/config/config.php');
 
 if (!in_array($path = dirname(__DIR__) . '/config/config.php', get_required_files()))
-  require_once($path);
+  require_once $path;
 elseif (__FILE__ == get_required_files()[0]) //die(getcwd());
   if ($path = (basename(getcwd()) == 'public')
     ? (is_file('config.php') ? 'config.php' : '../config/config.php') : '') require_once $path;
@@ -15,7 +15,7 @@ elseif (__FILE__ == get_required_files()[0]) //die(getcwd());
 $path = $_SERVER['DOCUMENT_ROOT'] . parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH);
 
 
-require_once(dirname(__DIR__) . '/public/index.php');
+require_once dirname(__DIR__) . '/public/index.php';
 //dd( realpath($path) == realpath(APP_PATH) );
 
 //dd(APP_ERRORS);

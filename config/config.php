@@ -83,7 +83,7 @@ elseif(!defined('DOMAIN_EXPR'))
 
 
 if (isset($_ENV['SHELL']['PHP_EXEC']) && !defined('PHP_EXEC'))
-  define('PHP_EXEC', ['SHELL']['PHP_EXEC']); // const DOMAIN_EXPR = 'string only/non-block/ternary';
+  define('PHP_EXEC', $_ENV['SHELL']['PHP_EXEC']); // const DOMAIN_EXPR = 'string only/non-block/ternary';
 elseif (!defined('PHP_EXEC'))
   define('PHP_EXEC', '/usr/bin/php'); // /(?:\.(?:([-a-z0-9]+){1,}?)?)?\.[a-z]{2,6}$/';
 
@@ -155,16 +155,13 @@ if (!empty($_GET['client']) || !empty($_GET['domain'])) {
       }
     }
   else if (!isset($_GET['domain']) && count($dirs) >= 1) {
-
     if (preg_match(DOMAIN_EXPR, strtolower(basename(array_values($dirs)[0])))) {
       $_GET['domain'] = basename(array_values($dirs)[0]);
       $path .= basename(array_values($dirs)[0]) . DIRECTORY_SEPARATOR;
     } else {
       $path .= ($_GET['domain'] = basename(array_values($dirs)[0])) . DIRECTORY_SEPARATOR;
     }
-
   //die(var_dump($path));
-
   }
   if (is_dir(APP_PATH . $path)) {
     (defined('APP_CLIENT') ?: define('APP_CLIENT', new clientOrProj($path)));
@@ -469,7 +466,7 @@ if (!is_file($file = APP_PATH . 'projects/index.php')) {
   file_put_contents($file, '<?php ' . <<<END
 
 //if (__FILE__ != get_required_files()[0])
-\$require = function(\$path) { require_once(\$path); };
+\$require = function(\$path) { require_once \$path; };
 if (\$path = (basename(getcwd()) == 'public')
   ? (is_file('config.php') ? 'config.php' : '../config/config.php') : '') \$require(\$path);
 else die(var_dump(\$path)); //die(var_dump(\$path . ' path was not found. file=config.php'));
@@ -636,7 +633,7 @@ $dirs[] = APP_PATH . APP_BASE['config'] . 'npm.php';
   });
 
   foreach ($dirs as $includeFile) {
-    dd('Trying file: ' . basename($includeFile), false);
+    //dd('Trying file: ' . basename($includeFile), false);
     $path = dirname($includeFile);
 
     if (in_array($includeFile, get_required_files())) continue; // $includeFile == __FILE__
@@ -698,7 +695,7 @@ if (\$_SERVER['REQUEST_METHOD'] == 'POST') {
 
     if (!is_file(APP_PATH . 'index.php'))
         if (@touch(APP_PATH . 'index.php'))
-            file_put_contents(APP_PATH . 'index.php', '<?php require_once(\'public/index.php\');');
+            file_put_contents(APP_PATH . 'index.php', '<?php require_once \'public/index.php\';');
 
     unlink(__FILE__);
 }
@@ -781,19 +778,17 @@ END
         }
       }
 
-    } else if (!in_array($path = realpath('config.php'), get_required_files())) {
-      //die($path . ' test');
-      require_once($path);
-    }
+    } else if (!in_array($path = realpath('config.php'), get_required_files()))
+      require_once $path;
 
-    if (defined('APP_PROJECT')) require_once('public/install.php');
+    if (defined('APP_PROJECT')) require_once 'public/install.php';
 }
 
 
 /*
 if ($path = realpath((basename(__DIR__) != 'config' ? NULL : __DIR__ . DIRECTORY_SEPARATOR ) . 'constants.php')) // is_file('config/constants.php')) 
   if (!in_array($path, get_required_files()))
-    require_once($path);
+    require_once $path;
 */
 
 //dd(get_defined_constants(true)['user']); // true
@@ -889,7 +884,7 @@ foreach (['composer_app.php', 'index.php'] as \$file) {
 
 if (!is_file(APP_PATH . 'index.php'))
     if (@touch(APP_PATH . 'index.php'))
-        file_put_contents(APP_PATH . 'index.php', '<?php require_once(\'public/index.php\');');
+        file_put_contents(APP_PATH . 'index.php', '<?php require_once \'public/index.php\';');
 
 unlink(__FILE__);
 END

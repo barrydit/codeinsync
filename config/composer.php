@@ -3,7 +3,7 @@
 if (is_file($include = APP_PATH . APP_ROOT . APP_BASE['vendor'] . 'autoload.php'))
   if (APP_SELF == APP_PUBLIC)
     if (isset($_ENV['COMPOSER']['AUTOLOAD']) && (bool) $_ENV['COMPOSER']['AUTOLOAD'] === true)
-      require_once($include);
+      require_once $include;
 
 use Composer\InstalledVersions;
 
@@ -150,9 +150,6 @@ class composerSchema {
   }
 }
 
-//dd(getcwd());
-
-// require_once(APP_PATH . APP_ROOT . APP_BASE['vendor'] . 'autoload.php');
 
 if (!defined('APP_CONFIG') || !in_array(APP_CONFIG, get_required_files()))
   die(APP_CONFIG . ' is missing. Presumed that this file was opened on its own.');
@@ -1101,7 +1098,7 @@ if (!defined('VENDOR_JSON') && isset(COMPOSER['json']->{'require'}->{'composer'}
 
 if (basename(dirname(APP_SELF)) == __DIR__ . DIRECTORY_SEPARATOR . 'public')
   if ($path = realpath((basename(__DIR__) != 'config' ? NULL : __DIR__ . DIRECTORY_SEPARATOR) . 'ui.composer.php')) // is_file('config/composer_app.php')) 
-    require_once($path);
+    require_once $path;
 
 if (APP_SELF == __FILE__ || defined(APP_DEBUG) && isset($_GET['app']) && $_GET['app'] == 'composer') die($appComposer['html']);
 

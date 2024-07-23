@@ -6,10 +6,22 @@
 
 //$errors->{'TEXT_MANAGER'} = $path . "\n" . 'File Modified:    Rights:    Date of creation: ';
 
-if (__FILE__ == get_required_files()[0])
-  if ($path = (basename(getcwd()) == 'public')
-    ? (is_file('config.php') ? 'config.php' : '../config/config.php') : '') require_once $path;
-  else die(var_dump("$path path was not found. file=config.php"));
+
+
+if (__FILE__ == get_required_files()[0] && __FILE__ == realpath($_SERVER["SCRIPT_FILENAME"])) {
+  if ($path = basename(dirname(get_required_files()[0])) == 'public') { // (basename(getcwd())
+    if (is_file($path = realpath('../config/config.php'))) {
+      require_once $path;
+    }
+  } elseif (is_file($path = realpath('config/config.php'))) {
+    require_once $path;
+  } else {
+    die(var_dump("Path was not found. file=$path"));
+  }
+} 
+
+
+
 
 //dd($_GET);
 
@@ -315,7 +327,9 @@ if (!empty($paths))
       </div>
     </div>
   </div>
-<?php $app['body'] = ob_get_contents();
+<?php
+
+$app['body'] = ob_get_contents();
 ob_end_clean();
 
 ob_start(); ?>
@@ -326,7 +340,7 @@ if (is_dir($path = APP_PATH . APP_BASE['resources'] . 'js/ace')) {
 ?>
 
 //var ace = require("resources/js/ace/src/ace.js"); // ext/language_tools
-var appEditor = ace.edit("app-ace-editor");
+var appEditor = ace.edit("ui_ace_editor");
 appEditor.setTheme("ace/theme/dracula");
 
 //var JavaScriptMode = ace.require("ace/mode/javascript").Mode;
@@ -345,24 +359,23 @@ appEditor.setOptions({
 
 <?= /* $(document).ready(function() {}); */ ''; ?>
 
-<?php $app['script'] = ob_get_contents();
+<?php
+$app['script'] = ob_get_contents();
 ob_end_clean();
 
+header("Cache-Control: no-store, no-cache, must-revalidate, max-age=0");
+header("Pragma: no-cache");
 //check if file is included or accessed directly
-if (__FILE__ == get_required_files()[0] || in_array(__FILE__, get_required_files()) && isset($_GET['app']) && $_GET['app'] == 'ace_editor' && APP_DEBUG) {
-  header("Cache-Control: no-store, no-cache, must-revalidate, max-age=0");
-  header("Pragma: no-cache");
-  ob_start(); ?>
+ob_start(); ?>
 <!DOCTYPE html>
 <html>
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
-  <link rel="stylesheet" href="//code.jquery.com/ui/1.12.1/themes/smoothness/jquery-ui.css" />
+  <link rel="stylesheet" href="//code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css">
+  <!-- link rel="stylesheet" href="//code.jquery.com/ui/1.12.1/themes/smoothness/jquery-ui.css" / -->
   
 <?php
-
 is_dir($path = APP_PATH . APP_BASE['resources'] . 'js/') or mkdir($path, 0755, true);
 if (is_file($path . 'tailwindcss-3.3.5.js')) {
   if (ceil(abs((strtotime(date('Y-m-d')) - strtotime(date('Y-m-d',strtotime('+5 days',filemtime($path . 'tailwindcss-3.3.5.js'))))) / 86400)) <= 0 ) {
@@ -393,14 +406,41 @@ unset($path);
 <body>
 <?= $app['body']; ?>
 
+<?php
+  is_dir($path = APP_PATH . APP_BASE['resources'] . 'js/jquery/') or mkdir($path, 0755, true);
+  if (is_file($path . 'jquery-3.7.1.min.js')) {
+    if (ceil(abs((strtotime(date('Y-m-d')) - strtotime(date('Y-m-d',strtotime('+5 days',filemtime($path . 'jquery-3.7.1.min.js'))))) / 86400)) <= 0 ) {
+      $url = 'https://code.jquery.com/jquery-3.7.1.min.js';
+      $handle = curl_init($url);
+      curl_setopt($handle, CURLOPT_RETURNTRANSFER, true);
+  
+      if (!empty($js = curl_exec($handle))) 
+        file_put_contents($path . 'jquery-3.7.1.min.js', $js) or $errors['JS-JQUERY'] = $url . ' returned empty.';
+    }
+  } else {
+    $url = 'https://code.jquery.com/jquery-3.7.1.min.js';
+    $handle = curl_init($url);
+    curl_setopt($handle, CURLOPT_RETURNTRANSFER, true);
+  
+    if (!empty($js = curl_exec($handle))) 
+      file_put_contents($path . 'jquery-3.7.1.min.js', $js) or $errors['JS-JQUERY'] = $url . ' returned empty.';
+  }
+  unset($path); ?>
+  <script src="<?= (check_http_200('https://code.jquery.com/jquery-3.7.1.min.js') ? 'https://code.jquery.com/jquery-3.7.1.min.js' : APP_BASE['resources'] . 'js/jquery/' . 'jquery-3.7.1.min.js') ?>"></script>
+  <!-- You need to include jQueryUI for the extended easing options. -->
+      <!-- script src="//code.jquery.com/jquery-1.12.4.js"></script -->
+  
+  <script src="<?= (check_http_200('https://code.jquery.com/ui/1.12.1/jquery-ui.min.js') ? 'https://code.jquery.com/ui/1.12.1/jquery-ui.min.js' : APP_BASE['resources'] . 'js/jquery-ui/' . 'jquery-ui-1.12.1.js') ?>"></script> <!-- Uncaught ReferenceError: jQuery is not defined -->
+
   <script src="resources/js/ace/src/ace.js" type="text/javascript" charset="utf-8"></script>
   <script src="resources/js/ace/src/ext-language_tools.js" type="text/javascript" charset="utf-8"></script> 
 <!-- <script src="https://cdnjs.cloudflare.com/ajax/libs/ace/1.4.12/ext-language_tools.js"></script>
 
   <script src="resources/js/ace/src/mode-php.js" type="text/javascript" charset="utf-8"></script> -->
   <!-- https://cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.min.js -->
-  <script src="//code.jquery.com/jquery-1.12.4.js"></script>
-  <script src="//code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
+
+  <!-- script src="//code.jquery.com/jquery-1.12.4.js"></script -->
+  <!-- script src="//code.jquery.com/ui/1.12.1/jquery-ui.js"></script -->
   <!-- <script src="../resources/js/jquery/jquery.min.js"></script> -->
 <script>
 <?= $app['script']; ?>
@@ -408,8 +448,13 @@ unset($path);
 </body>
 </html>
 <?php 
-  $return_contents = ob_get_contents(); 
+  $return_contents = ob_get_contents();
+
   ob_end_clean();
+
+if (__FILE__ == get_required_files()[0] && __FILE__ == realpath($_SERVER["SCRIPT_FILENAME"]) ) {
+  print $return_contents;
+} elseif (in_array(__FILE__, get_required_files()) && isset($_GET['app']) && $_GET['app'] == 'ace_editor' && APP_DEBUG) {
   return $return_contents;
 } else { 
   return $app;

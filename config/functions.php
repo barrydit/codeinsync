@@ -67,8 +67,8 @@ function resolve_host_to_ip($host) {
 /* HTTP status of a URL and the network connectivity using ping */
 function check_http_200($url = 'http://8.8.8.8') {
   if (defined('APP_CONNECTED')) { // check_ping() was 2 == fail | 0 == success
-    if ($url !== 'http://8.8.8.8') {
-      $errors[123] = 'check ' . $url;
+    if ($url !== 'http://8.8.8.8' && (preg_match('/^https?:\/\/(.*)$/', $url) ?: $url = 'http://' . $url)) {
+      //dd("check $url", false); // string interpolation
       if (!empty($headers = get_headers($url)))
         return strpos($headers[0], '200') !== false ? false : true;
     } else

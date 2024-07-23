@@ -7,7 +7,7 @@ if (__FILE__ == get_required_files()[0]) //die(getcwd());
 /*
 if ($path = (basename(getcwd()) == 'public')
     ? (is_file('../console_app.php') ? '../console_app.php' : (is_file('../config/console_app.php') ? '../config/console_app.php' : 'console_app.php'))
-    : (is_file('console_app.php') ? 'console_app.php' : (is_file('public/console_app.php') ? 'public/console_app.php' : null))) require_once($path); 
+    : (is_file('console_app.php') ? 'console_app.php' : (is_file('public/console_app.php') ? 'public/console_app.php' : null))) require_once $path; 
 else die(var_dump($path . ' path was not found. file=console_app.php'));
 */
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {

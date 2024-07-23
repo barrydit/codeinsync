@@ -47,19 +47,18 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             if (!$_SERVER['SOCKET']) {
               exec($_POST['cmd'], $output);
             } else {
-              $errors['server-1'] = "Connected to " . APP_HOST . " on port " . APP_PORT . "\n";
+              $errors['server-1'] = "Connected to Server: " . APP_HOST . "\n";
 
               // Send a message to the server
               $errors['server-2'] = 'Client request: ' . $message = "cmd: " . $_POST['cmd'] . "\n";
-            
+          
               fwrite($_SERVER['SOCKET'], $message);
               $output[] = $_POST['cmd'] . ': ';
               // Read response from the server
-              $errors['server-3'] = "Server responce: ";
               while (!feof($_SERVER['SOCKET'])) {
                   $response = fgets($_SERVER['SOCKET'], 1024);
-                  $errors['server-3'] .= "$response\n";
-                  $output[key($output)] .= trim($response) . "\n";
+                  $errors['server-3'] = "Server responce: $response\n";
+                  if (isset($output[end($output)])) $output[end($output)] .= trim($response);
                   //if (!empty($response)) break;
               }
             }
@@ -67,22 +66,59 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
           }
 
         } else if (preg_match('/^composer\s+(:?(.*))/i', $_POST['cmd'], $match)) {
-          $output[] = dd(COMPOSER_EXEC);
-          $output[] = APP_SUDO . COMPOSER_EXEC['bin'] . ' ' . $match[1];
-$proc=proc_open((strtoupper(substr(PHP_OS, 0, 3)) === 'WIN' ? '' : APP_SUDO) . COMPOSER_EXEC['bin'] . ' ' . $match[1],
-  array(
-    array("pipe","r"),
-    array("pipe","w"),
-    array("pipe","w")
-  ),
-  $pipes);
-          list($stdout, $stderr, $exitCode) = [stream_get_contents($pipes[1]), stream_get_contents($pipes[2]), proc_close($proc)];
-          $output[] = (!isset($stdout) ? NULL : $stdout . (isset($stderr) && $stderr === '' ? NULL : ' Error: ' . $stderr) . (!isset($exitCode) && $exitCode == 0  ? NULL : ' Exit Code: ' . $exitCode));
-          //$output[] = $_POST['cmd'];
+
+          if (!$_SERVER['SOCKET']) {
+
+            //$output[] = dd(COMPOSER_EXEC);
+            //$output[] = APP_SUDO . COMPOSER_EXEC['bin'] . ' ' . $match[1];
+            $proc=proc_open((strtoupper(substr(PHP_OS, 0, 3)) === 'WIN' ? '' : APP_SUDO) . COMPOSER_EXEC['bin'] . ' ' . $match[1],
+            [
+              ["pipe", "r"],
+              ["pipe", "w"],
+              ["pipe", "w"]
+            ],
+            $pipes);
+            list($stdout, $stderr, $exitCode) = [stream_get_contents($pipes[1]), stream_get_contents($pipes[2]), proc_close($proc)];
+            $output[] = (!isset($stdout) ? NULL : $stdout . (isset($stderr) && $stderr === '' ? NULL : ' Error: ' . $stderr) . (!isset($exitCode) && $exitCode == 0  ? NULL : ' Exit Code: ' . $exitCode));
+                  //$output[] = $_POST['cmd'];        
+            //exec($_POST['cmd'], $output);
+            //die(var_dump($output));
+
+          } else {
+
+            $errors['server-1'] = "Connected to " . APP_HOST . " on port " . APP_PORT . "\n";
+
+            // Send a message to the server
+            $errors['server-2'] = 'Client request: ' . $message = "cmd: " . $_POST['cmd'] . "\n";
+
+            $output[] = $_POST['cmd'] . ' test2: ';
+
+            //dd($message, false);
+            if (isset($_SERVER['SOCKET']) && is_resource($_SERVER['SOCKET'])) {
+              if (get_resource_type($_SERVER['SOCKET']) == 'stream') {
+                  fwrite($_SERVER['SOCKET'], $message);
+              } else {
+                  socket_write($_SERVER['SOCKET'], $message);
+              }
+            }
+
+            // Read response from the server
+            while (!feof($_SERVER['SOCKET'])) {
+                $response = fgets($_SERVER['SOCKET'], 1024);
+                
+                $errors['server-3'] = "Server responce: $response\n";
+                if (isset($output[end($output)])) $output[end($output)] .= trim($response);
+                else $output[] = trim($response);
+                //if (!empty($response)) break;
+            }
+
+            die(var_dump($output));
+          }
+
 
         } else if (preg_match('/^git\s+(:?(.*))/i', $_POST['cmd'], $match)) {
 
-          $requireFile = function($file) { require_once($file); };
+          $requireFile = function($file) { require_once $file; };
           $requireFile(APP_PATH . 'config/git.php');
           if (preg_match('/^git\s+(help)(:?\s+)?/i', $_POST['cmd'])) {
             $output[] = <<<END
@@ -225,7 +261,7 @@ $proc=proc_open($command,
             if (!$_SERVER['SOCKET']) {
               //exec($_POST['cmd'], $output);
               if (preg_match('/^(\w+)\s+(:?(.*))/i', $_POST['cmd'], $match))
-              if (isset($match[1]) && in_array($match[1], ['tail', 'cat', 'echo', 'env', 'sudo', 'whoami'])) {
+              if (isset($match[1]) && in_array($match[1], ['tail', 'cat', 'echo', 'env', 'sudo', 'whoami', 'server'])) {
                 //exec(APP_SUDO . $match[1] . ' ' . $match[2], $output); // $output[] = var_dump($match);
                 
   $output[] = APP_SUDO . $match[1] . ' ' . $match[2];
@@ -249,16 +285,17 @@ $proc=proc_open($command,
               $errors['server-2'] = 'Client request: ' . $message = "cmd: " . $_POST['cmd'] . "\n";
             
               fwrite($_SERVER['SOCKET'], $message);
-              $output[] = $_POST['cmd'] . ': ';
+              $output[] = $_POST['cmd'] . ' test2: ';
 
               // Read response from the server
               while (!feof($_SERVER['SOCKET'])) {
                   $response = fgets($_SERVER['SOCKET'], 1024);
                   $errors['server-3'] = "Server responce: $response\n";
-                  $output[key($output)] .= trim($response) . "\n";
+                  if (isset($output[end($output)])) $output[end($output)] .= trim($response);
+                  else $output[] = trim($response);
                   //if (!empty($response)) break;
               }
-              //dd($output);
+              //die(var_dump($_SERVER['SOCKET']));
             }
 
 
@@ -278,17 +315,17 @@ $proc=proc_open($command,
 /*
 if ($path = (basename(getcwd()) == 'public')
     ? (is_file('../git.php') ? '../git.php' : (is_file('../config/git.php') ? '../config/git.php' : null))
-    : (is_file('git.php') ? 'git.php' : (is_file('config/git.php') ? 'config/git.php' : null))) require_once($path); 
+    : (is_file('git.php') ? 'git.php' : (is_file('config/git.php') ? 'config/git.php' : null))) require_once $path; 
 else die(var_dump($path . ' path was not found. file=git.php'));
 
 if ($path = (basename(getcwd()) == 'public')
     ? (is_file('../composer.php') ? '../composer.php' : (is_file('../config/composer.php') ? '../config/composer.php' : null))
-    : (is_file('composer.php') ? 'composer.php' : (is_file('config/composer.php') ? 'config/composer.php' : null))) require_once($path); 
+    : (is_file('composer.php') ? 'composer.php' : (is_file('config/composer.php') ? 'config/composer.php' : null))) require_once $path; 
 else die(var_dump($path . ' path was not found. file=composer.php'));
 
 if ($path = (basename(getcwd()) == 'public')
     ? (is_file('../npm.php') ? '../npm.php' : (is_file('../config/npm.php') ? '../config/npm.php' : null))
-    : (is_file('npm.php') ? 'npm.php' : (is_file('config/npm.php') ? 'config/npm.php' : null))) require_once($path); 
+    : (is_file('npm.php') ? 'npm.php' : (is_file('config/npm.php') ? 'config/npm.php' : null))) require_once $path; 
 else die(var_dump($path . ' path was not found. file=npm.php'));
 */
 

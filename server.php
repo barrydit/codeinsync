@@ -29,6 +29,8 @@ if (file_exists(PID_FILE)) {
   }
 }
 
+$lastModifiedTime = filemtime(__FILE__);
+
 file_put_contents(PID_FILE, getmypid());
 
 set_time_limit(0);
@@ -37,44 +39,6 @@ set_time_limit(0);
 
 $address = APP_HOST ?? '0.0.0.0';
 $port = APP_PORT ?? 8080;
-
-function clientInputHandler($input) {
-    if ($input == '') return;
-    error_log('Client [Input]: ' . trim($input));
-    echo 'Client [Input]: ' . trim($input) . "\n";
-    //$input = trim($input);
-    $output = '';
-    if (preg_match('/^cmd:\s*(date(\?|)|what\s+is\s+the\s+date(\?|))?(?=\r?\n$)/si', $input, $matches)) { 
-      $output = 'The date is: ' . date('Y-m-d');
-    } elseif (preg_match('/^cmd:\s*(get\s+defined\s+constants)?(?=\r?\n$)/si', $input, $matches)) { 
-      $output = var_export(get_defined_constants(true)['user'], true);
-    } elseif (preg_match('/^cmd:\s*(get\s+(required|included)\s+files)?(?=\r?\n$)/si', $input, $matches)) { 
-      $output = var_export(get_required_files(), true);
-    } elseif (preg_match('/cmd:\s(.*)?(?=\r?\n$)/s', $input, $matches)) { // cmd: composer update
-        $cmd = $matches[1];
-        $output = trim(shell_exec(/*$cmd*/ 'echo $PWD'));
-        $output .= ' cmd: ' . $cmd;
-    } else {
-        // Process the request and send a response
-        $output = 'Hello, client!';
-    }
-
-    //$_POST['cmd'] = $cmd;
-    
-    //require_once('public/app.console.php');
-    error_log('Client [Output]: ' . $output);
-    echo 'Client [Output]: ' . $output . "\n";
-    return $output;
-}
-
-//die(var_dump(stream_get_wrappers()));
-
-$running = true;
-
-//use Logger; // use when not using composer
-//use Shutdown;
-
-Logger::init();
 
   // ps aux | grep server.php
   // kill -SIGTERM <PID>
@@ -87,21 +51,95 @@ Logger::init();
   // [1]+  Killed                  php server.php
 
   // Signal handler to gracefully shutdown
-function signalHandler($signal) {
-  global $running, $server;
-  switch ($signal) {
-    case SIGTERM:
-    case SIGINT:
-      echo "Shutting down server...\n";
-      $running = false;
-      //fclose($server);
-      unlink(PID_FILE);
-      exit(1);
+  function signalHandler($signal) {
+    global $running, $socket, $server, $client;
+    switch ($signal) {
+      case SIGTERM:
+      case SIGINT:
+        echo "Shutting down server...\n";
+        Logger::error('Shutting down server... PID=' . getmypid());
+        $running = false;
+        //fclose($server);
+        if (isset($socket)) {
+          if (is_resource($socket)) {
+            switch (get_resource_type($socket)) {
+              case 'stream':
+                fwrite($client, 'Shuting down server... PID=' . getmypid());
+                fclose($socket);
+                break;
+              default:
+                socket_write($client, 'Shuting down server... PID=' . getmypid());
+                socket_close($socket);
+                break;
+            }
+          }
+        }
+        unlink(PID_FILE);
+        exit(1);
+    }
   }
+  // Register signal handler
+  pcntl_signal(SIGTERM, 'signalHandler');
+  pcntl_signal(SIGINT, 'signalHandler');
+  
+function clientInputHandler($input) {
+    global $running, $lastModifiedTime;
+    if ($input == '') return;
+    error_log('Client [Input]: ' . trim($input));
+    echo 'Client [Input]: ' . trim($input) . "\n";
+    //$input = trim($input);
+    $output = '';
+    if ($lastModifiedTime < filemtime(__FILE__)) {
+      $output = 'Server has been updated. Please restart. ' . date('F d Y H:i:s', $lastModifiedTime) . ' < ' . date('F d Y H:i:s', filemtime(__FILE__));
+      //$lastModifiedTime = filemtime(__FILE__);
+      error_log("Client [Output]: $output");
+      echo "Client [Output]: $output\n";
+      return $output;
+    }
+    if (preg_match('/^cmd:\s*server\s*variables(?=\r?\n$)?/si', $input, $matches)) {
+      $output = var_export($_SERVER, true);
+    } elseif (preg_match('/^cmd:\s*(server\s*status)(?=\r?\n$)?/si', $input, $matches)) {
+      $output = 'Server is running...';
+    } elseif (preg_match('/^cmd:\s*(shutdown|restart|server\s*(shutdown|restart))(?=\r?\n$)?/si', $input, $matches)) { 
+      signalHandler(SIGTERM); // $running = false;
+    } elseif (preg_match('/^cmd:\s*(date(\?|)|what\s+is\s+the\s+date(\?|))(?=\r?\n$)?/si', $input, $matches)) { 
+      $output = 'The date is: ' . date('Y-m-d');
+    } elseif (preg_match('/^cmd:\s*(get\s+defined\s+constants)(?=\r?\n$)?/si', $input, $matches)) { 
+      $output = var_export(get_defined_constants(true)['user'], true);
+    } elseif (preg_match('/^cmd:\s*(get\s+(required|included)\s+files)(?=\r?\n$)?/si', $input, $matches)) { 
+      $output = var_export(get_required_files(), true);
+    } elseif (preg_match('/^cmd:\s*(composer(\s+.*|))(?=\r?\n$)?/si', $input, $matches)) { // ?(?=\r?\n$) // ?
+      $cmd = $matches[1]; // $input
+      $output = var_export($matches, true);
+      //$output = 'test ' . trim(shell_exec($cmd));
+      //$output .= " $input";
+
+    } elseif (preg_match('/cmd:\s+(.*)?(?=\r?\n$)/s', $input, $matches)) { // cmd: composer update
+      $cmd = $matches[1];
+      $output = trim(shell_exec(/*$cmd*/ 'echo $PWD'));
+      $output .= " cmd: $cmd";
+    } else {
+      // Process the request and send a response
+      $output = "Hello, client! Your input was: $input";
+    }
+
+    //$_POST['cmd'] = $cmd;
+    
+    //require_once('public/app.console.php');
+    error_log("Client [Output]: $output");
+    echo "Client [Output]: $output\n";
+    return $output;
 }
-// Register signal handler
-pcntl_signal(SIGTERM, 'signalHandler');
-pcntl_signal(SIGINT, 'signalHandler');
+
+//die(var_dump(stream_get_wrappers()));
+
+$running = true;
+
+//use Logger; // use when not using composer
+//use Shutdown;
+
+Logger::init();
+
 
 // Define some example notification functions
 function notifyUser1()
@@ -130,11 +168,12 @@ $manager->addNotification($notification1);
 
 //get_included_files()[0] == 
 if (is_dir(__DIR__ . '/vendor/cboden/ratchet') && !empty(glob(__DIR__ . '/vendor/cboden/ratchet/')) && file_exists(__DIR__ . '/vendor/autoload.php')) {
-  (file_exists(__DIR__ . '/vendor/autoload.php'))
-    and require __DIR__ . '/vendor/autoload.php';
+  error_log('Creating a websocket server...');
+  require_once __DIR__ . '/vendor/autoload.php';
   require_once realpath(__DIR__ . DIRECTORY_SEPARATOR . 'config' . DIRECTORY_SEPARATOR . 'classes' . DIRECTORY_SEPARATOR . 'class.websocketserver.php');
 } else
   try {
+    error_log('Creating a stream/socket server...');
   // Check if the stream wrapper for TCP is available
   //if (in_array('tcp', stream_get_wrappers())) {
   // Create a TCP/IP server socket
@@ -152,18 +191,18 @@ if (is_dir(__DIR__ . '/vendor/cboden/ratchet') && !empty(glob(__DIR__ . '/vendor
     while ($running) {
       $manager->checkNotifications();
       ($client = @stream_socket_accept($socket, -1))
-        and print 'Client Connected: ' . "\n";
+        and print "Client Connected: \n";
   
       if ($client) {
           // Read data from the client
           $response = clientInputHandler(fread($client, 1024));
   
         // Append notification output to the response
-        $response .= "\n" . $manager->getNotificationsOutput();
+          $response .= "\n" . $manager->getNotificationsOutput();
 
           fwrite($client, $response);
           // Close the client connection
-          fclose($client);
+          fclose($client) and print "Client Disconnected: \n";
       }
   
       // Dispatch signals
@@ -210,7 +249,6 @@ if (is_dir(__DIR__ . '/vendor/cboden/ratchet') && !empty(glob(__DIR__ . '/vendor
       // Dispatch signals
       pcntl_signal_dispatch();
   
-
       // Sleep for a short time to prevent busy-waiting
       usleep(100000); // 100 ms = 0.1 s | sleep(1);
     }

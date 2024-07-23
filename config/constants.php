@@ -1,7 +1,7 @@
 <?php
 // This may not be a good idea...
 //if ($path = realpath((basename(__DIR__) != 'config' ? NULL : __DIR__ . DIRECTORY_SEPARATOR) . 'config.php')) // is_file('config/config.php')) 
-//  require_once($path);
+//  require_once $path;
 
 // Enable output buffering
 //ini_set('output_buffering', 'On');
@@ -139,10 +139,10 @@ if (defined('APP_DOMAIN') && !in_array(APP_DOMAIN, [/*'localhost',*/ '127.0.0.1'
 (defined('APP_ENV') && !is_string(APP_ENV)) and $errors['APP_ENV'] = 'App Env: ' . APP_ENV; // print('App Env: ' . APP_ENV . "\n");
 /* if (APP_ENV == 'development') { 
   if ($path = realpath((basename(__DIR__) != 'config' ? NULL : __DIR__ . DIRECTORY_SEPARATOR) . 'constants_backup.php')) // is_file('config/constants.php')) 
-    require_once($path);
+    require_once $path;
 
   if ($path = realpath((basename(__DIR__) != 'config' ? NULL : __DIR__ . DIRECTORY_SEPARATOR) . 'constants_client-project.php')) // is_file('config/constants.php')) 
-    require_once($path);
+    require_once $path;
 } */
 
 //(defined('APP_PATH') && truepath(APP_PATH)) and $errors['APP_PATH'] = truepath(APP_PATH); // print('App Path: ' . APP_PATH . "\n" . "\t" . '$_SERVER[\'DOCUMENT_ROOT\'] => ' . $_SERVER['DOCUMENT_ROOT'] . "\n");
@@ -200,12 +200,12 @@ try {
     $errors['server-2'] = 'Client request: ' . $message = "cmd: " . $_SERVER["SCRIPT_FILENAME"] . "\n";
 
     fwrite($_SERVER['SOCKET'], $message);
-    $output[] = $_POST['cmd'] . ': ';
+    $output[] = (!isset($_POST['cmd'])?: $_POST['cmd']) . ': ';
     // Read response from the server
     while (!feof($_SERVER['SOCKET'])) {
         $response = fgets($_SERVER['SOCKET'], 1024);
         $errors['server-3'] = "Server responce: $response\n";
-        $output[end($output)] .= trim($response);
+        if (isset($output[end($output)])) $output[end($output)] .= trim($response);
         //if (!empty($response)) break;
     }
 
@@ -270,9 +270,9 @@ if (isset($_SERVER['SOCKET']) && APP_SELF === APP_PUBLIC) // realpath(dirname(__
     //fclose($_SERVER['SOCKET']);
 */
   } else
-    $errors['APP_HOST'] = ($_SERVER['SOCKET'] ?: 'Socket is unable to connect: ') . 'No server connection.' . "\n";
+    $errors['APP_SOCKET'] = ($_SERVER['SOCKET'] ?: 'Socket is unable to connect: ') . 'No server connection.' . "\n";
 else
-  $errors['APP_HOST'] = 'Socket is not being created: ' . 'Define $_SERVER[\'SOCKET\']' . "\n";
+  $errors['APP_SOCKET'] = 'Socket is not being created: ' . 'Define $_SERVER[\'SOCKET\']' . "\n";
 
 
 //var_dump(APP_PATH . basename(dirname(__DIR__, 2)) . '/' . basename(dirname(__DIR__, 1)));
@@ -280,22 +280,53 @@ else
 !isset($_SERVER['REQUEST_URI'])
   and $_SERVER['REQUEST_URI'] = substr($_SERVER['PHP_SELF'], 0) . ((isset($_SERVER['QUERY_STRING']) && $_SERVER['QUERY_STRING'] != "") AND '?' . $_SERVER['QUERY_STRING']);
 
+if (PHP_SAPI === 'cli') {
+  // Replace the script name from REQUEST_URI when run in CLI
+  $scriptName = $_SERVER['PHP_SELF'];
+  $requestUri = preg_replace('/' . preg_quote($scriptName, '/') . '$/', '/', $_SERVER['REQUEST_URI']);
+} else {
+  $requestUri = $_SERVER['REQUEST_URI'];
+}
+
+$baseUrl = substr($requestUri, 0, strrpos($requestUri, '/') + 1); // $_SERVER['DOCUMENT_ROOT']
+
+
 // substr( str_replace('\\', '/', __FILE__), strlen($_SERVER['DOCUMENT_ROOT']), strrpos(str_replace('\\', '/', __FILE__), '/') - strlen($_SERVER['DOCUMENT_ROOT']) + 1 )
+if (!is_array(APP_BASE)) {
+  $protocol = defined('APP_HTTPS') ? 'https' : 'http';
+  $appUrl = $protocol . '://' . APP_DOMAIN . $baseUrl;
+
+  define('APP_URL', $appUrl);
+} else {
+  $appUrl = [
+      'scheme' => (defined('APP_HTTPS') && APP_HTTPS ? 'https' : 'http'), // ($_SERVER['HTTPS'] == 'on', (isset($_SERVER['HTTPS']) === true ? 'https' : 'http')
+    /* https://www.php.net/manual/en/features.http-auth.php */
+      'user' => $_SERVER['PHP_AUTH_USER'] ?? null,
+      'pass' => $_SERVER['PHP_AUTH_PW'] ?? null,
+      'host' => APP_DOMAIN,
+      'port' => (int) ($_SERVER['SERVER_PORT'] ?? 80),
+      'path' => $baseUrl,
+      'query' => $_SERVER['QUERY_STRING'] ?? '', // array( key($_REQUEST) => current($_REQUEST) )
+      'fragment' => parse_url($_SERVER['REQUEST_URI'], PHP_URL_FRAGMENT),
+  ];
+
+  define('APP_URL', $appUrl);
+}
+/*
 !is_array(APP_BASE) ?
-  substr($_SERVER['REQUEST_URI'], 0, strrpos($_SERVER['REQUEST_URI'], '/') + 1) == '/' // $_SERVER['DOCUMENT_ROOT']
+  substr($_SERVER['REQUEST_URI'], 0, strrpos($_SERVER['REQUEST_URI'], '/') + 1) == '/' 
     and define('APP_URL', 'http' . (defined('APP_HTTPS') ? 's' : '') . '://' . APP_DOMAIN . substr($_SERVER['REQUEST_URI'], 0, strrpos($_SERVER['REQUEST_URI'], '/') + 1)) :
   define('APP_URL', [
-    'scheme' => 'http' . (defined('APP_HTTPS') && APP_HTTPS ? 's' : ''), // ($_SERVER['HTTPS'] == 'on', (isset($_SERVER['HTTPS']) === true ? 'https' : 'http')
-    /* https://www.php.net/manual/en/features.http-auth.php */
+    'scheme' => 'http' . (defined('APP_HTTPS') && APP_HTTPS ? 's' : ''), 
     'user' => (!isset($_SERVER['PHP_AUTH_USER']) ? NULL : $_SERVER['PHP_AUTH_USER']),
     'pass' => (!isset($_SERVER['PHP_AUTH_PW']) ? NULL : $_SERVER['PHP_AUTH_PW']),
     'host' => APP_DOMAIN,
     'port' => (int) ($_SERVER['SERVER_PORT'] ?? 80),
-    'path' => substr($_SERVER['REQUEST_URI'], 0, strrpos($_SERVER['REQUEST_URI'], '/') + 1), // https://stackoverflow.com/questions/7921065/manipulate-url-serverrequest-uri
-    'query' => $_SERVER['QUERY_STRING'] ?? '', // array( key($_REQUEST) => current($_REQUEST) )
+    'path' => $_SERVER['REQUEST_URI'] . substr($_SERVER['REQUEST_URI'], 0, strrpos($_SERVER['REQUEST_URI'], '/') + 1), // https://stackoverflow.com/questions/7921065/manipulate-url-serverrequest-uri
+    'query' => $_SERVER['QUERY_STRING'] ?? '',
     'fragment' => parse_url($_SERVER['REQUEST_URI'], PHP_URL_FRAGMENT),
   ]);
-
+*/
 /* var_dump(parse_url(APP_URL));
 var_dump(parse_url(APP_URL, PHP_URL_SCHEME));
 var_dump(parse_url(APP_URL, PHP_URL_USER));

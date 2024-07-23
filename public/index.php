@@ -10,8 +10,9 @@
     //? (is_file('../config.php') ? '../config.php' : 'config.php')
     //: (is_file('config.php') ? 'config.php' : (is_file('config/config.php') ? 'config/config.php' : null)))
 
-    require_once($path);
-  else die(var_dump($path . ' was not found. file=config.php'));
+    require_once $path;
+  else
+    die(var_dump("$path was not found. file=config.php"));
 
 //dd(get_defined_constants(true)['user']);
 
