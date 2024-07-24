@@ -39,7 +39,7 @@ elseif (APP_ENV == 'development' && APP_DEBUG == false)
 //    'src' => glob(APP_PATH . 'src' . DIRECTORY_SEPARATOR . '*.php')
 //);
 
-foreach ( array_merge(glob(APP_PATH . '*.php'), glob(APP_PATH . '**/*.php', GLOB_BRACE | GLOB_NOSORT)) as $filename) {
+foreach (array_merge(glob(APP_PATH . '*.php'), glob(APP_PATH . '**/*.php', GLOB_BRACE | GLOB_NOSORT)) as $filename) {
     if ($filename == APP_SELF) continue;
     if ($filename == APP_PATH . 'composer-setup.php') continue;
     $files[] = ['path' => $filename, 'filesize' => filesize($filename), 'filemtime' => filemtime($filename)];

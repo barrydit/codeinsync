@@ -85,10 +85,10 @@ $json_data = <<<END
 }
 END;
 
-!is_file(APP_PATH . APP_BASE['database'] . 'weekly-timesheet-' . date('Y-m') . '.json')
-  and @touch(APP_PATH . APP_BASE['database'] . 'weekly-timesheet-' . date('Y-m') . '.json');
+!is_file(APP_PATH . APP_BASE['var'] . 'weekly-timesheet-' . date('Y-m') . '.json')
+  and @touch(APP_PATH . APP_BASE['var'] . 'weekly-timesheet-' . date('Y-m') . '.json');
 
-$json_data = json_decode(file_get_contents(APP_PATH . APP_BASE['database'] . 'weekly-timesheet-' . date('Y-m') . '.json'), true);
+$json_data = json_decode(file_get_contents(APP_PATH . APP_BASE['var'] . 'weekly-timesheet-' . date('Y-m') . '.json'), true);
 
 if (empty($json_data))
   $json_data = json_decode('{' . '"' . date('Y-m-d') . 'T' . date('H').':00:00-24:00' . '": {' . '} }', true);
@@ -596,15 +596,15 @@ $Now = new DateTime(date('Y-m-d') . 'T' . date('H').':00:00', new DateTimeZone('
 
 //dd($Now->format('Y-m-d H:i:s'));
 
-$json = (!is_file(APP_PATH . APP_BASE['database'] . 'weekly-timesheet-' . date('Y-m') . '.json') ? 
-  (!@touch(APP_PATH . APP_BASE['database'] . 'weekly-timesheet-' . date('Y-m') . '.json') ? 
-    (!file_get_contents(APP_PATH . APP_BASE['database'] . 'weekly-timesheet-' . date('Y-m') . '.json', true) ? json_encode([$Now->format(DATE_RFC3339) => []]) : file_get_contents(APP_PATH . APP_BASE['database'] . 'weekly-timesheet-' . date('Y-m') . '.json', true)) :
-    (!@file_put_contents(APP_PATH . APP_BASE['database'] . 'weekly-timesheet-' . date('Y-m') . '.json', $json = json_encode([$Now->format(DATE_RFC3339) => []]), LOCK_EX) ?: $json)
+$json = (!is_file(APP_PATH . APP_BASE['var'] . 'weekly-timesheet-' . date('Y-m') . '.json') ? 
+  (!@touch(APP_PATH . APP_BASE['var'] . 'weekly-timesheet-' . date('Y-m') . '.json') ? 
+    (!file_get_contents(APP_PATH . APP_BASE['var'] . 'weekly-timesheet-' . date('Y-m') . '.json', true) ? json_encode([$Now->format(DATE_RFC3339) => []]) : file_get_contents(APP_PATH . APP_BASE['var'] . 'weekly-timesheet-' . date('Y-m') . '.json', true)) :
+    (!@file_put_contents(APP_PATH . APP_BASE['var'] . 'weekly-timesheet-' . date('Y-m') . '.json', $json = json_encode([$Now->format(DATE_RFC3339) => []]), LOCK_EX) ?: $json)
   ) :
-  (!file_get_contents(APP_PATH . APP_BASE['database'] . 'weekly-timesheet-' . date('Y-m') . '.json', true) ? json_encode([$Now->format(DATE_RFC3339) => []]) : file_get_contents(APP_PATH . APP_BASE['database'] . 'weekly-timesheet-' . date('Y-m') . '.json', true))
+  (!file_get_contents(APP_PATH . APP_BASE['var'] . 'weekly-timesheet-' . date('Y-m') . '.json', true) ? json_encode([$Now->format(DATE_RFC3339) => []]) : file_get_contents(APP_PATH . APP_BASE['var'] . 'weekly-timesheet-' . date('Y-m') . '.json', true))
 );
 
-//file_get_contents('database/weekly-timesheet-' . date('Y-m') . '.json', true) :  : (!@touch('timesheet.json') ? '' . json_encode([$Now->format(DATE_RFC3339) => []]), 'timesheet.json', LOCK_EX) : file_get_contents('timesheet.json', true)));
+//file_get_contents('var/weekly-timesheet-' . date('Y-m') . '.json', true) :  : (!@touch('timesheet.json') ? '' . json_encode([$Now->format(DATE_RFC3339) => []]), 'timesheet.json', LOCK_EX) : file_get_contents('timesheet.json', true)));
 
 //die(var_dump($json));
 
@@ -642,7 +642,7 @@ switch ($_SERVER['REQUEST_METHOD']) {
 
       $_POST['idletime'] = json_encode($_POST['idletime']); 
       
-      file_put_contents(APP_PATH . APP_BASE['database'] . 'weekly-timesheet-' . date("Y-m") . '.json', json_encode($json_decode), LOCK_EX);
+      file_put_contents(APP_PATH . APP_BASE['var'] . 'weekly-timesheet-' . date("Y-m") . '.json', json_encode($json_decode), LOCK_EX);
       
       //Shutdown::setEnabled(false)->setShutdownMessage()->shutdown(); 
       Shutdown::setEnabled(false)->setShutdownMessage(function() use($json_decode) {
@@ -655,8 +655,8 @@ switch ($_SERVER['REQUEST_METHOD']) {
     //Shutdown::setEnabled(false)->shutdown(json_encode($json_decode));// $_POST['idletime']
     break;
   case 'GET':
-    if (!is_file(APP_PATH . APP_BASE['database'] . 'weekly-timesheet-' . date("Y-m") . '.json'))
-      file_put_contents(APP_PATH . APP_BASE['database'] . 'weekly-timesheet-' . date("Y-m") . '.json', json_encode([$Now->format('Y-m-d\TH:i:sP') => []]), LOCK_EX);
+    if (!is_file(APP_PATH . APP_BASE['var'] . 'weekly-timesheet-' . date("Y-m") . '.json'))
+      file_put_contents(APP_PATH . APP_BASE['var'] . 'weekly-timesheet-' . date("Y-m") . '.json', json_encode([$Now->format('Y-m-d\TH:i:sP') => []]), LOCK_EX);
     //die(); // $Now->format('H:i:s') => null
       break;
 }
@@ -1189,7 +1189,7 @@ if (typeof snd !== 'undefined') {
         dataType: 'json',
         success: function (msg) {
           console.log(msg);
-          $.getJSON("database/weekly-timesheet-<?= date('Y-m'); ?>.json", function(json_decode) {
+          $.getJSON("var/weekly-timesheet-<?= date('Y-m'); ?>.json", function(json_decode) {
             var count_idle = 0;
             console.log(json_decode); // this will show the info it in console
             //json_decode = //JSON.parse(JSON.stringify(json));
@@ -1203,7 +1203,7 @@ if (typeof snd !== 'undefined') {
               console.log(item);
             } 
           });
-          // fetch("database/weekly-timesheet-<?= date('Y-m'); ?>.json").then(res => res.json()).then(data => jsonFile = JSON.parse(data));
+          // fetch("var/weekly-timesheet-<?= date('Y-m'); ?>.json").then(res => res.json()).then(data => jsonFile = JSON.parse(data));
         },
         error: function (jqXHR, textStatus) {
           console.log(jqXHR.responseText);

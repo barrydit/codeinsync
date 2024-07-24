@@ -350,7 +350,7 @@ END
 /applications
 /clientele
 /dist
-/database/weekly-timesheet-????-??.json
+/var/weekly-timesheet-????-??.json
 /node_modules
 #/public
 /public/example.php

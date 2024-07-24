@@ -3,8 +3,6 @@ declare(strict_types=1); // First Line Only!
 
 require_once realpath(__DIR__ . DIRECTORY_SEPARATOR . 'config' . DIRECTORY_SEPARATOR . 'config.php');
 
-//dd('test');
-
 ini_set('error_log', is_dir(dirname($path = __DIR__ . DIRECTORY_SEPARATOR . 'server.log')) ? $path : 'server.log');
 ini_set('log_errors', 'true');
 
@@ -85,45 +83,12 @@ $port = APP_PORT ?? 8080;
 function clientInputHandler($input) {
     global $socket, $client, $running, $manager;
 
-    $file = __FILE__;
-
-    // Retrieve file metadata using stat()
-    $fileStats = stat($file);
-    
-    // Extract the last modification time from the stat results
-    $statMtime = $fileStats['mtime']; // filemtime(__FILE__);
-
-    // Clear the file status cache
-    clearstatcache(true, $file);
-
-    // Clear OPcache if enabled
-    //if (function_exists('opcache_invalidate')) opcache_invalidate(__FILE__, true);
-
     if ($input == '') return;
     error_log('Client [Input]: ' . trim($input));
     echo 'Client [Input]: ' . trim($input) . "\n";
     //$input = trim($input);
     $output = '';
-    echo date('F d Y H:i:s', $statMtime) . ' != ' . date('F d Y H:i:s', filemtime($file)) . "\n";
 
-    if ($statMtime !== filemtime($file)) {
-      $output = 'Server has been updated. Please restart. ' . date('F d Y H:i:s', $statMtime) . ' != ' . date('F d Y H:i:s', filemtime($file));
-      //$lastModifiedTime = filemtime(__FILE__);
-      switch (get_resource_type($socket)) {
-        case 'stream':
-          fwrite($client, $output);
-          fclose($client);
-          break;
-        default:
-          socket_write($client, $output);
-          socket_close($client);
-          break;
-      }
-      error_log("Client [Output]: $output");
-      echo "Client [Output]: $output\n";
-      signalHandler(SIGTERM);
-      return $output;
-    }
     if (preg_match('/^cmd:\s*(shutdown|restart|server\s*(shutdown|restart))(?=\r?\n$)?/si', $input)) { 
       signalHandler(SIGTERM); // $running = false;
     } elseif (preg_match('/^cmd:\s*server\s*status(?=\r?\n$)?/si', $input)) {
@@ -133,6 +98,9 @@ function clientInputHandler($input) {
     } elseif (preg_match('/^cmd:\s*(add\s*notification)(?=\r?\n$)?/si', $input)) {    
       $output = 'Added notification...';
       $manager->addNotification(new Notification('notifyUser2', true, 300));
+    } elseif (preg_match('/^cmd:\s*(notifications)(?=\r?\n$)?/si', $input)) {    
+      $output = 'Notification(s)...';
+      $output .= $manager->getNotifications();
     } elseif (preg_match('/^cmd:\s*(date(\?|)|what\s+is\s+the\s+date(\?|))(?=\r?\n$)?/si', $input)) { 
       $output = 'The date is: ' . date('Y-m-d');
     } elseif (preg_match('/^cmd:\s*(get\s+defined\s+constants)(?=\r?\n$)?/si', $input)) { 
@@ -277,7 +245,7 @@ if (is_dir(__DIR__ . '/vendor/cboden/ratchet') && !empty(glob(__DIR__ . '/vendor
     while ($running) {
       $manager->checkNotifications();
       $client = @stream_socket_accept($socket, -1);
-        //and print "Client Connected: \n";
+      //and print "Client Connected: \n";
 
       // Check if 300 seconds have passed since the last execution
       if (time() - $lastExecutionTime >= $interval) {
@@ -289,88 +257,90 @@ if (is_dir(__DIR__ . '/vendor/cboden/ratchet') && !empty(glob(__DIR__ . '/vendor
       }
 
       if ($client) {
-          // Get the client's address and port
-          $clientName = stream_socket_get_name($client, true);
-                
-          // Extract the client's IP and port
-          list($clientAddress, $clientPort) = explode(':', $clientName);
-                
-          echo "Client connected: IP $clientAddress, Port $clientPort\n";
-          // Read data from the client
-          $response = clientInputHandler(fread($client, 1024));
-  
-        // Append notification output to the response
-          $response .= "\n" . $manager->getNotificationsOutput();
-
-          fwrite($client, $response);
-
-          // Close the client connection
-          fclose($client) and print "Client Disconnected: \n";
-      }
-  
-      // Dispatch signals
-      pcntl_signal_dispatch();
-  
-
-      // Sleep for a short time to prevent busy-waiting
-      usleep(100000); // 100 ms = 0.1 s | sleep(1);
-    }
-  if (extension_loaded('sockets')) {
-    // Using Sockets Extension for creating server socket.
-    if (!$socket = @socket_create(AF_INET, SOCK_STREAM, SOL_TCP)) {
-      echo "Error: Unable to create server socket: \n";
-    }
-
-    if (!@socket_bind($socket, $address, $port)) {
-      throw new Exception("Could not bind to socket: " . socket_strerror(socket_last_error()));
-    }
-
-    if (!@socket_listen($socket)) {
-      throw new Exception("Could not listen on socket: " . socket_strerror(socket_last_error()));
-    }
-
-    // Set the socket to non-blocking mode
-    socket_set_nonblock($socket);
-
-    echo "(Socket) Server started on $address:$port\n";
-
-    while ($running) {
-      $manager->checkNotifications();
-      $client = @socket_accept($socket);
-        //and print 'Client Connected: ' . "\n";
-
-      if ($client) {
         // Get the client's address and port
-        if (socket_getpeername($client, $clientAddress, $clientPort)) {
-          echo "Client connected: IP $clientAddress, Port $clientPort\n";
-        } else {
-          $errorCode = socket_last_error($client);
-          $errorMsg = socket_strerror($errorCode);
-          echo "Unable to get client's address and port: [$errorCode] $errorMsg\n";
-        }
-
-        // Handle client requests here
-        $response = clientInputHandler(socket_read($client, 1024));
+        $clientName = stream_socket_get_name($client, true);
+                
+        // Extract the client's IP and port
+        list($clientAddress, $clientPort) = explode(':', $clientName);
+                
+        echo "Client connected: IP $clientAddress, Port $clientPort\n";
+        // Read data from the client
+        $response = clientInputHandler(fread($client, 1024));
+        
+        $manager->checkNotifications();
         // Append notification output to the response
         $response .= "\n" . $manager->getNotificationsOutput();
 
-        @socket_write($client, $response);
-        @socket_close($client);
+        fwrite($client, $response);
+
+        // Close the client connection
+        fclose($client) and print "Client Disconnected: \n";
       }
   
       // Dispatch signals
       pcntl_signal_dispatch();
   
+
       // Sleep for a short time to prevent busy-waiting
       usleep(100000); // 100 ms = 0.1 s | sleep(1);
     }
 
-    socket_close($socket);
-  } else {
-    echo "Neither sockets or TCP stream wrapper are available.\n";
-    unlink(PID_FILE);
-    exit(1);
-  }
+   if (extension_loaded('sockets')) {
+      // Using Sockets Extension for creating server socket.
+      if (!$socket = @socket_create(AF_INET, SOCK_STREAM, SOL_TCP)) {
+        echo "Error: Unable to create server socket: \n";
+      }
+
+      if (!@socket_bind($socket, $address, $port)) {
+        throw new Exception("Could not bind to socket: " . socket_strerror(socket_last_error()));
+      }
+
+      if (!@socket_listen($socket)) {
+        throw new Exception("Could not listen on socket: " . socket_strerror(socket_last_error()));
+      }
+
+      // Set the socket to non-blocking mode
+      socket_set_nonblock($socket);
+
+      echo "(Socket) Server started on $address:$port\n";
+
+      while ($running) {
+        $manager->checkNotifications();
+        $client = @socket_accept($socket);
+        //and print "Client Connected: \n";
+
+        if ($client) {
+          // Get the client's address and port
+          if (socket_getpeername($client, $clientAddress, $clientPort)) {
+            echo "Client connected: IP $clientAddress, Port $clientPort\n";
+          } else {
+            $errorCode = socket_last_error($client);
+            $errorMsg = socket_strerror($errorCode);
+            echo "Unable to get client's address and port: [$errorCode] $errorMsg\n";
+          }
+
+          // Handle client requests here
+          $response = clientInputHandler(socket_read($client, 1024));
+          // Append notification output to the response
+          $response .= "\n" . $manager->getNotificationsOutput();
+
+          @socket_write($client, $response);
+          @socket_close($client);
+        }
+  
+        // Dispatch signals
+        pcntl_signal_dispatch();
+  
+        // Sleep for a short time to prevent busy-waiting
+        usleep(100000); // 100 ms = 0.1 s | sleep(1);
+      }
+
+      socket_close($socket);
+    } else {
+      echo "Neither sockets or TCP stream wrapper are available.\n";
+      unlink(PID_FILE);
+      exit(1);
+    }
 
   } catch (Exception $e) {
     Logger::error($e->getMessage());
@@ -386,6 +356,5 @@ if (is_dir(__DIR__ . '/vendor/cboden/ratchet') && !empty(glob(__DIR__ . '/vendor
         }
     }
   }
-
 
 unlink(PID_FILE);

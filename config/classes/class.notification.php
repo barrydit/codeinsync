@@ -63,6 +63,15 @@ class NotificationManager
         $this->notifications[] = $notification;
     }
 
+    public function getNotifications()
+    {
+        $output = '';
+        foreach ($this->notifications as $notification) {
+            $output .= "$notification\n";
+        }
+        return $output;
+    }
+
     public function checkNotifications()
     {
         foreach ($this->notifications as $notification) {

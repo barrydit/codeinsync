@@ -75,7 +75,7 @@ $output[] = $_POST['cmd'];
 */
 //}
 
-$data = (!file_exists($path = APP_PATH . APP_BASE['database'] . 'notes.json')) ? json_decode(<<<'JSON'
+$data = (!file_exists($path = APP_PATH . APP_BASE['var'] . 'notes.json')) ? json_decode(<<<'JSON'
 [{
   "language":"PHP",
   "category":"String Manipulation",

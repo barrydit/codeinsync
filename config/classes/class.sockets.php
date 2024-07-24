@@ -1,6 +1,7 @@
 <?php
 
 class SocketException extends Exception {}
+
 class Sockets
 {
     private $socket;

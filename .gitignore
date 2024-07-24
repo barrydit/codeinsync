@@ -1,9 +1,8 @@
-!/config
 /applications
 /bin
 /clientele
+!/config
 /dist
-/database/weekly-timesheet-????-??.json
 /node_modules
 !/public
 /public/example.php
@@ -16,6 +15,11 @@
 /vendor
 /var/*.html
 /var/*.php
+!/var/notes-sample.json
+!/var/notes.json
+!/var/package-psr-log.php
+/var/weekly-timesheet-????-??.json
+!/var/weekly-timesheet-sample.json
 .env*
 .htaccess
 *.old
