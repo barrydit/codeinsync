@@ -29,8 +29,6 @@ if (file_exists(PID_FILE)) {
   }
 }
 
-$lastModifiedTime = filemtime(__FILE__);
-
 file_put_contents(PID_FILE, getmypid());
 
 set_time_limit(0);
@@ -58,7 +56,6 @@ $port = APP_PORT ?? 8080;
       case SIGINT:
         echo "Shutting down server...\n";
         Logger::error('Shutting down server... PID=' . getmypid());
-        $running = false;
         //fclose($server);
         if (isset($socket)) {
           if (is_resource($socket)) {
@@ -74,39 +71,73 @@ $port = APP_PORT ?? 8080;
             }
           }
         }
+        $running = false;
         unlink(PID_FILE);
         exit(1);
     }
   }
+  
+
   // Register signal handler
   pcntl_signal(SIGTERM, 'signalHandler');
   pcntl_signal(SIGINT, 'signalHandler');
-  
+
 function clientInputHandler($input) {
-    global $running, $lastModifiedTime;
+    global $socket, $client, $running, $manager;
+
+    $file = __FILE__;
+
+    // Retrieve file metadata using stat()
+    $fileStats = stat($file);
+    
+    // Extract the last modification time from the stat results
+    $statMtime = $fileStats['mtime']; // filemtime(__FILE__);
+
+    // Clear the file status cache
+    clearstatcache(true, $file);
+
+    // Clear OPcache if enabled
+    //if (function_exists('opcache_invalidate')) opcache_invalidate(__FILE__, true);
+
     if ($input == '') return;
     error_log('Client [Input]: ' . trim($input));
     echo 'Client [Input]: ' . trim($input) . "\n";
     //$input = trim($input);
     $output = '';
-    if ($lastModifiedTime < filemtime(__FILE__)) {
-      $output = 'Server has been updated. Please restart. ' . date('F d Y H:i:s', $lastModifiedTime) . ' < ' . date('F d Y H:i:s', filemtime(__FILE__));
+    echo date('F d Y H:i:s', $statMtime) . ' != ' . date('F d Y H:i:s', filemtime($file)) . "\n";
+
+    if ($statMtime !== filemtime($file)) {
+      $output = 'Server has been updated. Please restart. ' . date('F d Y H:i:s', $statMtime) . ' != ' . date('F d Y H:i:s', filemtime($file));
       //$lastModifiedTime = filemtime(__FILE__);
+      switch (get_resource_type($socket)) {
+        case 'stream':
+          fwrite($client, $output);
+          fclose($client);
+          break;
+        default:
+          socket_write($client, $output);
+          socket_close($client);
+          break;
+      }
       error_log("Client [Output]: $output");
       echo "Client [Output]: $output\n";
+      signalHandler(SIGTERM);
       return $output;
     }
-    if (preg_match('/^cmd:\s*server\s*variables(?=\r?\n$)?/si', $input, $matches)) {
-      $output = var_export($_SERVER, true);
-    } elseif (preg_match('/^cmd:\s*(server\s*status)(?=\r?\n$)?/si', $input, $matches)) {
-      $output = 'Server is running...';
-    } elseif (preg_match('/^cmd:\s*(shutdown|restart|server\s*(shutdown|restart))(?=\r?\n$)?/si', $input, $matches)) { 
+    if (preg_match('/^cmd:\s*(shutdown|restart|server\s*(shutdown|restart))(?=\r?\n$)?/si', $input)) { 
       signalHandler(SIGTERM); // $running = false;
-    } elseif (preg_match('/^cmd:\s*(date(\?|)|what\s+is\s+the\s+date(\?|))(?=\r?\n$)?/si', $input, $matches)) { 
+    } elseif (preg_match('/^cmd:\s*server\s*status(?=\r?\n$)?/si', $input)) {
+      $output = 'Server is running... PID=' . getmypid();
+    } elseif (preg_match('/^cmd:\s*server(\s*variables|)(?=\r?\n$)?/si', $input)) {
+      $output = var_export($_SERVER, true);
+    } elseif (preg_match('/^cmd:\s*(add\s*notification)(?=\r?\n$)?/si', $input)) {    
+      $output = 'Added notification...';
+      $manager->addNotification(new Notification('notifyUser2', true, 300));
+    } elseif (preg_match('/^cmd:\s*(date(\?|)|what\s+is\s+the\s+date(\?|))(?=\r?\n$)?/si', $input)) { 
       $output = 'The date is: ' . date('Y-m-d');
-    } elseif (preg_match('/^cmd:\s*(get\s+defined\s+constants)(?=\r?\n$)?/si', $input, $matches)) { 
+    } elseif (preg_match('/^cmd:\s*(get\s+defined\s+constants)(?=\r?\n$)?/si', $input)) { 
       $output = var_export(get_defined_constants(true)['user'], true);
-    } elseif (preg_match('/^cmd:\s*(get\s+(required|included)\s+files)(?=\r?\n$)?/si', $input, $matches)) { 
+    } elseif (preg_match('/^cmd:\s*(get\s+(required|included)\s+files)(?=\r?\n$)?/si', $input)) { 
       $output = var_export(get_required_files(), true);
     } elseif (preg_match('/^cmd:\s*(composer(\s+.*|))(?=\r?\n$)?/si', $input, $matches)) { // ?(?=\r?\n$) // ?
       $cmd = $matches[1]; // $input
@@ -114,7 +145,7 @@ function clientInputHandler($input) {
       //$output = 'test ' . trim(shell_exec($cmd));
       //$output .= " $input";
 
-    } elseif (preg_match('/cmd:\s+(.*)?(?=\r?\n$)/s', $input, $matches)) { // cmd: composer update
+    } elseif (preg_match('/cmd:\s+(.*)(?=\r?\n$)?/s', $input, $matches)) { // cmd: composer update
       $cmd = $matches[1];
       $output = trim(shell_exec(/*$cmd*/ 'echo $PWD'));
       $output .= " cmd: $cmd";
@@ -122,7 +153,21 @@ function clientInputHandler($input) {
       // Process the request and send a response
       $output = "Hello, client! Your input was: $input";
     }
+/*
+    if ($cmd = $matches[1] ?? NULL) {
+      $proc=proc_open((strtoupper(substr(PHP_OS, 0, 3)) === 'WIN' ? '' : APP_SUDO) . $cmd,
+      [
+        ["pipe", "r"],
+        ["pipe", "w"],
+        ["pipe", "w"]
+      ],
+      $pipes);
+      list($stdout, $stderr, $exitCode) = [stream_get_contents($pipes[1]), stream_get_contents($pipes[2]), proc_close($proc)];
+      $output = !isset($stdout) ? NULL : $stdout . (isset($stderr) && $stderr === '' ? NULL : " Error: $stderr") . (!isset($exitCode) && $exitCode == 0 ? NULL : " Exit Code: $exitCode");
 
+      //$output = shell_exec($cmd);
+    }
+*/
     //$_POST['cmd'] = $cmd;
     
     //require_once('public/app.console.php');
@@ -135,22 +180,64 @@ function clientInputHandler($input) {
 
 $running = true;
 
+$lastExecutionTime = 0;
+$interval = 300;
+
 //use Logger; // use when not using composer
 //use Shutdown;
 
 Logger::init();
 
+function checkFileModification() {
+  global $socket, $client, $running;
+
+  $file = __FILE__;
+
+  // Retrieve file metadata using stat()
+  $fileStats = stat($file);
+
+  // Extract the last modification time from the stat results
+  $statMtime = $fileStats['mtime']; // filemtime(__FILE__);
+
+  // Clear the file status cache
+  clearstatcache(true, $file);
+
+  // Clear OPcache if enabled
+  //if (function_exists('opcache_invalidate')) opcache_invalidate(__FILE__, true);
+
+  //$input = trim($input);
+  $output = '';
+  echo date('F d Y H:i:s', $statMtime) . ' != ' . date('F d Y H:i:s', filemtime($file)) . "\n";
+
+  if ($statMtime !== filemtime($file)) {
+      $output = 'Server has been updated. Please restart. ' . date('F d Y H:i:s', $statMtime) . ' != ' . date('F d Y H:i:s', filemtime($file));
+      //$lastModifiedTime = filemtime(__FILE__);
+      switch (get_resource_type($socket)) {
+          case 'stream':
+              fwrite($client, $output);
+              fclose($client);
+              break;
+          default:
+              socket_write($client, $output);
+              socket_close($client);
+              break;
+      }
+      error_log("Client [Output]: $output");
+      echo "Client [Output]: $output\n";
+      signalHandler(SIGTERM);
+      return $output;
+  }
+}
 
 // Define some example notification functions
 function notifyUser1()
 {
     echo "Notifying user 1...\n";
 }
-
-//function notifyUser2()
-//{
-//    echo "Notifying user 2...\n";
-//}
+function notifyUser2()
+{
+    echo "Notifying user 2...\n";
+}
 
 // Create Notification objects
 $notification1 = new Notification('notifyUser1', true, 300); // Repeatable every 5 minutes
@@ -161,7 +248,6 @@ $manager = new NotificationManager();
 $manager->addNotification($notification1);
 //$manager->addNotification($notification2);
 
-
 // server.php
 // composer require cboden/ratchet
 // Exception: Interface "Ratchet\MessageComponentInterface" not found
@@ -170,7 +256,7 @@ $manager->addNotification($notification1);
 if (is_dir(__DIR__ . '/vendor/cboden/ratchet') && !empty(glob(__DIR__ . '/vendor/cboden/ratchet/')) && file_exists(__DIR__ . '/vendor/autoload.php')) {
   error_log('Creating a websocket server...');
   require_once __DIR__ . '/vendor/autoload.php';
-  require_once realpath(__DIR__ . DIRECTORY_SEPARATOR . 'config' . DIRECTORY_SEPARATOR . 'classes' . DIRECTORY_SEPARATOR . 'class.websocketserver.php');
+  require_once __DIR__ . DIRECTORY_SEPARATOR . 'config' . DIRECTORY_SEPARATOR . 'classes' . DIRECTORY_SEPARATOR . 'class.websocketserver.php';
 } else
   try {
     error_log('Creating a stream/socket server...');
@@ -190,10 +276,26 @@ if (is_dir(__DIR__ . '/vendor/cboden/ratchet') && !empty(glob(__DIR__ . '/vendor
 
     while ($running) {
       $manager->checkNotifications();
-      ($client = @stream_socket_accept($socket, -1))
-        and print "Client Connected: \n";
-  
+      $client = @stream_socket_accept($socket, -1);
+        //and print "Client Connected: \n";
+
+      // Check if 300 seconds have passed since the last execution
+      if (time() - $lastExecutionTime >= $interval) {
+        // Execute the function
+        checkFileModification();
+
+        // Update the last execution time
+        $lastExecutionTime = time();
+      }
+
       if ($client) {
+          // Get the client's address and port
+          $clientName = stream_socket_get_name($client, true);
+                
+          // Extract the client's IP and port
+          list($clientAddress, $clientPort) = explode(':', $clientName);
+                
+          echo "Client connected: IP $clientAddress, Port $clientPort\n";
           // Read data from the client
           $response = clientInputHandler(fread($client, 1024));
   
@@ -201,6 +303,7 @@ if (is_dir(__DIR__ . '/vendor/cboden/ratchet') && !empty(glob(__DIR__ . '/vendor
           $response .= "\n" . $manager->getNotificationsOutput();
 
           fwrite($client, $response);
+
           // Close the client connection
           fclose($client) and print "Client Disconnected: \n";
       }
@@ -233,10 +336,19 @@ if (is_dir(__DIR__ . '/vendor/cboden/ratchet') && !empty(glob(__DIR__ . '/vendor
 
     while ($running) {
       $manager->checkNotifications();
-      ($client = @socket_accept($socket))
-        and print 'Client Connected: ' . "\n";
+      $client = @socket_accept($socket);
+        //and print 'Client Connected: ' . "\n";
 
       if ($client) {
+        // Get the client's address and port
+        if (socket_getpeername($client, $clientAddress, $clientPort)) {
+          echo "Client connected: IP $clientAddress, Port $clientPort\n";
+        } else {
+          $errorCode = socket_last_error($client);
+          $errorMsg = socket_strerror($errorCode);
+          echo "Unable to get client's address and port: [$errorCode] $errorMsg\n";
+        }
+
         // Handle client requests here
         $response = clientInputHandler(socket_read($client, 1024));
         // Append notification output to the response

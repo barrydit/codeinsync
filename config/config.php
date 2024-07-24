@@ -58,9 +58,6 @@ if (APP_DEBUG || APP_ERROR) {
 ini_set('error_log', is_dir($path = dirname(__DIR__, 1) . DIRECTORY_SEPARATOR . 'config') ? dirname($path, 1) . DIRECTORY_SEPARATOR . 'error_log' : 'error_log');
 ini_set('log_errors', 'true');
 
-defined('PHP_ZTS') and $errors['PHP_ZTS'] = "PHP was built with ZTS enabled.\n";
-
-
 ini_set('xdebug.debug', '0'); // remote_enable
 ini_set('xdebug.mode', 'develop'); // default_enable mode=develop,coverage,debug,gcstats,profile,trace
 //ini_set('xdebug.mode', 'profile'); // profiler_enable
@@ -188,19 +185,6 @@ unset($dirs);
 // else { if (isset($_GET['path']) && is_dir(APP_PATH . $_GET['path'])) $path = $_GET['path']; }
 
 !defined('APP_ROOT') and define('APP_ROOT', $path = realpath(APP_PATH . $path) ? $path : null); // dirname(APP_SELF, (basename(getcwd()) != 'public' ?: 2))
-
-if (is_readable($path = APP_PATH . APP_ROOT . 'error_log') && filesize($path) >= 0 ) {
-  $errors['ERROR_PATH'] = $path . "\n";
-  if (strtoupper(substr(PHP_OS, 0, 3)) === 'WIN') {
-    $errors['ERROR_LOG'] = shell_exec("powershell Get-Content -Tail 10 $path");
-  } else {
-    $errors['ERROR_LOG'] = shell_exec(APP_SUDO . " tail $path");
-  }
-  if (isset($_GET[$error_log = basename($path)]) && $_GET[$error_log] == 'unlink') {
-    unlink($path);
-    $errors['ERROR_LOG'] = $shell_prompt . (!is_file($path) ? 'Error_log was completely removed.' : 'Error_log failed to be removed completely.') . "\n"; // header('Location: ' . APP_WWW)
-  }
-}
 
 (!function_exists('dd'))
   and $errors['FUNCTIONS'] = 'functions.php failed to load. Therefore function dd() does not exist (yet).';
@@ -586,76 +570,6 @@ if (basename($dir = getcwd()) != 'config') {
             }
         }*/
     //}
-  }
-
-
-  $previousFilename = '';
-
-!isset($_GET['app']) || $_GET['app'] != 'git' ? 
-  (APP_SELF == APP_PUBLIC ? (!defined('APP_ROOT') || empty(APP_ROOT) ?: $dirs[] = APP_PATH . APP_BASE['config'] . 'git.php') :
-    $dirs[] = APP_PATH . APP_BASE['config'] . 'git.php') :
-  $dirs[] = APP_PATH . APP_BASE['config'] . 'git.php';
-
-!isset($_GET['app']) || $_GET['app'] != 'composer' ? (APP_SELF == APP_PUBLIC ? (!defined('APP_ROOT') || empty(APP_ROOT) ? (!is_file($autoload = APP_PATH . APP_BASE['vendor'] . 'autoload.php') ?: $dirs[] = $autoload) : $dirs[] = APP_PATH . APP_ROOT . APP_BASE['vendor'] . 'autoload.php') : $dirs[] = APP_PATH . APP_BASE['config'] . 'composer.php') :
-  $dirs[] = APP_PATH . APP_BASE['config'] . 'composer.php';
-
-$dirs[] = APP_PATH . APP_BASE['config'] . 'npm.php';
-
-  //$dirs = [
-    //0 => APP_PATH . APP_BASE['config'] . 'git.php',
-    //1 => APP_PATH . APP_BASE['config'] . 'composer.php',
-    //2 => APP_PATH . APP_BASE['config'] . 'npm.php',
-    //2 => APP_PATH . 'composer-setup.php',
-    //1 => APP_PATH . 'config.php',
-    //1 => APP_PATH . 'constants.php',
-    //2 => APP_PATH . 'functions.php',
-    //4 => APP_PATH . APP_BASE['vendor'] . 'autoload.php',
-  //]; // array_filter(glob(__DIR__ . DIRECTORY_SEPARATOR . '*.php'), 'is_file');
-
-  usort($dirs, function ($a, $b) {
-      // Define your sorting criteria here
-    if (basename($a) === 'composer-setup.php')
-        return 1; // $a comes after $b
-    elseif (basename($b) === 'composer-setup.php')
-        return -1; // $a comes before $b/
-/*
-    elseif (basename($a) === 'composer.php')
-        return -1; // $a comes after $b
-    elseif (basename($b) === 'composer.php')
-        return 1; // $a comes before $b
-*/
-    elseif (basename($a) === 'git.php')
-        return -1; // $a comes after $b
-    elseif (basename($b) === 'git.php')
-        return 1; // $a comes before $b
-    else 
-        return strcmp(basename($a), basename($b)); // Compare other filenames alphabetically
-  });
-
-  foreach ($dirs as $includeFile) {
-    //dd('Trying file: ' . basename($includeFile), false);
-    $path = dirname($includeFile);
-
-    if (in_array($includeFile, get_required_files())) continue; // $includeFile == __FILE__
-
-    if (basename($includeFile) === 'composer-setup.php') continue;
-
-    if (!file_exists($includeFile)) {
-      error_log("Failed to load a necessary file: " . $includeFile . PHP_EOL);
-      break;
-    }
-
-    $currentFilename = substr(basename($includeFile), 0, -4);
-    
-    // $pattern = '/^' . preg_quote($previousFilename, '/')  . /*_[a-zA-Z0-9-]*/'(_\.+)?\.php$/'; // preg_match($pattern, $currentFilename)
-
-    if (!empty($previousFilename) && strpos($currentFilename, $previousFilename) !== false) continue;
-
-    // dd('file:'.$currentFilename,false);
-
-    require_once $includeFile;
-
-    $previousFilename = $currentFilename;
   }
 
   chdir(APP_PATH);

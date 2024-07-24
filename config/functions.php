@@ -1,6 +1,14 @@
 <?php
+
+require_once __DIR__ . DIRECTORY_SEPARATOR . 'constants.php'; 
+
 $paths = array_filter(glob(__DIR__ . DIRECTORY_SEPARATOR . 'classes/*.php'), 'is_file');
 //$paths[] = __DIR__ . DIRECTORY_SEPARATOR . 'constants.php';
+
+// Remove 'class.sockets.php' from $paths
+$paths = array_filter($paths, function ($path) {
+  return basename($path) !== 'class.sockets.php';
+});
 
 // Remove 'class.websocketserver.php' from $paths
 $paths = array_filter($paths, function ($path) {
@@ -17,9 +25,6 @@ while ($path = array_shift($paths)) {
     require_once $path;
   else die(var_dump(basename($path) . ' was not found. file=' . $path));
 }
-
-
-require(__DIR__ . DIRECTORY_SEPARATOR . 'constants.php'); 
 
 /*
         $curl = curl_init($url);

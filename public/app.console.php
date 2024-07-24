@@ -22,6 +22,9 @@ if (__FILE__ == get_required_files()[0] && __FILE__ == realpath($_SERVER["SCRIPT
   //  echo "included/required";
   //}
 }
+
+require_once realpath(__DIR__ . DIRECTORY_SEPARATOR . '..' . DIRECTORY_SEPARATOR  . 'config' . DIRECTORY_SEPARATOR . 'classes' . DIRECTORY_SEPARATOR . 'class.sockets.php');
+
   //dd(__FILE__, false);
 //!function_exists('dd') ? die('dd is not defined') : dd(COMPOSER_EXEC);
 
