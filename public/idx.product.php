@@ -159,7 +159,7 @@ header("Content-Type: text/html");
 header("Cache-Control: no-store, no-cache, must-revalidate, max-age=0");
 header("Pragma: no-cache"); 
 
-if (realpath($_GET['path']) && is_dir($_GET['path']))
+if (isset($_GET['path']) && realpath($_GET['path']) && is_dir($_GET['path']))
   if (substr($_GET['path'], -1) === '/')
     $_GET['path'] = rtrim($_GET['path'], '/');
 ?>
@@ -401,7 +401,7 @@ unset($path);
   <div style="position: relative; margin: 0px auto; width: 800px;">
     <div style="position: absolute; <?= /* (empty($errors) ? 'display: none;' : '') */ NULL; ?>left: -144px; /*width: 150px;*/ z-index: 3;">
       <!--form action="#!" method="GET">
-        <?= (isset($_GET['debug']) && !$_GET['debug'] ? '' : '<input type="hidden" name="debug" value / >') ?> 
+        <?= isset($_GET['debug']) && !$_GET['debug'] ? '' : '<input type="hidden" name="debug" value / >' ?> 
               <input class="input" id="toggle-debug" type="checkbox" onchange="this.form.submit();" <?= (isset($_GET['debug']) || defined('APP_ENV') && APP_ENV == 'development'? 'checked' : '') ?> / -->
       <input class="input" id="toggle-debug" type="checkbox" onchange="toggleSwitch(this); return null;" <?= (isset($_GET['debug']) || defined('APP_ENV') && APP_ENV == 'development' ? '' : '') ?> />
       <label class="label" for="toggle-debug" style="margin-left: -10px;">
@@ -1310,7 +1310,7 @@ $output = 'Invalid Input';
     <table style="width: inherit; border: 0 solid #000;">
       <tr>
         <?php
-          $paths = glob(APP_PATH . APP_ROOT . (isset($_GET['path']) ? $_GET['path'] . '/' : '') . '{.[!.]*,*}', GLOB_BRACE | GLOB_MARK);
+          $paths = glob(APP_PATH . APP_ROOT . ($_GET['path'] . '/' ?? '') . '{.[!.]*,*}', GLOB_BRACE | GLOB_MARK);
           //dd(urldecode($_GET['path']));
           
           usort($paths, function ($a, $b) {
@@ -1387,7 +1387,7 @@ $output = 'Invalid Input';
                     . '<a href="?' . (APP_ROOT != '' ? array_key_first($_GET) . '=' . $_GET[array_key_first($_GET)] . (array_key_first($_GET) == 'client' ? '&domain=' . $_GET['domain'] . '&' : '' ) : '') . 'app=composer&path=' . basename($path) . '" onclick="">' . basename($path)  // "?path=' . basename($path) . '"         
                     . '/</a></div>' . "\n";
                   else
-                    echo '<a href="?' . (!defined('APP_ROOT') || empty(APP_ROOT) ? '' : (array_key_first($_GET) == 'client' ? 'client=' . $_GET['client'] . '&' :  (array_key_first($_GET) == 'project' ? 'project=' . $_GET['project'] . '&' : ''))) . 'path=' . (!isset($_GET['path']) ? '' : $_GET['path'] ) . basename($path) . '">'
+                    echo '<a href="?' . (!defined('APP_ROOT') || empty(APP_ROOT) ? '' : (array_key_first($_GET) == 'client' ? 'client=' . $_GET['client'] . '&' :  (array_key_first($_GET) == 'project' ? 'project=' . $_GET['project'] . '&' : ''))) . 'path=' . (!isset($_GET['path']) ? '' : $_GET['path']) . '/' . basename($path) . '">'
                     . '<img src="resources/images/directory.png" width="50" height="32" /><br />' . basename($path) . '/</a>';
                 elseif (is_file($path)) {
           
@@ -1486,7 +1486,7 @@ $output = 'Invalid Input';
                     . (is_readable($path = ini_get('error_log')) && filesize($path) > 0 ? '</a><div style="position: absolute; right: 8px; bottom: -6px; color: red; font-weight: bold;">[1]</div>' : '' )
                     . '</div>' . "\n";
                   else
-                    echo '<a href="?' . (!isset($_GET['client']) ? (!isset($_GET['project']) ? '' : 'project=' . $_GET['project'] . '&') : 'client=' . $_GET['client'] . '&') . 'app=ace_editor&path=' . $_GET['path'] . /*(basename(dirname($path)) == basename(parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH) ? 'failed' : basename(dirname($path)))) . */ '&file=' . basename($path) . '"><img src="resources/images/php_file.png" width="40" height="50" /><br />' . basename($path) . '</a>';
+                    echo '<a href="?' . (!isset($_GET['client']) ? (!isset($_GET['project']) ? '' : 'project=' . $_GET['project'] . '&') : 'client=' . $_GET['client'] . '&') . 'app=ace_editor&path=' . ($_GET['path'] ?? '') . '&file=' . basename($path) . '"><img src="resources/images/php_file.png" width="40" height="50" /><br />' . basename($path) . '</a>';
                 }
                 echo '</td>' . "\n";
                 if ($count >= 6) echo '</tr><tr>';
