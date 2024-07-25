@@ -17,7 +17,8 @@
 /var/*.php
 !/var/notes-sample.json
 !/var/notes.json
-!/var/package-psr-log.php
+/var/packages
+!/var/packages/psr-log.php
 /var/weekly-timesheet-????-??.json
 !/var/weekly-timesheet-sample.json
 .env*
