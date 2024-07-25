@@ -7,7 +7,7 @@ if (is_file($include = APP_PATH . APP_ROOT . APP_BASE['vendor'] . 'autoload.php'
 
 use Composer\InstalledVersions;
 
-if (isset($_ENV['COMPOSER']['EXPR_NAME']) && !defined('COMPOSER_EXPR_NAME'))
+if (isset($_ENV['COMPOSER']['EXPR_NAME']) && !defined('COMPOSER_EXPR_NAME')) 
   define('COMPOSER_EXPR_NAME', $_ENV['COMPOSER']['EXPR_NAME']); // const COMPOSER_EXPR_NAME = 'string only/non-block/ternary';
 elseif (!defined('COMPOSER_EXPR_NAME'))
   define('COMPOSER_EXPR_NAME', '/([a-z0-9](?:[_.-]?[a-z0-9]+)*)\/([a-z0-9](?:(?:[_.]|-{1,2})?[a-z0-9]+)*)/'); // name

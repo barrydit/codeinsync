@@ -157,7 +157,12 @@ do {
 
 header("Content-Type: text/html");
 header("Cache-Control: no-store, no-cache, must-revalidate, max-age=0");
-header("Pragma: no-cache"); ?>
+header("Pragma: no-cache"); 
+
+if (realpath($_GET['path']) && is_dir($_GET['path']))
+  if (substr($_GET['path'], -1) === '/')
+    $_GET['path'] = rtrim($_GET['path'], '/');
+?>
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -419,7 +424,7 @@ unset($path);
   </select></form>
   </div>
 
-      <a href="#" onclick="document.getElementById('app_ace_editor-container').style.display='block';"><img src="resources/images/ace_editor_icon.png" width="32" height="32"> (Text) Editor</a> |
+      <a href="#" onclick="document.getElementById('app_ace_editor-container').style.display='block';"><img src="resources/images/ace_editor_icon.png" width="32" height="32">(Text) Editor</a> |
       <a href="#" onclick="document.getElementById('app_tools-container').style.display='block';"><img src="resources/images/apps_icon.gif" width="20" height="20"> Tools</a> |
       <a href="#" onclick="document.getElementById('app_timesheet-container').style.display='block';"><img src="resources/images/clock.gif" width="30" height="30"> Clock-In</a> |
       <a href="#" onclick="document.getElementById('app_git-container').style.display='block';"><img src="resources/images/git_icon.fw.png" width="18" height="18">Git/ <img src="resources/images/github.fw.png" width="18" height="18">Hub</a>
@@ -898,7 +903,7 @@ $output = 'Invalid Input';
 <?php
           //$paths = glob($path . '/*');
           $paths = COMPOSER_VENDORS;
-          
+          //dd(COMPOSER_VENDORS, false);
           //dd(urldecode($_GET['path']));
           /*
           $paths = ['0' => ...];
@@ -935,8 +940,8 @@ $output = 'Invalid Input';
           
           $dirs = [];
           
-          foreach (array_filter( glob( APP_PATH . APP_BASE['var'] . 'package-*.php'), 'is_file') as $key => $dir) {
-            if (preg_match('/^package-(.*)-(.*).php$/', basename($dir), $matches)) {
+          foreach (array_filter( glob( APP_PATH . APP_BASE['var'] . 'packages' . DIRECTORY_SEPARATOR . '*.php'), 'is_file') as $key => $dir) {
+            if (preg_match('/^(.*)-(.*).php$/', basename($dir), $matches)) {
                 $name = $matches[1];
                 if (!isset($uniqueNames[$name])) {
                     $uniqueNames[$name] = true;
@@ -976,7 +981,7 @@ $output = 'Invalid Input';
                   //if (!empty($arr)) { }
           
                   if ($show_notice)
-                    $show_notice = (isset($pkgs_matched) && !empty($pkgs_matched) && !empty(preg_grep($grep = '/^'. ucfirst($vendor) . '\\\\\\\\' . ucFirst($package) . '/', $pkgs_matched)) ? false : (in_array($vendor, $dirs) ? true : false)); // $arr[0] class_exists() $pkgs_matched[0]
+                    $show_notice = isset($pkgs_matched) && !empty($pkgs_matched) && !empty(preg_grep($grep = '/^' . ucfirst($vendor) . '\\\\\\\\' . ucFirst($package) . '/', $pkgs_matched)) ? false : (in_array($vendor, $dirs) ? true : false); // $arr[0] class_exists() $pkgs_matched[0]
                     
                     // (!in_array($vendor, $dirs) ? true : false) 
                     
@@ -1010,8 +1015,8 @@ $output = 'Invalid Input';
               
                   } elseif ($vendor == 'composer') {
                     foreach ($packages as $package) {
-                      if (is_file('var/package-' . $vendor . '-' . $package . '.php'))
-                        $app['composer'][$vendor][$package]['body'] = file_get_contents('var/package-' . $vendor . '-' . $package . '.php');
+                      if (is_file(APP_BASE['var'] . 'packages' . DIRECTORY_SEPARATOR . $vendor . '-' . $package . '.php'))
+                        $app['composer'][$vendor][$package]['body'] = file_get_contents(APP_BASE['var'] . 'packages' . DIRECTORY_SEPARATOR . $vendor . '-' . $package . '.php');
                       //if (!in_array(APP_PATH.'vendor/'.$vendor.'/'.$package.'/Psr/Log/LogLevel.php', get_required_files())) {
                         //echo '<div style="position: absolute; left: -12px; top: -12px; color: red; font-weight: bold;">[1]</div>';
                       //  break;
@@ -1294,7 +1299,7 @@ $output = 'Invalid Input';
       
       ob_start(); 
       
-      echo APP_PATH . APP_ROOT . (isset($_GET['path']) ? $_GET['path'] : '' ) ?>
+      echo APP_PATH . APP_ROOT . (isset($_GET['path']) ? $_GET['path'] . '/' : '' ) ?>
 
     <?php 
     if (!realpath(APP_PATH . APP_ROOT . (isset($_GET['path']) ? $_GET['path'] : '' ))) { ?>
@@ -1305,7 +1310,7 @@ $output = 'Invalid Input';
     <table style="width: inherit; border: 0 solid #000;">
       <tr>
         <?php
-          $paths = glob(APP_PATH . APP_ROOT . (isset($_GET['path']) ? $_GET['path'] . '/' : '' ) . '{.[!.]*,*}', GLOB_BRACE | GLOB_MARK);
+          $paths = glob(APP_PATH . APP_ROOT . (isset($_GET['path']) ? $_GET['path'] . '/' : '') . '{.[!.]*,*}', GLOB_BRACE | GLOB_MARK);
           //dd(urldecode($_GET['path']));
           
           usort($paths, function ($a, $b) {
@@ -1364,7 +1369,7 @@ $output = 'Invalid Input';
                   elseif (basename($path) == 'applications')
                     echo '<div style="position: relative;">'
                     . '<a href="?application" onclick="document.getElementById(\'app_application-container\').style.display=\'block\';"><img src="resources/images/directory-application.png" width="50" height="32" /></a><br />'
-                    . '<a href="?path=' . basename($path) . '" onclick="">' . basename($path)  // "?path=' . basename($path) . '"         
+                    . '<a href="?path=' . basename($path) . '/" onclick="">' . basename($path)  // "?path=' . basename($path) . '"         
                     . '/</a></div>' . "\n";
                   elseif (basename($path) == 'node_modules')
                     echo '<div style="position: relative;">'
@@ -1481,7 +1486,7 @@ $output = 'Invalid Input';
                     . (is_readable($path = ini_get('error_log')) && filesize($path) > 0 ? '</a><div style="position: absolute; right: 8px; bottom: -6px; color: red; font-weight: bold;">[1]</div>' : '' )
                     . '</div>' . "\n";
                   else
-                    echo '<a href="?' . (!isset($_GET['client']) ? (!isset($_GET['project']) ? '' : 'project=' . $_GET['project'] . '&') : 'client=' . $_GET['client'] . '&') . 'app=ace_editor&path=' . (basename(dirname($path)) == basename(parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH) ? 'failed' : basename(dirname($path)))) . '&file=' . basename($path) . '"><img src="resources/images/php_file.png" width="40" height="50" /><br />' . basename($path) . '</a>';
+                    echo '<a href="?' . (!isset($_GET['client']) ? (!isset($_GET['project']) ? '' : 'project=' . $_GET['project'] . '&') : 'client=' . $_GET['client'] . '&') . 'app=ace_editor&path=' . $_GET['path'] . /*(basename(dirname($path)) == basename(parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH) ? 'failed' : basename(dirname($path)))) . */ '&file=' . basename($path) . '"><img src="resources/images/php_file.png" width="40" height="50" /><br />' . basename($path) . '</a>';
                 }
                 echo '</td>' . "\n";
                 if ($count >= 6) echo '</tr><tr>';

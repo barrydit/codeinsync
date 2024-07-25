@@ -1077,8 +1077,8 @@ do {
               
               $dirs = [];
               
-              foreach (array_filter( glob( APP_PATH . APP_BASE['var'] . 'package-*.php'), 'is_file') as $key => $dir) {
-                if (preg_match('/^package-(.*)-(.*).php$/', basename($dir), $matches)) {
+              foreach (array_filter( glob( APP_PATH . APP_BASE['var'] . 'packages' . DIRECTORY_SEPARATOR . '*.php'), 'is_file') as $key => $dir) {
+                if (preg_match('/^(.*)-(.*).php$/', basename($dir), $matches)) {
                     $name = $matches[1];
                     if (!isset($uniqueNames[$name])) {
                         $uniqueNames[$name] = true;
@@ -1152,8 +1152,8 @@ do {
                   
                       } elseif ($vendor == 'composer') {
                         foreach ($packages as $package) {
-                          if (is_file('var/package-' . $vendor . '-' . $package . '.php'))
-                            $app['composer'][$vendor][$package]['body'] = file_get_contents('var/package-' . $vendor . '-' . $package . '.php');
+                          if (is_file(APP_BASE['var'] . 'packages' . DIRECTORY_SEPARATOR . $vendor . '-' . $package . '.php'))
+                            $app['composer'][$vendor][$package]['body'] = file_get_contents(APP_BASE['var'] . 'packages' . DIRECTORY_SEPARATOR . $vendor . '-' . $package . '.php');
                           //if (!in_array(APP_PATH.'vendor/'.$vendor.'/'.$package.'/Psr/Log/LogLevel.php', get_required_files())) {
                             //echo '<div style="position: absolute; left: -12px; top: -12px; color: red; font-weight: bold;">[1]</div>';
                           //  break;

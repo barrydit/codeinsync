@@ -173,8 +173,7 @@ if (PHP_SAPI === 'cli') {
   $requestUri = $_SERVER['REQUEST_URI'];
 }
 
-$baseUrl = substr($requestUri, 0, strrpos($requestUri, '/') + 1); // $_SERVER['DOCUMENT_ROOT']
-
+$parsedUrl = parse_url($requestUri);
 
 // substr( str_replace('\\', '/', __FILE__), strlen($_SERVER['DOCUMENT_ROOT']), strrpos(str_replace('\\', '/', __FILE__), '/') - strlen($_SERVER['DOCUMENT_ROOT']) + 1 )
 if (!is_array(APP_BASE)) {
@@ -190,13 +189,15 @@ if (!is_array(APP_BASE)) {
       'pass' => $_SERVER['PHP_AUTH_PW'] ?? null,
       'host' => APP_DOMAIN,
       'port' => (int) ($_SERVER['SERVER_PORT'] ?? 80),
-      'path' => $baseUrl,
+      'path' => $parsedUrl['path'],
       'query' => $_SERVER['QUERY_STRING'] ?? '', // array( key($_REQUEST) => current($_REQUEST) )
       'fragment' => parse_url($_SERVER['REQUEST_URI'], PHP_URL_FRAGMENT),
   ];
 
   define('APP_URL', $appUrl);
 }
+//die(var_dump(APP_URL));
+
 /*
 !is_array(APP_BASE) ?
   substr($_SERVER['REQUEST_URI'], 0, strrpos($_SERVER['REQUEST_URI'], '/') + 1) == '/' 
