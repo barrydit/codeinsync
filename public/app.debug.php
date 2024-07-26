@@ -394,7 +394,7 @@ if (basename($_SERVER['PHP_SELF']) == basename(__FILE__)) { // ($_SERVER["SCRIPT
     </div>
 
     <!-- JQUERY SCRIPTS -->
-    <script src="<?=(!defined('APP_URL_BASE') and '//' . APP_DOMAIN . APP_URL_PATH)?>assets/vendor/jquery/jquery-3.5.1.min.js"></script>
+    <script src="<?=!defined('APP_URL_BASE') and '//' . APP_DOMAIN . APP_URL_PATH . APP_BASE['resources'] ?>js/jquery/jquery-3.5.1.min.js"></script>
   </body>
 </html>
 <?php } ?>

@@ -5,25 +5,25 @@
     is_writable � Tells whether the filename is writable
     unlink � Deletes a file
 */
-if (__FILE__ == get_required_files()[0] && __FILE__ == realpath($_SERVER["SCRIPT_FILENAME"])) {
+//die(var_dump(get_required_files()));
+if (__FILE__ == get_required_files()[0] && __FILE__ == realpath($_SERVER["SCRIPT_FILENAME"]))
   if ($path = basename(dirname(get_required_files()[0])) == 'public') { // (basename(getcwd())
-    if (is_file($path = realpath('../config/config.php'))) {
+    if (is_file($path = realpath('index.php'))) {
       require_once $path;
     }
-  } elseif (is_file($path = realpath('config/config.php'))) {
-    require_once $path;
-  } else {
-    die(var_dump("Path was not found. file=$path"));
   }
-} else {
+  else
+    die(var_dump("Path was not found. file=$path"));
+
+
+  //require_once realpath(__DIR__ . DIRECTORY_SEPARATOR . '..' . DIRECTORY_SEPARATOR  . 'config' . DIRECTORY_SEPARATOR . 'classes' . DIRECTORY_SEPARATOR . 'class.sockets.php');
+
+//dd(get_required_files());
   //if (__FILE__ == $_SERVER["SCRIPT_FILENAME"]) {
   //  echo "called directly";
   //} else {
   //  echo "included/required";
   //}
-}
-
-require_once realpath(__DIR__ . DIRECTORY_SEPARATOR . '..' . DIRECTORY_SEPARATOR  . 'config' . DIRECTORY_SEPARATOR . 'classes' . DIRECTORY_SEPARATOR . 'class.sockets.php');
 
   //dd(__FILE__, false);
 //!function_exists('dd') ? die('dd is not defined') : dd(COMPOSER_EXEC);

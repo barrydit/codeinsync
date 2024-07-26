@@ -1045,8 +1045,8 @@ do {
               /*
               $paths = ['0' => ...];
               usort($paths, function ($a, $b) {
-                  $aIsDir = is_dir('vendor/'.$a);
-                  $bIsDir = is_dir('vendor/'.$b);
+                  $aIsDir = is_dir(APP_BASE['vendor'].$a);
+                  $bIsDir = is_dir(APP_BASE['vendor'].$b);
                   
                   // Directories go first, then files
                   if ($aIsDir && !$bIsDir) {

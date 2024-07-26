@@ -1,21 +1,18 @@
 <?php
-  //phpinfo();
-  //die(var_dump($_GET));
-
-
 
   // if ($path = (basename(getcwd()) == 'public') chdir('..');
 //APP_PATH == dirname(APP_PUBLIC) 
 if ($path = (basename(getcwd()) == 'public') ? (is_file('../config/config.php') ? '../config/config.php' : 'config.php') :
-  (is_file('config.php') ? 'config.php' : APP_PATH . APP_BASE['config'] . 'config.php' ))
-
-    //? (is_file('../config.php') ? '../config.php' : 'config.php')
-    //: (is_file('config.php') ? 'config.php' : (is_file('config/config.php') ? 'config/config.php' : null)))
-
+  (is_file('config.php') ? 'config.php' : dirname(__DIR__, 1) . DIRECTORY_SEPARATOR . 'config' . DIRECTORY_SEPARATOR . 'config.php' ))
   require_once $path;
 else
   die(var_dump("$path was not found. file=config.php"));
 
+
+
+
+    //? (is_file('../config.php') ? '../config.php' : 'config.php')
+    //: (is_file('config.php') ? 'config.php' : (is_file('config/config.php') ? 'config/config.php' : null)))
 
 if (APP_DEBUG) {
   defined('PHP_ZTS') and $errors['PHP_ZTS'] = "PHP was built with ZTS enabled.\n";
@@ -38,7 +35,7 @@ if (APP_DEBUG) {
 }
 
 
-
+if (APP_SELF != APP_SERVER)
   require_once realpath(__DIR__ . DIRECTORY_SEPARATOR . '..' . DIRECTORY_SEPARATOR  . 'config' . DIRECTORY_SEPARATOR . 'classes' . DIRECTORY_SEPARATOR . 'class.sockets.php');
 //dd(get_defined_constants(true)['user']);
 
@@ -242,14 +239,172 @@ $dirs[] = APP_PATH . APP_BASE['config'] . 'npm.php';
       }*/
   //}
   /**/
- 
- if (defined('APP_ENV') and APP_ENV == 'production' )
-   require_once 'idx.product.php';
- elseif (defined('APP_ENV') and APP_ENV == 'development')
-   require_once 'idx.develop.php';
- elseif (defined('APP_ENV') and APP_ENV == 'math')
-   require_once 'idx.math.php';
- else {
-   !defined('APP_ENV') and define('APP_ENV', 'production');
-   require_once 'idx.product.php';
- }
+
+
+
+  if (isset($_GET['CLIENT']) || isset($_GET['DOMAIN']) && !defined('APP_ROOT')) {
+
+    if (!isset($_ENV['DEFAULT_CLIENT'])) $_ENV['DEFAULT_CLIENT'] = $_GET['CLIENT'];
+  
+    if (!isset($_ENV['DEFAULT_DOMAIN'])) $_ENV['DEFAULT_DOMAIN'] = $_GET['DOMAIN'];
+  
+    if (defined('APP_QUERY') && empty(APP_QUERY))
+      die(header('Location: ' . APP_URL_BASE . '?' . http_build_query([
+          'client' => $_ENV['DEFAULT_CLIENT'],
+          'domain' => $_ENV['DEFAULT_DOMAIN']
+      ]) . '#'));
+    else
+      $_GET = array_merge($_GET, APP_QUERY);
+  
+  }
+  
+  
+  //dd(__DIR__ . DIRECTORY_SEPARATOR);
+
+    
+ if (APP_SELF == APP_PUBLIC) {
+  
+  $appPaths = array_filter(glob(__DIR__ . DIRECTORY_SEPARATOR . 'app.*.php'), 'is_file'); // public/
+  
+  // $globPaths[] = __DIR__ . DIRECTORY_SEPARATOR . 'app.console.php';
+  // $paths = array_values(array_unique(array_merge($additionalPaths, $globPaths)));
+  
+  //if (isset($paths[APP_PATH . APP_BASE['public'] . 'app.install.php']))
+  //  unset($paths[APP_PATH . APP_BASE['public'] . 'app.install.php']);
+  
+  // dd(get_included_files());
+  
+  usort($appPaths, function ($a, $b) {
+    // Define your sorting criteria here
+    global $appPaths;
+  
+    // install, debug, project, timesheet, browser, github, packagist, whiteboard, notes, pong, console
+    if (basename($a) === 'app.install.php')
+      return -1;
+    elseif (basename($b) === 'app.install.php')
+      return 1;
+    elseif (basename($a) === 'app.debug.php')
+      return -1;
+    elseif (basename($b) === 'app.debug.php')
+      return 1;
+    elseif (basename($a) === 'app.project.php')
+      return -1;
+    elseif (basename($b) === 'app.project.php')
+      return 1;
+    elseif (basename($a) === 'app.timesheet.php')
+      return -1;
+    elseif (basename($b) === 'app.timesheet.php')
+      return 1;
+    elseif (basename($a) === 'app.browser.php')
+      return -1;
+    elseif (basename($b) === 'app.browser.php')
+      return 1;
+    elseif (basename($a) === 'app.console.php')
+      return 1; // $a comes after $b
+    elseif (basename($b) === 'app.console.php')
+      return -1; // $a comes before $b
+    else 
+      return strcmp(basename($a), basename($b)); // Compare other filenames alphabetically
+  });
+  
+  if (in_array(APP_PATH . APP_BASE['public'] . 'app.install.php', $appPaths))
+    foreach ($appPaths as $key => $file)
+      if (basename($file) === 'app.install.php')
+        unset($appPaths[$key]);
+  
+  $uiPaths = array_filter(glob(__DIR__ . DIRECTORY_SEPARATOR . '{ui}.*.php', GLOB_BRACE), 'is_file');
+  
+  
+  /*
+  if (in_array(APP_PATH . APP_BASE['public'] . 'ui.composer.php', $uiPaths))
+    foreach ($uiPaths as $key => $file)
+      if (basename($file) === 'ui.composer.php')
+        unset($uiPaths[$key]);
+  */
+  
+  // If you want to reset the array keys to be numeric (optional)
+  $paths = array_values(array_unique(array_merge($uiPaths, $appPaths)));
+  
+  //$paths = array_values(array_unique(array_merge($globPaths, $additionalPaths)));
+  
+  /*9.4
+  do {
+      // Check if $paths is not empty
+      if (!empty($paths)) {
+          // Shift the first path from the array
+          $path = array_shift($paths);
+  
+          // Check if the path exists
+          if ($realpath = realpath($path)) {
+              // Require the file
+              require_once $realpath;
+          } else {
+              // Output a message if the file was not found
+              echo basename($path) . ' was not found. file=public/' . basename($path) . PHP_EOL;
+          }
+          
+          dd('finish time: ' . $path, false);
+      }
+      // Unset $paths if it is empty
+      if (empty($paths)) unset($paths);
+  } while (isset($paths) && !empty($paths));
+  */
+  // dd(get_defined_vars(), true);
+  
+  //$path = '';
+  
+  while ($path = array_shift($paths)) {
+  
+  //dd($path, false);
+  
+      // Check if $paths is not empty
+      if (!empty($paths)) {
+          // Shift the first path from the array
+          //;
+  
+          // Check if the path exists
+          if ($realpath = realpath($path)) {
+  
+              // Define a function to include the file
+  //            $requireFile = function($file) /*use ($apps)*/ { global $apps; }; */
+  
+              // Include the file using the function
+              $returnedValue = require_once $realpath;
+              //dd(get_required_files(), false);
+  //dd($returnedValue, false);
+  
+              // Check the type of the returned value
+              if (is_array($returnedValue)) {
+                  // The file returned an array
+                  if (preg_match('/^.*?\.(\w+)\.php$/', $realpath, $matches))
+                    !defined($app_name = 'UI_' . strtoupper($matches[1])) and define($app_name, $returnedValue); // $apps[$matches[1]]
+              } //elseif ($returnedValue !== null) {
+                  // The file returned a non-null value
+                  //echo 'Returned value: ' . $returnedValue . PHP_EOL;
+              //} else {
+                  // The file did not return a value
+              //    echo 'File did not return a value.' . PHP_EOL;
+              //}
+          } else {
+              // Output a message if the file was not found
+              echo basename($path) . ' was not found. file=public/' . basename($path) . PHP_EOL;
+          }
+      }
+  
+  
+      // Unset $paths if it is empty
+      //if (empty($paths)) unset($paths);
+  
+  } // isset($paths) && !empty($paths)
+
+   if (defined('APP_ENV') and APP_ENV == 'production' )
+     require_once 'idx.product.php';
+   elseif (defined('APP_ENV') and APP_ENV == 'development')
+     require_once 'idx.develop.php';
+   elseif (defined('APP_ENV') and APP_ENV == 'math')
+     require_once 'idx.math.php';
+   else {
+     !defined('APP_ENV') and define('APP_ENV', 'production');
+       require_once 'idx.product.php';
+   }
+  }

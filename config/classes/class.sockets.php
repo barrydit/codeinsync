@@ -45,7 +45,7 @@ class Sockets
             $this->handleLinuxSocketConnection();
         }
     }
-    private static function handleLinuxSocketConnection()
+    public static function handleLinuxSocketConnection()
     {
         $pidFile = (defined('APP_PATH') ? APP_PATH : dirname(__DIR__) . DIRECTORY_SEPARATOR) . 'server.pid';
 
@@ -55,7 +55,7 @@ class Sockets
         }
         shell_exec('nohup php server.php > /dev/null 2>&1 &');
     }
-    private static function handleWindowsSocketConnection()
+    public static function handleWindowsSocketConnection()
     {
         $pidFile = (defined('APP_PATH') ? APP_PATH : dirname(__DIR__) . DIRECTORY_SEPARATOR) . 'server.pid';
 
@@ -157,7 +157,7 @@ if (!$_SERVER['SOCKET']) {
     }
   }
 
-  var_dump($errors['APP_SOCKET'] = "Socket is not being created: Define \$_SERVER['SOCKET']\n");
+  var_dump($errors['APP_SOCKET'] = "Socket is not being created: Define \$_SERVER['SOCKET']");
 
 
 }

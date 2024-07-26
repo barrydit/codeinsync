@@ -1,14 +1,16 @@
 <?php
 declare(strict_types=1); // First Line Only!
 
-require_once realpath(__DIR__ . DIRECTORY_SEPARATOR . 'config' . DIRECTORY_SEPARATOR . 'config.php');
+//exit(1);
 
-ini_set('error_log', is_dir(dirname($path = __DIR__ . DIRECTORY_SEPARATOR . 'server.log')) ? $path : 'server.log');
+require_once __DIR__ . DIRECTORY_SEPARATOR . 'config' . DIRECTORY_SEPARATOR . 'config.php';
+
+ini_set('error_log', (!defined('APP_PATH') ? __DIR__ . DIRECTORY_SEPARATOR : APP_PATH)  . 'server.log' );
 ini_set('log_errors', 'true');
 
-define('PID_FILE', /*getcwd() . */(!defined('APP_PATH') ? __DIR__ . DIRECTORY_SEPARATOR : APP_PATH ) . 'server.pid');
+define('PID_FILE', /*getcwd() . */ (!defined('APP_PATH') ? __DIR__ . DIRECTORY_SEPARATOR : APP_PATH) . 'server.pid');
 
-if (file_exists(PID_FILE)) {
+if (file_exists(PID_FILE) && file_get_contents(PID_FILE)) {
   $pid = (int) file_get_contents(PID_FILE);
   //unlink(PID_FILE);
   if (strpos(PHP_OS, 'WIN') === 0) {
@@ -25,6 +27,9 @@ if (file_exists(PID_FILE)) {
       exit(1);
     }
   }
+} else {
+  if (isset($_SERVER['SUPERVISOR_ENABLED']) && $_SERVER['SUPERVISOR_ENABLED'] == '1')
+    touch(PID_FILE) and exit(1);
 }
 
 file_put_contents(PID_FILE, getmypid());
@@ -80,6 +85,48 @@ $port = APP_PORT ?? 8080;
   pcntl_signal(SIGTERM, 'signalHandler');
   pcntl_signal(SIGINT, 'signalHandler');
 
+     // Function to scan specified directories without recursing
+     function scanDirectories($directories, $baseDir, &$organizedFiles) {
+      foreach ($directories as $directory) {
+          $files = glob($baseDir . $directory . '/*.php'); // Adjusted to scan only .php files at the top level of the directory
+          foreach ($files as $file) {
+              if (is_file($file)) {
+                  $relativePath = str_replace($baseDir, '', $file);
+                  // Add the relative path to the array if it is a .php file and not already present
+                  if (pathinfo($relativePath, PATHINFO_EXTENSION) == 'php' && !in_array($relativePath, $organizedFiles)) {
+                      $organizedFiles[] = $relativePath;
+                  }
+              }
+          }
+      }
+  }
+  
+  function customSort($array) {
+    // Separate files and directories
+    $files = [];
+    $directories = [];
+  
+    foreach ($array as $item) {
+        if (preg_match('/^.\/(.*)/', $item)) continue;
+        if (preg_match('/^public\/(example|test|ui\_complete)(.*)/', $item)) continue;
+        // Check if the item contains directories
+        if (strpos($item, '/') !== false) {
+            $directories[] = $item;
+        } else {
+            $files[] = $item;
+        }
+    }
+  
+    // Sort directories and files
+    sort($files); // Sort files in descending order
+    sort($directories); // Sort directories in descending order
+  
+    // Merge files and directories
+    $sortedArray = array_merge($files, $directories);
+  
+    return $sortedArray;
+  }
+  
 function clientInputHandler($input) {
     global $socket, $client, $running, $manager;
 
@@ -89,15 +136,74 @@ function clientInputHandler($input) {
     //$input = trim($input);
     $output = '';
 
-    if (preg_match('/^cmd:\s*(shutdown|restart|server\s*(shutdown|restart))(?=\r?\n$)?/si', $input)) { 
-      signalHandler(SIGTERM); // $running = false;
+    if (preg_match('/^cmd:\s*(shutdown|restart|server\s*(shutdown|restart)?)\s*?(?:(-f))(?=\r?\n$)?/si', $input, $matches)) { 
+      //signalHandler(SIGTERM); // $running = false;
+      $output = var_export($matches, true);
+      if ($matches[3] == '-f')
+        signalHandler(SIGTERM);
     } elseif (preg_match('/^cmd:\s*server\s*status(?=\r?\n$)?/si', $input)) {
       $output = 'Server is running... PID=' . getmypid();
+    } elseif(preg_match('/^cmd:\s*server\s*backup(?=\r?\n$)?/si', $input)) {
+      require_once 'public/index.php';
+      echo "Including/Requiring... $matches[2]\n";
+
+      $files = get_required_files();
+      $baseDir = APP_PATH;
+      $organizedFiles = [];
+      $directoriesToScan = [];
+      
+      // Collect directories from the list of files
+      foreach ($files as $file) {
+          $relativePath = str_replace($baseDir, '', $file);
+          $directory = dirname($relativePath);
+          if (!in_array($directory, $directoriesToScan)) {
+              $directoriesToScan[] = $directory;
+          }
+          // Add the relative path to the organizedFiles array if it is a .php file and not already present
+          if (pathinfo($relativePath, PATHINFO_EXTENSION) == 'php' && !in_array($relativePath, $organizedFiles)) {
+              $organizedFiles[] = $relativePath;
+          }
+      }
+            
+      // Add non-recursive scanning for the root baseDir for *.php files
+      $rootPhpFiles = glob($baseDir . '*.php');
+      foreach ($rootPhpFiles as $file) {
+          if (is_file($file)) {
+              $relativePath = str_replace($baseDir, '', $file);
+              // Add the relative path to the array if it is a .php file and not already present
+              if (pathinfo($relativePath, PATHINFO_EXTENSION) == 'php' && !in_array($relativePath, $organizedFiles)) {
+                  if ($relativePath == 'composer-setup.php') continue;
+                  $organizedFiles[] = $relativePath;
+              }
+          }
+      }
+      
+      // Scan the specified directories
+      scanDirectories($directoriesToScan, $baseDir, $organizedFiles);
+      
+      // Display the results
+      $sortedArray = customSort($organizedFiles);
+
+      $output = var_export($sortedArray, true);
+
+      $json = "{\n";  // Display the sorted array
+      while ($path = array_shift($sortedArray)) {
+        $json .= '"' . $path . '" : ' . json_encode(file_get_contents($path)) . (end($sortedArray) != $path ? ',' : '') . "\n";
+      }
+      $json .= "}\n";
+
+      file_put_contents(APP_PATH . APP_BASE['var'] . 'codes.json', $json, LOCK_EX);
+/**/
     } elseif (preg_match('/^cmd:\s*server(\s*variables|)(?=\r?\n$)?/si', $input)) {
       $output = var_export($_SERVER, true);
     } elseif (preg_match('/^cmd:\s*(add\s*notification)(?=\r?\n$)?/si', $input)) {    
       $output = 'Added notification...';
       $manager->addNotification(new Notification('notifyUser2', true, 300));
+    } elseif (preg_match('/^cmd:\s*(include|require)\s*(.*)(?=\r?\n$)?/si', $input, $matches)) {    
+      //var_dump(getcwd() . "/$matches[2]");
+      require_once trim($matches[2]);
+      $output = "Including/Requiring... $matches[2]";
+      var_dump(get_required_files());
     } elseif (preg_match('/^cmd:\s*(notifications)(?=\r?\n$)?/si', $input)) {    
       $output = 'Notification(s)...';
       $output .= $manager->getNotifications();
@@ -221,9 +327,9 @@ $manager->addNotification($notification1);
 // Exception: Interface "Ratchet\MessageComponentInterface" not found
 
 //get_included_files()[0] == 
-if (is_dir(__DIR__ . '/vendor/cboden/ratchet') && !empty(glob(__DIR__ . '/vendor/cboden/ratchet/')) && file_exists(__DIR__ . '/vendor/autoload.php')) {
+if (is_dir($path = __DIR__ . APP_BASE['vendor'] . 'cboden' . DIRECTORY_SEPARATOR . 'ratchet') && !empty(glob($path)) && file_exists(__DIR__ . APP_BASE['vendor'] . 'autoload.php')) {
   error_log('Creating a websocket server...');
-  require_once __DIR__ . '/vendor/autoload.php';
+  require_once __DIR__ . APP_BASE['vendor'] . 'autoload.php';
   require_once __DIR__ . DIRECTORY_SEPARATOR . 'config' . DIRECTORY_SEPARATOR . 'classes' . DIRECTORY_SEPARATOR . 'class.websocketserver.php';
 } else
   try {

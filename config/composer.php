@@ -446,7 +446,7 @@ if (defined('APP_ENV') and APP_ENV == 'development') {
       or define('COMPOSER_INIT_PARAMS', /*<<<TEXT TEXT*/ ob_get_contents());
     ob_end_clean();
     
-  if (!is_dir($$c_or_p->path . 'vendor'))
+  if (!is_dir($$c_or_p->path . APP_BASE['vendor']))
     $errors['COMPOSER_INIT-VENDOR'] = 'Failed to create the vendor/ directory. If you are seeing this. An error has occured.';
     
     //@mkdir($$c_or_p->path . 'vendor');
@@ -546,7 +546,7 @@ if (!realpath(APP_PATH . APP_ROOT . APP_BASE['vendor'])) {
   //dd(get_required_files(), true);
 
 // moved to config.php load (last)
-// is_file('vendor/autoload.php') and require('vendor/autoload.php'); // Include Composer's autoloader
+// is_file(APP_BASE['vendor'] . 'autoload.php') and require_once APP_BASE['vendor'] . 'autoload.php'; // Include Composer's autoloader
 
 //dd(get_required_files());
 /*
@@ -682,8 +682,8 @@ if ($latestPackage !== null) {
 
 //dd(APP_PATH);
 
-//require __DIR__ . '/../vendor/Git.php/src/Git.php';
-//require __DIR__ . '/../vendor/Git.php/src/GitRepo.php';
+//require __DIR__ . APP_BASE['vendor'] . 'Git.php/src/Git.php';
+//require __DIR__ . APP_BASE['vendor'] . 'Git.php/src/GitRepo.php';
 
 //use Kbjr\Git\Git;
 //use Kbjr\Git\GitRepo;

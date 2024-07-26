@@ -1,159 +1,14 @@
 <?php
 
-if (!in_array($path = dirname(__DIR__) . DIRECTORY_SEPARATOR . 'config' . DIRECTORY_SEPARATOR . 'config.php', get_required_files()))
-  require_once $path;
-
-if (isset($_GET['CLIENT']) || isset($_GET['DOMAIN']) && !defined('APP_ROOT')) {
-
-  if (!isset($_ENV['DEFAULT_CLIENT'])) $_ENV['DEFAULT_CLIENT'] = $_GET['CLIENT'];
-
-  if (!isset($_ENV['DEFAULT_DOMAIN'])) $_ENV['DEFAULT_DOMAIN'] = $_GET['DOMAIN'];
-
-  if (defined('APP_QUERY') && empty(APP_QUERY))
-    die(header('Location: ' . APP_URL_BASE . '?' . http_build_query([
-        'client' => $_ENV['DEFAULT_CLIENT'],
-        'domain' => $_ENV['DEFAULT_DOMAIN']
-    ]) . '#'));
+if (__FILE__ == get_required_files()[0] && __FILE__ == realpath($_SERVER["SCRIPT_FILENAME"]))
+  if ($path = basename(dirname(get_required_files()[0])) == 'public') { // (basename(getcwd())
+    if (is_file($path = realpath('config.php'))) {
+      require_once $path;
+    }
+  }
   else
-    $_GET = array_merge($_GET, APP_QUERY);
+    die(var_dump("Path was not found. file=$path"));
 
-}
-
-
-//dd(__DIR__ . DIRECTORY_SEPARATOR);
-
-$appPaths = array_filter(glob(__DIR__ . DIRECTORY_SEPARATOR . 'app.*.php'), 'is_file'); // public/
-
-// $globPaths[] = __DIR__ . DIRECTORY_SEPARATOR . 'app.console.php';
-// $paths = array_values(array_unique(array_merge($additionalPaths, $globPaths)));
-
-//if (isset($paths[APP_PATH . APP_BASE['public'] . 'app.install.php']))
-//  unset($paths[APP_PATH . APP_BASE['public'] . 'app.install.php']);
-
-// dd(get_included_files());
-
-usort($appPaths, function ($a, $b) {
-  // Define your sorting criteria here
-  global $appPaths;
-
-  // install, debug, project, timesheet, browser, github, packagist, whiteboard, notes, pong, console
-  if (basename($a) === 'app.install.php')
-    return -1;
-  elseif (basename($b) === 'app.install.php')
-    return 1;
-  elseif (basename($a) === 'app.debug.php')
-    return -1;
-  elseif (basename($b) === 'app.debug.php')
-    return 1;
-  elseif (basename($a) === 'app.project.php')
-    return -1;
-  elseif (basename($b) === 'app.project.php')
-    return 1;
-  elseif (basename($a) === 'app.timesheet.php')
-    return -1;
-  elseif (basename($b) === 'app.timesheet.php')
-    return 1;
-  elseif (basename($a) === 'app.browser.php')
-    return -1;
-  elseif (basename($b) === 'app.browser.php')
-    return 1;
-  elseif (basename($a) === 'app.console.php')
-    return 1; // $a comes after $b
-  elseif (basename($b) === 'app.console.php')
-    return -1; // $a comes before $b
-  else 
-    return strcmp(basename($a), basename($b)); // Compare other filenames alphabetically
-});
-
-if (in_array(APP_PATH . APP_BASE['public'] . 'app.install.php', $appPaths))
-  foreach ($appPaths as $key => $file)
-    if (basename($file) === 'app.install.php')
-      unset($appPaths[$key]);
-
-$uiPaths = array_filter(glob(__DIR__ . DIRECTORY_SEPARATOR . '{ui}.*.php', GLOB_BRACE), 'is_file');
-
-
-/*
-if (in_array(APP_PATH . APP_BASE['public'] . 'ui.composer.php', $uiPaths))
-  foreach ($uiPaths as $key => $file)
-    if (basename($file) === 'ui.composer.php')
-      unset($uiPaths[$key]);
-*/
-
-// If you want to reset the array keys to be numeric (optional)
-$paths = array_values(array_unique(array_merge($uiPaths, $appPaths)));
-
-//$paths = array_values(array_unique(array_merge($globPaths, $additionalPaths)));
-
-/*9.4
-do {
-    // Check if $paths is not empty
-    if (!empty($paths)) {
-        // Shift the first path from the array
-        $path = array_shift($paths);
-
-        // Check if the path exists
-        if ($realpath = realpath($path)) {
-            // Require the file
-            require_once $realpath;
-        } else {
-            // Output a message if the file was not found
-            echo basename($path) . ' was not found. file=public/' . basename($path) . PHP_EOL;
-        }
-        
-        dd('finish time: ' . $path, false);
-    }
-    // Unset $paths if it is empty
-    if (empty($paths)) unset($paths);
-} while (isset($paths) && !empty($paths));
-*/
-// dd(get_defined_vars(), true);
-
-//$path = '';
-
-do {
-
-//dd($path, false);
-
-    // Check if $paths is not empty
-    if (!empty($paths)) {
-        // Shift the first path from the array
-        //;
-
-        // Check if the path exists
-        if ($realpath = realpath($path)) {
-
-            // Define a function to include the file
-//            $requireFile = function($file) /*use ($apps)*/ { global $apps; }; */
-
-            // Include the file using the function
-            $returnedValue = require_once $realpath;
-            //dd(get_required_files(), false);
-//dd($returnedValue, false);
-
-            // Check the type of the returned value
-            if (is_array($returnedValue)) {
-                // The file returned an array
-                if (preg_match('/^.*?\.(\w+)\.php$/', $realpath, $matches))
-                  !defined($app_name = 'UI_' . strtoupper($matches[1])) and define($app_name, $returnedValue); // $apps[$matches[1]]
-            } //elseif ($returnedValue !== null) {
-                // The file returned a non-null value
-                //echo 'Returned value: ' . $returnedValue . PHP_EOL;
-            //} else {
-                // The file did not return a value
-            //    echo 'File did not return a value.' . PHP_EOL;
-            //}
-        } else {
-            // Output a message if the file was not found
-            echo basename($path) . ' was not found. file=public/' . basename($path) . PHP_EOL;
-        }
-    }
-
-
-    // Unset $paths if it is empty
-    //if (empty($paths)) unset($paths);
-
-} while ($path = array_shift($paths)); // isset($paths) && !empty($paths)
 
 header("Content-Type: text/html");
 header("Cache-Control: no-store, no-cache, must-revalidate, max-age=0");
@@ -908,8 +763,8 @@ $output = 'Invalid Input';
           /*
           $paths = ['0' => ...];
           usort($paths, function ($a, $b) {
-              $aIsDir = is_dir('vendor/'.$a);
-              $bIsDir = is_dir('vendor/'.$b);
+              $aIsDir = is_dir(APP_BASE['vendor'].$a);
+              $bIsDir = is_dir(APP_BASE['vendor'].$b);
               
               // Directories go first, then files
               if ($aIsDir && !$bIsDir) {
@@ -966,7 +821,7 @@ $output = 'Invalid Input';
               foreach ($packages as $package) {
                   //var_dump('/^' . ucfirst($vendor) . '\\\\' . ucFirst($package) . '/'); // $pkgs_matched[0]
               //var_dump(preg_grep($grep = '/^'. ucfirst($vendor) . '\\\\\\\\' . ucFirst($package) . '/', $pkgs_matched));
-                      //if (!in_array(APP_PATH.'vendor/'.$vendor.'/'.$package.'/Psr/Log/LogLevel.php', get_required_files())) { break; }
+                      //if (!in_array(APP_PATH.APP_BASE['vendor'].$vendor.'/'.$package.'/Psr/Log/LogLevel.php', get_required_files())) { break; }
                   //if (isset($pkgs_matched) && !empty($pkgs_matched) && class_exists($pkgs_matched[0])) {
                   
                   //$grep = '/^' . ucfirst($vendor) . '\\\\' . ucFirst($package) . '/';
@@ -994,24 +849,24 @@ $output = 'Invalid Input';
               if ($show_notice)
                   echo '<div style="position: absolute; left: -12px; top: -12px; color: red; font-weight: bold;">[1]</div>';
           
-                if (is_dir('vendor/'.$vendor) || !is_dir('vendor/'.$vendor))
+                if (is_dir(APP_BASE['vendor'].$vendor) /*|| !is_dir(APP_BASE['vendor'].$vendor)*/)
                   //if ($vendor == 'barrydit') continue;
                   if ($vendor == 'symfony') {
-                    echo '<a class="pkg_dir" href="?path=vendor/' . $vendor . '">'
+                    echo '<a class="pkg_dir" href="?path=' . APP_BASE['vendor'] . $vendor . '">'
                     . '<img src="resources/images/directory-symfony.png" width="50" height="32" style="' . (isset(COMPOSER->{'require'}->{$vendor . '/' . $package}) || isset(COMPOSER->{'require-dev'}->{$vendor . '/' . $package})?: 'opacity:0.4;filter:alpha(opacity=40);') . '" /></a><br />'
                     . '<div class="overlay">';
                     foreach ($packages as $package) {
-                      if (in_array(APP_PATH.'vendor/'.$vendor.'/'.$package.'/bootstrap.php', get_required_files()))
-                        echo '<a href="?app=ace_editor&path=vendor/'.$vendor.'/'.$package.'/&file=bootstrap.php"><code style="background-color: white; color: #0078D7; font-size: 9px;">' . $package. '</code></a><br />';
-                      elseif (in_array(APP_PATH.'vendor/'.$vendor.'/'.$package.'/function.php', get_required_files()))
-                        echo '<a href="?app=ace_editor&path=vendor/'.$vendor.'/'.$package.'/&file=function.php"><code style="background-color: white; color: #0078D7; font-size: 9px;">' . $package. '</code></a><br />';
+                      if (in_array(APP_PATH . APP_BASE['vendor'] . $vendor.'/'.$package.'/bootstrap.php', get_required_files()))
+                        echo '<a href="?app=ace_editor&path=' . APP_BASE['vendor'] . $vendor.'/'.$package.'/&file=bootstrap.php"><code style="background-color: white; color: #0078D7; font-size: 9px;">' . $package. '</code></a><br />';
+                      elseif (in_array(APP_PATH . APP_BASE['vendor'] . $vendor.'/'.$package.'/function.php', get_required_files()))
+                        echo '<a href="?app=ace_editor&path=' . APP_BASE['vendor'] . $vendor.'/'.$package.'/&file=function.php"><code style="background-color: white; color: #0078D7; font-size: 9px;">' . $package. '</code></a><br />';
                       else 
                         echo '<p style="background-color: #0078D7;">' . $package . '</p>' . PHP_EOL;
-                      //echo APP_PATH.'vendor/'.$vendor.'/'.$package;
+                      //echo APP_PATH. APP_BASE['vendor'] . $vendor.'/'.$package;
           
                       // /mnt/c/www/public/composer/vendor/symfony/deprecation-contracts
                     }
-                    echo '</div>' . '<a href="?path=vendor/' . $vendor . '">' . ucfirst($vendor) . '</a>';
+                    echo '</div>' . '<a href="?path=' . APP_BASE['vendor'] . $vendor . '">' . ucfirst($vendor) . '</a>';
               
                   } elseif ($vendor == 'composer') {
                     foreach ($packages as $package) {
@@ -1387,7 +1242,7 @@ $output = 'Invalid Input';
                     . '<a href="?' . (APP_ROOT != '' ? array_key_first($_GET) . '=' . $_GET[array_key_first($_GET)] . (array_key_first($_GET) == 'client' ? '&domain=' . $_GET['domain'] . '&' : '' ) : '') . 'app=composer&path=' . basename($path) . '" onclick="">' . basename($path)  // "?path=' . basename($path) . '"         
                     . '/</a></div>' . "\n";
                   else
-                    echo '<a href="?' . (!defined('APP_ROOT') || empty(APP_ROOT) ? '' : (array_key_first($_GET) == 'client' ? 'client=' . $_GET['client'] . '&' :  (array_key_first($_GET) == 'project' ? 'project=' . $_GET['project'] . '&' : ''))) . 'path=' . (!isset($_GET['path']) ? '' : $_GET['path']) . '/' . basename($path) . '">'
+                    echo '<a href="?' . (!defined('APP_ROOT') || empty(APP_ROOT) ? '' : (array_key_first($_GET) == 'client' ? 'client=' . $_GET['client'] . '&' :  (array_key_first($_GET) == 'project' ? 'project=' . $_GET['project'] . '&' : ''))) . 'path=' . (!isset($_GET['path']) ? '' : $_GET['path'] . '/') . basename($path) . '">'
                     . '<img src="resources/images/directory.png" width="50" height="32" /><br />' . basename($path) . '/</a>';
                 elseif (is_file($path)) {
           

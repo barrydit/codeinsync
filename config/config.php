@@ -78,11 +78,9 @@ if (isset($_ENV['SHELL']['EXPR_DOMAIN']) && !defined('DOMAIN_EXPR'))
 elseif(!defined('DOMAIN_EXPR'))
   define('DOMAIN_EXPR', '/(?:[a-z]+\:\/\/)?(?:[a-z0-9\-]+\.)+[a-z]{2,6}(?:\/\S*)?/i'); // /(?:\.(?:([-a-z0-9]+){1,}?)?)?\.[a-z]{2,6}$/';
 
-
 if (isset($_ENV['SHELL']['PHP_EXEC']) && !defined('PHP_EXEC'))
-  define('PHP_EXEC', $_ENV['SHELL']['PHP_EXEC']); // const DOMAIN_EXPR = 'string only/non-block/ternary';
-elseif (!defined('PHP_EXEC'))
-  define('PHP_EXEC', '/usr/bin/php'); // /(?:\.(?:([-a-z0-9]+){1,}?)?)?\.[a-z]{2,6}$/';
+  define('PHP_EXEC', $_ENV['SHELL']['PHP_EXEC'] ?? '/usr/bin/php'); // const DOMAIN_EXPR = 'string only/non-block/ternary';
+// /(?:\.(?:([-a-z0-9]+){1,}?)?)?\.[a-z]{2,6}$/';
 
 //die(var_dump($_SERVER['PHP_SELF'] . DIRECTORY_SEPARATOR . basename($_SERVER['PHP_SELF'])));
 
@@ -92,13 +90,6 @@ elseif (!defined('PHP_EXEC'))
 
 
 //!is_file( dirname($_SERVER['PHP_SELF']) . basename($_SERVER['PHP_SELF']) ?? __FILE__) // (!empty(get_included_files()) ? get_included_files()[0] : __FILE__)
-!defined('APP_SELF') and define('APP_SELF', get_included_files()[0] ?? __FILE__); // get_included_files()[0] | str_replace($_SERVER['DOCUMENT_ROOT'], '', $_SERVER['SCRIPT_FILENAME']) | $_SERVER['PHP_SELF']
-
-//var_dump(get_defined_constants(true)['user']);
-!defined('APP_PATH') and define('APP_PATH', implode(DIRECTORY_SEPARATOR, array_intersect_assoc(
-  explode(DIRECTORY_SEPARATOR, __DIR__),
-  explode(DIRECTORY_SEPARATOR, dirname(APP_SELF))
-)) . DIRECTORY_SEPARATOR);
 
 
 //if (APP_ROOT != '') {}
@@ -111,18 +102,17 @@ is_file($path = __DIR__ . DIRECTORY_SEPARATOR . 'functions.php') ?
   $paths[] = $path : 
     (is_file($path = 'config/functions.php') ? 
       $paths[] = $path :
-      $paths[] = 'functions.php') or die(var_dump("$path was not found. file=" . $path));
+      $paths[] = 'functions.php') or die(var_dump("$path was not found. file=$path"));
 
 //$paths[] = __DIR__ . DIRECTORY_SEPARATOR . 'constants.php'; //require('constants.php'); 
 
 while ($path = array_shift($paths)) {
-  if (is_file($path = realpath($path))) require $path;
+  if (is_file($path = realpath($path))) require_once $path;
   else die(var_dump(basename($path) . ' was not found. file=' . $path));
-  
 }
 
-//die(var_dump(get_required_files()));
-
+(!function_exists('dd'))
+  and $errors['FUNCTIONS'] = 'functions.php failed to load. Therefore function dd() does not exist (yet).';
 
 if (!empty($_GET['client']) || !empty($_GET['domain'])) {
   $path = /*'../../'.*/ 'clientele/' . $_GET['client'] . '/';
@@ -185,9 +175,6 @@ unset($dirs);
 // else { if (isset($_GET['path']) && is_dir(APP_PATH . $_GET['path'])) $path = $_GET['path']; }
 
 !defined('APP_ROOT') and define('APP_ROOT', $path = realpath(APP_PATH . $path) ? $path : null); // dirname(APP_SELF, (basename(getcwd()) != 'public' ?: 2))
-
-(!function_exists('dd'))
-  and $errors['FUNCTIONS'] = 'functions.php failed to load. Therefore function dd() does not exist (yet).';
 
 //else dd('test');
 
@@ -455,7 +442,7 @@ if (\$path = (basename(getcwd()) == 'public')
   ? (is_file('config.php') ? 'config.php' : '../config/config.php') : '') \$require(\$path);
 else die(var_dump(\$path)); //die(var_dump(\$path . ' path was not found. file=config.php'));
 
-require_once(APP_PATH . 'vendor/autoload.php');
+require_once(APP_PATH . APP_BASE['vendor'] . 'autoload.php');
 ob_start(); // dd('Break/test the dd();');
 use noximo\PHPColoredAsciiLinechart\Settings;
 use noximo\PHPColoredAsciiLinechart\Linechart;

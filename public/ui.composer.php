@@ -1,10 +1,21 @@
 <?php
 
+if (__FILE__ == get_required_files()[0] && __FILE__ == realpath($_SERVER["SCRIPT_FILENAME"]))
+  if ($path = basename(dirname(get_required_files()[0])) == 'public') { // (basename(getcwd())
+    if (is_file($path = realpath('index.php'))) {
+      require_once $path;
+    }
+  }
+  else
+    die(var_dump("Path was not found. file=$path"));
+
+/*
 if (__FILE__ == get_required_files()[0])
   if ($path = (basename(getcwd()) == 'public')
     ? (is_file('config.php') ? 'config.php' : '../config/config.php') : '') require_once $path;
   else die(var_dump("$path path was not found. file=config.php"));
-/*
+*/
+  /*
 else {
   $path = APP_PATH . APP_BASE['config'] . 'composer.php';
 dd($path);
@@ -16,7 +27,7 @@ dd(get_included_files(), false);
 }*/
 
 // dd(get_required_files());
-// require 'vendor/autoload.php'; // Include Composer's autoloader
+// require APP_BASE['vendor'] . 'autoload.php'; // Include Composer's autoloader
 
 // dd(get_required_files());
 
@@ -1107,7 +1118,7 @@ if (defined('COMPOSER') && isset(COMPOSER['json']->require))
   foreach (COMPOSER['json']->require as $key => $require)
     if (preg_match('/.*\/.*:.*/', $key . ':' . $require)) 
       if (preg_match('/(.*\/.*)/', $key, $match))
-        if (!empty($match) && !is_dir('vendor/'.$match[1].'/')) $count++;
+        if (!empty($match) && !is_dir(APP_BASE['vendor'] . $match[1].'/')) $count++;
 
 ?>
       <div id="app_composer-frameInstall" class="app_composer-frame-container absolute <?= ($count > 0 ? 'selected' : ''); ?>" style="overflow: scroll; width: 400px; height: 270px;">
@@ -1133,7 +1144,7 @@ if (defined('COMPOSER') && isset(COMPOSER['json']->require))
 foreach (COMPOSER['json']->require as $key => $require) {
   if (preg_match('/.*\/.*:.*/', $key . ':' . $require)) 
     if (preg_match('/(.*\/.*)/', $key, $match))
-      if (!empty($match) && !is_dir('vendor/'.$match[1].'/')) echo '<li style="color: red;"><code class="text-sm">' . $match[1] . ':' . '<span style="float: right">' . $require . '</span>' . "</code></li>\n";
+      if (!empty($match) && !is_dir(APP_BASE['vendor'] . $match[1].'/')) echo '<li style="color: red;"><code class="text-sm">' . $match[1] . ':' . '<span style="float: right">' . $require . '</span>' . "</code></li>\n";
 }
 ?>
         </ul>

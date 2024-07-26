@@ -13,15 +13,32 @@
 $user = ''; // www-data
 $password = ''; // password
 
-define('APP_START', microtime(true));
-!defined('APP_START') || is_float(APP_START) ?: $errors['APP_START'] = 'APP_START is not a valid float value.';
+define('APP_SUDO', strtoupper(substr(PHP_OS, 0, 3)) === 'WIN' ? /*'runas /user:Administrator "cmd /c" '*/ : 'echo ' . escapeshellarg(isset($password) && $password == '' ? '' : $password) . ' | sudo -S ' . (isset($user) && $user == '' ? '' : "-u $user") . ' '); // 'su -c'
 
-if (strtoupper(substr(PHP_OS, 0, 3)) === 'WIN') {
-  define('APP_SUDO', ''); // 'runas /user:Administrator "cmd /c" '
-} else // 'su -c'
-  define('APP_SUDO', 'echo ' . escapeshellarg((isset($password) && $password == '' ? '' : $password)) . ' | sudo -S ' . (isset($user) && $user == '' ? '' : '-u ' . $user) . ' '); // 
+//require_once 'functions.php';
 
-require_once 'functions.php';
+
+!defined('APP_START') and define('APP_START', microtime(true)) ?: is_float(APP_START) or $errors['APP_START'] = 'APP_START is not a valid float value.';
+//!defined('APP_END') and define('APP_END', microtime(true)) ?: is_float(APP_END) or $errors['APP_END'] = 'APP_END is not a valid float value.'; // APP_END - APP_START
+
+!defined('APP_SELF') and define('APP_SELF', get_included_files()[0] ?? __FILE__) and is_string(APP_SELF) ?: $errors['APP_SELF'] = 'APP_SELF is not a valid string value.';; // get_included_files()[0] | str_replace($_SERVER['DOCUMENT_ROOT'], '', $_SERVER['SCRIPT_FILENAME']) | $_SERVER['PHP_SELF']
+
+//!defined('APP_PATH') and define('APP_PATH', implode(DIRECTORY_SEPARATOR, array_intersect_assoc( explode(DIRECTORY_SEPARATOR, __DIR__), explode(DIRECTORY_SEPARATOR, dirname(APP_SELF)))) . DIRECTORY_SEPARATOR);
+
+!defined('APP_PATH') and define('APP_PATH', realpath(__DIR__ . DIRECTORY_SEPARATOR . '..' . DIRECTORY_SEPARATOR) . DIRECTORY_SEPARATOR) and is_string(APP_PATH) ?: $errors['APP_PATH'] = 'APP_PATH is not a valid string value.';
+
+
+
+//var_dump(get_defined_constants(true)['user']);
+/*
+
+!defined('APP_DEV') and define('APP_DEV', true) ?: is_bool(APP_DEV) or $errors['APP_DEV'] = 'APP_DEV is not a valid boolean value.';
+!defined('APP_PROD') and define('APP_PROD', false) ?: is_bool(APP_PROD) or $errors['APP_PROD'] = 'APP_PROD is not a valid boolean value.';
+!defined('APP_TEST') and define('APP_TEST', false) ?: is_bool(APP_TEST) or $errors['APP_TEST'] = 'APP_TEST is not a valid boolean value.';
+!defined('APP_DEBUG') and define('APP_DEBUG', true) ?: is_bool(APP_DEBUG) or $errors['APP_DEBUG'] = 'APP_DEBUG is not a valid boolean value.';
+
+*/
+
 
 if ($ip = resolve_host_to_ip('google.com')) { // parse_url($ip, PHP_URL_HOST)
   if (check_internet_connection($ip)) {
@@ -158,7 +175,7 @@ if (defined('APP_BASE'))
     }
   }
 
-define('APP_PUBLIC', (defined('APP_PATH') ? APP_PATH : __DIR__ . DIRECTORY_SEPARATOR)  . APP_BASE['public'] . str_replace((defined('APP_PATH') ? APP_PATH : __DIR__ . DIRECTORY_SEPARATOR) , '', APP_BASE['public'] . dirname(basename(APP_SELF)) == 'public' ? basename(APP_SELF) : 'index.php')); // 
+define('APP_PUBLIC', (defined('APP_PATH') ? APP_PATH : __DIR__ . DIRECTORY_SEPARATOR)  . APP_BASE['public'] . str_replace(defined('APP_PATH') ? APP_PATH : __DIR__ . DIRECTORY_SEPARATOR , '', APP_BASE['public'] . dirname(basename(APP_SELF)) == 'public' ? basename(APP_SELF) : 'index.php')); // 
 
 //var_dump(APP_PATH . basename(dirname(__DIR__, 2)) . '/' . basename(dirname(__DIR__, 1)));
 
