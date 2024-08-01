@@ -6,24 +6,15 @@
 
 //$errors->{'TEXT_MANAGER'} = $path . "\n" . 'File Modified:    Rights:    Date of creation: ';
 
-
-
-if (__FILE__ == get_required_files()[0] && __FILE__ == realpath($_SERVER["SCRIPT_FILENAME"])) {
+if (__FILE__ == get_required_files()[0] && __FILE__ == realpath($_SERVER["SCRIPT_FILENAME"])) 
   if ($path = basename(dirname(get_required_files()[0])) == 'public') { // (basename(getcwd())
-    if (is_file($path = realpath('../config/config.php'))) {
+    if (is_file($path = realpath('index.php'))) {
       require_once $path;
     }
-  } elseif (is_file($path = realpath('config/config.php'))) {
-    require_once $path;
   } else {
     die(var_dump("Path was not found. file=$path"));
   }
-} 
 
-
-
-
-//dd($_GET);
 
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
   if (isset($_GET['app']) && $_GET['app'] == 'ace_editor')
@@ -104,11 +95,24 @@ if (defined('GIT_EXEC'))
   }
 
 ob_start(); ?>
+    #app_ace_editor-container { 
+      width: 550px;
+      height: 450px;
+      /* border: 1px solid black; */
+      position: absolute;
+      top: 60px; 
+      left: 30%;
+      right: 0;
+      z-index: 1;
+      /* resize: both; Make the div resizable */
+      /* overflow: hidden; Hide overflow to ensure proper resizing */
+    }
 
-#app_ace_editor-container { position: absolute; display: none; top: 60px; margin: 0 auto; left: 50%; right: 50%; }
-#app_ace_editor-container.selected {
-  display: block;
-  z-index: 1; 
+    #app_ace_editor-container.selected {
+      display: block;
+  z-index: 1;
+  resize: both; /* Make the div resizable */
+  overflow: hidden; /* Hide overflow to ensure proper resizing */
   /* Add your desired styling for the selected container */
   /*
   // background-color: rgb(240, 224, 198); //  240, 224, 198, .75    #FBF7F1; // rgba(240, 224, 198, .25);
@@ -121,18 +125,25 @@ ob_start(); ?>
   */
 }
 
+    #ui_ace_editor {
+      width: 100%;
+      height: calc(100% - 80px);
+      position: absolute;
+    }
+
+    
+    #ace-editor {
+      margin: 0;
+      position: relative;
+      /*resize: both;*/
+      overflow: auto;
+      white-space: pre-wrap;
+      /*width: 100%;
+      height: 100%;*/
+    }
+
 input {
   color: black;
-}
-
-#ace-editor {
-  margin: 0;
-  position: relative;
-  resize: both;
-  overflow: auto;
-  white-space: pre-wrap;
-  //width: 100%;
-  //height: 100%;
 }
 
 .containerTbl {
@@ -158,103 +169,39 @@ img { display: inline; }
 ob_end_clean();
 
 ob_start(); ?>
-  <div id="app_ace_editor-container" class="absolute <?= (__FILE__ ==  get_required_files()[0] || (isset($_GET['app']) && $_GET['app'] == 'ace_editor') && !isset($_GET['path']) ? 'selected' : '') ?>" style="z-index: 1; width: 424px; background-color: rgba(255,255,255,0.8); padding: 10px;">
-    <div style="position: relative; margin: 0 auto; width: 404px; height: 306px; border: 3px dashed #38B1FF; background-color: rgba(56,177,255,0.6);">
-      <div class="absolute ui-widget-header" style="position: absolute; display: inline-block; width: 100%; height: 25px; margin: -50px 0 25px 0; padding: 24px 0; border-bottom: 1px solid #000; z-index: 3;">
-        <label class="ace_editor-home" style="cursor: pointer;">
-          <div class="" style="position: relative; display: inline-block; top: 0; left: 0; margin-top: -5px;">
-            <img src="resources/images/ace_editor_icon.png" width="32" height="32" />
-          </div>
-        </label>
-        <div style="display: inline;">
-          <span style="background-color: #38B1FF; color: #FFF;">Ace Editor <?= /* (version_compare(NPM_LATEST, NPM_VERSION, '>') != 0 ? 'v'.substr(NPM_LATEST, 0, similar_text(NPM_LATEST, NPM_VERSION)) . '<span class="update" style="color: green; cursor: pointer;">' . substr(NPM_LATEST, similar_text(NPM_LATEST, NPM_VERSION)) . '</span>' : 'v'.NPM_VERSION ); */ NULL; ?></span> <span style="background-color: #0078D7; color: white;"><code id="AceEditorVersionBox" class="text-sm" style="background-color: white; color: #0078D7;"></code></span>
-        </div>
-        
-        <div style="display: inline; float: right; text-align: center; color: blue;"><code style="background-color: white; color: #0078D7;"><a style="cursor: pointer; font-size: 13px;" onclick="document.getElementById('app_ace_editor-container').style.display='none';">[X]</a></code></div> 
-      </div>
-      
-      <div class=" ui-widget-content" style="position: relative; display: block; width: 398px; background-color: rgba(251,247,241); z-index: 2;">
 
+<div id="app_ace_editor-container" class="absolute <?= __FILE__ == get_required_files()[0] || (isset($_GET['app']) && $_GET['app'] == 'ace_editor') && !isset($_GET['path']) ? 'selected' : '' ?>" style="display: <?= __FILE__ == get_required_files()[0] || (isset($_GET['app']) && $_GET['app'] == 'ace_editor') && !isset($_GET['path']) ? 'none' : 'block' ?>; resize: both; overflow: hidden;">
+    <div class="ui-widget-header" style="position: relative; display: inline-block; width: 100%; cursor: move; border-bottom: 1px solid #000;background-color: #FFF;">
+      <label class="ace_editor-home" style="cursor: pointer;">
+        <div class="" style="position: relative; display: inline-block; top: 0; left: 0;">
+          <img src="resources/images/ace_editor_icon.png" width="32" height="32" />
+        </div>
+      </label>
+      <div style="display: inline;">
+        <span style="background-color: #38B1FF; color: #FFF; margin-top: 10px;">Ace Editor <?= /* (version_compare(NPM_LATEST, NPM_VERSION, '>') != 0 ? 'v'.substr(NPM_LATEST, 0, similar_text(NPM_LATEST, NPM_VERSION)) . '<span class="update" style="color: green; cursor: pointer;">' . substr(NPM_LATEST, similar_text(NPM_LATEST, NPM_VERSION)) . '</span>' : 'v'.NPM_VERSION ); */ NULL; ?></span> <span style="background-color: #0078D7; color: white;"><code id="AceEditorVersionBox" class="text-sm" style="background-color: white; color: #0078D7;"></code></span>
+      </div>
+        
+      <div style="display: inline; float: right; text-align: center; color: blue;"><code style="background-color: white; color: #0078D7;"><a style="cursor: pointer; font-size: 13px;" onclick="document.getElementById('app_ace_editor-container').style.display='none';">[X]</a></code></div> 
+    </div>
+
+    <div id="" style="position: relative; width: 100%; height: 100%; border: 3px dashed #38B1FF; background-color: rgba(56,177,255,0.6);">
+
+      <div class="ui-widget-content" style="position: relative; display: block; margin: 0 auto; width: calc(100% - 2px); height: 50px; background-color: rgba(251,247,241);">
         <div style="display: inline-block; text-align: left; width: 125px;">
           <div class="npm-menu text-sm" style="cursor: pointer; font-weight: bold; padding-left: 25px; border: 1px solid #000;">Main Menu</div>
           <div class="text-xs" style="display: inline-block; border: 1px solid #000;">
             <a class="text-sm" id="app_ace_editor-frameMenuPrev" href="<?= (!empty(APP_QUERY) ? '?' . http_build_query(APP_QUERY) : '') . (defined('APP_ENV') && APP_ENV == 'development' ? '#!' : '#') ?>"> &lt; Menu</a> | <a class="text-sm" id="app_ace_editor-frameMenuNext" href="<?= (!empty(APP_QUERY) ? '?' . http_build_query(APP_QUERY) : '') . (defined('APP_ENV') && APP_ENV == 'development' ? '#!' : '#') ?>">Init &gt;</a>
           </div>
         </div>
-        <div class="absolute" style="position: absolute; display: inline-block; top: 4px; text-align: right; width: 272px; ">
-          <div class="text-xs" style="display: inline-block;">
+        <div class="absolute" style="position: absolute; display: inline-block; top: -3px; right: 0; text-align: right; float: right;">
+          <div class="text-xs" style="position: relative; display: inline-block;">
           + 478 <a href="https://github.com/ajaxorg/ace/graphs/contributors">contributors</a>
-          <br /><a href="https://github.com/ajaxorg"><img src="resources/images/node.js.png" title="https://github.com/nodejs" width="18" height="18" /></a>
+          <br /><!-- a href="https://github.com/ajaxorg"><img src="resources/images/node.js.png" title="https://github.com/nodejs" width="18" height="18" /></a -->
           <a style="color: blue; text-decoration-line: underline; text-decoration-style: solid;" href="https://ace.c9.io/" title="https://ace.c9.io/">https://ace.c9.io/</a>
           </div>
         </div>
         <div style="clear: both;"></div>
-      </div>
-<!--
-      <div class="" style="position: absolute; top: 0; left: 0; right: 0; margin: 10px auto; opacity: 1.0; text-align: center; cursor: pointer; z-index: 1;">
-        <img class="npm-menu" src="resources/images/node_npm.fw.png" style="margin-top: 45px;" width="150" height="198" />
-      </div>
--->
 
-<div style="position: relative; overflow: hidden; width: 398px; height: 256px;">
-<!--
-      <div id="app_ace_editor-frameMenu" class="app_ace_editor-frame-container absolute selected" style="background-color: rgb(225,196,151,.75); margin-top: 8px; height: 100%;">
--->
-
-    <div style="position: relative; display: inline-block; width: auto; padding-left: 10px;">
-<!--
-      <form style="display: inline;" autocomplete="off" spellcheck="false" action="<?= APP_URL_BASE . /*basename(__FILE__) .*/ '?' . http_build_query(APP_QUERY /*+ array( 'app' => 'ace_editor')*/) . (defined('APP_ENV') && APP_ENV == 'development' ? '#!' : '') /* $c_or_p . '=' . (empty($_GET[$c_or_p]) ? '' : $$c_or_p->name) . '&amp;app=composer' */ ?>" method="GET">
-        <input type="hidden" name="app" value="ace_editor" />
-      <?php $path = realpath(getcwd() . (isset($_GET['path']) ? DIRECTORY_SEPARATOR . $_GET['path'] : '')) . DIRECTORY_SEPARATOR;
-      if (isset($_GET['path'])) { ?>
-       <input type="hidden" name="path" value="<?= $_GET['path']; ?>" /> 
-      <?php } echo '<span title="' . $path . '">' . parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH) . '</span>'; /* $path; */ ?>
-        <select name="path" onchange="this.form.submit();">
-          <option value>.</option>
-          <option value>..</option>
-<?php
-if ($path)
-  foreach (array_filter( glob( $path . DIRECTORY_SEPARATOR . '*'), 'is_dir') as $dir) {
-    echo '<option value="' . (isset($_GET['path']) ?  $_GET['path'] . DIRECTORY_SEPARATOR : '') . basename($dir) . '"' . (isset($_GET['path']) && $_GET['path'] == basename($dir) ? ' selected' : '' )  . '>' . basename($dir) . '</option>' . "\n";
-  }
-?>
-        </select>
-      </form>
- / <input type="text" name="file" value="index.php" /> 
-
-      <form style="display: inline;" autocomplete="off" spellcheck="false" action="<?= APP_URL_BASE . /*basename(__FILE__) .*/ '?' . http_build_query(APP_QUERY /*+ array( 'app' => 'ace_editor')*/) . (defined('APP_ENV') && APP_ENV == 'development' ? '#!' : '') /* $c_or_p . '=' . (empty($_GET[$c_or_p]) ? '' : $$c_or_p->name) . '&amp;app=composer' */ ?>" method="GET">
-      <input type="hidden" name="app" value="ace_editor" />
-
-      <input type="hidden" name="path" value="<?= (isset($_GET['path']) ? $_GET['path'] : '') ?>" />
-
-        <select name="file" onchange="this.form.submit();">
-          <option value="">---</option>
-<?php
-if ($path)
-foreach (array_filter( glob($path . DIRECTORY_SEPARATOR . '*.php'), 'is_file') as $file) {
-  echo '<option value="' . basename($file) . '"' . (isset($_GET['file']) && $_GET['file'] == basename($file) ? ' selected' : '' )  . '>' . basename($file) . '</option>' . "\n";
-}
-?>
-        </select>
-      </form>
-      </div> -->
-
-
-      <form style="position: relative; display: inline;" action="<?= APP_URL_BASE . '?' . http_build_query(APP_QUERY + array( 'app' => 'ace_editor')) . (defined('APP_ENV') && APP_ENV == 'development' ? '#!' : '') /* $c_or_p . '=' . (empty($_GET[$c_or_p]) ? '' : $$c_or_p->name) . '&amp;app=composer' */ ?>" method="POST">
-        <input type="hidden" name="path" value="<?= APP_PATH /*. APP_BASE['public'];*/ ?>" />
-        <div style="display: inline-block; width: auto; text-align: right; float: right;">
-          <input type="submit" value="Save" class="btn" style="margin: -5px 5px 5px 0;" onclick="document.getElementsByClassName('ace_text-input')[0].value = globalEditor.getSession().getValue(); document.getElementsByClassName('ace_text-input')[0].name = 'editor';"/>
-        </div>
-<!--   A (<?= $path ?>) future note: keep ace-editor nice and tight ... no spaces, as it interferes with the content window.
- https://scribbled.space/ace-editor-setup-usage/ -->
-
-        <div id="ui_ace_editor" class="ace_editor" style="display: <?= (isset($_GET['file']) && isset($_GET['path']) && is_file($_GET['path'] . $_GET['file']) ? 'block': 'block')?>; width: 700px; height: 400px; z-index: 1;"><textarea name="contents" class="ace_text-input" autocorrect="off" autocapitalize="none" spellcheck="false" style="opacity: 0; font-size: 1px; height: 1px; width: 1px; top: 28px; left: 86px;" wrap="off"><?= (isset($_GET['file']) && is_file($path . $_GET['file']) ? htmlsanitize(file_get_contents($path . $_GET['file'])) : /* (isset($_GET['project']) ? htmlsanitize(file_get_contents($path . 'projects/index.php')) : '')*/ '' ); /*   'clientele/' . $_GET['client'] . '/' . $_GET['domain'] . '/' .  */ ?><?= htmlsanitize("<?php
-
-/* This is an example of ACE Editor working */
-
-require(__DIR__ . 'config/config.php');
-
-"); ?></textarea></div>
 <?= /*
         <div class="containerTbl" style="background-ground: #fff; border: 1px solid #000; display: <?= (isset($_GET['file']) && isset($_GET['path']) && is_file($_GET['path'] . $_GET['file']) ? 'none': 'block' ) ?>;">
 <table width="" style="border: 1px solid #000;">
@@ -297,7 +244,69 @@ if (!empty($paths))
 </table>
         </div>
 */ NULL; ?>
+      
+      </div>
+
+
+
+      <div style="position: relative; margin: 0 auto; width: calc(100% - 2px); height: 100%;">
+<!--
+      <div id="app_ace_editor-frameMenu" class="app_ace_editor-frame-container absolute selected" style="background-color: rgb(225,196,151,.75); margin-top: 8px; height: 100%;">
+-->
+<form style="" action="<?= APP_URL_BASE . '?' . http_build_query(APP_QUERY + array( 'app' => 'ace_editor')) . (defined('APP_ENV') && APP_ENV == 'development' ? '#!' : '') /* $c_or_p . '=' . (empty($_GET[$c_or_p]) ? '' : $$c_or_p->name) . '&amp;app=composer' */ ?>" method="POST">
+        <input type="hidden" name="path" value="<?= APP_PATH /*. APP_BASE['public'];*/ ?>" />
+        <div style="display: inline-block; width: auto; text-align: right; float: right;">
+          <input type="submit" value="Save" class="btn" style="margin: -5px 5px 5px 0;" onclick="document.getElementsByClassName('ace_text-input')[0].value = globalEditor.getSession().getValue(); document.getElementsByClassName('ace_text-input')[0].name = 'editor';"/>
+        </div>
+<!--   A (<?= $path ?>) future note: keep ace-editor nice and tight ... no spaces, as it interferes with the content window.
+ https://scribbled.space/ace-editor-setup-usage/ -->
+
+<div id="ui_ace_editor" class="ace_editor" style="display: <?= isset($_GET['file']) && isset($_GET['path']) && is_file($_GET['path'] . $_GET['file']) ? 'block' : 'block'?>; z-index: 1;"><textarea name="contents" class="ace_text-input" autocorrect="off" autocapitalize="none" spellcheck="false" style="opacity: 0; font-size: 1px; height: 1px; width: 1px; top: 28px; left: 86px;" wrap="off"><?= isset($_GET['file']) && is_file(APP_PATH . APP_ROOT . $_GET['file']) ? htmlsanitize(file_get_contents(APP_PATH . APP_ROOT . $_GET['file'])) : htmlsanitize("<?php
+
+/* This is an example of ACE Editor working */
+
+require(__DIR__ . 'config/config.php');
+
+"); /* (isset($_GET['project']) ? htmlsanitize(file_get_contents($path . 'projects/index.php')) : '')*/ ''; /*   'clientele/' . $_GET['client'] . '/' . $_GET['domain'] . '/' .  */ ?></textarea></div></form>
+    <!-- div style="position: relative; display: inline-block; width: 100%; height: 100%; padding-left: 10px;">
+
+      <form style="display: inline;" autocomplete="off" spellcheck="false" action="<?= APP_URL_BASE . /*basename(__FILE__) .*/ '?' . http_build_query(APP_QUERY /*+ array( 'app' => 'ace_editor')*/) . (defined('APP_ENV') && APP_ENV == 'development' ? '#!' : '') /* $c_or_p . '=' . (empty($_GET[$c_or_p]) ? '' : $$c_or_p->name) . '&amp;app=composer' */ ?>" method="GET">
+        <input type="hidden" name="app" value="ace_editor" />
+      <?php $path = realpath(getcwd() . (isset($_GET['path']) ? DIRECTORY_SEPARATOR . $_GET['path'] : '')) . DIRECTORY_SEPARATOR;
+      if (isset($_GET['path'])) { ?>
+       <input type="hidden" name="path" value="<?= $_GET['path']; ?>" /> 
+      <?php } echo '<span title="' . $path . '">' . parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH) . '</span>'; /* $path; */ ?>
+        <select name="path" onchange="this.form.submit();">
+          <option value>.</option>
+          <option value>..</option>
+<?php
+if ($path)
+  foreach (array_filter( glob( $path . DIRECTORY_SEPARATOR . '*'), 'is_dir') as $dir) {
+    echo '<option value="' . (isset($_GET['path']) ?  $_GET['path'] . DIRECTORY_SEPARATOR : '') . basename($dir) . '"' . (isset($_GET['path']) && $_GET['path'] == basename($dir) ? ' selected' : '' )  . '>' . basename($dir) . '</option>' . "\n";
+  }
+?>
+        </select>
       </form>
+ / <input type="text" name="file" value="index.php" /> 
+
+      <form style="display: inline;" autocomplete="off" spellcheck="false" action="<?= APP_URL_BASE . /*basename(__FILE__) .*/ '?' . http_build_query(APP_QUERY /*+ array( 'app' => 'ace_editor')*/) . (defined('APP_ENV') && APP_ENV == 'development' ? '#!' : '') /* $c_or_p . '=' . (empty($_GET[$c_or_p]) ? '' : $$c_or_p->name) . '&amp;app=composer' */ ?>" method="GET">
+      <input type="hidden" name="app" value="ace_editor" />
+
+      <input type="hidden" name="path" value="<?= (isset($_GET['path']) ? $_GET['path'] : '') ?>" />
+
+        <select name="file" onchange="this.form.submit();">
+          <option value="">---</option>
+<?php
+if ($path)
+foreach (array_filter( glob($path . DIRECTORY_SEPARATOR . '*.php'), 'is_file') as $file) {
+  echo '<option value="' . basename($file) . '"' . (isset($_GET['file']) && $_GET['file'] == basename($file) ? ' selected' : '' )  . '>' . basename($file) . '</option>' . "\n";
+}
+?>
+        </select>
+      </form>
+      </div> -->
+
+
 
       <!-- <pre id="ace-editor" class="ace_editor"></pre> -->
 
@@ -322,7 +331,8 @@ if (!empty($paths))
 -->
       </div>
 
-
+      <div id="container1" style="position: relative; width: 100%; height: 100%; border: 1px #000 solid;">
+      
 
       </div>
     </div>
@@ -336,26 +346,32 @@ ob_start(); ?>
 
 <?php //if (isset($_GET['client']) && $_GET['client'] != '') { 
 //if (isset($_GET['domain']) && $_GET['domain'] != '') {
-if (is_dir($path = APP_PATH . APP_BASE['resources'] . 'js/ace')) {
-?>
+if (is_dir($path = APP_PATH . APP_BASE['resources'] . 'js/ace')) { ?>
+    $(function() {
+      //$("#resizable").resizable();
 
-//var ace = require("resources/js/ace/src/ace.js"); // ext/language_tools
-var appEditor = ace.edit("ui_ace_editor");
-appEditor.setTheme("ace/theme/dracula");
+      var appEditor = ace.edit("ui_ace_editor");
+      appEditor.setTheme("ace/theme/dracula");
+      appEditor.session.setMode("ace/mode/php");
+      appEditor.setAutoScrollEditorIntoView(true);
+      appEditor.setShowPrintMargin(false);
+      appEditor.setOptions({
+        enableBasicAutocompletion: true,
+        enableLiveAutocompletion: true,
+        enableSnippets: true
+      });
 
-//var JavaScriptMode = ace.require("ace/mode/javascript").Mode;
-appEditor.session.setMode("ace/mode/php");
-appEditor.setAutoScrollEditorIntoView(true);
-appEditor.setShowPrintMargin(false);
-appEditor.setOptions({
-    //  resize: "both"
-  enableBasicAutocompletion: true,
-  enableLiveAutocompletion: true,
-  enableSnippets: true
-});
+      $("#app_ace_editor-container").resizable({ // , #ui_ace_editor
+        alsoResize: "#ui_ace_editor"
+      });
 
-<?php } //}
-?>
+      $("#app_ace_editor-container").on("resize", function () { // event, ui
+        /* console.log('Resized:', ui.size);*/
+        appEditor.resize();
+      });
+
+    });
+<?php } ?>
 
 <?= /* $(document).ready(function() {}); */ ''; ?>
 
@@ -415,7 +431,7 @@ unset($path);
       curl_setopt($handle, CURLOPT_RETURNTRANSFER, true);
   
       if (!empty($js = curl_exec($handle))) 
-        file_put_contents($path . 'jquery-3.7.1.min.js', $js) or $errors['JS-JQUERY'] = $url . ' returned empty.';
+        file_put_contents("{$path}jquery-3.7.1.min.js", $js) or $errors['JS-JQUERY'] = "$url returned empty.";
     }
   } else {
     $url = 'https://code.jquery.com/jquery-3.7.1.min.js';
@@ -423,14 +439,14 @@ unset($path);
     curl_setopt($handle, CURLOPT_RETURNTRANSFER, true);
   
     if (!empty($js = curl_exec($handle))) 
-      file_put_contents($path . 'jquery-3.7.1.min.js', $js) or $errors['JS-JQUERY'] = $url . ' returned empty.';
+      file_put_contents("{$path}jquery-3.7.1.min.js", $js) or $errors['JS-JQUERY'] = "$url returned empty.";
   }
   unset($path); ?>
-  <script src="<?= (check_http_200('https://code.jquery.com/jquery-3.7.1.min.js') ? 'https://code.jquery.com/jquery-3.7.1.min.js' : APP_BASE['resources'] . 'js/jquery/' . 'jquery-3.7.1.min.js') ?>"></script>
+  <script src="<?= check_http_200('https://code.jquery.com/jquery-3.7.1.min.js') ? 'https://code.jquery.com/jquery-3.7.1.min.js' : APP_BASE['resources'] . 'js/jquery/' . 'jquery-3.7.1.min.js' ?>"></script>
   <!-- You need to include jQueryUI for the extended easing options. -->
       <!-- script src="//code.jquery.com/jquery-1.12.4.js"></script -->
   
-  <script src="<?= (check_http_200('https://code.jquery.com/ui/1.12.1/jquery-ui.min.js') ? 'https://code.jquery.com/ui/1.12.1/jquery-ui.min.js' : APP_BASE['resources'] . 'js/jquery-ui/' . 'jquery-ui-1.12.1.js') ?>"></script> <!-- Uncaught ReferenceError: jQuery is not defined -->
+  <script src="<?= check_http_200('https://code.jquery.com/ui/1.12.1/jquery-ui.min.js') ? 'https://code.jquery.com/ui/1.12.1/jquery-ui.min.js' : APP_BASE['resources'] . 'js/jquery-ui/' . 'jquery-ui-1.12.1.js' ?>"></script> <!-- Uncaught ReferenceError: jQuery is not defined -->
 
   <script src="resources/js/ace/src/ace.js" type="text/javascript" charset="utf-8"></script>
   <script src="resources/js/ace/src/ext-language_tools.js" type="text/javascript" charset="utf-8"></script> 
@@ -443,6 +459,58 @@ unset($path);
   <!-- script src="//code.jquery.com/ui/1.12.1/jquery-ui.js"></script -->
   <!-- <script src="../resources/js/jquery/jquery.min.js"></script> -->
 <script>
+
+let isDragging = false;
+let activeWindow = null;
+
+function makeDraggable(windowId) {
+    const windowElement = document.getElementById(windowId);
+    const headerElement = windowElement.querySelector('.ui-widget-header');
+    let offsetX, offsetY;
+
+    headerElement.addEventListener('mousedown', function(event) {
+        if (!isDragging) {
+            // Bring the clicked window to the front
+            document.body.appendChild(windowElement);
+            offsetX = event.clientX - windowElement.getBoundingClientRect().left;
+            offsetY = event.clientY - windowElement.getBoundingClientRect().top;
+            isDragging = true;
+            activeWindow = windowElement;
+        }
+    });
+
+    document.addEventListener('mousemove', function(event) {
+        if (isDragging && activeWindow === windowElement) {
+            const left = event.clientX - offsetX;
+            const top = event.clientY - offsetY;
+
+            // Boundary restrictions
+            const maxX = window.innerWidth - windowElement.clientWidth - 100;
+            const maxY = window.innerHeight - windowElement.clientHeight;
+
+            windowElement.style.left = `${Math.max(-200, Math.min(left, maxX))}px`;
+            windowElement.style.top = `${Math.max(0, Math.min(top, maxY))}px`;
+        }
+    });
+
+    document.addEventListener('mouseup', function() {
+        if (activeWindow === windowElement) {
+            isDragging = false;
+            activeWindow = null;
+        }
+    });
+}
+      
+makeDraggable('app_ace_editor-container');
+
+$(function() {
+    $("#container1").resizable({
+        alsoResize: "#app_ace_editor" // Resize textarea along with the dialog
+    });
+
+});
+
+
 <?= $app['script']; ?>
 </script>
 </body>

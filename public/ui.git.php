@@ -236,15 +236,21 @@ ob_start();
             <textarea id="app_git-commit-input" type="text" placeholder="commit message" size="30"></textarea>
           </div>
 
-          <div id="app_git-oauth" style="position: absolute; display: none; top: 30px; left: 20%; right: 50%; border: 1px solid #000;">
-            <div style="position: absolute; top: -20px; left: -20px; color: red; font-weight: bold;">
+          <div id="app_git-oauth" style="position: absolute; display: none; top: 40px; left: 0; background-color: rgba(0, 0, 0, 0.5); border: 1px solid rgb(0, 0, 0); width: 100%; height: 100px; text-align: center; padding-top: 40px;">
+            <div style="position: absolute; top: 25px; left: 45px; color: red; height: 14px; font-weight: bold; background-color: #FFF; line-height: 8px;">
               <a style="cursor: pointer; font-size: 13px;" onclick="document.getElementById('app_git-oauth').style.display='none';">[X]</a>
             </div>
-            <input id="app_git-oauth-input" type="text" placeholder="ghp_54nj8sA53dZi9jgf..." size="26" />
+            <form action="" method="POST">
+            <input id="app_git-oauth-input" type="text" placeholder="ghp_54nj8sA53dZi9jgf..." size="26"><button type="submit" style="background-color: #FFF;"> Save </button><br />
+            </form>
+            <div style="position: absolute; bottom: -20px; right: 0px; color: red; font-weight: bold; background: #FFF;">
+              <a href="https://github.com/settings/tokens">Github.com-&gt;settings-&gt;tokens</a>
+            </div>
+
           </div>
 
           <div id="app_git-clone-url" style="position: absolute; display: none; top: 80px; left: 20%; right: 50%; border: 1px solid #000;">
-            <div style="position: absolute; top: -20px; left: -20px; color: red; font-weight: bold;">
+            <div style="position: absolute; top: 8px; left: 60px; color: red; font-weight: bold;">
               <a style="cursor: pointer; font-size: 13px;" onclick="document.getElementById('app_git-clone-url').style.display='none';">[X]</a>
             </div>
             <input id="app_git-clone-url-input" type="text" placeholder="https://github.com/barrydit/....git" size="26" />

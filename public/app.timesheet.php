@@ -7,17 +7,15 @@ https://stackoverflow.com/questions/17694894/different-timezone-types-on-datetim
 */
 
 
-if (__FILE__ == get_required_files()[0]) {
+if (__FILE__ == get_required_files()[0] && __FILE__ == realpath($_SERVER["SCRIPT_FILENAME"]))
   if ($path = basename(dirname(get_required_files()[0])) == 'public') { // (basename(getcwd())
-    if (is_file($path = realpath('../config/config.php'))) {
+    if (is_file($path = realpath('index.php'))) {
       require_once $path;
     }
-  } elseif (is_file($path = realpath('config/config.php'))) {
-    require_once $path;
-  } else {
-    die(var_dump("Path was not found. file=$path"));
   }
-}
+  else
+    die(var_dump("Path was not found. file=$path"));
+
 
 $interval = new DateInterval('PT00H');
 //echo $interval->format('%H:%I:%S');

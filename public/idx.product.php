@@ -9,7 +9,6 @@ if (__FILE__ == get_required_files()[0] && __FILE__ == realpath($_SERVER["SCRIPT
   else
     die(var_dump("Path was not found. file=$path"));
 
-
 header("Content-Type: text/html");
 header("Cache-Control: no-store, no-cache, must-revalidate, max-age=0");
 header("Pragma: no-cache"); 
@@ -29,6 +28,9 @@ if (isset($_GET['path']) && realpath($_GET['path']) && is_dir($_GET['path']))
     <title>Multiple Ace Editor Instances</title>
 <?php
 // (check_http_200('https://cdn.tailwindcss.com') ? 'https://cdn.tailwindcss.com' : APP_WWW . 'resources/js/tailwindcss-3.3.5.js')?
+
+// <link rel="stylesheet" href="https://code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css">
+// <link rel="stylesheet" href="resources/css/output.css">
 
 if (!is_file($path = APP_PATH . APP_BASE['resources'] . 'js/tailwindcss-3.3.5.js') || ceil(abs((strtotime(date('Y-m-d')) - strtotime(date('Y-m-d',strtotime('+5 days',filemtime($path))))) / 86400)) <= 0  ) {
     $url = 'https://cdn.tailwindcss.com';
@@ -1504,7 +1506,7 @@ if (!is_file($path)) { ?>
         if (!ace) {
                 console.error("Ace editor not loaded");
                 return;
-            }
+        }
         var editor1 = ace.edit("ui_ace_editor");
         //var JavaScriptMode = ace.require("ace/mode/javascript").Mode;
         editor1.setTheme("ace/theme/monokai");
@@ -1580,9 +1582,8 @@ if (!is_file($path)) { ?>
 <?php
 }
 unset($path);
-?>
 
-<?php if (date(/*Y-*/ 'm-d') == /*1928-*/ '08-07' ?? /*2023-*/ '03-30') { ?>
+if (date(/*Y-*/ 'm-d') == /*1928-*/ '08-07' ?? /*2023-*/ '03-30') { ?>
     <script src="resources/reels/leave-a-light-on.js" type="text/javascript" charset="utf-8"></script>
     <?php } elseif (date(/*Y-*/ 'm-d') == /*1976-*/ '03-20' ?? /*2017-*/ '07-20') { ?>
     <script src="resources/reels/leave-a-light-on.js" type="text/javascript" charset="utf-8"></script>
@@ -1616,10 +1617,10 @@ function makeDraggable(windowId) {
             const top = event.clientY - offsetY;
 
             // Boundary restrictions
-            const maxX = window.innerWidth - windowElement.clientWidth - 100;
+            const maxX = window.innerWidth - windowElement.clientWidth; //  - 100
             const maxY = window.innerHeight - windowElement.clientHeight;
 
-            windowElement.style.left = `${Math.max(-200, Math.min(left, maxX))}px`;
+            windowElement.style.left = `${Math.max(0, Math.min(left, maxX))}px`;
             windowElement.style.top = `${Math.max(0, Math.min(top, maxY))}px`;
         }
     });

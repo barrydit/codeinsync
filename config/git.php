@@ -6,12 +6,9 @@
 if ($path = realpath((basename(__DIR__) != 'config' ? NULL : __DIR__ . DIRECTORY_SEPARATOR) . 'constants.php')) // is_file('config/constants.php')) 
   require_once $path;
 
-if (strtoupper(substr(PHP_OS, 0, 3)) === 'WIN')
-  define('GIT_EXEC', 'git.exe');
-else
-  define('GIT_EXEC', '/usr/local/bin/git');
+define('GIT_EXEC', strtoupper(substr(PHP_OS, 0, 3)) === 'WIN' ? 'git.exe' : '/usr/local/bin/git');
 
-define('GIT_VERSION', preg_match("/(?:version|v)\s*((?:[0-9]+\.?)+)/i", exec(GIT_EXEC . ' --version'), $match) ? rtrim($match[1], '.') : '');
+define('GIT_VERSION', preg_match($_ENV['GITHUB']['EXPR_VERSION'], exec(GIT_EXEC . ' --version'), $match) ? rtrim($match[1], '.') : '');
 
 /* $latest_remote_commit_response = file_get_contents($latest_remote_commit_url);
 $latest_remote_commit_data = json_decode($latest_remote_commit_response, true);
@@ -29,6 +26,7 @@ function git_origin_sha_update() {
           "User-Agent: My-App\r\n",
     ],
   ];
+
   $context = stream_context_create($options);
 
   if (!empty($_GET['client']) || !empty($_GET['domain'])) {
@@ -81,11 +79,13 @@ $response = (defined('APP_CONNECTED') && check_http_200($_ENV['GITHUB']['ORIGIN_
       // $_ENV['HIDE_UPDATE_NOTICE'] = var_export(false, true);
       $errors[] = 'Remote SHA ($_ENV[\'GITHUB\'][\'REMOTE_SHA\']) was updated.' . "\n" . $errors['GIT_UPDATE'] . "\n";
       $_ENV['GITHUB']['REMOTE_SHA'] = $latest_remote_commit_sha;
+      $_ENV['HIDE_UPDATE_NOTICE'] = '';
       unset($errors['GIT_UPDATE']);
     }
   } else {
     $errors['GIT_UPDATE'] .= "Failed to retrieve commit information.\n";
   }
+  $_ENV['HIDE_UPDATE_NOTICE'] = '';
   return ($_ENV['GITHUB']['REMOTE_SHA'] = $latest_local_commit_sha);
 }
 //dd($latest_remote_commit_url);

@@ -86,7 +86,7 @@ $port = APP_PORT ?? 8080;
   pcntl_signal(SIGINT, 'signalHandler');
 
      // Function to scan specified directories without recursing
-     function scanDirectories($directories, $baseDir, &$organizedFiles) {
+  function scanDirectories($directories, $baseDir, &$organizedFiles) {
       foreach ($directories as $directory) {
           $files = glob($baseDir . $directory . '/*.php'); // Adjusted to scan only .php files at the top level of the directory
           foreach ($files as $file) {
@@ -94,6 +94,7 @@ $port = APP_PORT ?? 8080;
                   $relativePath = str_replace($baseDir, '', $file);
                   // Add the relative path to the array if it is a .php file and not already present
                   if (pathinfo($relativePath, PATHINFO_EXTENSION) == 'php' && !in_array($relativePath, $organizedFiles)) {
+                      if ($relativePath == 'public/project.php' && !in_array('projects/index.php', $organizedFiles)) $organizedFiles[] = 'projects/index.php';
                       $organizedFiles[] = $relativePath;
                   }
               }
@@ -136,14 +137,14 @@ function clientInputHandler($input) {
     //$input = trim($input);
     $output = '';
 
-    if (preg_match('/^cmd:\s*(shutdown|restart|server\s*(shutdown|restart)?)\s*?(?:(-f))(?=\r?\n$)?/si', $input, $matches)) { 
+    if (preg_match('/^cmd:\s*(shutdown|restart|server\s*(shutdown|restart))\s*?(?:(-f))(?=\r?\n$)?/si', $input, $matches)) { 
       //signalHandler(SIGTERM); // $running = false;
       $output = var_export($matches, true);
       if ($matches[3] == '-f')
         signalHandler(SIGTERM);
     } elseif (preg_match('/^cmd:\s*server\s*status(?=\r?\n$)?/si', $input)) {
       $output = 'Server is running... PID=' . getmypid();
-    } elseif(preg_match('/^cmd:\s*server\s*backup(?=\r?\n$)?/si', $input)) {
+    } elseif(preg_match('/^cmd:\s*server\s*backup(?=\r?\n$)?/si', $input, $matches)) {
       require_once 'public/index.php';
       echo "Including/Requiring... $matches[2]\n";
 
@@ -161,12 +162,12 @@ function clientInputHandler($input) {
           }
           // Add the relative path to the organizedFiles array if it is a .php file and not already present
           if (pathinfo($relativePath, PATHINFO_EXTENSION) == 'php' && !in_array($relativePath, $organizedFiles)) {
-              $organizedFiles[] = $relativePath;
+            $organizedFiles[] = $relativePath;
           }
       }
             
       // Add non-recursive scanning for the root baseDir for *.php files
-      $rootPhpFiles = glob($baseDir . '*.php');
+      $rootPhpFiles = glob($baseDir . '{*.php,.env,.gitignore,.htaccess,*.md,LICENSE,*.js,composer.json,package.json,settings.json}', GLOB_BRACE);
       foreach ($rootPhpFiles as $file) {
           if (is_file($file)) {
               $relativePath = str_replace($baseDir, '', $file);
@@ -174,6 +175,22 @@ function clientInputHandler($input) {
               if (pathinfo($relativePath, PATHINFO_EXTENSION) == 'php' && !in_array($relativePath, $organizedFiles)) {
                   if ($relativePath == 'composer-setup.php') continue;
                   $organizedFiles[] = $relativePath;
+              } elseif (pathinfo($relativePath, PATHINFO_EXTENSION) == 'env' && !in_array($relativePath, $organizedFiles)) {
+                $organizedFiles[] = $relativePath;
+              } elseif (pathinfo($relativePath, PATHINFO_EXTENSION) == 'gitignore' && !in_array($relativePath, $organizedFiles)) {
+                $organizedFiles[] = $relativePath;
+              } elseif (pathinfo($relativePath, PATHINFO_EXTENSION) == 'htaccess' && !in_array($relativePath, $organizedFiles)) {
+                $organizedFiles[] = $relativePath;
+              } elseif (pathinfo($relativePath, PATHINFO_EXTENSION) == 'md' && !in_array($relativePath, $organizedFiles)) {
+                $organizedFiles[] = $relativePath;
+              } elseif (pathinfo($relativePath, PATHINFO_EXTENSION) == 'env' && !in_array($relativePath, $organizedFiles)) {
+                $organizedFiles[] = $relativePath;
+              } elseif (pathinfo($relativePath, PATHINFO_EXTENSION) == 'LICENSE' && !in_array($relativePath, $organizedFiles)) {
+                $organizedFiles[] = $relativePath;
+              } elseif (pathinfo($relativePath, PATHINFO_EXTENSION) == 'js' && !in_array($relativePath, $organizedFiles)) {
+                $organizedFiles[] = $relativePath;
+              } elseif (pathinfo($relativePath, PATHINFO_EXTENSION) == 'json' && !in_array($relativePath, $organizedFiles)) {
+                $organizedFiles[] = $relativePath;
               }
           }
       }
@@ -187,6 +204,7 @@ function clientInputHandler($input) {
       $output = var_export($sortedArray, true);
 
       $json = "{\n";  // Display the sorted array
+
       while ($path = array_shift($sortedArray)) {
         $json .= '"' . $path . '" : ' . json_encode(file_get_contents($path)) . (end($sortedArray) != $path ? ',' : '') . "\n";
       }

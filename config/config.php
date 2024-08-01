@@ -432,7 +432,7 @@ if (!is_dir($path = APP_PATH . 'projects')) {
 }
 
 if (!is_file($file = APP_PATH . 'projects/index.php')) {
-  $errors['project.php'] = 'projects/index.php does not exist.';
+  $errors['projects'] = 'projects/index.php does not exist.';
 
   file_put_contents($file, '<?php ' . <<<END
 

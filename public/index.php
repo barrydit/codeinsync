@@ -397,14 +397,21 @@ $dirs[] = APP_PATH . APP_BASE['config'] . 'npm.php';
   
   } // isset($paths) && !empty($paths)
 
-   if (defined('APP_ENV') and APP_ENV == 'production' )
-     require_once 'idx.product.php';
-   elseif (defined('APP_ENV') and APP_ENV == 'development')
-     require_once 'idx.develop.php';
-   elseif (defined('APP_ENV') and APP_ENV == 'math')
-     require_once 'idx.math.php';
-   else {
-     !defined('APP_ENV') and define('APP_ENV', 'production');
-       require_once 'idx.product.php';
-   }
+  if (defined('APP_ENV') and APP_ENV == 'production' )
+    switch (APP_ENV) {
+      case 'development':
+        require_once 'idx.develop.php';
+        break;
+      case 'math':
+        require_once 'idx.math.php';
+        break;
+      case 'production':
+        require_once 'idx.product.php';
+        break;
+  } else {
+    define('APP_ENV', 'production');
+    require_once 'idx.product.php';
   }
+
+
+}
