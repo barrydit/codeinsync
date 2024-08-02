@@ -71,7 +71,7 @@ class Sockets
     private function handleClientRequest()
     {
         global $errors, $output;
-        $errors['server-1'] = "Connected to Server: " . APP_HOST . "\n";
+        $errors['server-1'] = "Connected to Server: " . APP_HOST . ':' . APP_PORT . "\n";
 
         // Send a message to the server
         $errors['server-2'] = 'Client request: ' . $message = "cmd: " . $_SERVER["SCRIPT_FILENAME"] . "\n";

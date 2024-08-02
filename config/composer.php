@@ -682,8 +682,8 @@ if ($latestPackage !== null) {
 
 //dd(APP_PATH);
 
-//require __DIR__ . APP_BASE['vendor'] . 'Git.php/src/Git.php';
-//require __DIR__ . APP_BASE['vendor'] . 'Git.php/src/GitRepo.php';
+//require __DIR__ . DIRECTORY_SEPARATOR . APP_BASE['vendor'] . 'Git.php/src/Git.php';
+//require __DIR__ . DIRECTORY_SEPARATOR . APP_BASE['vendor'] . 'Git.php/src/GitRepo.php';
 
 //use Kbjr\Git\Git;
 //use Kbjr\Git\GitRepo;

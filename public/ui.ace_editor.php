@@ -193,7 +193,7 @@ ob_start(); ?>
             <a class="text-sm" id="app_ace_editor-frameMenuPrev" href="<?= (!empty(APP_QUERY) ? '?' . http_build_query(APP_QUERY) : '') . (defined('APP_ENV') && APP_ENV == 'development' ? '#!' : '#') ?>"> &lt; Menu</a> | <a class="text-sm" id="app_ace_editor-frameMenuNext" href="<?= (!empty(APP_QUERY) ? '?' . http_build_query(APP_QUERY) : '') . (defined('APP_ENV') && APP_ENV == 'development' ? '#!' : '#') ?>">Init &gt;</a>
           </div>
         </div>
-        <div class="absolute" style="position: absolute; display: inline-block; top: -3px; right: 0; text-align: right; float: right;">
+        <div class="absolute" style="position: absolute; display: inline-block; top: 5px; right: 0; text-align: right; float: right;">
           <div class="text-xs" style="position: relative; display: inline-block;">
           + 478 <a href="https://github.com/ajaxorg/ace/graphs/contributors">contributors</a>
           <br /><!-- a href="https://github.com/ajaxorg"><img src="resources/images/node.js.png" title="https://github.com/nodejs" width="18" height="18" /></a -->
@@ -256,7 +256,7 @@ if (!empty($paths))
 <form style="" action="<?= APP_URL_BASE . '?' . http_build_query(APP_QUERY + array( 'app' => 'ace_editor')) . (defined('APP_ENV') && APP_ENV == 'development' ? '#!' : '') /* $c_or_p . '=' . (empty($_GET[$c_or_p]) ? '' : $$c_or_p->name) . '&amp;app=composer' */ ?>" method="POST">
         <input type="hidden" name="path" value="<?= APP_PATH /*. APP_BASE['public'];*/ ?>" />
         <div style="display: inline-block; width: auto; text-align: right; float: right;">
-          <input type="submit" value="Save" class="btn" style="margin: -5px 5px 5px 0;" onclick="document.getElementsByClassName('ace_text-input')[0].value = globalEditor.getSession().getValue(); document.getElementsByClassName('ace_text-input')[0].name = 'editor';"/>
+          <input type="submit" value="Save" class="btn" style="margin: -5px 5px 5px 0; z-index: 999;" onclick="document.getElementsByClassName('ace_text-input')[0].value = globalEditor.getSession().getValue(); document.getElementsByClassName('ace_text-input')[0].name = 'editor';"/>
         </div>
 <!--   A (<?= $path ?>) future note: keep ace-editor nice and tight ... no spaces, as it interferes with the content window.
  https://scribbled.space/ace-editor-setup-usage/ -->

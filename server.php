@@ -347,8 +347,8 @@ $manager->addNotification($notification1);
 //get_included_files()[0] == 
 if (is_dir($path = __DIR__ . APP_BASE['vendor'] . 'cboden' . DIRECTORY_SEPARATOR . 'ratchet') && !empty(glob($path)) && file_exists(__DIR__ . APP_BASE['vendor'] . 'autoload.php')) {
   error_log('Creating a websocket server...');
-  require_once __DIR__ . APP_BASE['vendor'] . 'autoload.php';
-  require_once __DIR__ . DIRECTORY_SEPARATOR . 'config' . DIRECTORY_SEPARATOR . 'classes' . DIRECTORY_SEPARATOR . 'class.websocketserver.php';
+  require_once __DIR__ . DIRECTORY_SEPARATOR . APP_BASE['vendor'] . 'autoload.php';
+  require_once __DIR__ . DIRECTORY_SEPARATOR . APP_BASE['config'] . 'classes' . DIRECTORY_SEPARATOR . 'class.websocketserver.php';
 } else
   try {
     error_log('Creating a stream/socket server...');
