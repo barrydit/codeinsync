@@ -261,7 +261,7 @@ if (!empty($paths))
 <!--   A (<?= $path ?>) future note: keep ace-editor nice and tight ... no spaces, as it interferes with the content window.
  https://scribbled.space/ace-editor-setup-usage/ -->
 
-<div id="ui_ace_editor" class="ace_editor" style="display: <?= isset($_GET['file']) && isset($_GET['path']) && is_file($_GET['path'] . $_GET['file']) ? 'block' : 'block'?>; z-index: 1;"><textarea name="contents" class="ace_text-input" autocorrect="off" autocapitalize="none" spellcheck="false" style="opacity: 0; font-size: 1px; height: 1px; width: 1px; top: 28px; left: 86px;" wrap="off"><?= isset($_GET['file']) && is_file(APP_PATH . APP_ROOT . $_GET['file']) ? htmlsanitize(file_get_contents(APP_PATH . APP_ROOT . $_GET['file'])) : htmlsanitize("<?php
+<div id="ui_ace_editor" class="ace_editor" style="display: <?= isset($_GET['file']) && isset($_GET['path']) && is_file($_GET['path'] . $_GET['file']) ? 'block' : 'block'?>; z-index: 1;"><textarea name="contents" class="ace_text-input" autocorrect="off" autocapitalize="none" spellcheck="false" style="opacity: 0; font-size: 1px; height: 1px; width: 1px; top: 28px; left: 86px;" wrap="off"><?= isset($_GET['file']) && is_file($filename = APP_PATH . APP_ROOT . (!isset($_GET['path']) ? '' : $_GET['path'] . ($_GET['path'] == '' ? '' : '/' )) . $_GET['file']) ? htmlsanitize(file_get_contents($filename)) : htmlsanitize("<?php
 
 /* This is an example of ACE Editor working */
 

@@ -17,7 +17,6 @@ define('APP_SUDO', strtoupper(substr(PHP_OS, 0, 3)) === 'WIN' ? /*'runas /user:A
 
 //require_once 'functions.php';
 
-
 !defined('APP_START') and define('APP_START', microtime(true)) ?: is_float(APP_START) or $errors['APP_START'] = 'APP_START is not a valid float value.';
 //!defined('APP_END') and define('APP_END', microtime(true)) ?: is_float(APP_END) or $errors['APP_END'] = 'APP_END is not a valid float value.'; // APP_END - APP_START
 
@@ -26,8 +25,6 @@ define('APP_SUDO', strtoupper(substr(PHP_OS, 0, 3)) === 'WIN' ? /*'runas /user:A
 //!defined('APP_PATH') and define('APP_PATH', implode(DIRECTORY_SEPARATOR, array_intersect_assoc( explode(DIRECTORY_SEPARATOR, __DIR__), explode(DIRECTORY_SEPARATOR, dirname(APP_SELF)))) . DIRECTORY_SEPARATOR);
 
 !defined('APP_PATH') and define('APP_PATH', realpath(__DIR__ . DIRECTORY_SEPARATOR . '..' . DIRECTORY_SEPARATOR) . DIRECTORY_SEPARATOR) and is_string(APP_PATH) ?: $errors['APP_PATH'] = 'APP_PATH is not a valid string value.';
-
-
 
 //var_dump(get_defined_constants(true)['user']);
 /*
@@ -38,7 +35,6 @@ define('APP_SUDO', strtoupper(substr(PHP_OS, 0, 3)) === 'WIN' ? /*'runas /user:A
 !defined('APP_DEBUG') and define('APP_DEBUG', true) ?: is_bool(APP_DEBUG) or $errors['APP_DEBUG'] = 'APP_DEBUG is not a valid boolean value.';
 
 */
-
 
 if ($ip = resolve_host_to_ip('google.com')) { // parse_url($ip, PHP_URL_HOST)
   if (check_internet_connection($ip)) {

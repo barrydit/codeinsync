@@ -54,7 +54,7 @@ if (is_readable($path = APP_PATH . APP_ROOT . $_ENV['ERROR_LOG_FILE']) && filesi
   $matches = [];
     
   // Parse the shell output line by line
-  foreach (explode("\n", $shellOutput) as $line) {
+  foreach (explode("\n", (string) $shellOutput) as $line) {
     if ($line == '') continue;
     elseif (preg_match($pattern, $line)) {
       $matches[] = $line;

@@ -82,6 +82,18 @@ function check_http_200($url = 'http://8.8.8.8') {
   //return false; // Ping or HTTP request failed //$connected = @fsockopen("www.google.com", 80); //fclose($connected);
 }
 
+function check_http_404($url = 'http://8.8.8.8') {
+  if (defined('APP_CONNECTED')) { // check_ping() was 2 == fail | 0 == success
+    if ($url !== 'http://8.8.8.8' && (preg_match('/^https?:\/\/(.*)$/', $url) ?: $url = 'http://' . $url)) {
+      //dd("check $url", false); // string interpolation
+      if (!empty($headers = get_headers($url)))
+        return strpos($headers[0], '404') !== false ? false : true;
+    } else
+      return true; // Special case for the default URL
+  }
+  //return false; // Ping or HTTP request failed //$connected = @fsockopen("www.google.com", 80); //fclose($connected);
+}
+
 function packagist_return_source($vendor, $package) {
   $url = "https://packagist.org/packages/$vendor/$package";
   $initial_url = '';
@@ -297,7 +309,7 @@ function parse_ini_file_multi($file) {
 } */
 
 function parse_ini_file_multi($file) {
-  $data = parse_ini_file($file, true, INI_SCANNER_TYPED);
+  $data = (array) parse_ini_file($file, true, INI_SCANNER_TYPED);
   $output = [];
 
   foreach ($data as $section => $values) {
