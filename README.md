@@ -1,5 +1,8 @@
 # CodeHub
-Front-end interface for php composer. I intend to make it a lot simplier to install php libraries off of packagist and github, and that I wanted to be able to just plug the code in it, and make it work. I also wanted to show my skills off. I realize there are many other peoples content/images that are copyrighted, but if you ask nicely, they will be removed.
+Front-end interface for php composer. I intend to make it a lot simplier to install php libraries off of packagist and github, and that I wanted to be able to just plug the code in it, and make it work. I also wanted to show my skills off. I realize there are many other peoples content/images that are copyrighted, but if
+ you ask nicely, they will be removed.
+ 
+![app_ace_editor](https://github.com/user-attachments/assets/ff747b1a-3bc5-4a07-8aaf-c92eaf287249)
 
 ![image](https://github.com/barrydit/CodeHub/assets/6217010/763efd9c-71f2-4e66-8ced-0e2b17c82da2)
 
