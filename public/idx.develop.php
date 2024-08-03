@@ -329,7 +329,7 @@ do {
     
     <title>WebPortal</title>
     <?php
-      // (check_http_200('https://cdn.tailwindcss.com') ? 'https://cdn.tailwindcss.com' : APP_WWW . 'resources/js/tailwindcss-3.3.5.js')?
+      // (check_http_status('https://cdn.tailwindcss.com') ? 'https://cdn.tailwindcss.com' : APP_WWW . 'resources/js/tailwindcss-3.3.5.js')?
       is_dir($path = APP_PATH . APP_BASE['resources'] . 'js/') or mkdir($path, 0755, true);
       if (is_file($path . 'tailwindcss-3.3.5.js')) {
         if (ceil(abs((strtotime(date('Y-m-d')) - strtotime(date('Y-m-d',strtotime('+5 days',filemtime($path . 'tailwindcss-3.3.5.js'))))) / 86400)) <= 0 ) {
@@ -821,7 +821,7 @@ do {
               <?php
                 $result = [];
                 
-                if (check_http_200()) {
+                if (check_http_status()) {
                   $whois = new Whois();
                   $query = 'example.com';
                   $result = $whois->lookup($query,false);
@@ -1699,7 +1699,7 @@ do {
       <span>IP Address: </span><br />
       <span>App Path: <?= APP_PATH; ?></span><br />
     </div>
-    <script src="<?= (check_http_200('https://code.jquery.com/jquery-3.7.1.min.js') ? 'https://code.jquery.com/jquery-3.7.1.min.js' : APP_BASE['resources'] . 'js/jquery/' . 'jquery-3.7.1.min.js') ?>"></script>
+    <script src="<?= check_http_status('https://code.jquery.com/jquery-3.7.1.min.js') ? 'https://code.jquery.com/jquery-3.7.1.min.js' : APP_BASE['resources'] . 'js/jquery/' . 'jquery-3.7.1.min.js' ?>"></script>
     <!-- You need to include jQueryUI for the extended easing options. -->
     <?php /* https://stackoverflow.com/questions/12592279/typeerror-p-easingthis-easing-is-not-a-function */ ?>
     <!-- script src="//code.jquery.com/jquery-1.12.4.js"></script -->

@@ -13,40 +13,35 @@
 $user = ''; // www-data
 $password = ''; // password
 
-define('APP_SUDO', strtoupper(substr(PHP_OS, 0, 3)) === 'WIN' ? /*'runas /user:Administrator "cmd /c" '*/ : 'echo ' . escapeshellarg(isset($password) && $password == '' ? '' : $password) . ' | sudo -S ' . (isset($user) && $user == '' ? '' : "-u $user") . ' '); // 'su -c'
-
-//require_once 'functions.php';
+!defined('APP_SUDO') and define('APP_SUDO', strtoupper(substr(PHP_OS, 0, 3)) === 'WIN' ? /*'runas /user:Administrator "cmd /c" '*/ : 'echo ' . escapeshellarg(isset($password) && $password == '' ? '' : $password) . ' | sudo -S ' . (isset($user) && $user == '' ? '' : "-u $user") . ' '); // 'su -c'
 
 !defined('APP_START') and define('APP_START', microtime(true)) ?: is_float(APP_START) or $errors['APP_START'] = 'APP_START is not a valid float value.';
 //!defined('APP_END') and define('APP_END', microtime(true)) ?: is_float(APP_END) or $errors['APP_END'] = 'APP_END is not a valid float value.'; // APP_END - APP_START
 
 !defined('APP_SELF') and define('APP_SELF', get_included_files()[0] ?? __FILE__) and is_string(APP_SELF) ?: $errors['APP_SELF'] = 'APP_SELF is not a valid string value.';; // get_included_files()[0] | str_replace($_SERVER['DOCUMENT_ROOT'], '', $_SERVER['SCRIPT_FILENAME']) | $_SERVER['PHP_SELF']
 
+!defined('APP_PATH') and define('APP_PATH', realpath(__DIR__ . DIRECTORY_SEPARATOR . '..' . DIRECTORY_SEPARATOR) . DIRECTORY_SEPARATOR) and is_string(APP_PATH) ?: $errors['APP_PATH'] = 'APP_PATH is not a valid string value.';
 //!defined('APP_PATH') and define('APP_PATH', implode(DIRECTORY_SEPARATOR, array_intersect_assoc( explode(DIRECTORY_SEPARATOR, __DIR__), explode(DIRECTORY_SEPARATOR, dirname(APP_SELF)))) . DIRECTORY_SEPARATOR);
 
-!defined('APP_PATH') and define('APP_PATH', realpath(__DIR__ . DIRECTORY_SEPARATOR . '..' . DIRECTORY_SEPARATOR) . DIRECTORY_SEPARATOR) and is_string(APP_PATH) ?: $errors['APP_PATH'] = 'APP_PATH is not a valid string value.';
-
-//var_dump(get_defined_constants(true)['user']);
 /*
-
 !defined('APP_DEV') and define('APP_DEV', true) ?: is_bool(APP_DEV) or $errors['APP_DEV'] = 'APP_DEV is not a valid boolean value.';
 !defined('APP_PROD') and define('APP_PROD', false) ?: is_bool(APP_PROD) or $errors['APP_PROD'] = 'APP_PROD is not a valid boolean value.';
 !defined('APP_TEST') and define('APP_TEST', false) ?: is_bool(APP_TEST) or $errors['APP_TEST'] = 'APP_TEST is not a valid boolean value.';
 !defined('APP_DEBUG') and define('APP_DEBUG', true) ?: is_bool(APP_DEBUG) or $errors['APP_DEBUG'] = 'APP_DEBUG is not a valid boolean value.';
-
 */
 
-if ($ip = resolve_host_to_ip('google.com')) { // parse_url($ip, PHP_URL_HOST)
-  if (check_internet_connection($ip)) {
-      //echo "Connected to the internet.";
-      define('APP_CONNECTED', true);
-  } else {
-      define('APP_CONNECTIVITY', "Not connected to the internet.");
-  }
+// Resolve host to IP and check internet connection
+if ($ip = resolve_host_to_ip('google.com')) {
+    if (check_internet_connection($ip)) {
+        define('APP_CONNECTED', true);
+    } else {
+        define('APP_CONNECTIVITY', "Not connected to the internet.");
+    }
 } else {
-  define('APP_CONNECTIVITY', "Failed to resolve host to IP.");
+    define('APP_CONNECTIVITY', "Failed to resolve host to IP.");
 }
 
+// Set connectivity error if not connected
 !defined('APP_CONNECTED') and $errors['APP_CONNECTIVITY'] = 'APP Connect(ed): ' . var_export(APP_CONNECTIVITY, true) . "\n"; // print('Connectivity: ' . APP_CONNECTIVITY . "\n");
 
 //echo 'Checking Constants: ' . "\n\n";
@@ -113,29 +108,65 @@ and define('APP_LOGIN', $login);
 // absolute pathname 
 switch (basename(__DIR__)) {
   case 'config':
-    define('APP_BASE', [ // https://stackoverflow.com/questions/8037266/get-the-url-of-a-file-included-by-php
-      'config' => 'config' . DIRECTORY_SEPARATOR,
-      'database' => 'database' . DIRECTORY_SEPARATOR,
-      'public' => 'public' . DIRECTORY_SEPARATOR,
-      'resources' => 'resources' . DIRECTORY_SEPARATOR,
-      'projects' => 'projects' . DIRECTORY_SEPARATOR,
-      'src' => 'src' . DIRECTORY_SEPARATOR,
-      'var' => 'var' . DIRECTORY_SEPARATOR,
-      'vendor' => 'vendor' . DIRECTORY_SEPARATOR,
-      //'tmp' => 'var' . DIRECTORY_SEPARATOR . 'tmp' . DIRECTORY_SEPARATOR,
-      //'export' =>  'var' . DIRECTORY_SEPARATOR . 'export' . DIRECTORY_SEPARATOR,
-      //'session' => 'var' . DIRECTORY_SEPARATOR . 'session' . DIRECTORY_SEPARATOR,
-    ]);
-    break;
   default:
-    define('APP_BASE', [
-      'config' => 'config' . DIRECTORY_SEPARATOR,
-      'database' => 'database' . DIRECTORY_SEPARATOR,
-      //'public' => 'public' . DIRECTORY_SEPARATOR,   // basename(APP_PATH) could be composer||public[_html]/
-      'resources' => 'resources' . DIRECTORY_SEPARATOR,
-      'var' => 'var' . DIRECTORY_SEPARATOR,
-      'vendor' => 'vendor' . DIRECTORY_SEPARATOR,
-    ]);
+    // Define base paths
+    $base_paths = [ // https://stackoverflow.com/questions/8037266/get-the-url-of-a-file-included-by-php
+      'config',
+      'clientele',
+      // 'database',
+      'public',
+      'projects',
+      'resources',
+      'node_modules',
+      'src',
+      'var',
+      'vendor',
+      // 'tmp' => 'var' . DIRECTORY_SEPARATOR . 'tmp' . DIRECTORY_SEPARATOR,
+      // 'export' =>  'var' . DIRECTORY_SEPARATOR . 'export' . DIRECTORY_SEPARATOR,
+      // 'session' => 'var' . DIRECTORY_SEPARATOR . 'session' . DIRECTORY_SEPARATOR,
+    ];
+
+    // Determine the base path for glob
+    $basePath = defined('APP_PATH') ? APP_PATH : __DIR__ . DIRECTORY_SEPARATOR;
+
+    // Get directories in the base path and filter them
+    $dirpaths = array_map('basename', array_filter(glob($basePath . '*', GLOB_ONLYDIR), 'is_dir'));
+
+    // Find common directories between base paths and directory paths
+    $common = array_intersect($base_paths, $dirpaths);
+
+    // Identify missing base paths
+    $missingBasePaths = array_diff($base_paths, $common);
+    if (!empty($missingBasePaths)) {
+      $errors['MISSING_BASE_PATHS'] = 'Directories missing base path: ' . implode(', ', $missingBasePaths) . "\n";
+    }
+
+    // Identify missing base paths
+    $missingPaths = array_diff($dirpaths, $common);
+    if (!empty($missingPaths)) {
+      $errors['MISSING_PATHS'] = 'Directories not added to the base paths: ' . implode(', ', $missingPaths) . "\n";
+    }
+
+    // Process common directories and prepare APP_BASE definition
+    $processedCommon = [];
+
+    if (empty($common))
+      $errors['APP_BASE'] = json_encode(array_keys($common)); 
+    else 
+      foreach ($common as $key => $dirname) {
+        if (basename(__DIR__) == 'public' && $dirname == 'public') {
+          continue;
+        }
+
+        if (!is_dir((defined('APP_PATH') ? APP_PATH : __DIR__ . DIRECTORY_SEPARATOR)  . $dirname) && APP_DEBUG)
+          (@!mkdir((defined('APP_PATH') ? APP_PATH : __DIR__ . DIRECTORY_SEPARATOR) . $dirname, 0755, true) ?: $errors['APP_BASE'][$key] = "$dirname could not be created." );
+
+        $processedCommon[$dirname] = $dirname . DIRECTORY_SEPARATOR;
+      }
+
+    // Define APP_BASE
+    define('APP_BASE', $processedCommon);
+
     break;
 }
 
@@ -159,17 +190,6 @@ if (defined('APP_DOMAIN') && !in_array(APP_DOMAIN, [/*'localhost',*/ '127.0.0.1'
 } */
 
 //(defined('APP_PATH') && truepath(APP_PATH)) and $errors['APP_PATH'] = truepath(APP_PATH); // print('App Path: ' . APP_PATH . "\n" . "\t" . '$_SERVER[\'DOCUMENT_ROOT\'] => ' . $_SERVER['DOCUMENT_ROOT'] . "\n");
-
-if (defined('APP_BASE'))
-  if (empty(APP_BASE))
-    $errors['APP_BASE'] = json_encode(array_keys(APP_BASE)); // print('App Base: ' .  . "\n");
-  else {
-    foreach (APP_BASE as $key => $path) { // << -- This only works when debug=true
-      if (!is_dir((defined('APP_PATH') ? APP_PATH : __DIR__ . DIRECTORY_SEPARATOR)  . $path) && APP_DEBUG)
-        (@!mkdir((defined('APP_PATH') ? APP_PATH : __DIR__ . DIRECTORY_SEPARATOR) . $path, 0755, true) ?: $errors['APP_BASE'][$key] = "$path could not be created." );
-    //else $errors['APP_BASE'][$key] = $path;
-    }
-  }
 
 define('APP_PUBLIC', (defined('APP_PATH') ? APP_PATH : __DIR__ . DIRECTORY_SEPARATOR)  . APP_BASE['public'] . str_replace(defined('APP_PATH') ? APP_PATH : __DIR__ . DIRECTORY_SEPARATOR , '', APP_BASE['public'] . dirname(basename(APP_SELF)) == 'public' ? basename(APP_SELF) : 'index.php')); // 
 

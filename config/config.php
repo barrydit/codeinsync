@@ -368,7 +368,7 @@ END
 
   if (!is_file($file = APP_PATH . 'LICENSE')) {
     if (@touch($file)) {
-      if (check_http_200('http://www.wtfpl.net/txt/copying')) {
+      if (check_http_status('http://www.wtfpl.net/txt/copying')) {
         file_put_contents($file, file_get_contents('http://www.wtfpl.net/txt/copying'));
       } else {
         file_put_contents($file, <<<END

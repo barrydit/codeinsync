@@ -1,29 +1,32 @@
 <?php
 
 require_once __DIR__ . DIRECTORY_SEPARATOR . 'constants.php'; 
-
+// Get all PHP files in the 'classes' directory
 $paths = array_filter(glob(__DIR__ . DIRECTORY_SEPARATOR . 'classes/*.php'), 'is_file');
-//$paths[] = __DIR__ . DIRECTORY_SEPARATOR . 'constants.php';
 
-// Remove 'class.sockets.php' from $paths
-$paths = array_filter($paths, function ($path) {
-  return basename($path) !== 'class.sockets.php';
+// Define the filenames to be excluded
+$excludedFiles = [
+    'class.sockets.php',
+    'class.websocketserver.php'
+];
+
+// Remove excluded files from $paths
+$paths = array_filter($paths, function ($path) use ($excludedFiles) {
+    return !in_array(basename($path), $excludedFiles);
 });
 
-// Remove 'class.websocketserver.php' from $paths
-$paths = array_filter($paths, function ($path) {
-  return basename($path) !== 'class.websocketserver.php';
-});
-
+// Sort $paths alphabetically by filename
 usort($paths, function ($a, $b) {
-  // Define your sorting criteria here
-  return strcmp(basename($a), basename($b)); // Compare filenames alphabetically
+    return strcmp(basename($a), basename($b));
 });
 
-while ($path = array_shift($paths)) {
-  if ($path = realpath($path))
-    require_once $path;
-  else die(var_dump(basename($path) . ' was not found. file=' . $path));
+// Require each file in $paths
+foreach ($paths as $path) {
+    if ($resolvedPath = realpath($path)) {
+        require_once $resolvedPath;
+    } else {
+        die(var_dump(basename($path) . ' was not found. file=' . $path));
+    }
 }
 
 /*
@@ -39,15 +42,43 @@ while ($path = array_shift($paths)) {
         return ($http_status == 200 ? true : false);
 */
 
-function custom_log($message)
-{
-    file_put_contents(ini_get('error_log'), date('Y-m-d H:i:s') . ' - ' . $message . PHP_EOL, FILE_APPEND);
+/**
+ * Logs a custom message to the error log.
+ *
+ * @param string $message The message to log.
+ */
+function custom_log($message) {
+  $timestamp = date('Y-m-d H:i:s');
+  $logMessage = sprintf("%s - %s%s", $timestamp, $message, PHP_EOL);
+  file_put_contents(ini_get('error_log'), $logMessage, FILE_APPEND);
 }
-
+/**
+ * Validates an IP address.
+ *
+ * @param string $ip The IP address to validate.
+ * @return bool True if the IP address is valid, false otherwise.
+ */
 function check_ip($ip = '') {
-  return filter_var($ip, FILTER_VALIDATE_IP) ? true : false;
+  return filter_var($ip, FILTER_VALIDATE_IP) !== false;
 }
 
+/**
+ * Resolves a hostname to an IP address.
+ *
+ * @param string $host The hostname to resolve.
+ * @return string|false The resolved IP address or false on failure.
+ */
+function resolve_host_to_ip($host) {
+  $ip = gethostbyname($host);
+  return $ip !== $host ? $ip : false;
+}
+
+/**
+ * Checks internet connection by pinging a specified IP address.
+ *
+ * @param string $ip The IP address to ping. Defaults to Google's DNS server.
+ * @return bool True if the connection is successful, false otherwise.
+ */
 function check_internet_connection($ip = '8.8.8.8') {
   $status = null;
 
@@ -56,51 +87,55 @@ function check_internet_connection($ip = '8.8.8.8') {
       exec("ping -n 1 -w 1 " . /*-W 20 */ escapeshellarg($ip), $output, $status);  // parse_url($ip, PHP_URL_HOST)
   else
       exec(APP_SUDO . "/bin/ping -c 1 -W 1 " . escapeshellarg($ip), $output, $status); // var_dump(\$status)
-  if ($status !== 0)
-    @fsockopen('www.google.com', 80, $errno, $errstr, 10) ?: $errors['APP_CONNECTIVITY'] = 'No internet connection.';
+
+  // If ping fails, try fsockopen as a fallback
+  if ($status !== 0) {
+    $connection = @fsockopen('www.google.com', 80, $errno, $errstr, 10);
+    if (!$connection) {
+        $errors['APP_CONNECTIVITY'] = 'No internet connection.';
+    } else {
+        fclose($connection);
+    }
+  }
 
   return $status === 0;
 }
 
 // die(var_dump(check_internet_connection()) ? true : false);
 
-function resolve_host_to_ip($host) {
-  $ip = gethostbyname($host);
-  return $ip !== $host ? $ip : false;
-}
-
-/* HTTP status of a URL and the network connectivity using ping */
-function check_http_200($url = 'http://8.8.8.8') {
-  if (defined('APP_CONNECTED')) { // check_ping() was 2 == fail | 0 == success
-    if ($url !== 'http://8.8.8.8' && (preg_match('/^https?:\/\/(.*)$/', $url) ?: $url = 'http://' . $url)) {
-      //dd("check $url", false); // string interpolation
-      if (!empty($headers = get_headers($url)))
-        return strpos($headers[0], '200') !== false ? false : true;
-    } else
-      return true; // Special case for the default URL
+/**
+ * Check if a URL returns a specific HTTP status code.
+ * 
+ * @param string $url The URL to check. Default is 'http://8.8.8.8'.
+ * @param int $statusCode The HTTP status code to check for. Default is 200.
+ * @return bool True if the URL does not return the specified status, false otherwise.
+ */
+function check_http_status($url = 'http://8.8.8.8', $statusCode = 200) {
+  if (defined('APP_CONNECTED')) {
+      if ($url !== 'http://8.8.8.8' && !preg_match('/^https?:\/\//', $url)) {
+          $url = 'http://' . $url;
+      }
+      $headers = get_headers($url);
+      return !empty($headers) && strpos($headers[0], (string)$statusCode) === false;
   }
-  //return false; // Ping or HTTP request failed //$connected = @fsockopen("www.google.com", 80); //fclose($connected);
+  return true; // Special case for the default URL or if not connected
 }
 
-function check_http_404($url = 'http://8.8.8.8') {
-  if (defined('APP_CONNECTED')) { // check_ping() was 2 == fail | 0 == success
-    if ($url !== 'http://8.8.8.8' && (preg_match('/^https?:\/\/(.*)$/', $url) ?: $url = 'http://' . $url)) {
-      //dd("check $url", false); // string interpolation
-      if (!empty($headers = get_headers($url)))
-        return strpos($headers[0], '404') !== false ? false : true;
-    } else
-      return true; // Special case for the default URL
-  }
-  //return false; // Ping or HTTP request failed //$connected = @fsockopen("www.google.com", 80); //fclose($connected);
-}
-
+/**
+ * Retrieves the source URL for a given package from Packagist.
+ *
+ * @param string $vendor The vendor name for the package.
+ * @param string $package The package name.
+ *
+ * @return string The source URL if it points to a GitHub repository; otherwise, the initial URL.
+ */
 function packagist_return_source($vendor, $package) {
   $url = "https://packagist.org/packages/$vendor/$package";
   $initial_url = '';
   
   libxml_use_internal_errors(true); // Prevent HTML errors from displaying
   $dom = new DOMDocument(1.0, 'utf-8');
-  if (check_http_200($url)) {
+  if (check_http_status($url)) {
     $dom->loadHTML(file_get_contents($url));
 
     $anchors = $dom->getElementsByTagName('a');
@@ -119,20 +154,27 @@ function packagist_return_source($vendor, $package) {
 
   // Extract username, repository, and version from the initial URL
     $parts = explode("/", rtrim($initial_url, "/"));
-    dd($initial_url);
-    dd($parts);
+    //dd($initial_url);
+    //dd($parts);
     
-    $username = $parts[3];
-    $repository = $parts[4];
-    $version = $parts[6];
+    //$username = {$parts[3]};
+    //$repository = $parts[4];
+    //$version = $parts[6];
 
   //$blob_url = "https://github.com/$username/$repository/blob/$version/composer.json";
-    return "https://raw.githubusercontent.com/$username/$repository/$version/composer.json";
+    return "https://raw.githubusercontent.com/{$parts[3]}/{$parts[4]}/{$parts[6]}/composer.json";
 
   }
   return $initial_url;
 }
 
+/**
+ * Sanitizes the input by converting HTML entities, removing invalid UTF-8 characters, and encoding special characters.
+ *
+ * @param mixed $input The input to sanitize. Can be a string, array, or null. Default is an empty string.
+ *
+ * @return string|null The sanitized string. Returns null if the input is null.
+ */
 function htmlsanitize(mixed $input = '') {
 
     if (is_array($input)) $input = var_export($input, true);
@@ -183,18 +225,42 @@ function getRelativePath($base, $path) {
   return $separator . (string)implode($separator, array_slice($path, count($base)));
 }
 
+/**
+ * Resolves a symbolic link to its final target path.
+ *
+ * This function follows symbolic links until it reaches a non-link file or directory.
+ *
+ * @param string $linkFilename The path to the symbolic link to resolve.
+ *
+ * @return string The resolved path of the final target, which is not a symbolic link.
+ */
+function readlinkToEnd(string $linkFilename): string {
+  // Check if the provided path is a symbolic link
+  if (!is_link($linkFilename)) {
+      // If it's not a symbolic link, return the path as is
+      return $linkFilename;
+  }
 
-function readlinkToEnd($linkFilename) {
-  if(!is_link($linkFilename)) return $linkFilename;
   $final = $linkFilename;
-  while(true) {
-    $target = readlink($final);
-    $final = (substr($target, 0, 1) == '/') ? $target : dirname($final) . '/' . $target;
-    if(substr($final, 0, 2)=='./') $final = substr($final, 2);
-    if(!is_link($final)) return $final;
+
+  while (true) {
+      // Read the target path of the current symbolic link
+      $target = readlink($final);
+
+      // Construct the new path from the target
+      $final = (substr($target, 0, 1) == '/') ? $target : dirname($final) . '/' . $target;
+
+      // Remove leading './' if present
+      if (substr($final, 0, 2) == './') {
+          $final = substr($final, 2);
+      }
+
+      // If the new path is not a symbolic link, return it
+      if (!is_link($final)) {
+          return $final;
+      }
   }
 }
-
 
 /* function parse_ini_file_multi($file) {
   // parse_ini_string(file_get_contents($file), true, INI_SCANNER_NORMAL))) 
@@ -409,15 +475,15 @@ function truepath($path){
     $parts = array_filter(explode(DIRECTORY_SEPARATOR, $path), 'strlen');
     $absolutes = array();
     foreach ($parts as $part) {
-        if ('.'  == $part) continue;
-    switch ('..') {
-      case $part:
-        array_pop($absolutes);
-        break;
-      default:
-        $absolutes[] = $part;
-        break;
-    }
+      if ('.'  == $part) continue;
+      switch ('..') {
+        case $part:
+          array_pop($absolutes);
+          break;
+        default:
+          $absolutes[] = $part;
+          break;
+      }
     }
     $path=implode(DIRECTORY_SEPARATOR, $absolutes);
     // resolve any symlinks

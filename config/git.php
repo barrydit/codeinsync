@@ -55,7 +55,7 @@ function git_origin_sha_update() {
   }
 }
 
-$response = (defined('APP_CONNECTED') && check_http_200($_ENV['GITHUB']['ORIGIN_URL']) === true && !check_http_404($latest_remote_commit_url) ? file_get_contents($latest_remote_commit_url, false, $context): '{}' );
+$response = (defined('APP_CONNECTED') && check_http_status($_ENV['GITHUB']['ORIGIN_URL']) === true && !check_http_status($latest_remote_commit_url, 404) ? file_get_contents($latest_remote_commit_url, false, $context): '{}' );
   $errorDetails = error_get_last();
   if (isset($http_response_header) && strpos($http_response_header[0], '401') !== false) {
     $errors['git-unauthorized'] = '[git] You are not authorized. The token may have expired.' . "\n";
@@ -65,7 +65,7 @@ $response = (defined('APP_CONNECTED') && check_http_200($_ENV['GITHUB']['ORIGIN_
   //throw new Exception('Error fetching data from the URL.');
 
   // Make the request
-  //$response = defined('APP_CONNECTED') || check_http_200($_ENV['GITHUB']['ORIGIN_URL']) ? file_get_contents($latest_remote_commit_url, false, $context) : '{}';
+  //$response = defined('APP_CONNECTED') || check_http_status($_ENV['GITHUB']['ORIGIN_URL']) ? file_get_contents($latest_remote_commit_url, false, $context) : '{}';
   $data = json_decode($response, true);
 
   //$errors['GIT_STATUS'] = var_dump($data);

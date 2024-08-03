@@ -824,7 +824,7 @@ fclose($pipes[2]);
 
 /* Previous unlink('composer.lock') location */
 
-  //if (check_http_200()) {
+  //if (check_http_status()) {
 
     $vendors = $dirs_diff = [];
 

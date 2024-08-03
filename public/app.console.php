@@ -1282,7 +1282,7 @@ ob_start(); ?>
   <link rel="stylesheet" href="//code.jquery.com/ui/1.12.1/themes/smoothness/jquery-ui.css" />
 
 <?php
-// (check_http_200('https://cdn.tailwindcss.com') ? 'https://cdn.tailwindcss.com' : APP_WWW . 'resources/js/tailwindcss-3.3.5.js')?
+// (check_http_status('https://cdn.tailwindcss.com') ? 'https://cdn.tailwindcss.com' : APP_WWW . 'resources/js/tailwindcss-3.3.5.js')?
 // Path to the JavaScript file
 $path = APP_PATH . APP_BASE['resources'] . 'js/tailwindcss-3.3.5.js';
 
@@ -1307,7 +1307,7 @@ if (!is_file($path) || (time() - filemtime($path)) > 5 * 24 * 60 * 60) { // ceil
 }
 ?>
 
-  <script src="<?= check_http_200($url) ? substr($url, strpos($url, parse_url($url)['host']) + strlen(parse_url($url)['host'])) : substr($path, strpos($path, dirname(APP_BASE['resources'] . 'js'))) ?>"></script>     
+  <script src="<?= check_http_status($url) ? substr($url, strpos($url, parse_url($url)['host']) + strlen(parse_url($url)['host'])) : substr($path, strpos($path, dirname(APP_BASE['resources'] . 'js'))) ?>"></script>     
 
 <style type="text/tailwindcss">
 <?= $appConsole['style']; ?>

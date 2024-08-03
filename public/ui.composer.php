@@ -153,13 +153,13 @@ $raw_url = $initial_url = $matches[0];
     
       if (!is_file(APP_BASE['var'].'package-' . $vendor . '-' . $package . '.php')) {
 
-      $source_blob = (check_http_200($raw_url) ? file_get_contents($raw_url) : '' );
+      $source_blob = check_http_status($raw_url) ? file_get_contents($raw_url) : '';
     
       //dd('url: ' . $raw_url);
       $raw_url = addslashes($raw_url);
 
       $source_blob = addslashes(COMPOSER_JSON['json']); // $source_blob
-      file_put_contents(APP_BASE['var'].'package-' . $vendor . '-' . $package . '.php', '<?php' . "\n" . ( check_http_200($raw_url) ? '$source = "' . $raw_url . '";' : '' ) . "\n" . 
+      file_put_contents(APP_BASE['var'].'package-' . $vendor . '-' . $package . '.php', '<?php' . "\n" . ( check_http_status($raw_url) ? '$source = "' . $raw_url . '";' : '' ) . "\n" . 
 <<<END
 \$composer_json = "{$source_blob}";
 return '<form action method="POST">'
@@ -1529,7 +1529,7 @@ ob_start(); ?>
   <!-- link rel="stylesheet" href="//code.jquery.com/ui/1.12.1/themes/smoothness/jquery-ui.css" /-->
 
 <?php
-// (check_http_200('https://cdn.tailwindcss.com') ? 'https://cdn.tailwindcss.com' : APP_WWW . 'resources/js/tailwindcss-3.3.5.js')?
+// (check_http_status('https://cdn.tailwindcss.com') ? 'https://cdn.tailwindcss.com' : APP_WWW . 'resources/js/tailwindcss-3.3.5.js')?
 is_dir($path = APP_PATH . APP_BASE['resources'] . 'js/') or mkdir($path, 0755, true);
 if (is_file($path . 'tailwindcss-3.3.5.js')) {
   if (ceil(abs((strtotime(date('Y-m-d')) - strtotime(date('Y-m-d',strtotime('+5 days',filemtime($path . 'tailwindcss-3.3.5.js'))))) / 86400)) <= 0 ) {
@@ -1559,7 +1559,7 @@ if (is_file($path . 'tailwindcss-3.3.5.js')) {
 <body>
 <?= $app['body']; ?>
 
-  <script src="<?= (check_http_200('https://code.jquery.com/jquery-3.7.1.min.js') ? 'https://code.jquery.com/jquery-3.7.1.min.js' : $path . 'jquery-3.7.1.min.js') ?>"></script>
+  <script src="<?= check_http_status('https://code.jquery.com/jquery-3.7.1.min.js') ? 'https://code.jquery.com/jquery-3.7.1.min.js' : "{$path}jquery-3.7.1.min.js" ?>"></script>
   <!-- You need to include jQueryUI for the extended easing options. -->
 <?php /* https://stackoverflow.com/questions/12592279/typeerror-p-easingthis-easing-is-not-a-function */ ?>
   <!-- script src="//code.jquery.com/jquery-1.12.4.js"></script -->
