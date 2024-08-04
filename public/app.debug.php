@@ -5,17 +5,18 @@
 // dd(get_required_files());
 //dd( dirname(__DIR__) . '/config/config.php');
 
-if (!in_array($path = dirname(__DIR__) . '/config/config.php', get_required_files()))
-  require_once $path;
-elseif (__FILE__ == get_required_files()[0]) //die(getcwd());
+if (__FILE__ == get_required_files()[0]) { //die(getcwd());
   if ($path = (basename(getcwd()) == 'public')
     ? (is_file('config.php') ? 'config.php' : '../config/config.php') : '') require_once $path;
   else die(var_dump("$path path was not found. file=config.php"));
-
+} elseif (!in_array($path = dirname(__DIR__) . '/config/config.php', get_required_files()))
+  require_once $path;
 $path = $_SERVER['DOCUMENT_ROOT'] . parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH);
 
 
-require_once dirname(__DIR__) . '/public/index.php';
+/*
+require_once realpath('index.php');
+*/
 //dd( realpath($path) == realpath(APP_PATH) );
 
 //dd(APP_ERRORS);
@@ -39,23 +40,72 @@ elseif (APP_ENV == 'development' && APP_DEBUG == false)
 //    'src' => glob(APP_PATH . 'src' . DIRECTORY_SEPARATOR . '*.php')
 //);
 
-foreach (array_merge(glob(APP_PATH . '*.php'), glob(APP_PATH . '**/*.php', GLOB_BRACE | GLOB_NOSORT)) as $filename) {
-    if ($filename == APP_SELF) continue;
-    if ($filename == APP_PATH . 'composer-setup.php') continue;
-    $files[] = ['path' => $filename, 'filesize' => filesize($filename), 'filemtime' => filemtime($filename)];
+//foreach (array_merge(glob(APP_PATH . '*.php'), glob(APP_PATH . '**/*.php', GLOB_BRACE | GLOB_NOSORT)) as $filename) {
+//    if ($filename == APP_SELF) continue;
+//    if ($filename == APP_PATH . 'composer-setup.php') continue;
+//    $files[] = ['path' => $filename, 'filesize' => filesize($filename), 'filemtime' => filemtime($filename)];
+//}
+
+
+$files = get_required_files();
+$baseDir = APP_PATH;
+$organizedFiles = [];
+$directoriesToScan = [];
+
+// Collect directories from the list of files
+foreach ($files as $key => $file) {
+    $relativePath = str_replace($baseDir, '', $file);
+    $directory = dirname($relativePath);
+    //var_dump($directory);
+    if (preg_match('/^vendor(\/.*$|)/', $directory)) {
+      unset($files[$key]);
+      continue;
+    }
+    if (!in_array($directory, $directoriesToScan)) {
+        $directoriesToScan[] = $directory;
+    }
+    // Add the relative path to the organizedFiles array if it is a .php file and not already present
+    if (pathinfo($relativePath, PATHINFO_EXTENSION) == 'php' && !in_array($relativePath, $organizedFiles)) {
+      $organizedFiles[] = $relativePath;
+    }
 }
+
+// Add non-recursive scanning for the root baseDir for *.php files
+$rootPhpFiles = glob($baseDir . '{*.php}', GLOB_BRACE);
+foreach ($rootPhpFiles as $file) {
+    if (is_file($file)) {
+        $relativePath = str_replace($baseDir, '', $file);
+        // Add the relative path to the array if it is a .php file and not already present
+        if (pathinfo($relativePath, PATHINFO_EXTENSION) == 'php' && !in_array($relativePath, $organizedFiles)) {
+            if ($relativePath == 'composer-setup.php') continue;
+            $organizedFiles[] = $relativePath;
+        }
+    }
+}
+
+// Scan the specified directories
+scanDirectories($directoriesToScan, $baseDir, $organizedFiles);
+
+// Display the results
+$sortedArray = customSort($organizedFiles);
+
+
+$total_include_files = count($files);
+$total_include_lines = 0;
+$total_filesize = 0;
+$total_files = count($sortedArray);
+$total_lines = 0;
 
 //dd($files);
 
-$total_files = 0;
-$total_filesize = 0;
-$total_lines = 0;
-
-foreach($files as $file) {
-  $total_files++;
-  $total_filesize += $file['filesize'];
-  $total_lines += count(file($file['path']));
+foreach($sortedArray as $key => $path) {
+  $sortedArray[$key] = ['path' => APP_PATH . $path, 'filesize' => filesize(APP_PATH . $path), 'filemtime' => filemtime(APP_PATH . $path)];
+  //$total_files++;
+  in_array($sortedArray[$key]['path'], $files) and $total_include_lines += count(file($sortedArray[$key]['path'])); //or $total_include_files++;
+  $total_filesize += $sortedArray[$key]['filesize'];
+  $total_lines += count(file($sortedArray[$key]['path']));
 }
+
 
 if (isset($_GET['debug'])) {
   //define('APP_END',     microtime(true));
@@ -200,7 +250,7 @@ HTML;
   defined('APP_END') or define('APP_END', microtime(true));
   echo '<div style="display: block;" title="APP_START - APP_END"><em>Execution time: <b>'  . round(APP_END - APP_START, 6) . '</b> secs ' . "<br />\n" . 'Mem: ' . formatSizeUnits(memory_get_usage()) . "<br />\n" . ' Max: ' . formatSizeUnits(convertToBytes(ini_get('memory_limit'))) . '</em></div>' . "\n";
   echo '<div style="display: inline-block; float: right; text-align: right;">'
-  . '  <em style="font-size: 13px;">Source (code): [<b>' .formatSizeUnits($total_filesize) . '</b>]  [<b>'. $total_files . '</b> files]  [<b>' . ($total_lines + $sql_lines) . '</b> lines]</em>'
+  . '  <em style="font-size: 13px;">Source (code): [<b>' . formatSizeUnits($total_filesize) . '</b>]  [<b>'. $total_files . '</b> files]  [<b>' . ($total_lines + $sql_lines) . '</b> lines]</em>'
   . '</div>';
   echo '<div id="chartContainer" style="height: 195px; display: inline-block; width: 46%;"></div>' . "\n";
   echo '<div id="chartContainer2" style="height: 195px; display: inline-block; width: 46%;"></div>' . "\n";

@@ -120,9 +120,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 
 
         } else if (preg_match('/^git\s+(:?(.*))/i', $_POST['cmd'], $match)) {
-
-          $requireFile = function($file) { require_once $file; };
-          $requireFile(APP_PATH . 'config/git.php');
+          require_once APP_PATH . 'config/git.php';
           if (preg_match('/^git\s+(help)(:?\s+)?/i', $_POST['cmd'])) {
             $output[] = <<<END
 git reset filename   (unstage a specific file)
@@ -148,7 +146,7 @@ $proc=proc_open($command,
   
           list($stdout, $stderr, $exitCode) = [stream_get_contents($pipes[1]), stream_get_contents($pipes[2]), proc_close($proc)];
           preg_match('/\/(.*)\//', DOMAIN_EXPR, $matches);   
-          $output[] = (!isset($stdout) ? NULL : $stdout . (isset($stderr) && $stderr === '' ? NULL : (preg_match('/^To\s' . $matches[1] . '/', $stderr) ? $stderr : 'Error: ' . $stderr) ) . (isset($exitCode) && $exitCode == 0 ? NULL : 'Exit Code: ' . $exitCode));
+          $output[] = !isset($stdout) ? NULL : $stdout . (isset($stderr) && $stderr === '' ? NULL : (preg_match('/^To\s' . $matches[1] . '/', $stderr) ? $stderr : "Error: $stderr")) . (isset($exitCode) && $exitCode == 0 ? NULL : "Exit Code: $exitCode");
           } else if (preg_match('/^git\s+(update)(:?\s+)?/i', $_POST['cmd'])) {
             $output[] = git_origin_sha_update();
           } else if (preg_match('/^git\s+(clone)(:?\s+)?/i', $_POST['cmd'])) {
@@ -200,7 +198,7 @@ if (isset($github_repo) && !empty($github_repo)) {
   $pipes);
   
   list($stdout, $stderr, $exitCode) = [stream_get_contents($pipes[1]), stream_get_contents($pipes[2]), proc_close($proc)];
-  $output[] = (!isset($stdout) ? NULL : $stdout . (isset($stderr) && $stderr === '' ? NULL : (isset($exitCode) && $exitCode == 0 ? NULL : 'Exit Code: ' . $exitCode)));
+  $output[] = !isset($stdout) ? NULL : $stdout . (isset($stderr) && $stderr === '' ? NULL : (isset($exitCode) && $exitCode == 0 ? NULL : "Exit Code: $exitCode"));
 
 }
 
@@ -213,7 +211,13 @@ if (isset($github_repo) && !empty($github_repo)) {
           // $GIT_DIR environment variable
           if (preg_match('/^(init)(:?\s+)?/i', $match[1])) 
             if (!is_file($path = APP_PATH . APP_ROOT . '.gitignore')) touch($path);
-          
+
+          if ($match[1] == 'pull') $_ENV['GITHUB']['REMOTE_SHA'] = git_origin_sha_update(); // git_origin_sha();
+
+          //var_dump($_ENV['GITHUB']['REMOTE_SHA']);
+
+          //dd($_ENV['GITHUB']['REMOTE_SHA']);
+
           $output[] = 'www-data@localhost:' . getcwd() . '# ' . $command = ((strtoupper(substr(PHP_OS, 0, 3)) === 'WIN') ? '' : APP_SUDO) . (defined('GIT_EXEC') ? GIT_EXEC : 'git' ) . (is_dir($path = APP_PATH . APP_ROOT . '.git') || APP_PATH . APP_ROOT != APP_PATH ? ' --git-dir="' . $path . '" --work-tree="' . dirname($path) . '"': '' ) . ' ' . $match[1];
 
 $proc=proc_open($command,
@@ -226,8 +230,9 @@ $proc=proc_open($command,
   
           list($stdout, $stderr, $exitCode) = [stream_get_contents($pipes[1]), stream_get_contents($pipes[2]), proc_close($proc)];
           preg_match('/\/(.*)\//', DOMAIN_EXPR, $matches);  
-          $output[] = (!isset($stdout) ? NULL : $stdout . (isset($stderr) && $stderr === '' ? NULL : (preg_match('/^To\s' . $matches[1] . '/', $stderr) ? $stderr : 'Error: ' . $stderr) ) . (isset($exitCode) && $exitCode == 0 ? NULL : 'Exit Code: ' . $exitCode));
-          //$output[] = $_POST['cmd'];
+          $output[] = !isset($stdout) ? NULL : $stdout . (isset($stderr) && $stderr === '' ? NULL : (preg_match('/^To\s' . $matches[1] . '/', $stderr) ? $stderr : "Error: $stderr")) . (isset($exitCode) && $exitCode == 0 ? NULL : "Exit Code: $exitCode");
+          //$output[] = $_POST['cmd'];     
+  
           }
   
 /*
@@ -239,6 +244,7 @@ $proc=proc_open($command,
    
 */
   // 
+
 
         } else if (preg_match('/^npm\s+(:?(.*))/i', $_POST['cmd'], $match)) {
           $output[] = $command = (strtoupper(substr(PHP_OS, 0, 3)) === 'WIN' ? '' : APP_SUDO) . NPM_EXEC . ' ' . $match[1];
@@ -258,13 +264,13 @@ $proc=proc_open($command,
           exec('whoami', $output);
         else if (preg_match('/^wget\s+(:?(.*))/i', $_POST['cmd'], $match))
           /* https://stackoverflow.com/questions/9691367/how-do-i-request-a-file-but-not-save-it-with-wget */
-          exec('wget -qO- ' . $match[1] . ' &> /dev/null', $output);
+          exec("wget -qO- $match[1] &> /dev/null", $output);
         else {
 
             if (!$_SERVER['SOCKET']) {
               //exec($_POST['cmd'], $output);
               if (preg_match('/^(\w+)\s+(:?(.*))/i', $_POST['cmd'], $match))
-              if (isset($match[1]) && in_array($match[1], ['tail', 'cat', 'echo', 'env', 'sudo', 'whoami', 'server'])) {
+                if (isset($match[1]) && in_array($match[1], ['tail', 'cat', 'echo', 'env', 'sudo', 'whoami', 'server'])) {
                 //exec(APP_SUDO . $match[1] . ' ' . $match[2], $output); // $output[] = var_dump($match);
                 
   $output[] = APP_SUDO . $match[1] . ' ' . $match[2];
@@ -276,7 +282,7 @@ $proc=proc_open($command,
     ),
     $pipes);
             list($stdout, $stderr, $exitCode) = [stream_get_contents($pipes[1]), stream_get_contents($pipes[2]), proc_close($proc)];
-            $output[] = !isset($stdout) ? NULL : $stdout . (isset($stderr) && $stderr === '' ? NULL : ' Error: ' . $stderr) . (isset($exitCode) && $exitCode == 0 ? NULL : 'Exit Code: ' . $exitCode);
+            $output[] = !isset($stdout) ? NULL : $stdout . (isset($stderr) && $stderr === '' ? NULL : " Error: $stderr") . (isset($exitCode) && $exitCode == 0 ? NULL : "Exit Code: $exitCode");
                 
             } else {
               $output[] = 'Command not found: ' . $_POST['cmd'];
@@ -308,10 +314,10 @@ $proc=proc_open($command,
       //else var_dump(NULL); // eval('echo $repo->status();')
       if (isset($output) && !empty($output))
         if (count($output) == 1) echo /*(isset($match[1]) ? $match[1] : 'PHP') . ' >>> ' . */ join("\n... <<< ", $output); // . "\n" var_dump($output);
-        else echo join("\n", $output); // . "\n"
+        else var_dump($output); // ltrim(join("|", $output), "\n"); // . "\n"
         //$output[] = 'post: ' . var_dump($_POST);
       //else var_dump(get_class_methods($repo));
-      Shutdown::setEnabled(false)->setShutdownMessage(function () {})->shutdown();
+      Shutdown::setEnabled(true)->setShutdownMessage(function () {})->shutdown();
       //exit();
     }
 }

@@ -1,4 +1,4 @@
-<?php
+<em?php
 
 if (__FILE__ == get_required_files()[0] && __FILE__ == realpath($_SERVER["SCRIPT_FILENAME"]))
   if ($path = basename(dirname(get_required_files()[0])) == 'public') { // (basename(getcwd())
@@ -251,7 +251,7 @@ unset($path);
     //if (empty(APP_URL['query'])) echo 'developer.php';
     //else
     // developer.php
-    ?><?= $path; ?>" style="height: 100%;"></iframe>
+    echo $path; ?>" style="height: 100%;"></iframe>
 </div>
 <?= /* $appBackup['body'] */ NULL;?>
 <div style="position: relative; margin: 0px auto; width: 100%; border: 1px solid #000;">
@@ -282,7 +282,7 @@ unset($path);
   </select></form>
   </div>
 
-      <a href="#" onclick="document.getElementById('app_ace_editor-container').style.display='block';"><img src="resources/images/ace_editor_icon.png" width="32" height="32">(Text) Editor</a> |
+      <a href="#" onclick="document.getElementById('app_ace_editor-container').style.display='block';"><img src="resources/images/ace_editor_icon.png" width="32" height="32">ACE Editor</a> |
       <a href="#" onclick="document.getElementById('app_tools-container').style.display='block';"><img src="resources/images/apps_icon.gif" width="20" height="20"> Tools</a> |
       <a href="#" onclick="document.getElementById('app_timesheet-container').style.display='block';"><img src="resources/images/clock.gif" width="30" height="30"> Clock-In</a> |
       <a href="#" onclick="document.getElementById('app_git-container').style.display='block';"><img src="resources/images/git_icon.fw.png" width="18" height="18">Git/ <img src="resources/images/github.fw.png" width="18" height="18">Hub</a>
@@ -1421,12 +1421,15 @@ $output = 'Invalid Input';
   }
   unset($path);
   ?>
-<div id="details-container" style="position: fixed; display: none; top: 0; left: 0; z-index: 1; border: 1px solid #000; height: auto; background-color: #FFF; width: 200px;">
+<div id="details-container" style="position: fixed; display: none; top: 0; left: 0; z-index: 1; border: 1px solid #000; height: auto; background-color: #FFF; width: 250px;">
   <span>Loading Time: <?= round(microtime(true) - APP_START, 3); ?>s</span><br />
   <span>Environment: <?= PHP_OS; ?></span><br />
   <span>Domain: <?= APP_DOMAIN; ?></span><br />
   <span>IP Address: <?= APP_HOST; ?></span><br />
   <span>App Path: <?= APP_PATH; ?></span><br />
+  <span>Memory: <em ><b style="color: green;"><?= formatSizeUnits(memory_get_usage()) . '</b> @ <b>' . formatSizeUnits(convertToBytes(ini_get('memory_limit'))); ?></em></span><br />
+  <span>Source (code): <em style="font-size: 13px;"><?= '[<b>' . formatSizeUnits($total_filesize) . '</b>] <b style="color: red;">' . $total_filesize - 1000000 . '</b>' ?></em></span>
+  <div style="position: relative;"><div style="position: absolute; display: block; float: right; right: 10px; width: 165px; text-align: right;"><?= ' [(<b style="color: green;">' . $total_include_files . ' loaded</b>) <b>'. $total_files . '</b> files] <br /> [<b style="color: green;">' . $total_include_lines . '</b> @ <b>' . $total_lines . '</b> lines]'; ?></div></div>
 </div>
 
 <div id="adhd_song-container" style="position: fixed; display: none; bottom: 0; right: 0; z-index: 1;">

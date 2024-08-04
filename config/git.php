@@ -49,10 +49,8 @@ function git_origin_sha_update() {
   }
   //if (isset($_GET['path']) && is_dir(APP_PATH . $path . $_GET['path'])) $path .= $_GET['path'];
 
-} else {
-  if (isset($_ENV['COMPOSER']) && !empty($_ENV['COMPOSER'])) {
+} else if (isset($_ENV['COMPOSER']) && !empty($_ENV['COMPOSER'])) {
     $latest_remote_commit_url = 'https://api.github.com/repos/barrydit/' . $_ENV['COMPOSER']['PACKAGE'] . '/git/refs/heads/main'; // commits/main | sha
-  }
 }
 
 $response = (defined('APP_CONNECTED') && check_http_status($_ENV['GITHUB']['ORIGIN_URL']) === true && !check_http_status($latest_remote_commit_url, 404) ? file_get_contents($latest_remote_commit_url, false, $context): '{}' );
@@ -86,15 +84,15 @@ $response = (defined('APP_CONNECTED') && check_http_status($_ENV['GITHUB']['ORIG
     $errors['GIT_UPDATE'] .= "Failed to retrieve commit information.\n";
   }
   $_ENV['HIDE_UPDATE_NOTICE'] = '';
-  return ($_ENV['GITHUB']['REMOTE_SHA'] = $latest_local_commit_sha);
+  return $_ENV['GITHUB']['REMOTE_SHA'] = $latest_local_commit_sha;
 }
+
 //dd($latest_remote_commit_url);
  if (is_file($file = APP_PATH . APP_ROOT . '.env') && date('Y-m-d', filemtime($file)) != date('Y-m-d')) {
     if (isset($_ENV['GITHUB']['REMOTE_SHA']) && git_origin_sha_update() !== $_ENV['GITHUB']['REMOTE_SHA']) {
       //
     }
 }
-
 
 // file has to exists first
 is_dir(APP_PATH . APP_BASE['var']) or mkdir(APP_PATH . APP_BASE['var'], 0755);

@@ -440,6 +440,52 @@ function array_intersect_key_recursive(array $array1, array $array2) {
   }
   return $result;
 }
+
+
+
+// Function to scan specified directories without recursing
+function scanDirectories($directories, $baseDir, &$organizedFiles) {
+      foreach ($directories as $directory) {
+          $files = glob($baseDir . $directory . '/*.php'); // Adjusted to scan only .php files at the top level of the directory
+          foreach ($files as $file) {
+              if (is_file($file)) {
+                  $relativePath = str_replace($baseDir, '', $file);
+                  // Add the relative path to the array if it is a .php file and not already present
+                  if (pathinfo($relativePath, PATHINFO_EXTENSION) == 'php' && !in_array($relativePath, $organizedFiles)) {
+                      if ($relativePath == 'public/project.php' && !in_array('projects/index.php', $organizedFiles)) $organizedFiles[] = 'projects/index.php';
+                      $organizedFiles[] = $relativePath;
+                  }
+              }
+          }
+      }
+  }
+  
+  function customSort($array) {
+    // Separate files and directories
+    $files = [];
+    $directories = [];
+  
+    foreach ($array as $item) {
+        if (preg_match('/^.\/(.*)/', $item)) continue;
+        if (preg_match('/^public\/(example|test|ui\_complete)(.*)/', $item)) continue;
+        // Check if the item contains directories
+        if (strpos($item, '/') !== false) {
+            $directories[] = $item;
+        } else {
+            $files[] = $item;
+        }
+    }
+  
+    // Sort directories and files
+    sort($files); // Sort files in descending order
+    sort($directories); // Sort directories in descending order
+  
+    // Merge files and directories
+    $sortedArray = array_merge($files, $directories);
+  
+    return $sortedArray;
+  }
+  
 /*
 if (!empty($env_arr = parse_ini_file($file, true, INI_SCANNER_TYPED ))) {
 foreach ($env_arr as $key => $value) {

@@ -85,49 +85,6 @@ $port = APP_PORT ?? 8080;
   pcntl_signal(SIGTERM, 'signalHandler');
   pcntl_signal(SIGINT, 'signalHandler');
 
-     // Function to scan specified directories without recursing
-  function scanDirectories($directories, $baseDir, &$organizedFiles) {
-      foreach ($directories as $directory) {
-          $files = glob($baseDir . $directory . '/*.php'); // Adjusted to scan only .php files at the top level of the directory
-          foreach ($files as $file) {
-              if (is_file($file)) {
-                  $relativePath = str_replace($baseDir, '', $file);
-                  // Add the relative path to the array if it is a .php file and not already present
-                  if (pathinfo($relativePath, PATHINFO_EXTENSION) == 'php' && !in_array($relativePath, $organizedFiles)) {
-                      if ($relativePath == 'public/project.php' && !in_array('projects/index.php', $organizedFiles)) $organizedFiles[] = 'projects/index.php';
-                      $organizedFiles[] = $relativePath;
-                  }
-              }
-          }
-      }
-  }
-  
-  function customSort($array) {
-    // Separate files and directories
-    $files = [];
-    $directories = [];
-  
-    foreach ($array as $item) {
-        if (preg_match('/^.\/(.*)/', $item)) continue;
-        if (preg_match('/^public\/(example|test|ui\_complete)(.*)/', $item)) continue;
-        // Check if the item contains directories
-        if (strpos($item, '/') !== false) {
-            $directories[] = $item;
-        } else {
-            $files[] = $item;
-        }
-    }
-  
-    // Sort directories and files
-    sort($files); // Sort files in descending order
-    sort($directories); // Sort directories in descending order
-  
-    // Merge files and directories
-    $sortedArray = array_merge($files, $directories);
-  
-    return $sortedArray;
-  }
-  
 function clientInputHandler($input) {
     global $socket, $client, $running, $manager;
 
@@ -167,7 +124,7 @@ function clientInputHandler($input) {
       }
             
       // Add non-recursive scanning for the root baseDir for *.php files
-      $rootPhpFiles = glob($baseDir . '{*.php,.env,.gitignore,.htaccess,*.md,LICENSE,*.js,composer.json,package.json,settings.json}', GLOB_BRACE);
+      $rootPhpFiles = glob($baseDir . '{*.php,.env.bck,.gitignore,.htaccess,*.md,LICENSE,*.js,composer.json,package.json,settings.json}', GLOB_BRACE);
       foreach ($rootPhpFiles as $file) {
           if (is_file($file)) {
               $relativePath = str_replace($baseDir, '', $file);
@@ -175,15 +132,14 @@ function clientInputHandler($input) {
               if (pathinfo($relativePath, PATHINFO_EXTENSION) == 'php' && !in_array($relativePath, $organizedFiles)) {
                   if ($relativePath == 'composer-setup.php') continue;
                   $organizedFiles[] = $relativePath;
-              } elseif (pathinfo($relativePath, PATHINFO_EXTENSION) == 'env' && !in_array($relativePath, $organizedFiles)) {
-                $organizedFiles[] = $relativePath;
+              } elseif (pathinfo($relativePath, PATHINFO_EXTENSION) == 'bck' && !in_array($relativePath, $organizedFiles)) {
+                if (preg_match('/^\.env\.bck/', $relativePath))
+                  $organizedFiles[] = $relativePath;
               } elseif (pathinfo($relativePath, PATHINFO_EXTENSION) == 'gitignore' && !in_array($relativePath, $organizedFiles)) {
                 $organizedFiles[] = $relativePath;
               } elseif (pathinfo($relativePath, PATHINFO_EXTENSION) == 'htaccess' && !in_array($relativePath, $organizedFiles)) {
                 $organizedFiles[] = $relativePath;
               } elseif (pathinfo($relativePath, PATHINFO_EXTENSION) == 'md' && !in_array($relativePath, $organizedFiles)) {
-                $organizedFiles[] = $relativePath;
-              } elseif (pathinfo($relativePath, PATHINFO_EXTENSION) == 'env' && !in_array($relativePath, $organizedFiles)) {
                 $organizedFiles[] = $relativePath;
               } elseif (pathinfo($relativePath, PATHINFO_EXTENSION) == 'LICENSE' && !in_array($relativePath, $organizedFiles)) {
                 $organizedFiles[] = $relativePath;
@@ -206,11 +162,14 @@ function clientInputHandler($input) {
       $json = "{\n";  // Display the sorted array
 
       while ($path = array_shift($sortedArray)) {
-        $json .= '"' . $path . '" : ' . json_encode(file_get_contents($path)) . (end($sortedArray) != $path ? ',' : '') . "\n";
+      $json .= match ($path) {
+        '.env.bck' => '".env" : ' . json_encode(file_get_contents($path)) . (end($sortedArray) != $path ? ',' : '') . "\n",
+        default => '"' . $path . '" : ' . json_encode(file_get_contents($path)) . (end($sortedArray) != $path ? ',' : '') . "\n",
+      };
       }
       $json .= "}\n";
 
-      file_put_contents(APP_PATH . APP_BASE['var'] . 'codes.json', $json, LOCK_EX);
+      file_put_contents(APP_PATH . APP_BASE['var'] . 'source_code.json', $json, LOCK_EX);
 /**/
     } elseif (preg_match('/^cmd:\s*server(\s*variables|)(?=\r?\n$)?/si', $input)) {
       $output = var_export($_SERVER, true);
@@ -299,10 +258,14 @@ function checkFileModification() {
 
   //$input = trim($input);
   $output = '';
-  echo date('F d Y H:i:s', $statMtime) . ' != ' . date('F d Y H:i:s', filemtime($file)) . "\n";
 
   if ($statMtime !== filemtime($file)) {
-      $output = 'Server has been updated. Please restart. ' . date('F d Y H:i:s', $statMtime) . ' != ' . date('F d Y H:i:s', filemtime($file));
+      $output = 'Server has been updated. Please restart. ' . date('F d Y H:i:s', $statMtime) . ' != ' . date('F d Y H:i:s', filemtime($file)) . "\n"
+      . 'Server is running... PID=' . getmypid() . "\n"
+      . 'Server backup...' . "\n";
+
+      $output .= clientInputHandler('server backup' . PHP_EOL);
+
       //$lastModifiedTime = filemtime(__FILE__);
       switch (get_resource_type($socket)) {
           case 'stream':
@@ -387,7 +350,7 @@ if (is_dir($path = __DIR__ . APP_BASE['vendor'] . 'cboden' . DIRECTORY_SEPARATOR
         // Extract the client's IP and port
         list($clientAddress, $clientPort) = explode(':', $clientName);
                 
-        echo "Client connected: IP $clientAddress, Port $clientPort\n";
+        echo "Client connected: IP {$clientAddress}:{$clientPort} Port \n";
         // Read data from the client
         $response = clientInputHandler(fread($client, 1024));
         
@@ -398,7 +361,7 @@ if (is_dir($path = __DIR__ . APP_BASE['vendor'] . 'cboden' . DIRECTORY_SEPARATOR
         fwrite($client, $response);
 
         // Close the client connection
-        fclose($client) and print "Client Disconnected: \n";
+        fclose($client) and print "Client Disconnected: IP {$clientAddress}:{$clientPort} Port \n\n";
       }
   
       // Dispatch signals
