@@ -90,6 +90,11 @@ if (__FILE__ == get_required_files()[0]) //die(getcwd());
   else die(var_dump("$path path was not found. file=config.php"));
 
 
+
+if (preg_match('/^app\.([\w\-.]+)\.php$/', basename(__FILE__), $matches))
+  ${$matches[1]} = $matches[1];
+
+
 /*
 // Define the GitHub API URL
 //$githubApiUrl = 'https://api.github.com/barrydit';
@@ -205,7 +210,7 @@ input {
 }
 
 
-<?php $appGithub['style'] = ob_get_contents();
+<?php $app[$github]['style'] = ob_get_contents();
 ob_end_clean();
 
 ob_start(); ?>
@@ -226,17 +231,17 @@ ob_start(); ?>
   </div>
 <!-- </div> -->
 
-<?php $appGithub['body'] = ob_get_contents();
+<?php $app[$github]['body'] = ob_get_contents();
 ob_end_clean();
 
 ob_start(); ?>
 
-<?php $appGithub['script'] = ob_get_contents();
+<?php $app[$github]['script'] = ob_get_contents();
 ob_end_clean();
 
 ob_start(); ?>
 
-<?php $appGithub['html'] = ob_get_contents(); 
+<?php $app[$github]['html'] = ob_get_contents(); 
 ob_end_clean();
 
 is_dir(APP_PATH . APP_BASE['var']) or mkdir(APP_PATH . APP_BASE['var'], 0755);

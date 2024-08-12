@@ -44,8 +44,8 @@ set_error_handler("customErrorHandler");
 !defined('APP_DEBUG') and define('APP_DEBUG', isset($_GET['debug']) ? TRUE : FALSE);
 
 if (APP_DEBUG || APP_ERROR) {
-    $errors['APP_DEBUG'] = 'Debugging is enabled.';
-    $errors['APP_ERROR'] = 'Error handling is enabled.';
+    $errors['APP_DEBUG'] = "Debugging is enabled.\n";
+    $errors['APP_ERROR'] = "Error handling is enabled.\n";
     ini_set('display_errors', 1);
     ini_set('display_startup_errors', 1);
     error_reporting(E_ALL/*E_STRICT |*/);

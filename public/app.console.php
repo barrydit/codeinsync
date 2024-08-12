@@ -1,34 +1,38 @@
 <?php
 
-/*
-    realpath � Returns canonicalized absolute pathname
-    is_writable � Tells whether the filename is writable
-    unlink � Deletes a file
-*/
-//die(var_dump(get_required_files()));
-if (__FILE__ == get_required_files()[0] && __FILE__ == realpath($_SERVER["SCRIPT_FILENAME"]))
-  if ($path = basename(dirname(get_required_files()[0])) == 'public') { // (basename(getcwd())
-    if (is_file($path = realpath('index.php'))) {
-      require_once $path;
+global $shell_prompt, $auto_clear;
+
+  /*
+      realpath ? Returns canonicalized absolute pathname
+      is_writable ? Tells whether the filename is writable
+      unlink ? Deletes a file
+  */
+  //die(var_dump(get_required_files()));
+  if (__FILE__ == get_required_files()[0] && __FILE__ == realpath($_SERVER["SCRIPT_FILENAME"]))
+    if ($path = basename(dirname(get_required_files()[0])) == 'public') { // (basename(getcwd())
+      if (is_file($path = realpath('index.php'))) {
+        require_once $path;
+      }
     }
-  }
-  else
-    die(var_dump("Path was not found. file=$path"));
+    else
+      die(var_dump("Path was not found. file=$path"));
 
-
-  //require_once realpath(__DIR__ . DIRECTORY_SEPARATOR . '..' . DIRECTORY_SEPARATOR  . 'config' . DIRECTORY_SEPARATOR . 'classes' . DIRECTORY_SEPARATOR . 'class.sockets.php');
-
-//dd(get_required_files());
-  //if (__FILE__ == $_SERVER["SCRIPT_FILENAME"]) {
-  //  echo "called directly";
-  //} else {
-  //  echo "included/required";
-  //}
-
-  //dd(__FILE__, false);
-//!function_exists('dd') ? die('dd is not defined') : dd(COMPOSER_EXEC);
-
-if ($_SERVER['REQUEST_METHOD'] == 'POST') {
+if (preg_match('/^app\.([\w\-.]+)\.php$/', basename(__FILE__), $matches))
+  ${$matches[1]} = $matches[1];
+  
+    //require_once realpath(__DIR__ . DIRECTORY_SEPARATOR . '..' . DIRECTORY_SEPARATOR  . 'config' . DIRECTORY_SEPARATOR . 'classes' . DIRECTORY_SEPARATOR . 'class.sockets.php');
+  
+  //dd(get_required_files());
+    //if (__FILE__ == $_SERVER["SCRIPT_FILENAME"]) {
+    //  echo "called directly";
+    //} else {
+    //  echo "included/required";
+    //}
+  
+    //dd(__FILE__, false);
+  //!function_exists('dd') ? die('dd is not defined') : dd(COMPOSER_EXEC);
+  
+  if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     if (isset($_POST['cmd'])) {
       chdir(APP_PATH . APP_ROOT);
       if ($_POST['cmd'] && $_POST['cmd'] != '') 
@@ -46,12 +50,12 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
           } else if (preg_match('/^php\s+(?:(-r))\s+(:?(.*))/i', $_POST['cmd'], $match)) {
             $match[2] = trim($match[2], '"');
             $_POST['cmd'] = 'php -r "' . $match[2] . (substr($match[2], -1) != ';' ? ';' : '') . '"';
-
+  
             if (!$_SERVER['SOCKET']) {
               exec($_POST['cmd'], $output);
             } else {
               $errors['server-1'] = "Connected to Server: " . APP_HOST . ':' . APP_PORT . "\n";
-
+  
               // Send a message to the server
               $errors['server-2'] = 'Client request: ' . $message = "cmd: " . $_POST['cmd'] . "\n";
           
@@ -67,11 +71,11 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             }
             //$output[] = $_POST['cmd'];
           }
-
+  
         } else if (preg_match('/^composer\s+(:?(.*))/i', $_POST['cmd'], $match)) {
-
+  
           if (!$_SERVER['SOCKET']) {
-
+  
             //$output[] = dd(COMPOSER_EXEC);
             //$output[] = APP_SUDO . COMPOSER_EXEC['bin'] . ' ' . $match[1];
             $proc=proc_open((strtoupper(substr(PHP_OS, 0, 3)) === 'WIN' ? '' : APP_SUDO) . COMPOSER_EXEC['bin'] . ' ' . $match[1],
@@ -82,20 +86,20 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             ],
             $pipes);
             list($stdout, $stderr, $exitCode) = [stream_get_contents($pipes[1]), stream_get_contents($pipes[2]), proc_close($proc)];
-            $output[] = (!isset($stdout) ? NULL : $stdout . (isset($stderr) && $stderr === '' ? NULL : ' Error: ' . $stderr) . (!isset($exitCode) && $exitCode == 0  ? NULL : ' Exit Code: ' . $exitCode));
+            $output[] = !isset($stdout) ? NULL : $stdout . (isset($stderr) && $stderr === '' ? NULL : ' Error: ' . $stderr) . (!isset($exitCode) && $exitCode == 0 ? NULL : ' Exit Code: ' . $exitCode);
                   //$output[] = $_POST['cmd'];        
             //exec($_POST['cmd'], $output);
             //die(var_dump($output));
-
+  
           } else {
-
+  
             $errors['server-1'] = "Connected to " . APP_HOST . " on port " . APP_PORT . "\n";
-
+  
             // Send a message to the server
             $errors['server-2'] = 'Client request: ' . $message = "cmd: " . $_POST['cmd'] . "\n";
-
+  
             $output[] = $_POST['cmd'] . ' test2: ';
-
+  
             //dd($message, false);
             if (isset($_SERVER['SOCKET']) && is_resource($_SERVER['SOCKET'])) {
               if (get_resource_type($_SERVER['SOCKET']) == 'stream') {
@@ -104,39 +108,39 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                   socket_write($_SERVER['SOCKET'], $message);
               }
             }
-
+  
             // Read response from the server
             while (!feof($_SERVER['SOCKET'])) {
                 $response = fgets($_SERVER['SOCKET'], 1024);
                 
                 $errors['server-3'] = "Server responce: $response\n";
                 if (isset($output[end($output)])) $output[end($output)] .= trim($response);
-                else $output[] = trim($response);
+                else $output[1] .= trim($response);
                 //if (!empty($response)) break;
             }
-
-            die(var_dump($output));
+  
+            //die(var_dump($output));
           }
-
-
+  
+  
         } else if (preg_match('/^git\s+(:?(.*))/i', $_POST['cmd'], $match)) {
           require_once APP_PATH . 'config/git.php';
           if (preg_match('/^git\s+(help)(:?\s+)?/i', $_POST['cmd'])) {
             $output[] = <<<END
-git reset filename   (unstage a specific file)
-
-git branch
+  git reset filename   (unstage a specific file)
+  
+  git branch
   -m   oldBranch newBranch   (Renaming a git branch)
   -d   Safe deletion
   -D   Forceful deletion
-
-git commit -am "Default message"
-
-git checkout -b branchName
-END;
+  
+  git commit -am "Default message"
+  
+  git checkout -b branchName
+  END;
           $output[] = $command = ((strtoupper(substr(PHP_OS, 0, 3)) === 'WIN') ? '' : APP_SUDO) . (defined('GIT_EXEC') ? GIT_EXEC : 'git' ) . (is_dir($path = APP_PATH . APP_ROOT . '.git') || APP_PATH . APP_ROOT != APP_PATH ? '' : '' ) . ' ' . $match[1];
-
-$proc=proc_open($command,
+  
+  $proc=proc_open($command,
   array(
     array("pipe","r"),
     array("pipe","w"),
@@ -153,42 +157,42 @@ $proc=proc_open($command,
           
             //$output[] = dd($_POST['cmd']);
             $output[] = 'test'; 
-
-if (preg_match('/^git\s+clone\s+(http(?:s)?:\/\/([^@\s]+)@github\.com\/[\w.-]+\/[\w.-]+\.git)(?:\s*([\w.-]+))?/', $_POST['cmd'], $github_repo)) { // matches with token
-
+  
+  if (preg_match('/^git\s+clone\s+(http(?:s)?:\/\/([^@\s]+)@github\.com\/[\w.-]+\/[\w.-]+\.git)(?:\s*([\w.-]+))?/', $_POST['cmd'], $github_repo)) { // matches with token
+  
    // (?:(?=(.*?[^@\s]+))[^@\s]+@)?
-
-} else if (preg_match('/^git\s+clone\s+(http(?:s)?:\/\/github\.com\/[\w.-]+\/[\w.-]+\.git)(?:\s*([\w.-]+))?/', $_POST['cmd'], $github_repo)) { // matches without token
-/*
+  
+  } else if (preg_match('/^git\s+clone\s+(http(?:s)?:\/\/github\.com\/[\w.-]+\/[\w.-]+\.git)(?:\s*([\w.-]+))?/', $_POST['cmd'], $github_repo)) { // matches without token
+  /*
               if (realpath($github_repo[3])) $output[] = realpath($github_repo[3]);
-
+  
               //$output[] = dd($github_repo);
               if (!is_dir('.git')) exec((strtoupper(substr(PHP_OS, 0, 3)) === 'WIN' ? '' : APP_SUDO) . 'git init', $output);
-
+  
               exec('git branch -m master main', $output);
-
+  
               //exec('git remote add origin ' . $github_repo[2], $output);
               //...git remote set-url origin http://...@github.com/barrydit/
-
+  
               exec((strtoupper(substr(PHP_OS, 0, 3)) === 'WIN' ? '' : APP_SUDO)  . 'git config core.sparseCheckout true', $output);
-
+  
               //touch('.git/info/sparse-checkout');
-
+  
               file_put_contents('.git/info/sparse-checkout', '*'); /// exec('echo "*" >> .git/info/sparse-checkout', $output);
-
+  
               exec((strtoupper(substr(PHP_OS, 0, 3)) === 'WIN' ? '' : APP_SUDO) . 'git pull origin main', $output);
-
+  
               //exec(APP_SUDO . ' git init', $output);
               //$output[] = dd($output);
             $output[] = 'This works ... ';
-*/
-}
-
-$output[] = $command = $_POST['cmd'] . ' --git-dir="' . APP_PATH . APP_ROOT . '.git" --work-tree="' . APP_PATH . APP_ROOT . '" https://' . $_ENV['GITHUB']['OAUTH_TOKEN'] .'@github.com/barrydit/CodeHub.git';
-
-/**/
-if (isset($github_repo) && !empty($github_repo)) {
-
+  */
+  }
+  
+  $output[] = $command = $_POST['cmd'] . ' --git-dir="' . APP_PATH . APP_ROOT . '.git" --work-tree="' . APP_PATH . APP_ROOT . '" https://' . $_ENV['GITHUB']['OAUTH_TOKEN'] .'@github.com/barrydit/CodeHub.git';
+  
+  /**/
+  if (isset($github_repo) && !empty($github_repo)) {
+  
   $proc = proc_open($command,
   array(
     array("pipe","r"),
@@ -199,28 +203,28 @@ if (isset($github_repo) && !empty($github_repo)) {
   
   list($stdout, $stderr, $exitCode) = [stream_get_contents($pipes[1]), stream_get_contents($pipes[2]), proc_close($proc)];
   $output[] = !isset($stdout) ? NULL : $stdout . (isset($stderr) && $stderr === '' ? NULL : (isset($exitCode) && $exitCode == 0 ? NULL : "Exit Code: $exitCode"));
-
-}
-
+  
+  }
+  
   // exec((strtoupper(substr(PHP_OS, 0, 3)) === 'WIN' ? '' : APP_SUDO)  . 'git --git-dir="' . APP_PATH . APP_ROOT . '.git" --work-tree="' . APP_PATH . APP_ROOT . '" remote add origin ' . $github_repo[2], $output);
-
+  
           } else {
-
+  
           // git --git-dir=/var/www/.git --work-tree=/var/www pull
           
           // $GIT_DIR environment variable
           if (preg_match('/^(init)(:?\s+)?/i', $match[1])) 
             if (!is_file($path = APP_PATH . APP_ROOT . '.gitignore')) touch($path);
-
+  
           if ($match[1] == 'pull') $_ENV['GITHUB']['REMOTE_SHA'] = git_origin_sha_update(); // git_origin_sha();
-
+  
           //var_dump($_ENV['GITHUB']['REMOTE_SHA']);
-
+  
           //dd($_ENV['GITHUB']['REMOTE_SHA']);
-
+  
           $output[] = 'www-data@localhost:' . getcwd() . '# ' . $command = ((strtoupper(substr(PHP_OS, 0, 3)) === 'WIN') ? '' : APP_SUDO) . (defined('GIT_EXEC') ? GIT_EXEC : 'git' ) . (is_dir($path = APP_PATH . APP_ROOT . '.git') || APP_PATH . APP_ROOT != APP_PATH ? ' --git-dir="' . $path . '" --work-tree="' . dirname($path) . '"': '' ) . ' ' . $match[1];
-
-$proc=proc_open($command,
+  
+  $proc=proc_open($command,
   array(
     array("pipe","r"),
     array("pipe","w"),
@@ -235,20 +239,20 @@ $proc=proc_open($command,
   
           }
   
-/*
- Error: To https://github.com/barrydit/CodeHub.git
+  /*
+  Error: To https://github.com/barrydit/CodeHub.git
    5fbad5b..29f689e  main -> main
    
-^To\s(?:[a-z]+\:\/\/)?(?:[a-z0-9\\-]+\.)+[a-z]{2,6}(?:\/\S*)?
+  ^To\s(?:[a-z]+\:\/\/)?(?:[a-z0-9\\-]+\.)+[a-z]{2,6}(?:\/\S*)?
    
    
-*/
+  */
   // 
-
-
+  
+  
         } else if (preg_match('/^npm\s+(:?(.*))/i', $_POST['cmd'], $match)) {
           $output[] = $command = (strtoupper(substr(PHP_OS, 0, 3)) === 'WIN' ? '' : APP_SUDO) . NPM_EXEC . ' ' . $match[1];
-$proc=proc_open($command,
+  $proc=proc_open($command,
   array(
     array("pipe","r"),
     array("pipe","w"),
@@ -258,7 +262,7 @@ $proc=proc_open($command,
           list($stdout, $stderr, $exitCode) = [stream_get_contents($pipes[1]), stream_get_contents($pipes[2]), proc_close($proc)];
           $output[] = (!isset($stdout) ? NULL : $stdout . (isset($stderr) && $stderr === '' ? NULL : ' Error: ' . $stderr) . (isset($exitCode) && $exitCode == 0 ? NULL : 'Exit Code: ' . $exitCode));
           //$output[] = $_POST['cmd'];
-
+  
           //exec($_POST['cmd'], $output);
         } else if (preg_match('/^whoami(:?(.*))/i', $_POST['cmd'], $match))
           exec('whoami', $output);
@@ -266,7 +270,7 @@ $proc=proc_open($command,
           /* https://stackoverflow.com/questions/9691367/how-do-i-request-a-file-but-not-save-it-with-wget */
           exec("wget -qO- $match[1] &> /dev/null", $output);
         else {
-
+  
             if (!$_SERVER['SOCKET']) {
               //exec($_POST['cmd'], $output);
               if (preg_match('/^(\w+)\s+(:?(.*))/i', $_POST['cmd'], $match))
@@ -289,13 +293,13 @@ $proc=proc_open($command,
             }
             } else {
               $errors['server-1'] = "Connected to " . APP_HOST . " on port " . APP_PORT . "\n";
-
+  
               // Send a message to the server
               $errors['server-2'] = 'Client request: ' . $message = "cmd: " . $_POST['cmd'] . "\n";
             
               fwrite($_SERVER['SOCKET'], $message);
-              $output[] = $_POST['cmd'] . ' test2: ';
-
+              $output[] = $_POST['cmd'] . ' test3: ';
+  
               // Read response from the server
               while (!feof($_SERVER['SOCKET'])) {
                   $response = fgets($_SERVER['SOCKET'], 1024);
@@ -306,41 +310,38 @@ $proc=proc_open($command,
               }
               //die(var_dump($_SERVER['SOCKET']));
             }
-
-
+  
+  
           //
       
         }
       //else var_dump(NULL); // eval('echo $repo->status();')
       if (isset($output) && !empty($output))
         if (count($output) == 1) echo /*(isset($match[1]) ? $match[1] : 'PHP') . ' >>> ' . */ join("\n... <<< ", $output); // . "\n" var_dump($output);
-        else var_dump($output); // ltrim(join("|", $output), "\n"); // . "\n"
+        else var_dump($output); //join("\n", $output); // . "\n"
         //$output[] = 'post: ' . var_dump($_POST);
       //else var_dump(get_class_methods($repo));
       Shutdown::setEnabled(true)->setShutdownMessage(function () {})->shutdown();
       //exit();
     }
-}
-/*
-if ($path = (basename(getcwd()) == 'public')
+  }
+  /*
+  if ($path = (basename(getcwd()) == 'public')
     ? (is_file('../git.php') ? '../git.php' : (is_file('../config/git.php') ? '../config/git.php' : null))
     : (is_file('git.php') ? 'git.php' : (is_file('config/git.php') ? 'config/git.php' : null))) require_once $path; 
-else die(var_dump($path . ' path was not found. file=git.php'));
-
-if ($path = (basename(getcwd()) == 'public')
+  else die(var_dump($path . ' path was not found. file=git.php'));
+  
+  if ($path = (basename(getcwd()) == 'public')
     ? (is_file('../composer.php') ? '../composer.php' : (is_file('../config/composer.php') ? '../config/composer.php' : null))
     : (is_file('composer.php') ? 'composer.php' : (is_file('config/composer.php') ? 'config/composer.php' : null))) require_once $path; 
-else die(var_dump($path . ' path was not found. file=composer.php'));
-
-if ($path = (basename(getcwd()) == 'public')
+  else die(var_dump($path . ' path was not found. file=composer.php'));
+  
+  if ($path = (basename(getcwd()) == 'public')
     ? (is_file('../npm.php') ? '../npm.php' : (is_file('../config/npm.php') ? '../config/npm.php' : null))
     : (is_file('npm.php') ? 'npm.php' : (is_file('config/npm.php') ? 'config/npm.php' : null))) require_once $path; 
-else die(var_dump($path . ' path was not found. file=npm.php'));
-*/
-
-
-const CONSOLE = true;
-
+  else die(var_dump($path . ' path was not found. file=npm.php'));
+  */
+  
 ob_start(); ?>
 html, body {
   height: 100%;
@@ -466,8 +467,9 @@ input {
             100% { transform: translateX(-100%); }
         }
 
-<?php $appConsole['style'] = ob_get_contents();
+<?php $app[$console]['style'] = ob_get_contents();
 ob_end_clean();
+
 
 ob_start(); ?>
 
@@ -559,10 +561,10 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
       if (!empty($output['results'])) {
         echo $shell_prompt . $command;
         foreach($output['results'] as $result) 
-          foreach($result as $line) { echo $line . "\n"; }
+          foreach($result as $line) { echo "$line\n"; }
       }
     }
-  else echo $shell_prompt . "\n";
+  else echo "$shell_prompt\n";
 
 }
 //dd($errors);
@@ -580,13 +582,10 @@ if (!empty($errors))
 
 <!-- </div> -->
 
-<?php $appConsole['body'] = ob_get_contents();
+<?php $app[$console]['body'] = ob_get_contents();
 ob_end_clean();
 
 ob_start(); ?>
-
-
-
 function deleteProcess(link) {
       const process = link.parentNode;
       process.parentNode.removeChild(process);
@@ -1275,7 +1274,7 @@ console.log = function() {
 
   });
 });
-<?php $appConsole['script'] = ob_get_contents();
+<?php $app[$console]['script'] = ob_get_contents();
 ob_end_clean();
 
 ob_start(); ?>
@@ -1316,24 +1315,24 @@ if (!is_file($path) || (time() - filemtime($path)) > 5 * 24 * 60 * 60) { // ceil
   <script src="<?= check_http_status($url) ? substr($url, strpos($url, parse_url($url)['host']) + strlen(parse_url($url)['host'])) : substr($path, strpos($path, dirname(APP_BASE['resources'] . 'js'))) ?>"></script>     
 
 <style type="text/tailwindcss">
-<?= $appConsole['style']; ?>
+<?= $app[$console]['style']; ?>
 </style>
 </head>
 <body>
-<?= $appConsole['body']; ?>
+<?= $app[$console]['body']; ?>
 
   <!-- https://cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.min.js -->
   <script src="//code.jquery.com/jquery-1.12.4.js"></script>
   <script src="//code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
   <!-- <script src="resources/js/jquery/jquery.min.js"></script> -->
 <script>
-<?= $appConsole['script']; ?>
+<?= $app[$console]['script']; ?>
 </script>
 </body>
 </html>
-<?php $appConsole['html'] = ob_get_contents(); 
+<?php $app[$console]['html'] = ob_get_contents(); 
 ob_end_clean();
 
 //check if file is included or accessed directly
 if (__FILE__ == get_required_files()[0] || in_array(__FILE__, get_required_files()) && isset($_GET['app']) && $_GET['app'] == 'console' && APP_DEBUG)
-  die($appConsole['html']);
+  die($app[$console]['html']);

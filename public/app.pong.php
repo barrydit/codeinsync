@@ -12,6 +12,11 @@ if (__FILE__ == get_required_files()[0] && __FILE__ == realpath($_SERVER["SCRIPT
   }
 }
 
+
+if (preg_match('/^app\.([\w\-.]+)\.php$/', basename(__FILE__), $matches))
+  ${$matches[1]} = $matches[1];
+
+
 if (!realpath($path = APP_BASE['resources'] . 'js/pong/'))
   (@!mkdir(APP_PATH . $path, 0755, true) ?: $errors['APP_PONG'] = "$path could not be created." );
 
@@ -363,7 +368,7 @@ padding: 10px;
 z-index: 1;
 }
 
-<?php $appPong['style'] = ob_get_contents();
+<?php $app[$pong]['style'] = ob_get_contents();
 ob_end_clean();
 
 ob_start(); ?>
@@ -382,14 +387,14 @@ ob_start(); ?>
   </div>
 <!-- </div> -->
 
-<?php $appPong['body'] = ob_get_contents();
+<?php $app[$pong]['body'] = ob_get_contents();
 ob_end_clean();
 
 ob_start(); ?>
 
 
 
-<?php $appPong['script'] = ob_get_contents();
+<?php $app[$pong]['script'] = ob_get_contents();
 ob_end_clean();
 
 //dd($_SERVER);
@@ -477,9 +482,9 @@ html, body { width: 100%; height: 100%; <?= ($_SERVER['SCRIPT_FILENAME'] == __FI
   <script type="module" src="resources/js/bootstrap.js"></script>
 </body>
 </html>
-<?php $appPong['html'] = ob_get_contents(); 
+<?php $app[$pong]['html'] = ob_get_contents(); 
 ob_end_clean();
 
 //check if file is included or accessed directly
 if (__FILE__ == realpath($_SERVER["SCRIPT_FILENAME"]) || in_array(__FILE__, get_required_files()) && isset($_GET['app']) && $_GET['app'] == 'php' && APP_DEBUG )
-  die($appPong['html']);
+  die($app[$pong]['html']);

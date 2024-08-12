@@ -12,6 +12,9 @@ if (__FILE__ == get_required_files()[0] && __FILE__ == realpath($_SERVER["SCRIPT
   }
 } 
 
+if (preg_match('/^app\.([\w\-.]+)\.php$/', basename(__FILE__), $matches))
+  ${$matches[1]} = $matches[1];
+
 
 // dd(APP_PATH . '  ' . APP_ROOT);
 // PHP_URL_SCHEME, PHP_URL_HOST, PHP_URL_PORT, PHP_URL_USER, PHP_URL_PASS, PHP_URL_PATH, PHP_URL_QUERY or PHP_URL_FRAGMENT
@@ -135,7 +138,7 @@ input {
 }
 
 
-<?php $appBrowser['style'] = ob_get_contents();
+<?php $app[$browser]['style'] = ob_get_contents();
 ob_end_clean();
 
 ob_start(); ?>
@@ -157,17 +160,17 @@ ob_start(); ?>
   </div>
 <!-- </div> -->
 
-<?php $appBrowser['body'] = ob_get_contents();
+<?php $app[$browser]['body'] = ob_get_contents();
 ob_end_clean();
 
 ob_start(); ?>
 
-<?php $appBrowser['script'] = ob_get_contents();
+<?php $app[$browser]['script'] = ob_get_contents();
 ob_end_clean();
 
 ob_start(); ?>
 
-<?php $appBrowser['html'] = ob_get_contents(); 
+<?php $app[$browser]['html'] = ob_get_contents(); 
 ob_end_clean();
 
 is_dir(APP_PATH . APP_BASE['var']) or mkdir(APP_PATH . APP_BASE['var'], 0755);

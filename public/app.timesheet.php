@@ -12,11 +12,12 @@ if (__FILE__ == get_required_files()[0] && __FILE__ == realpath($_SERVER["SCRIPT
     if (is_file($path = realpath('index.php'))) {
       require_once $path;
     }
-  }
-  else
+  } else
     die(var_dump("Path was not found. file=$path"));
 
-
+if (preg_match('/^app\.([\w\-.]+)\.php$/', basename(__FILE__), $matches))
+  ${$matches[1]} = $matches[1];
+  
 $interval = new DateInterval('PT00H');
 //echo $interval->format('%H:%I:%S');
 
@@ -690,7 +691,7 @@ td, tr {
 }
 
 
-<?php $appTimesheet['style'] = ob_get_contents();
+<?php $app[$timesheet]['style'] = ob_get_contents();
 ob_end_clean();
 
 ob_start(); ?>
@@ -1015,7 +1016,7 @@ END;
 
   </div>
 
-<?php $appTimesheet['body'] = ob_get_contents();
+<?php $app[$timesheet]['body'] = ob_get_contents();
 ob_end_clean();
 
 ob_start(); ?>
@@ -1285,11 +1286,10 @@ if (typeof snd !== 'undefined') {
     }
 
 
-<?php $appTimesheet['script'] = ob_get_contents();
+<?php $app[$timesheet]['script'] = ob_get_contents();
 ob_end_clean();
 
 ob_start(); ?>
-
 <!DOCTYPE html>
 <html>
 <head>
@@ -1323,11 +1323,11 @@ if (is_file($path . 'tailwindcss-3.3.5.js')) {
   <script src="<?= 'resources/js/tailwindcss-3.3.5.js' ?? $url ?>"></script>
 
 <style type="text/tailwindcss">
-<?= $appTimesheet['style']; ?>
+<?= $app[$timesheet]['style']; ?>
 </style>
 </head>
 <body>
-<?= $appTimesheet['body']; ?>
+<?= $app[$timesheet]['body']; ?>
 
   <!-- https://cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.min.js -->
   <script src="//code.jquery.com/jquery-1.12.4.js"></script>
@@ -1336,13 +1336,13 @@ if (is_file($path . 'tailwindcss-3.3.5.js')) {
   
   <script src="resources/js/play_sound.js"></script> 
 <script>
-<?= $appTimesheet['script']; ?>
+<?= $app[$timesheet]['script']; ?>
 </script>
 </body>
 </html>
-<?php $appTimesheet['html'] = ob_get_contents(); 
+<?php $app[$timesheet]['html'] = ob_get_contents();
 ob_end_clean();
 
 //check if file is included or accessed directly
 if (__FILE__ == get_required_files()[0] || in_array(__FILE__, get_required_files()) && isset($_GET['app']) && $_GET['app'] == 'git' && APP_DEBUG)
-  die($appTimesheet['html']);
+  die($app[$timesheet]['html']);

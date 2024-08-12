@@ -13,6 +13,10 @@
 $user = ''; // www-data
 $password = ''; // password
 
+
+const CONSOLE = true;
+
+
 !defined('APP_SUDO') and define('APP_SUDO', strtoupper(substr(PHP_OS, 0, 3)) === 'WIN' ? /*'runas /user:Administrator "cmd /c" '*/ : 'echo ' . escapeshellarg(isset($password) && $password == '' ? '' : $password) . ' | sudo -S ' . (isset($user) && $user == '' ? '' : "-u $user") . ' '); // 'su -c'
 
 !defined('APP_START') and define('APP_START', microtime(true)) ?: is_float(APP_START) or $errors['APP_START'] = 'APP_START is not a valid float value.';

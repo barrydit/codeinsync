@@ -21,8 +21,12 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 
 define('APP_BACKUP_PATH', (isset($_SERVER['HOME']) ? $_SERVER['HOME'] : $_SERVER['DOCUMENT_ROOT']) . '/backup/'); // symlink(/mnt/d)
 
-ob_start();
-?>
+
+
+if (preg_match('/^app\.([\w\-.]+)\.php$/', basename(__FILE__), $matches))
+  ${$matches[1]} = $matches[1];
+
+ob_start(); ?>
 
 /* Styles for the absolute div */
 #app_backup-container {
@@ -95,7 +99,7 @@ input {
 }
 
 
-<?php $appBackup['style'] = ob_get_contents();
+<?php $app[$backup]['style'] = ob_get_contents();
 ob_end_clean();
 
 ob_start(); ?>
@@ -203,7 +207,7 @@ die(var_dump($dirs));
 
   </div>
 
-<?php $appBackup['body'] = ob_get_contents();
+<?php $app[$backup]['body'] = ob_get_contents();
 ob_end_clean();
 
 ob_start(); ?>
@@ -254,12 +258,12 @@ function dragElement(element, direction) {
 
 dragElement(document.getElementById("separator"), "V");
 
-<?php $appBackup['script'] = ob_get_contents();
+<?php $app[$backup]['script'] = ob_get_contents();
 ob_end_clean();
 
 ob_start(); ?>
 
-<?php $appBackup['html'] = ob_get_contents(); 
+<?php $app[$backup]['html'] = ob_get_contents(); 
 ob_end_clean();
 
 //check if file is included or accessed directly

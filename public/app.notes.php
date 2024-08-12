@@ -12,6 +12,8 @@ if (__FILE__ == get_required_files()[0] && __FILE__ == realpath($_SERVER["SCRIPT
   }
 } 
 
+if (preg_match('/^app\.([\w\-.]+)\.php$/', basename(__FILE__), $matches))
+  ${$matches[1]} = $matches[1];
 
 /*
 if ($path = (basename(getcwd()) == 'public')
@@ -210,7 +212,7 @@ padding: 10px;
 z-index: 1;
 }
 
-<?php $appNotes['style'] = ob_get_contents();
+<?php $app[$notes]['style'] = ob_get_contents();
 ob_end_clean();
 
 ob_start(); ?>
@@ -229,20 +231,18 @@ ob_start(); ?>
   </div>
 <!-- </div> -->
 
-<?php $appNotes['body'] = ob_get_contents();
+<?php $app[$notes]['body'] = ob_get_contents();
 ob_end_clean();
 
 ob_start(); ?>
 
 
 
-<?php $appNotes['script'] = ob_get_contents();
+<?php $app[$notes]['script'] = ob_get_contents();
 ob_end_clean();
 
 //dd($_SERVER);
-ob_start(); 
-
-?>
+ob_start(); ?>
 
 
 <!DOCTYPE html>
@@ -465,10 +465,10 @@ $(document).ready(function(){
 
 </body>
 </html>
-<?php $appNotes['html'] = ob_get_contents(); 
+<?php $app[$notes]['html'] = ob_get_contents(); 
 ob_end_clean();
 
 //check if file is included or accessed directly
 if (__FILE__ == get_required_files()[0] || in_array(__FILE__, get_required_files()) && isset($_GET['app']) && $_GET['app'] == 'php' && APP_DEBUG)
-  die($appNotes['html']);
+  die($app[$notes]['html']);
 

@@ -16,6 +16,7 @@ if (!$path = realpath(APP_PATH . 'projects/index.php')) {
   // file_put_contents($path, $_POST['contents']);
   $errors['project.php'] = 'projects/index.php was missing. Using template.' . "\n";
 }
+
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
   if (isset($_GET['app']) && $_GET['app'] == 'project')
     if (isset($_POST['path']) && isset($_GET['file']) && $path = realpath($_POST['path'] . $_GET['file'])) {
@@ -23,6 +24,9 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
       die(); //header('Location: ' . APP_WWW)
     }
 }
+
+if (preg_match('/^app\.([\w\-.]+)\.php$/', basename(__FILE__), $matches))
+  ${$matches[1]} = $matches[1];
 
 ob_start(); ?>
 
@@ -98,7 +102,7 @@ input {
 }
 
 
-<?php $appProject['style'] = ob_get_contents();
+<?php $app[$project]['style'] = ob_get_contents();
 ob_end_clean(); 
 
 ob_start(); ?>
@@ -153,7 +157,7 @@ ob_start(); ?>
       </div>
     </div>
   </div>
-<?php $appProject['body'] = ob_get_contents();
+<?php $app[$project]['body'] = ob_get_contents();
 ob_end_clean();
 
 ob_start(); ?>
@@ -234,7 +238,7 @@ document.getElementById('app_project-saveForm').addEventListener('submit', funct
 
 });
 
-<?php $appProject['script'] = ob_get_contents();
+<?php $app[$project]['script'] = ob_get_contents();
 ob_end_clean();
 
 //header("Cache-Control: no-store, no-cache, must-revalidate, max-age=0");
@@ -273,11 +277,11 @@ if (is_file($path . 'tailwindcss-3.3.5.js')) {
   <script src="<?= 'resources/js/tailwindcss-3.3.5.js' ?? $url ?>"></script>
 
 <style type="text/tailwindcss">
-<?= $appProject['style']; ?>
+<?= $app[$project]['style']; ?>
 </style>
 </head>
 <body>
-<?= $appProject['body']; ?>
+<?= $app[$project]['body']; ?>
 
   <script src="<?= check_http_status('https://code.jquery.com/jquery-3.7.1.min.js') ? 'https://code.jquery.com/jquery-3.7.1.min.js' : "{$path}jquery-3.7.1.min.js" ?>"></script>
   <!-- You need to include jQueryUI for the extended easing options. -->
@@ -287,9 +291,9 @@ if (is_file($path . 'tailwindcss-3.3.5.js')) {
 
 
   <script src="resources/js/ace/src/ace.js" type="text/javascript" charset="utf-8"></script> 
-    <script src="resources/js/ace/src/ext-language_tools.js" type="text/javascript" charset="utf-8"></script>
+  <script src="resources/js/ace/src/ext-language_tools.js" type="text/javascript" charset="utf-8"></script>
     
-    <script>
+  <script>
     document.addEventListener("DOMContentLoaded", function() {
         var editor = ace.edit("app_project_editor");
         editor.setTheme("ace/theme/dracula");
@@ -306,15 +310,15 @@ if (is_file($path . 'tailwindcss-3.3.5.js')) {
 
     });
 
-<?= $appProject['script']; ?>
-</script>
+<?= $app[$project]['script']; ?>
+  </script>
 </body>
 </html>
-<?php $appProject['html'] = ob_get_contents(); 
+<?php $app[$project]['html'] = ob_get_contents(); 
 ob_end_clean();
 
 //check if file is included or accessed directly
 if (__FILE__ == get_required_files()[0] || in_array(__FILE__, get_required_files()) && isset($_GET['app']) && $_GET['app'] == 'project' && APP_DEBUG)
   Shutdown::setEnabled(false)->setShutdownMessage(function() {
-      return eval('?>' . file_get_contents('projects/index.php')); // -wow */
+      return eval('?>' . file_get_contents('projects/index.php') ?? 'Template Replace' ); // -wow */
     })->shutdown(); // die();ob_start(); ?>

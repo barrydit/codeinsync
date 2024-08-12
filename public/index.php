@@ -8,9 +8,6 @@ if ($path = (basename(getcwd()) == 'public') ? (is_file('../config/config.php') 
 else
   die(var_dump("$path was not found. file=config.php"));
 
-
-
-
     //? (is_file('../config.php') ? '../config.php' : 'config.php')
     //: (is_file('config.php') ? 'config.php' : (is_file('config/config.php') ? 'config/config.php' : null)))
 
@@ -25,9 +22,9 @@ if (APP_DEBUG) {
   defined('PHP_CONFIG_FILE_PATH') and $errors['PHP_CONFIG_FILE_PATH'] = "PHP_CONFIG_FILE_PATH: " . PHP_CONFIG_FILE_PATH . "\n";
   defined('PHP_CONFIG_FILE_SCAN_DIR') and $errors['PHP_CONFIG_FILE_SCAN_DIR'] = "PHP_CONFIG_FILE_SCAN_DIR: " . PHP_CONFIG_FILE_SCAN_DIR . "\n";
   defined('PHP_SHLIB_SUFFIX') and $errors['PHP_SHLIB_SUFFIX'] = "PHP_SHLIB_SUFFIX: " . PHP_SHLIB_SUFFIX . "\n";
-  defined('PHP_EOL') and $errors['PHP_EOL'] = "PHP_EOL: " . PHP_EOL . "\n";
-  defined('PHP_INT_MIN') and $errors['PHP_INT_MIN'] = "PHP_INT_MIN: " . PHP_INT_MIN . "\n";
-  defined('PHP_INT_MAX') and $errors['PHP_INT_MAX'] = "PHP_INT_MAX: " . PHP_INT_MAX . "\n";
+  defined('PHP_EOL') and $errors['PHP_EOL'] = 'PHP_EOL: ' . json_encode(PHP_EOL) . "\n";
+  defined('PHP_INT_MIN') and $errors['PHP_INT_MIN'] = "PHP_INT_MIN: " . PHP_INT_MIN . "\n"; // -/+ 2147483648 32-bit
+  defined('PHP_INT_MAX') and $errors['PHP_INT_MAX'] = "PHP_INT_MAX: " . PHP_INT_MAX . "\n"; // -/+ 9223372036854775808 64-bit
   defined('PHP_FLOAT_DIG') and $errors['PHP_FLOAT_DIG'] = "PHP_FLOAT_DIG: " . PHP_FLOAT_DIG . "\n";
   defined('PHP_FLOAT_EPSILON') and $errors['PHP_FLOAT_EPSILON'] = "PHP_FLOAT_EPSILON: " . PHP_FLOAT_EPSILON . "\n";
   defined('PHP_FLOAT_MIN') and $errors['PHP_FLOAT_MIN'] = "PHP_FLOAT_MIN: " . PHP_FLOAT_MIN . "\n";
@@ -36,7 +33,7 @@ if (APP_DEBUG) {
 
 
 if (APP_SELF != APP_SERVER)
-  require_once realpath(__DIR__ . DIRECTORY_SEPARATOR . '..' . DIRECTORY_SEPARATOR  . 'config' . DIRECTORY_SEPARATOR . 'classes' . DIRECTORY_SEPARATOR . 'class.sockets.php');
+  require_once dirname(__DIR__) . DIRECTORY_SEPARATOR . 'config' . DIRECTORY_SEPARATOR . 'classes' . DIRECTORY_SEPARATOR . 'class.sockets.php';
 //dd(get_defined_constants(true)['user']);
 
 //$path = "/path/to/your/logfile.log"; // Replace with your actual log file path
@@ -143,7 +140,7 @@ $dirs[] = APP_PATH . APP_BASE['config'] . 'npm.php';
     $previousFilename = $currentFilename;
   }
 
-/** Loading Time: 4.65s **/
+/** Loading Time: 0.638s **/
 
   // dd(null, true);
 
@@ -157,15 +154,13 @@ $dirs[] = APP_PATH . APP_BASE['config'] . 'npm.php';
       //dd($_ENV);
       if (isset($_POST['environment'])) {
         switch ($_POST['environment']) {
-          case 'product':
-            define('APP_ENV', 'production');
-            break;
           case 'develop':
             define('APP_ENV', 'development');
             break;
           case 'math':
             define('APP_ENV', 'math');
             break;
+          case 'product':
           default:
             define('APP_ENV', 'production');
             break;
@@ -239,7 +234,6 @@ $dirs[] = APP_PATH . APP_BASE['config'] . 'npm.php';
       }*/
   //}
   /**/
-
 
 
   if (isset($_GET['CLIENT']) || isset($_GET['DOMAIN']) && !defined('APP_ROOT')) {
@@ -352,13 +346,12 @@ $dirs[] = APP_PATH . APP_BASE['config'] . 'npm.php';
   // dd(get_defined_vars(), true);
   
   //$path = '';
-  
+
+$app = $apps = [];
+
+// Check if $paths is not empty
+if (!empty($paths))
   while ($path = array_shift($paths)) {
-  
-  //dd($path, false);
-  
-      // Check if $paths is not empty
-      if (!empty($paths)) {
           // Shift the first path from the array
           //;
   
@@ -369,16 +362,48 @@ $dirs[] = APP_PATH . APP_BASE['config'] . 'npm.php';
   //            $requireFile = function($file) /*use ($apps)*/ { global $apps; }; */
   
               // Include the file using the function
-              $returnedValue = require_once $realpath;
+              //dd("path is $realpath\n", false);
               //dd(get_required_files(), false);
-  //dd($returnedValue, false);
+              /* $returnedValue = (function() use ($realpath) {
+                ob_start();
+                require_once $realpath;
+                return ob_get_clean(); // redundant ob_end_clean();
+              })(); */
+
+              $returnedValue = (function() use ($realpath, &$app) {
+                ob_start();
+
+                require_once $realpath;
+
+                if (preg_match('/^app\.([\w\-.]+)\.php$/', basename($realpath), $matches) && isset($matches[1]) /*&& !empty($app[$matches[1]])*/) {
+                  return [$matches[1] => ['style' => $app[$matches[1]]['style'], 'body' => $app[$matches[1]]['body'], 'script' => $app[$matches[1]]['script']]];
+                } else if (preg_match('/^ui\.([\w\-.]+)\.php$/', basename($realpath), $matches)) {
+                  !defined($app_name = 'UI_' . strtoupper($matches[1])) and define($app_name, ['style' => $app['style'], 'body' => $app['body'], 'script' => $app['script']]); // $apps[$matches[1]]
+                  //dd('UI_' . strtoupper($matches[1]) . ' created?', false);
+                  //$app = [];
+                  return null;
+                }
+
+                //dd('UI_' . strtoupper($matches[1]) . ' created?', false);
+
+                //dd($realpath . ' created?', false);
+              })();
+        
+              //$returnedValue = require_once $realpath;
+
+              //dd($app, false);
+              //ob_start(); $ob_contents = ob_get_contents(); ob_end_clean();
+              //dd($ob_contents, false);
+              //dd(get_required_files(), false);
+              //dd($returnedValue, false);
   
               // Check the type of the returned value
-              if (is_array($returnedValue)) {
+              if (is_array($returnedValue) && !empty($returnedValue)) {
                   // The file returned an array
-                  if (preg_match('/^.*?\.(\w+)\.php$/', $realpath, $matches))
-                    !defined($app_name = 'UI_' . strtoupper($matches[1])) and define($app_name, $returnedValue); // $apps[$matches[1]]
-              } //elseif ($returnedValue !== null) {
+
+                  //dd($returnedValue);
+                  $apps = array_merge($apps, $returnedValue);
+              }  //elseif ($returnedValue !== null) {
                   // The file returned a non-null value
                   //echo 'Returned value: ' . $returnedValue . PHP_EOL;
               //} else {
@@ -389,15 +414,16 @@ $dirs[] = APP_PATH . APP_BASE['config'] . 'npm.php';
               // Output a message if the file was not found
               echo basename($path) . ' was not found. file=public/' . basename($path) . PHP_EOL;
           }
-      }
-  
-  
+
       // Unset $paths if it is empty
       //if (empty($paths)) unset($paths);
   
   } // isset($paths) && !empty($paths)
+  //dd(array_keys($apps['console']));
+      //dd(get_defined_vars(), true); // Check that $files remains unchanged
+      //dd($appDirectory['body']); 
 
-  if (defined('APP_ENV') and APP_ENV == 'production' )
+  if (defined('APP_ENV'))
     switch (APP_ENV) {
       case 'development':
         require_once 'idx.develop.php';
@@ -406,6 +432,7 @@ $dirs[] = APP_PATH . APP_BASE['config'] . 'npm.php';
         require_once 'idx.math.php';
         break;
       case 'production':
+      default:
         require_once 'idx.product.php';
         break;
   } else {

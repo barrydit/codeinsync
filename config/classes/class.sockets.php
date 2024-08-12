@@ -5,6 +5,9 @@ class SocketException extends Exception {}
 class Sockets
 {
     private $socket;
+    private $errstr;
+    private $errno;
+
 
     public function __construct()
     {
@@ -25,7 +28,7 @@ class Sockets
         $socket = $this->createSocket($host, $port, $timeout);
     
         if ($socket === false) {
-            throw new SocketException("Unable to open socket: $errstr", $errno);
+            throw new SocketException("Unable to open socket: {$this->errstr}", $this->errno);
         }
     
         return $socket;
@@ -34,7 +37,7 @@ class Sockets
     private function createSocket($host, $port, $timeout)
     {
         // Your implementation of creating a socket goes here
-        return @fsockopen($host, $port, $errno, $errstr, $timeout);
+        return @fsockopen($host, $port, $this->errno, $this->errstr, $timeout);
     }
 
     private function handleSocketConnection()
@@ -157,7 +160,10 @@ if (!$_SERVER['SOCKET']) {
     }
   }
 
-  var_dump($errors['APP_SOCKET'] = "Socket is not being created: Define \$_SERVER['SOCKET']");
+    $errors['APP_SOCKET'] = "Socket is not being created: Define \$_SERVER['SOCKET']\n";
+
+    if (APP_DEBUG) { var_dump(trim($errors['APP_SOCKET'])); }
+
 
 
 }

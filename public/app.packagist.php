@@ -66,6 +66,9 @@ $output[] = $_POST['cmd'];
 */
 }
 
+if (preg_match('/^app\.([\w\-.]+)\.php$/', basename(__FILE__), $matches))
+  ${$matches[1]} = $matches[1];
+
 ob_start(); ?>
 
 /* Styles for the absolute div */
@@ -99,7 +102,7 @@ input {
   //height: 100%;
 }
 
-<?php $appPackagist['style'] = ob_get_contents();
+<?php $app[$packagist]['style'] = ob_get_contents();
 ob_end_clean();
 
 ob_start(); ?>
@@ -120,17 +123,17 @@ ob_start(); ?>
   </div>
 <!-- </div> -->
 
-<?php $appPackagist['body'] = ob_get_contents();
+<?php $app[$packagist]['body'] = ob_get_contents();
 ob_end_clean();
 
 ob_start(); ?>
 
-<?php $appPackagist['script'] = ob_get_contents();
+<?php $app[$packagist]['script'] = ob_get_contents();
 ob_end_clean();
 
 ob_start(); ?>
 
-<?php $appPackagist['html'] = ob_get_contents(); 
+<?php $app[$packagist]['html'] = ob_get_contents(); 
 ob_end_clean();
 
 

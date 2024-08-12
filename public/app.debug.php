@@ -22,10 +22,10 @@ require_once realpath('index.php');
 //dd(APP_ERRORS);
 
 //dd($_ENV);
-
-if (APP_ENV == 'development' && defined('APP_ERRORS') && APP_ERRORS && defined('APP_DEBUG') && APP_DEBUG == $report_errors = true) NULL;
-elseif (APP_ENV == 'development' && APP_DEBUG == false)
-  die(header('Location: ' . (!defined('APP_URL_BASE') and 'http://' . APP_DOMAIN . APP_URL_PATH) .  '?debug'));
+if (defined('APP_ENV'))
+  if (APP_ENV == 'development' && defined('APP_ERRORS') && APP_ERRORS && defined('APP_DEBUG') && APP_DEBUG == $report_errors = true) NULL;
+  elseif (APP_ENV == 'development' && APP_DEBUG == false)
+    die(header('Location: ' . (!defined('APP_URL_BASE') and 'http://' . APP_DOMAIN . APP_URL_PATH) .  '?debug'));
 // is_array($ob_content)
   //$report_errors = true; /// dd(APP_ERRORS); // get_defined_constants(true)['user']'
 
@@ -46,6 +46,28 @@ elseif (APP_ENV == 'development' && APP_DEBUG == false)
 //    $files[] = ['path' => $filename, 'filesize' => filesize($filename), 'filemtime' => filemtime($filename)];
 //}
 
+if (preg_match('/^app\.([\w\-.]+)\.php$/', basename(__FILE__), $matches))
+  ${$matches[1]} = $matches[1];
+
+
+ob_start(); ?>
+html, body {
+  height: 100%;
+  margin: 0;
+  padding: 0;
+}
+<?php $app[$debug]['style'] = ob_get_contents();
+ob_end_clean();
+
+ob_start(); ?>
+<div></div>
+<?php $app[$debug]['body'] = ob_get_contents();
+ob_end_clean();
+
+ob_start(); ?>
+
+<?php $app[$debug]['script'] = ob_get_contents();
+ob_end_clean();
 
 $files = get_required_files();
 $baseDir = APP_PATH;
@@ -89,7 +111,6 @@ scanDirectories($directoriesToScan, $baseDir, $organizedFiles);
 // Display the results
 $sortedArray = customSort($organizedFiles);
 
-
 $total_include_files = count($files);
 $total_include_lines = 0;
 $total_filesize = 0;
@@ -107,7 +128,10 @@ foreach($sortedArray as $key => $path) {
 }
 
 
-if (isset($_GET['debug'])) {
+//die(include 'example-nodes.php');
+
+
+if (isset($_GET['debug']) && $_GET['debug'] == 'stats') {
   //define('APP_END',     microtime(true));
   
   echo <<<HTML

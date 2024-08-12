@@ -2,9 +2,11 @@
 
 /**This Program Should be Disabled by default ... for debugging purposes only!**/
 if (isset($_GET['src']) && is_readable($path = $_GET['src']) && filesize($path) > 0 ) {
-  Shutdown::setEnabled(false)->setShutdownMessage(function() use($path) {
-    return highlight_file($path); /* eval('?>' . $project_code); // -wow */
+
+  Shutdown::setEnabled(false)->setShutdownMessage(function() use ($path) {
+    highlight_file($path); /* return ''; eval('?>' . $project_code); // -wow */
   })->shutdown();
+
 }
   /*
   $_SERVER['REQUEST_SCHEME']
@@ -1993,7 +1995,7 @@ do {
                     //editor.setValue(e);
                 //})
                 
-            globalEditor = editor;
+            globalEditor = editor1;
             return editor;
         });
         
