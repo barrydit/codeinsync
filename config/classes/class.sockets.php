@@ -18,8 +18,8 @@ class Sockets
                 $this->handleClientRequest();
             }
         } catch (SocketException $e) {
-            Logger::error($e->getMessage());
-            Shutdown::triggerShutdown($e->getMessage());
+            //Logger::error($e->getMessage());
+            //Shutdown::triggerShutdown($e->getMessage());
         }
     }
 
@@ -48,7 +48,7 @@ class Sockets
             $this->handleLinuxSocketConnection();
         }
     }
-    public static function handleLinuxSocketConnection()
+    public static function handleLinuxSocketConnection($start = false)
     {
         $pidFile = (defined('APP_PATH') ? APP_PATH : dirname(__DIR__) . DIRECTORY_SEPARATOR) . 'server.pid';
 
@@ -56,7 +56,8 @@ class Sockets
             $pid = file_get_contents($pidFile);
             if (posix_kill($pid, 0)) posix_kill($pid, SIGTERM) and unlink($pidFile);
         }
-        shell_exec('nohup php server.php > /dev/null 2>&1 &');
+        if ($start)
+          shell_exec('nohup php server.php > /dev/null 2>&1 &');
     }
     public static function handleWindowsSocketConnection()
     {
@@ -162,8 +163,7 @@ if (!$_SERVER['SOCKET']) {
 
     $errors['APP_SOCKET'] = "Socket is not being created: Define \$_SERVER['SOCKET']\n";
 
-    if (APP_DEBUG) { var_dump(trim($errors['APP_SOCKET'])); }
-
-
-
+    if (APP_DEBUG) { 
+        //var_dump(trim($errors['APP_SOCKET']));
+    }
 }

@@ -113,7 +113,7 @@ function check_internet_connection($ip = '8.8.8.8') {
 function check_http_status($url = 'http://8.8.8.8', $statusCode = 200) {
   if (defined('APP_CONNECTED')) {
       if ($url !== 'http://8.8.8.8' && !preg_match('/^https?:\/\//', $url)) {
-          $url = 'http://' . $url;
+          $url = "http://$url";
       }
       $headers = get_headers($url);
       return !empty($headers) && strpos($headers[0], (string)$statusCode) === false;

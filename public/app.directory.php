@@ -1,5 +1,14 @@
 <?php
 
+if ($path = (basename(getcwd()) == 'public') ? (is_file('../config/config.php') ? '../config/config.php' : 'config.php') :
+  (is_file('config.php') ? 'config.php' : dirname(__DIR__, 1) . DIRECTORY_SEPARATOR . 'config' . DIRECTORY_SEPARATOR . 'config.php' ))
+  require_once $path;
+else
+  die(var_dump("$path was not found. file=config.php"));
+
+
+global $errors;
+
 //namespace App\Directory;
 
 if (preg_match('/^app\.([\w\-.]+)\.php$/', basename(__FILE__), $matches))
@@ -7,17 +16,12 @@ if (preg_match('/^app\.([\w\-.]+)\.php$/', basename(__FILE__), $matches))
 
 //dd($directory, true);
 
-ob_start(); ?>
-
-<?php $app[$directory]['style'] = ob_get_contents();
-ob_end_clean();
-
-
-ob_start(); ?>
-
-<div id="app_directory-container" style="position: absolute; display: <?= isset($_GET['debug']) || isset($_GET['project']) || isset($_GET['path']) ? /*'block'*/ 'none' : 'none'; ?>; background-color: white; height: 600px; top: 100px; margin-left: auto; margin-right: auto; left: 0; right: 0; width: 700px; overflow-x: hidden; overflow-y: scroll; padding: 10px;">
-
-<?php  if (isset($_GET['path']) && preg_match('/^vendor$/', $_GET['path'])) { ?>
+$tableGen = function() {
+  ob_start();
+  if (isset($_GET['path']) && preg_match('/^vendor$/', $_GET['path'])) { 
+    if ($_ENV['COMPOSER']['AUTOLOAD'] == true)
+      require_once APP_PATH . APP_ROOT . APP_BASE['vendor'] . 'autoload.php';
+    require_once 'config/composer.php'; ?>
     <!-- iframe src="composer_pkg.php" style="height: 500px; width: 700px;"></iframe -->
     <div style="width: 700px;">
       <div style="display: inline-block; width: 350px;">Composers Vendor Packages [Installed] List</div>
@@ -38,7 +42,7 @@ ob_start(); ?>
     <table style="width: inherit; border: none;">
       <tr style=" border: none;">
 <?php
-
+if (defined('COMPOSER_VENDORS')) {
           //$paths = glob($path . '/*');
           $paths = COMPOSER_VENDORS;
           //dd(COMPOSER_VENDORS, false);
@@ -224,7 +228,7 @@ ob_start(); ?>
               if (isset($count) && $count >= 6) $count = 1;
               else $count++;
             }
-          
+          } 
           ?>
         <!-- /tr -->
     </table>
@@ -390,9 +394,8 @@ ob_start(); ?>
     <table width="" style="border: none;">
       <tr style=" border: none;">
         <?php
-          $count = 1;
-          ?>
-        <?php
+          $count = 1; 
+
           //if (empty($links)) {
           //  echo '<option value="" selected>---</option>' . "\n"; // label="     "
           //} else  //dd($links);
@@ -400,13 +403,9 @@ ob_start(); ?>
           while ($link = array_shift($links)) {
             $old_link = $link;
             $link = basename($link);
-          
-          
-            echo '<td style="text-align: center; border: none;" class="text-xs">' . "\n";
-          
-            echo '<a class="pkg_dir" href="?client=' . $link . '">'
-            . '<img src="resources/images/directory.png" width="50" height="32" style="" /><br />' . $link . '</a><br />'
-            . '</td>' . "\n";
+
+            echo "<td style=\"text-align: center; border: none;\" class=\"text-xs\">\n"
+            . "<a class=\"pkg_dir\" href=\"?client=$link\"><img src=\"resources/images/directory.png\" width=\"50\" height=\"32\" style=\"\" /><br />$link</a><br /></td>\n";
           
             if ($count >= 6) echo '</tr><tr>';
             elseif ($old_link == end($old_links)) echo '</tr>';
@@ -428,25 +427,24 @@ ob_start(); ?>
     <?php } } else {
 
       if(isset($_GET['client']) && !empty($_GET['client']))
-        $path .= /*'../../'.*/ 'clientele/' . $_GET['client'] . '/' . (isset($_GET['domain']) && !empty($_GET['domain']) ? $_GET['domain'] . '/' : '');
+        $path = 'clientele/' . $_GET['client'] . '/' . (isset($_GET['domain']) && !empty($_GET['domain']) ? $_GET['domain'] . '/' : '');
       
       elseif(isset($_GET['project']) && !empty($_GET['project']))
-        $path .= /*'../../'.*/ 'projects/' . $_GET['project'] . '/';
+        $path =  'projects/' . $_GET['project'] . '/';
 
-      ob_start(); 
+ob_start(); 
 // >>>
-      echo '<div style="position: absolute; width: 100%;">' . APP_PATH . APP_ROOT . (isset($_GET['path']) ? $_GET['path'] : '' ) . '</div>';
+      echo '<div style="position: absolute; width: 100%;"><a href="?path">' . APP_PATH . APP_ROOT . '</a>' . (isset($_GET['path']) ? $_GET['path'] : '' ) . '</div>';
+      
 // <<<
-      ?>
 
-    <?php 
     if (!realpath(APP_PATH . APP_ROOT . (isset($_GET['path']) ? $_GET['path'] : '' ))) { ?>
     
-      <br /><br />Missing directory
+      <?= '<br /><br />Missing directory'; ?>
   
     <?php } else { ?>
     <table style="width: inherit; border: 0 solid #000;">
-      <tr>
+    <tr>
         <?php
 
           //$paths = ['thgsgfhfgh.php'];
@@ -647,15 +645,29 @@ ob_start(); ?>
                 else $count++;
             }
           ?>
-     <!-- - /tr -->
-    </table> <?php } ?>
-    <?php
+    </table>
+
+<?php } 
       $cwd_table = ob_get_contents();
       ob_end_clean();
 
       echo $cwd_table;
-    } ?>
-  </div>
+      
+      $returnValue = ob_get_contents();
+    }
+  ob_end_clean();
+  return $returnValue;
+};
+
+ob_start(); ?>
+
+<?php $app[$directory]['style'] = ob_get_contents();
+ob_end_clean(); 
+
+ob_start(); ?>
+<div id="app_directory-container" style="position: absolute; display: <?= isset($_GET['debug']) || isset($_GET['project']) || isset($_GET['path']) ? /*'block'*/ 'none' : 'none'; ?>; background-color: white; height: 600px; top: 100px; margin-left: auto; margin-right: auto; left: 0; right: 0; width: 700px; overflow-x: hidden; overflow-y: scroll; padding: 10px;">
+<?php echo $tableGen(); /*  '';*/  ?>
+</div>
 <?php $app[$directory]['body'] = ob_get_contents();
 ob_end_clean(); ?>
 
@@ -665,3 +677,64 @@ ob_start(); ?>
 <?php
 $app[$directory]['script'] = ob_get_contents();
 ob_end_clean();
+
+
+ob_start(); ?>
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <link rel="stylesheet" href="//code.jquery.com/ui/1.12.1/themes/smoothness/jquery-ui.css" />
+
+<?php
+// (check_http_status('https://cdn.tailwindcss.com') ? 'https://cdn.tailwindcss.com' : APP_WWW . 'resources/js/tailwindcss-3.3.5.js')?
+// Path to the JavaScript file
+$path = APP_PATH . APP_BASE['resources'] . 'js/tailwindcss-3.3.5.js';
+
+// Create the directory if it doesn't exist
+is_dir(dirname($path)) or mkdir(dirname($path), 0755, true);
+
+// URL for the CDN
+$url = 'https://cdn.tailwindcss.com';
+
+// Check if the file exists and if it needs to be updated
+if (!is_file($path) || (time() - filemtime($path)) > 5 * 24 * 60 * 60) { // ceil(abs((strtotime(date('Y-m-d')) - strtotime(date('Y-m-d',strtotime('+5 days',filemtime($path . 'tailwindcss-3.3.5.js'))))) / 86400)) <= 0 
+  // Download the file from the CDN
+  $handle = curl_init($url);
+  curl_setopt($handle, CURLOPT_RETURNTRANSFER, true);
+  $js = curl_exec($handle);
+  
+  // Check if the download was successful
+  if (!empty($js)) {
+    // Save the file
+    file_put_contents($path, $js) or $errors['JS-TAILWIND'] = $url . ' returned empty.';
+  }
+}
+?>
+
+  <script src="<?= check_http_status($url) ? substr($url, strpos($url, parse_url($url)['host']) + strlen(parse_url($url)['host'])) : substr($path, strpos($path, dirname(APP_BASE['resources'] . 'js'))) ?>"></script>     
+
+<style type="text/tailwindcss">
+<?= $app[$directory]['style']; ?>
+</style>
+</head>
+<body>
+<?= $app[$directory]['body']; ?>
+
+  <!-- https://cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.min.js -->
+  <script src="//code.jquery.com/jquery-1.12.4.js"></script>
+  <script src="//code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
+  <!-- <script src="resources/js/jquery/jquery.min.js"></script> -->
+<script>
+<?= $app[$directory]['script']; ?>
+</script>
+</body>
+</html>
+<?php $app[$directory]['html'] = ob_get_contents(); 
+ob_end_clean();
+
+//check if file is included or accessed directly
+if (__FILE__ == get_required_files()[0] || in_array(__FILE__, get_required_files()) && isset($_GET['app']) && $_GET['app'] == 'directory' && APP_DEBUG)
+  die($app[$directory]['html']);

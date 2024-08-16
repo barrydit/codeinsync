@@ -1,6 +1,6 @@
 <?php
 
-global $shell_prompt, $auto_clear;
+global $shell_prompt, $auto_clear, $errors;
 
   /*
       realpath ? Returns canonicalized absolute pathname
@@ -38,6 +38,8 @@ if (preg_match('/^app\.([\w\-.]+)\.php$/', basename(__FILE__), $matches))
       if ($_POST['cmd'] && $_POST['cmd'] != '') 
         if (preg_match('/^help/i', $_POST['cmd']))
           $output[] = implode(', ', array('install', 'php', 'composer', 'git', 'npm', 'whoami', 'wget', 'tail', 'cat', 'echo', 'env', 'sudo'));
+        else if (preg_match('/^server\s*start$/i', $_POST['cmd']))
+          Sockets::handleLinuxSocketConnection(true);
         else if (preg_match('/^install/i', $_POST['cmd']))
           include 'templates/' . preg_split("/^install (\s*+)/i", $_POST['cmd'])[1] . '.php';
         //else if (preg_match('/^edit\s+(:?(.*))/i', $_POST['cmd'], $match))
@@ -298,17 +300,36 @@ if (preg_match('/^app\.([\w\-.]+)\.php$/', basename(__FILE__), $matches))
               $errors['server-2'] = 'Client request: ' . $message = "cmd: " . $_POST['cmd'] . "\n";
             
               fwrite($_SERVER['SOCKET'], $message);
-              $output[] = $_POST['cmd'] . ' test3: ';
+              $output = []; //$_POST['cmd'] . ' test3: ';
+
+              $buffer = '';
   
               // Read response from the server
               while (!feof($_SERVER['SOCKET'])) {
-                  $response = fgets($_SERVER['SOCKET'], 1024);
-                  $errors['server-3'] = "Server responce: $response\n";
-                  if (isset($output[end($output)])) $output[end($output)] .= trim($response);
-                  else $output[] = trim($response);
-                  //if (!empty($response)) break;
+                $response = fgets($_SERVER['SOCKET'], 1024); // Read in chunks of 1024 bytes
+                if ($response !== false) {
+                    $buffer .= $response; // Accumulate the response
+                }
+/*
+                  $response = fgets($_SERVER['SOCKET'], 1024); // Reading the response 1024 bytes at a time
+                  $errors['server-3'] = "Server response: $response\n";
+          
+                  // Append or add the response to the output array
+                  if (end($output) !== false) {
+                      $output[key($output)] .= trim($response);
+                  } else {
+                      $output[] = trim($response);
+                  }
+          
+                  // Check for an empty response or end-of-message (optional)
+                  if (!empty($response)) {
+                      break; // Exit loop on receiving a non-empty response, or continue based on your logic
+                  }
+*/
               }
               //die(var_dump($_SERVER['SOCKET']));
+
+              fclose($_SERVER['SOCKET']);
             }
   
   
@@ -318,10 +339,11 @@ if (preg_match('/^app\.([\w\-.]+)\.php$/', basename(__FILE__), $matches))
       //else var_dump(NULL); // eval('echo $repo->status();')
       if (isset($output) && !empty($output))
         if (count($output) == 1) echo /*(isset($match[1]) ? $match[1] : 'PHP') . ' >>> ' . */ join("\n... <<< ", $output); // . "\n" var_dump($output);
-        else var_dump($output); //join("\n", $output); // . "\n"
+        else join("\n", $output); // . "\n"
         //$output[] = 'post: ' . var_dump($_POST);
       //else var_dump(get_class_methods($repo));
-      Shutdown::setEnabled(true)->setShutdownMessage(function () {})->shutdown();
+      else echo $buffer;
+      Shutdown::setEnabled(true)->setShutdownMessage(function () { })->shutdown();
       //exit();
     }
   }
@@ -1131,8 +1153,11 @@ console.log = function() {
         console.log("Data: " + data + "Status: " + status);
 
         //data = data.trim(); // replace(/(\r\n|\n|\r)/gm, "")
-        
-        if (matches = data.match(/((:?sudo\s+)?(:?<?=str_replace('/', '\/', (defined('GIT_EXEC') ? dirname(GIT_EXEC) : '')); ?>)?<?= (defined('GIT_EXEC') ? basename(GIT_EXEC) : ''); ?>.*)/gm)) {
+
+        if (matches = argv.match(/chdir(\s+(:?.*)?|)/gm)) {
+          document.getElementById('app_directory-container').innerHTML = data;
+          //console.log(data);
+        } else if (matches = data.match(/((:?sudo\s+)?(:?<?=str_replace('/', '\/', defined('GIT_EXEC') ? dirname(GIT_EXEC) : ''); ?>)?<?= defined('GIT_EXEC') ? basename(GIT_EXEC) : ''; ?>.*)/gm)) {
           if (matches = data.match(/.*status.*\n+/gm)) {
             if (matches = data.match(/.*On branch main\nYour branch is (ahead of|up to date with).*(:?by\s[0-9]+commits)?/gm)) {
               if (matches = data.match(/.*On branch main\nYour branch is up to date with.*\n+/gm)) {

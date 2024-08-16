@@ -1,3 +1,4 @@
+#!/usr/bin/env php
 <?php
 declare(strict_types=1); // First Line Only!
 
@@ -53,7 +54,7 @@ $port = APP_PORT ?? 8080;
 
   // Signal handler to gracefully shutdown
   function signalHandler($signal) {
-    global $running, $socket, $server, $client;
+    global $running, $socket, $server, $stream;
     switch ($signal) {
       case SIGTERM:
       case SIGINT:
@@ -62,20 +63,20 @@ $port = APP_PORT ?? 8080;
         //fclose($server);
         if (isset($socket)) {
           if (is_resource($socket)) {
+            $running = false;
+            unlink(PID_FILE);
             switch (get_resource_type($socket)) {
               case 'stream':
-                fwrite($client, 'Shuting down server... PID=' . getmypid());
+                fwrite($stream, 'Shuting down server... PID=' . getmypid());
                 fclose($socket);
-                break;
+                break 2;
               default:
-                socket_write($client, 'Shuting down server... PID=' . getmypid());
+                socket_write($stream, 'Shuting down server... PID=' . getmypid());
                 socket_close($socket);
-                break;
+                break 2;
             }
           }
         }
-        $running = false;
-        unlink(PID_FILE);
         exit(1);
     }
   }
@@ -86,13 +87,13 @@ $port = APP_PORT ?? 8080;
   pcntl_signal(SIGINT, 'signalHandler');
 
 function clientInputHandler($input) {
-    global $socket, $client, $running, $manager;
+    global $socket, $stream, $running, $manager;
 
     if ($input == '') return;
     error_log('Client [Input]: ' . trim($input));
     echo 'Client [Input]: ' . trim($input) . "\n";
     //$input = trim($input);
-    $output = '';
+    $output = 'gsdgdsfg';
 
     if (preg_match('/^cmd:\s*(shutdown|restart|server\s*(shutdown|restart))\s*?(?:(-f))(?=\r?\n$)?/si', $input, $matches)) { 
       //signalHandler(SIGTERM); // $running = false;
@@ -101,6 +102,24 @@ function clientInputHandler($input) {
         signalHandler(SIGTERM);
     } elseif (preg_match('/^cmd:\s*server\s*status(?=\r?\n$)?/si', $input)) {
       $output = 'Server is running... PID=' . getmypid();
+    } elseif (preg_match('/^cmd:\s*chdir\s*(.*)(?=\r?\n$)?/si', $input, $matches)) {
+      $output = "Changing directory to " . ($path = APP_PATH . APP_ROOT . trim($matches[1]) . '/');
+      if ($path = realpath($path)) {
+        $output = "Changing step 2 directory to $matches[1]";
+        $resultValue = (function() use ($path) {
+          // Replace the escaped APP_PATH and APP_ROOT with the actual directory path
+          if (realpath($_GET['path'] = preg_replace('/' . preg_quote(APP_PATH . APP_ROOT, '/') . '/', '', $path)) == realpath(APP_PATH . APP_ROOT))
+            $_GET['path'] = '';
+
+          //dd('Path: ' . $_GET['path'] . "\n", false);
+          ob_start();
+          require 'public/app.directory.php';
+          ob_end_clean();
+          return $tableGen();// $app['directory']['body'];
+        })();
+        $output = $resultValue;
+      }
+
     } elseif(preg_match('/^cmd:\s*server\s*backup(?=\r?\n$)?/si', $input, $matches)) {
       require_once 'public/index.php';
       echo "Including/Requiring... $matches[2]\n";
@@ -240,7 +259,7 @@ $interval = 300;
 Logger::init();
 
 function checkFileModification() {
-  global $socket, $client, $running;
+  global $socket, $stream, $running;
 
   $file = __FILE__;
 
@@ -269,12 +288,12 @@ function checkFileModification() {
       //$lastModifiedTime = filemtime(__FILE__);
       switch (get_resource_type($socket)) {
           case 'stream':
-              fwrite($client, $output);
-              fclose($client);
+              fwrite($stream, $output);
+              fclose($stream);
               break;
           default:
-              socket_write($client, $output);
-              socket_close($client);
+              socket_write($stream, $output);
+              socket_close($stream);
               break;
       }
       error_log("Client [Output]: $output");
@@ -331,37 +350,63 @@ if (is_dir($path = __DIR__ . APP_BASE['vendor'] . 'cboden' . DIRECTORY_SEPARATOR
 
     while ($running) {
       $manager->checkNotifications();
-      $client = @stream_socket_accept($socket, -1);
+      $stream = @stream_socket_accept($socket, -1);
       //and print "Client Connected: \n";
 
       // Check if 300 seconds have passed since the last execution
       if (time() - $lastExecutionTime >= $interval) {
         // Execute the function
+
         checkFileModification();
 
         // Update the last execution time
         $lastExecutionTime = time();
+      } else {
+        echo $interval - (time() - $lastExecutionTime) . ' seconds left' . "\n"; 
       }
 
-      if ($client) {
+      if ($stream) {
         // Get the client's address and port
-        $clientName = stream_socket_get_name($client, true);
+        $clientName = stream_socket_get_name($stream, true);
                 
         // Extract the client's IP and port
-        list($clientAddress, $clientPort) = explode(':', $clientName);
+        [$clientAddress, $clientPort] = explode(':', $clientName);
                 
         echo "Client connected: IP {$clientAddress}:{$clientPort} Port \n";
         // Read data from the client
-        $response = clientInputHandler(fread($client, 1024));
+        $data = clientInputHandler($clientMsg = fread($stream, 1024)) . "\n";
         
         $manager->checkNotifications();
         // Append notification output to the response
-        $response .= "\n" . $manager->getNotificationsOutput();
+        $data .= $manager->getNotificationsOutput();
+        //dd($data, false);
 
-        fwrite($client, $response);
+        $data = explode("\n", $data); // Split data by new lines into an array
+        $data = implode("\n", $data); // Rejoin array elements into a single string
+        
+        $totalLength = strlen($data); // Calculate the length of the string
+        $written = 0;
+        
+        while ($written < $totalLength) {
+            $chunkSize = 1024; // Adjust chunk size as needed
+            $writeLength = min($chunkSize, $totalLength - $written);
+        
+            $result = fwrite($stream, substr($data, $written, $writeLength));
+        
+            if ($result === false) {
+                // Handle the error (e.g., log it, retry, etc.)
+                break;
+            }
+        
+            $written += $result; // Move the pointer forward
+        }
+
+
+        //fwrite($stream, ?? "Something's not working...\n");
+        fflush($stream);
 
         // Close the client connection
-        fclose($client) and print "Client Disconnected: IP {$clientAddress}:{$clientPort} Port \n\n";
+        fclose($stream) and print "Client Disconnected: IP {$clientAddress}:{$clientPort} Port \n\n";
       }
   
       // Dispatch signals
@@ -430,8 +475,8 @@ if (is_dir($path = __DIR__ . APP_BASE['vendor'] . 'cboden' . DIRECTORY_SEPARATOR
     }
 
   } catch (Exception $e) {
-    Logger::error($e->getMessage());
-    Shutdown::triggerShutdown($e->getMessage());
+    //Logger::error($e->getMessage());
+    //Shutdown::triggerShutdown($e->getMessage());
   } finally {
     if (isset($socket)) {
         if (is_resource($socket)) {

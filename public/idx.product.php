@@ -24,7 +24,7 @@ if (isset($_GET['path']) && $_GET['path'] != '' && realpath($_GET['path']) && is
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-    <base href="<?=(!is_array(APP_URL) ? APP_URL : APP_URL_BASE) . (APP_URL['query'] != '' ? '?' . APP_URL['query'] : '') . (defined('APP_ENV') && APP_ENV == 'development' ? '#!' : ''); ?>">
+    <base href="<?=(!is_array(APP_URL) ? APP_URL : APP_URL_BASE) . (!defined('APP_DEBUG')? '?' : '?' . (APP_URL['query'] != '' ? APP_URL['query'] : '')) . (defined('APP_ENV') && APP_ENV == 'development' ? '#!' : ''); ?>">
 
     <title>Multiple Ace Editor Instances</title>
 <?php

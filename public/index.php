@@ -38,7 +38,7 @@ if (APP_SELF != APP_SERVER)
 
 //$path = "/path/to/your/logfile.log"; // Replace with your actual log file path
 if (is_readable($path = APP_PATH . APP_ROOT . $_ENV['ERROR_LOG_FILE']) && filesize($path) >= 0 ) {
-  $errors['ERROR_PATH'] = $path . "\n";
+  $errors['ERROR_PATH'] = "$path\n";
   //if (strtoupper(substr(PHP_OS, 0, 3)) === 'WIN') {
   //  $errors['ERROR_LOG'] = shell_exec("powershell Get-Content -Tail 10 $path") . "\n";
   //} else {
@@ -177,6 +177,24 @@ $dirs[] = APP_PATH . APP_BASE['config'] . 'npm.php';
       //if (!empty($_GET['path']) && !isset($_GET['app'])) !!infinite loop
       //  exit(header('Location: ' . APP_WWW . $_GET['path']));
 // http://localhost/?app=composer&path=vendor
+
+// Parse the URL and extract the query string
+
+// Convert the query string into an associative array
+
+// Now $queryArray contains the parsed query parameters as an array
+
+      if (isset($_SERVER['HTTP_REFERER'])) {
+        parse_str(parse_url($_SERVER['HTTP_REFERER'])['query'], $queryRefererArray);
+        if (array_key_exists('debug', $queryRefererArray)) {
+          parse_str(parse_url($_SERVER['REQUEST_URI'])['query'], $queryArray);
+          if (!array_key_exists('debug', $queryArray)) {
+            Shutdown::setEnabled(true)->setShutdownMessage(function() use ($queryArray) {
+              return header('Location: ' . APP_WWW . '?debug&' . http_build_query($queryArray, '', '&')); //$_SERVER['HTTP_REFERER'] -wow
+            })->shutdown();
+          } //else << NO ELSE!!
+        }
+      }
 
       if (isset($_GET['hide']) && $_GET['hide'] == 'update-notice') {
         $_ENV['HIDE_UPDATE_NOTICE'] = true; // var_export(true, true); // true

@@ -226,7 +226,7 @@ class Shutdown
                 $fnc(self::$shutdownMessage);
             }
         }
-        $message = (is_callable(self::$shutdownMessage) ? call_user_func(self::$shutdownMessage) : self::$shutdownMessage);
+        $message = is_callable(self::$shutdownMessage) ? call_user_func(self::$shutdownMessage) : self::$shutdownMessage;
         if ($die == true) {
             exit($message);
         }
