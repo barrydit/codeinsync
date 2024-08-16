@@ -21,7 +21,9 @@ $tableGen = function() {
   if (isset($_GET['path']) && preg_match('/^vendor$/', $_GET['path'])) { 
     if ($_ENV['COMPOSER']['AUTOLOAD'] == true)
       require_once APP_PATH . APP_ROOT . APP_BASE['vendor'] . 'autoload.php';
-    require_once 'config/composer.php'; ?>
+    require_once 'config/composer.php';
+  ob_start();
+?>
     <!-- iframe src="composer_pkg.php" style="height: 500px; width: 700px;"></iframe -->
     <div style="width: 700px;">
       <div style="display: inline-block; width: 350px;">Composers Vendor Packages [Installed] List</div>
@@ -232,8 +234,17 @@ if (defined('COMPOSER_VENDORS')) {
           ?>
         <!-- /tr -->
     </table>
-    <?php } elseif (isset($_GET['project']) && empty($_GET['project'])) { ?> 
-    <?php if (readlinkToEnd($_SERVER['HOME'] . '/projects') == '/mnt/c/www/projects' || realpath(APP_PATH . 'projects')) { ?>
+<?php 
+    $cwd_table = ob_get_contents();
+    ob_end_clean();
+
+    echo $cwd_table;
+
+
+  } elseif (isset($_GET['project']) && empty($_GET['project'])) {
+    if (readlinkToEnd($_SERVER['HOME'] . '/projects') == '/mnt/c/www/projects' || realpath(APP_PATH . 'projects')) {
+      ob_start();         
+?>
     <div style="text-align: center; border: none;" class="text-xs">
       <a class="pkg_dir" href="#" onclick="document.getElementById('app_project-container').style.display='block';">
       <img src="resources/images/project-icon.png" width="50" height="32" style="" /></a><br /><a href="?project">./project/</a>
@@ -285,7 +296,11 @@ if (defined('COMPOSER_VENDORS')) {
             </select>
           </form>
       </ul>
-      <?php } ?></li>
+      <?php }
+      $cwd_table = ob_get_contents();
+      ob_end_clean();
+
+      echo $cwd_table; ?></li>
       -->
     <?php } elseif(isset($_GET['application'])) { ?>
 
@@ -377,11 +392,11 @@ if (defined('COMPOSER_VENDORS')) {
           ?>
     </table>
     <?php } elseif(isset($_GET['client']) && empty($_GET['client'])) { ?> 
-    <?php if (readlinkToEnd('/var/www/clientele') == '/mnt/c/www/clientele' || realpath(APP_PATH . 'clientele')) { ?>
-
-<?php     foreach(['000', '100', '200', '300', '400'] as $key => $status) {
+    <?php if (readlinkToEnd('/var/www/clientele') == '/mnt/c/www/clientele' || realpath(APP_PATH . 'clientele')) {
+    ob_start();
+    foreach(['000', '100', '200', '300', '400'] as $key => $status) {
       
-      if ($key != 0) echo '</table>'."\n\n\n";
+      if ($key != 0) echo "</table>\n\n\n";
       
       $links = array_filter(glob(APP_PATH . /*'../../'.*/ 'clientele/' . $status . '*'), 'is_dir');
       $statusCode = $status;
@@ -389,7 +404,9 @@ if (defined('COMPOSER_VENDORS')) {
                (($status == 100) ? "Working" :
                (($status == 200) ? "Planning" :
                (($status == 300) ? "Previous" :
-               (($status == 400) ? "Future" : "Unknown")))); ?>
+               (($status == 400) ? "Future" : "Unknown"))));
+
+?>
     <h3>&#9660; Stage: <?= $status ?> (<?= $statusCode ?>)</h3>
     <table width="" style="border: none;">
       <tr style=" border: none;">
@@ -404,8 +421,7 @@ if (defined('COMPOSER_VENDORS')) {
             $old_link = $link;
             $link = basename($link);
 
-            echo "<td style=\"text-align: center; border: none;\" class=\"text-xs\">\n"
-            . "<a class=\"pkg_dir\" href=\"?client=$link\"><img src=\"resources/images/directory.png\" width=\"50\" height=\"32\" style=\"\" /><br />$link</a><br /></td>\n";
+            echo "<td style=\"text-align: center; border: none;\" class=\"text-xs\">\n<a class=\"pkg_dir\" href=\"?client=$link\"><img src=\"resources/images/directory.png\" width=\"50\" height=\"32\" style=\"\" /><br />$link</a><br /></td>\n";
           
             if ($count >= 6) echo '</tr><tr>';
             elseif ($old_link == end($old_links)) echo '</tr>';
@@ -415,7 +431,13 @@ if (defined('COMPOSER_VENDORS')) {
           }
         } ?>
     </table>
-    <?php } else { ?>
+    <?php 
+    $cwd_table = ob_get_contents();
+    ob_end_clean();
+  
+    echo $cwd_table;
+
+  } else { ?>
 
     <div style="position: absolute; top: 100px; width: 200px; left: 36%; right: 64%; text-align: center; border: 1px solid #000;">
             <?php echo '<a class="pkg_dir" style="border: 1px dashed blue;" href="?client=' . '">'
@@ -646,15 +668,13 @@ ob_start();
             }
           ?>
     </table>
-
 <?php } 
       $cwd_table = ob_get_contents();
       ob_end_clean();
 
       echo $cwd_table;
-      
-      $returnValue = ob_get_contents();
     }
+  $returnValue = ob_get_contents();
   ob_end_clean();
   return $returnValue;
 };

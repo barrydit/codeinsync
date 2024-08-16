@@ -401,7 +401,6 @@ if (is_dir($path = __DIR__ . APP_BASE['vendor'] . 'cboden' . DIRECTORY_SEPARATOR
             $written += $result; // Move the pointer forward
         }
 
-
         //fwrite($stream, ?? "Something's not working...\n");
         fflush($stream);
 

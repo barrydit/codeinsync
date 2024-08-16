@@ -270,7 +270,7 @@ if (preg_match('/^app\.([\w\-.]+)\.php$/', basename(__FILE__), $matches))
           exec('whoami', $output);
         else if (preg_match('/^wget\s+(:?(.*))/i', $_POST['cmd'], $match))
           /* https://stackoverflow.com/questions/9691367/how-do-i-request-a-file-but-not-save-it-with-wget */
-          exec("wget -qO- $match[1] &> /dev/null", $output);
+          exec("wget -qO- {$match[1]} &> /dev/null", $output);
         else {
   
             if (!$_SERVER['SOCKET']) {
@@ -337,12 +337,13 @@ if (preg_match('/^app\.([\w\-.]+)\.php$/', basename(__FILE__), $matches))
       
         }
       //else var_dump(NULL); // eval('echo $repo->status();')
-      if (isset($output) && !empty($output))
+      if (isset($output) && !empty($output)) {
         if (count($output) == 1) echo /*(isset($match[1]) ? $match[1] : 'PHP') . ' >>> ' . */ join("\n... <<< ", $output); // . "\n" var_dump($output);
         else join("\n", $output); // . "\n"
+        echo implode("\n", $output);
         //$output[] = 'post: ' . var_dump($_POST);
       //else var_dump(get_class_methods($repo));
-      else echo $buffer;
+      } else echo $buffer;
       Shutdown::setEnabled(true)->setShutdownMessage(function () { })->shutdown();
       //exit();
     }

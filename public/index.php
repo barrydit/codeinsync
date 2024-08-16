@@ -185,9 +185,9 @@ $dirs[] = APP_PATH . APP_BASE['config'] . 'npm.php';
 // Now $queryArray contains the parsed query parameters as an array
 
       if (isset($_SERVER['HTTP_REFERER'])) {
-        parse_str(parse_url($_SERVER['HTTP_REFERER'])['query'], $queryRefererArray);
+        parse_str(parse_url($_SERVER['HTTP_REFERER'])['query'] ?? '', $queryRefererArray);
         if (array_key_exists('debug', $queryRefererArray)) {
-          parse_str(parse_url($_SERVER['REQUEST_URI'])['query'], $queryArray);
+          parse_str(parse_url($_SERVER['REQUEST_URI'])['query'] ?? '', $queryArray);
           if (!array_key_exists('debug', $queryArray)) {
             Shutdown::setEnabled(true)->setShutdownMessage(function() use ($queryArray) {
               return header('Location: ' . APP_WWW . '?debug&' . http_build_query($queryArray, '', '&')); //$_SERVER['HTTP_REFERER'] -wow

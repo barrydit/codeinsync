@@ -261,8 +261,8 @@ unset($path);
     <div style="position: absolute; <?= /* (empty($errors) ? 'display: none;' : '') */ NULL; ?>left: -144px; /*width: 150px;*/ z-index: 3;">
       <!--form action="#!" method="GET">
         <?= isset($_GET['debug']) && !$_GET['debug'] ? '' : '<input type="hidden" name="debug" value / >' ?> 
-              <input class="input" id="toggle-debug" type="checkbox" onchange="this.form.submit();" <?= (isset($_GET['debug']) || defined('APP_ENV') && APP_ENV == 'development'? 'checked' : '') ?> / -->
-      <input class="input" id="toggle-debug" type="checkbox" onchange="toggleSwitch(this); return null;" <?= (isset($_GET['debug']) || defined('APP_ENV') && APP_ENV == 'development' ? '' : '') ?> />
+              <input class="input" id="toggle-debug" type="checkbox" onchange="this.form.submit();" <?= isset($_GET['debug']) || defined('APP_ENV') && APP_ENV == 'development' ? 'checked' : '' ?> / -->
+      <input class="input" id="toggle-debug" type="checkbox" onchange="toggleSwitch(this); return null;" <?= isset($_GET['debug']) || defined('APP_ENV') && APP_ENV == 'development' ? '' : '' ?> />
       <label class="label" for="toggle-debug" style="margin-left: -10px;">
         <div class="switch">
           <span class="slider round"></span>
@@ -277,9 +277,9 @@ unset($path);
     <div id="debug-content" class="absolute" style="position: absolute; display: none; right: 0; text-align: right; background-color: rgba(255, 255, 255, 0.8); border: 1px solid #000; width: 800px; z-index: 1; overflow: visible;">
       <div style="float: left; display: inline; margin: 5px;"><form style="display: inline;" action="/" method="POST">Stage: 
   <select name="environment" onchange="this.form.submit();">
-    <option value="develop" <?= ( defined('APP_ENV') && APP_ENV == 'development' ? 'selected' : '') ?>>Development</option>
-    <option value="product" <?= ( defined('APP_ENV') && APP_ENV == 'production' ? 'selected' : '') ?>>Production</option>
-    <option value="math" <?= ( defined('APP_ENV') && APP_ENV == 'math' ? 'selected' : '') ?>>Math</option>
+    <option value="develop" <?= defined('APP_ENV') && APP_ENV == 'development' ? 'selected' : '' ?>>Development</option>
+    <option value="product" <?= defined('APP_ENV') && APP_ENV == 'production' ? 'selected' : '' ?>>Production</option>
+    <option value="math" <?= defined('APP_ENV') && APP_ENV == 'math' ? 'selected' : '' ?>>Math</option>
   </select></form>
   </div>
 
@@ -305,7 +305,7 @@ unset($path);
     </div>
 
       
-      <div style="position: absolute; top: 40px; left: -15px; z-index: 1; background-color: white; border: <?= ( defined('APP_ROOT') && APP_ROOT != '' || isset($_GET['path']) ? '2px dashed red' : '1px solid #000'); ?>;">
+      <div style="position: absolute; top: 40px; left: -15px; z-index: 1; background-color: white; border: <?= defined('APP_ROOT') && APP_ROOT != '' || isset($_GET['path']) ? '2px dashed red' : '1px solid #000'; ?>;">
         <div style="display: inline; margin-top: -7px; float: left; "><a style="font-size: 18pt; font-weight: bold; padding: 0 3px;" href="?path">&#8962; </a></div>
         <?php $path = realpath(APP_ROOT . (isset($_GET['path']) ? DIRECTORY_SEPARATOR . $_GET['path'] : '')) . DIRECTORY_SEPARATOR; // getcwd()
           if (isset($_GET['path'])) { ?>
@@ -429,7 +429,7 @@ unset($path);
             <div style="margin: 0 auto;">
               <div id="clockTime"></div>
             </div>
-            <input class="input" id="toggle-project" type="checkbox" onchange="toggleSwitch(this); this.form.submit();" <?= (isset($_GET['project']) ? 'checked' : '') ?> />
+            <input class="input" id="toggle-project" type="checkbox" onchange="toggleSwitch(this); this.form.submit();" <?= isset($_GET['project']) ? 'checked' : '' ?> />
             <label class="label" for="toggle-project" style="margin-left: -6px;">
               <div class="left"> Client </div>
               <div class="switch" style="position: relative;"><span class="slider round"></span></div>
@@ -1042,6 +1042,7 @@ function makeDraggable(windowId) {
       makeDraggable('app_git-container');
       makeDraggable('app_npm-container');
       makeDraggable('app_php-container');
+      makeDraggable('app_timesheet-container');
       //makeDraggable('console-settings');
 
       displayDirectoryBtn.addEventListener('click', () => {
@@ -1176,11 +1177,7 @@ function makeDraggable(windowId) {
       $(document).ready(function(){
         $( "#app_console-container").css('display', 'none');
         if ($( "#app_directory-container" ).css('display') == 'none') {
-      <?php if (isset($_GET['debug'])) { ?>
-          $( '#app_directory-container' ).slideDown( "slow", function() {
-          // Animation complete.
-          });
-      <?php } else if (isset($_GET['path'])) { ?>
+      <?php if (isset($_GET['path']) || !empty(APP_URL['query']) || isset($_GET['debug']) || (!defined(APP_DEBUG)?: APP_DEBUG)) { ?>
         document.getElementById('toggle-debug').checked = true;
 
         toggleSwitch(document.getElementById('toggle-debug'));

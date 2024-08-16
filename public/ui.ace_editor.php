@@ -170,7 +170,7 @@ ob_end_clean();
 
 ob_start(); ?>
 
-<div id="app_ace_editor-container" class="absolute <?= __FILE__ == get_required_files()[0] || (isset($_GET['app']) && $_GET['app'] == 'ace_editor') && !isset($_GET['path']) ? 'selected' : '' ?>" style="display: <?= __FILE__ == get_required_files()[0] || (isset($_GET['app']) && $_GET['app'] == 'ace_editor') && !isset($_GET['path']) ? 'none' : 'block' ?>; resize: both; overflow: hidden;">
+<div id="app_ace_editor-container" class="absolute <?= __FILE__ == get_required_files()[0] || (isset($_GET['app']) && $_GET['app'] == 'ace_editor') && !isset($_GET['path']) ? 'selected' : '' ?>" style="display: <?= __FILE__ == get_required_files()[0] || (isset($_GET['app']) && $_GET['app'] == 'ace_editor') && !isset($_GET['path']) ? 'block' : 'none' ?>; resize: both; overflow: hidden;">
     <div class="ui-widget-header" style="position: relative; display: inline-block; width: 100%; cursor: move; border-bottom: 1px solid #000;background-color: #FFF;">
       <label class="ace_editor-home" style="cursor: pointer;">
         <div class="" style="position: relative; display: inline-block; top: 0; left: 0;">
