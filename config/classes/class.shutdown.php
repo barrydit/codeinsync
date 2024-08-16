@@ -87,7 +87,7 @@ class Shutdown
     
             file_put_contents($file, $iniString);
         } else {
-            file_put_contents($file, $iniString);
+            file_put_contents($file, $envContent);
         }
     }
 

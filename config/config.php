@@ -30,7 +30,7 @@ function customErrorHandler($errno, $errstr, $errfile, $errline) {
     ] as $key => $value) {
         if ($errno == $key) {
             $errors[$key] = $key . ' => ' . $value . "\n";
-            $errors[] = $value . ': ' . $errstr . ' in ' . $errfile . ' on line ' . $errline . "\n";
+            $errors[] = "$value: $errstr in $errfile on line $errline\n";
             break;
         }
     }
@@ -176,7 +176,6 @@ unset($dirs);
 
 !defined('APP_ROOT') and define('APP_ROOT', $path = realpath(APP_PATH . $path) ? $path : null); // dirname(APP_SELF, (basename(getcwd()) != 'public' ?: 2))
 
-//else dd('test');
 
 // dd(getenv('PATH') . ' -> ' . PATH_SEPARATOR);   
 
@@ -185,237 +184,8 @@ unset($dirs);
 //$errors->{'CONFIG'} = 'OK';
 
 $ob_content = NULL;
-//var_dump(dirname(APP_SELF) . ' == ' . __DIR__);
-//dd(APP_PATH  . '  ' .  __DIR__);
-
-/*
-if (!realpath($path = APP_PATH . 'CHANGELOG.md')) {
-  if (!is_file($path))
-    if (@touch($path))
-      file_put_contents($path, <<<END
-CHANGELOG
-END
-);
-}
-
-if (!realpath($path = APP_PATH . 'CONTRIBUTING.md')) {
-  if (!is_file($path))
-    if (@touch($path))
-      file_put_contents($path, <<<END
-CONTRIBUTING
-END
-);
-}
-
-if (!realpath($path = APP_PATH . 'LICENSE')) {
-  if (!is_file($path))
-    if (@touch($path))
-      file_put_contents($path, <<<END
-LICENSE
-END
-);
-}
-
-if (!realpath($path = APP_PATH . 'README.md')) {
-  if (!is_file($path))
-    if (@touch($path))
-      file_put_contents($path, <<<END
-README
-END
-);
-}
-
-if (!realpath($path = APP_PATH . 'docs/')) {
-  if (!mkdir($path, 0755, true))
-    $errors['DOCS'] = $path . ' does not exist';
-
-  if (!is_file($path . 'getting-started.md'))
-    if (@touch($path . 'getting-started.md'))   // https://github.com/auraphp/Aura.Session/docs/getting-started.md
-      file_put_contents($path . 'getting-started.md', <<<END
-getting-started
-END
-);
-}
-
-if (!realpath($path = APP_PATH . APP_BASE['public'] . 'policies/')) {
-  if (!mkdir($path, 0755, true))
-    $errors['POLICIES'] = $path . ' does not exist';
-
-  if (!is_file($path . 'privacy-policy'))
-    if (@touch($path . 'privacy-policy'))
-      file_put_contents($path . 'privacy-policy', <<<END
-Privacy Policy
-END
-);
-
-  if (!is_file($path . 'terms-of-use'))
-    if (@touch($path . 'terms-of-use'))
-      file_put_contents($path . 'terms-of-use', <<<END
-Terms of Use
-END
-);
-
-  if (!is_file($path . 'legal/cookies'))
-    if (@touch($path . 'legal/cookies'))
-      file_put_contents($path . 'legal/cookies', <<<END
-Cookies
-END
-);
-}
-*/
-if (basename(dirname(APP_SELF)) == 'public') {
-  if (!is_file('.htaccess')) {
-    if (@touch('.htaccess')) {
-      file_put_contents('.htaccess', <<<END
-RewriteEngine On
-
-# Redirect resource calls from /assets/ to /resources/
-RewriteRule ^resources/(.*)$ ../resources/$1 [L]
-END
-);
-    }
-  }
-} elseif (dirname(APP_SELF) == __DIR__) {
-  if (!is_file($file = APP_PATH . '.env')) {
-    if (@touch($file)) {
-      file_put_contents($file, <<<END
-APP_ENV=production
-APP_DEBUG=false
-CACHE_DRIVER=file
-SESSION_DRIVER=file
-DB_HOST=localhost
-DB_NAME= 
-DB_UNAME=root
-DB_PWORD= 
-DB_PORT=3306
-DEFAULT_CLIENT=
-DEFAULT_DOMAIN=
-DEFAULT_PROJECT=123
-ERROR_LOG_FILE=error_log
-ERROR_REPORTING_LEVEL=E_ALL
-HIDE_UPDATE_NOTICE=true
-MAIL_DRIVER=smtp
-MAIL_HOST=smtp.mailtrap.io
-MAIL_PORT=2525
-MAIL_USERNAME=your_username
-MAIL_PASSWORD=your_password
-MAIL_ENCRYPTION=tls
-[COMPOSER]
-VENDOR=barrydit
-PACKAGE=CodeHub
-AUTHOR=Barry Dick
-EMAIL=barryd.it@gmail.com
-[GITHUB]
-ORIGIN_URL=http://github.com/barrydit/CodeHub
-OAUTH_TOKEN=
-REMOTE_SHA=
-END
-);
-    }
-  }
-  if (!is_file($file = APP_PATH . '.htaccess')) {
-    if (@touch($file)) {
-      file_put_contents($file, <<<END
-RewriteEngine On
-
-# Check if the request is for an existing file in the resources/ directory
-RewriteCond %{DOCUMENT_ROOT}/resources%{REQUEST_URI} -f
-RewriteRule ^(.*)$ ./resources/$1 [L]
-
-# Redirect all requests to index.php (assuming a typical front controller pattern)
-#RewriteCond %{REQUEST_FILENAME} !-f
-#RewriteRule ^ index.php [L]
-END
-);
-    }
-  }
-  
-  if (!is_file($file = APP_PATH . '.gitignore')) {
-    if (@touch($file)) {
-      file_put_contents($file, <<<END
-#/config
-/applications
-/clientele
-/dist
-/var/weekly-timesheet-????-??.json
-/node_modules
-#/public
-/public/example.php
-/public/example?.php
-/project?
-/resources/js
-/resources/reels
-/vendor
-/var/*.html
-/var/*.php
-.env*
-.htaccess
-*.old
-auth.json
-composer.lock
-composer.phar
-composer-setup.php
-error_log
-main.js
-notes.txt
-package-lock.json
-settings.json
-*.config.js
-END
-);
-    }
-  }
-
-  if (!is_file($file = APP_PATH . 'LICENSE')) {
-    if (@touch($file)) {
-      if (check_http_status('http://www.wtfpl.net/txt/copying')) {
-        file_put_contents($file, file_get_contents('http://www.wtfpl.net/txt/copying'));
-      } else {
-        file_put_contents($file, <<<END
-This is free and unencumbered software released into the public domain.
-
-Anyone is free to copy, modify, publish, use, compile, sell, or
-distribute this software, either in source code form or as a compiled
-binary, for any purpose, commercial or non-commercial, and by any
-means.
-
-In jurisdictions that recognize copyright laws, the author or authors
-of this software dedicate any and all copyright interest in the
-software to the public domain. We make this dedication for the benefit
-of the public at large and to the detriment of our heirs and
-successors. We intend this dedication to be an overt act of
-relinquishment in perpetuity of all present and future rights to this
-software under copyright law.
-
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
-EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
-MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
-IN NO EVENT SHALL THE AUTHORS BE LIABLE FOR ANY CLAIM, DAMAGES OR
-OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE,
-ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
-OTHER DEALINGS IN THE SOFTWARE.
-
-For more information, please refer to <https://unlicense.org>
-END
-);
-      }
-    }
-  }
-}
 
 ob_start();
-// write content
-
-// 
-
-//echo APP_SELF;
-
-//dd(getRelativePath(APP_SELF, '/public'));
-
-// Check if the directory structure is /public_html/
-
-//require('constants.php');
-
 
 if (isset($_GET['project'])) {
   //require_once('composer.php');
@@ -433,98 +203,11 @@ if (!is_dir($path = APP_PATH . 'projects')) {
 
 if (!is_file($file = APP_PATH . 'projects/index.php')) {
   $errors['projects'] = 'projects/index.php does not exist.';
-
-  file_put_contents($file, '<?php ' . <<<END
-
-//if (__FILE__ != get_required_files()[0])
-\$require = function(\$path) { require_once \$path; };
-if (\$path = (basename(getcwd()) == 'public')
-  ? (is_file('config.php') ? 'config.php' : '../config/config.php') : '') \$require(\$path);
-else die(var_dump(\$path)); //die(var_dump(\$path . ' path was not found. file=config.php'));
-
-require_once(APP_PATH . APP_BASE['vendor'] . 'autoload.php');
-ob_start(); // dd('Break/test the dd();');
-use noximo\PHPColoredAsciiLinechart\Settings;
-use noximo\PHPColoredAsciiLinechart\Linechart;
-use noximo\PHPColoredAsciiLinechart\Colorizers\HTMLColorizer;
-
-\$linechart = new Linechart();
-\$settings = new Settings();  // Settings are needed in this case
-\$settings->setColorizer(new HTMLColorizer());  // Here you need to set up HTMLColorizer
-
-\$lineA = [];
-for (\$i = 0; \$i < +120; \$i++) {
-    \$lineA[] = 5 * sin(\$i * ((M_PI * 4) / 120));
-}
-
-\$linechart->addLine(0, ['color:white'], Linechart::FULL_LINE);  // Use css styles instead of ascii color codes
-\$linechart->addMarkers(\$lineA, ['color: green'], ['color: red']);
-\$linechart->setSettings(\$settings);
-
-echo \$linechart->chart();
-?>
-
-<div class="table-container">
-<table border="1" style="">
-<tr><td>Create</td><td>a</td><td>table</td><td>columns</td></tr>
-<tr><td>A</td><td>new</td><td>row</td></tr>
-<tr><td>And</td><td>some</td><td>more</td><td>rows</td></tr>
-</table>
-
-<table border="1" style="">
-<tr><td>Create New</td><td>a</td><td>table</td><td>columns</td></tr>
-<tr><td>A</td><td>new</td><td>row</td></tr>
-<tr><td>And</td><td>some</td><td>more</td><td>rows</td></tr>
-</table>
-</div>
-<div style="clear: both;"></div>
-
-<?php
-
-// Capture the output into a variable
-\$output = ob_get_clean();
-ob_end_clean();
-
-\$output = (\$output == '' ? '�' : \$output);
-
-return <<<END
-<!DOCTYPE html>
-<html>
-<head>
-  <title></title>
-
-<style>
-/* * { border: 1px dashed red; } */
-pre {
-    white-space: pre-wrap;
-    background: hsl(220, 80%, 90%);
-}
-    .table-container {
-      width: 100%;
-      margin: 10px 0; /* Adjust margin as needed */
-    }
-
-    .table-container table {
-      float: left;
-      width: 45%; /* Adjust width as needed */
-      margin-right: 5%; /* Adjust margin as needed */
-      border-collapse: collapse;
-    }
-
-    .table-container table:last-child {
-      margin-right: 0; /* Remove margin for the last table */
-    }
-
-</style>
-
-</head>
-<body style="background-color: #fff;">
-<pre style="text-align: center;"><code>|||| Demonstrational Purposes ||||<br />--[Save] to Update--</code></pre>
-{$output}
-</body>
-</html>
-END
-);
+  if (is_file($source_file = APP_PATH . 'var/source_code.json'))
+    $source_file = json_decode(file_get_contents($source_file));
+  if ($source_file) 
+    file_put_contents($file, $source_file->{'projects/index.php'});
+  unset($source_file);
 }
 }
 
@@ -563,7 +246,7 @@ if (basename($dir = getcwd()) != 'config') {
 
   
 } elseif (basename(dirname(APP_SELF)) == 'public_html') { // basename(__DIR__) == 'public_html'
-  $errors['APP_PUBLIC'] = 'The `public_html` scenario was detected.' . "\n";
+  $errors['APP_PUBLIC'] = "The `public_html` scenario was detected.\n";
   
   if (is_dir(dirname(APP_SELF, 2) . '/config')) {
     $errors['APP_PUBLIC'] .= "\t" . dirname(APP_SELF, 2) . '/config/*' . ' was found. This is not generally safe-scenario.'; 
@@ -575,8 +258,6 @@ if (basename($dir = getcwd()) != 'config') {
     // For example:
     // include '/home/user_123/public_html/config.php';
 } elseif (basename(dirname(APP_SELF)) == 'public') {    // strpos(APP_SELF, '/public/') !== false
-
-  //dd(APP_SELF . '   ' . __DIR__);
   
   dd(APP_BASE);
 

@@ -24,7 +24,7 @@ if (isset($_GET['path']) && $_GET['path'] != '' && realpath($_GET['path']) && is
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-    <base href="<?=(!is_array(APP_URL) ? APP_URL : APP_URL_BASE) . (!defined('APP_DEBUG')? '?' : '?' . (APP_URL['query'] != '' ? APP_URL['query'] : '')) . (defined('APP_ENV') && APP_ENV == 'development' ? '#!' : ''); ?>">
+    <base href="<?=(!is_array(APP_URL) ? APP_URL : APP_URL_BASE) . (preg_match('/^\/(?!\?)$/', $_SERVER['REQUEST_URI']) ? '?' : '') . (!defined('APP_DEBUG') ? '#' : '?' . (APP_URL['query'] != '' ? APP_URL['query'] : '')) . (defined('APP_ENV') && APP_ENV == 'development' ? '#!' : ''); ?>">
 
     <title>Multiple Ace Editor Instances</title>
 <?php
@@ -262,7 +262,7 @@ unset($path);
       <!--form action="#!" method="GET">
         <?= isset($_GET['debug']) && !$_GET['debug'] ? '' : '<input type="hidden" name="debug" value / >' ?> 
               <input class="input" id="toggle-debug" type="checkbox" onchange="this.form.submit();" <?= isset($_GET['debug']) || defined('APP_ENV') && APP_ENV == 'development' ? 'checked' : '' ?> / -->
-      <input class="input" id="toggle-debug" type="checkbox" onchange="toggleSwitch(this); return null;" <?= isset($_GET['debug']) || defined('APP_ENV') && APP_ENV == 'development' ? '' : '' ?> />
+      <input class="input" id="toggle-debug" type="checkbox" onchange="toggleSwitch(this); return null;" <?= isset($_GET['debug']) || defined('APP_ENV') && APP_ENV == 'development' ? 'checked' : '' ?> />
       <label class="label" for="toggle-debug" style="margin-left: -10px;">
         <div class="switch">
           <span class="slider round"></span>
@@ -1177,7 +1177,8 @@ function makeDraggable(windowId) {
       $(document).ready(function(){
         $( "#app_console-container").css('display', 'none');
         if ($( "#app_directory-container" ).css('display') == 'none') {
-      <?php if (isset($_GET['path']) || !empty(APP_URL['query']) || isset($_GET['debug']) || (!defined(APP_DEBUG)?: APP_DEBUG)) { ?>
+      <?php if (isset($_GET['path']) || !empty(APP_URL['query']) || isset($_GET['debug']) || (defined(APP_DEBUG) && APP_DEBUG)) { ?>
+
         document.getElementById('toggle-debug').checked = true;
 
         toggleSwitch(document.getElementById('toggle-debug'));

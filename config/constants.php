@@ -156,17 +156,90 @@ switch (basename(__DIR__)) {
 
     if (empty($common))
       $errors['APP_BASE'] = json_encode(array_keys($common)); 
-    else 
+    else {
       foreach ($common as $key => $dirname) {
         if (basename(__DIR__) == 'public' && $dirname == 'public') {
           continue;
         }
 
-        if (!is_dir((defined('APP_PATH') ? APP_PATH : __DIR__ . DIRECTORY_SEPARATOR)  . $dirname) && APP_DEBUG)
-          (@!mkdir((defined('APP_PATH') ? APP_PATH : __DIR__ . DIRECTORY_SEPARATOR) . $dirname, 0755, true) ?: $errors['APP_BASE'][$key] = "$dirname could not be created." );
+        if (!is_dir((defined('APP_PATH') ? APP_PATH : __DIR__ . DIRECTORY_SEPARATOR)  . $dirname) && APP_DEBUG) {
 
+          (@!mkdir((defined('APP_PATH') ? APP_PATH : __DIR__ . DIRECTORY_SEPARATOR) . $dirname, 0755, true) ?: $errors['APP_BASE'][$key] = "$dirname could not be created." );
+        }
         $processedCommon[$dirname] = $dirname . DIRECTORY_SEPARATOR;
       }
+    }
+
+    // Get directories in the base path and filter them
+    foreach(array_map('basename', array_filter(glob("{$basePath}{.env, .htaccess, .gitignore, LICENSE, *.md}", GLOB_BRACE), 'is_file')) as $filename) {
+      if (!is_file($file = APP_PATH . $filename)) {
+        if (@touch($file)) {
+          if (is_file($source_file = APP_PATH . 'var/source_code.json'))
+            $source_file = json_decode(file_get_contents($source_file));
+          if ($source_file) {
+            if (!is_file($file = APP_PATH . 'public/.htaccess')) {
+              if (@touch($file)) {
+                file_put_contents($file, $source_file->{'public/.htaccess'});
+              }
+            }
+            if (isset($source_file->{$filename}))
+              switch ($filename) {
+                case 'LICENSE':
+                  if (check_http_status('http://www.wtfpl.net/txt/copying')) {
+                    file_put_contents($file, file_get_contents('http://www.wtfpl.net/txt/copying'));
+                  } else {
+                    file_put_contents($file, $source_file->{$filename});
+                  }
+                  break;
+                default:
+
+/*
+if (!realpath($path = APP_PATH . 'docs/')) {
+  if (!mkdir($path, 0755, true))
+    $errors['DOCS'] = $path . ' does not exist';
+
+  if (!is_file($path . 'getting-started.md'))
+    if (@touch($path . 'getting-started.md'))   // https://github.com/auraphp/Aura.Session/docs/getting-started.md
+      file_put_contents($path . 'getting-started.md', <<<END
+getting-started
+END
+);
+}
+
+if (!realpath($path = APP_PATH . APP_BASE['public'] . 'policies/')) {
+  if (!mkdir($path, 0755, true))
+    $errors['POLICIES'] = $path . ' does not exist';
+
+  if (!is_file($path . 'privacy-policy'))
+    if (@touch($path . 'privacy-policy'))
+      file_put_contents($path . 'privacy-policy', <<<END
+Privacy Policy
+END
+);
+
+  if (!is_file($path . 'terms-of-use'))
+    if (@touch($path . 'terms-of-use'))
+      file_put_contents($path . 'terms-of-use', <<<END
+Terms of Use
+END
+);
+
+  if (!is_file($path . 'legal/cookies'))
+    if (@touch($path . 'legal/cookies'))
+      file_put_contents($path . 'legal/cookies', <<<END
+Cookies
+END
+);
+}
+*/
+                  file_put_contents($file, $source_file->{$filename});
+                  break;
+              }
+            unset($source_file);
+          }
+        }
+      }
+    }
 
     // Define APP_BASE
     define('APP_BASE', $processedCommon);
@@ -184,7 +257,7 @@ if (defined('APP_DOMAIN') && !in_array(APP_DOMAIN, [/*'localhost',*/ '127.0.0.1'
 //  defined('APP_ENV') or define('APP_ENV', 'development'); // development
 } // APP_DEV |  APP_PROD
 
-(defined('APP_ENV') && !is_string(APP_ENV)) and $errors['APP_ENV'] = 'App Env: ' . APP_ENV; // print('App Env: ' . APP_ENV . "\n");
+(defined('APP_ENV') && !is_string(APP_ENV)) and $errors['APP_ENV'] = 'App Env: ' . var_export(APP_ENV, true); // print('App Env: ' . APP_ENV . "\n");
 /* if (APP_ENV == 'development') { 
   if ($path = realpath((basename(__DIR__) != 'config' ? NULL : __DIR__ . DIRECTORY_SEPARATOR) . 'constants_backup.php')) // is_file('config/constants.php')) 
     require_once $path;

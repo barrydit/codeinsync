@@ -7,8 +7,8 @@ if ($path = realpath((basename(__DIR__) != 'config' ? NULL : __DIR__ . DIRECTORY
   require_once $path;
 
 define('GIT_EXEC', strtoupper(substr(PHP_OS, 0, 3)) === 'WIN' ? 'git.exe' : '/usr/local/bin/git');
-
-define('GIT_VERSION', preg_match($_ENV['GITHUB']['EXPR_VERSION'], exec(GIT_EXEC . ' --version'), $match) ? rtrim($match[1], '.') : '');
+isset($_ENV['GITHUB']['EXPR_VERSION'])
+  and define('GIT_VERSION', preg_match($_ENV['GITHUB']['EXPR_VERSION'], exec(GIT_EXEC . ' --version'), $match) ? rtrim($match[1], '.') : '');
 
 /* $latest_remote_commit_response = file_get_contents($latest_remote_commit_url);
 $latest_remote_commit_data = json_decode($latest_remote_commit_response, true);

@@ -190,7 +190,7 @@ if (preg_match('/^app\.([\w\-.]+)\.php$/', basename(__FILE__), $matches))
   */
   }
   
-  $output[] = $command = $_POST['cmd'] . ' --git-dir="' . APP_PATH . APP_ROOT . '.git" --work-tree="' . APP_PATH . APP_ROOT . '" https://' . $_ENV['GITHUB']['OAUTH_TOKEN'] .'@github.com/barrydit/CodeHub.git';
+  $output[] = $command = $_POST['cmd'] . ' --git-dir="' . APP_PATH . APP_ROOT . '.git" --work-tree="' . APP_PATH . APP_ROOT . '" https://' . $_ENV['GITHUB']['OAUTH_TOKEN'] .'@github.com/barrydit/codeinsync.git';
   
   /**/
   if (isset($github_repo) && !empty($github_repo)) {
@@ -242,7 +242,7 @@ if (preg_match('/^app\.([\w\-.]+)\.php$/', basename(__FILE__), $matches))
           }
   
   /*
-  Error: To https://github.com/barrydit/CodeHub.git
+  Error: To https://github.com/barrydit/codeinsync.git
    5fbad5b..29f689e  main -> main
    
   ^To\s(?:[a-z]+\:\/\/)?(?:[a-z0-9\\-]+\.)+[a-z]{2,6}(?:\/\S*)?

@@ -183,6 +183,8 @@ $dirs[] = APP_PATH . APP_BASE['config'] . 'npm.php';
 // Convert the query string into an associative array
 
 // Now $queryArray contains the parsed query parameters as an array
+//dd($_SERVER);
+      if (preg_match('/^\/(?!\?)$/', $_SERVER['REQUEST_URI'])) exit(header('Location: ' . APP_WWW . '?'));
 
       if (isset($_SERVER['HTTP_REFERER'])) {
         parse_str(parse_url($_SERVER['HTTP_REFERER'])['query'] ?? '', $queryRefererArray);

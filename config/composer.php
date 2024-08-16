@@ -40,12 +40,12 @@ foreach ($array = preg_split("/\r\n|\n|\r/", exec(APP_SUDO . ' /usr/local/bin/co
 // '(win) set VARIABLE / (linux/macos) export VARIABLE '
 
 const COMPOSER_ALLOW_SUPERUSER = true;
-putenv('COMPOSER_ALLOW_SUPERUSER=' . (int) COMPOSER_ALLOW_SUPERUSER);
+putenv('COMPOSER_ALLOW_SUPERUSER=' . (bool) COMPOSER_ALLOW_SUPERUSER);
 
 const COMPOSER_ALLOW_XDEBUG = false; // didn't work
-putenv('COMPOSER_ALLOW_XDEBUG=' . (int) COMPOSER_ALLOW_XDEBUG);
+putenv('COMPOSER_ALLOW_XDEBUG=' . (bool) COMPOSER_ALLOW_XDEBUG);
 
-putenv('COMPOSER_DISABLE_XDEBUG_WARN=' . (int) true);
+putenv('COMPOSER_DISABLE_XDEBUG_WARN=' . (bool) true);
 
 //dd(getenv('COMPOSER_ALLOW_SUPERUSER'));
 
@@ -238,16 +238,12 @@ define('COMPOSER_VENDORS', $uniqueVendors);
 */
 //dd(get_included_files());
 
-$composerUser = $_ENV['COMPOSER']['USER'];  
-$componetPkg = $_ENV['COMPOSER']['PACKAGE'];
+$composerUser = !isset($_ENV['COMPOSER']['USER']) ?: $_ENV['COMPOSER']['USER'];  
+$componetPkg = !isset($_ENV['COMPOSER']['PACKAGE']) ?: $_ENV['COMPOSER']['PACKAGE'];
 $user = getenv('USERNAME') ?: (getenv('APACHE_RUN_USER') ?: getenv('USER') ?: '');
 
 // Determine the Composer home path based on the OS and user
-if (strtoupper(substr(PHP_OS, 0, 3)) === 'WIN') {
-    $composerHome = 'C:/Users/' . $user . '/AppData/Roaming/Composer/';
-} else {
-    $composerHome = ($user === 'root' ? '/root/.composer/' : '/var/www/.composer/'); // /home . $user
-}
+$composerHome = (strtoupper(substr(PHP_OS, 0, 3)) === 'WIN') ? "C:/Users/$user/AppData/Roaming/Composer/" : ($user === 'root' ? '/root/.composer/' : '/var/www/.composer/');
 
 if (!realpath($composerHome)) {
   if (@!mkdir($composerHome, 0755, true))
@@ -257,7 +253,7 @@ if (!realpath($composerHome)) {
 //dd($errors);
 //dd('Composer Home: ' . $composerHome, 0);
 
-putenv('COMPOSER_HOME=' . $composerHome ?? $_SERVER['HOME'] . '/.composer/');
+putenv("COMPOSER_HOME=$composerHome" ?? $_SERVER['HOME'] . '/.composer/');
 
 if (!file_exists(APP_PATH . 'composer.phar')) {
   (!file_exists(APP_PATH . 'composer-setup.php'))
@@ -362,7 +358,7 @@ $configJsonPath = COMPOSER_HOME . 'config.json';
 
 if (!file_exists($configJsonPath)) {
     if (!touch($configJsonPath)) {
-      $errors['COMPOSER_CONFIG'] = $configJsonPath . ' is unable to be created.';
+      $errors['COMPOSER_CONFIG'] = "$configJsonPath is unable to be created.";
     } else {
       file_put_contents($configJsonPath, '{}');
     }
@@ -379,7 +375,7 @@ $authJsonPath = COMPOSER_HOME . 'auth.json';
 
 if (!file_exists($authJsonPath)) {
     if (!touch($authJsonPath)) {
-      $errors['COMPOSER_AUTH'] = $authJsonPath . ' is unable to be created.';
+      $errors['COMPOSER_AUTH'] = "$authJsonPath is unable to be created.";
     } else {
       file_put_contents($authJsonPath, '{"github-oauth": {"github.com": ""}}');
     }
@@ -413,7 +409,7 @@ putenv('PWD=' . APP_PATH . APP_ROOT);
 
 /* library, project, metapackage, composer-plugin ... Package type */
 
-$composer_exec = (defined('COMPOSER_PHAR') && COMPOSER_EXEC['bin'] == COMPOSER_PHAR['bin'] ? COMPOSER_PHAR['bin'] : COMPOSER_EXEC['bin']);
+$composer_exec = defined('COMPOSER_PHAR') && COMPOSER_EXEC['bin'] == COMPOSER_PHAR['bin'] ? COMPOSER_PHAR['bin'] : COMPOSER_EXEC['bin'];
 
 /*
 APP_WORK[client]
@@ -1100,6 +1096,6 @@ if (basename(dirname(APP_SELF)) == __DIR__ . DIRECTORY_SEPARATOR . 'public')
   if ($path = realpath((basename(__DIR__) != 'config' ? NULL : __DIR__ . DIRECTORY_SEPARATOR) . 'ui.composer.php')) // is_file('config/composer_app.php')) 
     require_once $path;
 
-if (APP_SELF == __FILE__ || defined(APP_DEBUG) && isset($_GET['app']) && $_GET['app'] == 'composer') die($appComposer['html']);
+if (APP_SELF == __FILE__ || defined(APP_DEBUG) && isset($_GET['app']) && $_GET['app'] == 'composer') die($app['composer']['html']);
 
 unset($output);

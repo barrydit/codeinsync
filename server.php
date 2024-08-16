@@ -93,7 +93,7 @@ function clientInputHandler($input) {
     error_log('Client [Input]: ' . trim($input));
     echo 'Client [Input]: ' . trim($input) . "\n";
     //$input = trim($input);
-    $output = 'gsdgdsfg';
+    $output = '';
 
     if (preg_match('/^cmd:\s*(shutdown|restart|server\s*(shutdown|restart))\s*?(?:(-f))(?=\r?\n$)?/si', $input, $matches)) { 
       //signalHandler(SIGTERM); // $running = false;
@@ -139,11 +139,13 @@ function clientInputHandler($input) {
           // Add the relative path to the organizedFiles array if it is a .php file and not already present
           if (pathinfo($relativePath, PATHINFO_EXTENSION) == 'php' && !in_array($relativePath, $organizedFiles)) {
             $organizedFiles[] = $relativePath;
+          } else if (pathinfo($relativePath, PATHINFO_EXTENSION) == 'htaccess' && !in_array($relativePath, $organizedFiles)) {
+            $organizedFiles[] = $relativePath;
           }
       }
             
       // Add non-recursive scanning for the root baseDir for *.php files
-      $rootPhpFiles = glob($baseDir . '{*.php,.env.bck,.gitignore,.htaccess,*.md,LICENSE,*.js,composer.json,package.json,settings.json}', GLOB_BRACE);
+      $rootPhpFiles = glob("{$baseDir}{*.php,.env.bck,.gitignore,.htaccess,*.md,LICENSE,*.js,composer.json,package.json,settings.json}", GLOB_BRACE);
       foreach ($rootPhpFiles as $file) {
           if (is_file($file)) {
               $relativePath = str_replace($baseDir, '', $file);
@@ -183,7 +185,7 @@ function clientInputHandler($input) {
       while ($path = array_shift($sortedArray)) {
       $json .= match ($path) {
         '.env.bck' => '".env" : ' . json_encode(file_get_contents($path)) . (end($sortedArray) != $path ? ',' : '') . "\n",
-        default => '"' . $path . '" : ' . json_encode(file_get_contents($path)) . (end($sortedArray) != $path ? ',' : '') . "\n",
+        default => '"' . $path . '" : ' . json_encode(file_get_contents($path)) . (end($sortedArray) != $path && !empty($sortedArray) ? ',' : '') . "\n",
       };
       }
       $json .= "}\n";

@@ -176,7 +176,7 @@ ob_end_clean();
 is_dir(APP_PATH . APP_BASE['var']) or mkdir(APP_PATH . APP_BASE['var'], 0755);
 if (is_file(APP_PATH . APP_BASE['var'] . 'github.com.html')) {
   if (ceil(abs((strtotime(date('Y-m-d')) - strtotime(date('Y-m-d',strtotime('+5 days',filemtime(APP_PATH . APP_BASE['var'] . '/github.com.html'))))) / 86400)) <= 0 ) {
-    $url = 'https://github.com/barrydit/CodeHub';
+    $url = 'https://github.com/barrydit/codeinsync';
     $handle = curl_init($url);
     curl_setopt($handle, CURLOPT_RETURNTRANSFER, true);
 
@@ -184,7 +184,7 @@ if (is_file(APP_PATH . APP_BASE['var'] . 'github.com.html')) {
       file_put_contents(APP_PATH . APP_BASE['var'] . 'github.com.html', $html) or $errors['COMPOSER_LATEST'] = "$url returned empty.";
   }
 } else {
-  $url = 'https://github.com/barrydit/CodeHub';
+  $url = 'https://github.com/barrydit/codeinsync';
   $handle = curl_init($url);
   curl_setopt($handle, CURLOPT_RETURNTRANSFER, true);
 
@@ -195,7 +195,7 @@ if (is_file(APP_PATH . APP_BASE['var'] . 'github.com.html')) {
 /*
 libxml_use_internal_errors(true); // Prevent HTML errors from displaying
 $dom = new DOMDocument(1.0, 'utf-8');
-$dom->loadHTML(file_get_contents(check_http_status('https://github.com/barrydit/CodeHub') ? 'https://github.com/barrydit/CodeHub' : APP_PATH . APP_BASE['var'] . 'github.com.html'), LIBXML_HTML_NOIMPLIED | LIBXML_HTML_NODEFDTD );   
+$dom->loadHTML(file_get_contents(check_http_status('https://github.com/barrydit/codeinsync') ? 'https://github.com/barrydit/codeinsync' : APP_PATH . APP_BASE['var'] . 'github.com.html'), LIBXML_HTML_NOIMPLIED | LIBXML_HTML_NODEFDTD );   
 $xpath = new DOMXPath($dom);
 
 //header('Content-Type: application/json');
@@ -237,5 +237,5 @@ $dom->appendChild($elm);
 //check if file is included or accessed directly
 if (__FILE__ == get_required_files()[0] || in_array(__FILE__, get_required_files()) && isset($_GET['app']) && $_GET['app'] == 'browser' && APP_DEBUG)
   Shutdown::setEnabled(false)->setShutdownMessage(function() { // use($dom)
-      return '<!DOCTYPE html>'; // $dom->saveHTML() ?? file_get_contents("https://github.com/barrydit/CodeHub"); // $dom->saveHTML(); /* eval('? >' . $project_code); // -wow */
+      return '<!DOCTYPE html>'; // $dom->saveHTML() ?? file_get_contents("https://github.com/barrydit/codeinsync"); // $dom->saveHTML(); /* eval('? >' . $project_code); // -wow */
     })->shutdown(); // die();

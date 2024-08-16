@@ -461,7 +461,7 @@ for (var i = 0; i < appGitPushElements.length; i++) {
   // For example, you can show an alert to indicate that the form submission is disabled
   alert('Push request was made.');
 
-  document.getElementById('requestInput').value = 'git push https://<?= getenv('COMPOSER_TOKEN') ?>@github.com/barrydit/<?= (isset($_GET['domain']) ? $_GET['domain']: (isset($_GET['project']) ? $_GET['project']: 'CodeHub.git')) ?>';
+  document.getElementById('requestInput').value = 'git push https://<?= getenv('COMPOSER_TOKEN') ?>@github.com/barrydit/<?= (isset($_GET['domain']) ? $_GET['domain']: (isset($_GET['project']) ? $_GET['project']: 'codeinsync.git')) ?>';
 
   // Get the element with the ID "requestSubmit"
   var requestSubmit = document.getElementById('requestSubmit');

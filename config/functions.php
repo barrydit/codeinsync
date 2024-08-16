@@ -446,7 +446,7 @@ function array_intersect_key_recursive(array $array1, array $array2) {
 // Function to scan specified directories without recursing
 function scanDirectories($directories, $baseDir, &$organizedFiles) {
       foreach ($directories as $directory) {
-          $files = glob($baseDir . $directory . '/*.php'); // Adjusted to scan only .php files at the top level of the directory
+          $files = glob($baseDir . $directory . '/{*.php,.htaccess}', GLOB_BRACE); // Adjusted to scan only .php files at the top level of the directory
           foreach ($files as $file) {
               if (is_file($file)) {
                   $relativePath = str_replace($baseDir, '', $file);
@@ -454,7 +454,9 @@ function scanDirectories($directories, $baseDir, &$organizedFiles) {
                   if (pathinfo($relativePath, PATHINFO_EXTENSION) == 'php' && !in_array($relativePath, $organizedFiles)) {
                       if ($relativePath == 'public/project.php' && !in_array('projects/index.php', $organizedFiles)) $organizedFiles[] = 'projects/index.php';
                       $organizedFiles[] = $relativePath;
-                  }
+                  } else if (pathinfo($relativePath, PATHINFO_EXTENSION) == 'htaccess' && !in_array($relativePath, $organizedFiles)) {
+                    $organizedFiles[] = $relativePath;
+                }
               }
           }
       }

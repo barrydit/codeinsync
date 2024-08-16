@@ -2281,7 +2281,7 @@ document.getElementById('app_git-push').addEventListener('submit', function(even
   // For example, you can show an alert to indicate that the form submission is disabled
   alert('Push request was made made.');
 
-  document.getElementById('requestInput').value = 'git push https://<?= getenv('COMPOSER_TOKEN') ?>@github.com/barrydit/CodeHub.git';
+  document.getElementById('requestInput').value = 'git push https://<?= getenv('COMPOSER_TOKEN') ?>@github.com/barrydit/codeinsync.git';
 
   // Get the element with the ID "requestSubmit"
   var requestSubmit = document.getElementById('requestSubmit');
