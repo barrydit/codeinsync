@@ -244,7 +244,6 @@ if (basename($dir = getcwd()) != 'config') {
 
   chdir(APP_PATH);
 
-  
 } elseif (basename(dirname(APP_SELF)) == 'public_html') { // basename(__DIR__) == 'public_html'
   $errors['APP_PUBLIC'] = "The `public_html` scenario was detected.\n";
   

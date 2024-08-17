@@ -247,8 +247,10 @@ unset($path);
 </script>
 </body>
 </html>
-<?php return ob_get_contents(); 
+<?php $buffer_contents = ob_get_contents();
   ob_end_clean();
+  return $buffer_contents; 
+
 } else {
   return $app;
 }

@@ -389,7 +389,7 @@ if (!empty($paths))
                 require_once $realpath;
                 return ob_get_clean(); // redundant ob_end_clean();
               })(); */
-
+              //dd($realpath, false);
               $returnedValue = (function() use ($realpath, &$app) {
                 ob_start();
 

@@ -103,6 +103,7 @@ function clientInputHandler($input) {
     } elseif (preg_match('/^cmd:\s*server\s*status(?=\r?\n$)?/si', $input)) {
       $output = 'Server is running... PID=' . getmypid();
     } elseif (preg_match('/^cmd:\s*chdir\s*(.*)(?=\r?\n$)?/si', $input, $matches)) {
+      ini_set('log_errors', 'false');
       $output = "Changing directory to " . ($path = APP_PATH . APP_ROOT . trim($matches[1]) . '/');
       if ($path = realpath($path)) {
         $output = "Changing step 2 directory to $matches[1]";
@@ -120,7 +121,10 @@ function clientInputHandler($input) {
         $output = $resultValue;
       }
 
-    } elseif(preg_match('/^cmd:\s*server\s*backup(?=\r?\n$)?/si', $input, $matches)) {
+    } elseif (preg_match('/^cmd:\s*edit\s*(.*)(?=\r?\n$)?/si', $input, $matches)) {
+      ini_set('log_errors', 'false');
+      $output = file_get_contents(APP_PATH . APP_ROOT . $_GET['path'] . '/' . trim($matches[1]));
+    } elseif (preg_match('/^cmd:\s*server\s*backup(?=\r?\n$)?/si', $input, $matches)) {
       require_once 'public/index.php';
       echo "Including/Requiring... $matches[2]\n";
 
@@ -336,8 +340,7 @@ if (is_dir($path = __DIR__ . APP_BASE['vendor'] . 'cboden' . DIRECTORY_SEPARATOR
 } else
   try {
     error_log('Creating a stream/socket server...');
-  // Check if the stream wrapper for TCP is available
-  //if (in_array('tcp', stream_get_wrappers())) {
+
   // Create a TCP/IP server socket
     if (!$socket = @stream_socket_server('tcp://' . $address . PATH_SEPARATOR . $port, $errno, $errstr)) {
       echo "Error: Unable to create server socket: $errstr ($errno)\n";
@@ -347,6 +350,8 @@ if (is_dir($path = __DIR__ . APP_BASE['vendor'] . 'cboden' . DIRECTORY_SEPARATOR
     
     // Set the socket to non-blocking mode
     stream_set_blocking($socket, false);
+
+    // Check if the stream wrapper for TCP is available
     echo 'TCP was '. (in_array('tcp', stream_get_wrappers()) ? '' : 'NOT ') . 'found in stream_get_wrappers()' . "\n";
     echo "(Stream) Server started on $address:$port\n";
 
@@ -377,11 +382,10 @@ if (is_dir($path = __DIR__ . APP_BASE['vendor'] . 'cboden' . DIRECTORY_SEPARATOR
         echo "Client connected: IP {$clientAddress}:{$clientPort} Port \n";
         // Read data from the client
         $data = clientInputHandler($clientMsg = fread($stream, 1024)) . "\n";
-        
+        //var_dump($data);
         $manager->checkNotifications();
         // Append notification output to the response
-        $data .= $manager->getNotificationsOutput();
-        //dd($data, false);
+        //  $data .= $manager->getNotificationsOutput();
 
         $data = explode("\n", $data); // Split data by new lines into an array
         $data = implode("\n", $data); // Rejoin array elements into a single string

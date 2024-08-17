@@ -67,7 +67,7 @@ class NotificationManager
     {
         $output = '';
         foreach ($this->notifications as $notification) {
-            $output .= "$notification\n";
+            $output .= (string)$notification . "\n";
         }
         return $output;
     }

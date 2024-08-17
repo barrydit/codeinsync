@@ -1128,7 +1128,25 @@ console.log = function() {
         const dirname = filePath.substring(0, lastSlashIndex);
         const filename = filePath.substring(lastSlashIndex + 1);
 
-        window.location.href = '<?= APP_URL_BASE ?>?app=text_editor&path=' + dirname + '&file=' + filename;  // filename= + pathname
+
+        $.post("<?= basename(__FILE__) . '?' . $_SERVER['QUERY_STRING'] ; //APP_URL_BASE; $projectRoot ?>",
+      {
+        cmd: argv
+      },
+      function(data, status) {
+        console.log("Data: " + data + "Status: " + status);
+
+        //data = data.trim(); // replace(/(\r\n|\n|\r)/gm, "")
+
+        if (matches = argv.match(/edit(\s+(:?.*)?|)/gm)) {
+          editor1.setValue(data);
+
+          document.getElementById('app_ace_editor-container').style.display = 'block';
+          //console.log(data);
+        }
+      });
+
+        // window.location.href = '<?= APP_URL_BASE ?>?app=ace_editor&path=' + dirname + '&file=' + filename;  // filename= + pathname
         return false;
       } else {
         console.log("Invalid input format.");
@@ -1264,7 +1282,7 @@ console.log = function() {
               window.location.reload();  // window.location.href = window.location.href;
             }
 
-          } else if (matches = data.match(/.*(:?<?=str_replace('/', '\/', (defined('GIT_EXEC') ? dirname(GIT_EXEC) : '')); ?>)?<?= (defined('GIT_EXEC') ? basename(GIT_EXEC) : ''); ?>.*commit.*\n/gm)) {
+          } else if (matches = data.match(/.*(:?<?=str_replace('/', '\/', defined('GIT_EXEC') ? dirname(GIT_EXEC) : ''); ?>)?<?= defined('GIT_EXEC') ? basename(GIT_EXEC) : ''; ?>.*commit.*\n/gm)) {
             if (matches = data.match(/.*Error: Author identity unknown\./gm)) {
               $('#responseConsole').val('<?= $shell_prompt; ?>Author identity unknown' + "\n" + data + "\n" + $('#responseConsole').val());
               $('#requestInput').val('git config --global user.email "barryd.it@gmail.com"');

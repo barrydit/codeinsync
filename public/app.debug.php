@@ -346,9 +346,9 @@ if (basename($_SERVER['PHP_SELF']) == basename(__FILE__)) { // ($_SERVER["SCRIPT
   echo 'Defined Constants [User]: ';
   print_r(get_defined_constants(true)['user']); // [Core] | [pcre]
 
-  echo '$_SERVER["HTTPS"]: ' . ((isset($_SERVER['HTTPS'])) ? $_SERVER['HTTPS'] : 'off') . "\n";
+  echo '$_SERVER["HTTPS"]: ' . (isset($_SERVER['HTTPS']) ? $_SERVER['HTTPS'] : 'off') . "\n";
   echo '$_SERVER["REQUEST_URI"]: ' . $_SERVER['REQUEST_URI'] . "\n";
-  echo '$_SERVER["HTTP_REFERER"]: ' . ((isset($_SERVER['HTTP_REFERER'])) ? $_SERVER['HTTP_REFERER'] : '&lt;none&gt;') . "\n\n";
+  echo '$_SERVER["HTTP_REFERER"]: ' . (isset($_SERVER['HTTP_REFERER']) ? $_SERVER['HTTP_REFERER'] : '&lt;none&gt;') . "\n\n";
 
   echo 'Included files: ';
   print_r(get_included_files());

@@ -1014,7 +1014,7 @@ if (defined('COMPOSER') && isset(COMPOSER['json']->{'require-dev'}) && !empty(ge
 <!--
           <select name="">
 <?php foreach (['Backend', 'Designer', 'Developer', 'Programmer'] as $role) { ?>
-            <option<?= (defined('COMPOSER') && isset(COMPOSER->authors) && COMPOSER->authors->role ? 'value="' . $role . '"' : '') && (defined('COMPOSER') && isset(COMPOSER->authors) && COMPOSER->authors->role == $role ? ' selected=""' : '' ); ?>><?= $role; ?></option>
+            <option<?= (defined('COMPOSER') && isset(COMPOSER->{'authors'}) && COMPOSER->{'authors'}->role ? "value=\"$role\"" : '') && (defined('COMPOSER') && isset(COMPOSER->authors) && COMPOSER->authors->role == $role ? ' selected=""' : '' ); ?>><?= $role; ?></option>
 <?php } ?>
           </select>
 -->
@@ -1570,8 +1570,10 @@ if (is_file($path . 'tailwindcss-3.3.5.js')) {
 </script>
 </body>
 </html>
-<?php return ob_get_contents(); 
+<?php
+$buffer_contents = ob_get_contents(); 
 ob_end_clean();
+return $buffer_contents;
 } else {
   return $app;
 }
