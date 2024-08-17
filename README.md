@@ -1,6 +1,8 @@
 # codeinsync
 
-![directory_list_final](https://github.com/user-attachments/assets/73ead4bf-8e20-47e4-a909-e259353a5275)
+<p align="center">
+  <img style="text-align: center;" src="https://github.com/barrydit/codeinsync/assets/6217010/73ead4bf-8e20-47e4-a909-e259353a5275" width="60%" height="60%" />
+</p>
 
 Front-end interface for php composer and git (push/pull). I intend to make it a lot simplier to install php libraries from packagist and github, and that I wanted to be able to just plug the code into it, and make it work. I also wanted to show my skills off. I realize there are many other peoples content/images that are copyrighted, but if you ask nicely, they will be removed.
  
