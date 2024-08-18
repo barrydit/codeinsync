@@ -1081,6 +1081,7 @@ function makeDraggable(windowId) {
 } else {
     // User clicked Cancel
     console.log('User clicked Cancel');
+
     $( '#app_directory-container' ).slideUp( "slow", function() {
            // Animation complete.
     });
@@ -1132,7 +1133,7 @@ function makeDraggable(windowId) {
           // Animation complete.
         });
 
-        <?php if (isset($_GET['client']) && $_GET['client'] != '') { ?>
+        <?php if (isset($_GET['client']) && $_GET['client']) { ?>
           $( '#app_directory-container' ).slideDown( "slow", function() {
           // Animation complete.
           });

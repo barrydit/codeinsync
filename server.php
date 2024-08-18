@@ -49,7 +49,7 @@ if (!cli_set_process_title($title = basename(__FILE__))) {
   echo "Unable to set process title for PID $pid...\n";
   exit(1);
 } else {
-  echo "The process title '$title' for PID $pid has been set for your process!\n";
+  echo "The process title '$title' has been set for your process!\n";
   strpos(PHP_OS, 'LIN') === 0 and cli_set_process_name($title);
   function cli_set_process_name($title)
   {
@@ -90,7 +90,8 @@ $port = APP_PORT ?? 8080;
       case SIGINT:
         echo 'Shutting down server... PID=' . getmypid() . "\n";
         Logger::error('Shutting down server... PID=' . getmypid());
-        //fclose($server);
+        //fclose($server); 
+        unlink(PID_FILE);
         if (isset($socket) && is_resource($stream))
           switch (get_resource_type($socket)) {
             case 'stream':
@@ -103,7 +104,7 @@ $port = APP_PORT ?? 8080;
               break;
           }
         $running = false;
-        unlink(PID_FILE);
+
         break;
     }
     exit(1);
@@ -384,143 +385,198 @@ if (is_dir($path = __DIR__ . APP_BASE['vendor'] . 'cboden' . DIRECTORY_SEPARATOR
 
     // Check if the stream wrapper for TCP is available
     echo in_array('tcp', stream_get_wrappers()) ? '' : "TCP was NOT found in stream_get_wrappers()\n";
-    echo '(' . get_resource_type($socket) . ") Server started on $address:$port (" . PHP_OS . ")\n\n";
+    echo '(' . get_resource_type($socket) . ") Server started on $address:$port (" . PHP_OS . ") PID=$pid \n\n";
+  
+  /**
+   * Manages the scheduled task based on a given interval.
+   */
+  function manageScheduledTask(&$lastExecutionTime, $interval) {
+      if (time() - $lastExecutionTime >= $interval) {
+          // Execute the scheduled task
+          checkFileModification();
+          
+          // Update the last execution time
+          $lastExecutionTime = time();
+      } else {
+          // Display remaining time until next execution
+          echo $interval - (time() - $lastExecutionTime) . " seconds left\n";
+      }
+  }
+  
+  /**
+   * Handles an incoming client connection.
+   */
+  function handleClientConnection($stream) {
+      // Retrieve client information
+      $clientName = stream_socket_get_name($stream, true);
+      [$clientAddress, $clientPort] = explode(':', $clientName);
+      echo "Client connected: IP {$clientAddress}:{$clientPort} Port \n";
+      
+      // Read and process client data
+      $data = processClientData(fread($stream, 1024));
+      
+      // Send processed data back to the client
+      sendDataToClient($stream, $data);
+      
+      // Close the client connection
+      fclose($stream);
+      echo "Client Disconnected: IP {$clientAddress}:{$clientPort} Port \n\n";
+  }
+
+  
+  /**
+   * Processes the data received from the client.
+   */
+  function processClientData($clientMsg) {
+    // Process the client message
+    $data = clientInputHandler($clientMsg) . "\n";
+    
+    // Additional processing or notifications can be added here
+    global $manager;
+    $manager->checkNotifications();
+    
+    // Normalize line breaks
+    $dataArray = explode("\n", $data);
+    return implode("\n", $dataArray);
+  }
+
+  /**
+   * Sends data back to the client in chunks.
+   */
+  function sendDataToClient($stream, $data) {
+    $totalLength = strlen($data);
+    $written = 0;
+    $chunkSize = 1024; // Adjust chunk size as needed
+    
+    while ($written < $totalLength) {
+        $writeLength = min($chunkSize, $totalLength - $written);
+        $result = fwrite($stream, substr($data, $written, $writeLength));
+        
+        if ($result === false) {
+            // Handle write errors here (e.g., log it, retry, etc.)
+            break;
+        }
+        
+        $written += $result;
+    }
+    
+    fflush($stream); // Ensure all data is sent
+  }
 
     while ($running) {
+      // Check notifications at the start of each loop
       $manager->checkNotifications();
-
-      //and print "Client Connected: \n";
-
-      // Check if 300 seconds have passed since the last execution
-      if (time() - $lastExecutionTime >= $interval) {
-        // Execute the function
-
-        checkFileModification();
-
-        // Update the last execution time
-        $lastExecutionTime = time();
-      } else {
-        echo $interval - (time() - $lastExecutionTime) . " seconds left\n"; 
-      }
-
+      
+      // Print the time left until the next scheduled execution
+      manageScheduledTask($lastExecutionTime, $interval);
+      
+      // Accept incoming client connections and handle them
       if ($stream = @stream_socket_accept($socket, -1)) {
-
-        if ($stream === false) {
-          if (pcntl_get_last_error() === EINTR) {
-              // If the error is an interrupted system call, continue the loop to retry
-              continue;
-          } else {
-              // Handle other errors or log them
-              echo 'Accept failed: ' . socket_strerror($errno) . "\n";
-              break;
-          }
-        }
-
-        // Get the client's address and port
-        $clientName = stream_socket_get_name($stream, true);
-                
-        // Extract the client's IP and port
-        [$clientAddress, $clientPort] = explode(':', $clientName);
-                
-        echo "Client connected: IP {$clientAddress}:{$clientPort} Port \n";
-        // Read data from the client
-        $data = clientInputHandler($clientMsg = fread($stream, 1024)) . "\n";
-        //var_dump($data);
-        $manager->checkNotifications();
-        // Append notification output to the response
-        //  $data .= $manager->getNotificationsOutput();
-
-        $data = explode("\n", $data); // Split data by new lines into an array
-        $data = implode("\n", $data); // Rejoin array elements into a single string
-        
-        $totalLength = strlen($data); // Calculate the length of the string
-        $written = 0;
-        if ($stream) {
-          while ($written < $totalLength) {
-            $chunkSize = 1024; // Adjust chunk size as needed
-            $writeLength = min($chunkSize, $totalLength - $written);
-
-              $result = fwrite($stream, substr($data, $written, $writeLength));
-        
-            if ($result === false) {
-                // Handle the error (e.g., log it, retry, etc.)
-                break;
-            }
-        
-            $written += $result; // Move the pointer forward
-          }
-
-        //fwrite($stream, ?? "Something's not working...\n");
-        fflush($stream);
-        }
-        // Close the client connection
-        fclose($stream) and print "Client Disconnected: IP {$clientAddress}:{$clientPort} Port \n\n";
+          handleClientConnection($stream);
       }
-
-      // Dispatch signals
+  
+      // Dispatch any pending signals
       pcntl_signal_dispatch();
-
-
+      
       // Sleep for a short time to prevent busy-waiting
-      usleep(100000); // 100 ms = 0.1 s | sleep(1);
+      usleep(100000); // 100 ms = 0.1 s
     }
 
-   if (extension_loaded('sockets')) {
-      // Using Sockets Extension for creating server socket.
-      if (!$socket = @socket_create(AF_INET, SOCK_STREAM, SOL_TCP)) {
-        echo "Error: Unable to create server socket: \n";
-      }
 
-      if (!@socket_bind($socket, $address, $port)) {
-        throw new Exception("Could not bind to socket: " . socket_strerror(socket_last_error()));
-      }
-
-      if (!@socket_listen($socket)) {
-        throw new Exception("Could not listen on socket: " . socket_strerror(socket_last_error()));
-      }
-
-      // Set the socket to non-blocking mode
-      socket_set_nonblock($socket);
-
+    if (extension_loaded('sockets')) {
+      // Create server socket using the Sockets extension
+      $socket = createServerSocket($address, $port);
       echo "(Socket) Server started on $address:$port\n";
+    
+  /**
+   * Creates a server socket.
+   */
+  function createServerSocket($address, $port) {
+    // Create the socket
+    if (!$socket = @socket_create(AF_INET, SOCK_STREAM, SOL_TCP)) {
+        throw new Exception("Error: Unable to create server socket: " . socket_strerror(socket_last_error()));
+    }
+
+    // Bind the socket to the address and port
+    if (!@socket_bind($socket, $address, $port)) {
+        throw new Exception("Could not bind to socket: " . socket_strerror(socket_last_error()));
+    }
+
+    // Listen for incoming connections
+    if (!@socket_listen($socket)) {
+        throw new Exception("Could not listen on socket: " . socket_strerror(socket_last_error()));
+    }
+
+    // Set the socket to non-blocking mode
+    socket_set_nonblock($socket);
+
+    return $socket;
+}
+
+/**
+ * Handles an incoming client connection using sockets.
+ */
+function handleSocketClientConnection($client) {
+    // Get the client's address and port
+    if (socket_getpeername($client, $clientAddress, $clientPort)) {
+        echo "Client connected: IP $clientAddress, Port $clientPort\n";
+    } else {
+        $errorCode = socket_last_error($client);
+        $errorMsg = socket_strerror($errorCode);
+        echo "Unable to get client's address and port: [$errorCode] $errorMsg\n";
+    }
+
+    // Read and process client data
+    $data = processClientData(socket_read($client, 1024));
+
+    // Send processed data back to the client
+    socket_write($client, $data);
+
+    // Close the client connection
+    socket_close($client);
+    echo "Client Disconnected: IP $clientAddress, Port $clientPort\n\n";
+}
+
+/**
+ * Processes the data received from the client.
+ */
+function processClientData($clientMsg) {
+    global $manager;
+
+    // Process the client message
+    $data = clientInputHandler($clientMsg);
+
+    // Append notification output to the response
+    $data .= "\n" . $manager->getNotificationsOutput();
+
+    // Normalize line breaks
+    $dataArray = explode("\n", $data);
+    return implode("\n", $dataArray);
+}
 
       while ($running) {
-        $manager->checkNotifications();
-        $client = @socket_accept($socket);
-        //and print "Client Connected: \n";
-
-        if ($client) {
-          // Get the client's address and port
-          if (socket_getpeername($client, $clientAddress, $clientPort)) {
-            echo "Client connected: IP $clientAddress, Port $clientPort\n";
-          } else {
-            $errorCode = socket_last_error($client);
-            $errorMsg = socket_strerror($errorCode);
-            echo "Unable to get client's address and port: [$errorCode] $errorMsg\n";
+          // Check notifications
+          $manager->checkNotifications();
+  
+          // Accept incoming client connections
+          if ($client = @socket_accept($socket)) {
+              handleSocketClientConnection($client);
           }
-
-          // Handle client requests here
-          $response = clientInputHandler(socket_read($client, 1024));
-          // Append notification output to the response
-          $response .= "\n" . $manager->getNotificationsOutput();
-
-          @socket_write($client, $response);
-          @socket_close($client);
-        }
   
-        // Dispatch signals
-        pcntl_signal_dispatch();
+          // Dispatch any pending signals
+          pcntl_signal_dispatch();
   
-        // Sleep for a short time to prevent busy-waiting
-        usleep(100000); // 100 ms = 0.1 s | sleep(1);
+          // Sleep for a short time to prevent busy-waiting
+          usleep(100000); // 100 ms = 0.1 s
       }
-
+  
       socket_close($socket);
     } else {
       echo "Neither sockets or TCP stream wrapper are available.\n";
       unlink(PID_FILE);
       exit(1);
     }
+
 
   } catch (Exception $e) {
     //Logger::error($e->getMessage());
@@ -538,3 +594,4 @@ if (is_dir($path = __DIR__ . APP_BASE['vendor'] . 'cboden' . DIRECTORY_SEPARATOR
   }
 
 unlink(PID_FILE);
+die('EOF');

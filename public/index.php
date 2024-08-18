@@ -147,7 +147,7 @@ $dirs[] = APP_PATH . APP_BASE['config'] . 'npm.php';
   //dd($_SERVER); php_self, script_name, request_uri /folder/
 
   // dd(getenv('PATH'));
-
+  if (isset($_SERVER['REQUEST_METHOD']))
   switch ($_SERVER['REQUEST_METHOD']) {
     case 'POST':    
       //dd(get_required_files(), false);
