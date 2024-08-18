@@ -38,9 +38,10 @@ if (preg_match('/^app\.([\w\-.]+)\.php$/', basename(__FILE__), $matches))
       if ($_POST['cmd'] && $_POST['cmd'] != '') 
         if (preg_match('/^help/i', $_POST['cmd']))
           $output[] = implode(', ', array('install', 'php', 'composer', 'git', 'npm', 'whoami', 'wget', 'tail', 'cat', 'echo', 'env', 'sudo'));
-        else if (preg_match('/^server\s*start$/i', $_POST['cmd']))
+        else if (preg_match('/^server\s*start$/i', $_POST['cmd'])) {
           Sockets::handleLinuxSocketConnection(true);
-        else if (preg_match('/^install/i', $_POST['cmd']))
+          $output[] = 'Sockets started ...';
+        } else if (preg_match('/^install/i', $_POST['cmd']))
           include 'templates/' . preg_split("/^install (\s*+)/i", $_POST['cmd'])[1] . '.php';
         //else if (preg_match('/^edit\s+(:?(.*))/i', $_POST['cmd'], $match))
           //exec($_POST['cmd'], $output);

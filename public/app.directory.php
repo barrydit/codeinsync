@@ -3,9 +3,11 @@
 if ($path = (basename(getcwd()) == 'public') ? (is_file('../config/config.php') ? '../config/config.php' : 'config.php') :
   (is_file('config.php') ? 'config.php' : dirname(__DIR__, 1) . DIRECTORY_SEPARATOR . 'config' . DIRECTORY_SEPARATOR . 'config.php' ))
   require_once $path;
-else
-  die(var_dump("$path was not found. file=config.php"));
+else {
+    die(var_dump("$path was not found. file=config.php"));
+}
 
+// !isset($_GET['path']) and $_GET['path'] = '';
 
 global $errors;
 
@@ -456,11 +458,12 @@ if (defined('COMPOSER_VENDORS')) {
 
 ob_start(); 
 // >>>
-      echo '<div style="position: absolute; width: 100%;"><a href="?path" onclick="handleClick(event, \'/\')">' . APP_PATH . APP_ROOT . '</a>' . (isset($_GET['path']) ? $_GET['path'] : '' ) . '</div>';
+      echo '<div style="position: absolute; width: 100%;"><a href="?path" onclick="handleClick(event, \'/\')">' . APP_PATH . APP_ROOT . '</a>' . ($_GET['path'] ?? ''). '</div>';
       
 // <<<
 
-    if (!realpath(APP_PATH . APP_ROOT . (isset($_GET['path']) ? $_GET['path'] : '' ))) { ?>
+    if (!realpath(APP_PATH . APP_ROOT . (isset($_GET['path']) ? rtrim($_GET['path'], '/') . '/' : ''))) { ?>
+      
     
       <?= '<br /><br />Missing directory'; ?>
   
@@ -470,7 +473,7 @@ ob_start();
         <?php
 
           //$paths = ['thgsgfhfgh.php'];
-          $paths = glob(APP_PATH . APP_ROOT . (!isset($_GET['path']) ?: $_GET['path'] . '/') . '{.[!.]*,*}', GLOB_BRACE | GLOB_MARK);
+          $paths = glob(APP_PATH . APP_ROOT . (isset($_GET['path']) ? rtrim($_GET['path'], '/') . '/' : '') . '{.[!.]*,*}', GLOB_BRACE | GLOB_MARK);
           //dd(urldecode($_GET['path']));
 
           usort($paths, function ($a, $b) {

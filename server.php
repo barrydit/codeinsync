@@ -1,6 +1,6 @@
 #!/usr/bin/env php
 <?php
-declare(strict_types=1); // First Line Only!
+declare(strict_types=1, ticks=1); // First Line Only!
 
 //exit(1);
 
@@ -11,8 +11,17 @@ ini_set('log_errors', 'true');
 
 define('PID_FILE', /*getcwd() . */ (!defined('APP_PATH') ? __DIR__ . DIRECTORY_SEPARATOR : APP_PATH) . 'server.pid');
 
-if (file_exists(PID_FILE) && file_get_contents(PID_FILE)) {
-  $pid = (int) file_get_contents(PID_FILE);
+
+strpos(PHP_OS, 'LIN') === 0 && !extension_loaded('posix') || !extension_loaded('pcntl')
+  and die('posix && pcntl required. exiting');
+
+!is_writable('/tmp')
+  and die('must be able to write to /tmp to continue. exiting.');
+
+//!file_exists($file = posix_getpwuid(posix_getuid())['dir'].'/.aws/credentials')
+//  and die('an aws credentials file is required. exiting file=' . $file);
+
+if (file_exists(PID_FILE) && $pid = (int) file_get_contents(PID_FILE)) {
   //unlink(PID_FILE);
   if (strpos(PHP_OS, 'WIN') === 0) {
     exec("tasklist /FI \"PID eq $pid\" 2>NUL | find /I \"$pid\" >NUL", $output, $status);
@@ -28,12 +37,25 @@ if (file_exists(PID_FILE) && file_get_contents(PID_FILE)) {
       exit(1);
     }
   }
-} else {
-  if (isset($_SERVER['SUPERVISOR_ENABLED']) && $_SERVER['SUPERVISOR_ENABLED'] == '1')
-    touch(PID_FILE) and exit(1);
-}
+} else if (isset($_SERVER['SUPERVISOR_ENABLED']) && $_SERVER['SUPERVISOR_ENABLED'] == '1')
+  touch(PID_FILE) and exit(1);
 
-file_put_contents(PID_FILE, getmypid());
+file_put_contents(PID_FILE, $pid = getmypid());
+
+/**
+ * Set the title of our script that ps(1) sees
+ */
+if (!cli_set_process_title($title = basename(__FILE__))) {
+  echo "Unable to set process title for PID $pid...\n";
+  exit(1);
+} else {
+  echo "The process title '$title' for PID $pid has been set for your process!\n";
+  strpos(PHP_OS, 'LIN') === 0 and cli_set_process_name($title);
+  function cli_set_process_name($title)
+  {
+    file_put_contents('/proc/'.getmypid().'/comm',$title);
+  }
+}
 
 set_time_limit(0);
 
@@ -41,6 +63,9 @@ set_time_limit(0);
 
 $address = APP_HOST ?? '0.0.0.0';
 $port = APP_PORT ?? 8080;
+
+!empty($parsed_args = parseargs($argv))
+  and print("Argv(s): " . var_export($parsed_args, true) . "\n");
 
   // ps aux | grep server.php
   // kill -SIGTERM <PID>
@@ -56,33 +81,38 @@ $port = APP_PORT ?? 8080;
   function signalHandler($signal) {
     global $running, $socket, $server, $stream;
     switch ($signal) {
+      case SIGCHLD:
+        while (pcntl_waitpid(-1, $status, WNOHANG) > 0) {
+          // Reap child processes
+        }
+        break;
       case SIGTERM:
       case SIGINT:
-        echo "Shutting down server...\n";
+        echo 'Shutting down server... PID=' . getmypid() . "\n";
         Logger::error('Shutting down server... PID=' . getmypid());
         //fclose($server);
-        if (isset($socket)) {
-          if (is_resource($socket)) {
-            $running = false;
-            unlink(PID_FILE);
-            switch (get_resource_type($socket)) {
-              case 'stream':
-                fwrite($stream, 'Shuting down server... PID=' . getmypid());
-                fclose($socket);
-                break 2;
-              default:
-                socket_write($stream, 'Shuting down server... PID=' . getmypid());
-                socket_close($socket);
-                break 2;
-            }
+        if (isset($socket) && is_resource($stream))
+          switch (get_resource_type($socket)) {
+            case 'stream':
+              fwrite($stream, 'Shuting down server... PID=' . getmypid());
+              fclose($socket);
+              break;
+            default:
+              socket_write($stream, 'Shuting down server... PID=' . getmypid());
+              socket_close($socket);
+              break;
           }
-        }
-        exit(1);
+        $running = false;
+        unlink(PID_FILE);
+        break;
     }
+    exit(1);
   }
-  
 
-  // Register signal handler
+  pcntl_async_signals(true); // Turn on asynchronous signal handling
+
+  // Register signal handlerfor SIGCHLD, SIGTERM, and SIGINT
+  //pcntl_signal(SIGCHLD, 'signalHandler'); // hangs on sockets with empty cmd: on loop
   pcntl_signal(SIGTERM, 'signalHandler');
   pcntl_signal(SIGINT, 'signalHandler');
 
@@ -126,7 +156,6 @@ function clientInputHandler($input) {
       $output = file_get_contents(APP_PATH . APP_ROOT . $_GET['path'] . '/' . trim($matches[1]));
     } elseif (preg_match('/^cmd:\s*server\s*backup(?=\r?\n$)?/si', $input, $matches)) {
       require_once 'public/index.php';
-      echo "Including/Requiring... $matches[2]\n";
 
       $files = get_required_files();
       $baseDir = APP_PATH;
@@ -245,10 +274,11 @@ function clientInputHandler($input) {
     }
 */
     //$_POST['cmd'] = $cmd;
-    
+
     //require_once('public/app.console.php');
-    error_log("Client [Output]: $output");
-    echo "Client [Output]: $output\n";
+    error_log("Client [Output]: " . (strlen($output) > 50 ? substr($output, 0, 20) . '...' : $output));
+
+    echo "Client [Output]: " . (strlen($output) > 50 ? substr($output, 0, 20) . "...\n" : $output);
     return $output;
 }
 
@@ -289,10 +319,11 @@ function checkFileModification() {
       . 'Server is running... PID=' . getmypid() . "\n"
       . 'Server backup...' . "\n";
 
-      $output .= clientInputHandler('server backup' . PHP_EOL);
+      $output .= clientInputHandler('cmd: server backup' . PHP_EOL);
 
       //$lastModifiedTime = filemtime(__FILE__);
-      switch (get_resource_type($socket)) {
+      if ($stream)
+        switch (get_resource_type($socket)) {
           case 'stream':
               fwrite($stream, $output);
               fclose($stream);
@@ -352,12 +383,12 @@ if (is_dir($path = __DIR__ . APP_BASE['vendor'] . 'cboden' . DIRECTORY_SEPARATOR
     stream_set_blocking($socket, false);
 
     // Check if the stream wrapper for TCP is available
-    echo 'TCP was '. (in_array('tcp', stream_get_wrappers()) ? '' : 'NOT ') . 'found in stream_get_wrappers()' . "\n";
-    echo "(Stream) Server started on $address:$port\n";
+    echo in_array('tcp', stream_get_wrappers()) ? '' : "TCP was NOT found in stream_get_wrappers()\n";
+    echo '(' . get_resource_type($socket) . ") Server started on $address:$port (" . PHP_OS . ")\n\n";
 
     while ($running) {
       $manager->checkNotifications();
-      $stream = @stream_socket_accept($socket, -1);
+
       //and print "Client Connected: \n";
 
       // Check if 300 seconds have passed since the last execution
@@ -369,10 +400,22 @@ if (is_dir($path = __DIR__ . APP_BASE['vendor'] . 'cboden' . DIRECTORY_SEPARATOR
         // Update the last execution time
         $lastExecutionTime = time();
       } else {
-        echo $interval - (time() - $lastExecutionTime) . ' seconds left' . "\n"; 
+        echo $interval - (time() - $lastExecutionTime) . " seconds left\n"; 
       }
 
-      if ($stream) {
+      if ($stream = @stream_socket_accept($socket, -1)) {
+
+        if ($stream === false) {
+          if (pcntl_get_last_error() === EINTR) {
+              // If the error is an interrupted system call, continue the loop to retry
+              continue;
+          } else {
+              // Handle other errors or log them
+              echo 'Accept failed: ' . socket_strerror($errno) . "\n";
+              break;
+          }
+        }
+
         // Get the client's address and port
         $clientName = stream_socket_get_name($stream, true);
                 
@@ -392,12 +435,12 @@ if (is_dir($path = __DIR__ . APP_BASE['vendor'] . 'cboden' . DIRECTORY_SEPARATOR
         
         $totalLength = strlen($data); // Calculate the length of the string
         $written = 0;
-        
-        while ($written < $totalLength) {
+        if ($stream) {
+          while ($written < $totalLength) {
             $chunkSize = 1024; // Adjust chunk size as needed
             $writeLength = min($chunkSize, $totalLength - $written);
-        
-            $result = fwrite($stream, substr($data, $written, $writeLength));
+
+              $result = fwrite($stream, substr($data, $written, $writeLength));
         
             if ($result === false) {
                 // Handle the error (e.g., log it, retry, etc.)
@@ -405,18 +448,18 @@ if (is_dir($path = __DIR__ . APP_BASE['vendor'] . 'cboden' . DIRECTORY_SEPARATOR
             }
         
             $written += $result; // Move the pointer forward
-        }
+          }
 
         //fwrite($stream, ?? "Something's not working...\n");
         fflush($stream);
-
+        }
         // Close the client connection
         fclose($stream) and print "Client Disconnected: IP {$clientAddress}:{$clientPort} Port \n\n";
       }
-  
+
       // Dispatch signals
       pcntl_signal_dispatch();
-  
+
 
       // Sleep for a short time to prevent busy-waiting
       usleep(100000); // 100 ms = 0.1 s | sleep(1);
@@ -483,15 +526,15 @@ if (is_dir($path = __DIR__ . APP_BASE['vendor'] . 'cboden' . DIRECTORY_SEPARATOR
     //Logger::error($e->getMessage());
     //Shutdown::triggerShutdown($e->getMessage());
   } finally {
-    if (isset($socket)) {
-        if (is_resource($socket)) {
-            if (get_resource_type($socket) == 'stream') {
-                fclose($socket);
-            } else {
-                socket_close($socket);
-            }
-        }
-    }
+    if (isset($socket) && is_resource($socket))
+      switch (get_resource_type($socket)) {
+        case 'stream':
+          fclose($socket);
+          break;
+        default:
+          socket_close($socket);
+          break;
+      }
   }
 
 unlink(PID_FILE);

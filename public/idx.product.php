@@ -21,6 +21,8 @@ if (isset($_GET['path']) && $_GET['path'] != '' && realpath($_GET['path']) && is
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
+    <script src="https://d3js.org/d3.v7.min.js"></script>
+
     <base href="<?=(!is_array(APP_URL) ? APP_URL : APP_URL_BASE) . (preg_match('/^\/(?!\?)$/', $_SERVER['REQUEST_URI']) ? '?' : '') . (!defined('APP_DEBUG') ? '#' : '?' . (APP_URL['query'] != '' ? APP_URL['query'] : '')) . (defined('APP_ENV') && APP_ENV == 'development' ? '#!' : ''); ?>">
 
     <title>Multiple Ace Editor Instances</title>
@@ -76,6 +78,7 @@ unset($path);
       <?= defined('UI_COMPOSER') ? UI_COMPOSER['style'] : null; /* (isset($appComposer) ? $appComposer['script'] : null); */ ?>
       <?= defined('UI_NPM') ? UI_NPM['style'] : null; ?>
       <?= defined('UI_ACE_EDITOR') ? UI_ACE_EDITOR['style'] : null; ?>
+      <?= defined('UI_NODES') ? UI_NODES['style'] : null; ?>
 
       <?= $apps['browser']['style']; ?>
       <?= $apps['github']['style']; ?>
@@ -778,6 +781,7 @@ $output = 'Invalid Input';
 <?= defined('UI_COMPOSER') ? UI_COMPOSER['body'] : null; /* (isset($appComposer) ? $appComposer['script'] : null); */ ?>
 <?= defined('UI_NPM') ? UI_NPM['body'] : null; ?>
 <?= defined('UI_ACE_EDITOR') ? UI_ACE_EDITOR['body'] : null; ?>
+<?= defined('UI_NODES') ? UI_NODES['body'] : null; ?>
 
 <?= $apps['project']['body']; ?>
 
@@ -951,6 +955,15 @@ if (!is_file($path)) { ?>
     var editor1, editor2;
 
     document.addEventListener("DOMContentLoaded", function() {
+
+<?php if (!$_SERVER['SOCKET']) { ?>
+   if (confirm('(Re)Start Server?')) {
+    $('#requestInput').val('server start');
+    $('#requestSubmit').click();
+   } else {
+    console.log('Cancel (Re)Start.');
+   }
+<?php } ?>
 /**/
         editor1 = ace.edit("ui_ace_editor");
         //var JavaScriptMode = ace.require("ace/mode/javascript").Mode;
@@ -1041,6 +1054,7 @@ function makeDraggable(windowId) {
       makeDraggable('app_git-container');
       makeDraggable('app_npm-container');
       makeDraggable('app_php-container');
+      makeDraggable('app_nodes-container');
       makeDraggable('app_timesheet-container');
       //makeDraggable('console-settings');
 
@@ -1347,6 +1361,7 @@ $( '#app_directory-container' ).slideUp( "slow", function() {
       <?= defined('UI_PHP') ? UI_PHP['script'] : null; /* print(...) */ ?>
       <?= defined('UI_COMPOSER') ? UI_COMPOSER['script'] : null; /* (isset($app['composer']) ? $app['composer']['script'] : null); */ ?>
       <?= defined('UI_NPM') ? UI_NPM['script'] : null; ?>
+      <?= defined('UI_NODES') ? UI_NODES['script'] : null; ?>
 
       
       <?= /* (defined('UI_ACE_EDITOR') ? UI_ACE_EDITOR['script'] : null); */ NULL;?>

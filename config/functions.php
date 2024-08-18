@@ -43,6 +43,39 @@ foreach ($paths as $path) {
 */
 
 /**
+ * Parses command line args and returns array of args and their values
+ *
+ * @param Array $args   The array from $argv
+ * @return Array
+ */
+function parseargs($args = [])
+{  
+    global $argv;
+    $parsed_args = [];
+
+    $args = array_slice($args ?? $argv, 1);
+    for ($i=0;$i<count($args);$i++) {
+
+        switch (substr_count($args[$i], "-", 0, 2)) {
+            case 1:
+                foreach (str_split(ltrim($args[$i], "-")) as $a) {
+                    $parsed_args[$a] = isset($parsed_args[$a]) ? $parsed_args[$a] + 1 : 1;
+                }
+                break;
+
+            case 2:
+                $parsed_args[ltrim(preg_replace("/=.*/", '', $args[$i]), '-')] = strpos($args[$i], '=') !== false ? substr($args[$i], strpos($args[$i], '=') + 1) : 1;
+                break;
+
+            default:
+                $parsed_args['positional'][] = $args[$i];
+        }
+    }
+
+    return $parsed_args;
+}
+
+/**
  * Logs a custom message to the error log.
  *
  * @param string $message The message to log.
