@@ -2,15 +2,12 @@
 <?php
 declare(strict_types=1, ticks=1); // First Line Only!
 
-//exit(1);
-
 require_once __DIR__ . DIRECTORY_SEPARATOR . 'config' . DIRECTORY_SEPARATOR . 'config.php';
 
 ini_set('error_log', (!defined('APP_PATH') ? __DIR__ . DIRECTORY_SEPARATOR : APP_PATH)  . 'server.log' );
 ini_set('log_errors', 'true');
 
 define('PID_FILE', /*getcwd() . */ (!defined('APP_PATH') ? __DIR__ . DIRECTORY_SEPARATOR : APP_PATH) . 'server.pid');
-
 
 strpos(PHP_OS, 'LIN') === 0 && !extension_loaded('posix') || !extension_loaded('pcntl')
   and die('posix && pcntl required. exiting');
@@ -22,7 +19,6 @@ strpos(PHP_OS, 'LIN') === 0 && !extension_loaded('posix') || !extension_loaded('
 //  and die('an aws credentials file is required. exiting file=' . $file);
 
 if (file_exists(PID_FILE) && $pid = (int) file_get_contents(PID_FILE)) {
-  //unlink(PID_FILE);
   if (strpos(PHP_OS, 'WIN') === 0) {
     exec("tasklist /FI \"PID eq $pid\" 2>NUL | find /I \"$pid\" >NUL", $output, $status);
     if ($status === 0) {
@@ -31,15 +27,16 @@ if (file_exists(PID_FILE) && $pid = (int) file_get_contents(PID_FILE)) {
       exit(1);
     }
   } else {
-    if (posix_kill($pid, 0)) {
+    if (extension_loaded('pcntl') && function_exists('posix_kill') && posix_kill($pid, 0)) {
       error_log("Server is already running with PID $pid\n");
       echo "Server is already running with PID $pid\n";
       exit(1);
     }
   }
-} else if (isset($_SERVER['SUPERVISOR_ENABLED']) && $_SERVER['SUPERVISOR_ENABLED'] == '1')
-  touch(PID_FILE) and exit(1);
-
+} else if (isset($_SERVER['SUPERVISOR_ENABLED']) && $_SERVER['SUPERVISOR_ENABLED'] == '1') {
+  touch(PID_FILE);
+  exit(1);
+}
 file_put_contents(PID_FILE, $pid = getmypid());
 
 /**
@@ -51,6 +48,12 @@ if (!cli_set_process_title($title = basename(__FILE__))) {
 } else {
   echo "The process title '$title' has been set for your process!\n";
   strpos(PHP_OS, 'LIN') === 0 and cli_set_process_name($title);
+  /**
+   * Summary of cli_set_process_name
+   * @param mixed $title
+   * @throws Exception
+   * @return void
+   */
   function cli_set_process_name($title)
   {
     file_put_contents('/proc/'.getmypid().'/comm',$title);
@@ -60,11 +63,10 @@ if (!cli_set_process_title($title = basename(__FILE__))) {
 set_time_limit(0);
 
 //dd(get_defined_constants()); // get_required_files()
+define('SERVER_HOST', defined('APP_HOST') ? APP_HOST : '0.0.0.0');
+define('SERVER_PORT', defined('APP_PORT') ? APP_PORT : 8080);
 
-$address = APP_HOST ?? '0.0.0.0';
-$port = APP_PORT ?? 8080;
-
-!empty($parsed_args = parseargs($argv))
+!empty($parsed_args = parseargs())
   and print("Argv(s): " . var_export($parsed_args, true) . "\n");
 
   // ps aux | grep server.php
@@ -78,6 +80,12 @@ $port = APP_PORT ?? 8080;
   // [1]+  Killed                  php server.php
 
   // Signal handler to gracefully shutdown
+  /**
+   * Summary of signalHandler
+   * @param mixed $signal
+   * @throws \Exception
+   * @return never
+   */
   function signalHandler($signal) {
     global $running, $socket, $server, $stream;
     switch ($signal) {
@@ -92,19 +100,16 @@ $port = APP_PORT ?? 8080;
         Logger::error('Shutting down server... PID=' . getmypid());
         //fclose($server); 
         unlink(PID_FILE);
-        if (isset($socket) && is_resource($stream))
-          switch (get_resource_type($socket)) {
-            case 'stream':
-              fwrite($stream, 'Shuting down server... PID=' . getmypid());
-              fclose($socket);
-              break;
-            default:
-              socket_write($stream, 'Shuting down server... PID=' . getmypid());
-              socket_close($socket);
-              break;
+        if (isset($socket) && is_resource($stream)) {
+          if (extension_loaded('sockets')) {
+            socket_write($stream, 'Shutting down server... PID=' . getmypid());
+            socket_close($socket);
+          } elseif (get_resource_type($socket) == 'stream') {
+            fwrite($stream, 'Shutting down server... PID=' . getmypid());
+            fclose($socket);
           }
+        }
         $running = false;
-
         break;
     }
     exit(1);
@@ -154,7 +159,8 @@ function clientInputHandler($input) {
 
     } elseif (preg_match('/^cmd:\s*edit\s*(.*)(?=\r?\n$)?/si', $input, $matches)) {
       ini_set('log_errors', 'false');
-      $output = file_get_contents(APP_PATH . APP_ROOT . $_GET['path'] . '/' . trim($matches[1]));
+      if (realpath($file = APP_PATH . APP_ROOT . ($_GET['path'] ?? '') . trim($matches[1])))
+        $output = file_get_contents($file);
     } elseif (preg_match('/^cmd:\s*server\s*backup(?=\r?\n$)?/si', $input, $matches)) {
       require_once 'public/index.php';
 
@@ -258,6 +264,11 @@ function clientInputHandler($input) {
     } else {
       // Process the request and send a response
       $output = "Hello, client! Your input was: $input";
+
+      global $manager;
+
+      // Append notification output to the response
+      $output .= "\n" . $manager->getNotificationsOutput();
     }
 /*
     if ($cmd = $matches[1] ?? NULL) {
@@ -323,17 +334,15 @@ function checkFileModification() {
       $output .= clientInputHandler('cmd: server backup' . PHP_EOL);
 
       //$lastModifiedTime = filemtime(__FILE__);
-      if ($stream)
-        switch (get_resource_type($socket)) {
-          case 'stream':
-              fwrite($stream, $output);
-              fclose($stream);
-              break;
-          default:
-              socket_write($stream, $output);
-              socket_close($stream);
-              break;
+
+      if (extension_loaded('sockets')) {
+        socket_write($stream, $output);
+        socket_close($stream);
+      } elseif (get_resource_type($socket) == 'stream') {
+        fwrite($stream, $output);
+        fclose($stream);
       }
+
       error_log("Client [Output]: $output");
       echo "Client [Output]: $output\n";
       signalHandler(SIGTERM);
@@ -371,125 +380,14 @@ if (is_dir($path = __DIR__ . APP_BASE['vendor'] . 'cboden' . DIRECTORY_SEPARATOR
   require_once __DIR__ . DIRECTORY_SEPARATOR . APP_BASE['config'] . 'classes' . DIRECTORY_SEPARATOR . 'class.websocketserver.php';
 } else
   try {
-    error_log('Creating a stream/socket server...');
-
-  // Create a TCP/IP server socket
-    if (!$socket = @stream_socket_server('tcp://' . $address . PATH_SEPARATOR . $port, $errno, $errstr)) {
-      echo "Error: Unable to create server socket: $errstr ($errno)\n";
-      unlink(PID_FILE);
-      throw new Exception("Could not create server socket: $errstr ($errno)");
-    }
-    
-    // Set the socket to non-blocking mode
-    stream_set_blocking($socket, false);
-
-    // Check if the stream wrapper for TCP is available
-    echo in_array('tcp', stream_get_wrappers()) ? '' : "TCP was NOT found in stream_get_wrappers()\n";
-    echo '(' . get_resource_type($socket) . ") Server started on $address:$port (" . PHP_OS . ") PID=$pid \n\n";
-  
-  /**
-   * Manages the scheduled task based on a given interval.
-   */
-  function manageScheduledTask(&$lastExecutionTime, $interval) {
-      if (time() - $lastExecutionTime >= $interval) {
-          // Execute the scheduled task
-          checkFileModification();
-          
-          // Update the last execution time
-          $lastExecutionTime = time();
-      } else {
-          // Display remaining time until next execution
-          echo $interval - (time() - $lastExecutionTime) . " seconds left\n";
-      }
-  }
-  
-  /**
-   * Handles an incoming client connection.
-   */
-  function handleClientConnection($stream) {
-      // Retrieve client information
-      $clientName = stream_socket_get_name($stream, true);
-      [$clientAddress, $clientPort] = explode(':', $clientName);
-      echo "Client connected: IP {$clientAddress}:{$clientPort} Port \n";
-      
-      // Read and process client data
-      $data = processClientData(fread($stream, 1024));
-      
-      // Send processed data back to the client
-      sendDataToClient($stream, $data);
-      
-      // Close the client connection
-      fclose($stream);
-      echo "Client Disconnected: IP {$clientAddress}:{$clientPort} Port \n\n";
-  }
-
-  
-  /**
-   * Processes the data received from the client.
-   */
-  function processClientData($clientMsg) {
-    // Process the client message
-    $data = clientInputHandler($clientMsg) . "\n";
-    
-    // Additional processing or notifications can be added here
-    global $manager;
-    $manager->checkNotifications();
-    
-    // Normalize line breaks
-    $dataArray = explode("\n", $data);
-    return implode("\n", $dataArray);
-  }
-
-  /**
-   * Sends data back to the client in chunks.
-   */
-  function sendDataToClient($stream, $data) {
-    $totalLength = strlen($data);
-    $written = 0;
-    $chunkSize = 1024; // Adjust chunk size as needed
-    
-    while ($written < $totalLength) {
-        $writeLength = min($chunkSize, $totalLength - $written);
-        $result = fwrite($stream, substr($data, $written, $writeLength));
-        
-        if ($result === false) {
-            // Handle write errors here (e.g., log it, retry, etc.)
-            break;
-        }
-        
-        $written += $result;
-    }
-    
-    fflush($stream); // Ensure all data is sent
-  }
-
-    while ($running) {
-      // Check notifications at the start of each loop
-      $manager->checkNotifications();
-      
-      // Print the time left until the next scheduled execution
-      manageScheduledTask($lastExecutionTime, $interval);
-      
-      // Accept incoming client connections and handle them
-      if ($stream = @stream_socket_accept($socket, -1)) {
-          handleClientConnection($stream);
-      }
-  
-      // Dispatch any pending signals
-      pcntl_signal_dispatch();
-      
-      // Sleep for a short time to prevent busy-waiting
-      usleep(100000); // 100 ms = 0.1 s
-    }
-
-
-    if (extension_loaded('sockets')) {
-      // Create server socket using the Sockets extension
-      $socket = createServerSocket($address, $port);
-      echo "(Socket) Server started on $address:$port\n";
+  error_log('Creating a stream/socket server...');
     
   /**
    * Creates a server socket.
+   * @param mixed $address
+   * @param mixed $port
+   * @throws \Exception
+   * @return bool|resource|Socket
    */
   function createServerSocket($address, $port) {
     // Create the socket
@@ -511,87 +409,172 @@ if (is_dir($path = __DIR__ . APP_BASE['vendor'] . 'cboden' . DIRECTORY_SEPARATOR
     socket_set_nonblock($socket);
 
     return $socket;
-}
+  }
 
-/**
- * Handles an incoming client connection using sockets.
- */
-function handleSocketClientConnection($client) {
-    // Get the client's address and port
-    if (socket_getpeername($client, $clientAddress, $clientPort)) {
-        echo "Client connected: IP $clientAddress, Port $clientPort\n";
-    } else {
-        $errorCode = socket_last_error($client);
-        $errorMsg = socket_strerror($errorCode);
-        echo "Unable to get client's address and port: [$errorCode] $errorMsg\n";
-    }
+  if (extension_loaded('sockets')) {
+    // Create server socket using the Sockets extension
+    $socket = createServerSocket(SERVER_HOST, SERVER_PORT);
 
-    // Read and process client data
-    $data = processClientData(socket_read($client, 1024));
-
-    // Send processed data back to the client
-    socket_write($client, $data);
-
-    // Close the client connection
-    socket_close($client);
-    echo "Client Disconnected: IP $clientAddress, Port $clientPort\n\n";
-}
-
-/**
- * Processes the data received from the client.
- */
-function processClientData($clientMsg) {
-    global $manager;
-
-    // Process the client message
-    $data = clientInputHandler($clientMsg);
-
-    // Append notification output to the response
-    $data .= "\n" . $manager->getNotificationsOutput();
-
-    // Normalize line breaks
-    $dataArray = explode("\n", $data);
-    return implode("\n", $dataArray);
-}
-
-      while ($running) {
-          // Check notifications
-          $manager->checkNotifications();
-  
-          // Accept incoming client connections
-          if ($client = @socket_accept($socket)) {
-              handleSocketClientConnection($client);
-          }
-  
-          // Dispatch any pending signals
-          pcntl_signal_dispatch();
-  
-          // Sleep for a short time to prevent busy-waiting
-          usleep(100000); // 100 ms = 0.1 s
-      }
-  
-      socket_close($socket);
-    } else {
-      echo "Neither sockets or TCP stream wrapper are available.\n";
+    echo '(Socket) ';
+  } elseif (get_resource_type($socket) == 'stream') {
+    // Create a TCP/IP server socket using stream_socket_server
+    if (!$socket = @stream_socket_server('tcp://' . SERVER_HOST . ':' . SERVER_PORT, $errno, $errstr)) {
+      echo "Error: Unable to create server socket: $errstr ($errno)\n";
       unlink(PID_FILE);
-      exit(1);
+      throw new Exception("Could not create server socket: $errstr ($errno)");
     }
 
+    echo in_array('tcp', stream_get_wrappers()) ? '' : "TCP was NOT found in stream_get_wrappers()\n";
+    // Set the socket to non-blocking mode
+    stream_set_blocking($socket, false);  
+    // Display server information  
+    echo '(' . get_resource_type($socket) . ') ';
+  } 
+  echo 'Server started on ' . SERVER_HOST . ':' . SERVER_PORT . ' (' . PHP_OS . ") PID=$pid\n\n";
+      
+  /**
+   * Manages the scheduled task based on a given interval.
+   */
+  function manageScheduledTask(&$lastExecutionTime, $interval) {
+      if (time() - $lastExecutionTime >= $interval) {
+          // Execute the scheduled task
+          checkFileModification();
 
-  } catch (Exception $e) {
-    //Logger::error($e->getMessage());
-    //Shutdown::triggerShutdown($e->getMessage());
-  } finally {
-    if (isset($socket) && is_resource($socket))
-      switch (get_resource_type($socket)) {
-        case 'stream':
-          fclose($socket);
-          break;
-        default:
-          socket_close($socket);
-          break;
+          // Update the last execution time
+          $lastExecutionTime = time();
+      } else {
+          // Display remaining time until next execution
+          if ($interval - (time() - $lastExecutionTime) != $interval)
+            echo ($interval - (time() - $lastExecutionTime)) . ' - ' . $interval . " seconds left\n";
+          //sleep(1);
       }
   }
+
+  /**
+   * Handles an incoming client connection for streams.
+   */
+  function handleStreamClientConnection($stream) {
+      // Retrieve client information
+      $clientName = stream_socket_get_name($stream, true);
+      [$clientAddress, $clientPort] = explode(':', $clientName);
+      echo "Client connected: IP {$clientAddress}:{$clientPort} Port \n";
+
+      // Read and process client data
+      $data = processClientData(fread($stream, 1024));
+
+      // Send processed data back to the client
+      sendDataToClient($stream, $data);
+
+      // Close the client connection
+      fclose($stream);
+      echo "Client Disconnected: IP {$clientAddress}:{$clientPort} Port \n\n";
+  }
+
+  /**
+   * Handles an incoming client connection for sockets.
+   */
+  function handleSocketClientConnection($client) {
+      // Get the client's address and port
+      if (socket_getpeername($client, $clientAddress, $clientPort)) {
+          echo "Client connected: IP $clientAddress, Port $clientPort\n";
+      } else {
+          $errorCode = socket_last_error($client);
+          $errorMsg = socket_strerror($errorCode);
+          echo "Unable to get client's address and port: [$errorCode] $errorMsg\n";
+      }
+
+      // Read and process client data
+      $data = processClientData(socket_read($client, 1024));
+
+      // Send processed data back to the client
+      socket_write($client, $data);
+
+      // Close the client connection
+      socket_close($client);
+      echo "Client Disconnected: IP $clientAddress, Port $clientPort\n\n";
+  }
+
+  /**
+   * Processes the data received from the client.
+   */
+  function processClientData($clientMsg) {
+
+      // Process the client message
+      $data = clientInputHandler($clientMsg);
+
+
+      // Normalize line breaks
+      $dataArray = explode("\n", $data ?? '');
+      return implode("\n", $dataArray);
+  }
+
+  /**
+   * Sends data back to the client in chunks.
+   */
+  function sendDataToClient($stream, $data) {
+      $totalLength = strlen($data);
+      $written = 0;
+      $chunkSize = 1024; // Adjust chunk size as needed
+
+      while ($written < $totalLength) {
+          $writeLength = min($chunkSize, $totalLength - $written);
+          $result = fwrite($stream, substr($data, $written, $writeLength));
+
+          if ($result === false) {
+              // Handle write errors here (e.g., log it, retry, etc.)
+              break;
+          }
+
+          $written += $result;
+      }
+
+      fflush($stream); // Ensure all data is sent
+  }
+
+  while ($running) {
+      // Check notifications at the start of each loop
+      $manager->checkNotifications();
+
+      // Print the time left until the next scheduled execution
+      manageScheduledTask($lastExecutionTime, $interval);
+
+      if (extension_loaded('sockets')) {
+        // Accept incoming client connections using sockets
+        if ($client = @socket_accept($socket)) {
+          handleSocketClientConnection($client);
+        }
+      } elseif (get_resource_type($socket) == 'stream') {
+        // Accept incoming client connections using streams
+        if ($stream = @stream_socket_accept($socket, -1)) {
+          handleStreamClientConnection($stream);
+        }
+      } 
+
+      // Dispatch any pending signals
+      pcntl_signal_dispatch();
+
+      // Sleep for a short time to prevent busy-waiting
+      usleep(100000); // 100 ms = 0.1 s
+  }
+
+  // extension_loaded('sockets') && socket_close($socket);
+  if (extension_loaded('sockets')) {
+    socket_close($socket);
+  } elseif (get_resource_type($socket) == 'stream') {
+    fclose($socket);
+  } 
+} catch (Exception $e) {
+  //Logger::error($e->getMessage());
+  //Shutdown::triggerShutdown($e->getMessage());
+} finally {
+  if (isset($socket) && is_resource($socket)) {
+    if (extension_loaded('sockets')) {
+      socket_close($socket);
+    } elseif (get_resource_type($socket) == 'stream') {
+      fclose($socket);
+    } 
+  }
+}
 
 unlink(PID_FILE);
 die('EOF');

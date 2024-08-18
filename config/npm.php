@@ -6,30 +6,35 @@ npm WARN EBADENGINE   required: { node: '^18.17.0 || >=20.5.0' },
 npm WARN EBADENGINE   current: { node: 'v12.22.12', npm: '7.5.2' }
 npm WARN EBADENGINE }
 */
-
 define('NODE_ENV', !defined('APP_ENV') ? 'production' : APP_ENV);
 putenv('NODE_ENV=' . (string) NODE_ENV);
 
-if (strtoupper(substr(PHP_OS, 0, 3)) === 'WIN')
-  define('NODE_EXEC', 'node.exe');
-else
-  define('NODE_EXEC', '/usr/bin/node');
+switch (substr(PHP_OS, 0, 3)) {
+  case 'win':
+    define('NODE_EXEC', 'node.exe');
+    break;
+  default:
+    define('NODE_EXEC', '/usr/bin/node');
+    break;
+}
 
-$proc = proc_open((strtoupper(substr(PHP_OS, 0, 3)) === 'WIN' ? '' : APP_SUDO) . NODE_EXEC . ' --version', [ array("pipe","r"), array("pipe","w"), array("pipe","w")], $pipes);
+$proc = proc_open((substr(PHP_OS, 0, 3) == 'win' ? '' : APP_SUDO) . NODE_EXEC . ' --version', [["pipe", "r"], ["pipe", "w"], ["pipe", "w"]], $pipes);
 
 $stdout = stream_get_contents($pipes[1]);
 $stderr = stream_get_contents($pipes[2]);
 
 $exitCode = proc_close($proc);
 
-if (preg_match('/v(\d+\.\d+\.\d+)/', $stdout, $matches))
+if (preg_match('/v(\d+\.\d+\.\d+)/', $stdout, $matches)) {
   define('NODE_VERSION', $matches[1]);
-else
+} else {
   if (empty($stdout)) {
-    if (!empty($stderr))
+    if (!empty($stderr)) {
       $errors['NODE_VERSION'] = "\$stderr = $stderr";
-  } // else $errors['NODE_VERSION'] = $stdout . ' does not match $version'; }
-
+    }
+  }
+  // else $errors['NODE_VERSION'] = $stdout . ' does not match $version';
+}
 
 define('NODE_MODULES_PATH', APP_PATH . 'node_modules/');
 
@@ -74,25 +79,25 @@ END
 );
 
 if (!is_dir(NODE_MODULES_PATH)) {
-  $proc=proc_open((strtoupper(substr(PHP_OS, 0, 3)) === 'WIN' ? '' : APP_SUDO) . NPM_EXEC . ' install',
-  array(
-    array("pipe","r"),
-    array("pipe","w"),
-    array("pipe","w")
-  ),
+  $proc=proc_open((substr(PHP_OS, 0, 3) == 'win' ? '' : APP_SUDO) . NPM_EXEC . ' install',
+    [
+      ["pipe", "r"],
+      ["pipe", "w"],
+      ["pipe", "w"]
+    ],
   $pipes);
-  list($stdout, $stderr, $exitCode) = [stream_get_contents($pipes[1]), stream_get_contents($pipes[2]), proc_close($proc)];
-  $errors['NPM-INSTALL']= (!isset($stdout) ? NULL : $stdout . (isset($stderr) && $stderr === '' ? NULL : ' Error: ' . $stderr) . (isset($exitCode) && $exitCode == 0 ? NULL : 'Exit Code: ' . $exitCode));
+  [$stdout, $stderr, $exitCode] = [stream_get_contents($pipes[1]), stream_get_contents($pipes[2]), proc_close($proc)];
+  $errors['NPM-INSTALL']= !isset($stdout) ? NULL : $stdout . (isset($stderr) && $stderr === '' ? NULL : " Error: $stderr") . (isset($exitCode) && $exitCode == 0 ? NULL : "Exit Code: $exitCode");
   
   $proc=proc_open((strtoupper(substr(PHP_OS, 0, 3)) === 'WIN' ? '' : APP_SUDO) . NPM_EXEC . ' install -g npm',
-  array(
-    array("pipe","r"),
-    array("pipe","w"),
-    array("pipe","w")
-  ),
+    [
+      ["pipe", "r"],
+      ["pipe", "w"],
+      ["pipe", "w"]
+    ],
   $pipes);
-  list($stdout, $stderr, $exitCode) = [stream_get_contents($pipes[1]), stream_get_contents($pipes[2]), proc_close($proc)];
-  $errors['NPM-INSTALL']= (!isset($stdout) ? NULL : $stdout . (isset($stderr) && $stderr === '' ? NULL : ' Error: ' . $stderr) . (isset($exitCode) && $exitCode == 0 ? NULL : 'Exit Code: ' . $exitCode));
+  [$stdout, $stderr, $exitCode] = [stream_get_contents($pipes[1]), stream_get_contents($pipes[2]), proc_close($proc)];
+  $errors['NPM-INSTALL']= !isset($stdout) ? NULL : $stdout . (isset($stderr) && $stderr === '' ? NULL : " Error: $stderr") . (isset($exitCode) && $exitCode == 0 ? NULL : "Exit Code: $exitCode");
 } else {
 /*
 
@@ -108,20 +113,20 @@ if (!is_dir(NODE_MODULES_PATH)) {
   
    // Error: npm WARN using --force Recommended protections disabled.
 */
-if (strtoupper(substr(PHP_OS, 0, 3)) !== 'WIN') {
+if (substr(PHP_OS, 0, 3) != 'WIN') {
   $npmExecPath = shell_exec('which ' . NPM_EXEC);
   if ($npmExecPath !== false) {
     $proc=proc_open(APP_SUDO . NPM_EXEC . ' cache clean -f',
-    array(
-      array("pipe","r"),
-      array("pipe","w"),
-      array("pipe","w")
-    ),
+        [
+          ["pipe", "r"],
+          ["pipe", "w"],
+          ["pipe", "w"]
+        ],
     $pipes);
-    list($stdout, $stderr, $exitCode) = [stream_get_contents($pipes[1]), stream_get_contents($pipes[2]), proc_close($proc)];
+      [$stdout, $stderr, $exitCode] = [stream_get_contents($pipes[1]), stream_get_contents($pipes[2]), proc_close($proc)];
 
     if (!preg_match('/npm\sWARN\susing\s--force\sRecommended\sprotections\sdisabled./', $stderr))
-      $errors['NPM-CACHE-CLEAN-F'] = (!isset($stdout) ? NULL : $stdout . (isset($stderr) && $stderr === '' ? NULL : (preg_match('/npm\sWARN\susing\s--force\sRecommended\sprotections\sdisabled./', $stderr) ? $stderr : ' Error: ' . $stderr)) . (isset($exitCode) && $exitCode == 0 ? NULL : 'Exit Code: ' . $exitCode));
+      $errors['NPM-CACHE-CLEAN-F'] = !isset($stdout) ? NULL : $stdout . (isset($stderr) && $stderr === '' ? NULL : (preg_match('/npm\sWARN\susing\s--force\sRecommended\sprotections\sdisabled./', $stderr) ? $stderr : " Error: $stderr")) . (isset($exitCode) && $exitCode == 0 ? NULL : "Exit Code: $exitCode");
   }
 
 

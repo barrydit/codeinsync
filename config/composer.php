@@ -340,14 +340,19 @@ if (strtoupper(substr(PHP_OS, 0, 3)) === 'WIN') { // DO NOT REMOVE! { .. }
 //exec('whoami', $output, $returnCode); // or $errors['COMPOSER-WHOAMI'] = $output;
 //if (APP_DEBUG) {
 
-(strtoupper(substr(PHP_OS, 0, 3)) === 'WIN' ?: realpath($output[0] = shell_exec(APP_SUDO . 'which composer'))) or $output[0] = (strtoupper(substr(PHP_OS, 0, 3)) === 'LIN' ? '/usr/local/bin/composer' : COMPOSER_BIN['bin']); 
-$output[1] = shell_exec(APP_SUDO . 'composer --version') or $errors['COMPOSER-VERSION'] = $output[1];
+$output[0] = (strtoupper(substr(PHP_OS, 0, 3)) === 'WIN') ? realpath(shell_exec(APP_SUDO . 'where composer')) : realpath(shell_exec(APP_SUDO . 'which composer'));
+$output[1] = shell_exec(APP_SUDO . 'composer --version') ?: $errors['COMPOSER-VERSION'] = $output[1];
 
-(strtoupper(substr(PHP_OS, 0, 3)) === 'WIN' ?: preg_match('/Composer(?: version)? (\d+\.\d+\.\d+) (\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2})/', $output[1], $matches) or $errors['COMPOSER-VERSION'] = $output[1]);
 
-defined('COMPOSER_EXEC')
-  or define('COMPOSER_EXEC', (isset($_GET['exec']) && $_GET['exec'] == 'phar' ? COMPOSER_PHAR : (defined('COMPOSER_BIN') ? ['bin' => basename(COMPOSER_BIN['bin']), 'version' => 
-  (isset($matches[1]) ? $matches[1] : '')] : COMPOSER_BIN)) ?? COMPOSER_PHAR);
+if (strtoupper(substr(PHP_OS, 0, 3)) === 'WIN') {
+  if (!preg_match('/Composer(?: version)? (\d+\.\d+\.\d+) (\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2})/', $output[1], $matches)) {
+    $errors['COMPOSER-VERSION'] = $output[1];
+  }
+} else {
+  preg_match('/Composer(?: version)? (\d+\.\d+\.\d+) (\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2})/', $output[1], $matches) or $errors['COMPOSER-VERSION'] = $output[1];
+}
+
+defined('COMPOSER_EXEC') or define('COMPOSER_EXEC', (isset($_GET['exec']) && $_GET['exec'] == 'phar' ? COMPOSER_PHAR : (defined('COMPOSER_BIN') ? ['bin' => basename(COMPOSER_BIN['bin']), 'version' => ($matches[1] ?? '')] : COMPOSER_BIN)) ?? COMPOSER_PHAR);
 
 if (is_array(COMPOSER_EXEC))
   define('COMPOSER_VERSION', COMPOSER_EXEC['version']);
@@ -408,7 +413,6 @@ putenv('PWD=' . APP_PATH . APP_ROOT);
 */
 
 /* library, project, metapackage, composer-plugin ... Package type */
-
 $composer_exec = defined('COMPOSER_PHAR') && COMPOSER_EXEC['bin'] == COMPOSER_PHAR['bin'] ? COMPOSER_PHAR['bin'] : COMPOSER_EXEC['bin'];
 
 /*
@@ -513,13 +517,14 @@ if (file_exists($$c_or_p->path . '/composer.json'))
 else (@!touch($$c_or_p->path . '/composer.json')? define('COMPOSER_JSON', $$c_or_p->path . '/composer.json') : $erros['COMPOSER-JSON'] = 'composer.json was unable to be created.');
 */
 } // else { }
-
-defined('COMPOSER_JSON')
-      or define('COMPOSER_JSON', ['json' => (is_file(APP_ROOT . 'composer.json') ? file_get_contents(APP_ROOT . 'composer.json') : '{}'), 'path' => APP_PATH . APP_ROOT . 'composer.json']);
+defined('COMPOSER_JSON') or define('COMPOSER_JSON', [
+  'json' => (is_file(APP_ROOT . 'composer.json') ? file_get_contents(APP_ROOT . 'composer.json') : '{}'),
+  'path' => APP_PATH . APP_ROOT . 'composer.json'
+]);
 
 ob_start(); 
-
-$root = APP_ROOT ?? ''; ?>
+$root = APP_ROOT ?? ''; // do not use APP_ROOT
+?>
 <?= $composer_exec; ?> init --quiet --no-interaction --working-dir="<?= APP_PATH . $root; ?>" --name="<?= $composerUser . '/' . str_replace('.', '_', basename($root) ?? $componetPkg); ?>" --description="General Description" --author="Barry Dick <barryd.it@gmail.com>" --type="project" --homepage="https://github.com/<?= $composerUser . '/' . str_replace('.', '_', basename($root) ?? $componetPkg); ?>" --require="php:^7.4||^8.0" --require="composer/composer:^1.0" --require-dev="pds/skeleton:^1.0" --stability="dev" --license="WTFPL"
 <?php
 defined('COMPOSER_INIT_PARAMS')
@@ -529,8 +534,14 @@ ob_end_clean();
 if (!realpath(APP_PATH . APP_ROOT . APP_BASE['vendor'])) {
   exec(COMPOSER_INIT_PARAMS);
 } elseif (!realpath(APP_PATH . APP_ROOT . APP_BASE['vendor'] . 'autoload.php')) {
-  exec((strtoupper(substr(PHP_OS, 0, 3)) === 'WIN' ? '' : APP_SUDO) . COMPOSER_EXEC['bin'] . ' update', $output, $returnCode) or $errors['COMPOSER-INIT-UPDATE'] = $output;
-  exec((strtoupper(substr(PHP_OS, 0, 3)) === 'WIN' ? '' : APP_SUDO) . COMPOSER_EXEC['bin'] . ' dump-autoload', $output, $returnCode) or $errors['COMPOSER-DUMP-AUTOLOAD'] = $output;
+  exec((strtoupper(substr(PHP_OS, 0, 3)) === 'WIN' ? '' : APP_SUDO) . COMPOSER_EXEC['bin'] . ' update', $output, $returnCode);
+  if ($returnCode !== 0) {
+    $errors['COMPOSER-INIT-UPDATE'] = $output;
+  }
+  exec((strtoupper(substr(PHP_OS, 0, 3)) === 'WIN' ? '' : APP_SUDO) . COMPOSER_EXEC['bin'] . ' dump-autoload', $output, $returnCode);
+  if ($returnCode !== 0) {
+    $errors['COMPOSER-DUMP-AUTOLOAD'] = $output;
+  }
 }
 /* Consider writing a gui that would handle the composer traffic ... */
 
@@ -690,31 +701,35 @@ if ($latestPackage !== null) {
 
 // file has to exists first
 
-is_dir(APP_PATH . APP_BASE['var']) or mkdir(APP_PATH . APP_BASE['var'], 0755);
+is_dir(APP_PATH . APP_BASE['var']) || mkdir(APP_PATH . APP_BASE['var'], 0755);
+
 if (is_file(APP_PATH . APP_BASE['var'] . 'getcomposer.org.html')) {
   if (ceil(abs((strtotime(date('Y-m-d')) - strtotime(date('Y-m-d',strtotime('+5 days',filemtime(APP_PATH . APP_BASE['var'] . '/getcomposer.org.html'))))) / 86400)) <= 0 ) {
     $url = 'https://getcomposer.org/';
     $handle = curl_init($url);
     curl_setopt($handle, CURLOPT_RETURNTRANSFER, true);
 
-    if (!empty($html = curl_exec($handle))) 
-      file_put_contents(APP_PATH . APP_BASE['var'] . 'getcomposer.org.html', $html) or $errors['COMPOSER_LATEST'] = $url . ' returned empty.';
+    if (!empty($html = curl_exec($handle))) {
+      file_put_contents(APP_PATH . APP_BASE['var'] . 'getcomposer.org.html', $html) or $errors['COMPOSER_LATEST'] = "$url returned empty.";
+    }
   }
 } else {
   $url = 'https://getcomposer.org/';
   $handle = curl_init($url);
   curl_setopt($handle, CURLOPT_RETURNTRANSFER, true);
 
-  if (!empty($html = curl_exec($handle))) 
-    file_put_contents(APP_PATH . APP_BASE['var'] . 'getcomposer.org.html', $html) or $errors['COMPOSER_LATEST'] = $url . ' returned empty.';
+  if (!empty($html = curl_exec($handle))) {
+    file_put_contents(APP_PATH . APP_BASE['var'] . 'getcomposer.org.html', $html) or $errors['COMPOSER_LATEST'] = "$url returned empty.";
+  }
 }
+
 libxml_use_internal_errors(true); // Prevent HTML errors from displaying
 $doc = new DOMDocument(1.0, 'utf-8');
 $doc->loadHTML(file_get_contents(APP_PATH . APP_BASE['var'] . 'getcomposer.org.html'));
 
-$content_node=$doc->getElementById("main");
+$content_node = $doc->getElementById("main");
 
-$node=getElementsByClass($content_node, 'p', 'latest');
+$node = getElementsByClass($content_node, 'p', 'latest');
 
 //$xpath = new DOMXpath ( $doc ); //$xpath->query ( '//p [contains (@class, "latest")]' );
 //dd($xpath);
@@ -726,19 +741,19 @@ if (preg_match($pattern, $node[0]->nodeValue, $matches)) {
 
   define('COMPOSER_LATEST', $version);
   //echo "New Version: " . COMPOSER_LATEST . "\n";
-} else $errors['COMPOSER_LATEST'] = $node[0]->nodeValue . ' did not match $version';
+} else {
+  $errors['COMPOSER_LATEST'] = $node[0]->nodeValue . ' did not match $version';
+}
 
-if (defined('COMPOSER_JSON') && !empty(COMPOSER_JSON['json']))
+if (defined('COMPOSER_JSON') && !empty(COMPOSER_JSON['json'])) {
   $composer_obj = json_decode(COMPOSER_JSON['json']);
-else {
+} else {
   $composer_obj = json_decode(json_encode(new composerConfig(), true)); 
   $composer_obj->{'require'} = new stdClass(); //(array) ['php' => '7.4||8.1'];
   $composer_obj->{'require'}->{'php'} = '7.4||8.1';
   $composer_obj->{'require-dev'} = new stdClass();
   $composer_obj->{'require-dev'}->{'pds/skeleton'} = '^1.0';
 }
-
-
 
 if (defined('COMPOSER_VERSION') && defined('COMPOSER_LATEST') && defined('APP_DEBUG')) {
 //  if (is_file($path = APP_PATH . 'composer.lock') && is_writable($path)) 
@@ -1006,7 +1021,7 @@ while (!feof($_SERVER['SOCKET'])) {
     putenv('COMPOSER_HOME='); // TESTING
     $proc = proc_open((strtoupper(substr(PHP_OS, 0, 3)) === 'WIN' ? '' : APP_SUDO) . COMPOSER_EXEC['bin'] . ' install -o', array( array("pipe","r"), array("pipe","w"), array("pipe","w")), $pipes);
 
-    list($stdout, $stderr, $exitCode) = [stream_get_contents($pipes[1]), stream_get_contents($pipes[2]), proc_close($proc)];
+    [$stdout, $stderr, $exitCode] = [stream_get_contents($pipes[1]), stream_get_contents($pipes[2]), proc_close($proc)];
 
     if ($exitCode !== 0)
       if (empty($stdout)) {
@@ -1060,27 +1075,34 @@ defined('COMPOSER_JSON')
 
 if (isset(COMPOSER['json']->{'require'}) && !empty(COMPOSER['json']->{'require'}))
   foreach (COMPOSER['json']->require as $key => $value) {
-    if ($key == 'php') continue;
-    else {
-      if (isset(COMPOSER['json']->require->{'composer/composer'}) && $value === COMPOSER['json']->require->{'composer/composer'}) {
+    switch ($key) {
+      case 'php':
+        continue 2;
+      default:
+        if (isset(COMPOSER['json']->require->{'composer/composer'}) && $value === COMPOSER['json']->require->{'composer/composer'}) {
           //echo "The key is: $key";
-        defined('VENDOR_JSON')
-          or define('VENDOR_JSON', ['json' => (is_file(APP_PATH . APP_ROOT . APP_BASE['vendor'] . $key . '/composer.json') ? file_get_contents(APP_PATH . APP_ROOT . APP_BASE['vendor'] . $key . '/composer.json') : '{}'), 'path' => APP_PATH . APP_ROOT . APP_BASE['vendor'] . $key . '/composer.json']);
-
-        if (realpath(VENDOR_JSON['path']))
           defined('VENDOR_JSON')
-            and define('VENDOR', json_decode(file_get_contents(VENDOR_JSON['path'])));
+            or define('VENDOR_JSON', ['json' => (is_file(APP_PATH . APP_ROOT . APP_BASE['vendor'] . $key . '/composer.json') ? file_get_contents(APP_PATH . APP_ROOT . APP_BASE['vendor'] . $key . '/composer.json') : '{}'), 'path' => APP_PATH . APP_ROOT . APP_BASE['vendor'] . $key . '/composer.json']);
+
+          if (realpath(VENDOR_JSON['path']))
+            defined('VENDOR_JSON')
+              and define('VENDOR', json_decode(file_get_contents(VENDOR_JSON['path'])));
+          break 2;
+        } else {
+          defined('VENDOR_JSON') or define('VENDOR_JSON', ['json' => '{}', 'path' => '']);
+        }
         break;
-      } else {
-        defined('VENDOR_JSON') or define('VENDOR_JSON', ['json' => '{}', 'path' => '']);
-      }
     }
   }
 
 //dd(COMPOSER['json']->{'require'}->{'php'}); 
 
-if (!defined('VENDOR_JSON') && isset(COMPOSER['json']->{'require'}->{'composer'}))
-  define('VENDOR_JSON', ['json' => (is_file(APP_PATH . APP_ROOT . APP_BASE['vendor'] . 'composer/composer.json') ? file_get_contents(APP_PATH . APP_ROOT . APP_BASE['vendor'] . 'composer/composer.json') : '{}'), 'path' => APP_PATH . APP_ROOT . APP_BASE['vendor'] . 'composer/composer.json']);
+if (!defined('VENDOR_JSON') && isset(COMPOSER['json']->{'require'}->{'composer'})) {
+  define('VENDOR_JSON', [
+    'json' => (is_file(APP_PATH . APP_ROOT . APP_BASE['vendor'] . 'composer/composer.json') ? file_get_contents(APP_PATH . APP_ROOT . APP_BASE['vendor'] . 'composer/composer.json') : '{}'),
+    'path' => APP_PATH . APP_ROOT . APP_BASE['vendor'] . 'composer/composer.json'
+  ]);
+}
 
 //dd(COMPOSER);
 //dd(COMPOSER);
@@ -1092,10 +1114,14 @@ if (!defined('VENDOR_JSON') && isset(COMPOSER['json']->{'require'}->{'composer'}
 //dd(COMPOSER_EXEC . '  ' . COMPOSER_VERSION);
 
 
-if (basename(dirname(APP_SELF)) == __DIR__ . DIRECTORY_SEPARATOR . 'public')
-  if ($path = realpath((basename(__DIR__) != 'config' ? NULL : __DIR__ . DIRECTORY_SEPARATOR) . 'ui.composer.php')) // is_file('config/composer_app.php')) 
+if (basename(dirname(APP_SELF)) == __DIR__ . DIRECTORY_SEPARATOR . 'public') {
+  if ($path = realpath((basename(__DIR__) != 'config' ? NULL : __DIR__ . DIRECTORY_SEPARATOR) . 'ui.composer.php')) {
     require_once $path;
+  }
+}
 
-if (APP_SELF == __FILE__ || defined(APP_DEBUG) && isset($_GET['app']) && $_GET['app'] == 'composer') die($app['composer']['html']);
+if (APP_SELF == __FILE__ || (defined(APP_DEBUG) && isset($_GET['app']) && $_GET['app'] == 'composer')) {
+  die($app['composer']['html']);
+}
 
 unset($output);
