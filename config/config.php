@@ -191,13 +191,16 @@ if (!empty($_GET['client']) || !empty($_GET['domain'])) {
 unset($dirs);
 
 if (!defined('APP_ROOT')) {
-  $path = isset($_GET['path']) && is_dir(APP_PATH . $_GET['path']) ? $_GET['path'] : null;
-  define('APP_ROOT', $path = realpath(APP_PATH . $path) ? $path : null);
+  $path = !isset($_GET['client']) ? '' : 'clientele/' . $_GET['client'] . '/' . (isset($_GET['domain']) ? ($_GET['domain'] != '' ? $_GET['domain'] . '/' : '') : '') . (!isset($_GET['project']) ? '' : 'projects/' . $_GET['project'] . '/'); /* ($_GET['path'] . '/' ?? '')*/
+  //die($path);
+  //is_dir(APP_PATH . $_GET['path']) 
+  define('APP_ROOT', !empty(realpath(APP_PATH . $path)) ? rtrim($path, '/') : null);
 }
-// dd(getenv('PATH') . ' -> ' . PATH_SEPARATOR);   
+
+// dd(getenv('PATH') . ' -> ' . PATH_SEPARATOR);
 
 if (!defined('APP_CONFIG')) {
-  define('APP_CONFIG',  str_replace(APP_PATH, '', basename(dirname(__FILE__))) == 'config' ? __FILE__ : __FILE__);
+  define('APP_CONFIG', str_replace(APP_PATH, '', basename(dirname(__FILE__))) == 'config' ? __FILE__ : __FILE__);
 }
 
 //$errors->{'CONFIG'} = 'OK';

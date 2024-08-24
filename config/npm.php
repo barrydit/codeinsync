@@ -18,7 +18,7 @@ switch (substr(PHP_OS, 0, 3)) {
     break;
 }
 
-$proc = proc_open((substr(PHP_OS, 0, 3) == 'win' ? '' : APP_SUDO) . NODE_EXEC . ' --version', [["pipe", "r"], ["pipe", "w"], ["pipe", "w"]], $pipes);
+$proc = proc_open((stripos(PHP_OS, 'WIN') === 0 ? '' : APP_SUDO) . NODE_EXEC . ' --version', [["pipe", "r"], ["pipe", "w"], ["pipe", "w"]], $pipes);
 
 $stdout = stream_get_contents($pipes[1]);
 $stderr = stream_get_contents($pipes[2]);
@@ -38,7 +38,7 @@ if (preg_match('/v(\d+\.\d+\.\d+)/', $stdout, $matches)) {
 
 define('NODE_MODULES_PATH', APP_PATH . 'node_modules/');
 
-if (strtoupper(substr(PHP_OS, 0, 3)) === 'WIN')
+if (stripos(PHP_OS, 'WIN') === 0)
   define('NPM_EXEC', 'npm' /*.'.cmd'*/);
 else {
   define('NPM_EXEC', '/usr/bin/npm');
@@ -48,7 +48,7 @@ else {
     // npm_exec not found
     // handle the error here
   
-$proc = proc_open((strtoupper(substr(PHP_OS, 0, 3)) === 'WIN' ? '' : APP_SUDO) . NPM_EXEC . ' --version', [array("pipe","r"), array("pipe","w"), array("pipe","w")], $pipes);
+$proc = proc_open((stripos(PHP_OS, 'WIN') === 0 ? '' : APP_SUDO) . NPM_EXEC . ' --version', [array("pipe","r"), array("pipe","w"), array("pipe","w")], $pipes);
 
 $stdout = stream_get_contents($pipes[1]);
 $stderr = stream_get_contents($pipes[2]);
@@ -79,7 +79,7 @@ END
 );
 
 if (!is_dir(NODE_MODULES_PATH)) {
-  $proc=proc_open((substr(PHP_OS, 0, 3) == 'win' ? '' : APP_SUDO) . NPM_EXEC . ' install',
+  $proc=proc_open((stripos(PHP_OS, 'WIN') === 0 ? '' : APP_SUDO) . NPM_EXEC . ' install',
     [
       ["pipe", "r"],
       ["pipe", "w"],
@@ -89,7 +89,7 @@ if (!is_dir(NODE_MODULES_PATH)) {
   [$stdout, $stderr, $exitCode] = [stream_get_contents($pipes[1]), stream_get_contents($pipes[2]), proc_close($proc)];
   $errors['NPM-INSTALL']= !isset($stdout) ? NULL : $stdout . (isset($stderr) && $stderr === '' ? NULL : " Error: $stderr") . (isset($exitCode) && $exitCode == 0 ? NULL : "Exit Code: $exitCode");
   
-  $proc=proc_open((strtoupper(substr(PHP_OS, 0, 3)) === 'WIN' ? '' : APP_SUDO) . NPM_EXEC . ' install -g npm',
+  $proc=proc_open((stripos(PHP_OS, 'WIN') === 0 ? '' : APP_SUDO) . NPM_EXEC . ' install -g npm',
     [
       ["pipe", "r"],
       ["pipe", "w"],
@@ -101,7 +101,7 @@ if (!is_dir(NODE_MODULES_PATH)) {
 } else {
 /*
 
-  $proc=proc_open((strtoupper(substr(PHP_OS, 0, 3)) === 'WIN' ? '' : APP_SUDO) . NPM_EXEC . ' --force update',
+  $proc=proc_open((stripos(PHP_OS, 'WIN') === 0 ? '' : APP_SUDO) . NPM_EXEC . ' --force update',
   array(
     array("pipe","r"),
     array("pipe","w"),
@@ -113,7 +113,7 @@ if (!is_dir(NODE_MODULES_PATH)) {
   
    // Error: npm WARN using --force Recommended protections disabled.
 */
-if (substr(PHP_OS, 0, 3) != 'WIN') {
+if (stripos(PHP_OS, 'WIN') !== 0) {  
   $npmExecPath = shell_exec('which ' . NPM_EXEC);
   if ($npmExecPath !== false) {
     $proc=proc_open(APP_SUDO . NPM_EXEC . ' cache clean -f',
@@ -133,20 +133,20 @@ if (substr(PHP_OS, 0, 3) != 'WIN') {
   // Error: npm WARN using --force Recommended protections disabled.
 
   if (!is_dir(NODE_MODULES_PATH . 'jquery') ) {
-    $proc=proc_open((strtoupper(substr(PHP_OS, 0, 3)) === 'WIN' ? '' : APP_SUDO) . NPM_EXEC . ' install jquery@3.7.1',
-      array(
-        array("pipe","r"),
-        array("pipe","w"),
-        array("pipe","w")
-      ),
+    $proc=proc_open((stripos(PHP_OS, 'WIN') === 0 ? '' : APP_SUDO) . NPM_EXEC . ' install jquery@3.7.1',
+        [
+          ["pipe", "r"],
+          ["pipe", "w"],
+          ["pipe", "w"]
+        ],
     $pipes);
     list($stdout, $stderr, $exitCode) = [stream_get_contents($pipes[1]), stream_get_contents($pipes[2]), proc_close($proc)];
-    $errors['NPM-INSTALL-JQUERY'] = (!isset($stdout) ? NULL : $stdout . (isset($stderr) && $stderr === '' ? NULL : ' Error: ' . $stderr) . (isset($exitCode) && $exitCode == 0 ? NULL : 'Exit Code: ' . $exitCode));
+    $errors['NPM-INSTALL-JQUERY'] = !isset($stdout) ? NULL : $stdout . (isset($stderr) && $stderr === '' ? NULL : " Error: $stderr") . (isset($exitCode) && $exitCode == 0 ? NULL : "Exit Code: $exitCode");
   }
 
   //webpack - Packs CommonJs/AMD modules for the browser
   
-  $proc=proc_open((strtoupper(substr(PHP_OS, 0, 3)) === 'WIN' ? '' : APP_SUDO) . 'webpack --version', // Prints out System, Binaries, Packages
+  $proc=proc_open((stripos(PHP_OS, 'WIN') === 0 ? '' : APP_SUDO) . 'webpack --version', // Prints out System, Binaries, Packages
       array(
         array("pipe","r"),
         array("pipe","w"),
@@ -159,7 +159,7 @@ if (substr(PHP_OS, 0, 3) != 'WIN') {
     if (!isset($errors['NPM-WEBPACK']) && !empty($errors['NPM-WEBPACK'])) {
     
   if (!is_dir(NODE_MODULES_PATH . 'webpack') || !is_dir(NODE_MODULES_PATH . 'webpack-cli') ) {
-    $proc=proc_open((strtoupper(substr(PHP_OS, 0, 3)) === 'WIN' ? '' : APP_SUDO) . NPM_EXEC . ' install webpack webpack-cli --save-dev',
+    $proc=proc_open((stripos(PHP_OS, 'WIN') === 0 ? '' : APP_SUDO) . NPM_EXEC . ' install webpack webpack-cli --save-dev',
       array(
         array("pipe","r"),
         array("pipe","w"),
@@ -201,7 +201,7 @@ END
     }
 
     if (!is_dir(NODE_MODULES_PATH . 'babel-loader') ) {
-      $proc=proc_open((strtoupper(substr(PHP_OS, 0, 3)) === 'WIN' ? '' : APP_SUDO) . NPM_EXEC . ' install babel-loader @babel/core @babel/preset-env --save-dev',
+      $proc=proc_open((stripos(PHP_OS, 'WIN') === 0 ? '' : APP_SUDO) . NPM_EXEC . ' install babel-loader @babel/core @babel/preset-env --save-dev',
         array(
           array("pipe","r"),
           array("pipe","w"),
@@ -232,7 +232,7 @@ END
     }
 
     if (!is_file(APP_PATH . 'dist/bundle.js')) {
-      $proc=proc_open((strtoupper(substr(PHP_OS, 0, 3)) === 'WIN' ? '' : APP_SUDO) . NPM_EXEC . ' run build',
+      $proc=proc_open((stripos(PHP_OS, 'WIN') === 0 ? '' : APP_SUDO) . NPM_EXEC . ' run build',
         array(
           array("pipe","r"),
           array("pipe","w"),

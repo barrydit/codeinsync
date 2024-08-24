@@ -63,7 +63,7 @@ class Shutdown
         }
     
         // Process the main .env file
-        $file = (defined('APP_PATH') ? APP_PATH : '') . (defined('APP_ROOT') ? APP_ROOT : '') . '.env';
+        $file = APP_PATH . APP_ROOT . '.env';
     
         if (is_file($file)) {
             $_ENV = array_intersect_key_recursive($_ENV, parse_ini_file_multi($file));
@@ -87,7 +87,7 @@ class Shutdown
     
             file_put_contents($file, $iniString);
         } else {
-            file_put_contents($file, $envContent);
+            //file_put_contents($file, $envContent);
         }
     }
 

@@ -6,7 +6,7 @@ if ($path = realpath((basename(__DIR__) != 'config' ? NULL : __DIR__ . DIRECTORY
   require_once $path;
 }
 
-define('GIT_EXEC', strtoupper(substr(PHP_OS, 0, 3)) === 'WIN' ? 'git.exe' : '/usr/local/bin/git');
+define('GIT_EXEC', stripos(PHP_OS, 'WIN') === 0 ? 'git.exe' : '/usr/local/bin/git');
 
 if (isset($_ENV['GITHUB']['EXPR_VERSION'])) {
   $gitVersion = exec(GIT_EXEC . ' --version');

@@ -1,25 +1,27 @@
 #!/usr/bin/env php
-<?php
-declare(strict_types=1, ticks=1); // First Line Only!
+<?php 
+//declare(strict_types=1, ticks=1); // First Line Only!
 
-require_once __DIR__ . DIRECTORY_SEPARATOR . 'config' . DIRECTORY_SEPARATOR . 'config.php';
+!defined('APP_PATH') and define('APP_PATH', __DIR__ . DIRECTORY_SEPARATOR);
 
-ini_set('error_log', (!defined('APP_PATH') ? __DIR__ . DIRECTORY_SEPARATOR : APP_PATH)  . 'server.log' );
+require_once APP_PATH . 'config' . DIRECTORY_SEPARATOR . 'config.php';
+
+ini_set('error_log', APP_PATH . 'server.log' );
 ini_set('log_errors', 'true');
 
-define('PID_FILE', /*getcwd() . */ (!defined('APP_PATH') ? __DIR__ . DIRECTORY_SEPARATOR : APP_PATH) . 'server.pid');
+!defined('PID_FILE') and define('PID_FILE', /*getcwd() . */ APP_PATH . 'server.pid');
 
-strpos(PHP_OS, 'LIN') === 0 && !extension_loaded('posix') || !extension_loaded('pcntl')
+//!file_exists($file = posix_getpwuid(posix_getuid())['dir'].'/.aws/credentials')
+//  and die('an aws credentials file is required. exiting file=' . $file);
+if (PHP_SAPI === 'cli') {
+stripos(PHP_OS, 'LIN') === 0 && !extension_loaded('posix') || !extension_loaded('pcntl')
   and die('posix && pcntl required. exiting');
 
 !is_writable('/tmp')
   and die('must be able to write to /tmp to continue. exiting.');
 
-//!file_exists($file = posix_getpwuid(posix_getuid())['dir'].'/.aws/credentials')
-//  and die('an aws credentials file is required. exiting file=' . $file);
-
 if (file_exists(PID_FILE) && $pid = (int) file_get_contents(PID_FILE)) {
-  if (strpos(PHP_OS, 'WIN') === 0) {
+  if (stripos(PHP_OS, 'WIN') === 0) {
     exec("tasklist /FI \"PID eq $pid\" 2>NUL | find /I \"$pid\" >NUL", $output, $status);
     if ($status === 0) {
       error_log("Server is already running with PID $pid\n");
@@ -47,7 +49,7 @@ if (!cli_set_process_title($title = basename(__FILE__))) {
   exit(1);
 } else {
   echo "The process title '$title' has been set for your process!\n";
-  strpos(PHP_OS, 'LIN') === 0 and cli_set_process_name($title);
+
   /**
    * Summary of cli_set_process_name
    * @param mixed $title
@@ -59,16 +61,7 @@ if (!cli_set_process_title($title = basename(__FILE__))) {
     file_put_contents('/proc/'.getmypid().'/comm',$title);
   }
 }
-
-set_time_limit(0);
-
-//dd(get_defined_constants()); // get_required_files()
-define('SERVER_HOST', defined('APP_HOST') ? APP_HOST : '0.0.0.0');
-define('SERVER_PORT', defined('APP_PORT') ? APP_PORT : 8080);
-
-!empty($parsed_args = parseargs())
-  and print("Argv(s): " . var_export($parsed_args, true) . "\n");
-
+stripos(PHP_OS, 'LIN') === 0 and cli_set_process_name($title);
   // ps aux | grep server.php
   // kill -SIGTERM <PID>
   // kill -SIGINT <PID>
@@ -102,10 +95,10 @@ define('SERVER_PORT', defined('APP_PORT') ? APP_PORT : 8080);
         unlink(PID_FILE);
         if (isset($socket) && is_resource($stream)) {
           if (extension_loaded('sockets')) {
-            socket_write($stream, 'Shutting down server... PID=' . getmypid());
+            socket_write($socket, 'Shutting down server... PID=' . getmypid());
             socket_close($socket);
           } elseif (get_resource_type($socket) == 'stream') {
-            fwrite($stream, 'Shutting down server... PID=' . getmypid());
+            fwrite($socket, 'Shutting down server... PID=' . getmypid());
             fclose($socket);
           }
         }
@@ -121,6 +114,16 @@ define('SERVER_PORT', defined('APP_PORT') ? APP_PORT : 8080);
   //pcntl_signal(SIGCHLD, 'signalHandler'); // hangs on sockets with empty cmd: on loop
   pcntl_signal(SIGTERM, 'signalHandler');
   pcntl_signal(SIGINT, 'signalHandler');
+}
+
+set_time_limit(0);
+
+//dd(get_defined_constants()); // get_required_files()
+define('SERVER_HOST', defined('APP_HOST') ? APP_HOST : '0.0.0.0');
+define('SERVER_PORT', defined('APP_PORT') ? APP_PORT : 8080);
+
+!empty($parsed_args = parseargs())
+  and print("Argv(s): " . var_export($parsed_args, true) . "\n");
 
 function clientInputHandler($input) {
     global $socket, $stream, $running, $manager;
@@ -137,7 +140,7 @@ function clientInputHandler($input) {
       if ($matches[3] == '-f')
         signalHandler(SIGTERM);
     } elseif (preg_match('/^cmd:\s*server\s*status(?=\r?\n$)?/si', $input)) {
-      $output = 'Server is running... PID=' . getmypid();
+      $output = 'Server is running... PID=' . getmypid() . "\n";
     } elseif (preg_match('/^cmd:\s*chdir\s*(.*)(?=\r?\n$)?/si', $input, $matches)) {
       ini_set('log_errors', 'false');
       $output = "Changing directory to " . ($path = APP_PATH . APP_ROOT . trim($matches[1]) . '/');
@@ -151,17 +154,18 @@ function clientInputHandler($input) {
           //dd('Path: ' . $_GET['path'] . "\n", false);
           ob_start();
           require 'public/app.directory.php';
+          $tableValue = $tableGen();
           ob_end_clean();
-          return $tableGen();// $app['directory']['body'];
+          return $tableValue; // $app['directory']['body'];
         })();
         $output = $resultValue;
       }
 
     } elseif (preg_match('/^cmd:\s*edit\s*(.*)(?=\r?\n$)?/si', $input, $matches)) {
       ini_set('log_errors', 'false');
-      if (realpath($file = APP_PATH . APP_ROOT . ($_GET['path'] ?? '') . trim($matches[1])))
-        $output = file_get_contents($file);
+      $output = ($file = rtrim(realpath(APP_PATH . APP_ROOT . $_GET['path'] ?? ''), '/') . '/' . trim($matches[1])) ? file_get_contents($file) : "File not found: $file";
     } elseif (preg_match('/^cmd:\s*server\s*backup(?=\r?\n$)?/si', $input, $matches)) {
+
       require_once 'public/index.php';
 
       $files = get_required_files();
@@ -272,7 +276,7 @@ function clientInputHandler($input) {
     }
 /*
     if ($cmd = $matches[1] ?? NULL) {
-      $proc=proc_open((strtoupper(substr(PHP_OS, 0, 3)) === 'WIN' ? '' : APP_SUDO) . $cmd,
+      $proc=proc_open((stripos(PHP_OS, 'WIN') === 0 ? '' : APP_SUDO) . $cmd,
       [
         ["pipe", "r"],
         ["pipe", "w"],
@@ -336,11 +340,11 @@ function checkFileModification() {
       //$lastModifiedTime = filemtime(__FILE__);
 
       if (extension_loaded('sockets')) {
-        socket_write($stream, $output);
-        socket_close($stream);
+        socket_write($socket, $output);
+        socket_close($socket);
       } elseif (get_resource_type($socket) == 'stream') {
-        fwrite($stream, $output);
-        fclose($stream);
+        fwrite($socket, $output);
+        fclose($socket);
       }
 
       error_log("Client [Output]: $output");
@@ -373,7 +377,8 @@ $manager->addNotification($notification1);
 // composer require cboden/ratchet
 // Exception: Interface "Ratchet\MessageComponentInterface" not found
 
-//get_included_files()[0] == 
+//get_included_files()[0] ==
+if (PHP_SAPI === 'cli') 
 if (is_dir($path = __DIR__ . APP_BASE['vendor'] . 'cboden' . DIRECTORY_SEPARATOR . 'ratchet') && !empty(glob($path)) && file_exists(__DIR__ . APP_BASE['vendor'] . 'autoload.php')) {
   error_log('Creating a websocket server...');
   require_once __DIR__ . DIRECTORY_SEPARATOR . APP_BASE['vendor'] . 'autoload.php';
@@ -436,16 +441,25 @@ if (is_dir($path = __DIR__ . APP_BASE['vendor'] . 'cboden' . DIRECTORY_SEPARATOR
    * Manages the scheduled task based on a given interval.
    */
   function manageScheduledTask(&$lastExecutionTime, $interval) {
+      static $previous_count = 0;
       if (time() - $lastExecutionTime >= $interval) {
           // Execute the scheduled task
           checkFileModification();
 
           // Update the last execution time
           $lastExecutionTime = time();
+          $previous_count = null;
       } else {
           // Display remaining time until next execution
-          if ($interval - (time() - $lastExecutionTime) != $interval)
-            echo ($interval - (time() - $lastExecutionTime)) . ' - ' . $interval . " seconds left\n";
+
+        // Calculate remaining time
+        $remaining_time = $interval - (time() - $lastExecutionTime);
+
+        // Display remaining time only if it has changed
+        if ($remaining_time !== $previous_count) {
+            echo "$remaining_time - $interval seconds left\n";
+            $previous_count = $remaining_time; // Update previous count
+        }
           //sleep(1);
       }
   }
@@ -567,7 +581,7 @@ if (is_dir($path = __DIR__ . APP_BASE['vendor'] . 'cboden' . DIRECTORY_SEPARATOR
   //Logger::error($e->getMessage());
   //Shutdown::triggerShutdown($e->getMessage());
 } finally {
-  if (isset($socket) && is_resource($socket)) {
+  if (isset($socket) /*&& is_resource($socket)*/) {
     if (extension_loaded('sockets')) {
       socket_close($socket);
     } elseif (get_resource_type($socket) == 'stream') {
@@ -576,5 +590,4 @@ if (is_dir($path = __DIR__ . APP_BASE['vendor'] . 'cboden' . DIRECTORY_SEPARATOR
   }
 }
 
-unlink(PID_FILE);
-die('EOF');
+(PHP_SAPI !== 'cli' || !is_file(PID_FILE) ?: unlink(PID_FILE)) or die('EOF');

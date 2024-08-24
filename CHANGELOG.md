@@ -8,6 +8,21 @@ Many php functions either produce a forward slash, indicating the end of folder/
   $path = dirname(__DIR__) . '/config/config.php'
 
 
+Which is the better format ... 
+
+1. stripos(PHP_OS, 'LIN') === 0
+...
+2. strpos(PHP_OS, 'WIN') === 0
+...
+3. strtoupper(substr(PHP_OS, 0, 3)) === 'WIN'
+
+
+(isset($_GET['client']) ? 'client=' . $_GET['client'] . '&' : '') . (isset($_GET['domain']) ? 'domain=' . $_GET['domain'] . '&' : '') . (isset($_GET['project']) ? 'project=' . $_GET['project'] . '&' : '')
+
+(!isset($_GET['client']) ? (!isset($_GET['project']) ? '' : 'project=' . $_GET['project'] . '&') : 'client=' . $_GET['client'] . '&' . (isset($_GET['domain']) ? 'domain=' . ($_GET['domain'] != '' ? $_GET['domain'] . '&' : '') : '' ) . (!isset($_GET['project']) ? '' : 'project=' . $_GET['project'] . '&') ) // client | project | client / ??domain / project
+
+(!isset($_GET['client']) ? (!isset($_GET['project']) ? '' : 'project=' . $_GET['project'] . '/') : 'client=' . $_GET['client'] . '/' . (isset($_GET['domain']) ? 'domain=' . ($_GET['domain'] != '' ? $_GET['domain'] . '/' : '') : '' ) . (!isset($_GET['project']) ? '' : 'project=' . $_GET['project'] . '&') ) client/project/domain/project
+
 :: JavaScript
 
 JScript

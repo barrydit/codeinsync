@@ -31,15 +31,14 @@ if (APP_DEBUG) {
   defined('PHP_FLOAT_MAX') and $errors['PHP_FLOAT_MAX'] = "PHP_FLOAT_MAX: " . PHP_FLOAT_MAX . "\n";
 }
 
-
-if (APP_SELF != APP_SERVER)
+if (APP_SELF != APP_SERVER && in_array(APP_PUBLIC, get_included_files()) /*APP_SELF == APP_PUBLIC*/)
   require_once dirname(__DIR__) . DIRECTORY_SEPARATOR . 'config' . DIRECTORY_SEPARATOR . 'classes' . DIRECTORY_SEPARATOR . 'class.sockets.php';
 //dd(get_defined_constants(true)['user']);
 
 //$path = "/path/to/your/logfile.log"; // Replace with your actual log file path
 if (is_readable($path = APP_PATH . APP_ROOT . $_ENV['ERROR_LOG_FILE']) && filesize($path) >= 0 ) {
   $errors['ERROR_PATH'] = "$path\n";
-  //if (strtoupper(substr(PHP_OS, 0, 3)) === 'WIN') {
+  //if (stripos(PHP_OS, 'WIN') === 0) {
   //  $errors['ERROR_LOG'] = shell_exec("powershell Get-Content -Tail 10 $path") . "\n";
   //} else {
   //  $errors['ERROR_LOG'] = shell_exec(APP_SUDO . " tail $path") . "\n";
@@ -60,7 +59,7 @@ if (is_readable($path = APP_PATH . APP_ROOT . $_ENV['ERROR_LOG_FILE']) && filesi
       $log_matches[] = $line;
     }
   }
-    
+
   $log_matches[] = end($matches) . ' [x' . count($matches) . ']';
 
   if (count($matches) >= 10 && count($log_matches) <= 2) unlink($path) and $errors['ERROR_PATH'] = (!is_file($path) ? trim($errors['ERROR_PATH']) . ' was completely removed.' : 'Error_log failed to be removed completely.') . "\n"; // header('Location: ' . APP_WWW);
@@ -115,7 +114,7 @@ $dirs[] = APP_PATH . APP_BASE['config'] . 'npm.php';
   });
 
   foreach ($dirs as $includeFile) {
-    //dd('Trying file: ' . basename($includeFile), false);
+
     $path = dirname($includeFile);
 
     if (in_array($includeFile, get_required_files())) continue; // $includeFile == __FILE__
@@ -125,19 +124,20 @@ $dirs[] = APP_PATH . APP_BASE['config'] . 'npm.php';
     if (!file_exists($includeFile)) {
       error_log("Failed to load a necessary file: " . $includeFile . PHP_EOL);
       break;
+    } else {
+      $currentFilename = substr(basename($includeFile), 0, -4);
+    
+      // $pattern = '/^' . preg_quote($previousFilename, '/')  . /*_[a-zA-Z0-9-]*/'(_\.+)?\.php$/'; // preg_match($pattern, $currentFilename)
+
+      if (!empty($previousFilename) && strpos($currentFilename, $previousFilename) !== false) continue;
+
+      // dd('file:'.$currentFilename,false);
+      //dd("Trying file: $includeFile", false);
+      require_once $includeFile;
+
+      $previousFilename = $currentFilename;     
     }
 
-    $currentFilename = substr(basename($includeFile), 0, -4);
-    
-    // $pattern = '/^' . preg_quote($previousFilename, '/')  . /*_[a-zA-Z0-9-]*/'(_\.+)?\.php$/'; // preg_match($pattern, $currentFilename)
-
-    if (!empty($previousFilename) && strpos($currentFilename, $previousFilename) !== false) continue;
-
-    // dd('file:'.$currentFilename,false);
-
-    require_once $includeFile;
-
-    $previousFilename = $currentFilename;
   }
 
 /** Loading Time: 0.638s **/

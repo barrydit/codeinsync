@@ -15,7 +15,7 @@ $password = ''; // password
 
 const CONSOLE = true;
 // Define APP_SUDO constant
-!defined('APP_SUDO') and define('APP_SUDO', strtoupper(substr(PHP_OS, 0, 3)) === 'WIN' ? /*'runas /user:Administrator "cmd /c" '*/ : 'echo ' . escapeshellarg(isset($password) && $password == '' ? '' : $password) . ' | sudo -S ' . (isset($user) && $user == '' ? '' : "-u $user") . ' '); // 'su -c'
+!defined('APP_SUDO') and define('APP_SUDO', stripos(PHP_OS, 'WIN') === 0 ? /*'runas /user:Administrator "cmd /c" '*/ : 'echo ' . escapeshellarg(isset($password) && $password == '' ? '' : $password) . ' | sudo -S ' . (isset($user) && $user == '' ? '' : "-u $user") . ' '); // 'su -c'
 
 // Define APP_START constant
 !defined('APP_START') and define('APP_START', microtime(true)) ?: is_float(APP_START) or $errors['APP_START'] = 'APP_START is not a valid float value.';
@@ -61,7 +61,7 @@ $auto_clear = false;
 define('APP_DOMAIN', array_key_exists('domain', parse_url($domain = $_SERVER['SERVER_NAME'] ?? $_SERVER['HTTP_HOST'] ?? $_SERVER['SERVER_ADDR'] ?? 'localhost')) ? $domain : 'localhost');
 !is_string(APP_DOMAIN) and $errors['APP_DOMAIN'] = 'APP_DOMAIN is not valid. (' . APP_DOMAIN . ')' . "\n";
 
-if (strtoupper(substr(PHP_OS, 0, 3)) === 'WIN') {
+if (stripos(PHP_OS, 'WIN') === 0) {
   $shell_prompt = 'www-data' . '@' . $domain . PATH_SEPARATOR . (($homePath = realpath($_SERVER['DOCUMENT_ROOT'])) === getcwd() ? '~': $homePath) . '$ ';
 } else if (isset($_SERVER['HOME']) && ($homePath = realpath($_SERVER['HOME'])) !== false && ($docRootPath = realpath($_SERVER['DOCUMENT_ROOT'])) !== false && strpos($homePath, $docRootPath) === 0) {
   $shell_prompt = $_SERVER['USER'] . '@' . $domain . PATH_SEPARATOR . ($homePath == getcwd() ? '~': $homePath) . '$ ';

@@ -1,7 +1,6 @@
 <?php
 
 if (isset($_GET['json'])) {
-    // dependencies.php
   header('Content-Type: application/json');
 
   function get_required_files_in_script($script) {
@@ -28,7 +27,10 @@ $files = array_map(function($path) {
 
   echo json_encode([
     //'server.php' => $server_files,
-    'server.php' => ["config/config.php","config/functions.php","config/constants.php","config/composer.php","config/classes/class.clientorproj.php","config/classes/class.logger.php","config/classes/class.notification.php","config/classes/class.shutdown.php","config/classes/class.websocketserver.php"],
+    'server.php' => array_values(array_map(function($file) /*use ($rootPath)*/ {
+      return preg_replace('/^' . preg_quote('/mnt/c/www/', '/') . '/', '', $file);
+    }, get_required_files_in_script('server.php'))),
+    // ["config/config.php","config/functions.php","config/constants.php","config/composer.php","config/classes/class.clientorproj.php","config/classes/class.logger.php","config/classes/class.notification.php","config/classes/class.shutdown.php","config/classes/class.websocketserver.php"],
     'public/index.php' => $files,
     'vendor/autoload.php' => array_merge(array_values(array_map(function($file){ if (preg_match('/\/mnt\/c\/www\/vendor\/.*/', $file)) return preg_replace('/^' . preg_quote('/mnt/c/www/', '/') . '/', '', $file); }, get_required_files_in_script('vendor/autoload.php'))), ['config/composer.php'])
   ]);
@@ -53,11 +55,11 @@ if (__FILE__ == get_required_files()[0] && __FILE__ == realpath($_SERVER["SCRIPT
 
 if (defined('GIT_EXEC'))
   if (is_dir($path = APP_PATH . APP_BASE['resources'] . 'js/ace') && empty(glob($path)))
-    exec((strtoupper(substr(PHP_OS, 0, 3)) === 'WIN' ? '' : 'sudo ') . GIT_EXEC . ' clone https://github.com/ajaxorg/ace-builds.git resources/js/ace', $output, $returnCode) or $errors['GIT-CLONE-ACE'] = $output;
+    exec((stripos(PHP_OS, 'WIN') === 0 ? '' : 'sudo ') . GIT_EXEC . ' clone https://github.com/ajaxorg/ace-builds.git resources/js/ace', $output, $returnCode) or $errors['GIT-CLONE-ACE'] = $output;
   elseif (!is_dir($path)) {
     if (!mkdir($path, 0755, true))
       $errors['GIT-CLONE-ACE'] = ' resources/js/ace does not exist.';
-    exec((strtoupper(substr(PHP_OS, 0, 3)) === 'WIN' ? '' : 'sudo ') . GIT_EXEC . ' clone https://github.com/ajaxorg/ace-builds.git resources/js/ace', $output, $returnCode) or $errors['GIT-CLONE-ACE'] = $output;
+    exec((stripos(PHP_OS, 'WIN') === 0 ? '' : 'sudo ') . GIT_EXEC . ' clone https://github.com/ajaxorg/ace-builds.git resources/js/ace', $output, $returnCode) or $errors['GIT-CLONE-ACE'] = $output;
   }
 
 ob_start(); ?>
@@ -239,7 +241,7 @@ fetch('<?= basename(__FILE__)?>?json')
             .then(data => createVisualization(data));
 
         function createVisualization(data) {
-            const width = 1000, height = 800;
+            const width = 1300, height = 600;
 
             const nodes = [];
             const links = [];

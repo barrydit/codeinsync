@@ -37,15 +37,39 @@ if (preg_match('/^app\.([\w\-.]+)\.php$/', basename(__FILE__), $matches))
       chdir(APP_PATH . APP_ROOT);
       if ($_POST['cmd'] && $_POST['cmd'] != '') 
         if (preg_match('/^help/i', $_POST['cmd']))
-          $output[] = implode(', ', array('install', 'php', 'composer', 'git', 'npm', 'whoami', 'wget', 'tail', 'cat', 'echo', 'env', 'sudo'));
+          $output[] = implode(', ', ['install', 'php', 'composer', 'git', 'npm', 'whoami', 'wget', 'tail', 'cat', 'echo', 'env', 'sudo']);
         else if (preg_match('/^server\s*start$/i', $_POST['cmd'])) {
           Sockets::handleLinuxSocketConnection(true);
           $output[] = 'Sockets started ...';
         } else if (preg_match('/^install/i', $_POST['cmd']))
           include 'templates/' . preg_split("/^install (\s*+)/i", $_POST['cmd'])[1] . '.php';
-        //else if (preg_match('/^edit\s+(:?(.*))/i', $_POST['cmd'], $match))
+        else if (preg_match('/^chdir\s+(:?(.*))/i', $_POST['cmd'], $match)) {
           //exec($_POST['cmd'], $output);
           //die(header('Location: ' . APP_URL_BASE . '?app=text_editor&filename='.$_POST['cmd']));
+          $path = APP_PATH . APP_ROOT . rtrim(trim($match[1]), '/');
+          //$output[] = "Changing directory to " . $path;
+/**/
+          if ($path = realpath($path)) {
+            //$output[] = "Changing step 2 directory to $match[1]";
+            $resultValue = (function() use ($path) {
+              // Replace the escaped APP_PATH and APP_ROOT with the actual directory path
+              if (realpath($_GET['path'] = preg_replace('/' . preg_quote(APP_PATH . APP_ROOT, '/') . '/', '', $path)) == realpath(APP_PATH . APP_ROOT))
+                $_GET['path'] = '';
+    
+              //dd('Path: ' . $_GET['path'] . "\n", false);
+              ob_start();
+              require 'app.directory.php';
+              $tableValue = $tableGen();
+              ob_end_clean();
+              return $tableValue; // $app['directory']['body'];
+            })();
+            $output[] = (string) $resultValue;
+          }
+
+        } else if (preg_match('/^edit\s+(:?(.*))/i', $_POST['cmd'], $match))
+          //exec($_POST['cmd'], $output);
+          //die(header('Location: ' . APP_URL_BASE . '?app=text_editor&filename='.$_POST['cmd']));
+          $output[] = ($file = rtrim(realpath(APP_PATH . APP_ROOT . $_GET['path']), '/') . '/' . trim($match[1])) ? file_get_contents($file) : "File not found: $file";
         else if (preg_match('/^php\s+(:?(.*))/i', $_POST['cmd'], $match)) {
           if (preg_match('/^php\s+(?!(-r))/i', $_POST['cmd'])) {
             $match[1] = trim($match[1], '"');
@@ -81,7 +105,7 @@ if (preg_match('/^app\.([\w\-.]+)\.php$/', basename(__FILE__), $matches))
   
             //$output[] = dd(COMPOSER_EXEC);
             //$output[] = APP_SUDO . COMPOSER_EXEC['bin'] . ' ' . $match[1];
-            $proc=proc_open((strtoupper(substr(PHP_OS, 0, 3)) === 'WIN' ? '' : APP_SUDO) . COMPOSER_EXEC['bin'] . ' ' . $match[1],
+            $proc=proc_open((stripos(PHP_OS, 'WIN') === 0 ? '' : APP_SUDO) . COMPOSER_EXEC['bin'] . ' ' . $match[1],
             [
               ["pipe", "r"],
               ["pipe", "w"],
@@ -141,7 +165,7 @@ if (preg_match('/^app\.([\w\-.]+)\.php$/', basename(__FILE__), $matches))
   
   git checkout -b branchName
   END;
-          $output[] = $command = ((strtoupper(substr(PHP_OS, 0, 3)) === 'WIN') ? '' : APP_SUDO) . (defined('GIT_EXEC') ? GIT_EXEC : 'git' ) . (is_dir($path = APP_PATH . APP_ROOT . '.git') || APP_PATH . APP_ROOT != APP_PATH ? '' : '' ) . ' ' . $match[1];
+          $output[] = $command = ((stripos(PHP_OS, 'WIN') === 0) ? '' : APP_SUDO) . (defined('GIT_EXEC') ? GIT_EXEC : 'git' ) . (is_dir($path = APP_PATH . APP_ROOT . '.git') || APP_PATH . APP_ROOT != APP_PATH ? '' : '' ) . ' ' . $match[1];
   
   $proc=proc_open($command,
   array(
@@ -170,20 +194,20 @@ if (preg_match('/^app\.([\w\-.]+)\.php$/', basename(__FILE__), $matches))
               if (realpath($github_repo[3])) $output[] = realpath($github_repo[3]);
   
               //$output[] = dd($github_repo);
-              if (!is_dir('.git')) exec((strtoupper(substr(PHP_OS, 0, 3)) === 'WIN' ? '' : APP_SUDO) . 'git init', $output);
+              if (!is_dir('.git')) exec((stripos(PHP_OS, 'WIN') === 0 ? '' : APP_SUDO) . 'git init', $output);
   
               exec('git branch -m master main', $output);
   
               //exec('git remote add origin ' . $github_repo[2], $output);
               //...git remote set-url origin http://...@github.com/barrydit/
   
-              exec((strtoupper(substr(PHP_OS, 0, 3)) === 'WIN' ? '' : APP_SUDO)  . 'git config core.sparseCheckout true', $output);
+              exec((stripos(PHP_OS, 'WIN') === 0 ? '' : APP_SUDO)  . 'git config core.sparseCheckout true', $output);
   
               //touch('.git/info/sparse-checkout');
   
               file_put_contents('.git/info/sparse-checkout', '*'); /// exec('echo "*" >> .git/info/sparse-checkout', $output);
   
-              exec((strtoupper(substr(PHP_OS, 0, 3)) === 'WIN' ? '' : APP_SUDO) . 'git pull origin main', $output);
+              exec((stripos(PHP_OS, 'WIN') === 0 ? '' : APP_SUDO) . 'git pull origin main', $output);
   
               //exec(APP_SUDO . ' git init', $output);
               //$output[] = dd($output);
@@ -209,7 +233,7 @@ if (preg_match('/^app\.([\w\-.]+)\.php$/', basename(__FILE__), $matches))
   
   }
   
-  // exec((strtoupper(substr(PHP_OS, 0, 3)) === 'WIN' ? '' : APP_SUDO)  . 'git --git-dir="' . APP_PATH . APP_ROOT . '.git" --work-tree="' . APP_PATH . APP_ROOT . '" remote add origin ' . $github_repo[2], $output);
+  // exec((stripos(PHP_OS, 'WIN') === 0 ? '' : APP_SUDO)  . 'git --git-dir="' . APP_PATH . APP_ROOT . '.git" --work-tree="' . APP_PATH . APP_ROOT . '" remote add origin ' . $github_repo[2], $output);
   
           } else {
   
@@ -225,7 +249,7 @@ if (preg_match('/^app\.([\w\-.]+)\.php$/', basename(__FILE__), $matches))
   
           //dd($_ENV['GITHUB']['REMOTE_SHA']);
   
-          $output[] = 'www-data@localhost:' . getcwd() . '# ' . $command = ((strtoupper(substr(PHP_OS, 0, 3)) === 'WIN') ? '' : APP_SUDO) . (defined('GIT_EXEC') ? GIT_EXEC : 'git' ) . (is_dir($path = APP_PATH . APP_ROOT . '.git') || APP_PATH . APP_ROOT != APP_PATH ? ' --git-dir="' . $path . '" --work-tree="' . dirname($path) . '"': '' ) . ' ' . $match[1];
+          $output[] = 'www-data@localhost:' . getcwd() . '# ' . $command = ((stripos(PHP_OS, 'WIN') === 0) ? '' : APP_SUDO) . (defined('GIT_EXEC') ? GIT_EXEC : 'git' ) . (is_dir($path = APP_PATH . APP_ROOT . '.git') || APP_PATH . APP_ROOT != APP_PATH ? ' --git-dir="' . $path . '" --work-tree="' . dirname($path) . '"': '' ) . ' ' . $match[1];
   
   $proc=proc_open($command,
   array(
@@ -254,7 +278,7 @@ if (preg_match('/^app\.([\w\-.]+)\.php$/', basename(__FILE__), $matches))
   
   
         } else if (preg_match('/^npm\s+(:?(.*))/i', $_POST['cmd'], $match)) {
-          $output[] = $command = (strtoupper(substr(PHP_OS, 0, 3)) === 'WIN' ? '' : APP_SUDO) . NPM_EXEC . ' ' . $match[1];
+          $output[] = $command = (stripos(PHP_OS, 'WIN') === 0 ? '' : APP_SUDO) . NPM_EXEC . ' ' . $match[1];
   $proc=proc_open($command,
   array(
     array("pipe","r"),
@@ -281,7 +305,7 @@ if (preg_match('/^app\.([\w\-.]+)\.php$/', basename(__FILE__), $matches))
                 //exec(APP_SUDO . $match[1] . ' ' . $match[2], $output); // $output[] = var_dump($match);
                 
   $output[] = APP_SUDO . $match[1] . ' ' . $match[2];
-  $proc=proc_open((strtoupper(substr(PHP_OS, 0, 3)) === 'WIN' ? '' : APP_SUDO) . $match[1] . ' ' . $match[2],
+  $proc=proc_open((stripos(PHP_OS, 'WIN') === 0 ? '' : APP_SUDO) . $match[1] . ' ' . $match[2],
     array(
       array("pipe","r"),
       array("pipe","w"),
@@ -338,10 +362,16 @@ if (preg_match('/^app\.([\w\-.]+)\.php$/', basename(__FILE__), $matches))
       
         }
       //else var_dump(NULL); // eval('echo $repo->status();')
-      if (isset($output) && !empty($output)) {
-        if (count($output) == 1) echo /*(isset($match[1]) ? $match[1] : 'PHP') . ' >>> ' . */ join("\n... <<< ", $output); // . "\n" var_dump($output);
-        else join("\n", $output); // . "\n"
-        echo implode("\n", $output);
+      if (isset($output) && is_array($output)) {
+        switch (count($output)) {
+          case 1:
+            echo /*(isset($match[1]) ? $match[1] : 'PHP') . ' >>> ' . */ join("\n... <<< ", $output);
+            break;
+          default:
+            join("\n", $output);
+            break;
+        } // . "\n"
+        //echo implode("\n", $output);
         //$output[] = 'post: ' . var_dump($_POST);
       //else var_dump(get_class_methods($repo));
       } else echo $buffer;
@@ -563,7 +593,7 @@ ob_start(); ?>
             </div>
             <div style="float: left;">
                 <button id="consoleSudo" class="text-xs" type="submit" style="border: 1px dashed #FFF; padding: 2px 2px; background-color: red;">sudo</button>
-                <input id="app_console-sudo" type="checkbox" name="auto_sudo" <?= (defined('APP_SUDO') ? 'checked="" ' : '') ?> />&nbsp;
+                <input id="app_console-sudo" type="checkbox" name="auto_sudo" <?= defined('APP_SUDO') ? 'checked="" ' : '' ?> />&nbsp;
             </div>
             <div style="float: right;">
                 &nbsp;<button id="consoleAnykeyBind" class="text-xs" type="submit" style="border: 1px dashed #FFF; padding: 2px 2px; background-color: green;">Bind Any[key]</button>
@@ -809,11 +839,12 @@ initSubmit.addEventListener('click', () => {
   const requestInput = document.getElementById('requestInput');
   const requestConsole = document.getElementById('requestConsole');
   const argv = requestInput.value;
-  $.post("<?= APP_URL_BASE; /*$projectRoot*/?>",
+  $.post("<?= APP_WWW . '?' . $_SERVER['QUERY_STRING']; /*$projectRoot*/?>",
   {
     cmd: argv
   },
   function(data, status) {
+    console.log('I can love me better baby!');
     const requestConsole = document.getElementById('requestConsole');
     console.log("Data: " + data + "\nStatus1: " + status);
     if (requestConsole !== null) {
@@ -1136,7 +1167,6 @@ console.log = function() {
       },
       function(data, status) {
         console.log("Data: " + data + "Status: " + status);
-
         //data = data.trim(); // replace(/(\r\n|\n|\r)/gm, "")
 
         if (matches = argv.match(/edit(\s+(:?.*)?|)/gm)) {

@@ -28,7 +28,8 @@ class Sockets
         $socket = $this->createSocket($host, $port, $timeout);
     
         if ($socket === false) {
-            throw new SocketException("Unable to open socket: {$this->errstr}", $this->errno);
+            //throw new SocketException("Unable to open socket: {$this->errstr}", $this->errno);
+            return false;
         }
     
         return $socket;
@@ -37,7 +38,19 @@ class Sockets
     private function createSocket($host, $port, $timeout)
     {
         // Your implementation of creating a socket goes here
-        return @fsockopen($host, $port, $this->errno, $this->errstr, $timeout);
+
+        $socket = @fsockopen($host, $port, $this->errno, $this->errstr, $timeout);
+        
+        if ($socket === false) {
+          // Log or display the error for debugging
+          error_log("Error: [$this->errno] $this->errstr - Could not connect to $host:$port");
+          //throw new Exception(/*"Could not connect to $host:$port ($this->errno): $this->errstr"*/);
+          
+          // You can return false or null to indicate failure
+          return false;
+        }
+
+        return $socket;
     }
 
     private function handleSocketConnection()
@@ -161,9 +174,9 @@ if (!$_SERVER['SOCKET']) {
     }
   }
 
-    $errors['APP_SOCKET'] = "Socket is not being created: Define \$_SERVER['SOCKET']\n";
+  $errors['APP_SOCKET'] = "Socket is not being created: Define \$_SERVER['SOCKET']\n";
 
-    if (APP_DEBUG) { 
-        //var_dump(trim($errors['APP_SOCKET']));
-    }
+  if (APP_DEBUG) { 
+    //var_dump(trim($errors['APP_SOCKET']));
+   }
 }
