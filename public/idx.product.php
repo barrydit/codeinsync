@@ -13,8 +13,7 @@ header("Content-Type: text/html");
 header("Cache-Control: no-store, no-cache, must-revalidate, max-age=0");
 header("Pragma: no-cache");
 
-if (isset($_GET['path']) && $_GET['path'] != '' && realpath($_GET['path']) && is_dir($_GET['path']))
-  $_GET['path'] = rtrim(ltrim($_GET['path'], '/'), '/'); ?>
+?>
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -798,7 +797,7 @@ $output = 'Invalid Input';
       curl_setopt($handle, CURLOPT_RETURNTRANSFER, true);
   
       if (!empty($js = curl_exec($handle))) 
-        file_put_contents($path . 'jquery-3.7.1.min.js', $js) or $errors['JS-JQUERY'] = $url . ' returned empty.';
+        file_put_contents("{$path}jquery-3.7.1.min.js", $js) or $errors['JS-JQUERY'] = "$url returned empty.";
     }
   } else {
     $url = 'https://code.jquery.com/jquery-3.7.1.min.js';
@@ -806,10 +805,10 @@ $output = 'Invalid Input';
     curl_setopt($handle, CURLOPT_RETURNTRANSFER, true);
   
     if (!empty($js = curl_exec($handle))) 
-      file_put_contents($path . 'jquery-3.7.1.min.js', $js) or $errors['JS-JQUERY'] = $url . ' returned empty.';
+      file_put_contents("{$path}jquery-3.7.1.min.js", $js) or $errors['JS-JQUERY'] = "$url returned empty.";
   }
   unset($path);
-include('app.debug.php');
+include 'app.debug.php';
   ?>
 <div id="details-container" style="position: fixed; display: none; top: 0; left: 0; z-index: 1; border: 1px solid #000; height: auto; background-color: #FFF; width: 250px;">
   <span>Loading Time: <?= round(microtime(true) - APP_START, 3); ?>s</span><br />
@@ -819,7 +818,7 @@ include('app.debug.php');
   <span>App Path: <?= APP_PATH; ?></span><br />
   <span>Memory: <em ><b style="color: green;"><?= formatSizeUnits(memory_get_usage()) . '</b> @ <b>' . formatSizeUnits(convertToBytes(ini_get('memory_limit'))); ?></b></em></span><br />
   <span>Source (code): <em style="font-size: 13px;"><?= '[<b>' . formatSizeUnits($total_filesize) . '</b>] <b style="color: red;">' . $total_filesize - 1000000 . '</b>' ?></em></span>
-  <div style="position: relative; display: block;"><div style="position: absolute; display: block; float: right; right: 10px; width: 165px; text-align: right;"><?= ' [(<b style="color: green;">' . $total_include_files . ' loaded</b>) <b>'. $total_files . '</b> files] <br /> [<b style="color: green;">' . $total_include_lines . '</b> @ <b>' . $total_lines . '</b> lines]'; ?></div></div>
+  <div style="position: relative; display: block;"><div style="position: absolute; display: block; float: right; right: 10px; width: 165px; text-align: right;"><?= ' [(<a style="font-weight: bolder; color: green;" href="#" onclick="document.getElementById(\'app_nodes-container\').style.display = \'block\';">' . $total_include_files . ' loaded</a>) <b>'. $total_files . '</b> files] <br /> [<b style="color: green;">' . $total_include_lines . '</b> @ <b>' . $total_lines . '</b> lines]'; ?></div></div>
 </div>
 
 <div id="adhd_song-container" style="position: fixed; display: none; bottom: 0; right: 0; z-index: 1;">

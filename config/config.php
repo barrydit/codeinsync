@@ -194,8 +194,15 @@ if (!defined('APP_ROOT')) {
   $path = !isset($_GET['client']) ? '' : 'clientele/' . $_GET['client'] . '/' . (isset($_GET['domain']) ? ($_GET['domain'] != '' ? $_GET['domain'] . '/' : '') : '') . (!isset($_GET['project']) ? '' : 'projects/' . $_GET['project'] . '/'); /* ($_GET['path'] . '/' ?? '')*/
   //die($path);
   //is_dir(APP_PATH . $_GET['path']) 
-  define('APP_ROOT', !empty(realpath(APP_PATH . $path)) ? rtrim($path, '/') : null);
+  define('APP_ROOT', !empty(realpath(APP_PATH . ($path = rtrim($path, '/')) ) && $path != '') ? "$path/" : null);
 }
+/*
+if (isset($_GET['path']) && $_GET['path'] != '' && realpath($_GET['path']) && is_dir($_GET['path']))
+  $_GET['path'] = rtrim(ltrim($_GET['path'], '/'), '/'); 
+*/
+
+isset($_GET['path'])
+  and $_GET['path'] = !empty(realpath(APP_PATH . APP_ROOT . ($path =  rtrim(ltrim($_GET['path'], '/'), '/')) ) && $path != '') ? "$path/" : null;
 
 // dd(getenv('PATH') . ' -> ' . PATH_SEPARATOR);
 

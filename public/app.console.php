@@ -51,7 +51,7 @@ if (preg_match('/^app\.([\w\-.]+)\.php$/', basename(__FILE__), $matches))
 /**/
           if ($path = realpath($path)) {
             //$output[] = "Changing step 2 directory to $match[1]";
-            $resultValue = (function() use ($path) {
+            $resultValue = (function() use ($path): string {
               // Replace the escaped APP_PATH and APP_ROOT with the actual directory path
               if (realpath($_GET['path'] = preg_replace('/' . preg_quote(APP_PATH . APP_ROOT, '/') . '/', '', $path)) == realpath(APP_PATH . APP_ROOT))
                 $_GET['path'] = '';
@@ -69,7 +69,7 @@ if (preg_match('/^app\.([\w\-.]+)\.php$/', basename(__FILE__), $matches))
         } else if (preg_match('/^edit\s+(:?(.*))/i', $_POST['cmd'], $match))
           //exec($_POST['cmd'], $output);
           //die(header('Location: ' . APP_URL_BASE . '?app=text_editor&filename='.$_POST['cmd']));
-          $output[] = ($file = rtrim(realpath(APP_PATH . APP_ROOT . $_GET['path']), '/') . '/' . trim($match[1])) ? file_get_contents($file) : "File not found: $file";
+          $output[] = is_file($file = APP_PATH . APP_ROOT . trim($match[1])) ? file_get_contents($file) : "File not found: $file";
         else if (preg_match('/^php\s+(:?(.*))/i', $_POST['cmd'], $match)) {
           if (preg_match('/^php\s+(?!(-r))/i', $_POST['cmd'])) {
             $match[1] = trim($match[1], '"');

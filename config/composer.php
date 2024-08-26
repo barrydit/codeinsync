@@ -339,7 +339,7 @@ if (stripos(PHP_OS, 'WIN') === 0) { // DO NOT REMOVE! { .. }
 //exec('whoami', $output, $returnCode); // or $errors['COMPOSER-WHOAMI'] = $output;
 //if (APP_DEBUG) {
 
-//$output[0] = (stripos(PHP_OS, 'WIN') === 0) ? realpath(shell_exec(APP_SUDO . 'where composer')) : realpath(shell_exec(APP_SUDO . 'which composer'));
+$output[0] = stripos(PHP_OS, 'WIN') === 0 ? realpath(shell_exec(APP_SUDO . 'where composer')) : realpath(shell_exec(APP_SUDO . 'which composer'));
 
 $output[1] = shell_exec(APP_SUDO . 'composer --version') ?: $errors['COMPOSER-VERSION'] = $output[1];
 
@@ -450,7 +450,6 @@ if (defined('APP_ENV') and APP_ENV == 'development') {
     
     //@mkdir($$c_or_p->path . 'vendor');
 
-die(APP_PATH . APP_ROOT . 'composer.json');
 
 // composer init --require=twig/twig:1.13.* -n   // https://webrewrite.com/create-composer-json-file-php-project/
 

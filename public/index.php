@@ -220,7 +220,10 @@ $dirs[] = APP_PATH . APP_BASE['config'] . 'npm.php';
         
       if (isset($_GET['path']) && !is_dir(APP_PATH . APP_ROOT)) {
         //dd(APP_PATH . APP_ROOT . ' test');
-        die(header('Location: ' . APP_URL_BASE));
+
+
+        
+          die(header('Location: ' . APP_URL_BASE));
       }
       break;
   }

@@ -24,7 +24,7 @@ const CONSOLE = true;
 !defined('APP_SELF') and define('APP_SELF', get_included_files()[0] ?? __FILE__) and is_string(APP_SELF) ?: $errors['APP_SELF'] = 'APP_SELF is not a valid string value.';
 
 // Define APP_PATH constant
-!defined('APP_PATH') and define('APP_PATH', realpath(__DIR__ . DIRECTORY_SEPARATOR . '..' . DIRECTORY_SEPARATOR) . DIRECTORY_SEPARATOR) and is_string(APP_PATH) ?: $errors['APP_PATH'] = 'APP_PATH is not a valid string value.';
+!defined('APP_PATH') and define('APP_PATH', realpath(dirname(__DIR__, 1)) . DIRECTORY_SEPARATOR) and is_string(APP_PATH) ?: $errors['APP_PATH'] = 'APP_PATH is not a valid string value.';
 
 /*
 !defined('APP_DEV') and define('APP_DEV', true) ?: is_bool(APP_DEV) or $errors['APP_DEV'] = 'APP_DEV is not a valid boolean value.';
