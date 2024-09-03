@@ -13,9 +13,7 @@ global $shell_prompt, $auto_clear, $errors;
       if (is_file($path = realpath('index.php'))) {
         require_once $path;
       }
-    }
-    else
-      die(var_dump("Path was not found. file=$path"));
+    } else die(var_dump("Path was not found. file=$path"));
 
 if (preg_match('/^app\.([\w\-.]+)\.php$/', basename(__FILE__), $matches))
   ${$matches[1]} = $matches[1];
@@ -31,7 +29,7 @@ if (preg_match('/^app\.([\w\-.]+)\.php$/', basename(__FILE__), $matches))
   
     //dd(__FILE__, false);
   //!function_exists('dd') ? die('dd is not defined') : dd(COMPOSER_EXEC);
-  
+
   if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     if (isset($_POST['cmd'])) {
       chdir(APP_PATH . APP_ROOT);
@@ -39,33 +37,71 @@ if (preg_match('/^app\.([\w\-.]+)\.php$/', basename(__FILE__), $matches))
         if (preg_match('/^help/i', $_POST['cmd']))
           $output[] = implode(', ', ['install', 'php', 'composer', 'git', 'npm', 'whoami', 'wget', 'tail', 'cat', 'echo', 'env', 'sudo']);
         else if (preg_match('/^server\s*start$/i', $_POST['cmd'])) {
-          Sockets::handleLinuxSocketConnection(true);
-          $output[] = 'Sockets started ...';
-        } else if (preg_match('/^install/i', $_POST['cmd']))
-          include 'templates/' . preg_split("/^install (\s*+)/i", $_POST['cmd'])[1] . '.php';
+          if (file_exists($pidFile = APP_PATH . 'server.pid')) {
+            $output[] = 'Server already running ...';
+          } else {
+            Sockets::handleLinuxSocketConnection(true);
+            $output[] = 'Sockets started ...';
+          }
+        } //else if (preg_match('/^install/i', $_POST['cmd']))
+          //include 'templates/' . preg_split("/^install (\s*+)/i", $_POST['cmd'])[1] . '.php';
         else if (preg_match('/^chdir\s+(:?(.*))/i', $_POST['cmd'], $match)) {
           //exec($_POST['cmd'], $output);
           //die(header('Location: ' . APP_URL_BASE . '?app=text_editor&filename='.$_POST['cmd']));
-          $path = APP_PATH . APP_ROOT . rtrim(trim($match[1]), '/');
           //$output[] = "Changing directory to " . $path;
 /**/
-          if ($path = realpath($path)) {
-            //$output[] = "Changing step 2 directory to $match[1]";
-            $resultValue = (function() use ($path): string {
-              // Replace the escaped APP_PATH and APP_ROOT with the actual directory path
-              if (realpath($_GET['path'] = preg_replace('/' . preg_quote(APP_PATH . APP_ROOT, '/') . '/', '', $path)) == realpath(APP_PATH . APP_ROOT))
-                $_GET['path'] = '';
-    
-              //dd('Path: ' . $_GET['path'] . "\n", false);
-              ob_start();
-              require 'app.directory.php';
-              $tableValue = $tableGen();
-              ob_end_clean();
-              return $tableValue; // $app['directory']['body'];
-            })();
-            $output[] = (string) $resultValue;
-          }
+          if ($path = realpath(APP_PATH . APP_ROOT . rtrim(trim($match[1]), '/'))) {
+            // Define the root directory you don't want to go past
+            $root_dir = realpath(APP_PATH . APP_ROOT);
 
+            // Check if the resolved path is within the allowed root
+            if (strpos($path, $root_dir) === 0 && strlen($path) >= strlen($root_dir)) {
+                // Proceed with your existing logic if the path is valid
+                $resultValue = (function() use ($path): string {
+                    // Replace the escaped APP_PATH and APP_ROOT with the actual directory path
+                    if (realpath($_GET['path'] = preg_replace('/' . preg_quote(APP_PATH . APP_ROOT, '/') . '/', '', $path)) == realpath(APP_PATH . APP_ROOT)) {
+                        $_GET['path'] = '';
+                    }
+                    ob_start();
+                    require 'app.directory.php';
+                    $tableValue = $tableGen();
+                    ob_end_clean();
+                    return $tableValue; // $app['directory']['body'];
+                })();
+                $output[] = (string) $resultValue;
+            } else {
+                // Handle the case where the path is trying to go past the root directory
+                $output[] = "Cannot go past the root directory: $root_dir";
+            }
+          }
+/*
+          if ($path = realpath(APP_PATH . APP_ROOT . rtrim(trim($match[1]), '/'))) {
+            // Define the root directory you don't want to go past
+            $root_dir = realpath(APP_PATH . APP_ROOT);
+  
+            // Resolve the parent directory path
+            $parent_dir = realpath("$path/../");
+  
+            // Check if the parent directory is within the allowed root
+            if (strpos($parent_dir, $root_dir) === 0 && strlen($parent_dir) >= strlen($root_dir)) {
+              // Proceed with your existing logic if the path is valid
+              $resultValue = (function() use ($path): string {
+                // Replace the escaped APP_PATH and APP_ROOT with the actual directory path
+                if (realpath($_GET['path'] = preg_replace('/' . preg_quote(APP_PATH . APP_ROOT, '/') . '/', '', $path)) == realpath(APP_PATH . APP_ROOT))
+                  $_GET['path'] = '';
+                ob_start();
+                require 'app.directory.php';
+                $tableValue = $tableGen();
+                ob_end_clean();
+                return $tableValue; // $app['directory']['body'];
+              })();
+              $output[] = (string) $resultValue;
+            } else {
+              // Handle the case where the path is trying to go past the root directory
+              $output[] = "Cannot go past the root directory: $root_dir";
+            }
+          }
+*/
         } else if (preg_match('/^edit\s+(:?(.*))/i', $_POST['cmd'], $match))
           //exec($_POST['cmd'], $output);
           //die(header('Location: ' . APP_URL_BASE . '?app=text_editor&filename='.$_POST['cmd']));
@@ -112,8 +148,8 @@ if (preg_match('/^app\.([\w\-.]+)\.php$/', basename(__FILE__), $matches))
               ["pipe", "w"]
             ],
             $pipes);
-            list($stdout, $stderr, $exitCode) = [stream_get_contents($pipes[1]), stream_get_contents($pipes[2]), proc_close($proc)];
-            $output[] = !isset($stdout) ? NULL : $stdout . (isset($stderr) && $stderr === '' ? NULL : ' Error: ' . $stderr) . (!isset($exitCode) && $exitCode == 0 ? NULL : ' Exit Code: ' . $exitCode);
+            [$stdout, $stderr, $exitCode] = [stream_get_contents($pipes[1]), stream_get_contents($pipes[2]), proc_close($proc)];
+            $output[] = !isset($stdout) ? NULL : $stdout . (isset($stderr) && $stderr === '' ? NULL : " Error: $stderr") . (!isset($exitCode) && $exitCode == 0 ? NULL : " Exit Code: $exitCode");
                   //$output[] = $_POST['cmd'];        
             //exec($_POST['cmd'], $output);
             //die(var_dump($output));
@@ -125,25 +161,28 @@ if (preg_match('/^app\.([\w\-.]+)\.php$/', basename(__FILE__), $matches))
             // Send a message to the server
             $errors['server-2'] = 'Client request: ' . $message = "cmd: " . $_POST['cmd'] . "\n";
   
-            $output[] = $_POST['cmd'] . ' test2: ';
+            $output[] = $_POST['cmd'] . ': ';
   
             //dd($message, false);
             if (isset($_SERVER['SOCKET']) && is_resource($_SERVER['SOCKET'])) {
-              if (get_resource_type($_SERVER['SOCKET']) == 'stream') {
+              switch (get_resource_type($_SERVER['SOCKET'])) {
+                case 'stream':
                   fwrite($_SERVER['SOCKET'], $message);
-              } else {
+                  break;
+                default:
                   socket_write($_SERVER['SOCKET'], $message);
+                  break;
               }
             }
   
             // Read response from the server
             while (!feof($_SERVER['SOCKET'])) {
-                $response = fgets($_SERVER['SOCKET'], 1024);
+              $response = fgets($_SERVER['SOCKET'], 1024);
                 
-                $errors['server-3'] = "Server responce: $response\n";
-                if (isset($output[end($output)])) $output[end($output)] .= trim($response);
-                else $output[1] .= trim($response);
-                //if (!empty($response)) break;
+              $errors['server-3'] = "Server responce: $response\n";
+              if (isset($output[end($output)])) $output[end($output)] .= trim($response);
+              else $output[1] .= trim($response);
+              //if (!empty($response)) break;
             }
   
             //die(var_dump($output));
@@ -183,7 +222,7 @@ if (preg_match('/^app\.([\w\-.]+)\.php$/', basename(__FILE__), $matches))
           } else if (preg_match('/^git\s+(clone)(:?\s+)?/i', $_POST['cmd'])) {
           
             //$output[] = dd($_POST['cmd']);
-            $output[] = 'test'; 
+            $output[] = 'This works ... '; 
   
   if (preg_match('/^git\s+clone\s+(http(?:s)?:\/\/([^@\s]+)@github\.com\/[\w.-]+\/[\w.-]+\.git)(?:\s*([\w.-]+))?/', $_POST['cmd'], $github_repo)) { // matches with token
   

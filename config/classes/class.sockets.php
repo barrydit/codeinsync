@@ -37,19 +37,35 @@ class Sockets
     
     private function createSocket($host, $port, $timeout)
     {
-        // Your implementation of creating a socket goes here
+        global $errors;
+        // Start output buffering to capture any error messages
+        ob_start();
 
-        $socket = @fsockopen($host, $port, $this->errno, $this->errstr, $timeout);
-        
+        // Store the original error handler
+        $oldErrorHandler = set_error_handler(function ($errno, $errstr, $errfile, $errline) {
+            // Store the error details in a class property or a global variable
+            $this->errno = $errno;
+            $this->errstr = $errstr;
+    
+            // Return true to prevent PHP's default error handler from being triggered
+            return true;
+        });
+    
+        // Try to open the socket without the @ operator
+        $socket = fsockopen($host, $port, $this->errno, $this->errstr, $timeout);
+    
+        // Restore the original error handler
+        restore_error_handler();
+    
         if ($socket === false) {
-          // Log or display the error for debugging
-          error_log("Error: [$this->errno] $this->errstr - Could not connect to $host:$port");
-          //throw new Exception(/*"Could not connect to $host:$port ($this->errno): $this->errstr"*/);
-          
-          // You can return false or null to indicate failure
-          return false;
+            $errors['SOCKET'] = "Error: [$this->errno] $this->errstr - Could not connect to $host:$port\n";
+            // Log the error details
+            error_log($errors['SOCKET']);
+    
+            // Optionally, you can throw an exception or handle the error
+            return false;
         }
-
+        // Return the socket resource if the connection was successful
         return $socket;
     }
 
@@ -67,8 +83,12 @@ class Sockets
 
         if (file_exists($pidFile)) {
             $pid = file_get_contents($pidFile);
-            if (posix_kill($pid, 0)) posix_kill($pid, SIGTERM) and unlink($pidFile);
+            //pcntl_signal(SIGINT, 'signalHandler');
+            //if (function_exists('posix_kill') && posix_kill($pid, 0)) posix_kill((int) $pid, SIGTERM) and unlink($pidFile);
+        } else {
+            //file_put_contents($pidFile, $pid = getmypid());
         }
+        
         if ($start)
           shell_exec('nohup php server.php > /dev/null 2>&1 &');
     }

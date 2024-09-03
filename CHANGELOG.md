@@ -1,7 +1,34 @@
 CHANGELOG
 
 
+
+HTACCESS
+
+
+RewriteEngine On
+RewriteBase "/clientele/000-Lastname,\Firstname/example.ca/public"
+
+# Rewrite requests for /assets to the /../resources directory if the file doesn't exist in /assets
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteCond %{REQUEST_FILENAME} !-d
+RewriteRule ^assets/(.*)$ ../resources/$1 [L]
+
+
 :: PHP
+
+$proc = proc_open((stripos(PHP_OS, 'WIN') === 0 ? '' : APP_SUDO ) . basename($bin) . ' --version;', array( array("pipe","r"), array("pipe","w"), array("pipe","w")), $pipes);
+
+        $stdout = stream_get_contents($pipes[1]);
+        $stderr = stream_get_contents($pipes[2]);
+
+        $exitCode = proc_close($proc);
+
+
+ui.composer.php
+
+  autoload.php
+  composer.php
+
 
 Many php functions either produce a forward slash, indicating the end of folder/path
 

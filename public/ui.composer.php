@@ -9,6 +9,12 @@ if (__FILE__ == get_required_files()[0] && __FILE__ == realpath($_SERVER["SCRIPT
   else
     die(var_dump("Path was not found. file=$path"));
 
+
+if (is_file($path = APP_PATH . APP_BASE['config'] . 'composer.php')) require_once $path; 
+else die(var_dump("$path path was not found. file=" . basename($path)));
+
+//dd(COMPOSER_VENDORS);
+
 /*
 if (__FILE__ == get_required_files()[0])
   if ($path = (basename(getcwd()) == 'public')
@@ -95,20 +101,20 @@ Publishes a Node.js package to GitHub Packages.
 /** Loading Time: 5.1s **/
   
   //dd(get_required_files(), true);
-
-if (!in_array(APP_PATH . APP_BASE['config'] . 'composer.php', get_required_files()))
-if ($path = (basename(getcwd()) == 'public')
+/*
+if (!in_array(APP_PATH . APP_BASE['config'] . 'composer.php', get_required_files())) {
+  require_once APP_PATH . APP_ROOT . APP_BASE['vendor'] . 'autoload.php';
+  if ($path = (basename(getcwd()) == 'public')
     ? (is_file('../composer.php') ? '../composer.php' : (is_file('../config/composer.php') ? '../config/composer.php' : null))
-    : (is_file('composer.php') ? 'composer.php' : (is_file('config/composer.php') ? 'config/composer.php' : null))) require_once($path); 
-else die(var_dump($path . ' path was not found. file=composer.php'));
-
+    : (is_file('composer.php') ? 'composer.php' : (is_file('config/composer.php') ? 'config/composer.php' : null))) require_once $path; 
+  else die(var_dump("$path path was not found. file=composer.php"));
+}
+*/
 if (!in_array(APP_PATH . APP_BASE['public'] . 'app.console.php', get_required_files()))
 if ($path = (basename(getcwd()) == 'public')
     ? (is_file('app.console.php') ? 'app.console.php' : (is_file('../config/app.console.php') ? '../config/app.console.php' : null))
-    : (is_file('app.console.php') ? 'app.console.php' : (is_file('public/app.console.php') ? 'public/app.console.php' : 'app.console.php'))) require_once($path); 
-else die(var_dump($path . ' path was not found. file=app.console.php'));
-
-
+    : (is_file('app.console.php') ? 'app.console.php' : (is_file('public/app.console.php') ? 'public/app.console.php' : 'app.console.php'))) require_once $path; 
+else die(var_dump("$path path was not found. file=app.console.php"));
 
 /*  ...
     "autoload": {
@@ -914,12 +920,12 @@ if (defined('COMPOSER') && isset(COMPOSER['json']->{'require-dev'}) && !empty(ge
 ?>
           <select onselect="selectPackage()">
             <option>---</option>
-<?php 
+<?php
   foreach($keys as $package) {
     if ($package == 'php') continue;
     elseif (isset(COMPOSER['json']->{'require'}->{$package}))
-      echo '<option selected>' . $package . '</option>';
-    else echo '<option>' . $package . '</option>';
+      echo "<option selected>$package</option>";
+    else echo "<option>$package</option>";
   }
 ?>
           </select>
@@ -942,9 +948,9 @@ if (defined('COMPOSER') && isset(COMPOSER['json']->{'require-dev'}) && !empty(ge
       <div style="display: inline-block; width: 100%;">Type:
         <div style="float: right;">
           <select name="">
-            <option label="" <?= (defined('VENDOR') && isset(VENDOR->license) ? '' : 'selected=""');?>></option>
+            <option label="" <?= defined('VENDOR') && isset(VENDOR->license) ? '' : 'selected=""';?>></option>
 <?php foreach (['library', 'project', 'metapackage', 'composer-plugin'] as $type) { ?>
-            <option<?= (defined('VENDOR') && isset(VENDOR->type) && VENDOR->type == $type ? ' selected=""' : '' ); ?>><?= $type; ?></option>
+            <option<?= defined('VENDOR') && isset(VENDOR->type) && VENDOR->type == $type ? ' selected=""' : ''; ?>><?= $type; ?></option>
 <?php } ?>
           </select>
         </div>
@@ -954,7 +960,7 @@ if (defined('COMPOSER') && isset(COMPOSER['json']->{'require-dev'}) && !empty(ge
           <input type="text" placeholder="Keywords" value="">
         </div>
         <div class="clearfix"></div>
-        <div id="composerAppendKeyword" style="padding: 10px 0 10px 0; display: <?= (defined('VENDOR') && isset(VENDOR->keywords) && !empty(VENDOR->keywords) ? 'block' : 'none') ?>; width: 100%;">
+        <div id="composerAppendKeyword" style="padding: 10px 0 10px 0; display: <?= defined('VENDOR') && isset(VENDOR->keywords) && !empty(VENDOR->keywords) ? 'block' : 'none' ?>; width: 100%;">
 <?php if (defined('VENDOR') && isset(VENDOR->keywords)) foreach (VENDOR->keywords as $key => $keyword) { ?>
           <label for="keyword_<?= $key; ?>"><sup onclick="rm_keyword(\'keyword_<?= $key; ?>\');">[x]</sup><?= $keyword; ?></label>&nbsp;
 <?php } ?>
@@ -967,9 +973,9 @@ if (defined('COMPOSER') && isset(COMPOSER['json']->{'require-dev'}) && !empty(ge
       <div style="display: inline-block; width: 100%;">License:
         <div style="float: right;">
           <select name="">
-            <option label=""<?= (defined('VENDOR') && isset(VENDOR->license) ? '' : ' selected=""' );?>></option>
+            <option label=""<?= defined('VENDOR') && isset(VENDOR->license) ? '' : ' selected=""';?>></option>
 <?php foreach (['WTFPL', 'GPL-3.0', 'MIT'] as $license) { ?>
-            <option <?= (defined('VENDOR') && isset(VENDOR->license) && VENDOR->license == $license ? 'selected=""' : '' ); ?>><?= $license; ?></option>
+            <option <?= defined('VENDOR') && isset(VENDOR->license) && VENDOR->license == $license ? 'selected=""' : ''; ?>><?= $license; ?></option>
 <?php } ?>
           </select>
         </div>
@@ -1515,65 +1521,64 @@ ob_end_clean();
   
   //dd(get_required_files(), true);
 
-
-
-//check if file is included or accessed directly
-if (__FILE__ ==  get_required_files()[0] || in_array(__FILE__, get_required_files()) && isset($_GET['app']) && $_GET['app'] == 'composer' && APP_DEBUG) {
-ob_start(); ?>
-<!DOCTYPE html>
-<html>
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
-  <!-- link rel="stylesheet" href="//code.jquery.com/ui/1.12.1/themes/smoothness/jquery-ui.css" /-->
-
-<?php
-// (check_http_status('https://cdn.tailwindcss.com') ? 'https://cdn.tailwindcss.com' : APP_WWW . 'resources/js/tailwindcss-3.3.5.js')?
-is_dir($path = APP_PATH . APP_BASE['resources'] . 'js/') or mkdir($path, 0755, true);
-if (is_file($path . 'tailwindcss-3.3.5.js')) {
-  if (ceil(abs((strtotime(date('Y-m-d')) - strtotime(date('Y-m-d',strtotime('+5 days',filemtime($path . 'tailwindcss-3.3.5.js'))))) / 86400)) <= 0 ) {
+  ob_start(); ?>
+  <!DOCTYPE html>
+  <html>
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+    <!-- link rel="stylesheet" href="//code.jquery.com/ui/1.12.1/themes/smoothness/jquery-ui.css" /-->
+  
+  <?php
+  // (check_http_status('https://cdn.tailwindcss.com') ? 'https://cdn.tailwindcss.com' : APP_WWW . 'resources/js/tailwindcss-3.3.5.js')?
+  is_dir($path = APP_PATH . APP_BASE['resources'] . 'js/') or mkdir($path, 0755, true);
+  if (is_file($path . 'tailwindcss-3.3.5.js')) {
+    if (ceil(abs((strtotime(date('Y-m-d')) - strtotime(date('Y-m-d',strtotime('+5 days',filemtime("{$path}tailwindcss-3.3.5.js"))))) / 86400)) <= 0 ) {
+      $url = 'https://cdn.tailwindcss.com';
+      $handle = curl_init($url);
+      curl_setopt($handle, CURLOPT_RETURNTRANSFER, true);
+  
+      if (!empty($js = curl_exec($handle))) 
+        file_put_contents("{$path}tailwindcss-3.3.5.js", $js) or $errors['JS-TAILWIND'] = "$url returned empty.";
+    }
+  } else {
     $url = 'https://cdn.tailwindcss.com';
     $handle = curl_init($url);
     curl_setopt($handle, CURLOPT_RETURNTRANSFER, true);
-
+  
     if (!empty($js = curl_exec($handle))) 
-      file_put_contents($path . 'tailwindcss-3.3.5.js', $js) or $errors['JS-TAILWIND'] = $url . ' returned empty.';
+      file_put_contents("{$path}tailwindcss-3.3.5.js", $js) or $errors['JS-TAILWIND'] = "$url returned empty.";
   }
-} else {
-  $url = 'https://cdn.tailwindcss.com';
-  $handle = curl_init($url);
-  curl_setopt($handle, CURLOPT_RETURNTRANSFER, true);
+  ?>
+  
+    <script src="<?= 'resources/js/tailwindcss-3.3.5.js' ?? $url ?>"></script>
+  
+  <style type="text/tailwindcss">
+  <?= $app['style']; ?>
+  </style>
+  </head>
+  <body>
+  <?= $app['body']; ?>
+  
+    <script src="<?= check_http_status('https://code.jquery.com/jquery-3.7.1.min.js') ? 'https://code.jquery.com/jquery-3.7.1.min.js' : "{$path}jquery-3.7.1.min.js" ?>"></script>
+    <!-- You need to include jQueryUI for the extended easing options. -->
+  <?php /* https://stackoverflow.com/questions/12592279/typeerror-p-easingthis-easing-is-not-a-function */ ?>
+    <!-- script src="//code.jquery.com/jquery-1.12.4.js"></script -->
+    <script src="//code.jquery.com/ui/1.12.1/jquery-ui.js"></script> <!-- Uncaught ReferenceError: jQuery is not defined -->
+  
+  <script>
+  <?= $app['script']; ?>
+  </script>
+  </body>
+  </html>
+  <?php
+  $app['html'] = ob_get_contents(); 
+  ob_end_clean();
 
-  if (!empty($js = curl_exec($handle))) 
-    file_put_contents($path . 'tailwindcss-3.3.5.js', $js) or $errors['JS-TAILWIND'] = $url . ' returned empty.';
-}
-?>
-
-  <script src="<?= 'resources/js/tailwindcss-3.3.5.js' ?? $url ?>"></script>
-
-<style type="text/tailwindcss">
-<?= $app['style']; ?>
-</style>
-</head>
-<body>
-<?= $app['body']; ?>
-
-  <script src="<?= check_http_status('https://code.jquery.com/jquery-3.7.1.min.js') ? 'https://code.jquery.com/jquery-3.7.1.min.js' : "{$path}jquery-3.7.1.min.js" ?>"></script>
-  <!-- You need to include jQueryUI for the extended easing options. -->
-<?php /* https://stackoverflow.com/questions/12592279/typeerror-p-easingthis-easing-is-not-a-function */ ?>
-  <!-- script src="//code.jquery.com/jquery-1.12.4.js"></script -->
-  <script src="//code.jquery.com/ui/1.12.1/jquery-ui.js"></script> <!-- Uncaught ReferenceError: jQuery is not defined -->
-
-<script>
-<?= $app['script']; ?>
-</script>
-</body>
-</html>
-<?php
-$buffer_contents = ob_get_contents(); 
-ob_end_clean();
-return $buffer_contents;
+//check if file is included or accessed directly
+if (__FILE__ ==  get_required_files()[0] || in_array(__FILE__, get_required_files()) && isset($_GET['app']) && $_GET['app'] == 'composer' && APP_DEBUG) {
+  return $app['html'];
 } else {
   return $app;
 }

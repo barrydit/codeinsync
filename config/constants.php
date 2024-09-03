@@ -50,7 +50,7 @@ if ($ip = resolve_host_to_ip('google.com')) {
 //echo 'Checking Constants: ' . "\n\n";
 
 // Application configuration
-define('APP_VERSION', '1.0.0');
+const APP_VERSION = '1.0.0';
 
 !is_string(APP_VERSION) and $errors['APP_VERSION'] = 'APP_VERSION is not a valid string value.';
 
@@ -58,22 +58,23 @@ define('APP_VERSION', '1.0.0');
   and $errors['APP_VERSION'] = 'APP_VERSION is not a valid version (' . APP_VERSION . ').';
 
 $auto_clear = false;
-define('APP_DOMAIN', array_key_exists('domain', parse_url($domain = $_SERVER['SERVER_NAME'] ?? $_SERVER['HTTP_HOST'] ?? $_SERVER['SERVER_ADDR'] ?? 'localhost')) ? $domain : 'localhost');
-!is_string(APP_DOMAIN) and $errors['APP_DOMAIN'] = 'APP_DOMAIN is not valid. (' . APP_DOMAIN . ')' . "\n";
-
-if (stripos(PHP_OS, 'WIN') === 0) {
-  $shell_prompt = 'www-data' . '@' . $domain . PATH_SEPARATOR . (($homePath = realpath($_SERVER['DOCUMENT_ROOT'])) === getcwd() ? '~': $homePath) . '$ ';
-} else if (isset($_SERVER['HOME']) && ($homePath = realpath($_SERVER['HOME'])) !== false && ($docRootPath = realpath($_SERVER['DOCUMENT_ROOT'])) !== false && strpos($homePath, $docRootPath) === 0) {
-  $shell_prompt = $_SERVER['USER'] . '@' . $domain . PATH_SEPARATOR . ($homePath == getcwd() ? '~': $homePath) . '$ ';
-} elseif (isset($_SERVER['USER'])) {
-  $shell_prompt = $_SERVER['USER'] . '@' . $domain . PATH_SEPARATOR . ($homePath == getcwd() ? '~': $homePath) . '$ ';
-} else {
-  $shell_prompt = 'www-data' . '@' . $domain . PATH_SEPARATOR . (getcwd() == '/var/www' ? '~' : getcwd()) . '$ ';
-}
 
 const APP_NAME = 'Dashboard';
 !is_string(APP_NAME)
   and $errors['APP_NAME'] = 'APP_NAME is not a string => ' . var_export(APP_NAME, true); // print('Name: ' . APP_NAME  . ' v' . APP_VERSION . "\n");
+
+  // Check if the request is using HTTPS
+if (isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] == 'on') {
+  define('APP_HTTPS', TRUE);
+}
+if (defined('APP_HTTPS') && APP_HTTPS) {
+  $errors['APP_HTTPS'] = (bool) var_export(APP_HTTPS, true); // print('HTTPS: ' . APP_HTTPS . "\n");
+}
+
+define('APP_WWW', 'http' . (defined('APP_HTTPS') ? 's' : '') . '://' . $_SERVER['SERVER_NAME'] ?? $_SERVER['HTTP_HOST'] ?? $_SERVER['SERVER_ADDR'] ?? 'localhost' . parse_url(isset($_SERVER['SERVER_NAME']) ? $_SERVER['REQUEST_URI'] : '' , PHP_URL_PATH));
+
+define('APP_DOMAIN', array_key_exists('host', $domain = parse_url(APP_WWW)) ? $domain['host'] : 'localhost');
+!is_string(APP_DOMAIN) and $errors['APP_DOMAIN'] = 'APP_DOMAIN is not valid. (' . APP_DOMAIN . ')' . "\n";
 
 define('APP_HOST', gethostbyname(APP_DOMAIN));
 !is_string(APP_HOST) and $errors['APP_HOST'] = 'APP_HOST is not valid. (' . APP_HOST . ')' . "\n";
@@ -82,23 +83,13 @@ const APP_PORT = 8080;
 !is_int(APP_PORT) and $errors['APP_PORT'] = 'APP_PORT is not valid. (' . APP_PORT . ')' . "\n";
 
 !defined('APP_SERVER') and define('APP_SERVER', (defined('APP_PATH') ? APP_PATH : __DIR__ . DIRECTORY_SEPARATOR)  . str_replace(defined('APP_PATH') ? APP_PATH : __DIR__ . DIRECTORY_SEPARATOR , '', dirname(basename(APP_SELF)) == 'public' ? basename(APP_SELF) : 'server.php')); //
-// Check if the request is using HTTPS
-if (isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] == 'on') {
-  define('APP_HTTPS', TRUE);
-}
-if (defined('APP_HTTPS') && APP_HTTPS) {
-  $errors['APP_HTTPS'] = (bool) var_export(APP_HTTPS, true); // print('HTTPS: ' . APP_HTTPS . "\n");
-}
-
-define('APP_WWW', 'http' . (defined('APP_HTTPS') ? 's' : '') . '://' . APP_DOMAIN . parse_url(isset($_SERVER['SERVER_NAME']) ? $_SERVER['REQUEST_URI'] : '' , PHP_URL_PATH));
 
 define('APP_TIMEOUT', strtotime("1970-01-01 08:00:00GMT"));
 if (defined('APP_TIMEOUT') && !is_int(APP_TIMEOUT)) {
   $errors['APP_TIMEOUT'] = APP_TIMEOUT;
 }
 
-$login = [/*'UNAME' => '', 'PWORD' => ''*/];
-if (!empty($login)) {
+if (!empty($login = [/*'UNAME' => '', 'PWORD' => ''*/])) {
   define('APP_LOGIN', $login);
 }
 if (defined('APP_LOGIN') && is_array(APP_LOGIN)) {
@@ -111,6 +102,9 @@ if (defined('APP_LOGIN') && is_array(APP_LOGIN)) {
 switch (basename(__DIR__)) {
   case 'config':
   default:
+
+    if (empty(APP_HOST) || APP_HOST == '127.0.0.1' || APP_DOMAIN == 'localhost') $errors['WHOIS'] = "WHOIS is disabled on localhost.\n";
+
     // Define base paths
     $base_paths = [ // https://stackoverflow.com/questions/8037266/get-the-url-of-a-file-included-by-php
       'config',
@@ -416,8 +410,6 @@ TEXT;
 
 //Ternary operator vs Null coalescing operator in PHP 
 // ($condition) ?? "NULL";
-
-
 
 //die();
  

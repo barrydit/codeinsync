@@ -7,6 +7,9 @@ else {
     die(var_dump("$path was not found. file=config.php"));
 }
 
+//require_once APP_PATH . APP_ROOT . APP_BASE['vendor'] . 'autoload.php';
+//require_once APP_PATH . APP_ROOT . APP_BASE['config'] . 'composer.php';
+
 // !isset($_GET['path']) and $_GET['path'] = '';
 
 global $errors;
@@ -25,15 +28,18 @@ if (preg_match('/^app\.([\w\-.]+)\.php$/', basename(__FILE__), $matches))
  */
 //
 $tableGen = function(): string {
-  ob_start();
-  if (isset($_GET['path']) && preg_match('/^vendor\/?$/', $_GET['path'])) {
+  ob_start(); ?>
+  <div id="info" style="position: absolute; display: block; width: 400px; height: 100px; left: 200px; top: 100px; border: 5px solid #000; background-color: #FFFFFF; z-index:99;">
+<div style="position: absolute; display: block; background-color: #FFFFFF; z-index: 1; float: right; margin-top: -20px;">[<a href="#" onclick="document.getElementById('info').style.display = 'none';">x</a>]</div>Texting inside</div>
+    
+<?php if (isset($_GET['path']) && preg_match('/^vendor\/?$/', $_GET['path'])) {
 
     //if ($_ENV['COMPOSER']['AUTOLOAD'] == true)
   require_once APP_PATH . APP_ROOT . APP_BASE['vendor'] . 'autoload.php';
   require_once APP_PATH . APP_ROOT . APP_BASE['config'] . 'composer.php';
 
 ?>
-    <!-- iframe src="composer_pkg.php" style="height: 500px; width: 700px;"></iframe -->
+<!-- iframe src="composer_pkg.php" style="height: 500px; width: 700px;"></iframe -->
     <div style="width: 700px;">
       <div style="display: inline-block; width: 350px;">Composers Vendor Packages [Installed] List</div>
       <div style="display: inline-block; text-align: right; width: 300px;">
@@ -50,6 +56,7 @@ $tableGen = function(): string {
         </form>
       </div>
     </div>
+
     <table style="width: inherit; border: none;">
       <tr style=" border: none;">
 <?php
@@ -554,7 +561,7 @@ if (defined('COMPOSER_VENDORS')) {
                       // (!isset($_GET['path']) ? '' : $_GET['path'] . ($_GET['path'] == '' ? '' : '/' )) . basename($path)
                       . '<img src="resources/images/directory.png" width="50" height="32" /><br />' . basename($path) . '/</a>';
                       break;
-              }
+                  }
                 elseif (is_file($path)) {
                   if (preg_match('/^\..*/', basename($path))) {
                     switch (basename($path)) {
@@ -654,7 +661,7 @@ if (defined('COMPOSER_VENDORS')) {
 
                   } elseif (preg_match('/^.*\.php$/', basename($path))) {
                     if (preg_match('/^project\.php/', basename($path)))
-                      echo '<a style="position: relative;" href="' . (isset($_GET['project']) ? '?project#!' : '#') . '" onclick="document.getElementById(\'app_project-container\').style.display=\'block\';"><div style="position: absolute; left: -60px; top: -20px; color: red; font-weight: bold;">' . (isset($_GET['project']) ? '' : '') . '</div><img src="resources/images/project-icon.png" width="40" height="50" /></a><br /><a href="' . (isset($_GET['project']) ? '?project#!' : '?app=ace_editor&' . (!isset($_GET['path']) ? '' : 'file=' . $_GET['path'] . '&') . /*'path=' . (basename(dirname($path)) == basename(parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH) ? 'failed' : basename(dirname($path)))) .*/ 'file=' . basename($path)) . '" ' . (isset($_GET['project']) ? 'onclick="document.getElementById(\'app_ace_editor-container\').style.display=\'block\';"' : '') . '>' . basename($path) . '</a>';
+                      echo '<a style="position: relative;" href="' . (isset($_GET['project']) ? '?project#!' : '#') . '" onclick="document.getElementById(\'app_project-container\').style.display=\'block\';"><div style="position: absolute; left: -60px; top: -20px; color: red; font-weight: bold;">' . (isset($_GET['project']) ? '' : '') . '</div><img src="resources/images/project-icon.png" width="40" height="50" /></a><br /><a href="' . (isset($_GET['project']) ? '?project#!' : '?app=ace_editor&' . (!isset($_GET['path']) ? '' : 'path=' . $_GET['path'] . '&') . /*'path=' . (basename(dirname($path)) == basename(parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH) ? 'failed' : basename(dirname($path)))) .*/ 'file=' . basename($path)) . '" ' . (isset($_GET['project']) ? 'onclick="document.getElementById(\'app_ace_editor-container\').style.display=\'block\';"' : '') . '>' . basename($path) . '</a>';
                     elseif (basename($path) == 'phpunit.php') echo '<a href="?' . (!isset($_GET['client']) ? (!isset($_GET['project']) ? '' : 'project=' . $_GET['project'] . '&') : 'client=' . $_GET['client'] . '&' ) . 'app=ace_editor&path=' . (basename(dirname($path)) == basename(parse_url($_SERVER['REQUEST_URI'] ?? '', PHP_URL_PATH) ? 'failed' : basename(dirname($path)))) . '&file=' . basename($path) . '"><img src="resources/images/phpunit_php_file.png" width="40" height="50" /></a><br />' . '<a href="?file=' . basename($path) . '" onclick="handleClick(event, \'' . $path . '\')">' . basename($path) . '</a>';
                     else echo '<a href="?' . (!isset($_GET['client']) ? (!isset($_GET['project']) ? '' : 'project=' . $_GET['project'] . '&') : 'client=' . $_GET['client'] . '&' . (isset($_GET['domain']) ? 'domain=' . ($_GET['domain'] != '' ? $_GET['domain'] . '&' : '') : '' ) ) . 'app=ace_editor&path=' . /*(basename(dirname($path)) == basename(parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH) ? 'failed' : basename(dirname($path))))*/ (isset($_GET['path']) ? $_GET['path'] : '') . '&file=' . basename($path) . '"><img src="resources/images/php_file.png" width="40" height="50" /></a><br />' . '<a href="?file=' . basename($path) . '" onclick="handleClick(event, \'' . $path . '\')">' . basename($path) . '</a>';
           
@@ -696,7 +703,8 @@ ob_end_clean();
 
 ob_start(); ?>
 <div id="app_directory-container" style="position: absolute; display: <?= isset($_GET['debug']) || isset($_GET['project']) || isset($_GET['path']) ? /*'block'*/ 'none' : 'none'; ?>; background-color: rgba(255,255,255,0.8); height: 600px; top: 100px; margin-left: auto; margin-right: auto; left: 0; right: 0; width: 700px; overflow-x: hidden; overflow-y: scroll; padding: 10px;">
-<?php echo $tableGen(); /*  '';*/  ?>
+
+<?php echo $tableGen(); /*'';*/ ?>
 </div>
 <?php $app[$directory]['body'] = ob_get_contents();
 ob_end_clean(); ?>
@@ -712,7 +720,7 @@ ob_end_clean(); ?>
       // Allow the hyperlink to work as usual
       window.location.href = event.currentTarget.href;
     } else {
-
+      document.getElementById('app_directory-container').style.display = 'block';
 
       if (matches = path.match(/^.*\/$/gm)) {
 

@@ -37,7 +37,7 @@ if (APP_SELF != APP_SERVER && in_array(APP_PUBLIC, get_included_files()) /*APP_S
 
 //$path = "/path/to/your/logfile.log"; // Replace with your actual log file path
 if (is_readable($path = APP_PATH . APP_ROOT . $_ENV['ERROR_LOG_FILE']) && filesize($path) >= 0 ) {
-  $errors['ERROR_PATH'] = "$path\n";
+  $errors['ERROR_PATH'] = "\n$path\n";
   //if (stripos(PHP_OS, 'WIN') === 0) {
   //  $errors['ERROR_LOG'] = shell_exec("powershell Get-Content -Tail 10 $path") . "\n";
   //} else {
@@ -72,15 +72,29 @@ if (is_readable($path = APP_PATH . APP_ROOT . $_ENV['ERROR_LOG_FILE']) && filesi
 
 $previousFilename = '';
 
-!isset($_GET['app']) || $_GET['app'] != 'git' ? 
-  (APP_SELF == APP_PUBLIC ? (!defined('APP_ROOT') || empty(APP_ROOT) ?: $dirs[] = APP_PATH . APP_BASE['config'] . 'git.php') :
-    $dirs[] = APP_PATH . APP_BASE['config'] . 'git.php') :
-  $dirs[] = APP_PATH . APP_BASE['config'] . 'git.php';
+$dirs = [];
 
-!isset($_GET['app']) || $_GET['app'] != 'composer' ? (APP_SELF == APP_PUBLIC ? (!defined('APP_ROOT') || empty(APP_ROOT) ? (!is_file($autoload = APP_PATH . APP_BASE['vendor'] . 'autoload.php') ?: $dirs[] = $autoload) : $dirs[] = APP_PATH . APP_ROOT . APP_BASE['vendor'] . 'autoload.php') : $dirs[] = APP_PATH . APP_BASE['config'] . 'composer.php') :
-  $dirs[] = APP_PATH . APP_BASE['config'] . 'composer.php';
+!isset($_GET['app']) || $_GET['app'] != 'git' ? :
+  //$dirs[] = APP_PATH . APP_BASE['config'] . 'git.php'
+  (APP_SELF != APP_PUBLIC ? : 
+    $dirs[] = APP_PATH . APP_BASE['config'] . 'git.php');
+/**/
 
-$dirs[] = APP_PATH . APP_BASE['config'] . 'npm.php';
+!isset($_GET['app']) || $_GET['app'] != 'composer' ? :
+  //$dirs[] = APP_PATH . APP_BASE['config'] . 'composer.php'
+  (APP_SELF == APP_PUBLIC ?
+    (!defined('APP_ROOT') || empty(APP_ROOT) ?
+      (!is_file($autoload = APP_PATH . (!defined('APP_ROOT') || empty(APP_ROOT) ? '' : APP_ROOT) . APP_BASE['vendor'] . 'autoload.php') ?: $dirs[] = $autoload) : $dirs[] = APP_PATH . APP_ROOT . APP_BASE['vendor'] . 'autoload.php') : $dirs[] = APP_PATH . APP_BASE['config'] . 'composer.php');
+
+
+!isset($_GET['app']) || $_GET['app'] != 'npm' ? :
+  //$dirs[] = APP_PATH . APP_BASE['config'] . 'git.php'
+  (APP_SELF != APP_PUBLIC ? : 
+    (!is_file($autoload = APP_PATH . APP_BASE['config'] . 'npm.php') ?: $dirs[] = $autoload ));
+
+unset($autoload);
+
+//dd(get_required_files(), true); // COMPOSER_VENDORS
 
   //$dirs = [
     //0 => APP_PATH . APP_BASE['config'] . 'git.php',
@@ -105,9 +119,13 @@ $dirs[] = APP_PATH . APP_BASE['config'] . 'npm.php';
     //elseif (basename($b) === 'composer.php')
     //    return 1; // $a comes before $b
 */
-    if (basename($a) === 'git.php')
+    if (dirname($a) . '/' . basename($a) === 'vendor/autoload.php')
         return -1; // $a comes after $b
-    elseif (basename($b) === 'git.php')
+    elseif (dirname($b) . '/' . basename($b) === 'vendor/autoload.php')
+        return 1; // $a comes before $b
+    elseif (dirname($a) . '/' . basename($a) === 'config/git.php')
+        return -1; // $a comes after $b
+    elseif (dirname($b) . '/' . basename($b) === 'config/git.php')
         return 1; // $a comes before $b
     else 
         return strcmp(basename($a), basename($b)); // Compare other filenames alphabetically
@@ -139,6 +157,8 @@ $dirs[] = APP_PATH . APP_BASE['config'] . 'npm.php';
     }
 
   }
+
+
 
 /** Loading Time: 0.638s **/
 
@@ -280,7 +300,7 @@ $dirs[] = APP_PATH . APP_BASE['config'] . 'npm.php';
 
     
  if (APP_SELF == APP_PUBLIC) {
-  
+
   $appPaths = array_filter(glob(__DIR__ . DIRECTORY_SEPARATOR . 'app.*.php'), 'is_file'); // public/
   
   // $globPaths[] = __DIR__ . DIRECTORY_SEPARATOR . 'app.console.php';

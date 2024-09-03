@@ -5,6 +5,9 @@ if (__FILE__ == get_required_files()[0])
     ? (is_file('config.php') ? 'config.php' : '../config/config.php') : '') require_once $path;
   else die(var_dump("$path path was not found. file=config.php"));
 
+  
+if (is_file($path = APP_PATH . APP_BASE['config'] . 'npm.php') ? $path : '' ) require_once $path; 
+
 ob_start(); ?>
 
 #app_npm-container { position: absolute; display: none; top: 60px; margin: 0 auto; left: 50%; right: 50%;  }
@@ -347,10 +350,9 @@ if (is_file($path . 'tailwindcss-3.3.5.js')) {
 </script>
 </body>
 </html>
-<?php $contents = ob_get_contents(); 
+<?php $app['html'] = ob_get_contents(); 
   ob_end_clean(); 
-  return $contents;
-
+  return $app['html'];
 } else {
   return $app;
 }

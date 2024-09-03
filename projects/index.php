@@ -62,7 +62,7 @@ echo $linechart->chart();
 $output = ob_get_clean();
 ob_end_clean();
 
-$output = ($output == '' ? ' ' : $output);
+$output = $output == '' ? ' ' : $output;
 
 return <<<END
 <!DOCTYPE html>

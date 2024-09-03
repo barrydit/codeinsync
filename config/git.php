@@ -125,13 +125,14 @@ if (preg_match($pattern, $node[0]->nodeValue, $matches)) {
 } else {
   $errors['GIT_LATEST'] = $node[0]->nodeValue . ' did not match $version';
 }
+//dd(dirname(__DIR__) . DIRECTORY_SEPARATOR . 'public');
 
-if (basename(dirname(APP_SELF)) == __DIR__ . DIRECTORY_SEPARATOR . 'public') {
-  if ($path = realpath((basename(__DIR__) != 'config' ? NULL : __DIR__ . DIRECTORY_SEPARATOR) . 'ui.git.php')) {
-    require_once $path;
+if (dirname(APP_SELF) == dirname(__DIR__) . DIRECTORY_SEPARATOR . 'public') {
+  if ($path = realpath(dirname(APP_SELF) . DIRECTORY_SEPARATOR . 'ui.git.php')) {
+    $app['html'] = require_once $path;
   }
 }
 
 if (APP_SELF == __FILE__ || (defined('APP_DEBUG') && isset($_GET['app']) && $_GET['app'] == 'git')) {
-  die($appGit['html']);
+  // die($app['html']);
 }

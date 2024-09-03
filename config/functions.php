@@ -407,7 +407,7 @@ function parse_ini_file_multi($file) {
   return $output;
 } */
 
-function parse_ini_file_multi($file) {
+function parse_ini_file_multi($file): array {
   $data = (array) parse_ini_file($file, true, INI_SCANNER_TYPED);
   $output = [];
 
@@ -429,16 +429,16 @@ function parse_ini_file_multi($file) {
           }
       } else {
           // Do not escape regular expressions
-          if (preg_match('/^\/.*\/[a-z]*$/i', $values)) {
-              $output[$section] = $values;
-          } else {
-              // Handle boolean values explicitly
-              if (is_bool($values)) {
-                  $output[$section] = $values ? 'true' : 'false';
-              } else {
-                  $output[$section] = addcslashes($values, '"\\');
-              }
-          }
+          // Unparenthesized `a ? b : c ? d : e` is not supported.
+          // $output[$section] = (preg_match('/^\/.*\/[a-z]*$/i', $values)) ? $values : (is_bool($values)) ? $values ? 'true' : 'false' : addcslashes($values, '"\\');
+
+        if (preg_match('/^\/.*\/[a-z]*$/i', $values)) {
+            $output[$section] = $values;
+        } else {
+            // Handle boolean values explicitly
+            $output[$section] = (is_bool($values)) ? $values ? 'true' : 'false' : addcslashes($values, '"\\');
+        }
+
       }
   }
 

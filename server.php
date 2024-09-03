@@ -6,7 +6,7 @@
 
 require_once APP_PATH . 'config' . DIRECTORY_SEPARATOR . 'config.php';
 
-ini_set('error_log', APP_PATH . 'server.log' );
+ini_set('error_log', APP_PATH . 'server.log');
 ini_set('log_errors', 'true');
 
 !defined('PID_FILE') and define('PID_FILE', /*getcwd() . */ APP_PATH . 'server.pid');
@@ -14,8 +14,7 @@ ini_set('log_errors', 'true');
 //!file_exists($file = posix_getpwuid(posix_getuid())['dir'].'/.aws/credentials')
 //  and die('an aws credentials file is required. exiting file=' . $file);
 if (PHP_SAPI === 'cli') {
-stripos(PHP_OS, 'LIN') === 0 && !extension_loaded('posix') || !extension_loaded('pcntl')
-  and die('posix && pcntl required. exiting');
+  stripos(PHP_OS, 'LIN') === 0 && !extension_loaded('posix') || !extension_loaded('pcntl') and die('posix && pcntl required. exiting');
 
 !is_writable('/tmp')
   and die('must be able to write to /tmp to continue. exiting.');
@@ -36,7 +35,7 @@ if (file_exists(PID_FILE) && $pid = (int) file_get_contents(PID_FILE)) {
     }
   }
 } else if (isset($_SERVER['SUPERVISOR_ENABLED']) && $_SERVER['SUPERVISOR_ENABLED'] == '1') {
-  touch(PID_FILE);
+  file_put_contents(PID_FILE, $pid = getmypid());
   exit(1);
 }
 file_put_contents(PID_FILE, $pid = getmypid());
@@ -92,7 +91,8 @@ stripos(PHP_OS, 'LIN') === 0 and cli_set_process_name($title);
         echo 'Shutting down server... PID=' . getmypid() . "\n";
         Logger::error('Shutting down server... PID=' . getmypid());
         //fclose($server); 
-        unlink(PID_FILE);
+        $file = PID_FILE;
+        !is_file($file)?: unlink($file);
         if (isset($socket) && is_resource($stream)) {
           if (extension_loaded('sockets')) {
             socket_write($socket, 'Shutting down server... PID=' . getmypid());
@@ -116,6 +116,25 @@ stripos(PHP_OS, 'LIN') === 0 and cli_set_process_name($title);
   pcntl_signal(SIGINT, 'signalHandler');
 }
 
+function safe_chdir($path) {
+  // Resolve the absolute path of the current directory
+  $current_dir = realpath($path);
+  
+  // Define the root directory you don't want to go past
+  $root_dir = realpath('/mnt/c/www');
+  
+  // Resolve the parent directory path
+  $parent_dir = realpath("$current_dir/../");
+  
+  // Check if the parent directory is within the allowed root
+  if (strpos($parent_dir, $root_dir) === 0 && strlen($parent_dir) >= strlen($root_dir)) {
+      chdir($parent_dir);
+      echo "Changed directory to: " . getcwd();
+  } else {
+      echo "Cannot go past the root directory: $root_dir";
+  }
+}
+
 set_time_limit(0);
 
 //dd(get_defined_constants()); // get_required_files()
@@ -134,13 +153,14 @@ function clientInputHandler($input) {
     //$input = trim($input);
     $output = '';
 
+    $pid = file_get_contents($pidFile = APP_PATH . 'server.pid');
+
     if (preg_match('/^cmd:\s*(shutdown|restart|server\s*(shutdown|restart))\s*?(?:(-f))(?=\r?\n$)?/si', $input, $matches)) { 
       //signalHandler(SIGTERM); // $running = false;
       $output = var_export($matches, true);
-      if ($matches[3] == '-f')
-        signalHandler(SIGTERM);
+      if ($matches[3] == '-f') signalHandler(SIGTERM) and unlink($pidFile);
     } elseif (preg_match('/^cmd:\s*server\s*status(?=\r?\n$)?/si', $input)) {
-      $output = 'Server is running... PID=' . getmypid() . "\n";
+      $output = 'Server is running... PID=' . $pid . "\n";
     } elseif (preg_match('/^cmd:\s*chdir\s*(.*)(?=\r?\n$)?/si', $input, $matches)) {
       ini_set('log_errors', 'false');
       $output = "Changing directory to " . ($path = APP_PATH . APP_ROOT . trim($matches[1]) . '/');
@@ -378,15 +398,15 @@ $manager->addNotification($notification1);
 // Exception: Interface "Ratchet\MessageComponentInterface" not found
 
 //get_included_files()[0] ==
-if (PHP_SAPI === 'cli') 
-if (is_dir($path = __DIR__ . APP_BASE['vendor'] . 'cboden' . DIRECTORY_SEPARATOR . 'ratchet') && !empty(glob($path)) && file_exists(__DIR__ . APP_BASE['vendor'] . 'autoload.php')) {
-  error_log('Creating a websocket server...');
-  require_once __DIR__ . DIRECTORY_SEPARATOR . APP_BASE['vendor'] . 'autoload.php';
-  require_once __DIR__ . DIRECTORY_SEPARATOR . APP_BASE['config'] . 'classes' . DIRECTORY_SEPARATOR . 'class.websocketserver.php';
-} else
-  try {
+if (PHP_SAPI === 'cli')
+  if (is_dir($path = __DIR__ . APP_BASE['vendor'] . 'cboden' . DIRECTORY_SEPARATOR . 'ratchet') && !empty(glob($path)) && file_exists(__DIR__ . APP_BASE['vendor'] . 'autoload.php')) {
+    error_log('Creating a websocket server...');
+    require_once __DIR__ . DIRECTORY_SEPARATOR . APP_BASE['vendor'] . 'autoload.php';
+    require_once __DIR__ . DIRECTORY_SEPARATOR . APP_BASE['config'] . 'classes' . DIRECTORY_SEPARATOR . 'class.websocketserver.php';
+  } else
+try {
   error_log('Creating a stream/socket server...');
-    
+
   /**
    * Creates a server socket.
    * @param mixed $address
@@ -498,7 +518,7 @@ if (is_dir($path = __DIR__ . APP_BASE['vendor'] . 'cboden' . DIRECTORY_SEPARATOR
       }
 
       // Read and process client data
-      $data = processClientData(socket_read($client, 1024));
+      $data = processClientData(socket_read($client, 1024)) . 'test';
 
       // Send processed data back to the client
       socket_write($client, $data);

@@ -145,10 +145,11 @@ class composerSchema {
   }
 }
 
-if (is_file($include = APP_PATH . APP_ROOT . APP_BASE['vendor'] . 'autoload.php'))
-  //if (APP_SELF == APP_PUBLIC)
-    //if (isset($_ENV['COMPOSER']['AUTOLOAD']) && (bool) $_ENV['COMPOSER']['AUTOLOAD'] === true)
-  require_once $include;
+//if (is_file($include = APP_PATH . APP_ROOT . APP_BASE['vendor'] . 'autoload.php'))
+//  if (APP_SELF == APP_PUBLIC)
+//    if (isset($_ENV['COMPOSER']['AUTOLOAD']) && (bool) $_ENV['COMPOSER']['AUTOLOAD'] === true)
+//  require_once $include;
+
 if (!defined('APP_CONFIG') || !in_array(APP_CONFIG, get_required_files()))
   die(APP_CONFIG . ' is missing. Presumed that this file was opened on its own.');
 
@@ -210,7 +211,6 @@ if (in_array(Composer\Autoload\ClassLoader::class, $loadedLibraries)) {
   }
 }
 
-//dd();
 $vendors = [];
 
 // Print information about each package
@@ -286,15 +286,15 @@ if (stripos(PHP_OS, 'WIN') === 0) { // DO NOT REMOVE! { .. }
     define('COMPOSER_BIN', '/usr/local/bin/composer');
   }
 */
-    (realpath($composer_which = trim(shell_exec(APP_SUDO . 'which composer')))) or $errors['COMPOSER-WHICH'] = 'which did not find composer. Err=' . $composer_which;
+    (realpath($composer_which = trim(shell_exec(APP_SUDO . 'which composer')))) or $errors['COMPOSER-WHICH'] = "which did not find composer. Err=$composer_which";
 
-    foreach(array( /*'/usr/local/bin/composer',*/ 'php ' . APP_PATH . 'composer.phar', $composer_which) as $key => $bin) {
+    foreach([ /*'/usr/local/bin/composer',*/ 'php ' . APP_PATH . 'composer.phar', $composer_which] as $key => $bin) {
       !isset($composer) and $composer = array();
 
 /*//*/
-      if (preg_match('/^php.*composer\.phar$/', $bin)) !defined('COMPOSER_PHAR') and define('COMPOSER_PHAR', [ 'bin' => 'php ' . $bin]);
+      if (preg_match('/^php.*composer\.phar$/', $bin)) !defined('COMPOSER_PHAR') and define('COMPOSER_PHAR', ['bin' => "php $bin"]);
       else {
-        $proc = proc_open('env COMPOSER_ALLOW_SUPERUSER=' . COMPOSER_ALLOW_SUPERUSER . '; ' . (stripos(PHP_OS, 'WIN') === 0 ? '' : APP_SUDO ) . basename($bin) . ' --version;', array( array("pipe","r"), array("pipe","w"), array("pipe","w")), $pipes);
+        $proc = proc_open('env COMPOSER_ALLOW_SUPERUSER=' . COMPOSER_ALLOW_SUPERUSER . '; ' . (stripos(PHP_OS, 'WIN') === 0 ? '' : APP_SUDO ) . basename($bin) . ' --version;', [["pipe", "r"], ["pipe", "w"], ["pipe", "w"]], $pipes);
 
         $stdout = stream_get_contents($pipes[1]);
         $stderr = stream_get_contents($pipes[2]);
@@ -304,8 +304,8 @@ if (stripos(PHP_OS, 'WIN') === 0) { // DO NOT REMOVE! { .. }
         if (preg_match('/Composer(?: version)? (\d+\.\d+\.\d+) (\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2})/', $stdout, $matches)) {
 
           $composer[$key]['bin'] = $bin;
-          $composer[$key]['version'] = $matches[1];
-          $composer[$key]['date'] = $matches[2];        
+          (!isset($matches[1])?: $composer[$key]['version'] = $matches[1]);   
+          (!isset($matches[2]) || is_bool($matches[2]) ?: $composer[$key]['date'] = $matches[2]);          
         } else {
           if (empty($stdout)) {
             if (!empty($stderr))
@@ -520,10 +520,9 @@ defined('COMPOSER_JSON') or define('COMPOSER_JSON', [
   'path' => APP_PATH . APP_ROOT . 'composer.json'
 ]);
 
-ob_start(); 
-$root = APP_ROOT ?? ''; // do not use APP_ROOT
-?>
-<?= $composer_exec; ?> init --quiet --no-interaction --working-dir="<?= APP_PATH . $root; ?>" --name="<?= $composerUser . '/' . str_replace('.', '_', basename($root) ?? $componetPkg); ?>" --description="General Description" --author="Barry Dick <barryd.it@gmail.com>" --type="project" --homepage="https://github.com/<?= $composerUser . '/' . str_replace('.', '_', basename($root) ?? $componetPkg); ?>" --require="php:^7.4||^8.0" --require="composer/composer:^1.0" --require-dev="pds/skeleton:^1.0" --stability="dev" --license="WTFPL"
+ob_start(); ?>
+
+<?= $composer_exec; ?> init --quiet --no-interaction --working-dir="<?= APP_PATH . APP_ROOT; ?>" --name="<?= $composerUser . '/' . str_replace('.', '_', basename(APP_ROOT) ?? $componetPkg); ?>" --description="General Description" --author="Barry Dick <barryd.it@gmail.com>" --type="project" --homepage="https://github.com/<?= $composerUser . '/' . str_replace('.', '_', basename(APP_ROOT) ?? $componetPkg); ?>" --require="php:^7.4||^8.0" --require="composer/composer:^1.0" --require-dev="pds/skeleton:^1.0" --stability="dev" --license="WTFPL"
 <?php
 defined('COMPOSER_INIT_PARAMS')
   or define('COMPOSER_INIT_PARAMS', /*<<<TEXT TEXT*/ ob_get_contents());
@@ -759,7 +758,7 @@ if (defined('COMPOSER_VERSION') && defined('COMPOSER_LATEST') && defined('APP_DE
 
   if (version_compare(COMPOSER_LATEST, COMPOSER_VERSION, '>') != 0) {
     //dd(basename(COMPOSER_EXEC['bin']) . ' self-update;'); // (stripos(PHP_OS, 'WIN') === 0 ? '' : APP_SUDO) . 
-    $proc = proc_open(basename(COMPOSER_EXEC['bin']) . ' self-update;', array( array("pipe","r"), array("pipe","w"), array("pipe","w")), $pipes);
+    $proc = proc_open(basename(COMPOSER_EXEC['bin']) . ' self-update;', [["pipe", "r"], ["pipe", "w"], ["pipe", "w"]], $pipes);
 
 /*
 //fwrite($pipes[0], "yes");
@@ -772,7 +771,7 @@ fclose($pipes[1]);
 fclose($pipes[2]);
 */
 /**/
-    list($stdout, $stderr, $exitCode) = [stream_get_contents($pipes[1]), stream_get_contents($pipes[2]), proc_close($proc)];
+    [$stdout, $stderr, $exitCode] = [stream_get_contents($pipes[1]), stream_get_contents($pipes[2]), proc_close($proc)];
     
     if (empty($stdout)) {
       if (!empty($stderr))
@@ -1114,12 +1113,15 @@ if (!defined('VENDOR_JSON') && isset(COMPOSER['json']->{'require'}->{'composer'}
 
 if (basename(dirname(APP_SELF)) == __DIR__ . DIRECTORY_SEPARATOR . 'public') {
   if ($path = realpath((basename(__DIR__) != 'config' ? NULL : __DIR__ . DIRECTORY_SEPARATOR) . 'ui.composer.php')) {
-    require_once $path;
+    $app['html'] = require_once $path;
   }
 }
 
-if (APP_SELF == __FILE__ || (defined(APP_DEBUG) && isset($_GET['app']) && $_GET['app'] == 'composer')) {
-  die($app['composer']['html']);
+if (APP_SELF == __FILE__ || (defined('APP_DEBUG') && isset($_GET['app']) && $_GET['app'] == 'composer')) {
+
+  //dd(get_included_files());
+
+  //die($apps['composer']['html']);
 }
 
 unset($output);

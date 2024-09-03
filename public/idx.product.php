@@ -1,5 +1,7 @@
 <?php
 
+//dd(get_defined_constants(true)['user']); dd(get_included_files());
+
 if (__FILE__ == get_required_files()[0] && __FILE__ == realpath($_SERVER["SCRIPT_FILENAME"]))
   if ($path = basename(dirname(get_required_files()[0])) == 'public') { // (basename(getcwd())
     if (is_file($path = realpath('config.php'))) {
@@ -8,6 +10,58 @@ if (__FILE__ == get_required_files()[0] && __FILE__ == realpath($_SERVER["SCRIPT
   }
   else
     die(var_dump("Path was not found. file=$path"));
+
+    
+// Check if client and domain are set, if not, set to default values
+//if (!isset($_GET['client']) || !isset($_GET['domain']) /*&& !defined('APP_ROOT')*/)
+if (!isset($_GET['client']) || !isset($_GET['domain']) && APP_DOMAIN != $_ENV['DEFAULT_DOMAIN']) {
+  !isset($_ENV['DEFAULT_CLIENT']) ? $_GET['client'] : $_GET['client'] = $_ENV['DEFAULT_CLIENT'];
+  !isset($_ENV['DEFAULT_DOMAIN']) ? $_GET['domain'] : $_GET['domain'] = $_ENV['DEFAULT_DOMAIN'];
+}
+
+// Construct the path to the client directory
+$path = APP_PATH . APP_BASE['clientele'] . $_GET['client'] . '/';
+
+// Check if the client directory exists
+if (!is_dir($path)) {
+  // Redirect to root if directory does not exist
+  header('Location: ' . APP_URL_BASE);
+  exit;
+}
+
+// Find the domain if not set
+if (!isset($_GET['domain'])) {
+  $dirs = array_filter(glob("$path*"), 'is_dir');
+  
+  if (count($dirs) == 1) {
+      $domainDir = $dirs[array_key_first($dirs)];
+      if (preg_match(DOMAIN_EXPR, strtolower(basename($domainDir)))) {
+          $_GET['domain'] = basename($domainDir);
+      }
+  } else {
+      $_GET['domain'] = basename(array_values($dirs)[0] ?? '');
+  }
+}
+
+// Update the path with the domain
+$path .= $_GET['domain'] . DIRECTORY_SEPARATOR;
+
+// Check if public directory exists within the domain
+if (is_dir($path . 'public/')) {
+  $path .= 'public/';
+}
+
+// Final redirect if needed
+if (defined('APP_QUERY') && empty(APP_QUERY)) {
+  header('Location: ' . APP_URL_BASE . '?' . http_build_query([
+      'client' => $_GET['client'],
+      'domain' => $_GET['domain']
+  ]) . '#');
+  exit;
+}
+
+// Merge APP_QUERY with GET
+$_GET = array_merge($_GET, APP_QUERY);
 
 header("Content-Type: text/html");
 header("Cache-Control: no-store, no-cache, must-revalidate, max-age=0");
@@ -266,10 +320,10 @@ unset($path);
         <div class="switch">
           <span class="slider round"></span>
           
-          <div id="hide_notice-container" style="position: absolute; display: <?= (isset($errors['GIT_UPDATE']) ? 'block' : 'none') ?>; left: -20px; top: 40px; width: 100px; background-color: white; color: red; font-variant-caps: all-small-caps; text-align: center;">[<a onclick="getElementById('toggle-debug').click(); /*toggleSwitch(this);*/ return null;" href="?hide=update-notice">Hide Notice</a>]</div>
+          <div id="hide_notice-container" style="position: absolute; display: <?= isset($errors['GIT_UPDATE']) ? 'block' : 'none' ?>; left: -20px; top: 40px; width: 100px; background-color: white; color: red; font-variant-caps: all-small-caps; text-align: center;">[<a onclick="getElementById('toggle-debug').click(); /*toggleSwitch(this);*/ return null;" href="?hide=update-notice">Hide Notice</a>]</div>
         </div>
 
-        <div class="right" style="background-color: #0078D7; display: <?= (isset($errors['GIT_UPDATE']) ? 'inline-block' : 'none') ?>; color: #FFF;"> &nbsp;<span style="background-color: #FFF; color: #0078D7;">&quot;Update&quot;</span>&nbsp;</div>
+        <div class="right" style="background-color: #0078D7; display: <?= isset($errors['GIT_UPDATE']) ? 'inline-block' : 'none' ?>; color: #FFF;"> &nbsp;<span style="background-color: #FFF; color: #0078D7;">&quot;Update&quot;</span>&nbsp;</div>
       </label>
       <!-- /form -->
     </div>
@@ -367,7 +421,7 @@ unset($path);
               }
               ?>
           </select> /</span></form><?php if (!empty($_GET['client'])) {
-          $dirs = array_filter(glob(dirname(__DIR__) . /*'../../'.*/ '/clientele/' . $_GET['client'] . '/*'), 'is_dir'); ?><form style="display: inline;" autocomplete="off" spellcheck="false" action="" method="GET"><?= (isset($_GET['client']) && !$_GET['client'] ? '' : '<input type="hidden" name="client" value="' . $_GET['client'] . '" / >') ?><select id="domain" name="domain" onchange="this.form.submit();">
+          $dirs = array_filter(glob(dirname(__DIR__) . /*'../../'.*/ '/clientele/' . $_GET['client'] . '/*'), 'is_dir'); ?><form style="display: inline;" autocomplete="off" spellcheck="false" action="" method="GET"><?= isset($_GET['client']) && !$_GET['client'] ? '' : '<input type="hidden" name="client" value="' . $_GET['client'] . '" / >' ?><select id="domain" name="domain" onchange="this.form.submit();">
             <option value="" <?= (isset($_GET['domain']) && $_GET['domain'] == '' ? 'selected' : '') ?>>---</option>
             <?php foreach ($dirs as $dir) { ?>
             <option <?= (isset($_GET['domain']) && $_GET['domain'] == basename($dir) ? 'selected' : '') ?>><?= basename($dir); ?></option>
@@ -396,7 +450,7 @@ unset($path);
               echo '              <option value="' . (isset($_GET['path']) ?  $_GET['path'] . DIRECTORY_SEPARATOR : '') . basename($dir) . '"' . (isset($_GET['path']) && $_GET['path'] == basename($dir) ? ' selected' : '' )  . '>' . basename($dir) . '/</option>' . "\n";
             }
           ?>
-      </select> / <a href="#test">+</a>
+      </select> / <a href="#" onclick="document.getElementById('info').style.display = 'block';">+</a>
       </span>
       </form>
 
@@ -477,9 +531,18 @@ unset($path);
   </form>
 </div>
 */ ?>
+
 <div style="position: relative;">
-  <?php if (isset($_GET['client']) && $_GET['client'] != '') { ?>
-  <div id="app_client-container" style="position: relative; display: none; top: 100px; margin: 0 auto; width: 800px; height: 600px; background-color: rgba(255, 255, 255, 0.9); overflow-x: scroll;">
+  <?php if (isset($_GET['client']) && $_GET['client'] != '') { 
+    
+if (!empty(APP_HOST) && APP_HOST != '127.0.0.1' || APP_DOMAIN != 'localhost') {
+  if (check_http_status() && class_exists('Whois')) {
+    $whois = new Whois();
+
+    !defined('APP_WHOIS') and define('APP_WHOIS', $whois->lookup($query = APP_DOMAIN, false)); 
+  }
+} ?>
+  <div id="app_client-container" style="position: relative; display: <?= (!defined('APP_WHOIS') ? 'none' : 'block') . ';'; ?> top: 100px; margin: 0 auto; width: 800px; height: 600px; background-color: rgba(255, 255, 255, 0.9); overflow-x: scroll;">
     <div style="display: inline;">
       <span style="background-color: #B0B0B0; color: white;">
       <input type="checkbox" checked /> Preview Domain
@@ -499,12 +562,7 @@ $input = $_GET['client'];
 $decoded = urldecode($input);
           
 // Use regex to extract name components
-if (preg_match('/^\d*-(\w+)[,]\s*(\w+)$/', $decoded, $matches)) {
-// $matches[1] contains the last name, $matches[2] contains the first name
-$output = $matches[2] . ' ' . $matches[1];
-} else {
-$output = 'Invalid Input';
-}
+$output = (preg_match('/^\d*-(\w+)[,]\s*(\w+)$/', $decoded, $matches)) ? "$matches[2] $matches[1]" : 'Invalid Input';
 ?>
         Work Status: 
         <select>
@@ -519,11 +577,8 @@ $output = 'Invalid Input';
                      (($status == 300) ? "Previous" :
                      (($status == 400) ? "Future" : "Unknown"))));
             ?>
-          <option><?= $statusCode . ' - ' . $status ?></option>
-          <?php
-            $count = 1;
-            }
-            ?>
+          <option><?= "$statusCode - $status" ?></option>
+<?php $count = 1; } ?>
         </select>
         <br />
         Name: <input type="text" value="<?= $output; ?>" /><br />
@@ -533,21 +588,25 @@ $output = 'Invalid Input';
         <span style="">
           Domain: 
           <select>
-            <option>example.com</option>
+            <option><?= $_GET['domain'] ?? 'example.com' ?></option>
           </select>
         </span>
         <br />
         <span style="">Add Domain: <input type="text"></span><br />
         <span>Domain Expiry: <input type="text" value="
-          <?php
-            $result = [];
-            
-            if (check_http_status() && class_exists('Whois')) {
-              $whois = new Whois();
-              $query = 'example.com';
-              $result = $whois->lookup($query,false);
-            }
-            
+<?php
+
+// Get the domain name
+if (defined('APP_WHOIS') && !empty(APP_WHOIS)) {
+  $result = APP_WHOIS;
+  echo !empty($result) && isset($result['regrinfo']['domain']['expires']) ? $result['regrinfo']['domain']['expires'] : 'Unknown';
+} else {
+  echo 'Unknown';
+}
+
+//dd(get_required_files());
+
+
             echo !empty($result) && isset($result['regrinfo']['domain']['expires']) ? $result['regrinfo']['domain']['expires'] : 'Unknown';
              ?>" style="text-align: right;"/></span><br /><br />
       </div>
@@ -595,10 +654,10 @@ $output = 'Invalid Input';
                   
                   if (!empty($ip_addrs = gethostbynamel($dname['regrinfo']['domain']['name'] = 'example.com')))
                     foreach ($ip_addrs as $ip_addr) {
-                      echo '            <option>' . $ip_addr . '</option>' . "\n";
+                      echo "            <option>$ip_addr</option>\n";
                     }
                   else
-                    echo '            <option></option>' . "\n";
+                    echo "            <option></option>\n";
                   
                   ?>
                 </select>
@@ -857,13 +916,13 @@ $(document).ready(function() {
 
 if (!is_file($path = APP_PATH . APP_BASE['resources'] . 'js/requirejs/require.js') || ceil(abs((strtotime(date('Y-m-d')) - strtotime(date('Y-m-d',strtotime('+5 days',filemtime($path))))) / 86400)) <= 0  ) {
   !is_dir($path = APP_PATH . APP_BASE['resources'] . 'js/requirejs') or @mkdir($path, 0755, true);
-  !is_dir($path) and $errors['JS-REQUIREJS'] = 'JS-REQUIREJS - Failed to create directory: ' . $path;
+  !is_dir($path) and $errors['JS-REQUIREJS'] = "JS-REQUIREJS - Failed to create directory: $path";
   $url = 'https://requirejs.org/docs/release/2.3.6/minified/require.js';
   $handle = curl_init($url);
   curl_setopt($handle, CURLOPT_RETURNTRANSFER, true);
 
   if (!empty($js = curl_exec($handle)))
-    file_put_contents($path, $js) or $errors['JS-REQUIREJS'] = $url . ' returned empty.';
+    file_put_contents($path, $js) or $errors['JS-REQUIREJS'] = "$url returned empty.";
 }
 
 if (!is_file($path)) { ?>
@@ -1002,7 +1061,7 @@ if (date(/*Y-*/ 'm-d') == /*1928-*/ '08-07' ?? /*2023-*/ '03-30') { ?>
     <?php } elseif (date(/*Y-*/ 'm-d') == /*1976-*/ '03-20' ?? /*2017-*/ '07-20') { ?>
     <script src="resources/reels/leave-a-light-on.js" type="text/javascript" charset="utf-8"></script>
     <?php } else {  // array_rand() can't be empty ?>
-    <script src="<?= APP_BASE['resources'] . 'reels/' . 'disturbed_-_it_wasnt_me.js'; /* adhd_song.js !empty($reels = glob(APP_PATH . 'resources/reels/*.js')) ? APP_BASE['resources'] . 'reels/' . basename(array_rand(array_flip(array_filter($reels, 'is_file')), 1)) : ''; APP_BASE['resources'] */?>" type="text/javascript" charset="utf-8"></script>
+    <script src="<?= APP_BASE['resources'] . 'reels/unknown.js'; /*disturbed_-_it_wasnt_me.js adhd_song.js !empty($reels = glob(APP_PATH . 'resources/reels/*.js')) ? APP_BASE['resources'] . 'reels/' . basename(array_rand(array_flip(array_filter($reels, 'is_file')), 1)) : ''; APP_BASE['resources'] */?>" type="text/javascript" charset="utf-8"></script>
     <?php } ?>
     <script type="text/javascript" charset="utf-8">
 

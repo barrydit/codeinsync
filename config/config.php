@@ -134,7 +134,7 @@ if (!function_exists('dd')) {
 
 if (!empty($_GET['client']) || !empty($_GET['domain'])) {
   $path = /*'../../'.*/ 'clientele/' . $_GET['client'] . '/';
-  $dirs = array_filter(glob(dirname(__DIR__) . '/' . $path . '*'), 'is_dir');
+  $dirs = array_filter(glob(dirname(__DIR__) . "/$path*"), 'is_dir');
 
   if (count($dirs) == 1) {
     foreach($dirs as $dir) {
@@ -194,7 +194,7 @@ if (!defined('APP_ROOT')) {
   $path = !isset($_GET['client']) ? '' : 'clientele/' . $_GET['client'] . '/' . (isset($_GET['domain']) ? ($_GET['domain'] != '' ? $_GET['domain'] . '/' : '') : '') . (!isset($_GET['project']) ? '' : 'projects/' . $_GET['project'] . '/'); /* ($_GET['path'] . '/' ?? '')*/
   //die($path);
   //is_dir(APP_PATH . $_GET['path']) 
-  define('APP_ROOT', !empty(realpath(APP_PATH . ($path = rtrim($path, '/')) ) && $path != '') ? "$path/" : null);
+  define('APP_ROOT', !empty(realpath(APP_PATH . ($path = rtrim($path, '/')) ) && $path != '') ? "$path/" : '');  // basename() does not like null
 }
 /*
 if (isset($_GET['path']) && $_GET['path'] != '' && realpath($_GET['path']) && is_dir($_GET['path']))
@@ -247,7 +247,36 @@ if (!is_file($file = APP_PATH . 'projects/index.php')) {
   })->shutdown();
 }
 
-$_ENV = parse_ini_file_multi(APP_PATH . '.env');
+// function loadEnvConfig($file) {
+
+//}
+
+// Load the environment variables from the .env file
+// = loadEnvConfig(APP_PATH . '.env');
+
+$_ENV = (function($file = APP_PATH . '.env') {
+  if (!file_exists($file)) {
+    throw new \RuntimeException(sprintf('%s file does not exist', $file));
+  }
+  return parse_ini_file_multi($file);
+})();
+
+// Access the variables from the parsed .env file
+$domain = $_ENV['SHELL']['DOMAIN'] ?? APP_DOMAIN ?? 'localhost';
+$defaultUser = $_ENV['SHELL']['DEFAULT_USER'] ?? 'www-data';
+$documentRoot = $_ENV['SHELL']['DOCUMENT_ROOT'] ?? $_SERVER['DOCUMENT_ROOT'];
+$homePathEnv = $_ENV['SHELL']['HOME_PATH'] ?? $_SERVER['HOME'];
+
+if (stripos(PHP_OS, 'WIN') === 0) {
+  $shell_prompt = 'www-data' . '@' . $domain . PATH_SEPARATOR . (($homePath = realpath($_SERVER['DOCUMENT_ROOT'])) === getcwd() ? '~': $homePath) . '$ ';
+} else if (isset($_SERVER['HOME']) && ($homePath = realpath($_SERVER['HOME'])) !== false && ($docRootPath = realpath($_SERVER['DOCUMENT_ROOT'])) !== false && strpos($homePath, $docRootPath) === 0) {
+  $shell_prompt = $_SERVER['USER'] . '@' . $domain . PATH_SEPARATOR . ($homePath == getcwd() ? '~': $homePath) . '$ ';
+} elseif (isset($_SERVER['USER'])) {
+  $shell_prompt = $_SERVER['USER'] . '@' . $domain . PATH_SEPARATOR . ($homePath == getcwd() ? '~': $homePath) . '$ ';
+} else {
+  $shell_prompt = 'www-data' . '@' . $domain . PATH_SEPARATOR . (getcwd() == '/var/www' ? '~' : getcwd()) . '$ ';
+}
+
 
 if (basename($dir = getcwd()) != 'config') {
   if (in_array(basename($dir), ['public', 'public_html']))
@@ -255,7 +284,7 @@ if (basename($dir = getcwd()) != 'config') {
 
   chdir(APP_PATH . APP_ROOT);
   if (is_file($file = APP_PATH . APP_ROOT . '.env')) {
-    $env = parse_ini_file_multi(APP_PATH . APP_ROOT . '.env');
+    $env = parse_ini_file_multi($file);
     $_ENV = array_merge_recursive_distinct($_ENV, $env);
 /*
         foreach($env as $key => $value) {

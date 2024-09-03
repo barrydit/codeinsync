@@ -241,7 +241,7 @@ fetch('<?= basename(__FILE__)?>?json')
             .then(data => createVisualization(data));
 
         function createVisualization(data) {
-            const width = 1300, height = 600;
+            const width = 1300, height = 900;
 
             const nodes = [];
             const links = [];
