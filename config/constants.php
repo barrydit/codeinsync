@@ -147,7 +147,7 @@ switch (basename(__DIR__)) {
     $processedCommon = [];
 
     if (empty($common))
-      $errors['APP_BASE'] = json_encode(array_keys($common)); 
+      $errors['APP_BASE'] = json_encode(array_keys($common));
     else {
       foreach ($common as $key => $dirname) {
         if (basename(__DIR__) == 'public' && $dirname == 'public') {

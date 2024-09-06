@@ -104,7 +104,7 @@ ob_end_clean();
 
 ob_start(); ?>
 
-  <div id="app_backup-container" class="<?= (APP_SELF == __FILE__ || isset($_GET['client']) && $_GET['client'] || (isset($_GET['app']) && $_GET['app'] == 'backup')  ? 'selected' : '') ?>" style="position: absolute; <?= (isset($_GET['client']) && $_GET['client'] ? 'display: block;' : '' ) ?> border: 1px solid #000; right: 0; top: 0; z-index: 1;">
+  <div id="app_backup-container" class="<?= APP_SELF == __FILE__ || isset($_GET['client']) && $_GET['client'] || (isset($_GET['app']) && $_GET['app'] == 'backup') ? 'selected' : '' ?>" style="position: absolute; <?= isset($_GET['client']) && $_GET['client'] ? 'display: block;' : '' ?> border: 1px solid #000; right: 0; top: 0; z-index: 1;">
 
 <?php
 if (isset($_GET['client']) && $_GET['client']) {
@@ -127,7 +127,7 @@ $_GET['client'] = urldecode($_GET['client']);
   $dirs = array_filter(glob(dirname(__DIR__) . '/../../clientele/*'), 'is_dir');
 
   foreach ($dirs as $dir) { ?>
-  <option <?= (isset($_GET['client']) && $_GET['client'] == basename($dir) ? 'selected' : '') ?>><?= basename($dir); ?></option>
+  <option <?= isset($_GET['client']) && $_GET['client'] == basename($dir) ? 'selected' : '' ?>><?= basename($dir); ?></option>
 <?php } ?>
 </select>
 </div>
@@ -139,7 +139,7 @@ $_GET['client'] = urldecode($_GET['client']);
 <select id="domain" name="domain" onchange="this.form.submit();">
   <option value="">---</option>
 <?php foreach ($dirs as $dir) { ?>
-  <option <?= (isset($_GET['domain']) && $_GET['domain'] == basename($dir) ? 'selected' : '') ?>><?= basename($dir); ?></option>
+  <option <?= isset($_GET['domain']) && $_GET['domain'] == basename($dir) ? 'selected' : '' ?>><?= basename($dir); ?></option>
 <?php } ?>
 </select>
 </div>
@@ -166,7 +166,7 @@ die(var_dump($dirs));
 
   <table style="width: 75%; font-family: 'Avenir', Verdana, sans-serif; font-size: 10px; color: #000; text-align: left; margin-left: 10px;">
     <tr>
-      <td><input id="folder-<?= $key; ?>" type="checkbox" name="folder[<?= basename($dir) ?>]" value="<?= basename($dir); ?>" checked="" <?= (in_array(basename($dir), ['database', 'vendor', 'var']) ? 'disabled' : '')  ?> />&nbsp;<label for="folder-<?= $key; ?>" style="color: blue; text-transform: uppercase;" title="<?= $dir; ?>"><?= basename($dir); ?>/</label></td>
+      <td><input id="folder-<?= $key; ?>" type="checkbox" name="folder[<?= basename($dir) ?>]" value="<?= basename($dir); ?>" checked="" <?= in_array(basename($dir), ['database', 'vendor', 'var']) ? 'disabled' : '' ?> />&nbsp;<label for="folder-<?= $key; ?>" style="color: blue; text-transform: uppercase;" title="<?= $dir; ?>"><?= basename($dir); ?>/</label></td>
     </tr>
 
 <?php
@@ -180,10 +180,10 @@ die(var_dump($dirs));
     <tr>
       <td >
         <fieldset name="">
-          <input id="files-<?= $key; ?>" type="checkbox" name="folder[<?= $dir ?>][]" value="<?= basename($file) ?>" <?= (!is_file($b_file) ? 'checked=""' : (md5_file($b_file) == $hash ?: 'checked=""')) ?> />&nbsp;<a href="<?= '?client=' . $_GET['client'] . '&domain=' . $_GET['domain']  . '&file=' . $dir . '/' . basename($file) ?>" style="<?=(md5_file($b_file) == $hash ?: 'color: red;')?>" title="<?= (!is_file($b_file) ? '&lt;NO FILE FOUND&gt;' : md5_file($file)) ?>"><?= basename($file) ?></a>
+          <input id="files-<?= $key; ?>" type="checkbox" name="folder[<?= $dir ?>][]" value="<?= basename($file) ?>" <?= !is_file($b_file) ? 'checked=""' : (md5_file($b_file) == $hash ?: 'checked=""') ?> />&nbsp;<a href="<?= '?client=' . $_GET['client'] . '&domain=' . $_GET['domain']  . '&file=' . $dir . '/' . basename($file) ?>" style="<?= md5_file($b_file) == $hash ?: 'color: red;'?>" title="<?= !is_file($b_file) ? '&lt;NO FILE FOUND&gt;' : md5_file($file) ?>"><?= basename($file) ?></a>
         </fieldset>
       </td>
-      <td style="color: <?= (!is_file($b_file)? 'black' : (md5_file($b_file) == $hash ? 'green' : 'red')) ?>;"><?= (!is_file($b_file)? '&lt;NO FILE FOUND&gt;' : '' /*md5_file($file)*/) ?></td>
+      <td style="color: <?= !is_file($b_file) ? 'black' : (md5_file($b_file) == $hash ? 'green' : 'red') ?>;"><?= !is_file($b_file) ? '&lt;NO FILE FOUND&gt;' : '' /*md5_file($file)*/ ?></td>
     </tr>
 <?php } ?>
   </table>

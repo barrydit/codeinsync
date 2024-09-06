@@ -11,57 +11,6 @@ if (__FILE__ == get_required_files()[0] && __FILE__ == realpath($_SERVER["SCRIPT
   else
     die(var_dump("Path was not found. file=$path"));
 
-    
-// Check if client and domain are set, if not, set to default values
-//if (!isset($_GET['client']) || !isset($_GET['domain']) /*&& !defined('APP_ROOT')*/)
-if (!isset($_GET['client']) || !isset($_GET['domain']) && APP_DOMAIN != $_ENV['DEFAULT_DOMAIN']) {
-  !isset($_ENV['DEFAULT_CLIENT']) ? $_GET['client'] : $_GET['client'] = $_ENV['DEFAULT_CLIENT'];
-  !isset($_ENV['DEFAULT_DOMAIN']) ? $_GET['domain'] : $_GET['domain'] = $_ENV['DEFAULT_DOMAIN'];
-}
-
-// Construct the path to the client directory
-$path = APP_PATH . APP_BASE['clientele'] . $_GET['client'] . '/';
-
-// Check if the client directory exists
-if (!is_dir($path)) {
-  // Redirect to root if directory does not exist
-  header('Location: ' . APP_URL_BASE);
-  exit;
-}
-
-// Find the domain if not set
-if (!isset($_GET['domain'])) {
-  $dirs = array_filter(glob("$path*"), 'is_dir');
-  
-  if (count($dirs) == 1) {
-      $domainDir = $dirs[array_key_first($dirs)];
-      if (preg_match(DOMAIN_EXPR, strtolower(basename($domainDir)))) {
-          $_GET['domain'] = basename($domainDir);
-      }
-  } else {
-      $_GET['domain'] = basename(array_values($dirs)[0] ?? '');
-  }
-}
-
-// Update the path with the domain
-$path .= $_GET['domain'] . DIRECTORY_SEPARATOR;
-
-// Check if public directory exists within the domain
-if (is_dir($path . 'public/')) {
-  $path .= 'public/';
-}
-
-// Final redirect if needed
-if (defined('APP_QUERY') && empty(APP_QUERY)) {
-  header('Location: ' . APP_URL_BASE . '?' . http_build_query([
-      'client' => $_GET['client'],
-      'domain' => $_GET['domain']
-  ]) . '#');
-  exit;
-}
-
-// Merge APP_QUERY with GET
-$_GET = array_merge($_GET, APP_QUERY);
 
 header("Content-Type: text/html");
 header("Cache-Control: no-store, no-cache, must-revalidate, max-age=0");
@@ -79,9 +28,9 @@ header("Pragma: no-cache");
     <base href="<?=(!is_array(APP_URL) ? APP_URL : APP_URL_BASE) . (preg_match('/^\/(?!\?)$/', $_SERVER['REQUEST_URI']) ? '?' : '') . (!defined('APP_DEBUG') ? '#' : '?' . (APP_URL['query'] != '' ? APP_URL['query'] : '')) . (defined('APP_ENV') && APP_ENV == 'development' ? '#!' : ''); ?>">
 
     <title>Multiple Ace Editor Instances</title>
+
 <?php
 // (check_http_status('https://cdn.tailwindcss.com') ? 'https://cdn.tailwindcss.com' : APP_WWW . 'resources/js/tailwindcss-3.3.5.js')?
-
 // <link rel="stylesheet" href="https://code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css">
 // <link rel="stylesheet" href="resources/css/output.css">
 
@@ -123,8 +72,34 @@ unset($path);
       body {
         background-color: #FFF;
         overflow-x: hidden;
+        font-family: Arial, sans-serif;
       }
       .row-container { display: flex; width: 100%; height: 100%; flex-direction: column; overflow: hidden; }
+
+.overlay2 {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.5);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 10;
+}
+
+.dialog2 {
+    background-color: white;
+    padding: 20px;
+    border-radius: 5px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    text-align: center;
+    resize: both; /* Make the div resizable */
+    overflow: hidden; /* Hide overflow to ensure proper resizing */
+    display: flex;
+    flex-direction: column;
+}
 
       <?= defined('UI_GIT') ? UI_GIT['style'] : null; ?>
       <?= defined('UI_PHP') ? UI_PHP['style'] : null; /* print(...) */ ?>
@@ -254,8 +229,15 @@ unset($path);
 </head>
 <body>
 
-<div style="position: relative; width: 100%; height: 100%; z-index: 1; border: 1px solid green;">
+<div style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(0, 0, 0, 0.5); display: flex; z-index: 1; border: 1px solid green;"> <!-- position: relative; width: 100%; height: 100%; z-index: 1; -->
+<!--
+    <div id="overlay2" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; display: flex; justify-content: center; align-items: center; z-index: 10;">
+      <div id="confirmDialog" class="dialog2" style="position: relative; height: 175px; width: 350px; text-align: center;">
+        <div style="position: absolute; display: block; background-color: #FFFFFF; z-index: 1; right: 0px; float: right; margin-top: -20px;">[<a href="#" onclick="document.getElementById('overlay2').style.display = 'none';">x</a>]</div>
 
+      </div>
+    </div>
+    -->
 <div class="row-container" style="position: absolute; left: 0; top: 0;">
   <?php // https://stackoverflow.com/questions/86428/what-s-the-best-way-to-reload-refresh-an-iframe ?>
   <iframe id="iWindow" src="<?php if (!empty($_GET['client'])) {
@@ -311,22 +293,7 @@ unset($path);
 <div style="position: relative; margin: 0px auto; width: 100%; border: 1px solid #000;">
 
   <div style="position: relative; margin: 0px auto; width: 800px;">
-    <div style="position: absolute; <?= /* (empty($errors) ? 'display: none;' : '') */ NULL; ?>left: -144px; /*width: 150px;*/ z-index: 3;">
-      <!--form action="#!" method="GET">
-        <?= isset($_GET['debug']) && !$_GET['debug'] ? '' : '<input type="hidden" name="debug" value / >' ?> 
-              <input class="input" id="toggle-debug" type="checkbox" onchange="this.form.submit();" <?= isset($_GET['debug']) || defined('APP_ENV') && APP_ENV == 'development' ? 'checked' : '' ?> / -->
-      <input class="input" id="toggle-debug" type="checkbox" onchange="toggleSwitch(this); return null;" <?= isset($_GET['debug']) || defined('APP_ENV') && APP_ENV == 'development' ? 'checked' : '' ?> />
-      <label class="label" for="toggle-debug" style="margin-left: -10px;">
-        <div class="switch">
-          <span class="slider round"></span>
-          
-          <div id="hide_notice-container" style="position: absolute; display: <?= isset($errors['GIT_UPDATE']) ? 'block' : 'none' ?>; left: -20px; top: 40px; width: 100px; background-color: white; color: red; font-variant-caps: all-small-caps; text-align: center;">[<a onclick="getElementById('toggle-debug').click(); /*toggleSwitch(this);*/ return null;" href="?hide=update-notice">Hide Notice</a>]</div>
-        </div>
-
-        <div class="right" style="background-color: #0078D7; display: <?= isset($errors['GIT_UPDATE']) ? 'inline-block' : 'none' ?>; color: #FFF;"> &nbsp;<span style="background-color: #FFF; color: #0078D7;">&quot;Update&quot;</span>&nbsp;</div>
-      </label>
-      <!-- /form -->
-    </div>
+    <div style="position: absolute; <?= /* (empty($errors) ? 'display: none;' : '') */ NULL; ?>left: -144px; /*width: 150px;*/ z-index: 3;">TEST</div>
     <div id="debug-content" class="absolute" style="position: absolute; display: none; right: 0; text-align: right; background-color: rgba(255, 255, 255, 0.8); border: 1px solid #000; width: 800px; z-index: 1; overflow: visible;">
       <div style="float: left; display: inline; margin: 5px;"><form style="display: inline;" action="/" method="POST">Stage: 
   <select name="environment" onchange="this.form.submit();">
@@ -847,6 +814,7 @@ if (defined('APP_WHOIS') && !empty(APP_WHOIS)) {
 <!-- https://cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.min.js -->
 <!-- https://code.jquery.com/jquery-3.7.1.min.js -->
 <!-- script src="https://code.jquery.com/jquery-3.6.0.min.js" integrity="sha256-/xUj+3OJU5yExlq6GSYGSHk7tPXikynS7ogEvDej/m4=" crossorigin="anonymous"></script -->
+
 <?php
   is_dir($path = APP_PATH . APP_BASE['resources'] . 'js/jquery/') or mkdir($path, 0755, true);
   if (is_file($path . 'jquery-3.7.1.min.js')) {
@@ -877,7 +845,27 @@ include 'app.debug.php';
   <span>App Path: <?= APP_PATH; ?></span><br />
   <span>Memory: <em ><b style="color: green;"><?= formatSizeUnits(memory_get_usage()) . '</b> @ <b>' . formatSizeUnits(convertToBytes(ini_get('memory_limit'))); ?></b></em></span><br />
   <span>Source (code): <em style="font-size: 13px;"><?= '[<b>' . formatSizeUnits($total_filesize) . '</b>] <b style="color: red;">' . $total_filesize - 1000000 . '</b>' ?></em></span>
-  <div style="position: relative; display: block;"><div style="position: absolute; display: block; float: right; right: 10px; width: 165px; text-align: right;"><?= ' [(<a style="font-weight: bolder; color: green;" href="#" onclick="document.getElementById(\'app_nodes-container\').style.display = \'block\';">' . $total_include_files . ' loaded</a>) <b>'. $total_files . '</b> files] <br /> [<b style="color: green;">' . $total_include_lines . '</b> @ <b>' . $total_lines . '</b> lines]'; ?></div></div>
+  <div style="position: relative; display: block;"><div style="position: absolute; display: block; float: right; right: 10px; width: 165px; text-align: right;"><?= ' [(<a style="font-weight: bolder; color: green;" href="#" onclick="document.getElementById(\'app_nodes-container\').style.display = \'block\';">' . $total_include_files . ' loaded</a>) <b>'. $total_files . '</b> files] <br /> [<b style="color: green;">' . $total_include_lines . '</b> @ <b>' . $total_lines . '</b> lines]'; ?></div></div><br /><br />
+</div>
+
+<div id="server-container" style="position: fixed; display: block; top: 0; right: 0; padding: 4px; z-index: 1; text-align: right; border: 1px solid #000; height: auto; background-color: #FFF; width: 250px;">
+  <div style="float: left;">$_ENV</div>
+  <h3 style="font-weight: bolder;">Server</h3>
+  <div style="display: inline-block;">On / Off <input id="check_server_start" type="checkbox" onclick="validate()" /><br /><a href="">Status</a><br /><a href="">Help</a><br />Error Log</div>
+  <img src="/resources/images/server.gif" style="float: right;" width="100" height="103">
+  <!--form action="#!" method="GET">
+      <?= isset($_GET['debug']) && !$_GET['debug'] ? '' : '<input type="hidden" name="debug" value / >' ?> 
+
+              <input class="input" id="toggle-debug" type="checkbox" onchange="this.form.submit();" <?= isset($_GET['debug']) || defined('APP_ENV') && APP_ENV == 'development' ? 'checked' : '' ?> / -->
+<div style="position: relative;">
+      <input class="input" id="toggle-debug" type="checkbox" onchange="toggleSwitch(this); return null;" <?= isset($_GET['debug']) || defined('APP_ENV') && APP_ENV == 'development' ? 'checked' : '' ?> />
+      <label class="label" for="toggle-debug" style="margin: 0 auto; padding-top: 10px;">
+        <div class="switch" style="display: inline; z-index: 999;">
+          <span class="slider round"></span>
+        </div>
+      </label><div style="position: absolute; right: 10px; top: 15px; z-index: 999;">&nbsp;&nbsp;&nbsp;&nbsp;Dashboard</div>
+    <!-- /form -->
+</div>
 </div>
 
 <div id="adhd_song-container" style="position: fixed; display: none; bottom: 0; right: 0; z-index: 1;">
@@ -888,11 +876,11 @@ include 'app.debug.php';
     <div id="app_project_editor" class="editor">This is the second editor.</div>
 -->
 
-    <script src="<?= (check_http_status('https://code.jquery.com/jquery-3.7.1.min.js') ? 'https://code.jquery.com/jquery-3.7.1.min.js' : APP_BASE['resources'] . 'js/jquery/' . 'jquery-3.7.1.min.js') ?>"></script>
+    <script src="<?= check_http_status('https://code.jquery.com/jquery-3.7.1.min.js') ? 'https://code.jquery.com/jquery-3.7.1.min.js' : APP_BASE['resources'] . 'js/jquery/' . 'jquery-3.7.1.min.js' ?>"></script>
     <!-- You need to include jQueryUI for the extended easing options. -->
         <!-- script src="//code.jquery.com/jquery-1.12.4.js"></script -->
     
-    <script src="<?= (check_http_status('https://code.jquery.com/ui/1.12.1/jquery-ui.min.js') ? 'https://code.jquery.com/ui/1.12.1/jquery-ui.min.js' : APP_BASE['resources'] . 'js/jquery-ui/' . 'jquery-ui-1.12.1.js') ?>"></script> <!-- Uncaught ReferenceError: jQuery is not defined -->
+    <script src="<?= check_http_status('https://code.jquery.com/ui/1.12.1/jquery-ui.min.js') ? 'https://code.jquery.com/ui/1.12.1/jquery-ui.min.js' : APP_BASE['resources'] . 'js/jquery-ui/' . 'jquery-ui-1.12.1.js' ?>"></script> <!-- Uncaught ReferenceError: jQuery is not defined -->
     
     <!-- <script src="resources/js/ace/src/ace.js" type="text/javascript" charset="utf-8"></script> 
     <script src="resources/js/ace/src/ext-language_tools.js" type="text/javascript" charset="utf-8"></script> -->
@@ -1012,15 +1000,24 @@ if (!is_file($path)) { ?>
     var globalEditor;
     var editor1, editor2;
 
+  function validate(){
+    var remember = document.getElementById('check_server_start');
+    if (remember.checked){
+        alert("checked") ;
+    }else{
+        alert("You didn't check it! Let me check it for you.")
+    }
+}
     document.addEventListener("DOMContentLoaded", function() {
 
 <?php if (!$_SERVER['SOCKET']) { ?>
-   if (confirm('(Re)Start Server?')) {
-    $('#requestInput').val('server start');
-    $('#requestSubmit').click();
-   } else {
-    console.log('Cancel (Re)Start.');
-   }
+
+  //if (confirm('(Re)Start Server?')) {
+  //  $('#requestInput').val('server start');
+  //  $('#requestSubmit').click();
+  //} else {
+  //  console.log('Cancel (Re)Start.');
+  //}
 <?php } ?>
 /**/
         editor1 = ace.edit("ui_ace_editor");
@@ -1465,7 +1462,25 @@ $( '#app_directory-container' ).slideUp( "slow", function() {
       
       <?= !isset($apps['timesheet']['script'])?: $apps['timesheet']['script']; ?>
       <?= !isset($apps['project']['script'])?: $apps['project']['script']; ?>
-      
+
+
+
+      function showConfirm(message) {
+    document.getElementById('confirmMessage').textContent = message;
+    document.getElementById('overlay2').style.display = 'flex';
+}
+
+function confirmAction(isConfirmed) {
+    document.getElementById('overlay2').style.display = 'none';
+    if (isConfirmed) {
+        alert('Confirmed!');
+    } else {
+        alert('Cancelled!');
+    }
+}
+
+
+
     </script>
   </body>
 </html>

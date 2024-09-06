@@ -340,7 +340,7 @@ if (preg_match('/^app\.([\w\-.]+)\.php$/', basename(__FILE__), $matches))
             if (!$_SERVER['SOCKET']) {
               //exec($_POST['cmd'], $output);
               if (preg_match('/^(\w+)\s+(:?(.*))/i', $_POST['cmd'], $match))
-                if (isset($match[1]) && in_array($match[1], ['tail', 'cat', 'echo', 'env', 'sudo', 'whoami', 'server'])) {
+                if (isset($match[1]) && in_array($match[1], ['tail', 'cat', 'unlink', 'echo', 'env', 'sudo', 'whoami', 'server'])) {
                 //exec(APP_SUDO . $match[1] . ' ' . $match[2], $output); // $output[] = var_dump($match);
                 
   $output[] = APP_SUDO . $match[1] . ' ' . $match[2];
@@ -471,7 +471,7 @@ margin: 0 auto;
 background-color: #D0D0D0; /* rgba(200,200,200,0.85) */
 color: black;
 cursor: pointer;
-height: 60px;
+height: 75px;
 }
 
 input {
@@ -483,7 +483,7 @@ input {
       background-color: #FFA6A6;
       left: -150px;
       width: 150px;
-      height: 150px;
+      height: 117px;
       border: 2px solid #000;
       overflow: hidden;
       display: block;
@@ -611,7 +611,16 @@ ob_start(); ?>
     <div style="position: absolute; top: -24px; background-color: #FFA6A6; border: 1px dashed #000; border-right: none; z-index: -1;"><button id="console-settings-btn" style="padding: 0 4px 4px 4px; font-weight: bold;" class="text-xs">[Settings...]</button></div>
 
     
-    <div style="position: absolute; top: -24px; left: 73px; background-color: #FFA6A6; border: 1px dashed #000; border-left: none; z-index: -1;"><button style="border: 1px dashed #000; padding: 0 4px 2px 4px; font-weight: bold; color: black;" class="text-xs">Console</button> | <button style="border: 1px dashed #000; padding: 0 4px 2px 4px; border: 1px dashed #000; font-weight: bold;" class="text-xs">SQL Query</button> | <button style="border: 1px dashed #000; padding: 0 4px 2px 4px; font-weight: bold;" class="text-xs">PHP</button> | <button style="border: 1px dashed #000; padding: 0 4px 2px 4px; font-weight: bold;" class="text-xs">Perl</button> | <button style="border: 1px dashed #000; padding: 0 4px 2px 4px; font-weight: bold;" class="text-xs">Python</button> | <button style="border: 1px dashed #000; padding: 0 4px 2px 4px; font-weight: bold;" class="text-xs">JavaScript</button> | <button style="border: 1px dashed #000; padding: 0 4px 2px 4px; font-weight: bold;" class="text-xs">CSS</button> | <button style="border: 1px dashed #000; padding: 0 4px 2px 4px; font-weight: bold;" class="text-xs">HTML</button> </div>
+    <div style="position: absolute; top: -24px; left: 73px; background-color: #FFA6A6; border: 1px dashed #000; border-left: none; z-index: -1;">
+      <button style="border: 1px dashed #000; padding: 0 4px 2px 4px; font-weight: bold; color: black;" class="text-xs">Console</button> |
+      <button style="border: 1px dashed #000; padding: 0 4px 2px 4px; border: 1px dashed #000; font-weight: bold;" class="text-xs">SQL Query</button> | 
+      <button style="border: 1px dashed #000; padding: 0 4px 2px 4px; font-weight: bold;" onclick="document.getElementById('app_ace_editor-container').style.display='block';" class="text-xs">PHP</button> | 
+      <button style="border: 1px dashed #000; padding: 0 4px 2px 4px; font-weight: bold;" class="text-xs">Perl</button> | 
+      <button style="border: 1px dashed #000; padding: 0 4px 2px 4px; font-weight: bold;" class="text-xs">Python</button> | 
+      <button style="border: 1px dashed #000; padding: 0 4px 2px 4px; font-weight: bold;" class="text-xs">JavaScript</button> | 
+      <button style="border: 1px dashed #000; padding: 0 4px 2px 4px; font-weight: bold;" class="text-xs">CSS</button> | 
+      <button style="border: 1px dashed #000; padding: 0 4px 2px 4px; font-weight: bold;" class="text-xs">HTML</button>
+    </div>
     <div style="text-align: left; position: relative;">
 
         <div style="display: inline-block; margin: 5px 0px 0px 10px; float: left;">
@@ -642,7 +651,7 @@ ob_start(); ?>
 
         </div>
         <button id="changePositionBtn" style="float: right; margin: 5px 10px 0 0;" type="submit">&#9650;</button>
-        <textarea id="responseConsole" spellcheck="false" rows="10" cols="85" name="responseConsole" readonly=""><?php
+        <textarea id="responseConsole" spellcheck="false" rows="14" cols="85" name="responseConsole" readonly=""><?php
 //$errors->{'CONSOLE'}  = 'wtf';
 
 //dd($errors);
