@@ -14,8 +14,11 @@ $user = ''; // www-data
 $password = ''; // password
 
 const CONSOLE = true;
-// Define APP_SUDO constant
-!defined('APP_SUDO') and define('APP_SUDO', stripos(PHP_OS, 'WIN') === 0 ? /*'runas /user:Administrator "cmd /c" '*/ : 'echo ' . escapeshellarg(isset($password) && $password == '' ? '' : $password) . ' | sudo -S ' . (isset($user) && $user == '' ? '' : "-u $user") . ' '); // 'su -c'
+
+// Define APP_SUDO constant based on OS
+!defined('APP_SUDO') and define('APP_SUDO', stripos(PHP_OS, 'WIN') === 0 
+    ? '' /*'runas /user:Administrator "cmd /c" '*/ // For Windows, you can insert the appropriate command 
+    : 'echo ' . escapeshellarg($password ?? '') . ' | sudo -S ' . ($user ? "-u $user" : ''));
 
 // Define APP_START constant
 !defined('APP_START') and define('APP_START', microtime(true)) ?: is_float(APP_START) or $errors['APP_START'] = 'APP_START is not a valid float value.';
@@ -71,18 +74,37 @@ if (defined('APP_HTTPS') && APP_HTTPS) {
   $errors['APP_HTTPS'] = (bool) var_export(APP_HTTPS, true); // print('HTTPS: ' . APP_HTTPS . "\n");
 }
 
-define('APP_WWW', 'http' . (defined('APP_HTTPS') ? 's' : '') . '://' . $_SERVER['SERVER_NAME'] ?? $_SERVER['HTTP_HOST'] ?? $_SERVER['SERVER_ADDR'] ?? 'localhost' . parse_url(isset($_SERVER['SERVER_NAME']) ? $_SERVER['REQUEST_URI'] : '' , PHP_URL_PATH));
+// Check if the script is running in CLI or HTTP environment
+if (php_sapi_name() === 'cli' || defined('STDIN')) {
+  // CLI environment: set a default URL or placeholder
+  define('APP_URL', 'http://localhost/');
+} else {
+  // HTTP environment: construct the URL dynamically
+  define('APP_URL', 
+      'http' . (defined('APP_HTTPS') ? 's' : '') . '://' .
+      ($_SERVER['SERVER_NAME'] ?? $_SERVER['HTTP_HOST'] ?? $_SERVER['SERVER_ADDR'] ?? 'localhost') . 
+      parse_url($_SERVER['REQUEST_URI'] ?? '', PHP_URL_PATH)
+  );
+}
 
-define('APP_DOMAIN', array_key_exists('host', $domain = parse_url(APP_WWW)) ? $domain['host'] : 'localhost');
+//define('APP_URL', 'http' . (defined('APP_HTTPS') ? 's' : '') . '://' . isset($_SERVER['SERVER_NAME']) ? '' : ($_SERVER['SERVER_NAME'] ?? $_SERVER['HTTP_HOST'] ?? $_SERVER['SERVER_ADDR'] ?? 'localhost' . parse_url(isset($_SERVER['SERVER_NAME']) ? $_SERVER['REQUEST_URI'] : '' , PHP_URL_PATH)));
+
+define('APP_DOMAIN', array_key_exists('host', $domain = parse_url(APP_URL)) ? $domain['host'] : 'localhost');
 !is_string(APP_DOMAIN) and $errors['APP_DOMAIN'] = 'APP_DOMAIN is not valid. (' . APP_DOMAIN . ')' . "\n";
 
-define('APP_HOST', gethostbyname(APP_DOMAIN));
+define('APP_HOST', gethostbyname(APP_DOMAIN) ?? 'localhost');
 !is_string(APP_HOST) and $errors['APP_HOST'] = 'APP_HOST is not valid. (' . APP_HOST . ')' . "\n";
 
-const APP_PORT = 8080;
-!is_int(APP_PORT) and $errors['APP_PORT'] = 'APP_PORT is not valid. (' . APP_PORT . ')' . "\n";
+const APP_PORT = '80';
+!is_int((int) APP_PORT) and $errors['APP_PORT'] = 'APP_PORT is not valid. (' . APP_PORT . ')' . "\n";
 
-!defined('APP_SERVER') and define('APP_SERVER', (defined('APP_PATH') ? APP_PATH : __DIR__ . DIRECTORY_SEPARATOR)  . str_replace(defined('APP_PATH') ? APP_PATH : __DIR__ . DIRECTORY_SEPARATOR , '', dirname(basename(APP_SELF)) == 'public' ? basename(APP_SELF) : 'server.php')); //
+const SERVER_HOST = APP_HOST ?? '0.0.0.0';
+!is_string(SERVER_HOST) and $errors['SERVER_HOST'] = 'SERVER_HOST is not valid. (' . SERVER_HOST . ')' . "\n";
+
+const SERVER_PORT = '8080'; // 9000
+!is_int((int) SERVER_PORT) and $errors['SERVER_PORT'] = 'SERVER_PORT is not valid. (' . SERVER_PORT . ')' . "\n";
+
+!defined('APP_PATH_SERVER') and define('APP_PATH_SERVER', (defined('APP_PATH') ? APP_PATH : __DIR__ . DIRECTORY_SEPARATOR)  . str_replace(defined('APP_PATH') ? APP_PATH : __DIR__ . DIRECTORY_SEPARATOR , '', dirname(basename(APP_SELF)) == 'public' ? basename(APP_SELF) : 'server.php')); //
 
 define('APP_TIMEOUT', strtotime("1970-01-01 08:00:00GMT"));
 if (defined('APP_TIMEOUT') && !is_int(APP_TIMEOUT)) {
@@ -263,7 +285,7 @@ if (defined('APP_ENV') && !is_string(APP_ENV)) {
 
 //(defined('APP_PATH') && truepath(APP_PATH)) and $errors['APP_PATH'] = truepath(APP_PATH); // print('App Path: ' . APP_PATH . "\n" . "\t" . '$_SERVER[\'DOCUMENT_ROOT\'] => ' . $_SERVER['DOCUMENT_ROOT'] . "\n");
 
-define('APP_PUBLIC', (defined('APP_PATH') ? APP_PATH : __DIR__ . DIRECTORY_SEPARATOR)  . APP_BASE['public'] . str_replace(defined('APP_PATH') ? APP_PATH : __DIR__ . DIRECTORY_SEPARATOR , '', APP_BASE['public'] . dirname(basename($_SERVER['PHP_SELF'])) == 'public' ? basename($_SERVER['PHP_SELF']) : 'index.php')); // 
+define('APP_PATH_PUBLIC', (defined('APP_PATH') ? APP_PATH : __DIR__ . DIRECTORY_SEPARATOR)  . APP_BASE['public'] . str_replace(defined('APP_PATH') ? APP_PATH : __DIR__ . DIRECTORY_SEPARATOR , '', APP_BASE['public'] . dirname(basename($_SERVER['PHP_SELF'])) == 'public' ? basename($_SERVER['PHP_SELF']) : 'index.php')); // 
 
 //var_dump(APP_PATH . basename(dirname(__DIR__, 2)) . '/' . basename(dirname(__DIR__, 1)));
 if (PHP_SAPI === 'cli') {
@@ -282,9 +304,9 @@ $parsedUrl = parse_url($requestUri);
 // substr( str_replace('\\', '/', __FILE__), strlen($_SERVER['DOCUMENT_ROOT']), strrpos(str_replace('\\', '/', __FILE__), '/') - strlen($_SERVER['DOCUMENT_ROOT']) + 1 )
 if (!is_array(APP_BASE)) {
   $protocol = defined('APP_HTTPS') ? 'https' : 'http';
-  $appUrl = $protocol . '://' . APP_DOMAIN . $baseUrl;
+  $appUrl = $protocol . '://' . APP_DOMAIN . $parsedUrl['path'];
 
-  define('APP_URL', $appUrl);
+  define('APP_URL_BASE', $appUrl);
 } else {
   $appUrl = [
     'scheme' => (defined('APP_HTTPS') && APP_HTTPS ? 'https' : 'http'), // ($_SERVER['HTTPS'] == 'on', (isset($_SERVER['HTTPS']) === true ? 'https' : 'http')
@@ -298,7 +320,7 @@ if (!is_array(APP_BASE)) {
     'fragment' => parse_url($_SERVER['REQUEST_URI'] ?? '', PHP_URL_FRAGMENT),
   ];
 
-  define('APP_URL', $appUrl);
+  define('APP_URL_BASE', $appUrl);
 }
 //die(var_dump(APP_URL));
 
@@ -328,11 +350,11 @@ var_dump(parse_url(APP_URL, PHP_URL_QUERY));
 var_dump(parse_url(APP_URL, PHP_URL_FRAGMENT)); */
 
 // Define APP_BASE_URL
-!is_array(APP_URL) ? define('APP_URL_BASE', APP_URL) :
-  define('APP_URL_BASE', APP_URL['scheme'] . '://' . APP_URL['host'] . APP_URL['path']);
+//is_array(APP_URL) ? define('APP_URL_BASE', APP_URL) :
+//  define('APP_URL_BASE', APP_URL['scheme'] . '://' . APP_URL['host'] . APP_URL['path']);
 
 // Define APP_BASE_URI
-define('APP_URL_PATH', !is_array(APP_URL) ? substr($_SERVER['REQUEST_URI'], 0, strrpos($_SERVER['REQUEST_URI'], '/') + 1) : APP_URL['path']);
+define('APP_URL_PATH', is_array(APP_URL) ? APP_URL['path'] : APP_URL); // substr($_SERVER['REQUEST_URI'], 0, strrpos($_SERVER['REQUEST_URI'], '/') + 1)
 define('APP_QUERY', !empty(parse_url($_SERVER['REQUEST_URI'] ?? '')['query']) ? (parse_str(parse_url($_SERVER['REQUEST_URI'])['query'], $query) ? [] : $query) : []);
 
 !is_array(APP_URL)

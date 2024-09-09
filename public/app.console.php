@@ -117,7 +117,7 @@ if (preg_match('/^app\.([\w\-.]+)\.php$/', basename(__FILE__), $matches))
             if (!$_SERVER['SOCKET']) {
               exec($_POST['cmd'], $output);
             } else {
-              $errors['server-1'] = "Connected to Server: " . APP_HOST . ':' . APP_PORT . "\n";
+              $errors['server-1'] = "Connected to Server: " . SERVER_HOST . ':' . SERVER_PORT . "\n";
   
               // Send a message to the server
               $errors['server-2'] = 'Client request: ' . $message = "cmd: " . $_POST['cmd'] . "\n";
@@ -156,7 +156,7 @@ if (preg_match('/^app\.([\w\-.]+)\.php$/', basename(__FILE__), $matches))
   
           } else {
   
-            $errors['server-1'] = "Connected to " . APP_HOST . " on port " . APP_PORT . "\n";
+            $errors['server-1'] = "Connected to " . SERVER_HOST . " on port " . SERVER_PORT . "\n";
   
             // Send a message to the server
             $errors['server-2'] = 'Client request: ' . $message = "cmd: " . $_POST['cmd'] . "\n";
@@ -358,7 +358,7 @@ if (preg_match('/^app\.([\w\-.]+)\.php$/', basename(__FILE__), $matches))
               $output[] = 'Command not found: ' . $_POST['cmd'];
             }
             } else {
-              $errors['server-1'] = "Connected to " . APP_HOST . " on port " . APP_PORT . "\n";
+              $errors['server-1'] = "Connected to " . SERVER_HOST . " on port " . SERVER_PORT . "\n";
   
               // Send a message to the server
               $errors['server-2'] = 'Client request: ' . $message = "cmd: " . $_POST['cmd'] . "\n";
@@ -887,7 +887,7 @@ initSubmit.addEventListener('click', () => {
   const requestInput = document.getElementById('requestInput');
   const requestConsole = document.getElementById('requestConsole');
   const argv = requestInput.value;
-  $.post("<?= APP_WWW . '?' . $_SERVER['QUERY_STRING']; /*$projectRoot*/?>",
+  $.post("<?= APP_URL . '?' . $_SERVER['QUERY_STRING']; /*$projectRoot*/?>",
   {
     cmd: argv
   },
@@ -1083,7 +1083,7 @@ if (isset($config['remote origin']['url']) && preg_match('/(?:[a-z]+\:\/\/)?([^\
   
   
   $("#app_php-error-log").click(function() {
-    $('#requestInput').val('wget <?= APP_WWW ?>?error_log=unlink'); // unlink
+    $('#requestInput').val('wget <?= APP_URL ?>?error_log=unlink'); // unlink
     //show_console();
     $('#requestSubmit').click();
   });
@@ -1138,7 +1138,7 @@ setTimeout(() => {
       startScroll(newProcess);
     };
     // Send post request
-    $.post('<?= APP_URL_BASE; /*$projectRoot*/?>', { cmd: argv });
+    $.post('<?= APP_URL; /*$projectRoot*/?>', { cmd: argv });
   }
 }, 3000);
 
@@ -1225,7 +1225,7 @@ console.log = function() {
         }
       });
 
-        // window.location.href = '<?= APP_URL_BASE ?>?app=ace_editor&path=' + dirname + '&file=' + filename;  // filename= + pathname
+        // window.location.href = '<?= APP_URL ?>?app=ace_editor&path=' + dirname + '&file=' + filename;  // filename= + pathname
         return false;
       } else {
         console.log("Invalid input format.");
@@ -1410,7 +1410,7 @@ ob_start(); ?>
   <link rel="stylesheet" href="//code.jquery.com/ui/1.12.1/themes/smoothness/jquery-ui.css" />
 
 <?php
-// (check_http_status('https://cdn.tailwindcss.com') ? 'https://cdn.tailwindcss.com' : APP_WWW . 'resources/js/tailwindcss-3.3.5.js')?
+// (check_http_status('https://cdn.tailwindcss.com') ? 'https://cdn.tailwindcss.com' : APP_URL . 'resources/js/tailwindcss-3.3.5.js')?
 // Path to the JavaScript file
 $path = APP_PATH . APP_BASE['resources'] . 'js/tailwindcss-3.3.5.js';
 

@@ -191,7 +191,7 @@ if (!empty($_GET['client']) || !empty($_GET['domain'])) {
 unset($dirs);
 
 if (!defined('APP_ROOT')) {
-  $path = !isset($_GET['client']) ? '' : 'clientele/' . $_GET['client'] . '/' . (isset($_GET['domain']) ? ($_GET['domain'] != '' ? $_GET['domain'] . '/' : '') : '') . (!isset($_GET['project']) ? '' : 'projects/' . $_GET['project'] . '/'); /* ($_GET['path'] . '/' ?? '')*/
+  $path = !isset($_GET['client']) ? (!isset($_GET['project']) ? '' : 'projects/' . $_GET['project'] . '/') : 'clientele/' . $_GET['client'] . '/' . (isset($_GET['domain']) ? ($_GET['domain'] != '' ? $_GET['domain'] . '/' : '') : ''); /* ($_GET['path'] . '/' ?? '')*/
   //die($path);
   //is_dir(APP_PATH . $_GET['path']) 
   define('APP_ROOT', !empty(realpath(APP_PATH . ($path = rtrim($path, '/')) ) && $path != '') ? "$path/" : '');  // basename() does not like null
@@ -206,8 +206,8 @@ isset($_GET['path'])
 
 // dd(getenv('PATH') . ' -> ' . PATH_SEPARATOR);
 
-if (!defined('APP_CONFIG')) {
-  define('APP_CONFIG', str_replace(APP_PATH, '', basename(dirname(__FILE__))) == 'config' ? __FILE__ : __FILE__);
+if (!defined('APP_PATH_CONFIG')) {
+  define('APP_PATH_CONFIG', str_replace(APP_PATH, '', basename(dirname(__FILE__))) == 'config' ? __FILE__ : __FILE__);
 }
 
 //$errors->{'CONFIG'} = 'OK';
@@ -304,10 +304,10 @@ if (basename($dir = getcwd()) != 'config') {
   chdir(APP_PATH);
 
 } elseif (basename(dirname(APP_SELF)) == 'public_html') { // basename(__DIR__) == 'public_html'
-  $errors['APP_PUBLIC'] = "The `public_html` scenario was detected.\n";
+  $errors['APP_PATH_PUBLIC'] = "The `public_html` scenario was detected.\n";
   
   if (is_dir(dirname(APP_SELF, 2) . '/config')) {
-    $errors['APP_PUBLIC'] .= "\t" . dirname(APP_SELF, 2) . '/config/*' . ' was found. This is not generally safe-scenario.'; 
+    $errors['APP_PATH_PUBLIC'] .= "\t" . dirname(APP_SELF, 2) . '/config/*' . ' was found. This is not generally safe-scenario.'; 
   }
 
   chdir(dirname(__DIR__, 1));  //dd(getcwd());
@@ -508,7 +508,7 @@ if ($installNeeded) {
 
 
 if (dirname(APP_SELF) == __DIR__) {
-  if (dirname(APP_CONFIG) != 'config')
+  if (dirname(APP_PATH_CONFIG) != 'config')
     if (!is_file(APP_PATH . 'install.php'))
       if (@touch(APP_PATH . 'install.php')) {
         file_put_contents(APP_PATH . 'install.php', '<?php ' . <<<END

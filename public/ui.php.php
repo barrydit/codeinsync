@@ -132,7 +132,7 @@ define('PHP_LATEST', 'PHP_VERSION');
 
     <div class=" ui-widget-content" style="display: inline-block; width: auto; padding-left: 10px;">
 
-      <form style="display: inline;" action="<?= APP_URL_BASE . /*basename(APP_SELF) .*/ '?' . http_build_query(APP_QUERY + array( 'app' => 'php')) . (defined('APP_ENV') && APP_ENV == 'development' ? '#!' : '') /*  $c_or_p . '=' . (empty($_GET[$c_or_p]) ? '' : $$c_or_p->name) . '&amp;app=composer' */ ?>" method="GET">
+      <form style="display: inline;" action="<?= APP_URL . /*basename(APP_SELF) .*/ '?' . http_build_query(APP_QUERY + array( 'app' => 'php')) . (defined('APP_ENV') && APP_ENV == 'development' ? '#!' : '') /*  $c_or_p . '=' . (empty($_GET[$c_or_p]) ? '' : $$c_or_p->name) . '&amp;app=composer' */ ?>" method="GET">
 
       <div>
         <div style="display: inline; width: 46%;">
@@ -140,7 +140,7 @@ define('PHP_LATEST', 'PHP_VERSION');
           <?php if (isset($_GET['debug'])) { ?> <input type="hidden" name="debug" value="" /> <?php } ?>
           <select name="const" onchange="this.form.submit()">
 <?php foreach(get_defined_constants(true)['user'] as $key => $user_const) { ?>
-            <option <?= (isset($_GET['const']) && $_GET['const'] == $key ? ' selected' : '' )?>><?= $key; ?></option>
+            <option <?= isset($_GET['const']) && $_GET['const'] == $key ? ' selected' : ''?>><?= $key; ?></option>
 <?php } ?>
           </select>
         </div>
@@ -202,7 +202,7 @@ header("Pragma: no-cache");
   <link rel="stylesheet" href="//code.jquery.com/ui/1.12.1/themes/smoothness/jquery-ui.css" />
 
 <?php
-// (check_http_status('https://cdn.tailwindcss.com') ? 'https://cdn.tailwindcss.com' : APP_WWW . 'resources/js/tailwindcss-3.3.5.js')?
+// (check_http_status('https://cdn.tailwindcss.com') ? 'https://cdn.tailwindcss.com' : APP_URL . 'resources/js/tailwindcss-3.3.5.js')?
 is_dir($path = APP_PATH . APP_BASE['resources'] . 'js/') or mkdir($path, 0755, true);
 if (is_file($path . 'tailwindcss-3.3.5.js')) {
   if (ceil(abs((strtotime(date('Y-m-d')) - strtotime(date('Y-m-d',strtotime('+5 days',filemtime($path . 'tailwindcss-3.3.5.js'))))) / 86400)) <= 0 ) {

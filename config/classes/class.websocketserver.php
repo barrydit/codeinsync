@@ -1,6 +1,6 @@
 <?php
 
-(!defined('APP_SERVER') && APP_SERVER !== get_required_files()[0])
+(!defined('APP_PATH_SERVER') && APP_PATH_SERVER !== get_required_files()[0])
   and exit(1);
 
 use Ratchet\MessageComponentInterface;

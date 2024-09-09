@@ -702,7 +702,7 @@ ob_start(); ?>
       <div style="display: inline; float: right; text-align: center;">[<a style="cursor: pointer; font-size: 13px;" onclick="document.getElementById('app_timesheet-container').style.display='none';">X</a>]</div> 
     </div>
 <div style=" overflow-x: scroll;">
-    <form style="display: inline;" action="<?= APP_URL_BASE . basename(APP_SELF) . '?' . http_build_query(APP_QUERY + array( 'app' => 'php')) . (defined('APP_ENV') && APP_ENV == 'development' ? '#!' : '#') /*  $c_or_p . '=' . (empty($_GET[$c_or_p]) ? '' : $$c_or_p->name) . '&amp;app=composer' */ ?>" method="GET">
+    <form style="display: inline;" action="<?= APP_URL . basename(APP_SELF) . '?' . http_build_query(APP_QUERY + array( 'app' => 'php')) . (defined('APP_ENV') && APP_ENV == 'development' ? '#!' : '#') /*  $c_or_p . '=' . (empty($_GET[$c_or_p]) ? '' : $$c_or_p->name) . '&amp;app=composer' */ ?>" method="GET">
       <div style="font-size: 12px;">
         <div style="float: left;">NAME OF EMPLOYEE<br />
         <input type="text" style="width: 300px;" />
@@ -1299,7 +1299,7 @@ ob_start(); ?>
   <link rel="stylesheet" href="//code.jquery.com/ui/1.12.1/themes/smoothness/jquery-ui.css" />
 
 <?php
-// (check_http_status'https://cdn.tailwindcss.com') ? 'https://cdn.tailwindcss.com' : APP_WWW . 'resources/js/tailwindcss-3.3.5.js')?
+// (check_http_status'https://cdn.tailwindcss.com') ? 'https://cdn.tailwindcss.com' : APP_URL . 'resources/js/tailwindcss-3.3.5.js')?
 is_dir($path = APP_PATH . APP_BASE['resources'] . 'js/') or mkdir($path, 0755, true);
 if (is_file($path . 'tailwindcss-3.3.5.js')) {
   if (ceil(abs((strtotime(date('Y-m-d')) - strtotime(date('Y-m-d',strtotime('+5 days',filemtime($path . 'tailwindcss-3.3.5.js'))))) / 86400)) <= 0 ) {

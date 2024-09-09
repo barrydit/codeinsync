@@ -25,12 +25,12 @@ header("Pragma: no-cache");
 
     <script src="https://d3js.org/d3.v7.min.js"></script>
 
-    <base href="<?=(!is_array(APP_URL) ? APP_URL : APP_URL_BASE) . (preg_match('/^\/(?!\?)$/', $_SERVER['REQUEST_URI']) ? '?' : '') . (!defined('APP_DEBUG') ? '#' : '?' . (APP_URL['query'] != '' ? APP_URL['query'] : '')) . (defined('APP_ENV') && APP_ENV == 'development' ? '#!' : ''); ?>">
+    <base href="<?=(!is_array(APP_URL) ? APP_URL : APP_URL_BASE) . (preg_match('/^\/(?!\?)$/', $_SERVER['REQUEST_URI']) ? '?' : '') . (!defined('APP_DEBUG') ? '#' : '?' . (APP_URL_BASE['query'] != '' ? APP_URL_BASE['query'] : '')) . (defined('APP_ENV') && APP_ENV == 'development' ? '#!' : ''); ?>">
 
     <title>Multiple Ace Editor Instances</title>
 
 <?php
-// (check_http_status('https://cdn.tailwindcss.com') ? 'https://cdn.tailwindcss.com' : APP_WWW . 'resources/js/tailwindcss-3.3.5.js')?
+// (check_http_status('https://cdn.tailwindcss.com') ? 'https://cdn.tailwindcss.com' : APP_URL . 'resources/js/tailwindcss-3.3.5.js')?
 // <link rel="stylesheet" href="https://code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css">
 // <link rel="stylesheet" href="resources/css/output.css">
 
@@ -229,7 +229,7 @@ unset($path);
 </head>
 <body>
 
-<div style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(0, 0, 0, 0.5); display: flex; z-index: 1; border: 1px solid green;"> <!-- position: relative; width: 100%; height: 100%; z-index: 1; -->
+<div style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; display: flex; z-index: 1; border: 1px solid green;"> <!-- position: relative; width: 100%; height: 100%; z-index: 1; -->
 <!--
     <div id="overlay2" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; display: flex; justify-content: center; align-items: center; z-index: 10;">
       <div id="confirmDialog" class="dialog2" style="position: relative; height: 175px; width: 350px; text-align: center;">
@@ -290,7 +290,7 @@ unset($path);
     echo $path; ?>" style="height: 100%;"></iframe>
 </div>
 <?= /* $apps['backup']['body'] */ NULL;?>
-<div style="position: relative; margin: 0px auto; width: 100%; border: 1px solid #000;">
+<div id="app_container" style="position: relative; display: none; margin: 0px auto; width: 100%; border: 1px solid #000; background-color: rgba(0, 0, 0, 0.5);">
 
   <div style="position: relative; margin: 0px auto; width: 800px;">
     <div style="position: absolute; <?= /* (empty($errors) ? 'display: none;' : '') */ NULL; ?>left: -144px; /*width: 150px;*/ z-index: 3;">TEST</div>
@@ -310,14 +310,14 @@ unset($path);
 
       <div style="position: relative; margin-left: 10px; right: 6px; float: right; z-index: 1;">
       <div class="text-sm" style="display: inline-block; margin: 0 auto;">
-        <form class="app_git-push" action="<?= APP_URL_BASE . '?' . http_build_query(APP_QUERY + array( 'app' => 'git')) . (defined('APP_ENV') && APP_ENV == 'development' ? '#!' : '') /* $c_or_p . '=' . (empty($_GET[$c_or_p]) ? '' : $$c_or_p->name) . '&amp;app=git' */ ?>" method="POST">
+        <form class="app_git-push" action="<?= APP_URL . '?' . http_build_query(APP_QUERY + ['app' => 'git']) . (defined('APP_ENV') && APP_ENV == 'development' ? '#!' : '') /* $c_or_p . '=' . (empty($_GET[$c_or_p]) ? '' : $$c_or_p->name) . '&amp;app=git' */ ?>" method="POST">
           <!-- <input type="hidden"  /> -->
           <button type="submit" name="cmd" value="push" disabled><img src="resources/images/green_arrow.fw.png" width="20" height="25" style="cursor: pointer; margin-left: 6px;" title="This feature is disabled." /><br />Push</button>
         </form>
       </div>
       <div class="text-sm" style="position: relative; display: inline-block; margin: 0 auto; border: 2px dashed #F00;">
         <div style="position: absolute; display: <?= (isset($errors['GIT_UPDATE']) ? 'block' : 'none') ?>; left: 26px; top: 5px; width: 126px; background-color: #0078D7; color: #FFF; z-index: -1; font-variant-caps: all-small-caps;"><span style="background-color: #FFF; color: #0078D7;">&lt;- </span><span style="background-color: #FFF; color: red; margin-right: 2px;">Click to update&nbsp;</span></div>
-        <form class="app_git-pull" action="<?= APP_URL_BASE . '?' . http_build_query(APP_QUERY + array( 'app' => 'git')) . (defined('APP_ENV') && APP_ENV == 'development' ? '#!' : '') /* $c_or_p . '=' . (empty($_GET[$c_or_p]) ? '' : $$c_or_p->name) . '&amp;app=git' */ ?>" method="POST">
+        <form class="app_git-pull" action="<?= APP_URL . '?' . http_build_query(APP_QUERY + array( 'app' => 'git')) . (defined('APP_ENV') && APP_ENV == 'development' ? '#!' : '') /* $c_or_p . '=' . (empty($_GET[$c_or_p]) ? '' : $$c_or_p->name) . '&amp;app=git' */ ?>" method="POST">
           <!-- <input type="hidden"  /> -->
           <button type="submit" name="cmd" value="pull"><img src="resources/images/red_arrow.fw.png" width="20" height="25" style="cursor: pointer; margin-left: 4px;" /><br />Pull</button>
         </form>
@@ -494,7 +494,7 @@ unset($path);
         <h3>Psr/Log</h3>
         <label><input type="checkbox" checked> Add to Project.</label>
         <button type="submit" style="float: right;">Save</button>
-        <iframe src="<?= APP_WWW ?>?project=show" style="height: 300px; width: 600px;"></iframe>
+        <iframe src="<?= APP_URL ?>?project=show" style="height: 300px; width: 600px;"></iframe>
   </form>
 </div>
 */ ?>
@@ -842,17 +842,18 @@ include 'app.debug.php';
   <span>Environment: <?= PHP_OS; ?></span><br />
   <span>Domain: <?= APP_DOMAIN; ?></span><br />
   <span>IP Address: <?= APP_HOST; ?></span><br />
+  <span><?= isset($_GET['client']) ? 'Client: ' . '<a href="?client=' . $_GET['client'] . '">' . $_GET['client'] . '</a>': (isset($_GET['project']) ? 'Project: ' . '<a href="?project=' . $_GET['project'] . '">' . $_GET['project'] . '</a>' : ''); ?></span><br />
   <span>App Path: <?= APP_PATH; ?></span><br />
   <span>Memory: <em ><b style="color: green;"><?= formatSizeUnits(memory_get_usage()) . '</b> @ <b>' . formatSizeUnits(convertToBytes(ini_get('memory_limit'))); ?></b></em></span><br />
   <span>Source (code): <em style="font-size: 13px;"><?= '[<b>' . formatSizeUnits($total_filesize) . '</b>] <b style="color: red;">' . $total_filesize - 1000000 . '</b>' ?></em></span>
   <div style="position: relative; display: block;"><div style="position: absolute; display: block; float: right; right: 10px; width: 165px; text-align: right;"><?= ' [(<a style="font-weight: bolder; color: green;" href="#" onclick="document.getElementById(\'app_nodes-container\').style.display = \'block\';">' . $total_include_files . ' loaded</a>) <b>'. $total_files . '</b> files] <br /> [<b style="color: green;">' . $total_include_lines . '</b> @ <b>' . $total_lines . '</b> lines]'; ?></div></div><br /><br />
 </div>
 
-<div id="server-container" style="position: fixed; display: block; top: 0; right: 0; padding: 4px; z-index: 1; text-align: right; border: 1px solid #000; height: auto; background-color: #FFF; width: 250px;">
+<div id="server-container" style="position: fixed; display: block; top: 0; right: 0; padding: 4px; z-index: 1; text-align: right; border: 1px solid #000; height: auto; background-color: #FFF; width: 225px;">
   <div style="float: left;">$_ENV</div>
   <h3 style="font-weight: bolder;">Server</h3>
-  <div style="display: inline-block;">On / Off <input id="check_server_start" type="checkbox" onclick="validate()" /><br /><a href="">Status</a><br /><a href="">Help</a><br />Error Log</div>
-  <img src="/resources/images/server.gif" style="float: right;" width="100" height="103">
+  <div style="display: inline-block;">On / Off <input id="check_server_start" type="checkbox" <?= isset($_SERVER['SOCKET']) ? 'checked="checked"' : '' ?> onclick="validate()" /><br /><a href="">Status</a><br /><a href="">Help</a><br />Error Log</div>
+  <img id="serverStatus" src="/resources/images/server<?= isset($_SERVER['SOCKET']) ? '-green' : '' ?>.gif" style="float: right;" width="100" height="103">
   <!--form action="#!" method="GET">
       <?= isset($_GET['debug']) && !$_GET['debug'] ? '' : '<input type="hidden" name="debug" value / >' ?> 
 
@@ -899,7 +900,7 @@ $(document).ready(function() {
 -->
 <?php
 
-// (check_http_status('https://cdn.tailwindcss.com') ? 'https://cdn.tailwindcss.com' : APP_WWW . 'resources/js/tailwindcss-3.3.5.js')?
+// (check_http_status('https://cdn.tailwindcss.com') ? 'https://cdn.tailwindcss.com' : APP_URL . 'resources/js/tailwindcss-3.3.5.js')?
 //!is_dir($path = APP_PATH . APP_BASE['resources'] . 'js/') or mkdir($path, 0755, true);
 
 if (!is_file($path = APP_PATH . APP_BASE['resources'] . 'js/requirejs/require.js') || ceil(abs((strtotime(date('Y-m-d')) - strtotime(date('Y-m-d',strtotime('+5 days',filemtime($path))))) / 86400)) <= 0  ) {
@@ -1000,14 +1001,6 @@ if (!is_file($path)) { ?>
     var globalEditor;
     var editor1, editor2;
 
-  function validate(){
-    var remember = document.getElementById('check_server_start');
-    if (remember.checked){
-        alert("checked") ;
-    }else{
-        alert("You didn't check it! Let me check it for you.")
-    }
-}
     document.addEventListener("DOMContentLoaded", function() {
 
 <?php if (!$_SERVER['SOCKET']) { ?>
@@ -1173,6 +1166,10 @@ function makeDraggable(windowId) {
         console.log('checked');
 
         //getElementById('hide_notice-container');
+
+        $( '#app_container' ).slideDown( "slow", function() {
+          // Animation complete.
+        });
         
         $( '#details-container' ).slideDown( "slow", function() {
           // Animation complete.
@@ -1202,7 +1199,11 @@ function makeDraggable(windowId) {
       //$("#app_backup-container").show("slide", { direction: "right" }, 1000);
       
       } else {
-        
+
+        $( '#app_container' ).slideUp( "slow", function() {
+          // Animation complete.
+        });
+
         $( '#details-container' ).slideUp( "slow", function() {
           // Animation complete.
         });
@@ -1344,7 +1345,23 @@ $( '#app_directory-container' ).slideUp( "slow", function() {
       
       // Define the function to be executed when "c" key is pressed
 
-      
+
+      function validate(){
+        var serverStatus = document.getElementById('serverStatus');
+        serverStatus.src = '/resources/images/server-green.gif';
+
+    var remember = document.getElementById('check_server_start');
+    if (remember.checked){
+        //alert("checked") ;
+        $('#requestInput').val('server start');
+        $('#requestSubmit').click();
+    }else{
+        //alert("You didn't check it! Let me check it for you.");
+        $('#requestInput').val('server shutdown -f');
+        $('#requestSubmit').click();
+
+    }
+}
       document.addEventListener('keydown', function() {
       // Check if the pressed key is "c" (you can use event.key or event.keyCode)
         if (event.key === '`' || event.keyCode === 192) // c||67
@@ -1478,9 +1495,6 @@ function confirmAction(isConfirmed) {
         alert('Cancelled!');
     }
 }
-
-
-
     </script>
   </body>
 </html>

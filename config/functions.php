@@ -43,6 +43,24 @@ foreach ($paths as $path) {
 */
 
 /**
+ * Summary of buildUri
+ * @param array $urlComponents
+ * @param mixed $queryParams
+ * @return string
+ */
+function buildUri(array $urlComponents, $queryParams = []) {
+  $uri = $urlComponents['scheme'] . '://' . $urlComponents['host'];
+  if (isset($urlComponents['port']) && $urlComponents['port'] !== '80') {
+    $uri .= ':' . $urlComponents['port'];
+  }
+  $uri .= $urlComponents['path'];
+  if (!empty($queryParams)) {
+    $uri .= '?' . http_build_query($queryParams);
+  }
+  return $uri;
+}
+
+/**
  * Parses command line args and returns array of args and their values
  *
  * @param Array $args   The array from $argv

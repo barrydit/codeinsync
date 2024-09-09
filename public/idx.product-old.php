@@ -456,7 +456,7 @@ header("Pragma: no-cache"); ?>
     
     <title>WebPortal</title>
     <?php
-      // (check_http_status('https://cdn.tailwindcss.com') ? 'https://cdn.tailwindcss.com' : APP_WWW . 'resources/js/tailwindcss-3.3.5.js')?
+      // (check_http_status('https://cdn.tailwindcss.com') ? 'https://cdn.tailwindcss.com' : APP_URL . 'resources/js/tailwindcss-3.3.5.js')?
       is_dir($path = APP_PATH . APP_BASE['resources'] . 'js/') or mkdir($path, 0755, true);
       if (is_file($path . 'tailwindcss-3.3.5.js')) {
         if (ceil(abs((strtotime(date('Y-m-d')) - strtotime(date('Y-m-d',strtotime('+5 days',filemtime($path . 'tailwindcss-3.3.5.js'))))) / 86400)) <= 0 ) {
@@ -897,7 +897,7 @@ header("Pragma: no-cache"); ?>
             <h3>Psr/Log</h3>
             <label><input type="checkbox" checked> Add to Project.</label>
             <button type="submit" style="float: right;">Save</button>
-            <iframe src="<?= APP_WWW ?>?project=show" style="height: 300px; width: 600px;"></iframe>
+            <iframe src="<?= APP_URL ?>?project=show" style="height: 300px; width: 600px;"></iframe>
       </form>
     </div>
     */ ?>
@@ -1859,7 +1859,7 @@ header("Pragma: no-cache"); ?>
     <!-- script src="//code.jquery.com/jquery-1.12.4.js"></script -->
     
 <?php
-      // (check_http_status('https://cdn.tailwindcss.com') ? 'https://cdn.tailwindcss.com' : APP_WWW . 'resources/js/tailwindcss-3.3.5.js')? [[jquery-ui]-[1.12.1].js]
+      // (check_http_status('https://cdn.tailwindcss.com') ? 'https://cdn.tailwindcss.com' : APP_URL . 'resources/js/tailwindcss-3.3.5.js')? [[jquery-ui]-[1.12.1].js]
       is_dir($path = APP_PATH . APP_BASE['resources'] . 'js/jquery-ui/') or mkdir($path, 0755, true);
       if (is_file($path . 'jquery-ui-1.12.1.js')) {
         if (ceil(abs((strtotime(date('Y-m-d')) - strtotime(date('Y-m-d',strtotime('+5 days',filemtime($path . 'jquery-ui-1.12.1.js'))))) / 86400)) <= 0 ) {

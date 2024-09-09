@@ -198,13 +198,13 @@ ob_start();
         <!--<h3>Main Menu</h3> <h4>Update - Edit Config - Initalize - Install</h4> -->
         <div style="position: absolute; right: 10px; float: right; z-index: 1;">
           <div class="text-sm" style="display: inline-block; margin: 0 auto;">
-            <form class="app_git-push" action="<?= APP_URL_BASE . '?' . http_build_query(APP_QUERY + array( 'app' => 'git')) . (defined('APP_ENV') && in_array(APP_ENV, ['development', 'production']) ? '#!' : '') /* $c_or_p . '=' . (empty($_GET[$c_or_p]) ? '' : $$c_or_p->name) . '&amp;app=git' */ ?>" method="POST">
+            <form class="app_git-push" action="<?= APP_URL . '?' . http_build_query(APP_QUERY + array( 'app' => 'git')) . (defined('APP_ENV') && in_array(APP_ENV, ['development', 'production']) ? '#!' : '') /* $c_or_p . '=' . (empty($_GET[$c_or_p]) ? '' : $$c_or_p->name) . '&amp;app=git' */ ?>" method="POST">
               <!-- <input type="hidden"  /> -->
               <button type="submit" name="cmd" value="push"><img src="resources/images/green_arrow.fw.png" width="20" height="25" style="cursor: pointer; margin-left: 6px;" /><br />Push</button>
             </form>
           </div>
           <div class="text-sm" style="display: inline-block; margin: 0 auto;">
-            <form class="app_git-pull" action="<?=APP_URL_BASE . '?' . http_build_query(APP_QUERY + array( 'app' => 'git')) . (defined('APP_ENV') && in_array(APP_ENV, ['development', 'production']) ? '#!' : '') /* $c_or_p . '=' . (empty($_GET[$c_or_p]) ? '' : $$c_or_p->name) . '&amp;app=git' */ ?>" method="POST">
+            <form class="app_git-pull" action="<?= APP_URL . '?' . http_build_query(APP_QUERY + array( 'app' => 'git')) . (defined('APP_ENV') && in_array(APP_ENV, ['development', 'production']) ? '#!' : '') /* $c_or_p . '=' . (empty($_GET[$c_or_p]) ? '' : $$c_or_p->name) . '&amp;app=git' */ ?>" method="POST">
               <!-- <input type="hidden"  /> -->
               <button type="submit" name="cmd" value="pull"><img src="resources/images/red_arrow.fw.png" width="20" height="25" style="cursor: pointer; margin-left: 4px;" /><br />Pull</button>
             </form>
@@ -220,11 +220,11 @@ ob_start();
           <div style="position: absolute; top: 28px; left: 10px; border: 1px dashed #000; height: 84px; overflow-x: auto;" class="text-xs">
             <div style="position: fixed; font-weight: bold; color: #FFF; background-color: #B0B0B0;">Git Commands</div><br />
             <code class="text-xs">
-            <a id="app_git-help-cmd" href="<?= (APP_URL['query'] != '' ? '?'.APP_URL['query'] : '') . (defined('APP_ENV') && in_array(APP_ENV, ['development', 'production']) ? '#!' : '') ?>" onclick="">git <span style="color: red;">[Help]</span></a><br />
-            <a id="app_git-add-cmd" href="<?= (APP_URL['query'] != '' ? '?'.APP_URL['query'] : '') . (defined('APP_ENV') && in_array(APP_ENV, ['development', 'production']) ? '#!' : '') ?>" onclick="">git add .</a><br />
-            <a id="app_git-remote-cmd" href="<?= (APP_URL['query'] != '' ? '?'.APP_URL['query'] : '') . (defined('APP_ENV') && in_array(APP_ENV, ['development', 'production']) ? '#!' : '') ?>" onclick="">git remote -v</a><br />
-            <a id="app_git-commit-cmd" href="<?= (APP_URL['query'] != '' ? '?'.APP_URL['query'] : '') . (defined('APP_ENV') && in_array(APP_ENV, ['development', 'production']) ? '#!' : '') ?>">git commit -am "&lt;detail message&gt;"</a><br />
-            <a id="app_git-clone-cmd" href="<?= (APP_URL['query'] != '' ? '?'.APP_URL['query'] : '') . (defined('APP_ENV') && in_array(APP_ENV, ['development', 'production']) ? '#!' : '') ?>">git clone &lt;URL&gt;</a><br />
+            <a id="app_git-help-cmd" href="<?= (APP_URL_BASE['query'] != '' ? '?'.APP_URL_BASE['query'] : '') . (defined('APP_ENV') && in_array(APP_ENV, ['development', 'production']) ? '#!' : '') ?>" onclick="">git <span style="color: red;">[Help]</span></a><br />
+            <a id="app_git-add-cmd" href="<?= (APP_URL_BASE['query'] != '' ? '?'.APP_URL_BASE['query'] : '') . (defined('APP_ENV') && in_array(APP_ENV, ['development', 'production']) ? '#!' : '') ?>" onclick="">git add .</a><br />
+            <a id="app_git-remote-cmd" href="<?= (APP_URL_BASE['query'] != '' ? '?'.APP_URL_BASE['query'] : '') . (defined('APP_ENV') && in_array(APP_ENV, ['development', 'production']) ? '#!' : '') ?>" onclick="">git remote -v</a><br />
+            <a id="app_git-commit-cmd" href="<?= (APP_URL_BASE['query'] != '' ? '?'.APP_URL_BASE['query'] : '') . (defined('APP_ENV') && in_array(APP_ENV, ['development', 'production']) ? '#!' : '') ?>">git commit -am "&lt;detail message&gt;"</a><br />
+            <a id="app_git-clone-cmd" href="<?= (APP_URL_BASE['query'] != '' ? '?'.APP_URL_BASE['query'] : '') . (defined('APP_ENV') && in_array(APP_ENV, ['development', 'production']) ? '#!' : '') ?>">git clone &lt;URL&gt;</a><br />
             <a>Testing Again</a><br />
             </code>
           </div>
@@ -766,7 +766,7 @@ ob_start(); ?>
   <!-- link rel="stylesheet" href="//code.jquery.com/ui/1.12.1/themes/smoothness/jquery-ui.css" /-->
 
 <?php
-// (check_http_status('https://cdn.tailwindcss.com') ? 'https://cdn.tailwindcss.com' : APP_WWW . 'resources/js/tailwindcss-3.3.5.js')?
+// (check_http_status('https://cdn.tailwindcss.com') ? 'https://cdn.tailwindcss.com' : APP_URL . 'resources/js/tailwindcss-3.3.5.js')?
 is_dir($path = APP_PATH . APP_BASE['resources'] . 'js/') or mkdir($path, 0755, true);
 if (is_file($path . 'tailwindcss-3.3.5.js')) {
   if (ceil(abs((strtotime(date('Y-m-d')) - strtotime(date('Y-m-d',strtotime('+5 days',filemtime("{$path}tailwindcss-3.3.5.js"))))) / 86400)) <= 0 ) {

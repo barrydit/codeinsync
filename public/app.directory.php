@@ -4,7 +4,7 @@ if ($path = (basename(getcwd()) == 'public') ? (is_file('../config/config.php') 
   (is_file('config.php') ? 'config.php' : dirname(__DIR__, 1) . DIRECTORY_SEPARATOR . 'config' . DIRECTORY_SEPARATOR . 'config.php' ))
   require_once $path;
 else {
-    die(var_dump("$path was not found. file=config.php"));
+  die(var_dump("$path was not found. file=config.php"));
 }
 
 //require_once APP_PATH . APP_ROOT . APP_BASE['vendor'] . 'autoload.php';
@@ -251,7 +251,7 @@ if (defined('COMPOSER_VENDORS')) {
           } ?>
         <!-- /tr -->
     </table>
-<?php } elseif (isset($_GET['project']) && empty($_GET['project'])) {
+<?php } elseif (isset($_GET['path']) && preg_match('/^project\/?/', $_GET['path']) || isset($_GET['project']) && empty($_GET['project'])) {
     if (readlinkToEnd($_SERVER['HOME'] . '/projects') == '/mnt/c/www/projects' || realpath(APP_PATH . 'projects')) { ?>
     <div style="text-align: center; border: none;" class="text-xs">
       <a class="pkg_dir" href="#" onclick="document.getElementById('app_project-container').style.display='block';">
@@ -378,8 +378,7 @@ if (defined('COMPOSER_VENDORS')) {
           while ($link = array_shift($links)) {
             $old_link = $link;
             $link = basename($link);
-          
-          
+
             echo '<td style="text-align: center; border: none;" class="text-xs">' . "\n";
           
             echo '<a class="pkg_dir" href="?application=' . $link . '">'
@@ -674,7 +673,7 @@ if (defined('COMPOSER_VENDORS')) {
                     . '</div>' . "\n";
                   } elseif (basename($path) == basename(ini_get('error_log')))
                     echo '<a href="?' . (!isset($_GET['client']) ? (!isset($_GET['project']) ? '' : 'project=' . $_GET['project'] . '&') : 'client=' . $_GET['client'] . '&') . 'app=ace_editor&' . (!isset($_GET['path']) ? '' : 'path=' . $_GET['path'] . '&') . /*'path=' . (basename(dirname($path)) == basename(parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH) ? 'failed' : basename(dirname($path)))) .*/ 'file=' . basename($path) . '">'
-                    . '<div style="position: relative;"><img src="resources/images/error_log.png" width="40" height="50" /></a><br /><a id="app_php-error-log" href="' . (APP_URL['query'] != '' ? '?'.APP_URL['query'] : '') . (defined('APP_ENV') && APP_ENV == 'development' ? '#!' : '') . /* '?' . basename(ini_get('error_log')) . '=unlink' */ '" style="text-decoration: line-through; background-color: red; color: white;"></a>' . '<a href="?file=' . basename($path) . '" onclick="handleClick(event, \'' . $relativePath . '\')">' . basename($path)
+                    . '<div style="position: relative;"><img src="resources/images/error_log.png" width="40" height="50" /></a><br /><a id="app_php-error-log" href="' . (APP_URL_BASE['query'] != '' ? '?'.APP_URL_BASE['query'] : '') . (defined('APP_ENV') && APP_ENV == 'development' ? '#!' : '') . /* '?' . basename(ini_get('error_log')) . '=unlink' */ '" style="text-decoration: line-through; background-color: red; color: white;"></a>' . '<a href="?file=' . basename($path) . '" onclick="handleClick(event, \'' . $relativePath . '\')">' . basename($path)
                     . (is_readable($path = ini_get('error_log')) && filesize($path) > 0 ? '</a><div style="position: absolute; top: -8px; left: 8px; color: red; font-weight: bold;"><a href="#" onclick="$(\'#requestInput\').val(\'unlink error_log\'); $(\'#requestSubmit\').click();">[X]</a></div>' : '' )
                     . '</div>' . "\n";
                   else
@@ -703,7 +702,7 @@ ob_start(); ?>
 ob_end_clean(); 
 
 ob_start(); ?>
-<div id="app_directory-container" style="position: absolute; display: <?= isset($_GET['debug']) || isset($_GET['project']) || isset($_GET['path']) ? /*'block'*/ 'none' : 'none'; ?>; background-color: rgba(255,255,255,0.8); height: 600px; top: 100px; margin-left: auto; margin-right: auto; left: 0; right: 0; width: 700px; overflow-x: hidden; overflow-y: scroll; padding: 10px;">
+<div id="app_directory-container" style="position: absolute; display: <?= isset($_GET['debug']) || isset($_GET['project']) || isset($_GET['path']) ? /*'block'*/ 'none' : 'none'; ?>; background-color: rgba(255,255,255,1); height: 600px; top: 100px; margin-left: auto; margin-right: auto; left: 0; right: 0; width: 700px; overflow-x: hidden; overflow-y: scroll; padding: 10px;">
 
 <?= $tableGen(); /*'';*/ ?>
 </div>
@@ -761,7 +760,7 @@ ob_start(); ?>
   <link rel="stylesheet" href="//code.jquery.com/ui/1.12.1/themes/smoothness/jquery-ui.css" />
 
 <?php
-// (check_http_status('https://cdn.tailwindcss.com') ? 'https://cdn.tailwindcss.com' : APP_WWW . 'resources/js/tailwindcss-3.3.5.js')?
+// (check_http_status('https://cdn.tailwindcss.com') ? 'https://cdn.tailwindcss.com' : APP_URL . 'resources/js/tailwindcss-3.3.5.js')?
 // Path to the JavaScript file
 $path = APP_PATH . APP_BASE['resources'] . 'js/tailwindcss-3.3.5.js';
 

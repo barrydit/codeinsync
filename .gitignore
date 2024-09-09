@@ -23,6 +23,7 @@
 !/var/packages/psr-log.php
 /var/weekly-timesheet-????-??.json
 !/var/weekly-timesheet-sample.json
+/tasks.txt
 .env*
 .htaccess
 *.old

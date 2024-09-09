@@ -259,7 +259,7 @@ ob_start(); ?>
   <link rel="stylesheet" href="//code.jquery.com/ui/1.12.1/themes/smoothness/jquery-ui.css" />
 
 <?php
-// (check_http_status('https://cdn.tailwindcss.com') ? 'https://cdn.tailwindcss.com' : APP_WWW . 'resources/js/tailwindcss-3.3.5.js')?
+// (check_http_status('https://cdn.tailwindcss.com') ? 'https://cdn.tailwindcss.com' : APP_URL . 'resources/js/tailwindcss-3.3.5.js')?
 is_dir($path = APP_PATH . APP_BASE['resources'] . 'js/') or mkdir($path, 0755, true);
 if (is_file("{$path}tailwindcss-3.3.5.js")) {
   if (ceil(abs(strtotime(date('Y-m-d')) - strtotime(date('Y-m-d', strtotime('+5 days', filemtime("{$path}tailwindcss-3.3.5.js")))) / 86400) <= 0 )) {
@@ -387,7 +387,7 @@ foreach($data as $key1 => $sample) {
   <!-- <script src="../resources/js/jquery/jquery.min.js"></script> -->
 
 <?php
-// (check_http_status('https://cdn.tailwindcss.com') ? 'https://cdn.tailwindcss.com' : APP_WWW . 'resources/js/highlight.min.js"')?
+// (check_http_status('https://cdn.tailwindcss.com') ? 'https://cdn.tailwindcss.com' : APP_URL . 'resources/js/highlight.min.js"')?
 is_dir($path = APP_PATH . APP_BASE['resources'] . 'js/highlight.js/') or mkdir($path, 0755, true);
 if (is_file($path . 'highlight.min.js')) {
   if (ceil(abs((strtotime(date('Y-m-d')) - strtotime(date('Y-m-d',strtotime('+5 days',filemtime($path . 'highlight.min.js'))))) / 86400)) <= 0 ) {

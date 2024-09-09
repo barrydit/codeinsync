@@ -146,12 +146,12 @@ class composerSchema {
 }
 
 //if (is_file($include = APP_PATH . APP_ROOT . APP_BASE['vendor'] . 'autoload.php'))
-//  if (APP_SELF == APP_PUBLIC)
+//  if (APP_SELF == APP_PATH_PUBLIC)
 //    if (isset($_ENV['COMPOSER']['AUTOLOAD']) && (bool) $_ENV['COMPOSER']['AUTOLOAD'] === true)
 //  require_once $include;
 
-if (!defined('APP_CONFIG') || !in_array(APP_CONFIG, get_required_files()))
-  die(APP_CONFIG . ' is missing. Presumed that this file was opened on its own.');
+if (!defined('APP_PATH_CONFIG') || !in_array(APP_PATH_CONFIG, get_required_files()))
+  die(APP_PATH_CONFIG . ' is missing. Presumed that this file was opened on its own.');
 
 if (!function_exists('get_declared_classes')) {
   $autoloadContent = file_get_contents($include);
@@ -545,9 +545,7 @@ if (!realpath(APP_PATH . APP_ROOT . APP_BASE['vendor'])) {
 
 // dd(getcwd());
 
-/** Loading Time: 0.134s **/
-
-  //dd(get_required_files(), true);
+//dd(get_required_files(), true);
 
 // moved to config.php load (last)
 // is_file(APP_BASE['vendor'] . 'autoload.php') and require_once APP_BASE['vendor'] . 'autoload.php'; // Include Composer's autoloader
@@ -862,8 +860,8 @@ fclose($pipes[2]);
 //dd($_SERVER['SOCKET']);
       if (isset($_SERVER['SOCKET']) && $_SERVER['SOCKET'] !== false) {
 /*
-list($server, $port) = explode(PATH_SEPARATOR, APP_HOST . PATH_SEPARATOR . APP_PORT); // 127.0.0.1:12345   
-$errors['server-1'] = "Connected to Server: " . $server . PATH_SEPARATOR . $port . "\n"; // APP_SERVER || APP_HOST
+list($server, $port) = explode(PATH_SEPARATOR, SERVER_HOST . PATH_SEPARATOR . SERVER_PORT); // 127.0.0.1:12345   
+$errors['server-1'] = "Connected to Server: " . $server . PATH_SEPARATOR . $port . "\n"; // APP_PATH_SERVER || APP_HOST
 
 // Send a message to the server
 $errors['server-2'] = 'Client request: ' . $message = "cmd: composer update " . "\n";

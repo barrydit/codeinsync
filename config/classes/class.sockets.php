@@ -12,9 +12,9 @@ class Sockets
     public function __construct()
     {
         try {
-            if (!isset($_SERVER['SOCKET']) && !$this->socket = $this->openSocket(APP_HOST, APP_PORT)) {
+            if (!isset($_SERVER['SOCKET']) && !$this->socket = $this->openSocket(SERVER_HOST, SERVER_PORT)) {
                 $this->handleSocketConnection();
-            } elseif (APP_SELF === APP_PUBLIC) {
+            } elseif (APP_SELF === APP_PATH_PUBLIC) {
                 $this->handleClientRequest();
             }
         } catch (SocketException $e) {
@@ -108,7 +108,7 @@ class Sockets
     private function handleClientRequest()
     {
         global $errors, $output;
-        $errors['server-1'] = "Connected to Server: " . APP_HOST . ':' . APP_PORT . "\n";
+        $errors['server-1'] = "Connected to Server: " . SERVER_HOST . ':' . SERVER_PORT . "\n";
 
         // Send a message to the server
         $errors['server-2'] = 'Client request: ' . $message = "cmd: " . $_SERVER["SCRIPT_FILENAME"] . "\n";

@@ -116,6 +116,12 @@ stripos(PHP_OS, 'LIN') === 0 and cli_set_process_name($title);
   pcntl_signal(SIGINT, 'signalHandler');
 }
 
+/**
+ * Summary of safe_chdir
+ * @param mixed $path
+ * @throws \Exception
+ * @return void
+ */
 function safe_chdir($path) {
   // Resolve the absolute path of the current directory
   $current_dir = realpath($path);
@@ -138,8 +144,8 @@ function safe_chdir($path) {
 set_time_limit(0);
 
 //dd(get_defined_constants()); // get_required_files()
-define('SERVER_HOST', defined('APP_HOST') ? APP_HOST : '0.0.0.0');
-define('SERVER_PORT', defined('APP_PORT') ? APP_PORT : 8080);
+defined('SERVER_HOST') or define('SERVER_HOST', defined('APP_HOST') ? APP_HOST : '0.0.0.0');
+defined('SERVER_PORT') or define('SERVER_PORT', '8080'); // 9000
 
 !empty($parsed_args = parseargs())
   and print("Argv(s): " . var_export($parsed_args, true) . "\n");

@@ -1,7 +1,7 @@
 <?php
 
   // if ($path = (basename(getcwd()) == 'public') chdir('..');
-//APP_PATH == dirname(APP_PUBLIC) 
+//APP_PATH == dirname(APP_PATH_PUBLIC) 
 if ($path = (basename(getcwd()) == 'public') ? (is_file('../config/config.php') ? '../config/config.php' : 'config.php') :
   (is_file('config.php') ? 'config.php' : dirname(__DIR__, 1) . DIRECTORY_SEPARATOR . 'config' . DIRECTORY_SEPARATOR . 'config.php' ))
   require_once $path;
@@ -31,7 +31,7 @@ if (APP_DEBUG) {
   defined('PHP_FLOAT_MAX') and $errors['PHP_FLOAT_MAX'] = "PHP_FLOAT_MAX: " . PHP_FLOAT_MAX . "\n";
 }
 
-if (APP_SELF != APP_SERVER && in_array(APP_PUBLIC, get_included_files()) /*APP_SELF == APP_PUBLIC*/)
+if (APP_SELF != APP_PATH_SERVER && in_array(APP_PATH_PUBLIC, get_included_files()) /*APP_SELF == APP_PATH_PUBLIC*/)
   require_once dirname(__DIR__) . DIRECTORY_SEPARATOR . 'config' . DIRECTORY_SEPARATOR . 'classes' . DIRECTORY_SEPARATOR . 'class.sockets.php';
 //dd(get_defined_constants(true)['user']);
 
@@ -62,7 +62,7 @@ if (is_readable($path = APP_PATH . APP_ROOT . $_ENV['ERROR_LOG_FILE']) && filesi
 
   $log_matches[] = end($matches) . ' [x' . count($matches) . ']';
 
-  if (count($matches) >= 10 && count($log_matches) <= 2) unlink($path) and $errors['ERROR_PATH'] = (!is_file($path) ? trim($errors['ERROR_PATH']) . ' was completely removed.' : 'Error_log failed to be removed completely.') . "\n"; // header('Location: ' . APP_WWW);
+  if (count($matches) >= 10 && count($log_matches) <= 2) unlink($path) and $errors['ERROR_PATH'] = (!is_file($path) ? trim($errors['ERROR_PATH']) . ' was completely removed.' : 'Error_log failed to be removed completely.') . "\n"; // header('Location: ' . APP_URL);
 
   $errors['ERROR_LOG'] = implode("\n", $log_matches) . "\n\n";
 
@@ -76,20 +76,20 @@ $dirs = [];
 
 !isset($_GET['app']) || $_GET['app'] != 'git' ? :
   //$dirs[] = APP_PATH . APP_BASE['config'] . 'git.php'
-  (APP_SELF != APP_PUBLIC ? : 
+  (APP_SELF != APP_PATH_PUBLIC ? : 
     $dirs[] = APP_PATH . APP_BASE['config'] . 'git.php');
 /**/
 
 !isset($_GET['app']) || $_GET['app'] != 'composer' ? :
   //$dirs[] = APP_PATH . APP_BASE['config'] . 'composer.php'
-  (APP_SELF == APP_PUBLIC ?
+  (APP_SELF == APP_PATH_PUBLIC ?
     (!defined('APP_ROOT') || empty(APP_ROOT) ?
       (!is_file($autoload = APP_PATH . (!defined('APP_ROOT') || empty(APP_ROOT) ? '' : APP_ROOT) . APP_BASE['vendor'] . 'autoload.php') ?: $dirs[] = $autoload) : $dirs[] = APP_PATH . APP_ROOT . APP_BASE['vendor'] . 'autoload.php') : $dirs[] = APP_PATH . APP_BASE['config'] . 'composer.php');
 
 
 !isset($_GET['app']) || $_GET['app'] != 'npm' ? :
   //$dirs[] = APP_PATH . APP_BASE['config'] . 'git.php'
-  (APP_SELF != APP_PUBLIC ? : 
+  (APP_SELF != APP_PATH_PUBLIC ? : 
     (!is_file($autoload = APP_PATH . APP_BASE['config'] . 'npm.php') ?: $dirs[] = $autoload ));
 
 unset($autoload);
@@ -187,7 +187,7 @@ unset($autoload);
         }
         $_ENV['APP_ENV'] = APP_ENV;
         Shutdown::setEnabled(false)->setShutdownMessage(function() {
-          return header('Location: ' . APP_WWW); // -wow
+          return header('Location: ' . APP_URL); // -wow
         })->shutdown();
       }
 
@@ -195,7 +195,7 @@ unset($autoload);
   case 'GET':
       if (isset($_ENV['APP_ENV']) && !empty($_ENV)) define('APP_ENV', $_ENV['APP_ENV']);
       //if (!empty($_GET['path']) && !isset($_GET['app'])) !!infinite loop
-      //  exit(header('Location: ' . APP_WWW . $_GET['path']));
+      //  exit(header('Location: ' . APP_URL . $_GET['path']));
 // http://localhost/?app=composer&path=vendor
 
 // Parse the URL and extract the query string
@@ -204,7 +204,7 @@ unset($autoload);
 
 // Now $queryArray contains the parsed query parameters as an array
 //dd($_SERVER);
-      if (preg_match('/^\/(?!\?)$/', $_SERVER['REQUEST_URI'])) exit(header('Location: ' . APP_WWW . '?'));
+      if (preg_match('/^\/(?!\?)$/', $_SERVER['REQUEST_URI'])) exit(header('Location: ' . APP_URL . '?'));
 
       if (isset($_SERVER['HTTP_REFERER'])) {
         parse_str(parse_url($_SERVER['HTTP_REFERER'])['query'] ?? '', $queryRefererArray);
@@ -212,7 +212,7 @@ unset($autoload);
           parse_str(parse_url($_SERVER['REQUEST_URI'])['query'] ?? '', $queryArray);
           if (!array_key_exists('debug', $queryArray)) {
             Shutdown::setEnabled(true)->setShutdownMessage(function() use ($queryArray) {
-              return header('Location: ' . APP_WWW . '?debug&' . http_build_query($queryArray, '', '&')); //$_SERVER['HTTP_REFERER'] -wow
+              return header('Location: ' . APP_URL . '?debug&' . http_build_query($queryArray, '', '&')); //$_SERVER['HTTP_REFERER'] -wow
             })->shutdown();
           } //else << NO ELSE!!
         }
@@ -221,7 +221,7 @@ unset($autoload);
       if (isset($_GET['hide']) && $_GET['hide'] == 'update-notice') {
         $_ENV['HIDE_UPDATE_NOTICE'] = true; // var_export(true, true); // true
         Shutdown::setEnabled(true)->setShutdownMessage(function() {
-          return header('Location: ' . APP_WWW); // -wow
+          return header('Location: ' . APP_URL); // -wow
         })->shutdown();
       }
         
@@ -229,14 +229,14 @@ unset($autoload);
       if (isset($_GET['category']) && !empty($_GET['category'])) {
         
         if ($_GET['category'] == 'projects')
-          exit(header('Location: ' . APP_WWW . '?project='));
+          exit(header('Location: ' . APP_URL . '?project='));
         if ($_GET['category'] == 'vendor')
-          exit(header('Location: ' . APP_WWW . '?app=composer&path=' . $_GET['category']));
+          exit(header('Location: ' . APP_URL . '?app=composer&path=' . $_GET['category']));
         //if ($_GET['category'] == 'applications')
-        //  exit(header('Location: ' . APP_WWW . '?path=' . $_GET['category']));
-        exit(header('Location: ' . APP_WWW . '?' . $_GET['category']));
+        //  exit(header('Location: ' . APP_URL . '?path=' . $_GET['category']));
+        exit(header('Location: ' . APP_URL . '?' . $_GET['category']));
       } elseif (isset($_GET['category']) && empty($_GET['category']))
-        exit(header('Location: ' . APP_WWW . '?path'));
+        exit(header('Location: ' . APP_URL . '?path'));
         
       if (isset($_GET['path']) && !is_dir(APP_PATH . APP_ROOT)) {
         //dd(APP_PATH . APP_ROOT . ' test');
@@ -299,7 +299,7 @@ unset($autoload);
   //dd(__DIR__ . DIRECTORY_SEPARATOR);
 
     
- if (APP_SELF == APP_PUBLIC) {
+ if (APP_SELF == APP_PATH_PUBLIC) {
 
   $appPaths = array_filter(glob(__DIR__ . DIRECTORY_SEPARATOR . 'app.*.php'), 'is_file'); // public/
   
