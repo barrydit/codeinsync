@@ -864,9 +864,11 @@ include 'app.debug.php';
         <div class="switch" style="display: inline; z-index: 999;">
           <span class="slider round"></span>
         </div>
-      </label><div style="position: absolute; right: 10px; top: 15px; z-index: 999;">&nbsp;&nbsp;&nbsp;&nbsp;Dashboard</div>
+      </label><div style="position: absolute; right: 10px; top: 15px; z-index: 999;">&nbsp;&nbsp;&nbsp;&nbsp;<?= APP_NAME ?></div>
     <!-- /form -->
 </div>
+<hr />
+<a href="?logout=true">Logout</a><br />
 </div>
 
 <div id="adhd_song-container" style="position: fixed; display: none; bottom: 0; right: 0; z-index: 1;">

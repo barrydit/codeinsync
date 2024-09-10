@@ -190,7 +190,13 @@ if (preg_match('/^app\.([\w\-.]+)\.php$/', basename(__FILE__), $matches))
   
   
         } else if (preg_match('/^git\s+(:?(.*))/i', $_POST['cmd'], $match)) {
-          require_once APP_PATH . 'config/git.php';
+          //(function() use ($path) {
+          //  ob_start();
+            require_once APP_PATH . 'config/git.php';
+          //  ob_end_clean();
+          //  return '';
+          //})();
+
           if (preg_match('/^git\s+(help)(:?\s+)?/i', $_POST['cmd'])) {
             $output[] = <<<END
   git reset filename   (unstage a specific file)
@@ -216,7 +222,7 @@ if (preg_match('/^app\.([\w\-.]+)\.php$/', basename(__FILE__), $matches))
   
           list($stdout, $stderr, $exitCode) = [stream_get_contents($pipes[1]), stream_get_contents($pipes[2]), proc_close($proc)];
           preg_match('/\/(.*)\//', DOMAIN_EXPR, $matches);   
-          $output[] = !isset($stdout) ? NULL : $stdout . (isset($stderr) && $stderr === '' ? NULL : (preg_match('/^To\s' . $matches[1] . '/', $stderr) ? $stderr : "Error: $stderr")) . (isset($exitCode) && $exitCode == 0 ? NULL : "Exit Code: $exitCode");
+          $output[] = !isset($stdout) ? NULL : $stdout . (isset($stderr) && $stderr === '' ? NULL : (preg_match("/^To\\s$matches[1]/", $stderr) ? $stderr : "Error: $stderr")) . (isset($exitCode) && $exitCode == 0 ? NULL : "Exit Code: $exitCode");
           } else if (preg_match('/^git\s+(update)(:?\s+)?/i', $_POST['cmd'])) {
             $output[] = git_origin_sha_update();
           } else if (preg_match('/^git\s+(clone)(:?\s+)?/i', $_POST['cmd'])) {
@@ -407,13 +413,13 @@ if (preg_match('/^app\.([\w\-.]+)\.php$/', basename(__FILE__), $matches))
             echo /*(isset($match[1]) ? $match[1] : 'PHP') . ' >>> ' . */ join("\n... <<< ", $output);
             break;
           default:
-            join("\n", $output);
+            echo join("\n", $output);
             break;
         } // . "\n"
-        //echo implode("\n", $output);
         //$output[] = 'post: ' . var_dump($_POST);
       //else var_dump(get_class_methods($repo));
-      } else echo $buffer;
+      }
+      echo $buffer;
       Shutdown::setEnabled(true)->setShutdownMessage(function () { })->shutdown();
       //exit();
     }

@@ -1,12 +1,25 @@
 CHANGELOG
 
+.htpasswd
+
+/*
+list($_SERVER['PHP_AUTH_USER'], $_SERVER['PHP_AUTH_PW']) = 
+  explode(':', base64_decode(substr($_SERVER['HTTP_AUTHORIZATION'], 6)));
+
+if (!isset($_SERVER['PHP_AUTH_USER'])) {
+    header('WWW-Authenticate: Basic realm="My Realm"');
+    header('HTTP/1.0 401 Unauthorized');
+    echo 'Text to send if user hits Cancel button';
+    exit;
+} else { echo "<p>Hello {$_SERVER['PHP_AUTH_USER']}.</p><p>You entered {$_SERVER['PHP_AUTH_PW']} as your password.</p>"; }
+*/
 
 
 HTACCESS
 
 
 RewriteEngine On
-RewriteBase "/clientele/000-Lastname,\Firstname/example.ca/public"
+RewriteBase "/clientele/000-Lastname,\ Firstname/example.ca/public"
 
 # Rewrite requests for /assets to the /../resources directory if the file doesn't exist in /assets
 RewriteCond %{REQUEST_FILENAME} !-f

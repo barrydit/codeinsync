@@ -148,7 +148,7 @@ switch (basename(__DIR__)) {
     $basePath = defined('APP_PATH') ? APP_PATH : __DIR__ . DIRECTORY_SEPARATOR;
 
     // Get directories in the base path and filter them
-    $dirpaths = array_map('basename', array_filter(glob($basePath . '*', GLOB_ONLYDIR), 'is_dir'));
+    $dirpaths = array_map('basename', array_filter(glob("$basePath*", GLOB_ONLYDIR), 'is_dir'));
 
     // Find common directories between base paths and directory paths
     $common = array_intersect($base_paths, $dirpaths);

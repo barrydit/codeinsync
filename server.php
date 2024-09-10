@@ -166,7 +166,7 @@ function clientInputHandler($input) {
       $output = var_export($matches, true);
       if ($matches[3] == '-f') signalHandler(SIGTERM) and unlink($pidFile);
     } elseif (preg_match('/^cmd:\s*server\s*status(?=\r?\n$)?/si', $input)) {
-      $output = 'Server is running... PID=' . $pid . "\n";
+      $output = "Server is running... PID=$pid";
     } elseif (preg_match('/^cmd:\s*chdir\s*(.*)(?=\r?\n$)?/si', $input, $matches)) {
       ini_set('log_errors', 'false');
       $output = "Changing directory to " . ($path = APP_PATH . APP_ROOT . trim($matches[1]) . '/');
@@ -524,7 +524,7 @@ try {
       }
 
       // Read and process client data
-      $data = processClientData(socket_read($client, 1024)) . 'test';
+      $data = processClientData(socket_read($client, 1024));
 
       // Send processed data back to the client
       socket_write($client, $data);

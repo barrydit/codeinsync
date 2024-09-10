@@ -1,7 +1,9 @@
 <?php
 
   // if ($path = (basename(getcwd()) == 'public') chdir('..');
-//APP_PATH == dirname(APP_PATH_PUBLIC) 
+//APP_PATH == dirname(APP_PATH_PUBLIC)
+require_once '../index.php';
+
 if ($path = (basename(getcwd()) == 'public') ? (is_file('../config/config.php') ? '../config/config.php' : 'config.php') :
   (is_file('config.php') ? 'config.php' : dirname(__DIR__, 1) . DIRECTORY_SEPARATOR . 'config' . DIRECTORY_SEPARATOR . 'config.php' ))
   require_once $path;

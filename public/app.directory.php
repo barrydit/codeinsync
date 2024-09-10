@@ -36,15 +36,15 @@ $tableGen = function(): string {
 <?php if (isset($_GET['path']) && preg_match('/^vendor\/?/', $_GET['path'])) {
 
     //if ($_ENV['COMPOSER']['AUTOLOAD'] == true)
-  require_once APP_PATH . APP_ROOT . APP_BASE['vendor'] . 'autoload.php';
-  require_once APP_PATH . APP_ROOT . APP_BASE['config'] . 'composer.php';
+  require_once APP_PATH . /*APP_ROOT .*/ APP_BASE['vendor'] . 'autoload.php';
+  require_once APP_PATH . /*APP_ROOT .*/ APP_BASE['config'] . 'composer.php';
 
 ?>
 <!-- iframe src="composer_pkg.php" style="height: 500px; width: 700px;"></iframe -->
     <div style="width: 700px;">
       <div style="display: inline-block; width: 350px;">Composers Vendor Packages [Installed] List</div>
       <div style="display: inline-block; text-align: right; width: 300px;">
-        <form action="<?= !defined('APP_URL_BASE') ? '//' . APP_DOMAIN . APP_URL_PATH . '?' . http_build_query(APP_QUERY, '', '&amp;') : APP_URL_BASE . '?' . http_build_query(APP_QUERY, '', '&amp;') ?>" method="POST">
+        <form action="<?= !defined('APP_URL') ? '//' . APP_DOMAIN . APP_URL_PATH . '?' . http_build_query(APP_QUERY, '', '&amp;') : APP_URL . '?' . http_build_query(APP_QUERY, '', '&amp;') ?>" method="POST">
           <input id="RequirePkg" type="text" title="Enter Text and onSelect" list="RequirePkgs" placeholder="[vendor]/[package]" name="composer[package]" value onselect="get_package(this);" autocomplete="off" style=" margin-top: 4px;">
           <button type="submit" style="border: 1px solid #000; margin-top: 4px;"> Add </button>
           <div style="display: inline-block; float: right; text-align: left; margin-left: 10px;" class="text-xs">
@@ -528,9 +528,10 @@ if (defined('COMPOSER_VENDORS')) {
                 if (is_dir($path))
                   switch (basename($path)) {
                     case '.git':
-                      echo '<a href="#!" onclick="document.getElementById(\'app_git-container\').style.display=\'block\';">' // "?path=' . basename($path) . '" 
+                      echo '<div style="position: relative; border: 4px dashed #F05033;">'
+                      . '<a href="#!" onclick="document.getElementById(\'app_git-container\').style.display=\'block\';">' // "?path=' . basename($path) . '" 
                       . '<img src="resources/images/directory-git.png" width="50" height="32" /><br />'
-                      . '<a href="?' . (isset($_GET['client']) ? 'client=' . $_GET['client'] . '&' : '') . (isset($_GET['domain']) ? 'domain=' . $_GET['domain'] . '&' : '') . 'path=' . $relativePath . '" onclick="handleClick(event, \'' . $relativePath . '\')">' . basename($path) . '/</a>' . "\n";
+                      . '<a href="?' . (isset($_GET['client']) ? 'client=' . $_GET['client'] . '&' : '') . (isset($_GET['domain']) ? 'domain=' . $_GET['domain'] . '&' : '') . 'path=' . $relativePath . '" onclick="handleClick(event, \'' . $relativePath . '\')">' . basename($path) . '/</a></div>' . "\n";
                       break;
                     case 'applications':
                       echo '<div style="position: relative;">'
@@ -538,20 +539,39 @@ if (defined('COMPOSER_VENDORS')) {
                       . '<a href="?' . (isset($_GET['client']) ? 'client=' . $_GET['client'] . '&' : '') . (isset($_GET['domain']) ? 'domain=' . $_GET['domain'] . '&' : '') . 'path=' . $relativePath . '" onclick="handleClick(event, \'' . $relativePath . '\')">' . basename($path)  // "?path=' . basename($path) . '"         
                       . '/</a></div>' . "\n";
                       break;
+                    case 'clients':
+                    case 'clientele':
+                      echo '<div style="position: relative; border: 4px dashed orange;">'
+                      . '<a href="?' . (!defined('APP_ROOT') || empty(APP_ROOT) ? '' : (array_key_first($_GET) == 'client' ? 'client=' . $_GET['client'] . '&' . (isset($_GET['domain']) ? 'domain=' . ($_GET['domain'] != '' ? $_GET['domain'] . '&' : '') : '') : (array_key_first($_GET) == 'project' ? 'project=' . $_GET['project'] . '&' : ''))) . 'path=' . $relativePath . '" onclick="handleClick(event, \'' . $relativePath . '\')">'
+                      // (!isset($_GET['path']) ? '' : $_GET['path'] . ($_GET['path'] == '' ? '' : '/' )) . basename($path)
+                      . '<img src="resources/images/directory.png" width="50" height="32" /><br />' . basename($path) . '/</a></div>' . "\n";
+                      break;
                     case 'node_modules':
-                      echo '<div style="position: relative;">'
+                      echo '<div style="position: relative; border: 4px dashed #E14747;">'
                       . '<a href="#!" onclick="document.getElementById(\'app_npm-container\').style.display=\'block\';"><img src="resources/images/directory-npm.png" width="50" height="32" /></a><br />'
                       . '<a href="?' . (APP_ROOT != '' && isset($_GET[array_key_first($_GET)]) ? array_key_first($_GET) . '=' . $_GET[array_key_first($_GET)] . '&' : '') . 'path=' . $relativePath . '" onclick="handleClick(event, \'' . $relativePath . '\')">' . basename($path)  // "?path=' . basename($path) . '"         
                       . '/</a></div>' . "\n";
                       break;
+                    case 'database':
+                      echo '<div style="position: relative; border: 4px dashed #2C88DA;">'
+                      . '<a href="?' . (!defined('APP_ROOT') || empty(APP_ROOT) ? '' : (array_key_first($_GET) == 'client' ? 'client=' . $_GET['client'] . '&' . (isset($_GET['domain']) ? 'domain=' . ($_GET['domain'] != '' ? $_GET['domain'] . '&' : '') : '') : (array_key_first($_GET) == 'project' ? 'project=' . $_GET['project'] . '&' : ''))) . 'path=' . $relativePath . '" onclick="handleClick(event, \'' . $relativePath . '\')">'
+                      // (!isset($_GET['path']) ? '' : $_GET['path'] . ($_GET['path'] == '' ? '' : '/' )) . basename($path)
+                      . '<img src="resources/images/directory.png" width="50" height="32" /><br />' . basename($path) . '/</a></div>' . "\n";
+                      break;
                     case 'projects':
-                      echo '<div style="position: relative;">'
+                      echo '<div style="position: relative; border: 4px dashed #2C88DA;">'
                       . '<a href="#!" onclick="document.getElementById(\'app_project-container\').style.display=\'block\';"><img src="resources/images/directory-project.png" width="50" height="32" /></a><br />'
                       . '<a href="?' . (isset($_GET['client']) ? 'client=' . $_GET['client'] . '&' : '') . (isset($_GET['domain']) ? 'domain=' . $_GET['domain'] . '&' : '') . 'path=' . $relativePath . '" onclick="handleClick(event, \'' . $relativePath . '\')">' . basename($path)  // "?path=' . basename($path) . '"
                       . '/</a></div>' . "\n";
                       break;
+                    case 'public':
+                      echo '<div style="position: relative; border: 4px dashed #CC9900;">'
+                      . '<a href="?' . (!defined('APP_ROOT') || empty(APP_ROOT) ? '' : (array_key_first($_GET) == 'client' ? 'client=' . $_GET['client'] . '&' . (isset($_GET['domain']) ? 'domain=' . ($_GET['domain'] != '' ? $_GET['domain'] . '&' : '') : '') : (array_key_first($_GET) == 'project' ? 'project=' . $_GET['project'] . '&' : ''))) . 'path=' . $relativePath . '" onclick="handleClick(event, \'' . $relativePath . '\')">'
+                      // (!isset($_GET['path']) ? '' : $_GET['path'] . ($_GET['path'] == '' ? '' : '/' )) . basename($path)
+                      . '<img src="resources/images/directory.png" width="50" height="32" /><br />' . basename($path) . '/</a></div>' . "\n";
+                      break;
                     case 'vendor':
-                      echo '<div style="position: relative;">'
+                      echo '<div style="position: relative; border: 4px dashed #6B4329;">'
                       . '<a href="#!" onclick="document.getElementById(\'app_composer-container\').style.display=\'block\';"><img src="resources/images/directory-composer.png" width="50" height="32" /></a><br />'
                       . '<a href="?' . (isset($_GET['client']) ? 'client=' . $_GET['client'] . '&' : '') . (isset($_GET['domain']) ? 'domain=' . $_GET['domain'] . '&' : '') . 'app=composer&path=' . $relativePath . '" onclick="handleClick(event, \'' . $relativePath . '\')">' . basename($path)  // "?path=' . basename($path) . '"         
                       . '/</a></div>' . "\n";
@@ -566,7 +586,7 @@ if (defined('COMPOSER_VENDORS')) {
                   if (preg_match('/^\..*/', basename($path))) {
                     switch (basename($path)) {
                       case '.htaccess':
-                        echo '<div style="position: relative;"><a href="?' . (!isset($_GET['client']) ? (!isset($_GET['project']) ? '' : 'project=' . $_GET['project'] . '&') : 'client=' . $_GET['client'] . '&' . (isset($_GET['domain']) ? 'domain=' . ($_GET['domain'] != '' ? $_GET['domain'] . '&' : '') : '' ) ) . 'app=ace_editor&' . (!isset($_GET['path']) ? '' : 'path=' . $_GET['path'] . '&') . /*'path=' . (basename(dirname($path)) == basename(parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH) ? 'failed' : basename(dirname($path)))) .*/  'file=' . basename($path) . '"><img src="resources/images/htaccess_file.png" width="40" height="50" /></a><br />' 
+                        echo '<div style="position: relative; border: 4px dashed #A50F5E;"><a href="?' . (!isset($_GET['client']) ? (!isset($_GET['project']) ? '' : 'project=' . $_GET['project'] . '&') : 'client=' . $_GET['client'] . '&' . (isset($_GET['domain']) ? 'domain=' . ($_GET['domain'] != '' ? $_GET['domain'] . '&' : '') : '' ) ) . 'app=ace_editor&' . (!isset($_GET['path']) ? '' : 'path=' . $_GET['path'] . '&') . /*'path=' . (basename(dirname($path)) == basename(parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH) ? 'failed' : basename(dirname($path)))) .*/  'file=' . basename($path) . '"><img src="resources/images/htaccess_file.png" width="40" height="50" /></a><br />' 
                         . '<a href="?file=' . basename($path) . '" onclick="handleClick(event, \'' . $relativePath . '\')">' . basename($path) . '</a>'
                         /*            . (is_readable($path = ini_get('error_log')) && filesize($path) > 0 ? '<div style="position: absolute; right: 8px; bottom: -6px; color: red; font-weight: bold;">[1]</div>' : '' ) */
                         . '</div>' . "\n";
@@ -578,7 +598,7 @@ if (defined('COMPOSER_VENDORS')) {
                         . '</div>' . "\n";
                         break;
                       case '.gitignore':
-                        echo '<div style="position: relative;"><a href="?' . (!isset($_GET['client']) ? (!isset($_GET['project']) ? '' : 'project=' . $_GET['project'] . '&') : 'client=' . $_GET['client'] . '&' . (isset($_GET['domain']) ? 'domain=' . ($_GET['domain'] != '' ? $_GET['domain'] . '&' : '') : '' ) ) . 'app=ace_editor&path=' . (basename(dirname($path)) == basename(parse_url($_SERVER['REQUEST_URI'] ?? '', PHP_URL_PATH) ? 'failed' : basename(dirname($path)))) . '&file=' . basename($path) . '"><img src="resources/images/gitignore_file.png" width="40" height="50" /></a><br />' 
+                        echo '<div style="position: relative; border: 4px dashed #F05033;"><a href="?' . (!isset($_GET['client']) ? (!isset($_GET['project']) ? '' : 'project=' . $_GET['project'] . '&') : 'client=' . $_GET['client'] . '&' . (isset($_GET['domain']) ? 'domain=' . ($_GET['domain'] != '' ? $_GET['domain'] . '&' : '') : '' ) ) . 'app=ace_editor&path=' . (basename(dirname($path)) == basename(parse_url($_SERVER['REQUEST_URI'] ?? '', PHP_URL_PATH) ? 'failed' : basename(dirname($path)))) . '&file=' . basename($path) . '"><img src="resources/images/gitignore_file.png" width="40" height="50" /></a><br />' 
                         . '<a href="?file=' . basename($path) . '" onclick="handleClick(event, \'' . $relativePath . '\')">' . basename($path) . '</a>'
                         /*            . (is_readable($path = ini_get('error_log')) && filesize($path) > 0 ? '<div style="position: absolute; right: 8px; bottom: -6px; color: red; font-weight: bold;">[1]</div>' : '' ) */
                         . '</div>' . "\n";
@@ -603,13 +623,13 @@ if (defined('COMPOSER_VENDORS')) {
 
                     switch (basename($path)) {
                       case 'package.json':
-                        echo '<div style="position: relative;"><img src="resources/images/package_json_file.png" width="40" height="50" /><br />' 
+                        echo '<div style="position: relative; border: 4px dashed #E14747;"><img src="resources/images/package_json_file.png" width="40" height="50" /><br />' 
                         . '<a href="?file=' . basename($path) . '" onclick="handleClick(event, \'' . $relativePath . '\')">' . basename($path) . '</a>'
                         . (isset($errors['COMPOSER-VALIDATE-JSON']) ? '<div style="position: absolute; right: 8px; top: -6px; color: red; font-weight: bold;">[1]</div>' : '')
                         . '</a></div>' . "\n";
                         break;
                       case 'package-lock.json':
-                        echo '<div style="position: relative;"><img src="resources/images/package-lock_json_file.png" width="40" height="50" /><br />' 
+                        echo '<div style="position: relative; border: 4px dashed #E14747;"><img src="resources/images/package-lock_json_file.png" width="40" height="50" /><br />' 
                         . '<a href="?file=' . basename($path) . '" onclick="handleClick(event, \'' . $relativePath . '\')">' . basename($path) . '</a>'
                         . (isset($errors['COMPOSER-VALIDATE-JSON']) ? '<div style="position: absolute; right: 8px; top: -6px; color: red; font-weight: bold;">[1]</div>' : '')
                         . '</a></div>' . "\n";
@@ -621,29 +641,29 @@ if (defined('COMPOSER_VENDORS')) {
 
                     switch (basename($path)) {
                       case 'composer.json':
-                        echo '<img src="resources/images/composer_json_file.gif" width="40" height="50" /><br />'
+                        echo '<div style="position: relative; border: 4px dashed #6B4329;"><img src="resources/images/composer_json_file.gif" width="40" height="50" /><br />'
                         . '<a href="?file=' . basename($path) . '" onclick="handleClick(event, \'' . $relativePath . '\')">' . basename($path) . '</a>'
                         . (isset($errors['COMPOSER-VALIDATE-JSON']) ? '<div style="position: absolute; right: 8px; top: -6px; color: red; font-weight: bold;">[1]</div>' : '')
-                        . '</a></div>' . "\n";
+                        . '</a></div></div>' . "\n";
                         break;
                       
                       case 'composer.lock':
-                        echo '<img src="resources/images/composer_lock_file.gif" width="40" height="50" /><br />'
+                        echo '<div style="position: relative; border: 4px dashed #6B4329;"><img src="resources/images/composer_lock_file.gif" width="40" height="50" /><br />'
                         . '<a href="?file=' . basename($path) . '" onclick="handleClick(event, \'' . $relativePath . '\')">' . basename($path) . '</a>'
                         . (isset($errors['COMPOSER-VALIDATE-LOCK']) ? '<div style="position: absolute; right: 8px; top: -6px; color: red; font-weight: bold;">[1]</div>' : '')
                         /*            . (is_readable($path = ini_get('error_log')) && filesize($path) > 0 ? '<div style="position: absolute; right: 8px; bottom: -6px; color: red; font-weight: bold;">[1]</div>' : '' ) */
-                        . '</a></div>' . "\n";
+                        . '</a></div></div>' . "\n";
                         break;
                       case 'composer.phar':
-                        echo '<img src="resources/images/phar_file.png" width="40" height="50" /><br />'
+                        echo '<div style="position: relative; border: 4px dashed #6B4329;"><img src="resources/images/phar_file.png" width="40" height="50" /><br />'
                         . '<a href="?file=' . basename($path) . '" onclick="handleClick(event, \'' . $relativePath . '\')">' . basename($path) . '</a>'
                         /*            . (is_readable($path = ini_get('error_log')) && filesize($path) > 0 ? '<div style="position: absolute; right: 8px; bottom: -6px; color: red; font-weight: bold;">[1]</div>' : '' ) */
-                        . '</a></div>' . "\n";
+                        . '</a></div></div>' . "\n";
                         break;
                       default:
-                        echo '<img src="resources/images/composer_php_file.gif" width="40" height="50" /></a><br />'
+                        echo '<div style="position: relative; border: 4px dashed #6B4329;"><img src="resources/images/composer_php_file.gif" width="40" height="50" /></a><br />'
                         . '<a href="?file=' . basename($path) . '" onclick="handleClick(event, \'' . $relativePath . '\')">' . basename($path)
-                        . '</a></div>' . "\n";
+                        . '</a></div></div>' . "\n";
                         break;
                     }
                   } elseif (preg_match('/^.*\.js$/', basename($path))) {
@@ -661,8 +681,11 @@ if (defined('COMPOSER_VENDORS')) {
 
                   } elseif (preg_match('/^.*\.php$/', basename($path))) {
                     if (preg_match('/^project\.php/', basename($path)))
-                      echo '<a style="position: relative;" href="' . (isset($_GET['project']) ? '?project#!' : '#') . '" onclick="document.getElementById(\'app_project-container\').style.display=\'block\';"><div style="position: absolute; left: -60px; top: -20px; color: red; font-weight: bold;">' . (isset($_GET['project']) ? '' : '') . '</div><img src="resources/images/project-icon.png" width="40" height="50" /></a><br /><a href="' . (isset($_GET['project']) ? '?project#!' : '?app=ace_editor&' . (!isset($_GET['path']) ? '' : 'path=' . $_GET['path'] . '&') . /*'path=' . (basename(dirname($path)) == basename(parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH) ? 'failed' : basename(dirname($path)))) .*/ 'file=' . basename($path)) . '" ' . (isset($_GET['project']) ? 'onclick="document.getElementById(\'app_ace_editor-container\').style.display=\'block\';"' : '') . '>' . basename($path) . '</a>';
+                      echo '<div style="position: relative; border: 4px dashed #2C88DA;"><a style="position: relative;" href="' . (isset($_GET['project']) ? '?project#!' : '#') . '" onclick="document.getElementById(\'app_project-container\').style.display=\'block\';"><div style="position: absolute; left: -60px; top: -20px; color: red; font-weight: bold;">' . (isset($_GET['project']) ? '' : '') . '</div><img src="resources/images/project-icon.png" width="40" height="50" /></a><br /><a href="' . (isset($_GET['project']) ? '?project#!' : '?app=ace_editor&' . (!isset($_GET['path']) ? '' : 'path=' . $_GET['path'] . '&') . /*'path=' . (basename(dirname($path)) == basename(parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH) ? 'failed' : basename(dirname($path)))) .*/ 'file=' . basename($path)) . '" ' . (isset($_GET['project']) ? 'onclick="document.getElementById(\'app_ace_editor-container\').style.display=\'block\';"' : '') . '>' . basename($path) . '</a></div>';
                     elseif (basename($path) == 'phpunit.php') echo '<a href="?' . (!isset($_GET['client']) ? (!isset($_GET['project']) ? '' : 'project=' . $_GET['project'] . '&') : 'client=' . $_GET['client'] . '&' ) . 'app=ace_editor&path=' . (basename(dirname($path)) == basename(parse_url($_SERVER['REQUEST_URI'] ?? '', PHP_URL_PATH) ? 'failed' : basename(dirname($path)))) . '&file=' . basename($path) . '"><img src="resources/images/phpunit_php_file.png" width="40" height="50" /></a><br />' . '<a href="?file=' . basename($path) . '" onclick="handleClick(event, \'' . $relativePath . '\')">' . basename($path) . '</a>';
+
+                    elseif (basename($path) == 'index.php') echo '<div style="position: relative; border: 4px dashed #897AE3;"><a href="?' . (!isset($_GET['client']) ? (!isset($_GET['project']) ? '' : 'project=' . $_GET['project'] . '&') : 'client=' . $_GET['client'] . '&' . (isset($_GET['domain']) ? 'domain=' . ($_GET['domain'] != '' ? $_GET['domain'] . '&' : '') : '' ) ) . 'app=ace_editor&path=' . /*(basename(dirname($path)) == basename(parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH) ? 'failed' : basename(dirname($path))))*/ (isset($_GET['path']) ? $_GET['path'] : '') . '&file=' . basename($path) . '"><img src="resources/images/php_file.png" width="40" height="50" /></a><br />' . '<a href="?file=' . basename($path) . '" onclick="handleClick(event, \'' . $relativePath . '\')">' . basename($path) . '</a></div>';
+                    elseif (basename($path) == 'server.php') echo '<div style="position: relative; border: 4px dashed #897AE3;"><a href="?' . (!isset($_GET['client']) ? (!isset($_GET['project']) ? '' : 'project=' . $_GET['project'] . '&') : 'client=' . $_GET['client'] . '&' . (isset($_GET['domain']) ? 'domain=' . ($_GET['domain'] != '' ? $_GET['domain'] . '&' : '') : '' ) ) . 'app=ace_editor&path=' . /*(basename(dirname($path)) == basename(parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH) ? 'failed' : basename(dirname($path))))*/ (isset($_GET['path']) ? $_GET['path'] : '') . '&file=' . basename($path) . '"><img src="resources/images/php_file.png" width="40" height="50" /></a><br />' . '<a href="?file=' . basename($path) . '" onclick="handleClick(event, \'' . $relativePath . '\')">' . basename($path) . '</a></div>';
                     else echo '<a href="?' . (!isset($_GET['client']) ? (!isset($_GET['project']) ? '' : 'project=' . $_GET['project'] . '&') : 'client=' . $_GET['client'] . '&' . (isset($_GET['domain']) ? 'domain=' . ($_GET['domain'] != '' ? $_GET['domain'] . '&' : '') : '' ) ) . 'app=ace_editor&path=' . /*(basename(dirname($path)) == basename(parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH) ? 'failed' : basename(dirname($path))))*/ (isset($_GET['path']) ? $_GET['path'] : '') . '&file=' . basename($path) . '"><img src="resources/images/php_file.png" width="40" height="50" /></a><br />' . '<a href="?file=' . basename($path) . '" onclick="handleClick(event, \'' . $relativePath . '\')">' . basename($path) . '</a>';
           
                   } elseif (basename($path) == 'LICENSE') {
