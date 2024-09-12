@@ -145,10 +145,11 @@ class composerSchema {
   }
 }
 
-//if (is_file($include = APP_PATH . APP_ROOT . APP_BASE['vendor'] . 'autoload.php'))
-//  if (APP_SELF == APP_PATH_PUBLIC)
-//    if (isset($_ENV['COMPOSER']['AUTOLOAD']) && (bool) $_ENV['COMPOSER']['AUTOLOAD'] === true)
-//  require_once $include;
+if (is_file($include = APP_PATH . APP_ROOT . APP_BASE['vendor'] . 'autoload.php'))
+  if (isset($_ENV['COMPOSER']['AUTOLOAD']) && (bool) $_ENV['COMPOSER']['AUTOLOAD'] === TRUE)
+    require_once $include;
+  else
+    $errors['COMPOSER_AUTOLOAD'] = 'Composer autoload is disabled.';
 
 if (!defined('APP_PATH_CONFIG') || !in_array(APP_PATH_CONFIG, get_required_files()))
   die(APP_PATH_CONFIG . ' is missing. Presumed that this file was opened on its own.');
@@ -232,13 +233,15 @@ if (isset($installedPackages) && !empty($installedPackages)) {
   define('COMPOSER_VENDORS', $uniqueVendors);
 }
 
+//dd(COMPOSER_VENDORS, true);
+
 /*
   Must be defined before the composer-setup.php can be preformed.
 */
 //dd(get_included_files());
 
-$composerUser = !isset($_ENV['COMPOSER']['USER']) ?: $_ENV['COMPOSER']['USER'];  
-$componetPkg = !isset($_ENV['COMPOSER']['PACKAGE']) ?: $_ENV['COMPOSER']['PACKAGE'];
+$composerUser = $_ENV['COMPOSER']['USER'] ?? '';  
+$componetPkg = $_ENV['COMPOSER']['PACKAGE'] ?? '';
 $user = getenv('USERNAME') ?: (getenv('APACHE_RUN_USER') ?: getenv('USER') ?: '');
 
 // Determine the Composer home path based on the OS and user
@@ -268,11 +271,11 @@ if (!file_exists(APP_PATH . 'composer.phar')) {
 }
 
 if (stripos(PHP_OS, 'WIN') === 0) { // DO NOT REMOVE! { .. }
-    if (file_exists('C:\ProgramData\ComposerSetup\bin\composer.phar')) {
-      if (preg_match('/Composer(?: version)? (\d+\.\d+\.\d+) (\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2})/', exec($bin = 'php C:\ProgramData\ComposerSetup\bin\composer.phar' . ' -V'), $matches))
-        !defined('COMPOSER_PHAR') and define('COMPOSER_PHAR', ['bin' => $bin, 'version' => $matches[1], 'date' => $matches[2]]);
-      !defined('COMPOSER_BIN') && defined('COMPOSER_PHAR') and define('COMPOSER_BIN', COMPOSER_PHAR);
-    }
+  if (file_exists('C:\ProgramData\ComposerSetup\bin\composer.phar')) {
+    if (preg_match('/Composer(?: version)? (\d+\.\d+\.\d+) (\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2})/', exec($bin = "php C:\\ProgramData\\ComposerSetup\\bin\\composer.phar -V"), $matches))
+      !defined('COMPOSER_PHAR') and define('COMPOSER_PHAR', ['bin' => $bin, 'version' => $matches[1], 'date' => $matches[2]]);
+    !defined('COMPOSER_BIN') && defined('COMPOSER_PHAR') and define('COMPOSER_BIN', COMPOSER_PHAR);
+  }
 } else {
 
   //if (file_exists(APP_PATH . 'composer.phar'))
@@ -289,11 +292,11 @@ if (stripos(PHP_OS, 'WIN') === 0) { // DO NOT REMOVE! { .. }
     (realpath($composer_which = trim(shell_exec(APP_SUDO . 'which composer')))) or $errors['COMPOSER-WHICH'] = "which did not find composer. Err=$composer_which";
 
     foreach([ /*'/usr/local/bin/composer',*/ 'php ' . APP_PATH . 'composer.phar', $composer_which] as $key => $bin) {
-      !isset($composer) and $composer = array();
-
+      !isset($composer) and $composer = [];
 /*//*/
       if (preg_match('/^php.*composer\.phar$/', $bin)) !defined('COMPOSER_PHAR') and define('COMPOSER_PHAR', ['bin' => "php $bin"]);
       else {
+
         $proc = proc_open('env COMPOSER_ALLOW_SUPERUSER=' . COMPOSER_ALLOW_SUPERUSER . '; ' . (stripos(PHP_OS, 'WIN') === 0 ? '' : APP_SUDO ) . basename($bin) . ' --version;', [["pipe", "r"], ["pipe", "w"], ["pipe", "w"]], $pipes);
 
         $stdout = stream_get_contents($pipes[1]);
@@ -302,16 +305,16 @@ if (stripos(PHP_OS, 'WIN') === 0) { // DO NOT REMOVE! { .. }
         $exitCode = proc_close($proc);
 
         if (preg_match('/Composer(?: version)? (\d+\.\d+\.\d+) (\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2})/', $stdout, $matches)) {
-
-          $composer[$key]['bin'] = $bin;
+          $composer[$key]['bin'] = $bin;        
           (!isset($matches[1])?: $composer[$key]['version'] = $matches[1]);   
-          (!isset($matches[2]) || is_bool($matches[2]) ?: $composer[$key]['date'] = $matches[2]);          
+          (!isset($matches[2]) || is_bool($matches[2]) ?: $composer[$key]['date'] = $matches[2]);
         } else {
           if (empty($stdout)) {
             if (!empty($stderr))
               $errors['COMPOSER_VERSION'] = $stderr;
           } else $errors['COMPOSER_VERSION'] = $stdout; // else $errors['COMPOSER_VERSION'] = $stdout . ' does not match $version'; }
         }
+
       }
     }
 

@@ -224,8 +224,7 @@ function clientInputHandler($input) {
                   if ($relativePath == 'composer-setup.php') continue;
                   $organizedFiles[] = $relativePath;
               } elseif (pathinfo($relativePath, PATHINFO_EXTENSION) == 'bck' && !in_array($relativePath, $organizedFiles)) {
-                if (preg_match('/^\.env\.bck/', $relativePath))
-                  $organizedFiles[] = $relativePath;
+                if (preg_match('/^\.env\.bck/', $relativePath)) $organizedFiles[] = $relativePath;
               } elseif (pathinfo($relativePath, PATHINFO_EXTENSION) == 'gitignore' && !in_array($relativePath, $organizedFiles)) {
                 $organizedFiles[] = $relativePath;
               } elseif (pathinfo($relativePath, PATHINFO_EXTENSION) == 'htaccess' && !in_array($relativePath, $organizedFiles)) {
@@ -253,10 +252,10 @@ function clientInputHandler($input) {
       $json = "{\n";  // Display the sorted array
 
       while ($path = array_shift($sortedArray)) {
-      $json .= match ($path) {
-        '.env.bck' => '".env" : ' . json_encode(file_get_contents($path)) . (end($sortedArray) != $path ? ',' : '') . "\n",
-        default => '"' . $path . '" : ' . json_encode(file_get_contents($path)) . (end($sortedArray) != $path && !empty($sortedArray) ? ',' : '') . "\n",
-      };
+        $json .= match ($path) {
+          '.env.bck' => '".env" : ' . json_encode(file_get_contents($path)) . (end($sortedArray) != $path ? ',' : '') . "\n",
+          default => '"' . $path . '" : ' . json_encode(file_get_contents($path)) . (end($sortedArray) != $path && !empty($sortedArray) ? ',' : '') . "\n",
+        };
       }
       $json .= "}\n";
 

@@ -63,6 +63,11 @@ if (preg_match('/^app\.([\w\-.]+)\.php$/', basename(__FILE__), $matches))
                         $_GET['path'] = '';
                     }
                     ob_start();
+
+                    //if (is_file($include = APP_PATH . APP_ROOT . APP_BASE['vendor'] . 'autoload.php'))
+                      //if (isset($_ENV['COMPOSER']['AUTOLOAD']) && (bool) $_ENV['COMPOSER']['AUTOLOAD'] === TRUE)
+                    //  require_once $include;
+
                     require 'app.directory.php';
                     $tableValue = $tableGen();
                     ob_end_clean();

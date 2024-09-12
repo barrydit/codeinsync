@@ -30,15 +30,16 @@ if (preg_match('/^app\.([\w\-.]+)\.php$/', basename(__FILE__), $matches))
 
 $tableGen = function(): string {
   ob_start(); ?>
-  <div id="info" style="position: absolute; display: block; width: 400px; height: 100px; left: 200px; top: 100px; border: 5px solid #000; background-color: #FFFFFF; z-index:99;">
+
+  <div id="info" style="position: absolute; display: none; width: 400px; height: 100px; left: 200px; top: 100px; border: 5px solid #000; background-color: #FFFFFF; z-index:99;">
 <div style="position: absolute; display: block; background-color: #FFFFFF; z-index: 1; right: 0px; margin-top: -20px;">[<a href="#" onclick="document.getElementById('info').style.display = 'none';">x</a>]</div>Texting inside</div>
 
 <?php if (isset($_GET['path']) && preg_match('/^vendor\/?/', $_GET['path'])) {
 
     //if ($_ENV['COMPOSER']['AUTOLOAD'] == true)
-  require_once APP_PATH . /*APP_ROOT .*/ APP_BASE['vendor'] . 'autoload.php';
-  require_once APP_PATH . /*APP_ROOT .*/ APP_BASE['config'] . 'composer.php';
-
+  require_once APP_PATH . APP_ROOT . APP_BASE['vendor'] . 'autoload.php';
+  require_once APP_PATH . APP_BASE['config'] . 'composer.php';
+  //dd(get_required_files());
 ?>
 <!-- iframe src="composer_pkg.php" style="height: 500px; width: 700px;"></iframe -->
     <div style="width: 700px;">
@@ -57,7 +58,8 @@ $tableGen = function(): string {
         </form>
       </div>
     </div>
-
+   
+<?= /* var_dump(get_required_files()); */   null; ?>
     <table style="width: inherit; border: none;">
       <tr style=" border: none;">
 <?php
@@ -155,8 +157,8 @@ if (defined('COMPOSER_VENDORS')) {
               }
               if ($show_notice)
                   echo '<div style="position: absolute; left: -12px; top: -12px; color: red; font-weight: bold;">[1]</div>';
-          
-                if (is_dir(APP_BASE['vendor'].$vendor) /*|| !is_dir(APP_BASE['vendor'].$vendor)*/)
+
+                if (is_dir(APP_PATH . APP_ROOT . APP_BASE['vendor'] . $vendor) /*|| !is_dir(APP_BASE['vendor'].$vendor)*/)
                   //if ($vendor == 'barrydit') continue;
                   if ($vendor == 'symfony') {
                     echo '<a class="pkg_dir" href="?path=' . APP_BASE['vendor'] . $vendor . '">'
@@ -175,7 +177,8 @@ if (defined('COMPOSER_VENDORS')) {
                     }
                     echo '</div>' . '<a href="?path=' . APP_BASE['vendor'] . $vendor . '">' . ucfirst($vendor) . '</a>';
               
-                  } elseif ($vendor == 'composer') {
+                  } else if ($vendor == 'composer') {
+                    
                     foreach ($packages as $package) {
                       if (is_file(APP_BASE['var'] . 'packages' . DIRECTORY_SEPARATOR . $vendor . '-' . $package . '.php'))
                         $app['composer'][$vendor][$package]['body'] = file_get_contents(APP_BASE['var'] . 'packages' . DIRECTORY_SEPARATOR . $vendor . '-' . $package . '.php');
@@ -188,7 +191,7 @@ if (defined('COMPOSER_VENDORS')) {
                     . '<img src="resources/images/directory-composer.png" width="50" height="32" style="' . (isset(COMPOSER->{'require'}->{"$vendor/composer"}) || isset(COMPOSER->{'require-dev'}->{"$vendor/$package"})? '' : 'opacity:0.4;filter:alpha(opacity=40);') . '" /></a><br />'
                     . '<div class="pkg_dir overlay">';
                     foreach ($packages as $package) {
-                      if (!in_array(APP_PATH.'vendor/'.$vendor.'/'.$package.'/Psr/Log/LogLevel.php', get_required_files()) && $package == 'log') {
+                      if (!in_array(APP_PATH . APP_ROOT.'vendor/'.$vendor.'/'.$package.'/Psr/Log/LogLevel.php', get_required_files()) && $package == 'log') {
                         echo '<a href="?app=ace_editor&path=vendor/'.$vendor.'/'.$package.'/Psr/Log/&file=LogLevel.php"><code style="background-color: white; color: #0078D7; font-size: 10px;">' . $package. '</code></a>';
                         continue;
                       }

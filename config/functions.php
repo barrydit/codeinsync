@@ -168,7 +168,7 @@ function check_http_status($url = 'http://8.8.8.8', $statusCode = 200) {
       }
       $headers = get_headers($url);
       return !empty($headers) && strpos($headers[0], (string)$statusCode) === false;
-  }
+  } else { return false; }
   return true; // Special case for the default URL or if not connected
 }
 

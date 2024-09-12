@@ -2,13 +2,14 @@
 
   // if ($path = (basename(getcwd()) == 'public') chdir('..');
 //APP_PATH == dirname(APP_PATH_PUBLIC)
-require_once '../index.php';
 
 if ($path = (basename(getcwd()) == 'public') ? (is_file('../config/config.php') ? '../config/config.php' : 'config.php') :
   (is_file('config.php') ? 'config.php' : dirname(__DIR__, 1) . DIRECTORY_SEPARATOR . 'config' . DIRECTORY_SEPARATOR . 'config.php' ))
   require_once $path;
 else
   die(var_dump("$path was not found. file=config.php"));
+
+require_once APP_PATH . 'index.php';
 
     //? (is_file('../config.php') ? '../config.php' : 'config.php')
     //: (is_file('config.php') ? 'config.php' : (is_file('config/config.php') ? 'config/config.php' : null)))
@@ -76,25 +77,35 @@ $previousFilename = '';
 
 $dirs = [];
 
-!isset($_GET['app']) || $_GET['app'] != 'git' ? :
+!isset($_GET['app']) || $_GET['app'] != 'git' ?:
   //$dirs[] = APP_PATH . APP_BASE['config'] . 'git.php'
   (APP_SELF != APP_PATH_PUBLIC ? : 
     $dirs[] = APP_PATH . APP_BASE['config'] . 'git.php');
+
 /**/
 
-!isset($_GET['app']) || $_GET['app'] != 'composer' ? :
-  //$dirs[] = APP_PATH . APP_BASE['config'] . 'composer.php'
-  (APP_SELF == APP_PATH_PUBLIC ?
-    (!defined('APP_ROOT') || empty(APP_ROOT) ?
-      (!is_file($autoload = APP_PATH . (!defined('APP_ROOT') || empty(APP_ROOT) ? '' : APP_ROOT) . APP_BASE['vendor'] . 'autoload.php') ?: $dirs[] = $autoload) : $dirs[] = APP_PATH . APP_ROOT . APP_BASE['vendor'] . 'autoload.php') : $dirs[] = APP_PATH . APP_BASE['config'] . 'composer.php');
+!isset($_GET['app']) || $_GET['app'] != 'composer' ?:
+  $dirs = (APP_SELF == APP_PATH_PUBLIC) ? array_merge(
+    $dirs,
+    [
+      (!is_file($include = APP_PATH . APP_BASE['config'] . 'composer.php') ?: $include)
+    ]
+  ) : array_merge(
+    $dirs,
+    [
+      (!is_file($include = APP_PATH . APP_ROOT . APP_BASE['vendor'] . 'autoload.php') ?: $include),
+      (!is_file($include = APP_PATH . APP_BASE['config'] . 'composer.php') ?: $include)
+    ]
+  );
 
-
-!isset($_GET['app']) || $_GET['app'] != 'npm' ? :
+!isset($_GET['app']) || $_GET['app'] != 'npm' ?:
   //$dirs[] = APP_PATH . APP_BASE['config'] . 'git.php'
-  (APP_SELF != APP_PATH_PUBLIC ? : 
-    (!is_file($autoload = APP_PATH . APP_BASE['config'] . 'npm.php') ?: $dirs[] = $autoload ));
+  (APP_SELF != APP_PATH_PUBLIC ?: 
+    (!is_file($include = APP_PATH . APP_BASE['config'] . 'npm.php') ?: $dirs[] = $include ));
 
-unset($autoload);
+
+    //dd($dirs);
+unset($include);
 
 //dd(get_required_files(), true); // COMPOSER_VENDORS
 
@@ -121,13 +132,13 @@ unset($autoload);
     //elseif (basename($b) === 'composer.php')
     //    return 1; // $a comes before $b
 */
-    if (dirname($a) . '/' . basename($a) === 'vendor/autoload.php')
+    if (dirname($a) . DIRECTORY_SEPARATOR . basename($a) === APP_BASE['vendor'] . 'autoload.php') // DIRECTORY_SEPARATOR
         return -1; // $a comes after $b
-    elseif (dirname($b) . '/' . basename($b) === 'vendor/autoload.php')
+    elseif (dirname($b) . DIRECTORY_SEPARATOR . basename($b) === APP_BASE['vendor'] . 'autoload.php')
         return 1; // $a comes before $b
-    elseif (dirname($a) . '/' . basename($a) === 'config/git.php')
+    elseif (dirname($a) . DIRECTORY_SEPARATOR . basename($a) === APP_BASE['config'] . 'git.php')
         return -1; // $a comes after $b
-    elseif (dirname($b) . '/' . basename($b) === 'config/git.php')
+    elseif (dirname($b) . DIRECTORY_SEPARATOR . basename($b) === APP_BASE['config'] . 'git.php')
         return 1; // $a comes before $b
     else 
         return strcmp(basename($a), basename($b)); // Compare other filenames alphabetically
@@ -159,7 +170,6 @@ unset($autoload);
     }
 
   }
-
 
 
 /** Loading Time: 0.638s **/
@@ -195,7 +205,7 @@ unset($autoload);
 
     break;
   case 'GET':
-      if (isset($_ENV['APP_ENV']) && !empty($_ENV)) define('APP_ENV', $_ENV['APP_ENV']);
+      if (isset($_ENV['APP_ENV']) && !empty($_ENV)) !defined('APP_ENV') and define('APP_ENV', $_ENV['APP_ENV']);
       //if (!empty($_GET['path']) && !isset($_GET['app'])) !!infinite loop
       //  exit(header('Location: ' . APP_URL . $_GET['path']));
 // http://localhost/?app=composer&path=vendor
@@ -419,11 +429,11 @@ if (!empty($paths))
                 ob_start();
 
                 require_once $realpath;
-
+                
                 if (preg_match('/^app\.([\w\-.]+)\.php$/', basename($realpath), $matches) && isset($matches[1]) /*&& !empty($app[$matches[1]])*/) {
-                  return [$matches[1] => ['style' => $app[$matches[1]]['style'], 'body' => $app[$matches[1]]['body'], 'script' => $app[$matches[1]]['script']]];
+                  return [$matches[1] => ['style' => $app[$matches[1]]['style'] ?? '', 'body' => $app[$matches[1]]['body'] ?? '', 'script' => $app[$matches[1]]['script'] ?? '']];
                 } else if (preg_match('/^ui\.([\w\-.]+)\.php$/', basename($realpath), $matches)) {
-                  !defined($app_name = 'UI_' . strtoupper($matches[1])) and define($app_name, ['style' => $app['style'], 'body' => $app['body'], 'script' => $app['script']]); // $apps[$matches[1]]
+                  !defined($app_name = 'UI_' . strtoupper($matches[1])) and define($app_name, ['style' => $app['style'] ?? '', 'body' => $app['body'] ?? '', 'script' => $app['script'] ?? '']); // $apps[$matches[1]]
                   //dd('UI_' . strtoupper($matches[1]) . ' created?', false);
                   //$app = [];
                   return null;

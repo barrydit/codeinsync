@@ -293,7 +293,7 @@ unset($path);
 <div id="app_container" style="position: relative; display: none; margin: 0px auto; width: 100%; border: 1px solid #000; background-color: rgba(0, 0, 0, 0.5);">
 
   <div style="position: relative; margin: 0px auto; width: 800px;">
-    <div style="position: absolute; <?= /* (empty($errors) ? 'display: none;' : '') */ NULL; ?>left: -144px; /*width: 150px;*/ z-index: 3;">TEST</div>
+    <!-- div style="position: absolute; <?= /* (empty($errors) ? 'display: none;' : '') */ NULL; ?>left: -144px; /*width: 150px;*/ z-index: 3;">TEST</div -->
     <div id="debug-content" class="absolute" style="position: absolute; display: none; right: 0; text-align: right; background-color: rgba(255, 255, 255, 0.8); border: 1px solid #000; width: 800px; z-index: 1; overflow: visible;">
       <div style="float: left; display: inline; margin: 5px;"><form style="display: inline;" action="/" method="POST">Stage: 
   <select name="environment" onchange="this.form.submit();">
@@ -335,7 +335,7 @@ unset($path);
           //APP_URL_BASE . /*basename(__FILE__) .*/ '?' . http_build_query(APP_QUERY /*+ array( 'app' => 'ace_editor')*/) . (defined('APP_ENV') && APP_ENV == 'development' ? '#!' : '') 
           
           /* $c_or_p . '=' . (empty($_GET[$c_or_p]) ? '' : $$c_or_p->name) . '&amp;app=composer' */ NULL; ?>
-        <?= '          <button id="displayDirectoryBtn" style="margin: 2px 5px 0 0;" type="">&nbsp;&#9660;</button> ' . "\n"; ?>
+        <?= "          <button id=\"displayDirectoryBtn\" style=\"margin: 2px 5px 0 0;\" type=\"\">&nbsp;&#9660;</button> \n"; ?>
         <?php
           $main_cat = '        <form style="display: inline;" autocomplete="off" spellcheck="false" action="" method="GET">/'  . "\n"
           . '            <select name="category" onchange="this.form.submit();">' . "\n"
@@ -348,7 +348,7 @@ unset($path);
           . '              <option value="resources" ' . (isset($_GET['path']) && $_GET['path'] == 'resources' ? 'selected' : '') . '>./resources</option>' . "\n"
           . '              <option value="project" ' . (isset($_GET['project']) && !$_GET['project'] && preg_match('/(?:^|&)project(?![^&]*=)/', $_SERVER['QUERY_STRING']) ? 'selected' : '') . '>./project</option>' . "\n"
           . '              <option value="vendor" ' . (isset($_GET['path']) && $_GET['path'] == 'vendor' ? 'selected' : '') . '>./vendor</option>' . "\n"
-          . '            </select>' . "\n"
+          . '            </select>' . "\n" 
           . '        </form>';
 
           if (isset($_GET['project']) /*&& $_GET['project'] != ''*/) {
@@ -367,7 +367,7 @@ unset($path);
                 if (is_dir(APP_PATH . /*'../../'.*/ 'projects/' . $link))
                   echo '              <option value="' . $link . '" ' . (current($_GET) == $link ? 'selected' : '') . '>' . $link . '</option>' . "\n";
               } ?>
-          </select> /</span></form>
+          </select> /</span> <a href="#" onclick="document.getElementById('info').style.display = 'block';">+</a></form>
 
         <?php
           } elseif (isset($_GET['client']) /*&& $_GET['client'] != ''*/ ) {
@@ -387,13 +387,15 @@ unset($path);
                   echo '              <option value="' . $link . '" ' . (current($_GET) == $link ? 'selected' : '') . '>' . $link . '</option>' . "\n";
               }
               ?>
-          </select> /</span></form><?php if (!empty($_GET['client'])) {
+          </select> /</span>
+          <a href="#" onclick="document.getElementById('info').style.display = 'block';">+</a>
+          </form><?php if (!empty($_GET['client'])) {
           $dirs = array_filter(glob(dirname(__DIR__) . /*'../../'.*/ '/clientele/' . $_GET['client'] . '/*'), 'is_dir'); ?><form style="display: inline;" autocomplete="off" spellcheck="false" action="" method="GET"><?= isset($_GET['client']) && !$_GET['client'] ? '' : '<input type="hidden" name="client" value="' . $_GET['client'] . '" / >' ?><select id="domain" name="domain" onchange="this.form.submit();">
             <option value="" <?= (isset($_GET['domain']) && $_GET['domain'] == '' ? 'selected' : '') ?>>---</option>
             <?php foreach ($dirs as $dir) { ?>
             <option <?= (isset($_GET['domain']) && $_GET['domain'] == basename($dir) ? 'selected' : '') ?>><?= basename($dir); ?></option>
             <?php } ?>
-          </select> /</form>
+          </select> / <a href="#" onclick="document.getElementById('info').style.display = 'block';">+</a></form>
           <?php } ?>
 
       <?php } else {
@@ -842,7 +844,7 @@ include 'app.debug.php';
   <span>Environment: <?= PHP_OS; ?></span><br />
   <span>Domain: <?= APP_DOMAIN; ?></span><br />
   <span>IP Address: <?= APP_HOST; ?></span><br />
-  <span><?= isset($_GET['client']) ? 'Client: ' . '<a href="?client=' . $_GET['client'] . '">' . $_GET['client'] . '</a>': (isset($_GET['project']) ? 'Project: ' . '<a href="?project=' . $_GET['project'] . '">' . $_GET['project'] . '</a>' : ''); ?></span><br />
+  <span><?= isset($_GET['client']) ? 'Client: ' . '<a href="?client=' . $_GET['client'] . '">' . $_GET['client'] . '</a>': (isset($_GET['project']) ? 'Project: ' . '<a href="?project=' . $_GET['project'] . '">' . $_GET['project'] . '</a>' : 'Document Root: ' . $_SERVER['DOCUMENT_ROOT']); ?></span><br />
   <span>App Path: <?= APP_PATH; ?></span><br />
   <span>Memory: <em ><b style="color: green;"><?= formatSizeUnits(memory_get_usage()) . '</b> @ <b>' . formatSizeUnits(convertToBytes(ini_get('memory_limit'))); ?></b></em></span><br />
   <span>Source (code): <em style="font-size: 13px;"><?= '[<b>' . formatSizeUnits($total_filesize) . '</b>] <b style="color: red;">' . $total_filesize - 1000000 . '</b>' ?></em></span>
@@ -852,8 +854,8 @@ include 'app.debug.php';
 <div id="server-container" style="position: fixed; display: block; top: 0; right: 0; padding: 4px; z-index: 1; text-align: right; border: 1px solid #000; height: auto; background-color: #FFF; width: 225px;">
   <div style="float: left;">$_ENV</div>
   <h3 style="font-weight: bolder;">Server</h3>
-  <div style="display: inline-block;">On / Off <input id="check_server_start" type="checkbox" <?= isset($_SERVER['SOCKET']) ? 'checked="checked"' : '' ?> onclick="validate()" /><br /><a href="">Status</a><br /><a href="">Help</a><br />Error Log</div>
-  <img id="serverStatus" src="/resources/images/server<?= isset($_SERVER['SOCKET']) ? '-green' : '' ?>.gif" style="float: right;" width="100" height="103">
+  <div style="display: inline-block;">On / Off <input id="check_server_start" type="checkbox" <?= is_resource($_SERVER['SOCKET']) ? 'checked="checked"' : '' ?> onclick="validate()" /><br /><a href="">Status</a><br /><a href="">Help</a><br />Error Log</div>
+  <img id="serverStatus" src="/resources/images/server<?= is_resource($_SERVER['SOCKET']) ? '-green' : '' ?>.gif" style="float: right;" width="100" height="103">
   <!--form action="#!" method="GET">
       <?= isset($_GET['debug']) && !$_GET['debug'] ? '' : '<input type="hidden" name="debug" value / >' ?> 
 
@@ -1248,17 +1250,30 @@ function makeDraggable(windowId) {
       
       $(document).ready(function(){
         $( "#app_console-container").css('display', 'none');
-        if ($( "#app_directory-container" ).css('display') == 'none') {
-      <?php if (isset($_GET['path']) || !empty(APP_URL['query']) || isset($_GET['debug']) || (defined(APP_DEBUG) && APP_DEBUG)) { ?>
 
-        document.getElementById('toggle-debug').checked = true;
+        <?php if (isset($_GET['path'])) { ?>
 
-        toggleSwitch(document.getElementById('toggle-debug'));
+document.getElementById('toggle-debug').checked = true;
+
+toggleSwitch(document.getElementById('toggle-debug'));
 /**/
-        $( '#app_directory-container' ).slideDown( "slow", function() {
-         // Animation complete.
-        });
+$( '#app_directory-container' ).slideDown( "slow", function() {
+ // Animation complete.
+});
 
+<?php } ?>
+
+        if ($( "#app_directory-container" ).css('display') == 'none') {
+      <?php 
+       if (!empty(APP_URL['query']) || isset($_GET['debug']) || (defined(APP_DEBUG) && APP_DEBUG)) { ?>
+
+document.getElementById('toggle-debug').checked = true;
+
+toggleSwitch(document.getElementById('toggle-debug'));
+/**/
+$( '#app_directory-container' ).slideDown( "slow", function() {
+ // Animation complete.
+});
       <?php } else if (isset($_GET['project'])) { ?>
         document.getElementById('toggle-debug').checked = true;
 

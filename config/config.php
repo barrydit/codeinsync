@@ -202,7 +202,7 @@ if (isset($_GET['path']) && $_GET['path'] != '' && realpath($_GET['path']) && is
 */
 
 isset($_GET['path'])
-  and $_GET['path'] = !empty(realpath(APP_PATH . APP_ROOT . ($path =  rtrim(ltrim($_GET['path'], '/'), '/')) ) && $path != '') ? "$path/" : null;
+  and $_GET['path'] = !empty(realpath(APP_PATH . APP_ROOT . ($path =  rtrim(ltrim($_GET['path'], '/'), '/')) ) && $path != '') ? "$path/" : '';
 
 // dd(getenv('PATH') . ' -> ' . PATH_SEPARATOR);
 
