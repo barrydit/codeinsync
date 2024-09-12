@@ -34,8 +34,6 @@ if (APP_DEBUG) {
   defined('PHP_FLOAT_MAX') and $errors['PHP_FLOAT_MAX'] = "PHP_FLOAT_MAX: " . PHP_FLOAT_MAX . "\n";
 }
 
-if (APP_SELF != APP_PATH_SERVER && in_array(APP_PATH_PUBLIC, get_included_files()) /*APP_SELF == APP_PATH_PUBLIC*/)
-  require_once dirname(__DIR__) . DIRECTORY_SEPARATOR . 'config' . DIRECTORY_SEPARATOR . 'classes' . DIRECTORY_SEPARATOR . 'class.sockets.php';
 //dd(get_defined_constants(true)['user']);
 
 //$path = "/path/to/your/logfile.log"; // Replace with your actual log file path

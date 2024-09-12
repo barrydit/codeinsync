@@ -36,20 +36,6 @@ const CONSOLE = true;
 !defined('APP_DEBUG') and define('APP_DEBUG', true) ?: is_bool(APP_DEBUG) or $errors['APP_DEBUG'] = 'APP_DEBUG is not a valid boolean value.';
 */
 
-// Resolve host to IP and check internet connection
-if ($ip = resolve_host_to_ip('google.com')) {
-  if (check_internet_connection($ip)) {
-    define('APP_CONNECTED', true);
-  } else {
-    define('APP_CONNECTIVITY', "Not connected to the internet.");
-  }
-} else {
-  define('APP_CONNECTIVITY', "Failed to resolve host to IP.");
-}
-
-// Set connectivity error if not connected
-!defined('APP_CONNECTED') and $errors['APP_CONNECTIVITY'] = 'APP Connect(ed): ' . var_export(APP_CONNECTIVITY, true) . "\n"; // print('Connectivity: ' . APP_CONNECTIVITY . "\n");
-
 //echo 'Checking Constants: ' . "\n\n";
 
 // Application configuration
@@ -104,8 +90,9 @@ const SERVER_HOST = APP_HOST ?? '0.0.0.0';
 const SERVER_PORT = '8080'; // 9000
 !is_int((int) SERVER_PORT) and $errors['SERVER_PORT'] = 'SERVER_PORT is not valid. (' . SERVER_PORT . ')' . "\n";
 
-!defined('APP_PATH_SERVER') and define('APP_PATH_SERVER', (defined('APP_PATH') ? APP_PATH : __DIR__ . DIRECTORY_SEPARATOR)  . str_replace(defined('APP_PATH') ? APP_PATH : __DIR__ . DIRECTORY_SEPARATOR , '', dirname(basename(APP_SELF)) == 'public' ? basename(APP_SELF) : 'server.php')); //
+!defined('APP_PATH_SERVER') and define('APP_PATH_SERVER', (defined('APP_PATH') ? APP_PATH : __DIR__ . DIRECTORY_SEPARATOR) . str_replace(defined('APP_PATH') ? APP_PATH : __DIR__ . DIRECTORY_SEPARATOR , '', dirname(basename(APP_SELF)) == 'public' ? basename(APP_SELF) : 'server.php'));
 
+// Define APP_TIMEOUT constant
 define('APP_TIMEOUT', strtotime("1970-01-01 08:00:00GMT"));
 if (defined('APP_TIMEOUT') && !is_int(APP_TIMEOUT)) {
   $errors['APP_TIMEOUT'] = APP_TIMEOUT;
@@ -258,6 +245,55 @@ END
     // Define APP_BASE
     define('APP_BASE', $processedCommon);
 
+//(defined('APP_PATH') && truepath(APP_PATH)) and $errors['APP_PATH'] = truepath(APP_PATH); // print('App Path: ' . APP_PATH . "\n" . "\t" . '$_SERVER[\'DOCUMENT_ROOT\'] => ' . $_SERVER['DOCUMENT_ROOT'] . "\n");
+
+    define('APP_PATH_PUBLIC', (defined('APP_PATH') ? APP_PATH : __DIR__ . DIRECTORY_SEPARATOR)  . APP_BASE['public'] . str_replace(defined('APP_PATH') ? APP_PATH : __DIR__ . DIRECTORY_SEPARATOR , '', APP_BASE['public'] . dirname(basename($_SERVER['PHP_SELF'])) == 'public' ? basename($_SERVER['PHP_SELF']) : 'index.php')); // APP_PATH . 'public' . DIRECTORY_SEPARATOR . 'index.php'
+
+    if (APP_SELF != APP_PATH_SERVER && in_array(APP_PATH_PUBLIC, get_included_files()) /*APP_SELF == APP_PATH_PUBLIC*/)
+      require_once dirname(__DIR__) . DIRECTORY_SEPARATOR . 'config' . DIRECTORY_SEPARATOR . 'classes' . DIRECTORY_SEPARATOR . 'class.sockets.php';
+
+    // Resolve host to IP and check internet connection
+    if (isset($_SERVER['SOCKET']) && is_resource($_SERVER['SOCKET']) && $_SERVER['REQUEST_METHOD'] != 'POST') {
+      $errors['server-1'] = "Connected to Server: " . SERVER_HOST . ':' . SERVER_PORT . "\n";
+  
+      // Send a message to the server
+      $errors['server-2'] = 'Client request: ' . $message = "cmd: app connected\n";
+  
+      fwrite($_SERVER['SOCKET'], $message);
+      $output[] = trim($message) . ': ';
+      // Read response from the server
+      while (!feof($_SERVER['SOCKET'])) {
+          $response = fgets($_SERVER['SOCKET'], 1024);
+          $errors['server-3'] = "Server responce: $response\n";
+          if (isset($output[end($output)])) $output[end($output)] .= trim($response);
+          //if (!empty($response)) break;
+      }
+      if (!empty($response))
+        switch ((bool) $response) {
+          case true:
+            define('APP_CONNECTED', true);
+            define('APP_CONNECTIVITY', "Network is connected to the Internet, via Server.");
+            break;
+          default:
+            define('APP_CONNECTIVITY', "Not connected to the internet.");
+            break;
+        }
+    } elseif (!isset($_SERVER['SOCKET']) || !$_SERVER['SOCKET']) {
+      $ip = resolve_host_to_ip('google.com');
+      if (check_internet_connection($ip)) {
+        define('APP_CONNECTED', true);
+      } else {
+        define('APP_CONNECTIVITY', "Not connected to the internet.");
+      }
+    } else {
+      $ip = resolve_host_to_ip('google.com');
+      define('APP_CONNECTIVITY', "Failed to resolve host to IP=$ip");
+    }
+  
+    // Set connectivity error if not connected
+    defined('APP_CONNECTIVITY') and
+    !defined('APP_CONNECTED') and $errors['APP_CONNECTIVITY'] = 'APP Connect(ed): ' . var_export(APP_CONNECTIVITY, true) . "\n"; // print('Connectivity: ' . APP_CONNECTIVITY . "\n");
+
     break;
 }
 
@@ -283,17 +319,13 @@ if (defined('APP_ENV') && !is_string(APP_ENV)) {
     require_once $path;
 } */
 
-//(defined('APP_PATH') && truepath(APP_PATH)) and $errors['APP_PATH'] = truepath(APP_PATH); // print('App Path: ' . APP_PATH . "\n" . "\t" . '$_SERVER[\'DOCUMENT_ROOT\'] => ' . $_SERVER['DOCUMENT_ROOT'] . "\n");
-
-define('APP_PATH_PUBLIC', (defined('APP_PATH') ? APP_PATH : __DIR__ . DIRECTORY_SEPARATOR)  . APP_BASE['public'] . str_replace(defined('APP_PATH') ? APP_PATH : __DIR__ . DIRECTORY_SEPARATOR , '', APP_BASE['public'] . dirname(basename($_SERVER['PHP_SELF'])) == 'public' ? basename($_SERVER['PHP_SELF']) : 'index.php')); // 
-
 //var_dump(APP_PATH . basename(dirname(__DIR__, 2)) . '/' . basename(dirname(__DIR__, 1)));
 if (PHP_SAPI === 'cli') {
   // Replace the script name from REQUEST_URI when run in CLI
   $scriptName = $_SERVER['PHP_SELF'];
   $requestUri = preg_replace('/' . preg_quote($scriptName, '/') . '$/', '/', $_SERVER['REQUEST_URI'] ?? '');
 } else {
-  $requestUri = isset($_SERVER['REQUEST_URI']) ? $_SERVER['REQUEST_URI'] : (isset($_SERVER['PHP_SELF']) ? $_SERVER['PHP_SELF'] : '');
+  $requestUri = $_SERVER['REQUEST_URI'] ?? ($_SERVER['PHP_SELF'] ?? '');
   if ($requestUri !== '') {
     $queryString = isset($_SERVER['QUERY_STRING']) && $_SERVER['QUERY_STRING'] !== '' ? '?' . $_SERVER['QUERY_STRING'] : '';
     $requestUri .= $queryString;

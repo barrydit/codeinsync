@@ -261,6 +261,8 @@ function clientInputHandler($input) {
 
       file_put_contents(APP_PATH . APP_BASE['var'] . 'source_code.json', $json, LOCK_EX);
 /**/
+    } elseif (preg_match('/^cmd:\s*app(\s*connected)?(?=\r?\n$)?/si', $input)) {
+      $output = var_export(APP_CONNECTED, true) . "\n";
     } elseif (preg_match('/^cmd:\s*server(\s*variables|)(?=\r?\n$)?/si', $input)) {
       $output = var_export($_SERVER, true);
     } elseif (preg_match('/^cmd:\s*(add\s*notification)(?=\r?\n$)?/si', $input)) {    
