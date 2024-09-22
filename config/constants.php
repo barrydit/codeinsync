@@ -10,15 +10,20 @@
 //ini_set('max_execution_time', 60);
 
 /* This code sets up some basic configuration constants for a PHP application. */
+
 $user = ''; // www-data
 $password = ''; // password
+$use_sudo = true;
 
 const CONSOLE = true;
 
 // Define APP_SUDO constant based on OS
-!defined('APP_SUDO') and define('APP_SUDO', stripos(PHP_OS, 'WIN') === 0 
-    ? '' /*'runas /user:Administrator "cmd /c" '*/ // For Windows, you can insert the appropriate command 
-    : 'echo ' . escapeshellarg($password ?? '') . ' | sudo -S ' . ($user ? "-u $user" : ''));
+!defined('APP_SUDO') and define('APP_SUDO', stripos(PHP_OS, 'WIN') === 0
+  ? '' /*'runas /user:Administrator "cmd /c" '*/ // For Windows, you can insert the appropriate command 
+  : ($use_sudo 
+    ? 'echo ' . escapeshellarg($password ?? '') . ' | sudo -S '/* . ($user ? "-u $user" : '') . ' ' */// For Linux, you can insert the appropriate command
+    : '')
+);
 
 // Define APP_START constant
 !defined('APP_START') and define('APP_START', microtime(true)) ?: is_float(APP_START) or $errors['APP_START'] = 'APP_START is not a valid float value.';
@@ -53,7 +58,7 @@ const APP_NAME = 'Dashboard';
   and $errors['APP_NAME'] = 'APP_NAME is not a string => ' . var_export(APP_NAME, true); // print('Name: ' . APP_NAME  . ' v' . APP_VERSION . "\n");
 
   // Check if the request is using HTTPS
-if (isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] == 'on') {
+if (isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] == 'on') { // $_SERVER['REQUEST_SCHEME']   
   define('APP_HTTPS', TRUE);
 }
 if (defined('APP_HTTPS') && APP_HTTPS) {
@@ -265,7 +270,7 @@ END
       while (!feof($_SERVER['SOCKET'])) {
           $response = fgets($_SERVER['SOCKET'], 1024);
           $errors['server-3'] = "Server responce: $response\n";
-          if (isset($output[end($output)])) $output[end($output)] .= trim($response);
+          if (isset($output[end($output)])) $output[end($output)] .= $response = trim($response);
           //if (!empty($response)) break;
       }
       if (!empty($response))
@@ -292,7 +297,7 @@ END
   
     // Set connectivity error if not connected
     defined('APP_CONNECTIVITY') and
-    !defined('APP_CONNECTED') and $errors['APP_CONNECTIVITY'] = 'APP Connect(ed): ' . var_export(APP_CONNECTIVITY, true) . "\n"; // print('Connectivity: ' . APP_CONNECTIVITY . "\n");
+      !defined('APP_CONNECTED') and $errors['APP_CONNECTIVITY'] = 'APP Connect(ed): ' . var_export(APP_CONNECTIVITY, true) . "\n"; // print('Connectivity: ' . APP_CONNECTIVITY . "\n");
 
     break;
 }

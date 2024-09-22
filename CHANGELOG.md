@@ -21,8 +21,21 @@ if (!isset($_SERVER['PHP_AUTH_USER'])) {
 */
 
 
-HTACCESS
 
+
+if (__FILE__ == get_required_files()[0] && __FILE__ == realpath($_SERVER["SCRIPT_FILENAME"])) 
+  if ($path = basename(dirname(get_required_files()[0])) == 'public') { // (basename(getcwd())
+    if (is_file($path = realpath('index.php'))) {
+      require_once $path;
+    }
+  } else {
+    die(var_dump("Path was not found. file=$path"));
+  }
+
+
+
+
+HTACCESS
 
 RewriteEngine On
 RewriteBase "/clientele/000-Lastname,\ Firstname/example.ca/public"
@@ -33,7 +46,48 @@ RewriteCond %{REQUEST_FILENAME} !-d
 RewriteRule ^assets/(.*)$ ../resources/$1 [L]
 
 
+vendor/composer/installed.php
+
+<?php return array(
+    'root' => array(
+        'name' => 'barrydit/1234',
+        'pretty_version' => 'dev-main',
+        'version' => 'dev-main',
+        'reference' => '1d21ed08f33201dc985e9f2dca4984dd1783d9a9',
+        'type' => 'project',
+        'install_path' => __DIR__ . '/../../',
+        'aliases' => array(),
+        'dev' => true,
+    ),
+    'versions' => array(
+        'barrydit/1234' => array(
+            'pretty_version' => 'dev-main',
+            'version' => 'dev-main',
+            'reference' => '1d21ed08f33201dc985e9f2dca4984dd1783d9a9',
+            'type' => 'project',
+            'install_path' => __DIR__ . '/../../',
+            'aliases' => array(),
+            'dev_requirement' => false,
+        ),
+    ),
+);
+
+
+
+
 :: PHP
+
+
+
+      $proc=proc_open((stripos(PHP_OS, 'WIN') === 0 ? '' : APP_SUDO) . "composer $matches[1]",  
+        array(
+          array("pipe","r"),
+          array("pipe","w"),
+          array("pipe","w")
+        ),
+        $pipes);
+                list($stdout, $stderr, $exitCode) = [stream_get_contents($pipes[1]), stream_get_contents($pipes[2]), proc_close($proc)];
+                $output[] = !isset($stdout) ? NULL : $stdout . (isset($stderr) && $stderr === '' ? NULL : " Error: $stderr") . (isset($exitCode) && $exitCode == 0 ? NULL : "Exit Code: $exitCode");
 
 $proc = proc_open((stripos(PHP_OS, 'WIN') === 0 ? '' : APP_SUDO ) . basename($bin) . ' --version;', array( array("pipe","r"), array("pipe","w"), array("pipe","w")), $pipes);
 

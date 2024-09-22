@@ -1,4 +1,4 @@
-<?php
+<div?php
 
 //dd(get_defined_constants(true)['user']); dd(get_included_files());
 
@@ -388,7 +388,6 @@ unset($path);
               }
               ?>
           </select> /</span>
-          <a href="#" onclick="document.getElementById('info').style.display = 'block';">+</a>
           </form><?php if (!empty($_GET['client'])) {
           $dirs = array_filter(glob(dirname(__DIR__) . /*'../../'.*/ '/clientele/' . $_GET['client'] . '/*'), 'is_dir'); ?><form style="display: inline;" autocomplete="off" spellcheck="false" action="" method="GET"><?= isset($_GET['client']) && !$_GET['client'] ? '' : '<input type="hidden" name="client" value="' . $_GET['client'] . '" / >' ?><select id="domain" name="domain" onchange="this.form.submit();">
             <option value="" <?= (isset($_GET['domain']) && $_GET['domain'] == '' ? 'selected' : '') ?>>---</option>
@@ -839,7 +838,25 @@ if (defined('APP_WHOIS') && !empty(APP_WHOIS)) {
   unset($path);
 include 'app.debug.php';
   ?>
-<div id="details-container" style="position: fixed; display: none; top: 0; left: 0; z-index: 1; border: 1px solid #000; height: auto; background-color: #FFF; width: 250px;">
+
+
+<div id="details-container" style="position: fixed; display: block; top: 0; right: 0; padding: 4px; z-index: 1; text-align: right; border: 1px solid #000; height: auto; background-color: #FFF; width: 225px;">
+  <div style="float: left;">$_ENV</div>
+  <h3 style="font-weight: bolder;">Server</h3>
+  <div style="display: inline-block;">On / Off <input id="check_server_start" type="checkbox" <?= is_resource($_SERVER['SOCKET']) ? 'checked="checked"' : '' ?> onclick="validate()" /><br /><a href="">Status</a><br /><a href="">Help</a><br />Error Log</div>
+  <img id="serverStatus" src="/resources/images/server<?= is_resource($_SERVER['SOCKET']) ? '-green' : '' ?>.gif" style="float: right;" width="100" height="103">
+  <!--form action="#!" method="GET">
+      <?= isset($_GET['debug']) && !$_GET['debug'] ? '' : '<input type="hidden" name="debug" value / >' ?> 
+
+              <input class="input" id="toggle-debug" type="checkbox" onchange="this.form.submit();" <?= isset($_GET['debug']) || defined('APP_ENV') && APP_ENV == 'development' ? 'checked' : '' ?> / -->
+<div style="position: relative;">
+      <div style="">&nbsp;&nbsp;&nbsp;&nbsp;<?= APP_NAME ?></div>
+    <!-- /form -->
+</div>
+<hr />
+<a href="?logout=true">Logout</a><br />
+
+<div id="" style="">
   <span>Loading Time: <?= round(microtime(true) - APP_START, 3); ?>s</span><br />
   <span>Environment: <?= PHP_OS; ?></span><br />
   <span>Domain: <?= APP_DOMAIN; ?></span><br />
@@ -850,30 +867,24 @@ include 'app.debug.php';
   <span>Source (code): <em style="font-size: 13px;"><?= '[<b>' . formatSizeUnits($total_filesize) . '</b>] <b style="color: red;">' . $total_filesize - 1000000 . '</b>' ?></em></span>
   <div style="position: relative; display: block;"><div style="position: absolute; display: block; float: right; right: 10px; width: 165px; text-align: right;"><?= ' [(<a style="font-weight: bolder; color: green;" href="#" onclick="document.getElementById(\'app_nodes-container\').style.display = \'block\';">' . $total_include_files . ' loaded</a>) <b>'. $total_files . '</b> files] <br /> [<b style="color: green;">' . $total_include_lines . '</b> @ <b>' . $total_lines . '</b> lines]'; ?></div></div><br /><br />
 </div>
+</div>
 
-<div id="server-container" style="position: fixed; display: block; top: 0; right: 0; padding: 4px; z-index: 1; text-align: right; border: 1px solid #000; height: auto; background-color: #FFF; width: 225px;">
-  <div style="float: left;">$_ENV</div>
-  <h3 style="font-weight: bolder;">Server</h3>
-  <div style="display: inline-block;">On / Off <input id="check_server_start" type="checkbox" <?= is_resource($_SERVER['SOCKET']) ? 'checked="checked"' : '' ?> onclick="validate()" /><br /><a href="">Status</a><br /><a href="">Help</a><br />Error Log</div>
-  <img id="serverStatus" src="/resources/images/server<?= is_resource($_SERVER['SOCKET']) ? '-green' : '' ?>.gif" style="float: right;" width="100" height="103">
-  <!--form action="#!" method="GET">
-      <?= isset($_GET['debug']) && !$_GET['debug'] ? '' : '<input type="hidden" name="debug" value / >' ?> 
 
-              <input class="input" id="toggle-debug" type="checkbox" onchange="this.form.submit();" <?= isset($_GET['debug']) || defined('APP_ENV') && APP_ENV == 'development' ? 'checked' : '' ?> / -->
-<div style="position: relative;">
-      <input class="input" id="toggle-debug" type="checkbox" onchange="toggleSwitch(this); return null;" <?= isset($_GET['debug']) || defined('APP_ENV') && APP_ENV == 'development' ? 'checked' : '' ?> />
-      <label class="label" for="toggle-debug" style="margin: 0 auto; padding-top: 10px;">
-        <div class="switch" style="display: inline; z-index: 999;">
+<div id="toggle-container" style="position: fixed; display: block; bottom: 0; right: 0; padding: 4px; z-index: 1; text-align: right; border: 1px solid #000; height: auto;">
+
+<div style="display: inline-block;"><input class="input" id="toggle-debug" type="checkbox" onchange="toggleSwitch(this); return null;" <?= isset($_GET['debug']) || defined('APP_ENV') && APP_ENV == 'development' ? 'checked' : '' ?> /><label class="label" for="toggle-debug" style="margin: 0 auto; padding-top: 10px;">
+        <div class="switch" style="display: inline; z-index: 1;">
           <span class="slider round"></span>
         </div>
-      </label><div style="position: absolute; right: 10px; top: 15px; z-index: 999;">&nbsp;&nbsp;&nbsp;&nbsp;<?= APP_NAME ?></div>
-    <!-- /form -->
-</div>
-<hr />
-<a href="?logout=true">Logout</a><br />
+      </label></div>
+
+<div style="display: inline-block;">
+<p style="color: #fff; background-color: #0078D7;">Developed by <a href="mailto:barryd.it@gmail.com" style="color: #eee">Barry R. Dick</a><br />
+<?=APP_NAME?> (<a href="release-notes-<?=APP_VERSION?>.html" style="color: #eee;">v<?=APP_VERSION?></a>)</p></div>
+
 </div>
 
-<div id="adhd_song-container" style="position: fixed; display: none; bottom: 0; right: 0; z-index: 1;">
+<div id="adhd_song-container" style="position: fixed; display: none; bottom: 0; right: 0; z-index: 2;">
   <img src="/resources/reels/adhd_song.gif" />
 </div>
 <!--
@@ -1055,7 +1066,7 @@ if (date(/*Y-*/ 'm-d') == /*1928-*/ '08-07' ?? /*2023-*/ '03-30') { ?>
     <?php } elseif (date(/*Y-*/ 'm-d') == /*1976-*/ '03-20' ?? /*2017-*/ '07-20') { ?>
     <script src="resources/reels/leave-a-light-on.js" type="text/javascript" charset="utf-8"></script>
     <?php } else {  // array_rand() can't be empty ?>
-    <script src="<?= APP_BASE['resources'] . 'reels/unknown.js'; /*disturbed_-_it_wasnt_me.js adhd_song.js !empty($reels = glob(APP_PATH . 'resources/reels/*.js')) ? APP_BASE['resources'] . 'reels/' . basename(array_rand(array_flip(array_filter($reels, 'is_file')), 1)) : ''; APP_BASE['resources'] */?>" type="text/javascript" charset="utf-8"></script>
+    <script src="<?= APP_BASE['resources'] . 'reels/something_happened.js'; /*disturbed_-_it_wasnt_me.js adhd_song.js !empty($reels = glob(APP_PATH . 'resources/reels/*.js')) ? APP_BASE['resources'] . 'reels/' . basename(array_rand(array_flip(array_filter($reels, 'is_file')), 1)) : ''; APP_BASE['resources'] */?>" type="text/javascript" charset="utf-8"></script>
     <?php } ?>
     <script type="text/javascript" charset="utf-8">
 
@@ -1102,7 +1113,7 @@ function makeDraggable(windowId) {
       
       makeDraggable('app_ace_editor-container');
       makeDraggable('app_composer-container');
-      // makeDraggable('app_project-container');
+      makeDraggable('app_project-container');
       makeDraggable('app_git-container');
       makeDraggable('app_npm-container');
       makeDraggable('app_php-container');
@@ -1189,11 +1200,11 @@ function makeDraggable(windowId) {
           // Animation complete.
         });
 
-        <?php if (isset($_GET['client']) && $_GET['client']) { ?>
-          $( '#app_directory-container' ).slideDown( "slow", function() {
-          // Animation complete.
-          });
-         <?php } ?>
+        <?php if (isset($_GET['client']) && $_GET['client']) { } ?>
+        $( '#app_directory-container' ).slideDown( "slow", function() {
+        // Animation complete.
+        });
+
 
         
         $("#debug-content").css('overflow', 'visible');
@@ -1454,7 +1465,7 @@ $( '#app_directory-container' ).slideUp( "slow", function() {
       <?= defined('UI_NODES') ? UI_NODES['script'] : null; ?>
 
       
-      <?= /* (defined('UI_ACE_EDITOR') ? UI_ACE_EDITOR['script'] : null); */ NULL;?>
+      <?= defined('UI_ACE_EDITOR') ? UI_ACE_EDITOR['script'] : null; /* NULL; */?>
       
       <?= !isset($apps['directory']['script'])?: $apps['directory']['script']; ?>
 

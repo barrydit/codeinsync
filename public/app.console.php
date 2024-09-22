@@ -140,13 +140,13 @@ if (preg_match('/^app\.([\w\-.]+)\.php$/', basename(__FILE__), $matches))
             //$output[] = $_POST['cmd'];
           }
   
-        } else if (preg_match('/^composer\s+(:?(.*))/i', $_POST['cmd'], $match)) {
-  
+        } /* else if (preg_match('/^composer\s+(:?(.*))/i', $_POST['cmd'], $match)) {
+
           if (!$_SERVER['SOCKET']) {
-  
+
             //$output[] = dd(COMPOSER_EXEC);
             //$output[] = APP_SUDO . COMPOSER_EXEC['bin'] . ' ' . $match[1];
-            $proc=proc_open((stripos(PHP_OS, 'WIN') === 0 ? '' : APP_SUDO) . COMPOSER_EXEC['bin'] . ' ' . $match[1],
+            $proc=proc_open((stripos(PHP_OS, 'WIN') === 0 ? '' : APP_SUDO) . COMPOSER_EXEC['bin'] . ' ' . $match[1] . ' --working-dir="' . APP_PATH . APP_ROOT . '"',
             [
               ["pipe", "r"],
               ["pipe", "w"],
@@ -194,7 +194,7 @@ if (preg_match('/^app\.([\w\-.]+)\.php$/', basename(__FILE__), $matches))
           }
   
   
-        } else if (preg_match('/^git\s+(:?(.*))/i', $_POST['cmd'], $match)) {
+        } */ else if (preg_match('/^git\s+(:?(.*))/i', $_POST['cmd'], $match)) {
           //(function() use ($path) {
           //  ob_start();
             require_once APP_PATH . 'config/git.php';
@@ -215,7 +215,7 @@ if (preg_match('/^app\.([\w\-.]+)\.php$/', basename(__FILE__), $matches))
   
   git checkout -b branchName
   END;
-          $output[] = $command = ((stripos(PHP_OS, 'WIN') === 0) ? '' : APP_SUDO) . (defined('GIT_EXEC') ? GIT_EXEC : 'git' ) . (is_dir($path = APP_PATH . APP_ROOT . '.git') || APP_PATH . APP_ROOT != APP_PATH ? '' : '' ) . ' ' . $match[1];
+          $output[] = $command = ((stripos(PHP_OS, 'WIN') === 0) ? '' : APP_SUDO) . (defined('GIT_EXEC') ? GIT_EXEC : 'git' ) . (is_dir($path = APP_PATH . APP_ROOT . '.git') || APP_PATH . APP_ROOT != APP_PATH ? '' : '') . ' ' . $match[1];
   
   $proc=proc_open($command,
   array(
@@ -311,7 +311,7 @@ if (preg_match('/^app\.([\w\-.]+)\.php$/', basename(__FILE__), $matches))
   
           list($stdout, $stderr, $exitCode) = [stream_get_contents($pipes[1]), stream_get_contents($pipes[2]), proc_close($proc)];
           preg_match('/\/(.*)\//', DOMAIN_EXPR, $matches);  
-          $output[] = !isset($stdout) ? NULL : $stdout . (isset($stderr) && $stderr === '' ? NULL : (preg_match('/^To\s' . $matches[1] . '/', $stderr) ? $stderr : "Error: $stderr")) . (isset($exitCode) && $exitCode == 0 ? NULL : "Exit Code: $exitCode");
+          $output[] = !isset($stdout) ? NULL : $stdout . (isset($stderr) && $stderr === '' ? NULL : (preg_match("/^To\\s$matches[1]/", $stderr) ? $stderr : "Error: $stderr")) . (isset($exitCode) && $exitCode == 0 ? NULL : "Exit Code: $exitCode");
           //$output[] = $_POST['cmd'];     
   
           }
@@ -337,7 +337,7 @@ if (preg_match('/^app\.([\w\-.]+)\.php$/', basename(__FILE__), $matches))
   ),
   $pipes);
           list($stdout, $stderr, $exitCode) = [stream_get_contents($pipes[1]), stream_get_contents($pipes[2]), proc_close($proc)];
-          $output[] = (!isset($stdout) ? NULL : $stdout . (isset($stderr) && $stderr === '' ? NULL : ' Error: ' . $stderr) . (isset($exitCode) && $exitCode == 0 ? NULL : 'Exit Code: ' . $exitCode));
+          $output[] = !isset($stdout) ? NULL : $stdout . (isset($stderr) && $stderr === '' ? NULL : " Error: $stderr") . (isset($exitCode) && $exitCode == 0 ? NULL : "Exit Code: $exitCode");
           //$output[] = $_POST['cmd'];
   
           //exec($_POST['cmd'], $output);
@@ -351,11 +351,11 @@ if (preg_match('/^app\.([\w\-.]+)\.php$/', basename(__FILE__), $matches))
             if (!$_SERVER['SOCKET']) {
               //exec($_POST['cmd'], $output);
               if (preg_match('/^(\w+)\s+(:?(.*))/i', $_POST['cmd'], $match))
-                if (isset($match[1]) && in_array($match[1], ['tail', 'cat', 'unlink', 'echo', 'env', 'sudo', 'whoami', 'server'])) {
+                if (isset($match[1]) && in_array($match[1], ['tail', 'cat', 'unlink', 'echo', 'env', 'sudo', 'whoami'])) {
                 //exec(APP_SUDO . $match[1] . ' ' . $match[2], $output); // $output[] = var_dump($match);
-                
-  $output[] = APP_SUDO . $match[1] . ' ' . $match[2];
-  $proc=proc_open((stripos(PHP_OS, 'WIN') === 0 ? '' : APP_SUDO) . $match[1] . ' ' . $match[2],
+
+  $output[] = APP_SUDO . "$match[1] $match[2]";
+  $proc=proc_open((stripos(PHP_OS, 'WIN') === 0 ? '' : APP_SUDO) . "$match[1] $match[2]",  
     array(
       array("pipe","r"),
       array("pipe","w"),
@@ -364,15 +364,18 @@ if (preg_match('/^app\.([\w\-.]+)\.php$/', basename(__FILE__), $matches))
     $pipes);
             list($stdout, $stderr, $exitCode) = [stream_get_contents($pipes[1]), stream_get_contents($pipes[2]), proc_close($proc)];
             $output[] = !isset($stdout) ? NULL : $stdout . (isset($stderr) && $stderr === '' ? NULL : " Error: $stderr") . (isset($exitCode) && $exitCode == 0 ? NULL : "Exit Code: $exitCode");
-                
+
             } else {
-              $output[] = 'Command not found: ' . $_POST['cmd'];
+              $output[] = 'Server is not connected. Command not found: ' . $_POST['cmd'];
             }
             } else {
               $errors['server-1'] = "Connected to " . SERVER_HOST . " on port " . SERVER_PORT . "\n";
-  
-              // Send a message to the server
-              $errors['server-2'] = 'Client request: ' . $message = "cmd: " . $_POST['cmd'] . "\n";
+
+              if (preg_match('/^composer\s+(:?(.*))/i', $_POST['cmd'], $match))
+                $errors['server-2'] = 'Client request: ' . $message = "cmd: composer " . $match[1] . ' --working-dir"' . APP_PATH . APP_ROOT . '"'. "\n";
+              else if (preg_match('/^git\s+(:?(.*))/i', $_POST['cmd'], $match))
+                $errors['server-2'] = 'Client request: ' . $message = "cmd: git " . $match[1] . ' --git-dir="' . APP_PATH . APP_ROOT . '.git" --work-tree="' . APP_PATH . APP_ROOT  . '"' . "\n";
+              else $errors['server-2'] = 'Client request: ' . $message = "cmd: " . $_POST['cmd'] . "\n";
             
               fwrite($_SERVER['SOCKET'], $message);
               $output = []; //$_POST['cmd'] . ' test3: ';
@@ -687,8 +690,8 @@ if (!empty($errors))
         echo /*$key . '=>' . */$error . ($key != end($errors) ? '' : "\n");
       else echo var_export($error, true); // foreach($error as $err) echo $err . "\n";
       //else dd($error);
-  } ?>
-</textarea>
+  }
+?></textarea>
         
     </div>
 </div>

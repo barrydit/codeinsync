@@ -364,7 +364,7 @@ foreach($data as $key1 => $sample) {
   foreach ($sample['snippets'] as $key2 => $snippet) {
 ?>
   <h3><?= $snippet['title']; ?></h3>
-  <a href="<?= $snippet['stackoverflow']['url']; ?>"><?= (!empty($snippet['stackoverflow']['title']) ? $snippet['stackoverflow']['title'] : 'Stackoverflow Question/Answer') ?></a>
+  <a href="<?= $snippet['stackoverflow']['url']; ?>"><?= !empty($snippet['stackoverflow']['title']) ? $snippet['stackoverflow']['title'] : 'Stackoverflow Question/Answer' ?></a>
   <form action method="POST">
     <img class="open_edit" src="resources/images/notes-edit.png" style="display: inline-block;margin-left: 4px; padding-top: 5px; cursor: pointer; " height="25" width="21" onclick="document.getElementById('id').value = '<?= $key1 . '-' . $key2; ?>';" />  
     <input type="hidden" name="id" value="<?= $key1 . '-' . $key2; ?>" />

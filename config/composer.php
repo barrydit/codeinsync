@@ -27,7 +27,7 @@ elseif (!defined('COMPOSER_EXPR_VER'))
 // php -dxdebug.mode=debug -dxdebug.output_dir=. public/ui_complete.php
 
 /*
-foreach ($array = preg_split("/\r\n|\n|\r/", exec(APP_SUDO . ' /usr/local/bin/composer diagnose')) as $key => $diag_line) {
+foreach ($array = preg_split("/\r\n|\n|\r/", exec(APP_SUDO  . -u www-data /usr/local/bin/composer diagnose')) as $key => $diag_line) {
   dd($diag_line, false);
 }
 */
@@ -145,11 +145,12 @@ class composerSchema {
   }
 }
 
-if (is_file($include = APP_PATH . APP_ROOT . APP_BASE['vendor'] . 'autoload.php'))
-  if (isset($_ENV['COMPOSER']['AUTOLOAD']) && (bool) $_ENV['COMPOSER']['AUTOLOAD'] === TRUE)
+if (is_file($include = APP_PATH . APP_ROOT . APP_BASE['vendor'] . 'autoload.php')) {
+  if (!empty(APP_ROOT) || isset($_GET['app']) && $_GET['app'] === 'composer')
     require_once $include;
-  else
-    $errors['COMPOSER_AUTOLOAD'] = 'Composer autoload is disabled.';
+  else if (isset($_ENV['COMPOSER']['AUTOLOAD']) && (bool) $_ENV['COMPOSER']['AUTOLOAD'] === TRUE)
+    require_once $include;
+} else $errors['COMPOSER_AUTOLOAD'] = 'Composer autoload is disabled.';
 
 if (!defined('APP_PATH_CONFIG') || !in_array(APP_PATH_CONFIG, get_required_files()))
   die(APP_PATH_CONFIG . ' is missing. Presumed that this file was opened on its own.');
@@ -289,7 +290,7 @@ if (stripos(PHP_OS, 'WIN') === 0) { // DO NOT REMOVE! { .. }
     define('COMPOSER_BIN', '/usr/local/bin/composer');
   }
 */
-    (realpath($composer_which = trim(shell_exec(APP_SUDO . 'which composer')))) or $errors['COMPOSER-WHICH'] = "which did not find composer. Err=$composer_which";
+    (realpath($composer_which = trim(shell_exec(APP_SUDO  . /*-u www-data */ 'which composer')))) or $errors['COMPOSER-WHICH'] = "which did not find composer. Err=$composer_which";
 
     foreach([ /*'/usr/local/bin/composer',*/ 'php ' . APP_PATH . 'composer.phar', $composer_which] as $key => $bin) {
       !isset($composer) and $composer = [];
@@ -753,7 +754,8 @@ if (defined('COMPOSER_JSON') && !empty(COMPOSER_JSON['json'])) {
   $composer_obj->{'require-dev'}->{'pds/skeleton'} = '^1.0';
 }
 
-if (defined('COMPOSER_VERSION') && defined('COMPOSER_LATEST') && defined('APP_DEBUG')) {
+if (defined('COMPOSER_VERSION') && defined('COMPOSER_LATEST') && defined('APP_DEBUG') && APP_DEBUG !== false) {
+
 //  if (is_file($path = APP_PATH . 'composer.lock') && is_writable($path)) 
 //    unlink($path);
 
@@ -861,7 +863,22 @@ fclose($pipes[2]);
 
       //if (!$_SERVER['SOCKET']) $_SERVER['SOCKET'] = openSocket(APP_HOST, 12345); // 
 //dd($_SERVER['SOCKET']);
-      if (isset($_SERVER['SOCKET']) && $_SERVER['SOCKET'] !== false) {
+      if (isset($_SERVER['SOCKET']) && is_resource($_SERVER['SOCKET']) && $_SERVER['SOCKET'] !== false) {
+
+        $errors['server-1'] = "Connected to Server: " . SERVER_HOST . ':' . SERVER_PORT . "\n";
+  
+        // Send a message to the server
+        $errors['server-2'] = 'Client request: ' . $message = "cmd: composer update\n";
+    
+        fwrite($_SERVER['SOCKET'], $message);
+        $output[] = trim($message) . ': ';
+        // Read response from the server
+        while (!feof($_SERVER['SOCKET'])) {
+            $response = fgets($_SERVER['SOCKET'], 1024);
+            $errors['server-3'] = "Server responce: $response\n";
+            if (isset($output[end($output)])) $output[end($output)] .= $response = trim($response);
+            //if (!empty($response)) break;
+        }
 /*
 list($server, $port) = explode(PATH_SEPARATOR, SERVER_HOST . PATH_SEPARATOR . SERVER_PORT); // 127.0.0.1:12345   
 $errors['server-1'] = "Connected to Server: " . $server . PATH_SEPARATOR . $port . "\n"; // APP_PATH_SERVER || APP_HOST
@@ -1116,13 +1133,6 @@ if (basename(dirname(APP_SELF)) == __DIR__ . DIRECTORY_SEPARATOR . 'public') {
   if ($path = realpath((basename(__DIR__) != 'config' ? NULL : __DIR__ . DIRECTORY_SEPARATOR) . 'ui.composer.php')) {
     $app['html'] = require_once $path;
   }
-}
-
-if (APP_SELF == __FILE__ || (defined('APP_DEBUG') && isset($_GET['app']) && $_GET['app'] == 'composer')) {
-
-  //dd(get_included_files());
-
-  //die($apps['composer']['html']);
 }
 
 unset($output);

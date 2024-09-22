@@ -359,7 +359,7 @@ update [--with WITH] [--prefer-source] [--prefer-dist] [--prefer-install PREFER-
 ob_start(); ?>
 
 
-#app_composer-container { position: absolute; display: none; top: 60px; left: 50%; right: 50%; margin: 0 auto; z-index: 1; }
+#app_composer-container { position: absolute; display: none; left: 832px; top: 96px; margin: 0 auto; z-index: 1; }
 #app_composer-container.selected { display: block; z-index: 1; 
   /* Add your desired styling for the selected container */
   /*

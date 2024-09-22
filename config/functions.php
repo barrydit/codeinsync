@@ -63,8 +63,8 @@ function buildUri(array $urlComponents, $queryParams = []) {
 /**
  * Parses command line args and returns array of args and their values
  *
- * @param Array $args   The array from $argv
- * @return Array
+ * @param array $args   The array from $argv
+ * @return array
  */
 function parseargs($args = [])
 {  

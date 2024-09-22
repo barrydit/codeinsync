@@ -288,21 +288,20 @@ unset($include);
   //}
   /**/
 
-
-  if (isset($_GET['CLIENT']) || isset($_GET['DOMAIN']) && !defined('APP_ROOT')) {
-
+  if (defined('APP_QUERY') && empty(APP_QUERY) || isset($_GET['CLIENT']) || isset($_GET['DOMAIN']) && !defined('APP_ROOT')) {
     if (!isset($_ENV['DEFAULT_CLIENT'])) $_ENV['DEFAULT_CLIENT'] = $_GET['CLIENT'];
-  
+
     if (!isset($_ENV['DEFAULT_DOMAIN'])) $_ENV['DEFAULT_DOMAIN'] = $_GET['DOMAIN'];
-  
+
     if (defined('APP_QUERY') && empty(APP_QUERY))
-      die(header('Location: ' . APP_URL_BASE . '?' . http_build_query([
+      Shutdown::setEnabled(false)->setShutdownMessage(function() {
+        return header('Location: ' . APP_URL . '?' . http_build_query([
           'client' => $_ENV['DEFAULT_CLIENT'],
           'domain' => $_ENV['DEFAULT_DOMAIN']
-      ]) . '#'));
+        ]) . '#'); // -wow
+      })->shutdown();
     else
       $_GET = array_merge($_GET, APP_QUERY);
-  
   }
   
   

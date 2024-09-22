@@ -750,15 +750,20 @@ ob_end_clean(); ?>
 
       if (matches = path.match(/^.*\/$/gm)) {
 
-      // Use jQuery to update the request input and submit
-      $('#requestInput').val('chdir ' + path);
-      $('#requestSubmit').click();
+        // Use jQuery to update the request input and submit
+        $('#requestInput').val('chdir ' + path);
+        $('#requestSubmit').click();
 
       } else {
 
+        // Update the hidden ace_path input with the file path
+        $('input[name="ace_path"]').val(path);
+
+        document.getElementsByClassName('ace_text-input')[0].name = 'ace_contents';
+
         // Use jQuery to update the request input and submit
-      $('#requestInput').val('edit ' + path);
-      $('#requestSubmit').click();
+        $('#requestInput').val('edit ' + path);
+        $('#requestSubmit').click();
 
 
         //document.getElementsByClassName('ace_text-input')[0].value = 'hello world';

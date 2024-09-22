@@ -30,7 +30,7 @@ if (preg_match('/^app\.([\w\-.]+)\.php$/', basename(__FILE__), $matches))
 
 ob_start(); ?>
 
-#app_project-container { position: absolute; height: auto; display: none; top: 40%; left: 50%; transform: translate(-50%, -50%); }
+#app_project-container { position: absolute; height: auto; display: none;  left: 832px; top: 96px; }
 #app_project-container.selected { display: block; z-index: 1; 
   /* Add your desired styling for the selected container */
   /*
@@ -144,7 +144,7 @@ ob_start(); ?>
           <div id="second">
 
 <?php $path = realpath(getcwd() . (isset($_GET['path']) ? DIRECTORY_SEPARATOR . $_GET['path'] : '')) . DIRECTORY_SEPARATOR; ?>
-            <div id="app_project_editor" class="editor" style="display: <?= (isset($_GET['file']) && isset($_GET['path']) && is_file($_GET['path'] . $_GET['file']) ? 'block': 'block'); ?>; width: 778px; height: 287px; z-index: 2;"><textarea name="contents" class="ace_text-input" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" style="opacity: 0; font-size: 1px; height: 1px; width: 1px; top: 28px; left: 86px;" wrap="off"><?= htmlsanitize((is_file('projects/index.php') ? file_get_contents('projects/index.php') : '') ) /*   'clientele/' . $_GET['client'] . '/' . $_GET['domain'] . '/' .  */ ?></textarea></div>
+            <div id="app_project_editor" class="editor" style="display: <?= isset($_GET['file']) && isset($_GET['path']) && is_file($_GET['path'] . $_GET['file']) ? 'block' : 'block'; ?>; width: 778px; height: 287px; z-index: 2;"><textarea name="contents" class="ace_text-input" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" style="opacity: 0; font-size: 1px; height: 1px; width: 1px; top: 28px; left: 86px;" wrap="off"><?= htmlsanitize(is_file('projects/index.php') ? file_get_contents('projects/index.php') : '' ) /*   'clientele/' . $_GET['client'] . '/' . $_GET['domain'] . '/' .  */ ?></textarea></div>
           </div>
         </form>
       </div>

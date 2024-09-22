@@ -10,7 +10,7 @@ if (is_file($path = APP_PATH . APP_BASE['config'] . 'npm.php') ? $path : '' ) re
 
 ob_start(); ?>
 
-#app_npm-container { position: absolute; display: none; top: 60px; margin: 0 auto; left: 50%; right: 50%;  }
+#app_npm-container { position: absolute; display: none; margin: 0 auto; left: 832px; top: 96px;  }
 #app_npm-container.selected { display: block; z-index: 1; 
   /* Add your desired styling for the selected container */
   /*

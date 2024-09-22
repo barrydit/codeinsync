@@ -89,8 +89,7 @@ class Sockets
             //file_put_contents($pidFile, $pid = getmypid());
         }
         
-        if ($start)
-          shell_exec('nohup php server.php > /dev/null 2>&1 &');
+        if ($start) shell_exec('nohup php server.php > /dev/null 2>&1 &');
     }
     public static function handleWindowsSocketConnection()
     {
@@ -171,7 +170,7 @@ if ($_SERVER['SOCKET'] = $socket->getSocket()) // realpath(dirname(__DIR__) . DI
 
 if (!$_SERVER['SOCKET']) {
 
-  define('PID_FILE', /*getcwd() . */(!defined('APP_PATH') ? __DIR__ . DIRECTORY_SEPARATOR : APP_PATH ) . 'server.pid');
+  !defined('PID_FILE') and define('PID_FILE', /*getcwd() . */(!defined('APP_PATH') ? __DIR__ . DIRECTORY_SEPARATOR : APP_PATH ) . 'server.pid');
 
   if (file_exists(PID_FILE)) {
     $pid = (int) file_get_contents(PID_FILE);

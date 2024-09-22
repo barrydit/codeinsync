@@ -17,11 +17,16 @@ if (__FILE__ == get_required_files()[0] && __FILE__ == realpath($_SERVER["SCRIPT
 
 
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
-  if (isset($_GET['app']) && $_GET['app'] == 'ace_editor')
-    if (isset($_POST['path']) && isset($_GET['file']) && $path = realpath($_POST['path'] . $_GET['file'])) {
-      file_put_contents($path, $_POST['contents']);
-      die(header('Location: ' . APP_URL));
-    }
+  if (isset($_GET['app']) && $_GET['app'] == 'ace_editor') 
+    if (isset($_POST['ace_path']) && realpath($path = APP_PATH . APP_ROOT . $_POST['ace_path'])) { // $_GET['file']      
+      if (isset($_POST['ace_contents']))
+        file_put_contents($path, $_POST['ace_contents']);
+
+      //dd($_POST, true);
+      //http://localhost/Array?app=ace_editor&path=&file=test.txt    obj.prop.second = value    obj->prop->second = value
+      //dd( APP_URL . '1234?' . http_build_query(['path' => dirname( $_POST['ace_path']), 'app' => 'ace_editor', 'file' => basename($path)]), true);
+      die(header('Location: ' . APP_URL . '?' . http_build_query(['path' => dirname($_POST['ace_path']), 'file' => basename($path)])));
+    } else dd("Path: $path was not found.", true);
   //dd($_POST);
 
 //  if (isset($_GET['file'])) {
@@ -184,7 +189,9 @@ ob_start(); ?>
       <div style="display: inline; float: right; text-align: center; color: blue;"><code style="background-color: white; color: #0078D7;"><a style="cursor: pointer; font-size: 13px;" onclick="document.getElementById('app_ace_editor-container').style.display='none';">[X]</a></code></div> 
     </div>
 
-    <div id="" style="position: relative; width: 100%; height: 100%; border: 3px dashed #38B1FF; background-color: rgba(56,177,255,0.6);">
+    <form id="" name="ace_form" style="position: relative; width: 100%; height: 100%; border: 3px dashed #38B1FF; background-color: rgba(56,177,255,0.6);" action="<?= APP_URL . '?' . http_build_query(APP_QUERY + ['app' => 'ace_editor']) . (defined('APP_ENV') && APP_ENV == 'development' ? '#!' : '') /* $c_or_p . '=' . (empty($_GET[$c_or_p]) ? '' : $$c_or_p->name) . '&amp;app=composer' */ ?>" method="POST" onsubmit="syncAceContent()">
+      <input type="hidden" name="ace_path" value="<?= /* APP_PATH . APP_BASE['public']; */ NULL; ?>" />
+
 
       <div class="ui-widget-content" style="position: relative; display: block; margin: 0 auto; width: calc(100% - 2px); height: 50px; background-color: rgba(251,247,241);">
         <div style="display: inline-block; text-align: left; width: 125px;">
@@ -193,9 +200,12 @@ ob_start(); ?>
             <a class="text-sm" id="app_ace_editor-frameMenuPrev" href="<?= (!empty(APP_QUERY) ? '?' . http_build_query(APP_QUERY) : '') . (defined('APP_ENV') && APP_ENV == 'development' ? '#!' : '#') ?>"> &lt; Menu</a> | <a class="text-sm" id="app_ace_editor-frameMenuNext" href="<?= (!empty(APP_QUERY) ? '?' . http_build_query(APP_QUERY) : '') . (defined('APP_ENV') && APP_ENV == 'development' ? '#!' : '#') ?>">Init &gt;</a>
           </div>
         </div>
+<!-- onclick="document.getElementsByClassName('ace_text-input')[0].value = globalEditor.getSession().getValue(); document.getElementsByClassName('ace_text-input')[0].name = 'editor';"   -->
+        <div style="position:absolute; right: 100px; top: 10px; display: inline-block; width: auto; text-align: right;"><input type="submit" name="ace_save" value="Save" class="btn" style="margin: -5px 5px 5px 0;"></div>
+
         <div class="absolute" style="position: absolute; display: inline-block; top: 5px; right: 0; text-align: right; float: right;">
           <div class="text-xs" style="position: relative; display: inline-block;">
-          + 478 <a href="https://github.com/ajaxorg/ace/graphs/contributors">contributors</a>
+          + 495 <a href="https://github.com/ajaxorg/ace/graphs/contributors">contributors</a>
           <br /><!-- a href="https://github.com/ajaxorg"><img src="resources/images/node.js.png" title="https://github.com/nodejs" width="18" height="18" /></a -->
           <a style="color: blue; text-decoration-line: underline; text-decoration-style: solid;" href="https://ace.c9.io/" title="https://ace.c9.io/">https://ace.c9.io/</a>
           </div>
@@ -253,20 +263,11 @@ if (!empty($paths))
 <!--
       <div id="app_ace_editor-frameMenu" class="app_ace_editor-frame-container absolute selected" style="background-color: rgb(225,196,151,.75); margin-top: 8px; height: 100%;">
 -->
-<form style="" action="<?= APP_URL . '?' . http_build_query(APP_QUERY + array( 'app' => 'ace_editor')) . (defined('APP_ENV') && APP_ENV == 'development' ? '#!' : '') /* $c_or_p . '=' . (empty($_GET[$c_or_p]) ? '' : $$c_or_p->name) . '&amp;app=composer' */ ?>" method="POST">
-        <input type="hidden" name="path" value="<?= APP_PATH /*. APP_BASE['public'];*/ ?>" />
+
 <!--   A (<?= /* $path */ ''; ?>) future note: keep ace-editor nice and tight ... no spaces, as it interferes with the content window.
  https://scribbled.space/ace-editor-setup-usage/ -->
 
-<div style="display: inline-block; width: auto; text-align: right; float: right; z-index: 2;"><input type="submit" value="Save" class="btn" style="margin: -5px 5px 5px 0; z-index: 999;" onclick="document.getElementsByClassName('ace_text-input')[0].value = globalEditor.getSession().getValue(); document.getElementsByClassName('ace_text-input')[0].name = 'editor';"/></div>
-
-<div id="ui_ace_editor" class="ace_editor" style="display: <?= isset($_GET['file']) && isset($_GET['path']) && is_file($_GET['path'] . $_GET['file']) ? 'block' : 'block'?>; z-index: 1;"><textarea name="contents" class="ace_text-input" autocorrect="off" autocapitalize="none" spellcheck="false" style="opacity: 0; font-size: 1px; height: 1px; width: 1px; top: 28px; left: 86px;" wrap="off"><?= isset($_GET['file']) && is_file($filename = APP_PATH . APP_ROOT . (!isset($_GET['path']) ? '' : $_GET['path'] . ($_GET['path'] == '' ? '' : '/' )) . $_GET['file']) ? htmlsanitize(file_get_contents($filename)) : htmlsanitize("<?php
-
-/* This is an example of ACE Editor working */
-
-require(__DIR__ . 'config/config.php');
-
-"); /* (isset($_GET['project']) ? htmlsanitize(file_get_contents($path . 'projects/index.php')) : '')*/ ''; /*   'clientele/' . $_GET['client'] . '/' . $_GET['domain'] . '/' .  */ ?></textarea></div></form>
+<div id="ui_ace_editor" class="ace_editor" style="display: <?= isset($_GET['file']) && isset($_GET['path']) && is_file($_GET['path'] . $_GET['file']) ? 'block' : 'block'?>; z-index: 1;"></div><textarea id="ace_contents" name="ace_contents" class="ace_text-input" autocorrect="off" autocapitalize="none" spellcheck="false" style="display: none; opacity: 0; font-size: 1px; height: 1px; width: 1px; top: 28px; left: 86px;" wrap="on"></textarea></form>
     <!-- div style="position: relative; display: inline-block; width: 100%; height: 100%; padding-left: 10px;">
 
       <form style="display: inline;" autocomplete="off" spellcheck="false" action="<?= APP_URL . /*basename(__FILE__) .*/ '?' . http_build_query(APP_QUERY /*+ array( 'app' => 'ace_editor')*/) . (defined('APP_ENV') && APP_ENV == 'development' ? '#!' : '') /* $c_or_p . '=' . (empty($_GET[$c_or_p]) ? '' : $$c_or_p->name) . '&amp;app=composer' */ ?>" method="GET">
@@ -341,9 +342,8 @@ foreach (array_filter( glob($path . DIRECTORY_SEPARATOR . '*.php'), 'is_file') a
 $app['body'] = ob_get_contents();
 ob_end_clean();
 
-ob_start(); ?>
-
-<?php //if (isset($_GET['client']) && $_GET['client'] != '') { 
+ob_start(); 
+//if (isset($_GET['client']) && $_GET['client'] != '') { 
 //if (isset($_GET['domain']) && $_GET['domain'] != '') {
 if (is_dir($path = APP_PATH . APP_BASE['resources'] . 'js/ace')) { ?>
     $(function() {
@@ -369,9 +369,43 @@ if (is_dir($path = APP_PATH . APP_BASE['resources'] . 'js/ace')) { ?>
         appEditor.resize();
       });
 
+      // Set initial content to the editor on load
+    var initialContent = `<?= isset($_GET['file']) && is_file($filename = APP_PATH . APP_ROOT . (!isset($_GET['path']) ? '' : $_GET['path'] . ($_GET['path'] == '' ? '' : '/' )) . $_GET['file']) ? json_encode(str_replace(['`', '\\'], ['\\`', '\\\\'], file_get_contents($filename))) : "<?php
+
+/* This is an example of ACE Editor working */
+
+require(__DIR__ . 'config/config.php');
+
+"; /* (isset($_GET['project']) ? htmlsanitize(file_get_contents($path . 'projects/index.php')) : '')*/ ''; /*   'clientele/' . $_GET['client'] . '/' . $_GET['domain'] . '/' .  */ ?>`;
+    appEditor.setValue(initialContent, 1); // The second parameter is cursor position, 1 moves it to the end
+
     });
+
+
+
+
 <?php } ?>
 
+// Function to sync Ace Editor content to hidden textarea before form submission
+    function syncAceContent() {
+        var appEditor = ace.edit("ui_ace_editor");
+        var aceContent = appEditor.getValue(); // Get the content from Ace Editor
+        document.getElementById('ace_contents').value = aceContent; // Set it to the hidden textarea
+    }
+
+// Function to update the textarea before form submission
+//function updateTextarea() {
+    //var appEditor = ace.edit("ui_ace_editor");
+    //var aceContent = appEditor.getValue();  // Get the content from the ACE editor
+
+    //document.getElementsByClassName('ace_text-input')[0].name = 'ace_contents';  // Update the name attribute
+    //document.querySelector('textarea[name="ace_contents"]').value = aceContent;  // Update the textarea with the content
+//}
+
+// Add an event listener to the form's submit event to call the update function
+//document.querySelector('form[name="ace_form"]').addEventListener('submit', function(event) {
+//    updateTextarea();  // Update the textarea with ACE editor content before submitting
+//});
 <?= /* $(document).ready(function() {}); */ ''; ?>
 
 <?php

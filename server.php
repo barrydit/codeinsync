@@ -93,6 +93,13 @@ stripos(PHP_OS, 'LIN') === 0 and cli_set_process_name($title);
         //fclose($server); 
         $file = PID_FILE;
         !is_file($file)?: unlink($file);
+        
+        if (isset($socket) && is_resource($socket)) {
+          socket_close($socket);
+        } elseif (is_resource($stream) && get_resource_type($stream) == 'stream') {
+          fclose($stream);
+        }
+/*
         if (isset($socket) && is_resource($stream)) {
           if (extension_loaded('sockets')) {
             socket_write($socket, 'Shutting down server... PID=' . getmypid());
@@ -102,6 +109,7 @@ stripos(PHP_OS, 'LIN') === 0 and cli_set_process_name($title);
             fclose($socket);
           }
         }
+*/
         $running = false;
         break;
     }
@@ -163,8 +171,9 @@ function clientInputHandler($input) {
 
     if (preg_match('/^cmd:\s*(shutdown|restart|server\s*(shutdown|restart))\s*?(?:(-f))(?=\r?\n$)?/si', $input, $matches)) { 
       //signalHandler(SIGTERM); // $running = false;
-      $output = var_export($matches, true);
-      if ($matches[3] == '-f') signalHandler(SIGTERM) and unlink($pidFile);
+      $output = "Shutting down... Written by Barry Dick (2024)";
+      //$output .= var_export($matches, true);
+      if ($matches[3] == '-f') { signalHandler(SIGTERM) and unlink($pidFile); /* exit(1); */ }
     } elseif (preg_match('/^cmd:\s*server\s*status(?=\r?\n$)?/si', $input)) {
       $output = "Server is running... PID=$pid";
     } elseif (preg_match('/^cmd:\s*chdir\s*(.*)(?=\r?\n$)?/si', $input, $matches)) {
@@ -191,7 +200,6 @@ function clientInputHandler($input) {
       ini_set('log_errors', 'false');
       $output = ($file = rtrim(realpath(APP_PATH . APP_ROOT . $_GET['path'] ?? ''), '/') . '/' . trim($matches[1])) ? file_get_contents($file) : "File not found: $file";
     } elseif (preg_match('/^cmd:\s*server\s*backup(?=\r?\n$)?/si', $input, $matches)) {
-
       require_once 'public/index.php';
 
       $files = get_required_files();
@@ -262,12 +270,27 @@ function clientInputHandler($input) {
       file_put_contents(APP_PATH . APP_BASE['var'] . 'source_code.json', $json, LOCK_EX);
 /**/
     } elseif (preg_match('/^cmd:\s*app(\s*connected)?(?=\r?\n$)?/si', $input)) {
-      $output = var_export(APP_CONNECTED, true) . "\n";
+      $output = var_export(APP_CONNECTED, true);
+    } elseif (preg_match('/^cmd:\s*composer\s*(.*)(?=\r?\n$)?/si', $input, $matches)) {
+      //$output = shell_exec($matches[1]);
+
+      $proc = proc_open((stripos(PHP_OS, 'WIN') === 0 ? '' : APP_SUDO . '-u www-data ') . "composer $matches[1]",
+      [
+        ["pipe", "r"],
+        ["pipe", "w"],
+        ["pipe", "w"]
+      ],
+      $pipes);
+
+      [$stdout, $stderr, $exitCode] = [stream_get_contents($pipes[1]), stream_get_contents($pipes[2]), proc_close($proc)];
+      $output = !isset($stdout) ? NULL : $stdout . (isset($stderr) && $stderr === '' ? NULL : " Error: $stderr") . (isset($exitCode) && $exitCode == 0 ? NULL : "Exit Code: $exitCode");
+      $output .= "\n" . (stripos(PHP_OS, 'WIN') === 0 ? '' : APP_SUDO . '-u www-data ') . "composer $matches[1]";
+
     } elseif (preg_match('/^cmd:\s*server(\s*variables|)(?=\r?\n$)?/si', $input)) {
       $output = var_export($_SERVER, true);
     } elseif (preg_match('/^cmd:\s*(add\s*notification)(?=\r?\n$)?/si', $input)) {    
       $output = 'Added notification...';
-      $manager->addNotification(new Notification('notifyUser2', true, 300));
+      $manager->addNotification(new Notification('notifyUser2', true, 20));
     } elseif (preg_match('/^cmd:\s*(include|require)\s*(.*)(?=\r?\n$)?/si', $input, $matches)) {    
       //var_dump(getcwd() . "/$matches[2]");
       require_once trim($matches[2]);
@@ -287,7 +310,6 @@ function clientInputHandler($input) {
       $output = var_export($matches, true);
       //$output = 'test ' . trim(shell_exec($cmd));
       //$output .= " $input";
-
     } elseif (preg_match('/cmd:\s+(.*)(?=\r?\n$)?/s', $input, $matches)) { // cmd: composer update
       $cmd = $matches[1];
       $output = trim(shell_exec(/*$cmd*/ 'echo $PWD'));
@@ -303,7 +325,7 @@ function clientInputHandler($input) {
     }
 /*
     if ($cmd = $matches[1] ?? NULL) {
-      $proc=proc_open((stripos(PHP_OS, 'WIN') === 0 ? '' : APP_SUDO) . $cmd,
+      $proc=proc_open((stripos(PHP_OS, 'WIN') === 0 ? '' : APP_SUDO . '-u www-data ')  $cmd,
       [
         ["pipe", "r"],
         ["pipe", "w"],
@@ -330,7 +352,7 @@ function clientInputHandler($input) {
 $running = true;
 
 $lastExecutionTime = 0;
-$interval = 300;
+$interval = 10;
 
 //use Logger; // use when not using composer
 //use Shutdown;
@@ -365,7 +387,7 @@ function checkFileModification() {
       $output .= clientInputHandler('cmd: server backup' . PHP_EOL);
 
       //$lastModifiedTime = filemtime(__FILE__);
-
+/*
       if (extension_loaded('sockets')) {
         socket_write($socket, $output);
         socket_close($socket);
@@ -373,10 +395,12 @@ function checkFileModification() {
         fwrite($socket, $output);
         fclose($socket);
       }
-
+*/
       error_log("Client [Output]: $output");
       echo "Client [Output]: $output\n";
+
       signalHandler(SIGTERM);
+
       return $output;
   }
 }
@@ -427,6 +451,9 @@ try {
         throw new Exception("Error: Unable to create server socket: " . socket_strerror(socket_last_error()));
     }
 
+    // Set the SO_REUSEADDR option
+    socket_set_option($socket, SOL_SOCKET, SO_REUSEADDR, 1);
+
     // Bind the socket to the address and port
     if (!@socket_bind($socket, $address, $port)) {
         throw new Exception("Could not bind to socket: " . socket_strerror(socket_last_error()));
@@ -463,7 +490,7 @@ try {
     echo '(' . get_resource_type($socket) . ') ';
   } 
   echo 'Server started on ' . SERVER_HOST . ':' . SERVER_PORT . ' (' . PHP_OS . ") PID=$pid\n\n";
-      
+
   /**
    * Manages the scheduled task based on a given interval.
    */
@@ -603,12 +630,17 @@ try {
     socket_close($socket);
   } elseif (get_resource_type($socket) == 'stream') {
     fclose($socket);
-  } 
+  }
 } catch (Exception $e) {
   //Logger::error($e->getMessage());
   //Shutdown::triggerShutdown($e->getMessage());
 } finally {
-  if (isset($socket) /*&& is_resource($socket)*/) {
+  require_once APP_PATH . 'config/classes/class.sockets.php';
+  Sockets::handleLinuxSocketConnection(true);
+
+  print "Written by Barry Dick (2024)\n";
+
+  if (isset($socket) && is_resource($socket)) {
     if (extension_loaded('sockets')) {
       socket_close($socket);
     } elseif (get_resource_type($socket) == 'stream') {
