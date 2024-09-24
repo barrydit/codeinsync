@@ -25,12 +25,20 @@ if (!isset($_SERVER['PHP_AUTH_USER'])) {
 
 if (__FILE__ == get_required_files()[0] && __FILE__ == realpath($_SERVER["SCRIPT_FILENAME"])) 
   if ($path = basename(dirname(get_required_files()[0])) == 'public') { // (basename(getcwd())
-    if (is_file($path = realpath('index.php'))) {
+    if (is_file($path = realpath('index.php')))
       require_once $path;
-    }
   } else {
     die(var_dump("Path was not found. file=$path"));
   }
+
+switch (__FILE__) {
+  case get_required_files()[0]:
+    if ($path = (basename(getcwd()) == 'public') ? (is_file('config.php') ? 'config.php' : '../config/config.php') : '') require_once $path;
+    else die(var_dump("$path path was not found. file=config.php"));
+
+    break;
+  default:
+}
 
 
 

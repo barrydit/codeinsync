@@ -1,4 +1,4 @@
-<div?php
+<?php
 
 //dd(get_defined_constants(true)['user']); dd(get_included_files());
 
@@ -326,7 +326,7 @@ unset($path);
 
       
       <div style="position: absolute; top: 40px; left: -15px; z-index: 1; background-color: white; border: <?= defined('APP_ROOT') && APP_ROOT != '' || isset($_GET['path']) ? '2px dashed red' : '1px solid #000'; ?>;">
-        <div style="display: inline; margin-top: -7px; float: left; "><a style="font-size: 18pt; font-weight: bold; padding: 0 3px;" href="?path" onclick="handleClick(event, '/')">&#8962; </a></div>
+        <div style="display: inline; margin-top: -7px; float: left; "><a style="font-size: 18pt; font-weight: bold; padding: 0 3px;" href="<?= isset($_GET['path']) ? '/' : '/?path' ?>" onclick="<?= isset($_GET['path']) ? '' : 'handleClick(event, \'/\')' ?>">&#8962; </a></div>
         <?php $path = realpath(APP_ROOT . (isset($_GET['path']) ? DIRECTORY_SEPARATOR . $_GET['path'] : '')) . DIRECTORY_SEPARATOR; // getcwd()
           if (isset($_GET['path'])) { ?>
         <!-- <input type="hidden" name="path" value="<?= $_GET['path']; ?>" /> -->
@@ -840,7 +840,7 @@ include 'app.debug.php';
   ?>
 
 
-<div id="details-container" style="position: fixed; display: block; top: 0; right: 0; padding: 4px; z-index: 1; text-align: right; border: 1px solid #000; height: auto; background-color: #FFF; width: 225px;">
+<div id="details-container" style="position: fixed; display: <?= is_resource($_SERVER['SOCKET']) ? 'none' : 'block' ?>; top: 0; right: 0; padding: 4px; z-index: 1; text-align: right; border: 1px solid #000; height: auto; background-color: #FFF; width: 245px;">
   <div style="float: left;">$_ENV</div>
   <h3 style="font-weight: bolder;">Server</h3>
   <div style="display: inline-block;">On / Off <input id="check_server_start" type="checkbox" <?= is_resource($_SERVER['SOCKET']) ? 'checked="checked"' : '' ?> onclick="validate()" /><br /><a href="">Status</a><br /><a href="">Help</a><br />Error Log</div>

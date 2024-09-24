@@ -98,7 +98,6 @@ if (isset($_ENV['SHELL']['PHP_EXEC']) && !defined('PHP_EXEC'))
 
 //!is_file( dirname($_SERVER['PHP_SELF']) . basename($_SERVER['PHP_SELF']) ?? __FILE__) // (!empty(get_included_files()) ? get_included_files()[0] : __FILE__)
 
-
 //if (APP_ROOT != '') {}
 
 // Retrieve the latest commit SHA of the main branch from the remote repository
@@ -282,10 +281,12 @@ if (basename($dir = getcwd()) != 'config') {
   if (in_array(basename($dir), ['public', 'public_html']))
     chdir('../');
 
+
   chdir(APP_PATH . APP_ROOT);
   if (is_file($file = APP_PATH . APP_ROOT . '.env')) {
     $env = parse_ini_file_multi($file);
     $_ENV = array_merge_recursive_distinct($_ENV, $env);
+
 /*
         foreach($env as $key => $value) {
             if (is_array($value)) {
@@ -423,7 +424,6 @@ END
 
     if (defined('APP_PROJECT')) require_once 'public/install.php';
 }
-
 
 /*
 if ($path = realpath((basename(__DIR__) != 'config' ? NULL : __DIR__ . DIRECTORY_SEPARATOR ) . 'constants.php')) // is_file('config/constants.php')) 

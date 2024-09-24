@@ -2,11 +2,9 @@
 
 if (__FILE__ == get_required_files()[0] && __FILE__ == realpath($_SERVER["SCRIPT_FILENAME"]))
   if ($path = basename(dirname(get_required_files()[0])) == 'public') { // (basename(getcwd())
-    if (is_file($path = realpath('index.php'))) {
+    if (is_file($path = realpath('index.php'))) 
       require_once $path;
-    }
-  }
-  else
+  } else
     die(var_dump("Path was not found. file=$path"));
 
 
@@ -110,12 +108,13 @@ if (!in_array(APP_PATH . APP_BASE['config'] . 'composer.php', get_required_files
   else die(var_dump("$path path was not found. file=composer.php"));
 }
 */
+/*
 if (!in_array(APP_PATH . APP_BASE['public'] . 'app.console.php', get_required_files()))
-if ($path = (basename(getcwd()) == 'public')
+  if ($path = (basename(getcwd()) == 'public')
     ? (is_file('app.console.php') ? 'app.console.php' : (is_file('../config/app.console.php') ? '../config/app.console.php' : null))
     : (is_file('app.console.php') ? 'app.console.php' : (is_file('public/app.console.php') ? 'public/app.console.php' : 'app.console.php'))) require_once $path; 
 else die(var_dump("$path path was not found. file=app.console.php"));
-
+*/
 /*  ...
     "autoload": {
         "psr-4": {
@@ -269,7 +268,7 @@ END
   }
 
   if (isset($_POST['composer']['init']) && !empty($_POST['composer']['init'])) {
-      $proc = proc_open('env COMPOSER_ALLOW_SUPERUSER=' . COMPOSER_ALLOW_SUPERUSER . '; ' . (stripos(PHP_OS, 'WIN') === 0 ? '' : 'sudo ')  . str_replace(array("\r\n", "\r", "\n"), ' ', $_POST['composer']['init']) . '; ' . (stripos(PHP_OS, 'WIN') === 0 ? '' : 'sudo ') . COMPOSER_EXEC['bin'] . ' update;', array( array("pipe","r"), array("pipe","w"), array("pipe","w")), $pipes);
+    $proc = proc_open('env COMPOSER_ALLOW_SUPERUSER=' . COMPOSER_ALLOW_SUPERUSER . '; ' . (stripos(PHP_OS, 'WIN') === 0 ? '' : 'sudo ')  . str_replace(array("\r\n", "\r", "\n"), ' ', $_POST['composer']['init']) . '; ' . (stripos(PHP_OS, 'WIN') === 0 ? '' : 'sudo ') . COMPOSER_EXEC['bin'] . ' update;', array( array("pipe","r"), array("pipe","w"), array("pipe","w")), $pipes);
 
     list($stdout, $stderr, $exitCode) = [stream_get_contents($pipes[1]), stream_get_contents($pipes[2]), proc_close($proc)];
 
@@ -305,7 +304,7 @@ END
   }
     
   if (isset($_POST['composer']['update'])) {
-    
+
     /* Update won't work if the repositry has any upper/lower case letters differn't ... */
 /*  
 update [--with WITH] [--prefer-source] [--prefer-dist] [--prefer-install PREFER-INSTALL] [--dry-run] [--dev] [--no-dev] [--lock] [--no-install] [--no-audit] [--audit-format AUDIT-FORMAT] [--no-autoloader] [--no-suggest] [--no-progress] [-w|--with-dependencies] [-W|--with-all-dependencies] [-v|vv|vvv|--verbose] [-o|--optimize-autoloader] [-a|--classmap-authoritative] [--apcu-autoloader] [--apcu-autoloader-prefix APCU-AUTOLOADER-PREFIX] [--ignore-platform-req IGNORE-PLATFORM-REQ] [--ignore-platform-reqs] [--prefer-stable] [--prefer-lowest] [-i|--interactive] [--root-reqs] [--] [<packages>...]
@@ -354,7 +353,6 @@ update [--with WITH] [--prefer-source] [--prefer-dist] [--prefer-install PREFER-
 <HTML ...>
 <?php $app['css'] = ob_get_contents(); ?>
 */ 
-
 
 ob_start(); ?>
 

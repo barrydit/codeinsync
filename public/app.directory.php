@@ -28,6 +28,8 @@ if (preg_match('/^app\.([\w\-.]+)\.php$/', basename(__FILE__), $matches))
  */
 //
 
+
+
 $tableGen = function(): string {
   ob_start(); ?>
 
@@ -309,7 +311,7 @@ if (defined('COMPOSER_VENDORS')) {
       </ul>
       <?php } ?></li>
       -->
-    <?php } elseif(isset($_GET['application'])) { ?>
+    <?php } elseif (isset($_GET['application'])) { ?>
 
     <?php if (readlinkToEnd('/var/www/applications') == '/mnt/c/www/applications') {
     if ($_GET['application']) {
@@ -465,7 +467,7 @@ if (defined('COMPOSER_VENDORS')) {
     <?php } else { ?>
     <table style="width: inherit; border: 0 solid #000;">
     <tr>
-        <?php
+<?php
 
           //$paths = ['thgsgfhfgh.php'];
           $paths = glob(rtrim($path, '/') . '/' . '{.[!.]*,*}', GLOB_BRACE | GLOB_MARK);
@@ -680,7 +682,7 @@ if (defined('COMPOSER_VENDORS')) {
                     }
 
                   } elseif (preg_match('/^.*\.md$/', basename($path))) {
-                    echo '<a href="?' . (!isset($_GET['client']) ? (!isset($_GET['project']) ? '' : 'project=' . $_GET['project'] . '&') : 'client=' . $_GET['client'] . '&') . 'app=ace_editor&' . (!isset($_GET['path']) ? '' : 'path=' . $_GET['path'] . '&') . /*'path=' . (basename(dirname($path)) == basename(parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH) ? 'failed' : basename(dirname($path)))) .*/ 'file=' . basename($path) . '"><img src="resources/images/md_file.png" width="40" height="50" /></a><br />' . '<a href="?file=' . basename($path) . '" onclick="handleClick(event, \'' . $relativePath . '\')">' . basename($path) . '</a>';
+                    echo '<div style="position: relative; border: 4px dashed #8BBB4B;"><a href="?' . (!isset($_GET['client']) ? (!isset($_GET['project']) ? '' : 'project=' . $_GET['project'] . '&') : 'client=' . $_GET['client'] . '&') . 'app=ace_editor&' . (!isset($_GET['path']) ? '' : 'path=' . $_GET['path'] . '&') . /*'path=' . (basename(dirname($path)) == basename(parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH) ? 'failed' : basename(dirname($path)))) .*/ 'file=' . basename($path) . '"><img src="resources/images/md_file.png" width="40" height="50" /></a><br />' . '<a href="?file=' . basename($path) . '" onclick="handleClick(event, \'' . $relativePath . '\')">' . basename($path) . '</a></div>';
 
                   } elseif (preg_match('/^.*\.php$/', basename($path))) {
                     if (preg_match('/^project\.php/', basename($path)))
@@ -733,9 +735,9 @@ ob_start(); ?>
 <?= $tableGen(); /*'';*/ ?>
 </div>
 <?php $app[$directory]['body'] = ob_get_contents();
-ob_end_clean(); ?>
+ob_end_clean();
 
-<?php ob_start(); ?>
+ob_start(); ?>
 
   function handleClick(event, path) {
     // Prevent the default hyperlink action
@@ -780,7 +782,6 @@ ob_end_clean(); ?>
 $app[$directory]['script'] = ob_get_contents();
 ob_end_clean();
 
-
 ob_start(); ?>
 <!DOCTYPE html>
 <html>
@@ -802,21 +803,21 @@ is_dir(dirname($path)) or mkdir(dirname($path), 0755, true);
 $url = 'https://cdn.tailwindcss.com';
 
 // Check if the file exists and if it needs to be updated
-if (!is_file($path) || (time() - filemtime($path)) > 5 * 24 * 60 * 60) { // ceil(abs((strtotime(date('Y-m-d')) - strtotime(date('Y-m-d',strtotime('+5 days',filemtime($path . 'tailwindcss-3.3.5.js'))))) / 86400)) <= 0 
-  // Download the file from the CDN
-  $handle = curl_init($url);
-  curl_setopt($handle, CURLOPT_RETURNTRANSFER, true);
-  $js = curl_exec($handle);
+if (defined('APP_CONNECTED') && APP_CONNECTED)
+  if (!is_file($path) || (time() - filemtime($path)) > 5 * 24 * 60 * 60) { // ceil(abs((strtotime(date('Y-m-d')) - strtotime(date('Y-m-d',strtotime('+5 days',filemtime($path . 'tailwindcss-3.3.5.js'))))) / 86400)) <= 0 
+    // Download the file from the CDN
+    $handle = curl_init($url);
+    curl_setopt($handle, CURLOPT_RETURNTRANSFER, true);
+    $js = curl_exec($handle);
   
-  // Check if the download was successful
-  if (!empty($js)) {
-    // Save the file
-    file_put_contents($path, $js) or $errors['JS-TAILWIND'] = $url . ' returned empty.';
-  }
-}
-?>
+    // Check if the download was successful
+    if (!empty($js)) {
+      // Save the file
+      file_put_contents($path, $js) or $errors['JS-TAILWIND'] = $url . ' returned empty.';
+    }
+} ?>
 
-  <script src="<?= check_http_status($url) ? substr($url, strpos($url, parse_url($url)['host']) + strlen(parse_url($url)['host'])) : substr($path, strpos($path, dirname(APP_BASE['resources'] . 'js'))) ?>"></script>     
+  <script src="<?= defined('APP_CONNECTED') && APP_CONNECTED && check_http_status($url) ? substr($url, strpos($url, parse_url($url)['host']) + strlen(parse_url($url)['host'])) : substr($path, strpos($path, dirname(APP_BASE['resources'] . 'js'))) ?>"></script>     
 
 <style type="text/tailwindcss">
 <?= $app[$directory]['style']; ?>

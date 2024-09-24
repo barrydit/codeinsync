@@ -1,4 +1,5 @@
 <?php
+
 /**/
 // https://techglimpse.com/git-push-github-token-based-passwordless/
 // git push https://<GITHUB_ACCESS_TOKEN>@github.com/<GITHUB_USERNAME>/<REPOSITORY_NAME>.git
@@ -9,7 +10,6 @@ if ($path = realpath((basename(__DIR__) != 'config' ? NULL : __DIR__ . DIRECTORY
 define('GIT_EXEC', stripos(PHP_OS, 'WIN') === 0 ? 'git.exe' : '/usr/local/bin/git');
 
 if (isset($_ENV['GITHUB']['EXPR_VERSION'])) {
-
   (function() {
     $gitVersion = exec(GIT_EXEC . ' --version');
     // match will interferer with any included files
@@ -17,7 +17,6 @@ if (isset($_ENV['GITHUB']['EXPR_VERSION'])) {
       define('GIT_VERSION', rtrim($match[1], '.'));
     }
   })();
-
 }
 /* $latest_remote_commit_response = file_get_contents($latest_remote_commit_url);
 $latest_remote_commit_data = json_decode($latest_remote_commit_response, true);

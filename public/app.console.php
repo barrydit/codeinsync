@@ -30,6 +30,7 @@ if (preg_match('/^app\.([\w\-.]+)\.php$/', basename(__FILE__), $matches))
     //dd(__FILE__, false);
   //!function_exists('dd') ? die('dd is not defined') : dd(COMPOSER_EXEC);
 
+
   if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     if (isset($_POST['cmd'])) {
       chdir(APP_PATH . APP_ROOT);
@@ -432,6 +433,7 @@ if (preg_match('/^app\.([\w\-.]+)\.php$/', basename(__FILE__), $matches))
       //exit();
     }
   }
+
   /*
   if ($path = (basename(getcwd()) == 'public')
     ? (is_file('../git.php') ? '../git.php' : (is_file('../config/git.php') ? '../config/git.php' : null))
@@ -448,7 +450,7 @@ if (preg_match('/^app\.([\w\-.]+)\.php$/', basename(__FILE__), $matches))
     : (is_file('npm.php') ? 'npm.php' : (is_file('config/npm.php') ? 'config/npm.php' : null))) require_once $path; 
   else die(var_dump($path . ' path was not found. file=npm.php'));
   */
-  
+
 ob_start(); ?>
 html, body {
   height: 100%;
@@ -576,7 +578,6 @@ input {
 
 <?php $app[$console]['style'] = ob_get_contents();
 ob_end_clean();
-
 
 ob_start(); ?>
 
@@ -1048,6 +1049,7 @@ if (is_file($file = APP_PATH . APP_ROOT . '.git/config')) {
 
 $config = parse_ini_file($file, true);
 
+
 if (isset($config['remote origin']['url']) && preg_match('/(?:[a-z]+\:\/\/)?([^\s]+@)?((?:[a-z0-9\-]+\.)+[a-z]{2,6}(?:\/\S*))/', $config['remote origin']['url'], $matches))
   if (count($matches) >= 2) { ?>
 
@@ -1435,21 +1437,22 @@ is_dir(dirname($path)) or mkdir(dirname($path), 0755, true);
 $url = 'https://cdn.tailwindcss.com';
 
 // Check if the file exists and if it needs to be updated
-if (!is_file($path) || (time() - filemtime($path)) > 5 * 24 * 60 * 60) { // ceil(abs((strtotime(date('Y-m-d')) - strtotime(date('Y-m-d',strtotime('+5 days',filemtime($path . 'tailwindcss-3.3.5.js'))))) / 86400)) <= 0 
-  // Download the file from the CDN
-  $handle = curl_init($url);
-  curl_setopt($handle, CURLOPT_RETURNTRANSFER, true);
-  $js = curl_exec($handle);
+if (defined('APP_CONNECTED') && APP_CONNECTED)
+  if (!is_file($path) || (time() - filemtime($path)) > 5 * 24 * 60 * 60) { // ceil(abs((strtotime(date('Y-m-d')) - strtotime(date('Y-m-d',strtotime('+5 days',filemtime($path . 'tailwindcss-3.3.5.js'))))) / 86400)) <= 0 
+    // Download the file from the CDN
+    $handle = curl_init($url);
+    curl_setopt($handle, CURLOPT_RETURNTRANSFER, true);
+    $js = curl_exec($handle);
   
-  // Check if the download was successful
-  if (!empty($js)) {
-    // Save the file
-    file_put_contents($path, $js) or $errors['JS-TAILWIND'] = $url . ' returned empty.';
+    // Check if the download was successful
+    if (!empty($js)) {
+      // Save the file
+      file_put_contents($path, $js) or $errors['JS-TAILWIND'] = $url . ' returned empty.';
+    }
   }
-}
 ?>
 
-  <script src="<?= check_http_status($url) ? substr($url, strpos($url, parse_url($url)['host']) + strlen(parse_url($url)['host'])) : substr($path, strpos($path, dirname(APP_BASE['resources'] . 'js'))) ?>"></script>     
+  <script src="<?= defined('APP_CONNECTED') && APP_CONNECTED && check_http_status($url) ? substr($url, strpos($url, parse_url($url)['host']) + strlen(parse_url($url)['host'])) : substr($path, strpos($path, dirname(APP_BASE['resources'] . 'js'))) ?>"></script>     
 
 <style type="text/tailwindcss">
 <?= $app[$console]['style']; ?>
@@ -1473,3 +1476,4 @@ ob_end_clean();
 //check if file is included or accessed directly
 if (__FILE__ == get_required_files()[0] || in_array(__FILE__, get_required_files()) && isset($_GET['app']) && $_GET['app'] == 'console' && APP_DEBUG)
   die($app[$console]['html']);
+

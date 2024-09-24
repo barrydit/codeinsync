@@ -405,7 +405,6 @@ define('APP_QUERY', !empty(parse_url($_SERVER['REQUEST_URI'] ?? '')['query']) ? 
 
 //dd(get_defined_constants(true)['user']);
 
-
 /*
 require_once('functions.php');
 

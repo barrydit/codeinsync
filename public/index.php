@@ -101,7 +101,6 @@ $dirs = [];
   (APP_SELF != APP_PATH_PUBLIC ?: 
     (!is_file($include = APP_PATH . APP_BASE['config'] . 'npm.php') ?: $dirs[] = $include ));
 
-
     //dd($dirs);
 unset($include);
 
@@ -168,7 +167,6 @@ unset($include);
     }
 
   }
-
 
 /** Loading Time: 0.638s **/
 
@@ -306,7 +304,6 @@ unset($include);
   
   
   //dd(__DIR__ . DIRECTORY_SEPARATOR);
-
     
  if (APP_SELF == APP_PATH_PUBLIC) {
 
@@ -423,6 +420,7 @@ if (!empty($paths))
               })(); */
               //dd($realpath, false);
               $returnedValue = (function() use ($realpath, &$app) {
+                //dd($realpath, false);
                 ob_start();
 
                 require_once $realpath;
@@ -435,11 +433,14 @@ if (!empty($paths))
                   //$app = [];
                   return null;
                 }
+                $null = ob_get_contents();
+                ob_clean_end();
 
                 //dd('UI_' . strtoupper($matches[1]) . ' created?', false);
 
                 //dd($realpath . ' created?', false);
               })();
+              //dd(get_required_files(), false);
         
               //$returnedValue = require_once $realpath;
 
@@ -487,7 +488,8 @@ if (!empty($paths))
       default:
         require_once 'idx.product.php';
         break;
-  } else {
+    }
+  else {
     define('APP_ENV', 'production');
     require_once 'idx.product.php';
   }

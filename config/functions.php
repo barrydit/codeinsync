@@ -140,7 +140,8 @@ function check_internet_connection($ip = '8.8.8.8') {
       exec(APP_SUDO . "/bin/ping -c 1 -W 1 " . escapeshellarg($ip), $output, $status); // var_dump(\$status)
 
   // If ping fails, try fsockopen as a fallback
-  if ($status !== 0) {
+  if ($status !== 0 && defined('APP_CONNECTED')) {
+
     $connection = @fsockopen('www.google.com', 80, $errno, $errstr, 10);
     if (!$connection) {
         $errors['APP_CONNECTIVITY'] = 'No internet connection.';
@@ -163,12 +164,11 @@ function check_internet_connection($ip = '8.8.8.8') {
  */
 function check_http_status($url = 'http://8.8.8.8', $statusCode = 200) {
   if (defined('APP_CONNECTED')) {
-      if ($url !== 'http://8.8.8.8' && !preg_match('/^https?:\/\//', $url)) {
-          $url = "http://$url";
-      }
-      $headers = get_headers($url);
-      return !empty($headers) && strpos($headers[0], (string)$statusCode) === false;
-  } else { return false; }
+    if ($url !== 'http://8.8.8.8' && !preg_match('/^https?:\/\//', $url))
+      $url = "http://$url";
+    $headers = get_headers($url);
+    return !empty($headers) && strpos($headers[0], (string)$statusCode) === false;
+  } else return false;
   return true; // Special case for the default URL or if not connected
 }
 
@@ -664,7 +664,7 @@ function FileSizeConvert($bytes)
 }
 
 function getElementsByClass(&$parentNode, $tagName, $className) {
-    $nodes= [];
+    $nodes = [];
 
     $childNodeList = $parentNode->getElementsByTagName($tagName);
     for ($i = 0; $i < $childNodeList->length; $i++) {

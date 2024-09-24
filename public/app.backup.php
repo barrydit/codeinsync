@@ -270,4 +270,5 @@ ob_end_clean();
 if (__FILE__ == get_required_files()[0] || in_array(__FILE__, get_required_files()) && isset($_GET['app']) && $_GET['app'] == 'backup' && APP_DEBUG)
   Shutdown::setEnabled(false)->setShutdownMessage(function() {
       return '<!DOCTYPE html>'; // -wow */
-    })->shutdown(); // die();ob_start(); ?>
+    })->shutdown(); // die();ob_start();
+?>
