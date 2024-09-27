@@ -1,39 +1,49 @@
-name: PHP Composer
+name: PHP Workflow
 
 on:
   push:
-    branches: [ "main" ]
+    branches:
+      - main
   pull_request:
-    branches: [ "main" ]
-
-permissions:
-  contents: read
+    branches:
+      - main
 
 jobs:
-  build:
-
+  test:
     runs-on: ubuntu-latest
 
+    strategy:
+      matrix:
+        php-versions: ['7.4', '8.0', '8.1']
+        # Add additional PHP versions if you want to test against them
+        include:
+          - php-versions: '8.2'
+
     steps:
-    - uses: actions/checkout@v3
+    - name: Checkout code
+      uses: actions/checkout@v3
 
-    - name: Validate composer.json and composer.lock
-      run: composer validate --strict
-
-    - name: Cache Composer packages
-      id: composer-cache
-      uses: actions/cache@v3
+    - name: Set up PHP ${{ matrix.php-versions }}
+      uses: shivammathur/setup-php@v2
       with:
-        path: vendor
-        key: ${{ runner.os }}-php-${{ hashFiles('**/composer.lock') }}
-        restore-keys: |
-          ${{ runner.os }}-php-
+        php-version: ${{ matrix.php-versions }}
+        extensions: mbstring, json, pdo, pdo_mysql
+        coverage: xdebug
 
-    - name: Install dependencies
-      run: composer install --prefer-dist --no-progress
+    - name: Install dependencies with Composer
+      run: composer install --prefer-dist --no-progress --no-suggest
 
-    # Add a test script to composer.json, for instance: "test": "vendor/bin/phpunit"
-    # Docs: https://getcomposer.org/doc/articles/scripts.md
+    - name: Run PHPUnit tests
+      run: vendor/bin/phpunit --verbose
+      env:
+        APP_ENV: testing
 
-    # - name: Run test suite
-    #   run: composer run-script test
+    - name: Check code style with PHP-CS-Fixer
+      run: vendor/bin/php-cs-fixer fix --dry-run --diff
+
+    - name: Upload coverage report
+      if: success()
+      uses: actions/upload-artifact@v3
+      with:
+        name: coverage-report
+        path: tests/coverage-report/

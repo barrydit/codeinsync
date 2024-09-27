@@ -283,7 +283,7 @@ $_ENV = (function($file = APP_PATH . '.env') {
 $domain = $_ENV['SHELL']['DOMAIN'] ?? APP_DOMAIN ?? 'localhost';
 $defaultUser = $_ENV['SHELL']['DEFAULT_USER'] ?? 'www-data';
 $documentRoot = $_ENV['SHELL']['DOCUMENT_ROOT'] ?? $_SERVER['DOCUMENT_ROOT'];
-$homePathEnv = $_ENV['SHELL']['HOME_PATH'] ?? $_SERVER['HOME'];
+$homePathEnv = $_ENV['SHELL']['HOME_PATH'] ?? $_SERVER['HOME'] ?? $_SERVER['USERPROFILE'] ?? '';
 
 if (stripos(PHP_OS, 'WIN') === 0) {
   $shell_prompt = 'www-data' . '@' . $domain . PATH_SEPARATOR . (($homePath = realpath($_SERVER['DOCUMENT_ROOT'])) === getcwd() ? '~': $homePath) . '$ ';
