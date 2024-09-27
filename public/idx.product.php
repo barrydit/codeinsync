@@ -893,6 +893,9 @@ include 'app.debug.php';
         <!-- script src="//code.jquery.com/jquery-1.12.4.js"></script -->
 <?php
 if (!is_file($path = APP_PATH . APP_BASE['resources'] . 'js/jquery-ui/' . 'jquery-ui-1.12.1.js') || ceil(abs((strtotime(date('Y-m-d')) - strtotime(date('Y-m-d',strtotime('+5 days',filemtime($path))))) / 86400)) <= 0 ) {
+  if (!realpath($pathdir = dirname($path)))
+    if (!mkdir($pathdir, 0755, true)) $errors['DOCS'] = $pathdir . ' does not exist';
+
     $url = 'https://code.jquery.com/ui/1.12.1/jquery-ui.min.js';
     $handle = curl_init($url);
     curl_setopt($handle, CURLOPT_RETURNTRANSFER, true);

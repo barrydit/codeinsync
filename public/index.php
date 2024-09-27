@@ -323,7 +323,7 @@ if (!empty($paths))
               })(); */
               //dd($realpath, false);
               $returnedValue = (function() use ($realpath, &$app) {
-                //dd($realpath, false);
+                dd($realpath, false);
                 ob_start();
 
                 require_once $realpath;
