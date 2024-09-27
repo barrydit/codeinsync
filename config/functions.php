@@ -430,36 +430,20 @@ function parse_ini_file_multi($file): array {
   $output = [];
 
   foreach ($data as $section => $values) {
-      if (is_array($values)) {
-          $output[$section] = [];
-          foreach ($values as $key => $value) {
-              // Do not escape regular expressions
-              if (preg_match('/^\/.*\/[a-z]*$/i', $value)) {
-                  $output[$section][$key] = $value;
-              } else {
-                  // Handle boolean values explicitly
-                  if (is_bool($value)) {
-                      $output[$section][$key] = $value ? 'true' : 'false';
-                  } else {
-                      $output[$section][$key] = addcslashes($value, '"\\');
-                  }
-              }
-          }
-      } else {
-          // Do not escape regular expressions
-          // Unparenthesized `a ? b : c ? d : e` is not supported.
-          // $output[$section] = (preg_match('/^\/.*\/[a-z]*$/i', $values)) ? $values : (is_bool($values)) ? $values ? 'true' : 'false' : addcslashes($values, '"\\');
-
-        if (preg_match('/^\/.*\/[a-z]*$/i', $values)) {
-            $output[$section] = $values;
-        } else {
-            // Handle boolean values explicitly
-            $output[$section] = (is_bool($values)) ? $values ? 'true' : 'false' : addcslashes($values, '"\\');
-        }
-
+    if (is_array($values)) {
+      $output[$section] = [];
+      foreach ($values as $key => $value) {
+        // Do not escape regular expressions
+        $output[$section][$key] = preg_match('/^\/.*\/[a-z]*$/i', $value) ? $value : (is_bool($value) ? $value : addcslashes($value, '"\\'));
       }
-  }
+    } else {
+      // Do not escape regular expressions
+      // Unparenthesized `a ? b : c ? d : e` is not supported.
+      // $output[$section] = (preg_match('/^\/.*\/[a-z]*$/i', $values)) ? $values : (is_bool($values)) ? $values ? 'true' : 'false' : addcslashes($values, '"\\');
+      $output[$section] = (preg_match('/^\/.*\/[a-z]*$/i', $values)) ? $values : ((is_bool($values)) ? ($values ? true : false) : addcslashes($values, '"\\'));
 
+    }
+  }
   return $output;
 }
 

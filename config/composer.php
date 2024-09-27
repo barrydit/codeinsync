@@ -167,12 +167,12 @@ if (!function_exists('get_declared_classes')) {
   if (!preg_match('/class\s+ComposerAutoloaderInit([a-f0-9]+)/', $autoloadContent, $matches))
     $errors['COMPOSER-AutoloaderInit'] = 'ComposerAutoloaderInit failed to be matched.';
 } else if (!empty($classes = get_declared_classes())) {
-    foreach($classes as $key => $class) {
-      if (preg_match('/(ComposerAutoloaderInit[a-f0-9]+)/', $class, $matches)) 
-        break;
-      if ($class == end($classes))
-        $errors['COMPOSER-AutoloaderInit'] = "ComposerAutloaderInit2 failed to be matched.\n";
-    }  
+  foreach($classes as $key => $class) {
+    if (preg_match('/(ComposerAutoloaderInit[a-f0-9]+)/', $class, $matches)) 
+      break;
+    if ($class == end($classes))
+      $errors['COMPOSER-AutoloaderInit'] = "ComposerAutloaderInit2 failed to be matched.\n";
+  }  
 /*
 Check oauth github
 Check vendor folder exists and/or empty

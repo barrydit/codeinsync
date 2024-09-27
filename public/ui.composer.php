@@ -127,19 +127,25 @@ else die(var_dump("$path path was not found. file=app.console.php"));
     }
 */
 
+    //dd($_POST);
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
+
+  $_ENV['COMPOSER']['AUTOLOAD'] = isset($_POST['composer']['autoload']) ? true : false; // $_POST['composer']['autoload'] == 'on'
+
+  //dd($_ENV['COMPOSER']['AUTOLOAD']);
+
+  //dd($_ENV);
+  Shutdown::setEnabled(false)->setShutdownMessage(function() {
+    return header('Location: http://' . APP_DOMAIN); // ['scheme'] . '://' . APP_URL['host'] -wow
+  })->shutdown();
+
 
   // consider creating a visual aspect for the lock file
   
-  dd($_POST);
+  //dd($_POST);
   
   chdir(APP_PATH . APP_ROOT);
 
-  //if (isset($_POST['composer']['autoload']))
-  //  Shutdown::setEnabled(false)->setShutdownMessage(function() {
-  //    $_ENV['COMPOSER']['AUTOLOAD'] = $_POST['composer']['autoload'] == 'on' ? true : false;
-  //    return header('Location: ' . APP_URL); // -wow
-  //  })->shutdown();
   if (isset($_POST['composer']['create-project']) && preg_match(COMPOSER_EXPR_NAME, $_POST['composer']['package'], $matches)) {
     if (!is_dir($path = APP_PATH . 'project'))
       (@!mkdir($path, 0755, true) ?: $errors['COMPOSER-PROJECT'] = 'project/ could not be created.' );
@@ -501,7 +507,7 @@ ob_start(); ?>
     <div class="text-xs" style="display: inline-block; border: 1px solid #000;">
       <a class="text-sm" id="app_composer-frameMenuPrev" href="<?= (!empty(APP_QUERY) ? '?' . http_build_query(APP_QUERY) : '') . (defined('APP_ENV') && APP_ENV == 'development' ? '#!' : '#') ?>"> &lt; Menu</a> | <a class="text-sm" id="app_composer-frameMenuNext" href="<?= (!empty(APP_QUERY) ? '?' . http_build_query(APP_QUERY) : '') . (defined('APP_ENV') && APP_ENV == 'development' ? '#!' : '#') ?>">Init &gt;</a>
     </div>
-    <form style="display: inline-block;" action="<?= basename(__FILE__); ?>" method="POST"><div class="text-sm" ><input type="checkbox" <?= $_ENV['COMPOSER']['AUTOLOAD'] ?: 'checked="checked"' ?> name="composer[autoload]" onchange="this.form.submit();" /> AUTOLOAD</div></form>
+    <form style="display: inline-block;" action="<?= basename(__FILE__); ?>" method="POST"><div class="text-sm" ><input type="checkbox"  <?= $_ENV['COMPOSER']['AUTOLOAD'] ? 'checked="checked"' : '' ?> name="composer[autoload]" onchange="this.form.submit();" /> AUTOLOAD</div></form>
   </div>
   <div class="absolute" style="position: absolute; display: inline-block; top: 4px; text-align: right; width: 175px; ">
     <div class="text-xs" style="display: inline-block;">
@@ -893,7 +899,7 @@ if (!isset(COMPOSER['json']->{'require'}->{'php'})) { ?>
   <div style="float: right;">
     <select name="composer[config][minimum-stability]">
 <?php if (defined('COMPOSER')) foreach (['stable', 'rc', 'beta', 'alpha', 'dev'] as $ms) { ?>
-      <option value="<?= $ms ?>"<?= (isset(COMPOSER['json']->{'minimum-stability'}) && COMPOSER['json']->{'minimum-stability'} == $ms ? ' selected=""' : '' )?>><?= $ms ?></option>
+      <option value="<?= $ms ?>"<?= isset(COMPOSER['json']->{'minimum-stability'}) && COMPOSER['json']->{'minimum-stability'} == $ms ? ' selected=""' : ''?>><?= $ms ?></option>
 <?php } ?>
     </select>
   </div>
@@ -904,8 +910,8 @@ if (!isset(COMPOSER['json']->{'require'}->{'php'})) { ?>
   <div class="text-sm" style="display: inline;">
     <!-- <input id="composerJson" type="checkbox" style="cursor: pointer;" name="" value="true" checked=""> -->
 
-    <label for="composerJson" id="appComposerVendorJsonLabel" class="text-sm" style="background-color: #6B4329; <?= (defined('VENDOR_JSON') && realpath(VENDOR_JSON['path']) ? 'color: #F0E0C6; text-decoration: underline; ' : 'color:red; text-decoration: underline; text-decoration: line-through;') ?> cursor: pointer; font-weight: bold;" title="<?= (defined('VENDOR_JSON') && realpath(VENDOR_JSON['path']) ? VENDOR_JSON['path'] : '') /*NULL*/; ?>">&#9650; <code>COMPOSER_PATH/[vendor/*].json</code></label>
-    <div class="text-xs" style="display: <?= (!is_file(APP_PATH . 'composer.lock') ? 'none' : 'inline-block' )?>; padding-top: 5px; padding-right: 10px; float: right;"></div>
+    <label for="composerJson" id="appComposerVendorJsonLabel" class="text-sm" style="background-color: #6B4329; <?= defined('VENDOR_JSON') && realpath(VENDOR_JSON['path']) ? 'color: #F0E0C6; text-decoration: underline; ' : 'color:red; text-decoration: underline; text-decoration: line-through;' ?> cursor: pointer; font-weight: bold;" title="<?= defined('VENDOR_JSON') && realpath(VENDOR_JSON['path']) ? VENDOR_JSON['path'] : '' /*NULL*/; ?>">&#9650; <code>COMPOSER_PATH/[vendor/*].json</code></label>
+    <div class="text-xs" style="display: <?= !is_file(APP_PATH . 'composer.lock') ? 'none' : 'inline-block' ?>; padding-top: 5px; padding-right: 10px; float: right;"></div>
   </div>
 </div>
 

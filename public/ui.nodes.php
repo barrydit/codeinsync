@@ -7,7 +7,7 @@ if (isset($_GET['json'])) {
     ob_start();
     include $script;
     ob_end_clean();
-    return get_included_files();
+    return get_required_files();
   }
 
 //$server_files = get_required_files_in_script(APP_PATH . 'server.php');
@@ -25,6 +25,8 @@ $files = array_map(function($path) {
     return preg_replace('/^' . preg_quote('/mnt/c/www/', '/') . '/', '', $file);
   }, get_required_files_in_script('index.php')));
 
+  //dd($files);
+
   echo json_encode([
     //'server.php' => $server_files,
     'server.php' => array_values(array_map(function($file) /*use ($rootPath)*/ {
@@ -40,9 +42,7 @@ $files = array_map(function($path) {
 
 if (__FILE__ == get_required_files()[0] && __FILE__ == realpath($_SERVER["SCRIPT_FILENAME"])) 
   if ($path = basename(dirname(get_required_files()[0])) == 'public') { // (basename(getcwd())
-    if (is_file($path = realpath('index.php'))) {
-      require_once $path;
-    }
+    if (is_file($path = realpath('index.php'))) require_once $path;
   } else {
     die(var_dump("Path was not found. file=$path"));
   }
@@ -57,8 +57,7 @@ if (defined('GIT_EXEC'))
   if (is_dir($path = APP_PATH . APP_BASE['resources'] . 'js/ace') && empty(glob($path)))
     exec((stripos(PHP_OS, 'WIN') === 0 ? '' : 'sudo ') . GIT_EXEC . ' clone https://github.com/ajaxorg/ace-builds.git resources/js/ace', $output, $returnCode) or $errors['GIT-CLONE-ACE'] = $output;
   elseif (!is_dir($path)) {
-    if (!mkdir($path, 0755, true))
-      $errors['GIT-CLONE-ACE'] = ' resources/js/ace does not exist.';
+    if (!mkdir($path, 0755, true)) $errors['GIT-CLONE-ACE'] = ' resources/js/ace does not exist.';
     exec((stripos(PHP_OS, 'WIN') === 0 ? '' : 'sudo ') . GIT_EXEC . ' clone https://github.com/ajaxorg/ace-builds.git resources/js/ace', $output, $returnCode) or $errors['GIT-CLONE-ACE'] = $output;
   }
 
@@ -241,7 +240,7 @@ fetch('<?= basename(__FILE__)?>?json')
             .then(data => createVisualization(data));
 
         function createVisualization(data) {
-            const width = 1000, height = 1000;
+            const width = 1500, height = 1000;
 
             const nodes = [];
             const links = [];
