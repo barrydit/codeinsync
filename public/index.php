@@ -3,36 +3,25 @@
   // if ($path = (basename(getcwd()) == 'public') chdir('..');
 //APP_PATH == dirname(APP_PATH_PUBLIC)
 
+if (is_file(dirname(__DIR__, 1) . DIRECTORY_SEPARATOR . 'index.php')) {
+  require_once realpath(dirname(__DIR__, 1) . DIRECTORY_SEPARATOR . 'index.php'); // APP_PATH . 'index.php'
+}
+
+/*
 if ($path = (basename(getcwd()) == 'public') ? (is_file('../config/config.php') ? '../config/config.php' : 'config.php') :
   (is_file('config.php') ? 'config.php' : dirname(__DIR__, 1) . DIRECTORY_SEPARATOR . 'config' . DIRECTORY_SEPARATOR . 'config.php' ))
   require_once $path;
 else
   die(var_dump("$path was not found. file=config.php"));
 
-require_once APP_PATH . 'index.php';
+if (__FILE__ == get_required_files()[0] && __FILE__ == realpath($_SERVER["SCRIPT_FILENAME"])) {
+  if (is_file($path = dirname(getcwd()) . DIRECTORY_SEPARATOR . 'config' . DIRECTORY_SEPARATOR . 'config.php')) require_once $path; 
+  else die(var_dump("$path path was not found. file=" . basename($path)));
+}
+*/
 
     //? (is_file('../config.php') ? '../config.php' : 'config.php')
     //: (is_file('config.php') ? 'config.php' : (is_file('config/config.php') ? 'config/config.php' : null)))
-
-if (APP_DEBUG) {
-  defined('PHP_ZTS') and $errors['PHP_ZTS'] = "PHP was built with ZTS enabled.\n";
-  defined('PHP_DEBUG') and $errors['PHP_DEBUG'] = "PHP was built with DEBUG enabled.\n";
-  defined('PHP_VERSION') and $errors['PHP_VERSION'] = "PHP Version: " . PHP_VERSION . "\n";
-  defined('PHP_OS') and $errors['PHP_OS'] = "PHP_OS: " . PHP_OS . "\n";
-  defined('PHP_SAPI') and $errors['PHP_SAPI'] = "PHP_SAPI: " . PHP_SAPI . "\n";
-  defined('PHP_BINARY') and $errors['PHP_BINARY'] = "PHP_BINARY: " . PHP_BINARY . "\n";
-  defined('PHP_BINDIR') and $errors['PHP_BINDIR'] = "PHP_BINDIR: " . PHP_BINDIR . "\n";
-  defined('PHP_CONFIG_FILE_PATH') and $errors['PHP_CONFIG_FILE_PATH'] = "PHP_CONFIG_FILE_PATH: " . PHP_CONFIG_FILE_PATH . "\n";
-  defined('PHP_CONFIG_FILE_SCAN_DIR') and $errors['PHP_CONFIG_FILE_SCAN_DIR'] = "PHP_CONFIG_FILE_SCAN_DIR: " . PHP_CONFIG_FILE_SCAN_DIR . "\n";
-  defined('PHP_SHLIB_SUFFIX') and $errors['PHP_SHLIB_SUFFIX'] = "PHP_SHLIB_SUFFIX: " . PHP_SHLIB_SUFFIX . "\n";
-  defined('PHP_EOL') and $errors['PHP_EOL'] = 'PHP_EOL: ' . json_encode(PHP_EOL) . "\n";
-  defined('PHP_INT_MIN') and $errors['PHP_INT_MIN'] = "PHP_INT_MIN: " . PHP_INT_MIN . "\n"; // -/+ 2147483648 32-bit
-  defined('PHP_INT_MAX') and $errors['PHP_INT_MAX'] = "PHP_INT_MAX: " . PHP_INT_MAX . "\n"; // -/+ 9223372036854775808 64-bit
-  defined('PHP_FLOAT_DIG') and $errors['PHP_FLOAT_DIG'] = "PHP_FLOAT_DIG: " . PHP_FLOAT_DIG . "\n";
-  defined('PHP_FLOAT_EPSILON') and $errors['PHP_FLOAT_EPSILON'] = "PHP_FLOAT_EPSILON: " . PHP_FLOAT_EPSILON . "\n";
-  defined('PHP_FLOAT_MIN') and $errors['PHP_FLOAT_MIN'] = "PHP_FLOAT_MIN: " . PHP_FLOAT_MIN . "\n";
-  defined('PHP_FLOAT_MAX') and $errors['PHP_FLOAT_MAX'] = "PHP_FLOAT_MAX: " . PHP_FLOAT_MAX . "\n";
-}
 
 //dd(get_defined_constants(true)['user']);
 
@@ -71,102 +60,6 @@ if (is_readable($path = APP_PATH . APP_ROOT . $_ENV['ERROR_LOG_FILE']) && filesi
     unlink($path);
 }
 
-$previousFilename = '';
-
-$dirs = [];
-
-!isset($_GET['app']) || $_GET['app'] != 'git' ?:
-  //$dirs[] = APP_PATH . APP_BASE['config'] . 'git.php'
-  (APP_SELF != APP_PATH_PUBLIC ? : 
-    $dirs[] = APP_PATH . APP_BASE['config'] . 'git.php');
-
-/**/
-
-!isset($_GET['app']) || $_GET['app'] != 'composer' ?:
-  $dirs = (APP_SELF == APP_PATH_PUBLIC) ? array_merge(
-    $dirs,
-    [
-      (!is_file($include = APP_PATH . APP_BASE['config'] . 'composer.php') ?: $include)
-    ]
-  ) : array_merge(
-    $dirs,
-    [
-      (!is_file($include = APP_PATH . APP_ROOT . APP_BASE['vendor'] . 'autoload.php') ?: $include),
-      (!is_file($include = APP_PATH . APP_BASE['config'] . 'composer.php') ?: $include)
-    ]
-  );
-
-!isset($_GET['app']) || $_GET['app'] != 'npm' ?:
-  //$dirs[] = APP_PATH . APP_BASE['config'] . 'git.php'
-  (APP_SELF != APP_PATH_PUBLIC ?: 
-    (!is_file($include = APP_PATH . APP_BASE['config'] . 'npm.php') ?: $dirs[] = $include ));
-
-    //dd($dirs);
-unset($include);
-
-//dd(get_required_files(), true); // COMPOSER_VENDORS
-
-  //$dirs = [
-    //0 => APP_PATH . APP_BASE['config'] . 'git.php',
-    //1 => APP_PATH . APP_BASE['config'] . 'composer.php',
-    //2 => APP_PATH . APP_BASE['config'] . 'npm.php',
-    //2 => APP_PATH . 'composer-setup.php',
-    //1 => APP_PATH . 'config.php',
-    //1 => APP_PATH . 'constants.php',
-    //2 => APP_PATH . 'functions.php',
-    //4 => APP_PATH . APP_BASE['vendor'] . 'autoload.php',
-  //]; // array_filter(glob(__DIR__ . DIRECTORY_SEPARATOR . '*.php'), 'is_file');
-
-  usort($dirs, function ($a, $b) {
-      // Define your sorting criteria here
-    //if (basename($a) === 'composer-setup.php')
-    //    return 1; // $a comes after $b
-    //elseif (basename($b) === 'composer-setup.php')
-    //    return -1; // $a comes before $b/
-/*
-    //elseif (basename($a) === 'composer.php')
-    //    return -1; // $a comes after $b
-    //elseif (basename($b) === 'composer.php')
-    //    return 1; // $a comes before $b
-*/
-    if (dirname($a) . DIRECTORY_SEPARATOR . basename($a) === APP_BASE['vendor'] . 'autoload.php') // DIRECTORY_SEPARATOR
-        return -1; // $a comes after $b
-    elseif (dirname($b) . DIRECTORY_SEPARATOR . basename($b) === APP_BASE['vendor'] . 'autoload.php')
-        return 1; // $a comes before $b
-    elseif (dirname($a) . DIRECTORY_SEPARATOR . basename($a) === APP_BASE['config'] . 'git.php')
-        return -1; // $a comes after $b
-    elseif (dirname($b) . DIRECTORY_SEPARATOR . basename($b) === APP_BASE['config'] . 'git.php')
-        return 1; // $a comes before $b
-    else 
-        return strcmp(basename($a), basename($b)); // Compare other filenames alphabetically
-  });
-
-  foreach ($dirs as $includeFile) {
-
-    $path = dirname($includeFile);
-
-    if (in_array($includeFile, get_required_files())) continue; // $includeFile == __FILE__
-
-    if (basename($includeFile) === 'composer-setup.php') continue;
-
-    if (!file_exists($includeFile)) {
-      error_log("Failed to load a necessary file: " . $includeFile . PHP_EOL);
-      break;
-    } else {
-      $currentFilename = substr(basename($includeFile), 0, -4);
-    
-      // $pattern = '/^' . preg_quote($previousFilename, '/')  . /*_[a-zA-Z0-9-]*/'(_\.+)?\.php$/'; // preg_match($pattern, $currentFilename)
-
-      if (!empty($previousFilename) && strpos($currentFilename, $previousFilename) !== false) continue;
-
-      // dd('file:'.$currentFilename,false);
-      //dd("Trying file: $includeFile", false);
-      require_once $includeFile;
-
-      $previousFilename = $currentFilename;     
-    }
-
-  }
 
 /** Loading Time: 0.638s **/
 
@@ -175,11 +68,13 @@ unset($include);
   //dd($_SERVER); php_self, script_name, request_uri /folder/
 
   // dd(getenv('PATH'));
-  if (isset($_SERVER['REQUEST_METHOD']))
+
+if (isset($_SERVER['REQUEST_METHOD']))
   switch ($_SERVER['REQUEST_METHOD']) {
     case 'POST':    
       //dd(get_required_files(), false);
-      //dd($_ENV);
+      //dd($_POST);
+      //dd('what the heck is going on here?', false);
       if (isset($_POST['environment'])) {
         switch ($_POST['environment']) {
           case 'develop':
@@ -194,13 +89,14 @@ unset($include);
             break;
         }
         $_ENV['APP_ENV'] = APP_ENV;
+        die('testing ' . $_SERVER['REQUEST_METHOD'] );
         Shutdown::setEnabled(false)->setShutdownMessage(function() {
           return header('Location: ' . APP_URL); // -wow
         })->shutdown();
       }
+      break;
+    case 'GET':
 
-    break;
-  case 'GET':
       if (isset($_ENV['APP_ENV']) && !empty($_ENV)) !defined('APP_ENV') and define('APP_ENV', $_ENV['APP_ENV']);
       //if (!empty($_GET['path']) && !isset($_GET['app'])) !!infinite loop
       //  exit(header('Location: ' . APP_URL . $_GET['path']));
@@ -249,12 +145,11 @@ unset($include);
       if (isset($_GET['path']) && !is_dir(APP_PATH . APP_ROOT)) {
         //dd(APP_PATH . APP_ROOT . ' test');
 
-
-        
-          die(header('Location: ' . APP_URL_BASE));
+        die(header('Location: ' . APP_URL_BASE));
       }
       break;
   }
+
   //dd(APP_PATH . APP_ROOT);
   /*
   switch ($_SERVER['REQUEST_METHOD']) {
@@ -285,8 +180,12 @@ unset($include);
       }*/
   //}
   /**/
+  //dd('req method==' . $_SERVER['REQUEST_METHOD'], false);
 
+  if ($_SERVER['REQUEST_METHOD'] == 'GET')
   if (defined('APP_QUERY') && empty(APP_QUERY) || isset($_GET['CLIENT']) || isset($_GET['DOMAIN']) && !defined('APP_ROOT')) {
+
+    //dd('does this do anything? 1234 ' . $_SERVER['REQUEST_METHOD']);
     if (!isset($_ENV['DEFAULT_CLIENT'])) $_ENV['DEFAULT_CLIENT'] = $_GET['CLIENT'];
 
     if (!isset($_ENV['DEFAULT_DOMAIN'])) $_ENV['DEFAULT_DOMAIN'] = $_GET['DOMAIN'];
@@ -301,10 +200,10 @@ unset($include);
     else
       $_GET = array_merge($_GET, APP_QUERY);
   }
-  
+
   
   //dd(__DIR__ . DIRECTORY_SEPARATOR);
-    
+
  if (APP_SELF == APP_PATH_PUBLIC) {
 
   $appPaths = array_filter(glob(__DIR__ . DIRECTORY_SEPARATOR . 'app.*.php'), 'is_file'); // public/
@@ -396,11 +295,15 @@ unset($include);
   
   //$path = '';
 
+
 $app = $apps = [];
 
 // Check if $paths is not empty
 if (!empty($paths))
   while ($path = array_shift($paths)) {
+
+
+    //dd($path, false);
           // Shift the first path from the array
           //;
   
@@ -408,7 +311,7 @@ if (!empty($paths))
           if ($realpath = realpath($path)) {
   
               // Define a function to include the file
-  //            $requireFile = function($file) /*use ($apps)*/ { global $apps; }; */
+              // $requireFile = function($file) /*use ($apps)*/ { global $apps; }; */
   
               // Include the file using the function
               //dd("path is $realpath\n", false);
@@ -434,7 +337,8 @@ if (!empty($paths))
                   return null;
                 }
                 $null = ob_get_contents();
-                ob_clean_end();
+                ob_end_clean();
+
 
                 //dd('UI_' . strtoupper($matches[1]) . ' created?', false);
 
@@ -475,24 +379,24 @@ if (!empty($paths))
   //dd(array_keys($apps['console']));
       //dd(get_defined_vars(), true); // Check that $files remains unchanged
       //dd($appDirectory['body']); 
-
-  if (defined('APP_ENV'))
-    switch (APP_ENV) {
-      case 'development':
-        require_once 'idx.develop.php';
-        break;
-      case 'math':
-        require_once 'idx.math.php';
-        break;
-      case 'production':
-      default:
-        require_once 'idx.product.php';
-        break;
-    }
-  else {
-    define('APP_ENV', 'production');
-    require_once 'idx.product.php';
+//dd(get_required_files());
+if (defined('APP_ENV'))
+  switch (APP_ENV) {
+    case 'development':
+      require_once 'idx.develop.php';
+      break;
+    case 'math':
+      require_once 'idx.math.php';
+      break;
+    case 'production':
+    default:
+      require_once 'idx.product.php';
+      break;
   }
+else {
+  define('APP_ENV', 'production');
+  require_once 'idx.product.php';
+}
 
 
 }

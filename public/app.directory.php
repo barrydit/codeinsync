@@ -3,9 +3,8 @@
 if ($path = (basename(getcwd()) == 'public') ? (is_file('../config/config.php') ? '../config/config.php' : 'config.php') :
   (is_file('config.php') ? 'config.php' : dirname(__DIR__, 1) . DIRECTORY_SEPARATOR . 'config' . DIRECTORY_SEPARATOR . 'config.php' ))
   require_once $path;
-else {
-  die(var_dump("$path was not found. file=config.php"));
-}
+else die(var_dump("$path was not found. file=config.php"));
+
 
 //require_once APP_PATH . APP_ROOT . APP_BASE['vendor'] . 'autoload.php';
 //require_once APP_PATH . APP_ROOT . APP_BASE['config'] . 'composer.php';
@@ -456,7 +455,7 @@ if (defined('COMPOSER_VENDORS')) {
 
 // >>>
       $path = APP_PATH . APP_ROOT . ($_GET['path'] ?? '');
-      echo '<div style="position: absolute; width: 100%;"><a href="?path">' . APP_PATH . '</a>' . '<a href="?' . (isset($_GET['client']) ? 'client=' . $_GET['client'] . '&' : '') . (isset($_GET['domain']) ? 'domain=' . $_GET['domain'] . '&' : (isset($_GET['project']) ? 'project=' . $_GET['project'] . '&' : '')) . 'path" onclick="handleClick(event, \'/\')"">' . (APP_ROOT) . '</a>' . ($_GET['path'] ?? '') . '</div>';
+      echo '<div style="position: absolute; width: 100%;"><a href="?path">' .  rtrim(APP_PATH, '/') . '</a>' . '<a href="?' . (isset($_GET['client']) ? 'client' : '') . '">' . DIRECTORY_SEPARATOR . dirname(APP_ROOT, 2) . '</a>'. '<a href="?' . (isset($_GET['client']) ? 'client=' . $_GET['client'] . '&' : '') . (isset($_GET['domain']) ? 'domain=' . $_GET['domain'] . '&' : (isset($_GET['project']) ? 'project=' . $_GET['project'] . '&' : '')) . 'path" onclick="handleClick(event, \'/\')">' . ((isset($_GET['client']) ? DIRECTORY_SEPARATOR . $_GET['client'] : '') . (isset($_GET['domain']) ? DIRECTORY_SEPARATOR . $_GET['domain'] : '') ?? ($_GET['project'])) . '</a>' . DIRECTORY_SEPARATOR .  (isset($_GET['path']) ? $_GET['path'] : '') . '</div>';
 
 // <<<
 
@@ -759,7 +758,7 @@ ob_start(); ?>
       } else {
 
         // Update the hidden ace_path input with the file path
-        $('input[name="ace_path"]').val(path);
+        $('input[name="ace_path"]').val(path); // path.substring(0, path.lastIndexOf('/'))
 
         document.getElementsByClassName('ace_text-input')[0].name = 'ace_contents';
 

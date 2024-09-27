@@ -3,7 +3,7 @@
 //die(__FILE__ . '==' . $_SERVER["SCRIPT_FILENAME"]);
 //die(realpath($_SERVER["SCRIPT_FILENAME"]) . '==' . get_required_files()[0]);
 //
-
+/*
 if (realpath($_SERVER["SCRIPT_FILENAME"]) == get_required_files()[0] && in_array(__FILE__, get_required_files()) ) {
   if ($path = basename(dirname(get_required_files()[0])) == 'public') { // (basename(getcwd())
     if (is_file($path = realpath('../config/config.php'))) {
@@ -16,9 +16,16 @@ if (realpath($_SERVER["SCRIPT_FILENAME"]) == get_required_files()[0] && in_array
   }
   //require_once(realpath('../config/constants.php')); 
 }
+*/
 
-if (isset($_ENV['COMPOSER']['AUTOLOAD']) && (bool) $_ENV['COMPOSER']['AUTOLOAD'] === true)
-  require_once APP_PATH . APP_BASE['vendor'] . 'autoload.php';
+if (is_file(dirname(__DIR__, 1) . DIRECTORY_SEPARATOR . 'index.php')) {
+  require_once realpath(dirname(__DIR__, 1) . DIRECTORY_SEPARATOR . 'index.php');
+}
+
+//dd(get_required_files());
+
+//if (isset($_ENV['COMPOSER']['AUTOLOAD']) && (bool) $_ENV['COMPOSER']['AUTOLOAD'] === true)
+require_once APP_PATH . APP_BASE['vendor'] . 'autoload.php';
 
 ob_start(); // dd('Break/test the dd();');
 use noximo\PHPColoredAsciiLinechart\Settings;

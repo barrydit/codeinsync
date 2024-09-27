@@ -4,13 +4,8 @@
 
 if (__FILE__ == get_required_files()[0] && __FILE__ == realpath($_SERVER["SCRIPT_FILENAME"]))
   if ($path = basename(dirname(get_required_files()[0])) == 'public') { // (basename(getcwd())
-    if (is_file($path = realpath('config.php'))) {
-      require_once $path;
-    }
-  }
-  else
-    die(var_dump("Path was not found. file=$path"));
-
+    if (is_file($path = realpath('config.php'))) require_once $path;
+  } else die(var_dump("Path was not found. file=$path"));
 
 header("Content-Type: text/html");
 header("Cache-Control: no-store, no-cache, must-revalidate, max-age=0");
@@ -384,7 +379,7 @@ unset($path);
               while ($link = array_shift($links)) {
                 $link = basename($link); // Get the directory name from the full path
                 if (is_dir(APP_PATH . /*'../../'.*/ 'clientele/' . $link))
-                  echo '              <option value="' . $link . '" ' . (current($_GET) == $link ? 'selected' : '') . '>' . $link . '</option>' . "\n";
+                  echo '              <option value="' . $link . '" ' . (current($_GET) == $link || $_GET['client'] == $link ? 'selected' : '') . '>' . $link . '</option>' . "\n";
               }
               ?>
           </select> /</span>
@@ -842,7 +837,7 @@ include 'app.debug.php';
 
 <div id="details-container" style="position: fixed; display: <?= is_resource($_SERVER['SOCKET']) ? 'none' : 'block' ?>; top: 0; right: 0; padding: 4px; z-index: 1; text-align: right; border: 1px solid #000; height: auto; background-color: #FFF; width: 245px;">
   <div style="float: left;">$_ENV</div>
-  <h3 style="font-weight: bolder;">Server</h3>
+  <h3 style="font-weight: bolder;"><?= !is_file($pid_file = APP_PATH . 'server.pid') ? '' : '(PID=' . (int) file_get_contents(APP_PATH . 'server.pid') . ')'?> Server</h3>
   <div style="display: inline-block;">On / Off <input id="check_server_start" type="checkbox" <?= is_resource($_SERVER['SOCKET']) ? 'checked="checked"' : '' ?> onclick="validate()" /><br /><a href="">Status</a><br /><a href="">Help</a><br />Error Log</div>
   <img id="serverStatus" src="/resources/images/server<?= is_resource($_SERVER['SOCKET']) ? '-green' : '' ?>.gif" style="float: right;" width="100" height="103">
   <!--form action="#!" method="GET">

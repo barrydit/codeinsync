@@ -300,14 +300,14 @@ if (basename($_SERVER['PHP_SELF']) == basename(__FILE__)) { // ($_SERVER["SCRIPT
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     <title>Patient Clinic Files -- Debug Window</title>
     
-    <base href="<?=(!is_array(APP_URL) ? APP_URL : APP_URL_BASE)?>">
+    <base href="<?= !is_array(APP_URL) ? APP_URL : APP_URL_BASE ?>">
     
     <link rel="shortcut icon" href="<?=(!defined('APP_URL_BASE') and '//' . APP_DOMAIN . APP_URL_PATH)?>favicon.ico" />
 
     <!-- BOOTSTRAP STYLES-->
-    <link rel="stylesheet" type="text/css" href="<?=(!defined('APP_URL_BASE') and '//' . APP_DOMAIN . APP_URL_PATH)?>assets/css/bootstrap/bootstrap.min.css" />
+    <link rel="stylesheet" type="text/css" href="<?= !defined('APP_URL_BASE') and '//' . APP_DOMAIN . APP_URL_PATH?>assets/css/bootstrap/bootstrap.min.css" />
 
-    <link rel="stylesheet" type="text/css" href="<?=(!defined('APP_URL_BASE') and '//' . APP_DOMAIN . APP_URL_PATH)?>assets/css/styles.css" />
+    <link rel="stylesheet" type="text/css" href="<?= !defined('APP_URL_BASE') and '//' . APP_DOMAIN . APP_URL_PATH?>assets/css/styles.css" />
 
     <style></style>
 

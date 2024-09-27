@@ -1,5 +1,12 @@
 <?php
 
+
+//die($_SERVER['REQUEST_METHOD']);
+
+//if ($_SERVER['REQUEST_METHOD'] == 'POST') 
+//  die(var_dump($_GET));
+
+
 use Composer\InstalledVersions;
 
 if (isset($_ENV['COMPOSER']['EXPR_NAME']) && !defined('COMPOSER_EXPR_NAME'))
@@ -762,8 +769,14 @@ if (defined('COMPOSER_VERSION') && defined('COMPOSER_LATEST') && defined('APP_DE
   if (version_compare(COMPOSER_LATEST, COMPOSER_VERSION, '>') != 0) {
     //dd(basename(COMPOSER_EXEC['bin']) . ' self-update;'); // (stripos(PHP_OS, 'WIN') === 0 ? '' : APP_SUDO) . 
     $proc = proc_open(basename(COMPOSER_EXEC['bin']) . ' self-update;', [["pipe", "r"], ["pipe", "w"], ["pipe", "w"]], $pipes);
-
 /*
+
+  if (isset($_POST['composer']['self-update']) || file_exists(APP_PATH . 'composer.phar')) {
+    if (!file_exists(APP_PATH . 'composer-setup.php'))
+      copy('https://getcomposer.org/installer', 'composer-setup.php');
+    exec('php composer-setup.php');
+  }
+
 //fwrite($pipes[0], "yes");
 //fclose($pipes[0]);
 
@@ -853,9 +866,9 @@ fclose($pipes[2]);
         }
       }
 
-    if (!isset($dirs_diff) && !empty($dirs_diff))
-      dd($dirs_diff);
-    else $dirs_diff = [];
+    if (!isset($dirs_diff) || empty($dirs_diff))
+      $dirs_diff = [];
+    //else //dd($dirs_diff);
 
 //dd($vendors);
 
@@ -899,9 +912,9 @@ while (!feof($_SERVER['SOCKET'])) {
 //fclose($_SERVER['SOCKET']);
 */
       } else {
-        $proc = proc_open((stripos(PHP_OS, 'WIN') === 0 ? '' : APP_SUDO) . COMPOSER_EXEC['bin'] . ' update', array( array("pipe","r"), array("pipe","w"), array("pipe","w")), $pipes);
+        $proc = proc_open((stripos(PHP_OS, 'WIN') === 0 ? '' : APP_SUDO) . COMPOSER_EXEC['bin'] . ' update', [["pipe", "r"], ["pipe", "w"], ["pipe", "w"]], $pipes);
 
-        list($stdout, $stderr, $exitCode) = [stream_get_contents($pipes[1]), stream_get_contents($pipes[2]), proc_close($proc)];
+        [$stdout, $stderr, $exitCode] = [stream_get_contents($pipes[1]), stream_get_contents($pipes[2]), proc_close($proc)];
 
         if ($exitCode !== 0)
           if (empty($stdout)) {

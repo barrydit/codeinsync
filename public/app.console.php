@@ -1447,12 +1447,12 @@ if (defined('APP_CONNECTED') && APP_CONNECTED)
     // Check if the download was successful
     if (!empty($js)) {
       // Save the file
-      file_put_contents($path, $js) or $errors['JS-TAILWIND'] = $url . ' returned empty.';
+      file_put_contents($path, $js) or $errors['JS-TAILWIND'] = "$url returned empty.";
     }
   }
 ?>
 
-  <script src="<?= defined('APP_CONNECTED') && APP_CONNECTED && check_http_status($url) ? substr($url, strpos($url, parse_url($url)['host']) + strlen(parse_url($url)['host'])) : substr($path, strpos($path, dirname(APP_BASE['resources'] . 'js'))) ?>"></script>     
+  <script src="<?= !defined('APP_CONNECTED') || !APP_CONNECTED ? '':  (check_http_status($url) ? substr($url, strpos($url, parse_url($url)['host']) + strlen(parse_url($url)['host'])) : substr($path, strpos($path, dirname(APP_BASE['resources'] . 'js')))) ?>"></script>     
 
 <style type="text/tailwindcss">
 <?= $app[$console]['style']; ?>

@@ -132,11 +132,8 @@ if (preg_match($pattern, $node[0]->nodeValue, $matches)) {
 }
 //dd(dirname(__DIR__) . DIRECTORY_SEPARATOR . 'public');
 
-if (dirname(APP_SELF) == dirname(__DIR__) . DIRECTORY_SEPARATOR . 'public') {
-  if ($path = realpath(dirname(APP_SELF) . DIRECTORY_SEPARATOR . 'ui.git.php')) {
-    $app['html'] = require_once $path;
-  }
-}
+//if (dirname(APP_SELF) == dirname(__DIR__) . DIRECTORY_SEPARATOR . 'public')
+//  if ($path = realpath(dirname(APP_SELF) . DIRECTORY_SEPARATOR . 'ui.git.php')) $app['html'] = require_once $path;
 
 if (APP_SELF == __FILE__ || (defined('APP_DEBUG') && isset($_GET['app']) && $_GET['app'] == 'git')) {
   // die($app['html']);

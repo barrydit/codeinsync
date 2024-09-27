@@ -18,14 +18,16 @@ if (__FILE__ == get_required_files()[0] && __FILE__ == realpath($_SERVER["SCRIPT
 
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
   if (isset($_GET['app']) && $_GET['app'] == 'ace_editor') 
-    if (isset($_POST['ace_path']) && realpath($path = APP_PATH . APP_ROOT . $_POST['ace_path'])) { // $_GET['file']      
+    if (isset($_POST['ace_path']) && realpath($path = APP_PATH . APP_ROOT . ($_POST['ace_path'] ?? $_GET['file']) ) ) { //     
       if (isset($_POST['ace_contents']))
+        //dd($path);
         file_put_contents($path, $_POST['ace_contents']);
 
       //dd($_POST, true);
       //http://localhost/Array?app=ace_editor&path=&file=test.txt    obj.prop.second = value    obj->prop->second = value
       //dd( APP_URL . '1234?' . http_build_query(['path' => dirname( $_POST['ace_path']), 'app' => 'ace_editor', 'file' => basename($path)]), true);
-      die(header('Location: ' . APP_URL . '?' . http_build_query(['path' => dirname($_POST['ace_path']), 'file' => basename($path)])));
+
+      die(header('Location: ' . APP_URL . '?' . http_build_query(APP_QUERY + ['path' => dirname($_POST['ace_path']), 'file' => basename($path)])));
     } else dd("Path: $path was not found.", true);
   //dd($_POST);
 
@@ -370,7 +372,7 @@ if (is_dir($path = APP_PATH . APP_BASE['resources'] . 'js/ace')) { ?>
       });
 
       // Set initial content to the editor on load
-    var initialContent = `<?= isset($_GET['file']) && is_file($filename = APP_PATH . APP_ROOT . (!isset($_GET['path']) ? '' : $_GET['path'] . ($_GET['path'] == '' ? '' : '/' )) . $_GET['file']) ? json_encode(str_replace(['`', '\\'], ['\\`', '\\\\'], file_get_contents($filename))) : "<?php
+    var initialContent = `<?= isset($_GET['file']) && is_file($filename = APP_PATH . APP_ROOT . (!isset($_GET['path']) ? '' : $_GET['path'] . ($_GET['path'] == '' ? '' : '/' )) . $_GET['file']) ? str_replace(['`', '\\'], ['\\`', '\\\\'], file_get_contents($filename)) : "<?php
 
 /* This is an example of ACE Editor working */
 
@@ -433,7 +435,7 @@ if (is_file($path . 'tailwindcss-3.3.5.js')) {
     curl_setopt($handle, CURLOPT_RETURNTRANSFER, true);
 
     if (!empty($js = curl_exec($handle))) 
-      file_put_contents($path . 'tailwindcss-3.3.5.js', $js) or $errors['JS-TAILWIND'] = $url . ' returned empty.';
+      file_put_contents("{$path}tailwindcss-3.3.5.js", $js) or $errors['JS-TAILWIND'] = "$url returned empty.";
   }
 } else {
   $url = 'https://cdn.tailwindcss.com';
@@ -441,7 +443,7 @@ if (is_file($path . 'tailwindcss-3.3.5.js')) {
   curl_setopt($handle, CURLOPT_RETURNTRANSFER, true);
 
   if (!empty($js = curl_exec($handle))) 
-    file_put_contents($path . 'tailwindcss-3.3.5.js', $js) or $errors['JS-TAILWIND'] = $url . ' returned empty.';
+    file_put_contents("{$path}tailwindcss-3.3.5.js", $js) or $errors['JS-TAILWIND'] = "$url returned empty.";
 }
 unset($path);
 ?>
