@@ -887,6 +887,8 @@ include 'app.debug.php';
 -->
 
     <script src="<?= check_http_status('https://code.jquery.com/jquery-3.7.1.min.js') ? 'https://code.jquery.com/jquery-3.7.1.min.js' : APP_BASE['resources'] . 'js/jquery/' . 'jquery-3.7.1.min.js' ?>"></script>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-easing/1.4.1/jquery.easing.min.js"></script>
     <!-- You need to include jQueryUI for the extended easing options. -->
         <!-- script src="//code.jquery.com/jquery-1.12.4.js"></script -->
     
