@@ -624,7 +624,7 @@ try {
       } 
 
       // Dispatch any pending signals
-      pcntl_signal_dispatch();
+      (stripos(PHP_OS, 'LIN') === 0) and pcntl_signal_dispatch();
 
       // Sleep for a short time to prevent busy-waiting
       usleep(100000); // 100 ms = 0.1 s
@@ -641,7 +641,9 @@ try {
   //Shutdown::triggerShutdown($e->getMessage());
 } finally {
   require_once APP_PATH . 'config/classes/class.sockets.php';
-  Sockets::handleLinuxSocketConnection(true);
+
+  if (stripos(PHP_OS, 'LIN') === 0) Sockets::handleLinuxSocketConnection(true);
+  else if (stripos(PHP_OS, 'WIN') === 0) Sockets::handleWindowsSocketConnection();
 
   print "Written by Barry Dick (2024)\n";
 
