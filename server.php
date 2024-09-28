@@ -13,8 +13,11 @@ ini_set('log_errors', 'true');
 
 //!file_exists($file = posix_getpwuid(posix_getuid())['dir'].'/.aws/credentials')
 //  and die('an aws credentials file is required. exiting file=' . $file);
-if (PHP_SAPI === 'cli') {
-  stripos(PHP_OS, 'LIN') === 0 && !extension_loaded('posix') || !extension_loaded('pcntl') and die('posix && pcntl required. exiting');
+if (PHP_SAPI === 'cli' && stripos(PHP_OS, 'LIN') === 0 ) {
+  (!extension_loaded('posix') || !extension_loaded('pcntl')) and die('posix && pcntl required. exiting');
+} else if (PHP_SAPI === 'cli' && stripos(PHP_OS, 'WIN') === 0 ) {
+  (!extension_loaded('sockets') || !extension_loaded('pcntl')) and die('sockets && pcntl required. exiting');
+}
 
 !is_writable('/tmp')
   and die('must be able to write to /tmp to continue. exiting.');
@@ -122,7 +125,7 @@ stripos(PHP_OS, 'LIN') === 0 and cli_set_process_name($title);
   //pcntl_signal(SIGCHLD, 'signalHandler'); // hangs on sockets with empty cmd: on loop
   pcntl_signal(SIGTERM, 'signalHandler');
   pcntl_signal(SIGINT, 'signalHandler');
-}
+
 
 /**
  * Summary of safe_chdir
