@@ -11,9 +11,6 @@ ini_set('log_errors', 'true');
 
 !defined('PID_FILE') and define('PID_FILE', /*getcwd() . */ APP_PATH . 'server.pid');
 
-!is_writable('/tmp')
-  and die('must be able to write to /tmp to continue. exiting.');
-
 if (file_exists(PID_FILE) && $pid = (int) file_get_contents(PID_FILE)) {
   if (stripos(PHP_OS, 'WIN') === 0) {
     exec("tasklist /FI \"PID eq $pid\" 2>NUL | find /I \"$pid\" >NUL", $output, $status);
@@ -40,6 +37,9 @@ file_put_contents(PID_FILE, $pid = getmypid());
 //  and die('an aws credentials file is required. exiting file=' . $file);
 if (PHP_SAPI === 'cli' && stripos(PHP_OS, 'LIN') === 0 ) {
   (!extension_loaded('posix') || !extension_loaded('pcntl')) and die('posix && pcntl required. exiting');
+
+!is_writable('/tmp')
+  and die('must be able to write to /tmp to continue. exiting.');
 
 /**
  * Set the title of our script that ps(1) sees
