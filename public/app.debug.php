@@ -11,7 +11,9 @@ if (__FILE__ == get_required_files()[0]) { //die(getcwd());
   else die(var_dump("$path path was not found. file=config.php"));
 } elseif (!in_array($path = dirname(__DIR__) . '/config/config.php', get_required_files()))
   require_once $path;
-$path = $_SERVER['DOCUMENT_ROOT'] . parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH);
+
+if (!empty($_SERVER['REQUEST_URI']))
+  $path = $_SERVER['DOCUMENT_ROOT'] . parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH);
 
 
 /*

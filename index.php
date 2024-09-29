@@ -32,11 +32,11 @@ $previousFilename = '';
 
 $dirs = [];
 
-isset($_GET['app']) && $_GET['app'] == 'git' ?:
+!isset($_GET['app']) || $_GET['app'] != 'git' ?:
   (APP_SELF != APP_PATH_PUBLIC ? : 
     $dirs[] = APP_PATH . APP_BASE['config'] . 'git.php');
 
-isset($_GET['app']) && $_GET['app'] == 'composer' ?:
+!isset($_GET['app']) || $_GET['app'] != 'composer' ?:
   $dirs = (APP_SELF != APP_PATH_PUBLIC) 
     ? array_merge(
       $dirs,
@@ -48,15 +48,14 @@ isset($_GET['app']) && $_GET['app'] == 'composer' ?:
       $dirs,
       [
         (!is_file($include = APP_PATH . APP_BASE['config'] . 'composer.php') ?: $include),
-        (!is_file($include = APP_PATH . APP_ROOT . APP_BASE['vendor'] . 'autoload.php') ?:
-          (!isset($_ENV['COMPOSER']['AUTOLOAD']) || (bool) $_ENV['COMPOSER']['AUTOLOAD'] !== true) ?: $include)
+        (!is_file($include = APP_PATH . APP_ROOT . APP_BASE['vendor'] . 'autoload.php') ?: $include)
       ]
     );
 
 //if (is_file($path = APP_PATH . APP_BASE['config'] . 'composer.php')) require_once $path; 
 //else die(var_dump("$path path was not found. file=" . basename($path)));
 
-isset($_GET['app']) && $_GET['app'] == 'npm' ?:
+!isset($_GET['app']) || $_GET['app'] != 'npm' ?:
   (APP_SELF != APP_PATH_PUBLIC ?: 
     (!is_file($include = APP_PATH . APP_BASE['config'] . 'npm.php') ?: $dirs[] = $include ));
 
@@ -80,7 +79,6 @@ usort($dirs, function ($a, $b) {
 });
 
 foreach ($dirs as $includeFile) {
-
   $path = dirname($includeFile);
 
   if (in_array($includeFile, get_required_files())) continue; // $includeFile == __FILE__
@@ -99,7 +97,15 @@ foreach ($dirs as $includeFile) {
 
     // dd('file:'.$currentFilename,false);
     //dd("Trying file: $includeFile", false);
-    require_once $includeFile;
+
+    switch ($includeFile) {
+      case APP_PATH . APP_ROOT . APP_BASE['vendor'] . 'autoload.php':
+        (!isset($_ENV['COMPOSER']['AUTOLOAD']) || (bool) $_ENV['COMPOSER']['AUTOLOAD'] !== true || APP_SELF !== APP_PATH_SERVER) ?: require_once $includeFile;
+        break;
+      default:
+        require_once $includeFile;
+        break;
+    }
 
     $previousFilename = $currentFilename;     
   }

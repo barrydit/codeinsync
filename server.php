@@ -4,7 +4,7 @@
 
 !defined('APP_PATH') and define('APP_PATH', __DIR__ . DIRECTORY_SEPARATOR);
 
-require_once APP_PATH . 'config' . DIRECTORY_SEPARATOR . 'config.php';
+require_once APP_PATH . DIRECTORY_SEPARATOR . 'index.php';
 
 ini_set('error_log', APP_PATH . 'server.log');
 ini_set('log_errors', 'true');
@@ -200,12 +200,13 @@ function clientInputHandler($input) {
         })();
         $output = $resultValue;
       }
-
+      ini_set('log_errors', 'true');
     } elseif (preg_match('/^cmd:\s*edit\s*(.*)(?=\r?\n$)?/si', $input, $matches)) {
       ini_set('log_errors', 'false');
       $output = ($file = rtrim(realpath(APP_PATH . APP_ROOT . $_GET['path'] ?? ''), '/') . '/' . trim($matches[1])) ? file_get_contents($file) : "File not found: $file";
+      ini_set('log_errors', 'true');
     } elseif (preg_match('/^cmd:\s*server\s*backup(?=\r?\n$)?/si', $input, $matches)) {
-      require_once 'public/index.php';
+      require_once 'public/idx.product.php';
 
       $files = get_required_files();
       $baseDir = APP_PATH;

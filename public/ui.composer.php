@@ -129,16 +129,18 @@ else die(var_dump("$path path was not found. file=app.console.php"));
 
     //dd($_POST);
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
+  if (isset($_POST['composer']['autoload'])) {
+    $_ENV['COMPOSER']['AUTOLOAD'] = $_POST['composer']['autoload'] === 'on' ? true : false;
 
-  $_ENV['COMPOSER']['AUTOLOAD'] = isset($_POST['composer']['autoload']) ? true : false; // $_POST['composer']['autoload'] == 'on'
+    Shutdown::setEnabled(false)->setShutdownMessage(function() {
+      return header('Location: http://' . APP_DOMAIN); // ['scheme'] . '://' . APP_URL['host'] -wow
+    })->shutdown();
+  }
+
 
   //dd($_ENV['COMPOSER']['AUTOLOAD']);
 
   //dd($_ENV);
-  Shutdown::setEnabled(false)->setShutdownMessage(function() {
-    return header('Location: http://' . APP_DOMAIN); // ['scheme'] . '://' . APP_URL['host'] -wow
-  })->shutdown();
-
 
   // consider creating a visual aspect for the lock file
   
@@ -507,7 +509,10 @@ ob_start(); ?>
     <div class="text-xs" style="display: inline-block; border: 1px solid #000;">
       <a class="text-sm" id="app_composer-frameMenuPrev" href="<?= (!empty(APP_QUERY) ? '?' . http_build_query(APP_QUERY) : '') . (defined('APP_ENV') && APP_ENV == 'development' ? '#!' : '#') ?>"> &lt; Menu</a> | <a class="text-sm" id="app_composer-frameMenuNext" href="<?= (!empty(APP_QUERY) ? '?' . http_build_query(APP_QUERY) : '') . (defined('APP_ENV') && APP_ENV == 'development' ? '#!' : '#') ?>">Init &gt;</a>
     </div>
-    <form style="display: inline-block;" action="<?= basename(__FILE__); ?>" method="POST"><div class="text-sm" ><input type="checkbox"  <?= $_ENV['COMPOSER']['AUTOLOAD'] ? 'checked="checked"' : '' ?> name="composer[autoload]" onchange="this.form.submit();" /> AUTOLOAD</div></form>
+    <form style="display: inline-block;" action="<?= basename(__FILE__); ?>" method="POST"><div class="text-sm" >
+    <input type="hidden" name="composer[autoload]" value="off">
+    <!-- Checkbox input that overrides the hidden input if checked -->
+    <input type="checkbox" name="composer[autoload]" value="on" onchange="this.form.submit();" <?= isset($_ENV['COMPOSER']['AUTOLOAD']) && $_ENV['COMPOSER']['AUTOLOAD'] ? 'checked="checked"' : '' ?>> AUTOLOAD</div></form>
   </div>
   <div class="absolute" style="position: absolute; display: inline-block; top: 4px; text-align: right; width: 175px; ">
     <div class="text-xs" style="display: inline-block;">

@@ -356,7 +356,12 @@ if (is_dir($path = APP_PATH . APP_BASE['resources'] . 'js/ace')) { ?>
       appEditor.session.setMode("ace/mode/php");
       appEditor.setAutoScrollEditorIntoView(true);
       appEditor.setShowPrintMargin(false);
+
+      // Enable word wrapping
+      appEditor.setOption("wrap", true);
+
       appEditor.setOptions({
+        //fontSize: "12pt",
         enableBasicAutocompletion: true,
         enableLiveAutocompletion: true,
         enableSnippets: true
