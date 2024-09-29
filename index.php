@@ -30,10 +30,10 @@ if ($path) {
 
 $previousFilename = '';
 
-$dirs = [];
+$dirs = [/* APP_PATH . APP_BASE['config'] . 'php.php' */];
 
 !isset($_GET['app']) || $_GET['app'] != 'git' ?:
-  (APP_SELF != APP_PATH_PUBLIC ? : 
+  (APP_SELF != APP_PATH_PUBLIC ?: 
     $dirs[] = APP_PATH . APP_BASE['config'] . 'git.php');
 
 !isset($_GET['app']) || $_GET['app'] != 'composer' ?:
@@ -74,6 +74,10 @@ usort($dirs, function ($a, $b) {
     return -1; // $a comes after $b
   elseif (dirname($b) . DIRECTORY_SEPARATOR . basename($b) === APP_PATH . APP_BASE['config'] . 'git.php')
     return 1; // $a comes before $b
+  //elseif (dirname($a) . DIRECTORY_SEPARATOR . basename($a) === APP_PATH . APP_BASE['config'] . 'npm.php')
+  //  return -1; // $a comes after $b
+  //elseif (dirname($b) . DIRECTORY_SEPARATOR . basename($b) === APP_PATH . APP_BASE['config'] . 'npm.php')
+  //  return 1; // $a comes before $b
   else 
     return strcmp(basename($a), basename($b)); // Compare other filenames alphabetically
 });
@@ -103,6 +107,7 @@ foreach ($dirs as $includeFile) {
         (!isset($_ENV['COMPOSER']['AUTOLOAD']) || (bool) $_ENV['COMPOSER']['AUTOLOAD'] !== true || APP_SELF !== APP_PATH_SERVER) ?: require_once $includeFile;
         break;
       default:
+
         require_once $includeFile;
         break;
     }

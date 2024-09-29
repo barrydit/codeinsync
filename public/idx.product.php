@@ -803,9 +803,9 @@ if (defined('APP_WHOIS') && !empty(APP_WHOIS)) {
 <?= defined('UI_ACE_EDITOR') ? UI_ACE_EDITOR['body'] : null; ?>
 <?= defined('UI_NODES') ? UI_NODES['body'] : null; ?>
 
-<?= $apps['project']['body']; ?>
+<?= isset($apps['project']['body']) ? $apps['project']['body'] : ''; ?>
 
-<?= $apps['console']['body']; ?>
+<?= isset($apps['console']['body']) ? $apps['console']['body'] : ''; ?>
 <!-- https://cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.min.js -->
 <!-- https://code.jquery.com/jquery-3.7.1.min.js -->
 <!-- script src="https://code.jquery.com/jquery-3.6.0.min.js" integrity="sha256-/xUj+3OJU5yExlq6GSYGSHk7tPXikynS7ogEvDej/m4=" crossorigin="anonymous"></script -->
