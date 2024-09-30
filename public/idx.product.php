@@ -834,7 +834,7 @@ include 'app.debug.php';
   ?>
 
 
-<div id="details-container" style="position: fixed; display: <?= isset($_SERVER['SOCKET']) && is_resource($_SERVER['SOCKET']) ? 'none' : 'block' ?>; top: 0; right: 0; padding: 4px; z-index: 1; text-align: right; border: 1px solid #000; height: auto; background-color: #FFF; width: 245px;">
+<div id="details-container" style="position: fixed; display: <?= isset($_SERVER['SOCKET']) && is_resource($_SERVER['SOCKET']) ? 'none' : 'block' ?>; top: 0; left: 0; padding: 4px; z-index: 1; text-align: right; border: 1px solid #000; height: auto; background-color: #FFF; width: 245px;">
   <div style="float: left;">$_ENV</div>
   <h3 style="font-weight: bolder;"><?= !is_file($pid_file = APP_PATH . 'server.pid') ? '' : '(PID=' . (int) file_get_contents(APP_PATH . 'server.pid') . ')'?> Server</h3>
   <div style="display: inline-block;">On / Off <input id="check_server_start" type="checkbox" <?= isset($_SERVER['SOCKET']) && is_resource($_SERVER['SOCKET']) ? 'checked="checked"' : '' ?> onclick="validate()" /><br /><a href="">Status</a><br /><a href="">Help</a><br />Error Log</div>
