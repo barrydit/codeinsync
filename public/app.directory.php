@@ -35,15 +35,21 @@ $tableGen = function(): string {
   <div id="info" style="position: absolute; display: none; width: 400px; height: 100px; left: 200px; top: 100px; border: 5px solid #000; background-color: #FFFFFF; z-index:99;">
 <div style="position: absolute; display: block; background-color: #FFFFFF; z-index: 1; right: 0px; margin-top: -20px;">[<a href="#" onclick="document.getElementById('info').style.display = 'none';">x</a>]</div>Texting inside</div>
 
-<?php if (isset($_GET['path']) && preg_match('/^vendor\/?/', $_GET['path'])) {
+<?php
+  $path = APP_PATH . APP_ROOT . ($_GET['path'] ?? '');
+  
+  echo '<div style="position: absolute; top: 2px; left: 2px;  width: 100%;"><a href="?path" ' . (isset($_GET['path']) && !isset($_GET['client']) ? 'onclick="handleClick(event, \'/\')"' : '') . '><img src="resources/images/directory-www.fw.png" width="50" height="32">' .  rtrim(APP_PATH, DIRECTORY_SEPARATOR) /**/ . '</a>' . (isset($_GET['client']) ? '<a href="?client">' . DIRECTORY_SEPARATOR . dirname(APP_ROOT, 2) . DIRECTORY_SEPARATOR . '</a><a href="?client=' . $_GET['client'] . '">' . $_GET['client'] . '</a>' : '') . (isset($_GET['domain']) ? '<a href="?domain=' . $_GET['domain'] . '">' . DIRECTORY_SEPARATOR . $_GET['domain'] . '</a>' : ((isset($_GET['client']) ? DIRECTORY_SEPARATOR . $_GET['client'] : '')) . (isset($_GET['domain']) ? DIRECTORY_SEPARATOR . $_GET['domain'] : '') ?? ($_GET['project'])) . (isset($_GET['project']) ? '<a onclick="handleClick(event, \'/\')">' . DIRECTORY_SEPARATOR . 'projects' . (DIRECTORY_SEPARATOR . $_GET['project'] ?? '') . '</a>' : '') .  (isset($_GET['path']) && $_GET['path'] && $_GET['path'] !== '/' ? '<a href="?path=' . trim($_GET['path'], DIRECTORY_SEPARATOR) . '" onclick="handleClick(event, \'/\')">' . DIRECTORY_SEPARATOR . trim($_GET['path'], DIRECTORY_SEPARATOR) . DIRECTORY_SEPARATOR : DIRECTORY_SEPARATOR) . '</a></div><div style="height: 25px;"></div>';
+
+if (isset($_GET['path']) && preg_match('/^vendor\/?/', $_GET['path'])) {
 
     //if ($_ENV['COMPOSER']['AUTOLOAD'] == true)
   require_once APP_PATH . APP_ROOT . APP_BASE['vendor'] . 'autoload.php';
   require_once APP_PATH . APP_BASE['config'] . 'composer.php';
   //dd(get_required_files());
+
 ?>
 <!-- iframe src="composer_pkg.php" style="height: 500px; width: 700px;"></iframe -->
-    <div style="width: 700px;">
+    <div style="width: 700px; ">
       <div style="display: inline-block; width: 350px;">Composers Vendor Packages [Installed] List</div>
       <div style="display: inline-block; text-align: right; width: 300px;">
         <form action="<?= !defined('APP_URL') ? '//' . APP_DOMAIN . APP_URL_PATH . '?' . http_build_query(APP_QUERY, '', '&amp;') : APP_URL . '?' . http_build_query(APP_QUERY, '', '&amp;') ?>" method="POST">
@@ -453,9 +459,10 @@ if (defined('COMPOSER_VENDORS')) {
       //elseif(isset($_GET['project']) && !empty($_GET['project']))
       //  $path = 'projects/' . $_GET['project'] . '/';
 
+
 // >>>
-      $path = APP_PATH . APP_ROOT . ($_GET['path'] ?? '');
-      echo '<div style="position: absolute; width: 100%;"><a href="?path">' .  rtrim(APP_PATH, '/') . '</a>' . '<a href="?' . (isset($_GET['client']) ? 'client' : '') . '">' . DIRECTORY_SEPARATOR . dirname(APP_ROOT, 2) . '</a>'. '<a href="?' . (isset($_GET['client']) ? 'client=' . $_GET['client'] . '&' : '') . (isset($_GET['domain']) ? 'domain=' . $_GET['domain'] . '&' : (isset($_GET['project']) ? 'project=' . $_GET['project'] . '&' : '')) . 'path" onclick="handleClick(event, \'/\')">' . ((isset($_GET['client']) ? DIRECTORY_SEPARATOR . $_GET['client'] : '') . (isset($_GET['domain']) ? DIRECTORY_SEPARATOR . $_GET['domain'] : '') ?? ($_GET['project'])) . '</a>' . DIRECTORY_SEPARATOR .  (isset($_GET['path']) ? $_GET['path'] : '') . '</div>';
+
+$path = APP_PATH . APP_ROOT . ($_GET['path'] ?? '');
 
 // <<<
 

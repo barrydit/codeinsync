@@ -132,10 +132,13 @@ class Sockets
     {
         if (isset($this->socket)) {
             if (is_resource($this->socket)) {
-                if (get_resource_type($this->socket) == 'stream') {
-                    fclose($this->socket);
-                } else {
-                    socket_close($this->socket);
+                switch (get_resource_type($this->socket)) {
+                    case 'stream':
+                        fclose($this->socket);
+                        break;
+                    default:
+                        socket_close($this->socket);
+                        break;
                 }
             }
         }
@@ -145,8 +148,8 @@ class Sockets
 $socket = new Sockets();
 
 if ($_SERVER['SOCKET'] = $socket->getSocket()) // realpath(dirname(__DIR__) . DIRECTORY_SEPARATOR . 'server.php')
-  if ($_SERVER['SOCKET'] === false) dd($errors['APP_SOCKET'] = 'Have you checked your server.php file lately?', false);
-  elseif ($_SERVER['SOCKET']) {
+  if (!$_SERVER['SOCKET']) dd($errors['APP_SOCKET'] = 'Have you checked your server.php file lately?', false);
+  elseif (is_resource($_SERVER['SOCKET'])) {
 /*
     $errors['server-1'] = "Connected to Server: " . APP_HOST . "\n";
 
@@ -168,8 +171,7 @@ if ($_SERVER['SOCKET'] = $socket->getSocket()) // realpath(dirname(__DIR__) . DI
   } else
     $errors['APP_SOCKET'] = ($_SERVER['SOCKET'] ?: 'Socket is unable to connect: ') . 'No server connection.' . "\n";
 
-if (!$_SERVER['SOCKET']) {
-
+if (!isset($_SERVER['SOCKET']) || !$_SERVER['SOCKET']) {
   !defined('PID_FILE') and define('PID_FILE', /*getcwd() . */(!defined('APP_PATH') ? __DIR__ . DIRECTORY_SEPARATOR : APP_PATH ) . 'server.pid');
 
   if (file_exists(PID_FILE)) {

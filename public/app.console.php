@@ -120,7 +120,7 @@ if (preg_match('/^app\.([\w\-.]+)\.php$/', basename(__FILE__), $matches))
             $match[2] = trim($match[2], '"');
             $_POST['cmd'] = 'php -r "' . $match[2] . (substr($match[2], -1) != ';' ? ';' : '') . '"';
   
-            if (!$_SERVER['SOCKET']) {
+            if (!isset($_SERVER['SOCKET']) || !$_SERVER['SOCKET']) {
               exec($_POST['cmd'], $output);
             } else {
               $errors['server-1'] = "Connected to Server: " . SERVER_HOST . ':' . SERVER_PORT . "\n";
@@ -143,7 +143,7 @@ if (preg_match('/^app\.([\w\-.]+)\.php$/', basename(__FILE__), $matches))
   
         } /* else if (preg_match('/^composer\s+(:?(.*))/i', $_POST['cmd'], $match)) {
 
-          if (!$_SERVER['SOCKET']) {
+          if (!isset($_SERVER['SOCKET']) || !$_SERVER['SOCKET']) {
 
             //$output[] = dd(COMPOSER_EXEC);
             //$output[] = APP_SUDO . COMPOSER_EXEC['bin'] . ' ' . $match[1];
@@ -217,7 +217,12 @@ if (preg_match('/^app\.([\w\-.]+)\.php$/', basename(__FILE__), $matches))
   git checkout -b branchName
   END;
           $output[] = $command = ((stripos(PHP_OS, 'WIN') === 0) ? '' : APP_SUDO) . (defined('GIT_EXEC') ? GIT_EXEC : 'git' ) . (is_dir($path = APP_PATH . APP_ROOT . '.git') || APP_PATH . APP_ROOT != APP_PATH ? '' : '') . ' ' . $match[1];
-  
+
+
+
+
+
+
   $proc=proc_open($command,
   array(
     array("pipe","r"),
@@ -229,6 +234,15 @@ if (preg_match('/^app\.([\w\-.]+)\.php$/', basename(__FILE__), $matches))
           list($stdout, $stderr, $exitCode) = [stream_get_contents($pipes[1]), stream_get_contents($pipes[2]), proc_close($proc)];
           preg_match('/\/(.*)\//', DOMAIN_EXPR, $matches);   
           $output[] = !isset($stdout) ? NULL : $stdout . (isset($stderr) && $stderr === '' ? NULL : (preg_match("/^To\\s$matches[1]/", $stderr) ? $stderr : "Error: $stderr")) . (isset($exitCode) && $exitCode == 0 ? NULL : "Exit Code: $exitCode");
+
+
+
+
+
+
+
+
+
           } else if (preg_match('/^git\s+(update)(:?\s+)?/i', $_POST['cmd'])) {
             $output[] = git_origin_sha_update();
           } else if (preg_match('/^git\s+(clone)(:?\s+)?/i', $_POST['cmd'])) {
@@ -349,7 +363,7 @@ if (preg_match('/^app\.([\w\-.]+)\.php$/', basename(__FILE__), $matches))
           exec("wget -qO- {$match[1]} &> /dev/null", $output);
         else {
   
-            if (!$_SERVER['SOCKET']) {
+            if (!isset($_SERVER['SOCKET']) || !$_SERVER['SOCKET']) {
               //exec($_POST['cmd'], $output);
               if (preg_match('/^(\w+)\s+(:?(.*))/i', $_POST['cmd'], $match))
                 if (isset($match[1]) && in_array($match[1], ['tail', 'cat', 'unlink', 'echo', 'env', 'sudo', 'whoami'])) {

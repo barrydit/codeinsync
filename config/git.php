@@ -28,7 +28,7 @@ $latest_remote_commit_sha = $latest_remote_commit_data['object']['sha']; */
  */
 function git_origin_sha_update() {
   global $errors;
-  $latest_local_commit_sha = exec(GIT_EXEC . ' --git-dir="' . APP_PATH . APP_ROOT . '.git" --work-tree="' . dirname(__DIR__) . '" rev-parse main');
+  $latest_local_commit_sha = exec(GIT_EXEC . ' --git-dir="' . APP_PATH . APP_ROOT . '.git" --work-tree="' . APP_PATH . APP_ROOT . '" rev-parse main');
   $errors['GIT_UPDATE'] = "Local main branch is not up-to-date with origin/main\n";
 
   $options = [
@@ -42,15 +42,15 @@ function git_origin_sha_update() {
   $context = stream_context_create($options);
 
   if (!empty($_GET['client']) || !empty($_GET['domain'])) {
-    $latest_remote_commit_url = 'https://api.github.com/repos/barrydit/' . $_GET['domain'] . '/git/refs/heads/main';
+    $latest_remote_commit_url = 'https://api.github.com/repos/' . $_ENV['GITHUB']['USER'] . '/' . $_GET['domain'] . '/git/refs/heads/main';
   } elseif (!empty($_GET['project'])) {
     $path = 'projects' . DIRECTORY_SEPARATOR . $_GET['project'] . DIRECTORY_SEPARATOR;   
     if (is_dir(APP_PATH . $path)) {
       define('APP_PROJECT', new clientOrProj($path));
-      $latest_remote_commit_url = 'https://api.github.com/repos/barrydit/' . $_GET['project'] . '/git/refs/heads/main';
+      $latest_remote_commit_url = 'https://api.github.com/repos/' . $_ENV['GITHUB']['USER'] . '/' . $_GET['project'] . '/git/refs/heads/main';
     }
   } else if (isset($_ENV['COMPOSER']) && !empty($_ENV['COMPOSER'])) {
-    $latest_remote_commit_url = 'https://api.github.com/repos/barrydit/' . $_ENV['COMPOSER']['PACKAGE'] . '/git/refs/heads/main';
+    $latest_remote_commit_url = 'https://api.github.com/repos/' . $_ENV['GITHUB']['USER'] . '/' . $_ENV['COMPOSER']['PACKAGE'] . '/git/refs/heads/main';
   }
 
   $response = defined('APP_CONNECTED') && check_http_status($_ENV['GITHUB']['ORIGIN_URL']) === true && !check_http_status($latest_remote_commit_url, 404) ? file_get_contents($latest_remote_commit_url, false, $context) : '{}';

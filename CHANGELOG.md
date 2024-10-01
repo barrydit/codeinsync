@@ -1,5 +1,15 @@
 CHANGELOG
 
+.git/config
+
+fatal: could not read Username for 'https://github.com': No such device or address
+
+[remote "origin"]
+	url = git@github.com:barrydit/repository.git
+
+git remote set-url origin https://github.com/barrydit/repository.git
+
+
 
 $composerUser = !isset($_ENV['COMPOSER']['USER']) ?: $_ENV['COMPOSER']['USER'];  
 $componetPkg = !isset($_ENV['COMPOSER']['PACKAGE']) ?: $_ENV['COMPOSER']['PACKAGE'];
@@ -85,6 +95,42 @@ vendor/composer/installed.php
 
 :: PHP
 
+if (!isset($_SERVER['SOCKET']) || !is_resource($_SERVER['SOCKET']) || !$_SERVER['SOCKET']) { // get_resource_type($stream) == 'stream'
+
+  $proc = proc_open((stripos(PHP_OS, 'WIN') === 0 ? '' : APP_SUDO) . 'APPLICATION', [["pipe", "r"], ["pipe", "w"], ["pipe", "w"]], $pipes);
+
+  [$stdout, $stderr, $exitCode] = [stream_get_contents($pipes[1]), stream_get_contents($pipes[2]), proc_close($proc)];
+
+  if ($exitCode !== 0) {
+    if (empty($stdout)) {
+      if (!empty($stderr)) {
+        $errors['APPLICATION'] = $stderr;
+        error_log($stderr);
+      }
+    } else {
+      $errors['APPLICATION'] = $stdout;
+    }
+  }
+
+} else {
+  $errors['server-1'] = "Connected to Server: " . SERVER_HOST . ':' . SERVER_PORT . "\n";
+  
+  // Send a message to the server
+  $errors['server-2'] = 'Client request: ' . $message = "cmd: composer update\n";
+    
+  fwrite($_SERVER['SOCKET'], $message);
+  $output[] = trim($message) . ': ';
+  // Read response from the server
+  while (!feof($_SERVER['SOCKET'])) {
+    $response = fgets($_SERVER['SOCKET'], 1024);
+    $errors['server-3'] = "Server responce: $response\n";
+    if (isset($output[end($output)])) $output[end($output)] .= $response = trim($response);
+    //if (!empty($response)) break;
+  }
+}
+
+
+exec() shell_exec() escapeshellarg()
 
 
       $proc=proc_open((stripos(PHP_OS, 'WIN') === 0 ? '' : APP_SUDO) . "composer $matches[1]",  
@@ -97,12 +143,24 @@ vendor/composer/installed.php
                 list($stdout, $stderr, $exitCode) = [stream_get_contents($pipes[1]), stream_get_contents($pipes[2]), proc_close($proc)];
                 $output[] = !isset($stdout) ? NULL : $stdout . (isset($stderr) && $stderr === '' ? NULL : " Error: $stderr") . (isset($exitCode) && $exitCode == 0 ? NULL : "Exit Code: $exitCode");
 
+
+
 $proc = proc_open((stripos(PHP_OS, 'WIN') === 0 ? '' : APP_SUDO ) . basename($bin) . ' --version;', array( array("pipe","r"), array("pipe","w"), array("pipe","w")), $pipes);
 
         $stdout = stream_get_contents($pipes[1]);
         $stderr = stream_get_contents($pipes[2]);
 
         $exitCode = proc_close($proc);
+
+
+if (isset($socket) && is_resource($socket)) {
+  //socket_close($socket);
+  socket_write
+} elseif (is_resource($stream) && get_resource_type($stream) == 'stream') {
+  //fclose($stream);
+  fwrite()
+}
+
 
 
 ui.composer.php

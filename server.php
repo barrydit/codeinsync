@@ -280,7 +280,7 @@ function clientInputHandler($input) {
     } elseif (preg_match('/^cmd:\s*composer\s*(.*)(?=\r?\n$)?/si', $input, $matches)) {
       //$output = shell_exec($matches[1]);
 
-      $proc = proc_open((stripos(PHP_OS, 'WIN') === 0 ? '' : APP_SUDO . '-u www-data ') . "composer $matches[1]",
+      $proc = proc_open('env COMPOSER_ALLOW_SUPERUSER=' . COMPOSER_ALLOW_SUPERUSER . '; ' . (stripos(PHP_OS, 'WIN') === 0 ? '' : APP_SUDO . '-u www-data ') . "composer $matches[1]",
       [
         ["pipe", "r"],
         ["pipe", "w"],
@@ -292,6 +292,11 @@ function clientInputHandler($input) {
       $output = !isset($stdout) ? NULL : $stdout . (isset($stderr) && $stderr === '' ? NULL : " Error: $stderr") . (isset($exitCode) && $exitCode == 0 ? NULL : "Exit Code: $exitCode");
       $output .= "\n" . (stripos(PHP_OS, 'WIN') === 0 ? '' : APP_SUDO . '-u www-data ') . "composer $matches[1]";
 
+    } elseif (preg_match('/^cmd:\s*(composer(\s+.*|))(?=\r?\n$)?/si', $input, $matches)) { // ?(?=\r?\n$) // ?
+      $cmd = $matches[1]; // $input
+      $output = var_export($matches, true);
+      //$output = 'test ' . trim(shell_exec($cmd));
+      //$output .= " $input";
     } elseif (preg_match('/^cmd:\s*server(\s*variables|)(?=\r?\n$)?/si', $input)) {
       $output = var_export($_SERVER, true);
     } elseif (preg_match('/^cmd:\s*(add\s*notification)(?=\r?\n$)?/si', $input)) {    
@@ -311,11 +316,6 @@ function clientInputHandler($input) {
       $output = var_export(get_defined_constants(true)['user'], true);
     } elseif (preg_match('/^cmd:\s*(get\s+(required|included)\s+files)(?=\r?\n$)?/si', $input)) { 
       $output = var_export(get_required_files(), true);
-    } elseif (preg_match('/^cmd:\s*(composer(\s+.*|))(?=\r?\n$)?/si', $input, $matches)) { // ?(?=\r?\n$) // ?
-      $cmd = $matches[1]; // $input
-      $output = var_export($matches, true);
-      //$output = 'test ' . trim(shell_exec($cmd));
-      //$output .= " $input";
     } elseif (preg_match('/cmd:\s+(.*)(?=\r?\n$)?/s', $input, $matches)) { // cmd: composer update
       $cmd = $matches[1];
       $output = 'input: ' . json_encode($input) . " cmd: $cmd";
