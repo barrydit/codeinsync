@@ -151,7 +151,7 @@ if (!function_exists('dd')) {
 }
 
 if (!empty($_GET['client']) || !empty($_GET['domain'])) {
-  $path = /*'../../'.*/ 'clientele/' . $_GET['client'] . '/';
+  $path = /*'../../'.*/ 'clientele/' . ($_GET['client'] ?? '') . '/';
   $dirs = array_filter(glob(dirname(__DIR__) . "/$path*"), 'is_dir');
 
   if (count($dirs) == 1) {
