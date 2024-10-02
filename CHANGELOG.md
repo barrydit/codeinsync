@@ -95,7 +95,7 @@ vendor/composer/installed.php
 
 :: PHP
 
-if (!isset($_SERVER['SOCKET']) || !is_resource($_SERVER['SOCKET']) || !$_SERVER['SOCKET']) { // get_resource_type($stream) == 'stream'
+if (!is_resource($_SERVER['SOCKET']) || empty($_SERVER['SOCKET'])) { // get_resource_type($stream) == 'stream'
 
   $proc = proc_open((stripos(PHP_OS, 'WIN') === 0 ? '' : APP_SUDO) . 'APPLICATION', [["pipe", "r"], ["pipe", "w"], ["pipe", "w"]], $pipes);
 
@@ -153,7 +153,7 @@ $proc = proc_open((stripos(PHP_OS, 'WIN') === 0 ? '' : APP_SUDO ) . basename($bi
         $exitCode = proc_close($proc);
 
 
-if (isset($socket) && is_resource($socket)) {
+if (is_resource($socket) || !empty($socket)) {
   //socket_close($socket);
   socket_write
 } elseif (is_resource($stream) && get_resource_type($stream) == 'stream') {

@@ -148,7 +148,7 @@ class Sockets
 $socket = new Sockets();
 
 if ($_SERVER['SOCKET'] = $socket->getSocket()) // realpath(dirname(__DIR__) . DIRECTORY_SEPARATOR . 'server.php')
-  if (!$_SERVER['SOCKET']) dd($errors['APP_SOCKET'] = 'Have you checked your server.php file lately?', false);
+  if (!isset($_SERVER['SOCKET']) || empty($_SERVER['SOCKET'])) dd($errors['APP_SOCKET'] = 'Have you checked your server.php file lately?', false);
   elseif (is_resource($_SERVER['SOCKET'])) {
 /*
     $errors['server-1'] = "Connected to Server: " . APP_HOST . "\n";

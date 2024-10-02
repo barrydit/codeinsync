@@ -769,7 +769,7 @@ if (defined('COMPOSER_VERSION') && defined('COMPOSER_LATEST')) { // defined('APP
   if (version_compare(COMPOSER_LATEST, COMPOSER_VERSION, '>') != 0) {
     //dd(basename(COMPOSER_EXEC['bin']) . ' self-update;'); // (stripos(PHP_OS, 'WIN') === 0 ? '' : APP_SUDO) . 
 
-    if (!isset($_SERVER['SOCKET']) || !is_resource($_SERVER['SOCKET']) || !$_SERVER['SOCKET']) {
+    if (!isset($_SERVER['SOCKET']) || !is_resource($_SERVER['SOCKET']) || empty($_SERVER['SOCKET'])) {
       $proc = proc_open((stripos(PHP_OS, 'WIN') === 0 ? '' : APP_SUDO . '-u www-data ') . basename(COMPOSER_EXEC['bin']) . ' self-update', [["pipe", "r"], ["pipe", "w"], ["pipe", "w"]], $pipes);
     
       [$stdout, $stderr, $exitCode] = [stream_get_contents($pipes[1]), stream_get_contents($pipes[2]), proc_close($proc)];
@@ -911,7 +911,7 @@ fclose($pipes[2]);
 
       //if (!isset($_SERVER['SOCKET']) || !$_SERVER['SOCKET']) $_SERVER['SOCKET'] = openSocket(APP_HOST, 12345); // 
 //dd($_SERVER['SOCKET']);
-      if (isset($_SERVER['SOCKET']) && is_resource($_SERVER['SOCKET']) && $_SERVER['SOCKET'] !== false) {
+      if (!isset($_SERVER['SOCKET']) || !is_resource($_SERVER['SOCKET']) || empty($_SERVER['SOCKET'])) {
 
         $errors['server-1'] = "Connected to Server: " . SERVER_HOST . ':' . SERVER_PORT . "\n";
   
@@ -948,7 +948,7 @@ while (!feof($_SERVER['SOCKET'])) {
 */
       } else {
 
-        if (!isset($_SERVER['SOCKET']) || !is_resource($_SERVER['SOCKET']) || !$_SERVER['SOCKET']) {
+        if (!isset($_SERVER['SOCKET']) || !is_resource($_SERVER['SOCKET']) || empty($_SERVER['SOCKET'])) {
           $proc = proc_open((stripos(PHP_OS, 'WIN') === 0 ? '' : APP_SUDO . '-u www-data ') . basename(COMPOSER_EXEC['bin']) . ' update', [["pipe", "r"], ["pipe", "w"], ["pipe", "w"]], $pipes);
         
           [$stdout, $stderr, $exitCode] = [stream_get_contents($pipes[1]), stream_get_contents($pipes[2]), proc_close($proc)];
@@ -1121,7 +1121,7 @@ while (!feof($_SERVER['SOCKET'])) {
 
     putenv('COMPOSER_HOME='); // TESTING
 
-    if (!isset($_SERVER['SOCKET']) || !is_resource($_SERVER['SOCKET']) || !$_SERVER['SOCKET']) {
+    if (!isset($_SERVER['SOCKET']) || !is_resource($_SERVER['SOCKET']) || empty($_SERVER['SOCKET'])) {
       $proc = proc_open((stripos(PHP_OS, 'WIN') === 0 ? '' : APP_SUDO) . COMPOSER_EXEC['bin'] . ' install -o', [["pipe", "r"], ["pipe", "w"], ["pipe", "w"]], $pipes);
     
       [$stdout, $stderr, $exitCode] = [stream_get_contents($pipes[1]), stream_get_contents($pipes[2]), proc_close($proc)];

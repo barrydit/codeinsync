@@ -95,13 +95,13 @@ stripos(PHP_OS, 'LIN') === 0 and cli_set_process_name($title);
         $file = PID_FILE;
         !is_file($file)?: unlink($file);
         
-        if (isset($socket) && is_resource($socket)) {
+        if (isset($socket) && is_resource($socket) && !empty($socket)) {
           socket_close($socket);
-        } elseif (is_resource($stream) && get_resource_type($stream) == 'stream') {
+        } elseif (isset($stream) && is_resource($stream) && get_resource_type($stream) == 'stream') {
           fclose($stream);
         }
 /*
-        if (isset($socket) && is_resource($stream)) {
+        if (!empty($socket) && is_resource($stream)) {
           if (extension_loaded('sockets')) {
             socket_write($socket, 'Shutting down server... PID=' . getmypid());
             socket_close($socket);
@@ -649,7 +649,7 @@ try {
 
   print "Written by Barry Dick (2024)\n";
 
-  if (isset($socket) && is_resource($socket)) {
+  if (isset($socket) && is_resource($socket) && !empty($socket)) {
     if (extension_loaded('sockets')) {
       socket_close($socket);
     } elseif (get_resource_type($socket) == 'stream') {

@@ -258,7 +258,7 @@ END
       require_once dirname(__DIR__) . DIRECTORY_SEPARATOR . 'config' . DIRECTORY_SEPARATOR . 'classes' . DIRECTORY_SEPARATOR . 'class.sockets.php';
 
     // Resolve host to IP and check internet connection
-    if (isset($_SERVER['SOCKET']) && is_resource($_SERVER['SOCKET']) && $_SERVER['REQUEST_METHOD'] != 'POST') {
+    if (isset($_SERVER['SOCKET']) && is_resource($_SERVER['SOCKET']) && !empty($_SERVER['SOCKET']) && $_SERVER['REQUEST_METHOD'] != 'POST') {
       $errors['server-1'] = "Connected to Server: " . SERVER_HOST . ':' . SERVER_PORT . "\n";
   
       // Send a message to the server
