@@ -764,7 +764,7 @@ if (defined('APP_WHOIS') && !empty(APP_WHOIS)) {
   </div>
   <?php } ?>
   
-<?= ($apps['directory']['body'] ?? ''); ?>
+<?= $apps['directory']['body'] ?? ''; ?>
   
   <div id="app_notes-container" style="position: absolute; display: none; top: 100px; margin: 0 auto; width: 800px; height: 600px; background-color: rgba(255, 255, 255, 0.9); overflow-x: scroll;">
     <div style="display: inline;">
@@ -790,14 +790,14 @@ if (defined('APP_WHOIS') && !empty(APP_WHOIS)) {
   </div>
 </div>
 
-<?= ($apps['timesheet']['body'] ?? ''); ?>
-<?= ($apps['browser']['body'] ?? ''); ?>
-<?= ($apps['github']['body'] ?? ''); ?>
-<?= ($apps['packagist']['body'] ?? ''); ?>
-<?= ($apps['whiteboard']['body'] ?? ''); ?>
-<?= ($apps['notes']['body'] ?? ''); ?>
+<?= $apps['timesheet']['body'] ?? ''; ?>
+<?= $apps['browser']['body'] ?? ''; ?>
+<?= $apps['github']['body'] ?? ''; ?>
+<?= $apps['packagist']['body'] ?? ''; ?>
+<?= $apps['whiteboard']['body'] ?? ''; ?>
+<?= $apps['notes']['body'] ?? ''; ?>
 <!-- https://pong-2.com/ -->
-<?= ($apps['pong']['body'] ?? ''); ?>
+<?= $apps['pong']['body'] ?? ''; ?>
 
 </div>
 </div>
@@ -810,8 +810,8 @@ if (defined('APP_WHOIS') && !empty(APP_WHOIS)) {
 <?= defined('UI_ACE_EDITOR') ? UI_ACE_EDITOR['body'] : null; ?>
 <?= defined('UI_NODES') ? UI_NODES['body'] : null; ?>
 
-<?= ($apps['project']['body'] ?? ''); ?>
-<?= ($apps['console']['body'] ?? ''); ?>
+<?= $apps['project']['body'] ?? ''; ?>
+<?= $apps['console']['body'] ?? ''; ?>
 <!-- https://cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.min.js -->
 <!-- https://code.jquery.com/jquery-3.7.1.min.js -->
 <!-- script src="https://code.jquery.com/jquery-3.6.0.min.js" integrity="sha256-/xUj+3OJU5yExlq6GSYGSHk7tPXikynS7ogEvDej/m4=" crossorigin="anonymous"></script -->
@@ -1481,13 +1481,13 @@ $( '#app_directory-container' ).slideUp( "slow", function() {
       
       <?= defined('UI_ACE_EDITOR') ? UI_ACE_EDITOR['script'] : null; /* NULL; */?>
       
-      <?= ($apps['directory']['script'] ?? ''); ?>  
+      <?= $apps['directory']['script'] ?? ''; ?>  
 
-      <?= ($apps['browser']['script'] ?? ''); ?>
+      <?= $apps['browser']['script'] ?? ''; ?>
       
-      <?= ($apps['github']['script'] ?? ''); ?>
+      <?= $apps['github']['script'] ?? ''; ?>
       
-      <?= ($apps['packagist']['script'] ?? ''); ?>
+      <?= $apps['packagist']['script'] ?? ''; ?>
       
       <?= /*$app['whiteboard']['script'];*/ NULL; ?>
       
@@ -1497,7 +1497,7 @@ $( '#app_directory-container' ).slideUp( "slow", function() {
       <?= /*$app['backup']['script']*/ NULL; ?>
       
       
-      <?= ($apps['pong']['script'] ?? ''); ?>
+      <?= $apps['pong']['script'] ?? ''; ?>
       
       /*
       require.config({
@@ -1519,10 +1519,8 @@ $( '#app_directory-container' ).slideUp( "slow", function() {
       });
       */
       
-      <?= ($apps['timesheet']['script'] ?? ''); ?>
-      <?= ($apps['project']['script'] ?? ''); ?>
-
-
+      <?= $apps['timesheet']['script'] ?? ''; ?>
+      <?= $apps['project']['script'] ?? ''; ?>
 
       function showConfirm(message) {
     document.getElementById('confirmMessage').textContent = message;

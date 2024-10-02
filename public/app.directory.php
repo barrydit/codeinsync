@@ -529,68 +529,66 @@ $path = APP_PATH . APP_ROOT . ($_GET['path'] ?? '');
 
           if (!empty($paths))
             foreach($paths as $key => $path) {
-
               // Adjust the path to be relative to the current directory
+              $relativePath = rtrim(basename(str_replace(APP_PATH . APP_ROOT, '', $path)), DIRECTORY_SEPARATOR) . '/';
 
-              $relativePath = basename(str_replace(APP_PATH . APP_ROOT, '', $path)) . DIRECTORY_SEPARATOR;
-
-                echo "<td style=\"border: 0 solid #000; text-align: center;\" class=\"text-xs\">\n";
-                if (is_dir($path))
-                  switch (basename($path)) {
-                    case '.git':
-                      echo '<div style="position: relative; border: 4px dashed #F05033;">'
-                      . '<a href="#!" onclick="document.getElementById(\'app_git-container\').style.display=\'block\';">' // "?path=' . basename($path) . '" 
-                      . '<img src="resources/images/directory-git.png" width="50" height="32" /></a><br />'
-                      . '<a href="?' . (isset($_GET['client']) ? 'client=' . $_GET['client'] . '&' : '') . (isset($_GET['domain']) ? 'domain=' . $_GET['domain'] . '&' : '') . 'path=' . $relativePath . '" onclick="handleClick(event, \'' . $relativePath . '\')">' . basename($path) . '/</a></div>' . "\n";
-                      break;
-                    case 'applications':
-                      echo '<div style="position: relative;">'
-                      . '<a href="?application" onclick="document.getElementById(\'app_application-container\').style.display=\'block\';"><img src="resources/images/directory-application.png" width="50" height="32" /></a><br />'
-                      . '<a href="?' . (isset($_GET['client']) ? 'client=' . $_GET['client'] . '&' : '') . (isset($_GET['domain']) ? 'domain=' . $_GET['domain'] . '&' : '') . 'path=' . $relativePath . '" onclick="handleClick(event, \'' . $relativePath . '\')">' . basename($path)  // "?path=' . basename($path) . '"         
-                      . '/</a></div>' . "\n";
-                      break;
-                    case 'clients':
-                    case 'clientele':
-                      echo '<div style="position: relative; border: 4px dashed orange;">'
-                      . '<a href="?' . (!defined('APP_ROOT') || empty(APP_ROOT) ? '' : (array_key_first($_GET) == 'client' ? 'client=' . $_GET['client'] . '&' . (isset($_GET['domain']) ? 'domain=' . ($_GET['domain'] != '' ? $_GET['domain'] . '&' : '') : '') : (array_key_first($_GET) == 'project' ? 'project=' . $_GET['project'] . '&' : ''))) . 'path=' . $relativePath . '" onclick="handleClick(event, \'' . $relativePath . '\')">'
-                      // (!isset($_GET['path']) ? '' : $_GET['path'] . ($_GET['path'] == '' ? '' : '/' )) . basename($path)
-                      . '<img src="resources/images/directory.png" width="50" height="32" /><br />' . basename($path) . '/</a></div>' . "\n";
-                      break;
-                    case 'node_modules':
-                      echo '<div style="position: relative; border: 4px dashed #E14747;">'
-                      . '<a href="#!" onclick="document.getElementById(\'app_npm-container\').style.display=\'block\';"><img src="resources/images/directory-npm.png" width="50" height="32" /></a><br />'
-                      . '<a href="?' . (APP_ROOT != '' && isset($_GET[array_key_first($_GET)]) ? array_key_first($_GET) . '=' . $_GET[array_key_first($_GET)] . '&' : '') . 'path=' . $relativePath . '" onclick="handleClick(event, \'' . $relativePath . '\')">' . basename($path)  // "?path=' . basename($path) . '"         
-                      . '/</a></div>' . "\n";
-                      break;
-                    case 'database':
-                      echo '<div style="position: relative; border: 4px dashed #2C88DA;">'
-                      . '<a href="?' . (!defined('APP_ROOT') || empty(APP_ROOT) ? '' : (array_key_first($_GET) == 'client' ? 'client=' . $_GET['client'] . '&' . (isset($_GET['domain']) ? 'domain=' . ($_GET['domain'] != '' ? $_GET['domain'] . '&' : '') : '') : (array_key_first($_GET) == 'project' ? 'project=' . $_GET['project'] . '&' : ''))) . 'path=' . $relativePath . '" onclick="handleClick(event, \'' . $relativePath . '\')">'
-                      // (!isset($_GET['path']) ? '' : $_GET['path'] . ($_GET['path'] == '' ? '' : '/' )) . basename($path)
-                      . '<img src="resources/images/directory.png" width="50" height="32" /><br />' . basename($path) . '/</a></div>' . "\n";
-                      break;
-                    case 'projects':
-                      echo '<div style="position: relative; border: 4px dashed #2C88DA;">'
-                      . '<a href="#!" onclick="document.getElementById(\'app_project-container\').style.display=\'block\';"><img src="resources/images/directory-project.png" width="50" height="32" /></a><br />'
-                      . '<a href="?' . (isset($_GET['client']) ? 'client=' . $_GET['client'] . '&' : '') . (isset($_GET['domain']) ? 'domain=' . $_GET['domain'] . '&' : '') . 'path=' . $relativePath . '" onclick="handleClick(event, \'' . $relativePath . '\')">' . basename($path)  // "?path=' . basename($path) . '"
-                      . '/</a></div>' . "\n";
-                      break;
-                    case 'public':
-                      echo '<div style="position: relative; border: 4px dashed #CC9900;">'
-                      . '<a href="?' . (!defined('APP_ROOT') || empty(APP_ROOT) ? '' : (array_key_first($_GET) == 'client' ? 'client=' . $_GET['client'] . '&' . (isset($_GET['domain']) ? 'domain=' . ($_GET['domain'] != '' ? $_GET['domain'] . '&' : '') : '') : (array_key_first($_GET) == 'project' ? 'project=' . $_GET['project'] . '&' : ''))) . 'path=' . $relativePath . '" onclick="handleClick(event, \'' . $relativePath . '\')">'
-                      // (!isset($_GET['path']) ? '' : $_GET['path'] . ($_GET['path'] == '' ? '' : '/' )) . basename($path)
-                      . '<img src="resources/images/directory.png" width="50" height="32" /><br />' . basename($path) . '/</a></div>' . "\n";
-                      break;
-                    case 'vendor':
-                      echo '<div style="position: relative; border: 4px dashed #6B4329;">'
-                      . '<a href="#!" onclick="document.getElementById(\'app_composer-container\').style.display=\'block\';"><img src="resources/images/directory-composer.png" width="50" height="32" /></a><br />'
-                      . '<a href="?' . (isset($_GET['client']) ? 'client=' . $_GET['client'] . '&' : '') . (isset($_GET['domain']) ? 'domain=' . $_GET['domain'] . '&' : '') . 'app=composer&path=' . $relativePath . '" onclick="handleClick(event, \'' . $relativePath . '\')">' . basename($path)  // "?path=' . basename($path) . '"         
-                      . '/</a></div>' . "\n";
-                      break;
-                    default:
-                      echo '<a href="?' . (!defined('APP_ROOT') || empty(APP_ROOT) ? '' : (array_key_first($_GET) == 'client' ? 'client=' . $_GET['client'] . '&' . (isset($_GET['domain']) ? 'domain=' . ($_GET['domain'] != '' ? $_GET['domain'] . '&' : '') : '') : (array_key_first($_GET) == 'project' ? 'project=' . $_GET['project'] . '&' : ''))) . 'path=' . $relativePath . '" onclick="handleClick(event, \'' . $relativePath . '\')">'
-                      // (!isset($_GET['path']) ? '' : $_GET['path'] . ($_GET['path'] == '' ? '' : '/' )) . basename($path)
-                      . '<img src="resources/images/directory.png" width="50" height="32" /><br />' . basename($path) . '/</a>';
-                      break;
+              echo "<td style=\"border: 0 solid #000; text-align: center;\" class=\"text-xs\">\n";
+              if (is_dir($path))
+                switch (basename($path)) {
+                  case '.git':
+                    echo '<div style="position: relative; border: 4px dashed #F05033;">'
+                    . '<a href="#!" onclick="document.getElementById(\'app_git-container\').style.display=\'block\';">' // "?path=' . basename($path) . '" 
+                    . '<img src="resources/images/directory-git.png" width="50" height="32" /></a><br />'
+                    . '<a href="?' . (isset($_GET['client']) ? 'client=' . $_GET['client'] . '&' : '') . (isset($_GET['domain']) ? 'domain=' . $_GET['domain'] . '&' : '') . 'path=' . $relativePath . '" onclick="handleClick(event, \'' . $relativePath . '\')">' . basename($path) . '/</a></div>' . "\n";
+                    break;
+                  case 'applications':
+                    echo '<div style="position: relative;">'
+                    . '<a href="?application" onclick="document.getElementById(\'app_application-container\').style.display=\'block\';"><img src="resources/images/directory-application.png" width="50" height="32" /></a><br />'
+                    . '<a href="?' . (isset($_GET['client']) ? 'client=' . $_GET['client'] . '&' : '') . (isset($_GET['domain']) ? 'domain=' . $_GET['domain'] . '&' : '') . 'path=' . $relativePath . '" onclick="handleClick(event, \'' . $relativePath . '\')">' . basename($path)  // "?path=' . basename($path) . '"         
+                    . '/</a></div>' . "\n";
+                    break;
+                  case 'clients':
+                  case 'clientele':
+                    echo '<div style="position: relative; border: 4px dashed orange;">'
+                    . '<a href="?' . (!defined('APP_ROOT') || empty(APP_ROOT) ? '' : (array_key_first($_GET) == 'client' ? 'client=' . $_GET['client'] . '&' . (isset($_GET['domain']) ? 'domain=' . ($_GET['domain'] != '' ? $_GET['domain'] . '&' : '') : '') : (array_key_first($_GET) == 'project' ? 'project=' . $_GET['project'] . '&' : ''))) . 'path=' . $relativePath . '" onclick="handleClick(event, \'' . $relativePath . '\')">'
+                    // (!isset($_GET['path']) ? '' : $_GET['path'] . ($_GET['path'] == '' ? '' : '/' )) . basename($path)
+                    . '<img src="resources/images/directory.png" width="50" height="32" /><br />' . basename($path) . '/</a></div>' . "\n";
+                    break;
+                  case 'node_modules':
+                    echo '<div style="position: relative; border: 4px dashed #E14747;">'
+                    . '<a href="#!" onclick="document.getElementById(\'app_npm-container\').style.display=\'block\';"><img src="resources/images/directory-npm.png" width="50" height="32" /></a><br />'
+                    . '<a href="?' . (APP_ROOT != '' && isset($_GET[array_key_first($_GET)]) ? array_key_first($_GET) . '=' . $_GET[array_key_first($_GET)] . '&' : '') . 'path=' . $relativePath . '" onclick="handleClick(event, \'' . $relativePath . '\')">' . basename($path)  // "?path=' . basename($path) . '"         
+                    . '/</a></div>' . "\n";
+                    break;
+                  case 'database':
+                    echo '<div style="position: relative; border: 4px dashed #2C88DA;">'
+                    . '<a href="?' . (!defined('APP_ROOT') || empty(APP_ROOT) ? '' : (array_key_first($_GET) == 'client' ? 'client=' . $_GET['client'] . '&' . (isset($_GET['domain']) ? 'domain=' . ($_GET['domain'] != '' ? $_GET['domain'] . '&' : '') : '') : (array_key_first($_GET) == 'project' ? 'project=' . $_GET['project'] . '&' : ''))) . 'path=' . $relativePath . '" onclick="handleClick(event, \'' . $relativePath . '\')">'
+                    // (!isset($_GET['path']) ? '' : $_GET['path'] . ($_GET['path'] == '' ? '' : '/' )) . basename($path)
+                    . '<img src="resources/images/directory.png" width="50" height="32" /><br />' . basename($path) . '/</a></div>' . "\n";
+                    break;
+                  case 'projects':
+                    echo '<div style="position: relative; border: 4px dashed #2C88DA;">'
+                    . '<a href="#!" onclick="document.getElementById(\'app_project-container\').style.display=\'block\';"><img src="resources/images/directory-project.png" width="50" height="32" /></a><br />'
+                    . '<a href="?' . (isset($_GET['client']) ? 'client=' . $_GET['client'] . '&' : '') . (isset($_GET['domain']) ? 'domain=' . $_GET['domain'] . '&' : '') . 'path=' . $relativePath . '" onclick="handleClick(event, \'' . $relativePath . '\')">' . basename($path)  // "?path=' . basename($path) . '"
+                    . '/</a></div>' . "\n";
+                    break;
+                  case 'public':
+                    echo '<div style="position: relative; border: 4px dashed #CC9900;">'
+                    . '<a href="?' . (!defined('APP_ROOT') || empty(APP_ROOT) ? '' : (array_key_first($_GET) == 'client' ? 'client=' . $_GET['client'] . '&' . (isset($_GET['domain']) ? 'domain=' . ($_GET['domain'] != '' ? $_GET['domain'] . '&' : '') : '') : (array_key_first($_GET) == 'project' ? 'project=' . $_GET['project'] . '&' : ''))) . 'path=' . $relativePath . '" onclick="handleClick(event, \'' . $relativePath . '\')">'
+                    // (!isset($_GET['path']) ? '' : $_GET['path'] . ($_GET['path'] == '' ? '' : '/' )) . basename($path)
+                    . '<img src="resources/images/directory.png" width="50" height="32" /><br />' . basename($path) . '/</a></div>' . "\n";
+                    break;
+                  case 'vendor':
+                    echo '<div style="position: relative; border: 4px dashed #6B4329;">'
+                    . '<a href="#!" onclick="document.getElementById(\'app_composer-container\').style.display=\'block\';"><img src="resources/images/directory-composer.png" width="50" height="32" /></a><br />'
+                    . '<a href="?' . (isset($_GET['client']) ? 'client=' . $_GET['client'] . '&' : '') . (isset($_GET['domain']) ? 'domain=' . $_GET['domain'] . '&' : '') . 'app=composer&path=' . $relativePath . '" onclick="handleClick(event, \'' . $relativePath . '\')">' . basename($path)  // "?path=' . basename($path) . '"         
+                    . '/</a></div>' . "\n";
+                    break;
+                  default:
+                    echo '<a href="?' . (!defined('APP_ROOT') || empty(APP_ROOT) ? '' : (array_key_first($_GET) == 'client' ? 'client=' . $_GET['client'] . '&' . (isset($_GET['domain']) ? 'domain=' . ($_GET['domain'] != '' ? $_GET['domain'] . '&' : '') : '') : (array_key_first($_GET) == 'project' ? 'project=' . $_GET['project'] . '&' : ''))) . 'path=' . $relativePath . '" onclick="handleClick(event, \'' . $relativePath . '\')">'
+                    // (!isset($_GET['path']) ? '' : $_GET['path'] . ($_GET['path'] == '' ? '' : '/' )) . basename($path)
+                    . '<img src="resources/images/directory.png" width="50" height="32" /><br />' . basename($path) . '/</a>';
+                    break;
                   }
                 elseif (is_file($path)) {
                   if (preg_match('/^\..*/', basename($path))) {
