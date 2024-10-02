@@ -532,7 +532,7 @@ $path = APP_PATH . APP_ROOT . ($_GET['path'] ?? '');
 
               // Adjust the path to be relative to the current directory
 
-              $relativePath = str_replace(APP_PATH . APP_ROOT, '', $path);
+              $relativePath = basename(str_replace(APP_PATH . APP_ROOT, '', $path)) . DIRECTORY_SEPARATOR;
 
                 echo "<td style=\"border: 0 solid #000; text-align: center;\" class=\"text-xs\">\n";
                 if (is_dir($path))
