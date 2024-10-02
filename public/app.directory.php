@@ -530,10 +530,11 @@ $path = APP_PATH . APP_ROOT . ($_GET['path'] ?? '');
           if (!empty($paths))
             foreach($paths as $key => $path) {
               // Adjust the path to be relative to the current directory
-              $relativePath = rtrim(basename(str_replace(APP_PATH . APP_ROOT, '', $path)), DIRECTORY_SEPARATOR) . '/';
+              $relativePath = basename(str_replace(APP_PATH . APP_ROOT, '', rtrim($path, DIRECTORY_SEPARATOR)));
 
               echo "<td style=\"border: 0 solid #000; text-align: center;\" class=\"text-xs\">\n";
-              if (is_dir($path))
+              if (is_dir($path)) {
+                $relativePath = $relativePath . '/';
                 switch (basename($path)) {
                   case '.git':
                     echo '<div style="position: relative; border: 4px dashed #F05033;">'
@@ -590,7 +591,8 @@ $path = APP_PATH . APP_ROOT . ($_GET['path'] ?? '');
                     . '<img src="resources/images/directory.png" width="50" height="32" /><br />' . basename($path) . '/</a>';
                     break;
                   }
-                elseif (is_file($path)) {
+                } elseif (is_file($path)) {
+                  $relativePath = str_replace(APP_PATH . APP_ROOT, '', rtrim($path, DIRECTORY_SEPARATOR));
                   if (preg_match('/^\..*/', basename($path))) {
                     switch (basename($path)) {
                       case '.htaccess':
