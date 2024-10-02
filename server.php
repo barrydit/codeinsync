@@ -318,8 +318,9 @@ function clientInputHandler($input) {
       //$output .= " $input";
     } elseif (preg_match('/cmd:\s+(.*)(?=\r?\n$)?/s', $input, $matches)) { // cmd: composer update
       $cmd = $matches[1];
-      $output = trim(shell_exec(/*$cmd*/ 'echo $PWD'));
-      $output .= " cmd: $cmd";
+      $output = 'input: ' . json_encode($input) . " cmd: $cmd";
+      //$output = trim(shell_exec(/*$cmd*/ 'echo $PWD'));
+      //$output .= 'input: ' . json_encode($input) . " cmd: $cmd";
     } else {
       // Process the request and send a response
       $output = "Hello, client! Your input was: $input";

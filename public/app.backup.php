@@ -263,7 +263,7 @@ ob_end_clean();
 
 ob_start(); ?>
 
-<?php $app[$backup]['html'] = ob_get_contents(); 
+<?php $app[$backup]['html'] = ob_get_contents();
 ob_end_clean();
 
 //check if file is included or accessed directly
