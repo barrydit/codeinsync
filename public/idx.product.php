@@ -7,10 +7,13 @@ if (__FILE__ == get_required_files()[0] && __FILE__ == realpath($_SERVER["SCRIPT
     if (is_file($path = realpath('config.php'))) require_once $path;
   } else die(var_dump("Path was not found. file=$path"));
 
-header("Content-Type: text/html");
-header("Cache-Control: no-store, no-cache, must-revalidate, max-age=0");
-header("Expires: Sat, 26 Jul 1997 05:00:00 GMT");
-header("Pragma: no-cache"); ?>
+if (!headers_sent()) {
+  header("Content-Type: text/html");
+  header("Cache-Control: no-store, no-cache, must-revalidate, max-age=0");
+  header("Expires: Sat, 26 Jul 1997 05:00:00 GMT");
+  header("Pragma: no-cache");
+}
+ ?>
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -19,7 +22,7 @@ header("Pragma: no-cache"); ?>
 
     <script src="https://d3js.org/d3.v7.min.js"></script>
 
-    <base href="<?=(!is_array(APP_URL) ? APP_URL : APP_URL_BASE) . (preg_match('/^\/(?!\?)$/', $_SERVER['REQUEST_URI']) ? '?' : '') . (!defined('APP_DEBUG') ? '#' : '?' . (APP_URL_BASE['query'] != '' ? APP_URL_BASE['query'] : '')) . (defined('APP_ENV') && APP_ENV == 'development' ? '#!' : ''); ?>">
+    <base href="<?=(!is_array(APP_URL) ? APP_URL : APP_URL_BASE) . (preg_match('/^\/(?!\?)$/', ($_SERVER['REQUEST_URI'] ?? '')) ? '?' : '') . (!defined('APP_DEBUG') ? '#' : '?' . (APP_URL_BASE['query'] != '' ? APP_URL_BASE['query'] : '')) . (defined('APP_ENV') && APP_ENV == 'development' ? '#!' : ''); ?>">
 
     <title>Multiple Ace Editor Instances</title>
 
@@ -102,17 +105,19 @@ unset($path);
       <?= defined('UI_ACE_EDITOR') ? UI_ACE_EDITOR['style'] : null; ?>
       <?= defined('UI_NODES') ? UI_NODES['style'] : null; ?>
 
-      <?= $apps['browser']['style']; ?>
-      <?= $apps['github']['style']; ?>
-      <?= $apps['packagist']['style']; ?>
-      <?= $apps['whiteboard']['style']; ?>
-      <?= $apps['notes']['style']; ?> 
-      <?= $apps['pong']['style']; ?>
+      <?= ($apps['browser']['style'] ?? ''); ?>
+      <?= ($apps['github']['style'] ?? ''); ?>
+      <?= ($apps['packagist']['style'] ?? ''); ?>
+      <?= ($apps['whiteboard']['style'] ?? ''); ?>
+      <?= ($apps['notes']['style'] ?? ''); ?> 
+      <?= ($apps['pong']['style'] ?? ''); ?>
 
       <?= /*$appBackup['style']*/ NULL; ?>
-      <?= $apps['console']['style']; ?>
-      <?= $apps['timesheet']['style']; ?>
-      <?= $apps['project']['style']; ?>
+      <?= ($apps['console']['style'] ?? ''); ?>
+      <?= ($apps['timesheet']['style'] ?? ''); ?>
+      <?= ($apps['project']['style'] ?? ''); ?>
+
+      ( ?? '')
       .container2 {
       position: relative;
       display: inline-block;
@@ -334,10 +339,10 @@ unset($path);
           $main_cat = '        <form style="display: inline;" autocomplete="off" spellcheck="false" action="" method="GET">/'  . "\n"
           . '            <select name="category" onchange="this.form.submit();">' . "\n"
           
-          . '              <option value="" ' . (empty(APP_QUERY) ? 'selected' : '') . '>' . basename(parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH)) . '</option>' . "\n"
+          . '              <option value="" ' . (empty(APP_QUERY) ? 'selected' : '') . '>' . basename(parse_url(($_SERVER['REQUEST_URI'] ?? ''), PHP_URL_PATH)) . '</option>' . "\n"
           . '              <option value="application" ' . (isset($_GET['application']) ? 'selected' : '') . ' ' . (realpath(APP_PATH . /*'../../'.*/ 'applications/') ? '' : 'disabled') . '>applications</option>' . "\n"
           . '              <option value="client" ' . (isset($_GET['client']) ? 'selected' : '') . '>clientele</option>' . "\n"
-          . '              <option value="projects" ' . (isset($_GET['project']) && $_GET['project'] || preg_match('/(?:^|&)project(?:[^&]*=)/', $_SERVER['QUERY_STRING']) ? 'selected' : '') . '>projects</option>' . "\n"
+          . '              <option value="projects" ' . (isset($_GET['project']) && $_GET['project'] || preg_match('/(?:^|&)project(?:[^&]*=)/', ($_SERVER['QUERY_STRING'] ?? '')) ? 'selected' : '') . '>projects</option>' . "\n"
           . '              <option value="node_module" ' . (isset($_GET['node_module']) && !$_GET['node_module'] && preg_match('/(?:^|&)node_module(?![^&]*=)/', $_SERVER['QUERY_STRING']) ? 'selected' : '') . '>./node_modules</option>' . "\n"
           . '              <option value="resources" ' . (isset($_GET['path']) && $_GET['path'] == 'resources' ? 'selected' : '') . '>./resources</option>' . "\n"
           . '              <option value="project" ' . (isset($_GET['project']) && !$_GET['project'] && preg_match('/(?:^|&)project(?![^&]*=)/', $_SERVER['QUERY_STRING']) ? 'selected' : '') . '>./project</option>' . "\n"
@@ -757,7 +762,9 @@ if (defined('APP_WHOIS') && !empty(APP_WHOIS)) {
       </div>
     </div>
   </div>
-  <?php } echo $apps['directory']['body']; ?>
+  <?php } ?>
+  
+<?= ($apps['directory']['body'] ?? ''); ?>
   
   <div id="app_notes-container" style="position: absolute; display: none; top: 100px; margin: 0 auto; width: 800px; height: 600px; background-color: rgba(255, 255, 255, 0.9); overflow-x: scroll;">
     <div style="display: inline;">
@@ -783,14 +790,14 @@ if (defined('APP_WHOIS') && !empty(APP_WHOIS)) {
   </div>
 </div>
 
-<?= $apps['timesheet']['body']; ?>
-<?= $apps['browser']['body']; ?>
-<?= $apps['github']['body']; ?>
-<?= $apps['packagist']['body']; ?>
-<?= $apps['whiteboard']['body']; ?>
-<?= $apps['notes']['body']; ?>
+<?= ($apps['timesheet']['body'] ?? ''); ?>
+<?= ($apps['browser']['body'] ?? ''); ?>
+<?= ($apps['github']['body'] ?? ''); ?>
+<?= ($apps['packagist']['body'] ?? ''); ?>
+<?= ($apps['whiteboard']['body'] ?? ''); ?>
+<?= ($apps['notes']['body'] ?? ''); ?>
 <!-- https://pong-2.com/ -->
-<?= $apps['pong']['body']; ?>
+<?= ($apps['pong']['body'] ?? ''); ?>
 
 </div>
 </div>
@@ -803,9 +810,8 @@ if (defined('APP_WHOIS') && !empty(APP_WHOIS)) {
 <?= defined('UI_ACE_EDITOR') ? UI_ACE_EDITOR['body'] : null; ?>
 <?= defined('UI_NODES') ? UI_NODES['body'] : null; ?>
 
-<?= isset($apps['project']['body']) ? $apps['project']['body'] : ''; ?>
-
-<?= isset($apps['console']['body']) ? $apps['console']['body'] : ''; ?>
+<?= ($apps['project']['body'] ?? ''); ?>
+<?= ($apps['console']['body'] ?? ''); ?>
 <!-- https://cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.min.js -->
 <!-- https://code.jquery.com/jquery-3.7.1.min.js -->
 <!-- script src="https://code.jquery.com/jquery-3.6.0.min.js" integrity="sha256-/xUj+3OJU5yExlq6GSYGSHk7tPXikynS7ogEvDej/m4=" crossorigin="anonymous"></script -->
@@ -1475,13 +1481,13 @@ $( '#app_directory-container' ).slideUp( "slow", function() {
       
       <?= defined('UI_ACE_EDITOR') ? UI_ACE_EDITOR['script'] : null; /* NULL; */?>
       
-      <?= !isset($apps['directory']['script'])?: $apps['directory']['script']; ?>
+      <?= ($apps['directory']['script'] ?? ''); ?>  
 
-      <?= !isset($apps['browser']['script'])?: $apps['browser']['script']; ?>
+      <?= ($apps['browser']['script'] ?? ''); ?>
       
-      <?= !isset($apps['github']['script'])?: $apps['github']['script']; ?>
+      <?= ($apps['github']['script'] ?? ''); ?>
       
-      <?= !isset($apps['packagist']['script'])?: $apps['packagist']['script']; ?>
+      <?= ($apps['packagist']['script'] ?? ''); ?>
       
       <?= /*$app['whiteboard']['script'];*/ NULL; ?>
       
@@ -1491,7 +1497,7 @@ $( '#app_directory-container' ).slideUp( "slow", function() {
       <?= /*$app['backup']['script']*/ NULL; ?>
       
       
-      <?= !isset($apps['pong']['script'])?: $apps['pong']['script']; ?>
+      <?= ($apps['pong']['script'] ?? ''); ?>
       
       /*
       require.config({
@@ -1513,8 +1519,8 @@ $( '#app_directory-container' ).slideUp( "slow", function() {
       });
       */
       
-      <?= !isset($apps['timesheet']['script'])?: $apps['timesheet']['script']; ?>
-      <?= !isset($apps['project']['script'])?: $apps['project']['script']; ?>
+      <?= ($apps['timesheet']['script'] ?? ''); ?>
+      <?= ($apps['project']['script'] ?? ''); ?>
 
 
 
