@@ -1059,7 +1059,7 @@ function clockIncrement() {
     weekday[6]="Sat,";
     
     
-    clocktime.innerHTML = '<i style="background-color: #0078D7; color: white;">' + weekday[date.getDay()] + '  ' + time + '  ' + month + ' ' + date.getDate() + ' ' + date.getFullYear()  + '</i>';
+    clocktime.innerHTML = '<i style="background-color: white; color: #0078D7;"> ' + weekday[date.getDay()] + '  ' + time + '  ' + month + ' ' + date.getDate() + ' ' + date.getFullYear()  + ' </i>';
 }
 
 function startInterval() {

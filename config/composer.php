@@ -790,7 +790,7 @@ if (defined('COMPOSER_VERSION') && defined('COMPOSER_LATEST')) { // defined('APP
       
       // Send a message to the server
       $errors['server-2'] = 'Client request: ' . $message = "cmd: " . basename(COMPOSER_EXEC['bin']) . " self-update\n";
-        
+      /* Known socket  Error / Bug is mis-handled and An established connection was aborted by the software in your host machine */
       fwrite($_SERVER['SOCKET'], $message);
       $output[] = trim($message) . ': ';
       // Read response from the server
@@ -1142,7 +1142,7 @@ while (!feof($_SERVER['SOCKET'])) {
       
       // Send a message to the server
       $errors['server-2'] = 'Client request: ' . $message = 'cmd: ' . COMPOSER_EXEC['bin'] . " install -o\n";
-        
+      /* Known socket  Error / Bug is mis-handled and An established connection was aborted by the software in your host machine */
       fwrite($_SERVER['SOCKET'], $message);
       $output[] = trim($message) . ': ';
       // Read response from the server

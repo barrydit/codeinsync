@@ -38,7 +38,7 @@ $tableGen = function(): string {
 <?php
   $path = APP_PATH . APP_ROOT . ($_GET['path'] ?? '');
   
-  echo '<div style="position: absolute; top: 2px; left: 2px;  width: 100%;"><a href="?path" ' . (isset($_GET['path']) && !isset($_GET['client']) ? 'onclick="handleClick(event, \'/\')"' : '') . '><img src="resources/images/directory-www.fw.png" width="50" height="32">' . APP_PATH /* rtrim(, DIRECTORY_SEPARATOR)*/ . '</a>' . (isset($_GET['client']) ? '<a href="?client" ' . (isset($_GET['path']) ? 'onclick="handleClick(event, \'/\')"' : '') . '>' . 'clientele' . DIRECTORY_SEPARATOR . '</a><a href="?client=' . $_GET['client'] . '">' . $_GET['client'] . '</a>' : '') . (isset($_GET['domain']) ? '<a href="?' . (isset($_GET['client']) ? 'client=' . $_GET['client'] . '&' : '') . 'domain=' . $_GET['domain'] . '" onclick="handleClick(event, \'/\')">' . DIRECTORY_SEPARATOR . $_GET['domain'] . DIRECTORY_SEPARATOR . '</a>' : ((isset($_GET['client']) ? $_GET['client'] : '')) . (isset($_GET['domain']) ? DIRECTORY_SEPARATOR . $_GET['domain'] : '') ?? ($_GET['project'])) . (isset($_GET['project']) ? '<a onclick="handleClick(event, \'/\')">' . DIRECTORY_SEPARATOR . 'projects' . (DIRECTORY_SEPARATOR . $_GET['project'] ?? '') . '</a>' : '') .  (isset($_GET['path']) && $_GET['path'] && $_GET['path'] !== '/' ? '<a href="?path=' . trim($_GET['path'], DIRECTORY_SEPARATOR) . '" onclick="handleClick(event, \'/\')">' . /*DIRECTORY_SEPARATOR .*/ trim($_GET['path'], DIRECTORY_SEPARATOR) . DIRECTORY_SEPARATOR : '' /*DIRECTORY_SEPARATOR*/) . '</a></div><div style="height: 25px;"></div>';
+  echo '<div style="position: absolute; top: 2px; left: 2px;  width: 100%;"><a href="?path" ' . (isset($_GET['path']) && !isset($_GET['client']) ? 'onclick="handleClick(event, \'/\')"' : '') . '><img src="resources/images/directory-www.fw.png" width="50" height="32">' . APP_PATH /* rtrim(, DIRECTORY_SEPARATOR)*/ . '</a>' . (isset($_GET['client']) ? '<a href="?client" ' . (isset($_GET['path']) ? 'onclick="handleClick(event, \'/\')"' : '') . '>' . 'clientele' . DIRECTORY_SEPARATOR . '</a><a href="?client=' . $_GET['client'] . '">' . $_GET['client'] . '</a>' : '') . (isset($_GET['domain']) ? '<a href="?' . (isset($_GET['client']) ? 'client=' . $_GET['client'] . '&' : '') . 'domain=' . $_GET['domain'] . '" onclick="handleClick(event, \'/\')">' . DIRECTORY_SEPARATOR . $_GET['domain'] . DIRECTORY_SEPARATOR . '</a>' : ((isset($_GET['client']) ? $_GET['client'] : '')) . (isset($_GET['domain']) ? DIRECTORY_SEPARATOR . $_GET['domain'] : '') ?? ($_GET['project'])) . (isset($_GET['project']) ? '<a onclick="handleClick(event, \'/\')">' . DIRECTORY_SEPARATOR . 'projects' . (DIRECTORY_SEPARATOR . $_GET['project'] ?? '') . '</a>' : '') . (isset($_GET['path']) && $_GET['path'] && $_GET['path'] !== '/' ? '<a href="?path=' . trim($_GET['path'], DIRECTORY_SEPARATOR) . '" onclick="handleClick(event, \'/\')">' . /*DIRECTORY_SEPARATOR .*/ trim($_GET['path'], DIRECTORY_SEPARATOR) . DIRECTORY_SEPARATOR . '</a>' : '' /*DIRECTORY_SEPARATOR*/) . '</div><div style="height: 25px;"></div>';
 
 if (isset($_GET['path']) && preg_match('/^vendor\/?/', $_GET['path'])) {
 
@@ -172,11 +172,11 @@ if (defined('COMPOSER_VENDORS')) {
                     . '<img src="resources/images/directory-symfony.png" width="50" height="32" style="' . (isset(COMPOSER->{'require'}->{"$vendor/$package"}) || isset(COMPOSER->{'require-dev'}->{"$vendor/$package"})?: 'opacity:0.4;filter:alpha(opacity=40);') . '" /></a><br />'
                     . '<div class="overlay">';
                     foreach ($packages as $package) {
-                      if (in_array(APP_PATH . APP_BASE['vendor'] . $vendor.'/'.$package.'/bootstrap.php', get_required_files()))
-                        echo '<a href="?app=ace_editor&path=' . APP_BASE['vendor'] . $vendor.'/'.$package.'/&file=bootstrap.php"><code style="background-color: white; color: #0078D7; font-size: 9px;">' . $package. '</code></a><br />';
-                      elseif (in_array(APP_PATH . APP_BASE['vendor'] . $vendor.'/'.$package.'/function.php', get_required_files()))
-                        echo '<a href="?app=ace_editor&path=' . APP_BASE['vendor'] . $vendor.'/'.$package.'/&file=function.php"><code style="background-color: white; color: #0078D7; font-size: 9px;">' . $package. '</code></a><br />';
-                      else 
+                      if (in_array(APP_PATH . APP_BASE['vendor'] . $vendor. DIRECTORY_SEPARATOR . $package . DIRECTORY_SEPARATOR . 'bootstrap.php', get_required_files()))
+                        echo '<a href="?app=ace_editor&path=' . APP_BASE['vendor'] . $vendor . '/' . $package . '/&file=bootstrap.php"><code style="background-color: white; color: #0078D7; font-size: 9px;">' . $package. '</code></a><br />';
+                      elseif (in_array(APP_PATH . APP_BASE['vendor'] . $vendor. DIRECTORY_SEPARATOR . $package . DIRECTORY_SEPARATOR . 'function.php', get_required_files()))
+                        echo '<a href="?app=ace_editor&path=' . APP_BASE['vendor'] . $vendor . '/' . $package.'/&file=function.php"><code style="background-color: white; color: #0078D7; font-size: 9px;">' . $package. '</code></a><br />';
+                      else
                         echo '<p style="background-color: #0078D7;">' . $package . '</p>' . PHP_EOL;
                       //echo APP_PATH. APP_BASE['vendor'] . $vendor.'/'.$package;
           
@@ -198,7 +198,7 @@ if (defined('COMPOSER_VENDORS')) {
                     . '<img src="resources/images/directory-composer.png" width="50" height="32" style="' . (isset(COMPOSER->{'require'}->{"$vendor/composer"}) || isset(COMPOSER->{'require-dev'}->{"$vendor/$package"})? '' : 'opacity:0.4;filter:alpha(opacity=40);') . '" /></a><br />'
                     . '<div class="pkg_dir overlay">';
                     foreach ($packages as $package) {
-                      if (!in_array(APP_PATH . APP_ROOT.'vendor/'.$vendor.'/'.$package.'/Psr/Log/LogLevel.php', get_required_files()) && $package == 'log') {
+                      if (!in_array(APP_PATH . APP_ROOT. APP_BASE['vendor'] . $vendor . DIRECTORY_SEPARATOR . $package. DIRECTORY_SEPARATOR .'Psr' . DIRECTORY_SEPARATOR . 'Log' . DIRECTORY_SEPARATOR . 'LogLevel.php', get_required_files()) && $package == 'log') {
                         echo '<a href="?app=ace_editor&path=vendor/'.$vendor.'/'.$package.'/Psr/Log/&file=LogLevel.php"><code style="background-color: white; color: #0078D7; font-size: 10px;">' . $package. '</code></a>';
                         continue;
                       }
@@ -210,7 +210,7 @@ if (defined('COMPOSER_VENDORS')) {
                     . '<img src="resources/images/directory-psr.png" width="50" height="32" style="' . (isset(COMPOSER->{'require'}->{"$vendor/$package"}) || isset(COMPOSER->{'require-dev'}->{"$vendor/$package"}) ? '' : (!$show_notice ? '' : 'opacity:0.4;filter:alpha(opacity=40);')) . '" />' . '</a><br />'
                     . '<div class="overlay">';
                     foreach ($packages as $package) {
-                      if (!in_array(APP_PATH.'vendor/'.$vendor.'/'.$package.'/Psr/Log/LogLevel.php', get_required_files()) && $package == 'log') {
+                      if (!in_array(APP_PATH . APP_BASE['vendor'] . $vendor . DIRECTORY_SEPARATOR . $package . DIRECTORY_SEPARATOR . 'Psr' . DIRECTORY_SEPARATOR . 'Log' . DIRECTORY_SEPARATOR . 'LogLevel.php', get_required_files()) && $package == 'log') {
                         echo '<a href="?app=ace_editor&path=vendor/'.$vendor.'/'.$package.'/Psr/Log/&file=LogLevel.php"><code style="background-color: white; color: #0078D7; font-size: 10px;">' . $package. '</code></a>';
                         continue;
                       }
@@ -235,7 +235,6 @@ if (defined('COMPOSER_VENDORS')) {
           
                 if (isset($count) && $count >= 6) $count = 1;
                 else $count++;
-          
             }
           
           foreach (COMPOSER_VENDORS as $vendor => $packages) {
@@ -476,7 +475,7 @@ $path = APP_PATH . APP_ROOT . ($_GET['path'] ?? '');
 <?php
 
           //$paths = ['thgsgfhfgh.php'];
-          $paths = glob(rtrim($path, '/') . '/' . '{.[!.]*,*}', GLOB_BRACE | GLOB_MARK);
+          $paths = glob(rtrim($path, DIRECTORY_SEPARATOR) . DIRECTORY_SEPARATOR . '{.[!.]*,*}', GLOB_BRACE | GLOB_MARK);
           //dd(urldecode($_GET['path']));
 
           usort($paths, function ($a, $b) {
@@ -541,7 +540,7 @@ $path = APP_PATH . APP_ROOT . ($_GET['path'] ?? '');
                     case '.git':
                       echo '<div style="position: relative; border: 4px dashed #F05033;">'
                       . '<a href="#!" onclick="document.getElementById(\'app_git-container\').style.display=\'block\';">' // "?path=' . basename($path) . '" 
-                      . '<img src="resources/images/directory-git.png" width="50" height="32" /><br />'
+                      . '<img src="resources/images/directory-git.png" width="50" height="32" /></a><br />'
                       . '<a href="?' . (isset($_GET['client']) ? 'client=' . $_GET['client'] . '&' : '') . (isset($_GET['domain']) ? 'domain=' . $_GET['domain'] . '&' : '') . 'path=' . $relativePath . '" onclick="handleClick(event, \'' . $relativePath . '\')">' . basename($path) . '/</a></div>' . "\n";
                       break;
                     case 'applications':
@@ -634,16 +633,16 @@ $path = APP_PATH . APP_ROOT . ($_GET['path'] ?? '');
 
                     switch (basename($path)) {
                       case 'package.json':
-                        echo '<div style="position: relative; border: 4px dashed #E14747;"><img src="resources/images/package_json_file.png" width="40" height="50" /><br />' 
+                        echo '<div style="position: relative; border: 4px dashed #E14747;"><img src="resources/images/package_json_file.png" width="40" height="50" /></a><br />' 
                         . '<a href="?file=' . basename($path) . '" onclick="handleClick(event, \'' . $relativePath . '\')">' . basename($path) . '</a>'
                         . (isset($errors['COMPOSER-VALIDATE-JSON']) ? '<div style="position: absolute; right: 8px; top: -6px; color: red; font-weight: bold;">[1]</div>' : '')
-                        . '</a></div>' . "\n";
+                        . '</div>' . "\n";
                         break;
                       case 'package-lock.json':
-                        echo '<div style="position: relative; border: 4px dashed #E14747;"><img src="resources/images/package-lock_json_file.png" width="40" height="50" /><br />' 
+                        echo '<div style="position: relative; border: 4px dashed #E14747;"><img src="resources/images/package-lock_json_file.png" width="40" height="50" /></a><br />' 
                         . '<a href="?file=' . basename($path) . '" onclick="handleClick(event, \'' . $relativePath . '\')">' . basename($path) . '</a>'
                         . (isset($errors['COMPOSER-VALIDATE-JSON']) ? '<div style="position: absolute; right: 8px; top: -6px; color: red; font-weight: bold;">[1]</div>' : '')
-                        . '</a></div>' . "\n";
+                        . '</div>' . "\n";
                         break;
                     }
                     
@@ -652,18 +651,18 @@ $path = APP_PATH . APP_ROOT . ($_GET['path'] ?? '');
 
                     switch (basename($path)) {
                       case 'composer.json':
-                        echo '<div style="position: relative; border: 4px dashed #6B4329;"><img src="resources/images/composer_json_file.gif" width="40" height="50" /><br />'
+                        echo '<div style="position: relative; border: 4px dashed #6B4329;"><img src="resources/images/composer_json_file.gif" width="40" height="50" /></a><br />'
                         . '<a href="?file=' . basename($path) . '" onclick="handleClick(event, \'' . $relativePath . '\')">' . basename($path) . '</a>'
                         . (isset($errors['COMPOSER-VALIDATE-JSON']) ? '<div style="position: absolute; right: 8px; top: -6px; color: red; font-weight: bold;">[1]</div>' : '')
-                        . '</a></div></div>' . "\n";
+                        . '</div></div>' . "\n";
                         break;
                       
                       case 'composer.lock':
-                        echo '<div style="position: relative; border: 4px dashed #6B4329;"><img src="resources/images/composer_lock_file.gif" width="40" height="50" /><br />'
+                        echo '<div style="position: relative; border: 4px dashed #6B4329;"><img src="resources/images/composer_lock_file.gif" width="40" height="50" /></a><br />'
                         . '<a href="?file=' . basename($path) . '" onclick="handleClick(event, \'' . $relativePath . '\')">' . basename($path) . '</a>'
                         . (isset($errors['COMPOSER-VALIDATE-LOCK']) ? '<div style="position: absolute; right: 8px; top: -6px; color: red; font-weight: bold;">[1]</div>' : '')
                         /*            . (is_readable($path = ini_get('error_log')) && filesize($path) > 0 ? '<div style="position: absolute; right: 8px; bottom: -6px; color: red; font-weight: bold;">[1]</div>' : '' ) */
-                        . '</a></div></div>' . "\n";
+                        . '</div></div>' . "\n";
                         break;
                       case 'composer.phar':
                         echo '<div style="position: relative; border: 4px dashed #6B4329;"><img src="resources/images/phar_file.png" width="40" height="50" /><br />'
