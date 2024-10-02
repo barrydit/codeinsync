@@ -212,7 +212,7 @@ if (!defined('APP_ROOT')) {
   $path = !isset($_GET['client']) ? (!isset($_GET['project']) ? '' : 'projects/' . $_GET['project'] . '/') : 'clientele/' . $_GET['client'] . '/' . (isset($_GET['domain']) ? ($_GET['domain'] != '' ? $_GET['domain'] . '/' : '') : ''); /* ($_GET['path'] . '/' ?? '')*/
   //die($path);
   //is_dir(APP_PATH . $_GET['path']) 
-  define('APP_ROOT', !empty(realpath(APP_PATH . ($path = rtrim($path, '/')) ) && $path != '') ? "$path/" : '');  // basename() does not like null
+  define('APP_ROOT', !empty(realpath(APP_PATH . ($path = rtrim($path, DIRECTORY_SEPARATOR)) ) && $path != '') ? (string) $path . DIRECTORY_SEPARATOR : '');  // basename() does not like null
 }
 /*
 if (isset($_GET['path']) && $_GET['path'] != '' && realpath($_GET['path']) && is_dir($_GET['path']))
