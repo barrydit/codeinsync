@@ -13,6 +13,7 @@ if (!headers_sent()) {
   header("Expires: Sat, 26 Jul 1997 05:00:00 GMT");
   header("Pragma: no-cache");
 }
+
  ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -229,6 +230,9 @@ unset($path);
 <body>
 
 <div style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; display: flex; z-index: 1; border: 1px solid green;"> <!-- position: relative; width: 100%; height: 100%; z-index: 1; -->
+
+
+
 <!--
     <div id="overlay2" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; display: flex; justify-content: center; align-items: center; z-index: 10;">
       <div id="confirmDialog" class="dialog2" style="position: relative; height: 175px; width: 350px; text-align: center;">
@@ -315,8 +319,8 @@ unset($path);
         </form>
       </div>
       <div class="text-sm" style="position: relative; display: inline-block; margin: 0 auto; border: 2px dashed #F00;">
-        <div style="position: absolute; display: <?= (isset($errors['GIT_UPDATE']) ? 'block' : 'none') ?>; left: 26px; top: 5px; width: 126px; background-color: #0078D7; color: #FFF; z-index: -1; font-variant-caps: all-small-caps;"><span style="background-color: #FFF; color: #0078D7;">&lt;- </span><span style="background-color: #FFF; color: red; margin-right: 2px;">Click to update&nbsp;</span></div>
-        <form class="app_git-pull" action="<?= APP_URL . '?' . http_build_query(APP_QUERY + array( 'app' => 'git')) . (defined('APP_ENV') && APP_ENV == 'development' ? '#!' : '') /* $c_or_p . '=' . (empty($_GET[$c_or_p]) ? '' : $$c_or_p->name) . '&amp;app=git' */ ?>" method="POST">
+        <div style="position: absolute; display: <?= isset($errors['GIT_UPDATE']) ? 'block' : 'none' ?>; left: 26px; top: 5px; width: 86px; background-color: #0078D7; color: #FFF; z-index: -1; font-variant-caps: all-small-caps;"><span style="background-color: #FFF; color: #0078D7;">&lt;- </span><span style="background-color: #FFF; color: red; margin-right: 2px;">Click to update&nbsp;</span></div>
+        <form class="app_git-pull" action="<?= APP_URL . '?' . http_build_query(APP_QUERY + ['app' => 'git']) . (defined('APP_ENV') && APP_ENV == 'development' ? '#!' : '') /* $c_or_p . '=' . (empty($_GET[$c_or_p]) ? '' : $$c_or_p->name) . '&amp;app=git' */ ?>" method="POST">
           <!-- <input type="hidden"  /> -->
           <button type="submit" name="cmd" value="pull"><img src="resources/images/red_arrow.fw.png" width="20" height="25" style="cursor: pointer; margin-left: 4px;" /><br />Pull</button>
         </form>
@@ -839,7 +843,7 @@ if (defined('APP_WHOIS') && !empty(APP_WHOIS)) {
 include 'app.debug.php';
   ?>
 
-
+<?= (APP_SELF !== APP_PATH_SERVER) and $socketInstance = Sockets::getInstance(); ?>
 <div id="details-container" style="position: fixed; display: <?= isset($_SERVER['SOCKET']) && is_resource($_SERVER['SOCKET']) && isset($_GET['client'])? 'none' : 'block' ?>; top: 0; left: 0; padding: 4px; z-index: 1; text-align: right; border: 1px solid #000; height: auto; background-color: #FFF; width: 245px;">
   <div style="float: left;"><h3 style="font-weight: bolder;"><?= !is_file($pid_file = APP_PATH . 'server.pid') ? '' : '(PID=' . (int) file_get_contents(APP_PATH . 'server.pid') . ')'?> Server</h3></div><div style="float: right;">On / Off <input id="check_server_start" type="checkbox" <?= isset($_SERVER['SOCKET']) && is_resource($_SERVER['SOCKET']) ? 'checked="checked"' : '' ?> onclick="validate()" /></div>
   <div style="clear: both;"></div>
@@ -1272,8 +1276,7 @@ function makeDraggable(windowId) {
             // Set the src attribute of the iframe
             document.getElementById('iWindow').src = uri_location;
         }
-      
-      $(document).ready(function(){
+        $(document).ready(function(){
         $( "#app_console-container").css('display', 'none');
 
         <?php if (isset($_GET['path'])) { ?>
@@ -1287,8 +1290,7 @@ $( '#app_directory-container' ).slideDown( "slow", function() {
 });
 
 <?php } ?>
-
-        if ($( "#app_directory-container" ).css('display') == 'none') {
+      if ($( "#app_directory-container" ).css('display') == 'none') {
       <?php 
        if (!empty(APP_URL['query']) || isset($_GET['debug']) || (defined(APP_DEBUG) && APP_DEBUG)) { ?>
 
@@ -1311,16 +1313,16 @@ $( '#app_directory-container' ).slideDown( "slow", function() {
       <?php } else if (defined('APP_ROOT') && APP_ROOT != '' && isset($errors['GIT_UPDATE']) && isset($_ENV['HIDE_UPDATE_NOTICE']) && $_ENV['HIDE_UPDATE_NOTICE'] != true ) { //  isset($_GET['client'])  !$_GET['client'] 
       
         
-      if ($_GET['client'] != '') { ?>
+      if ($_GET['client'] == '') { ?>
           document.getElementById('toggle-debug').checked = true;
 
-          toggleSwitch(document.getElementById('toggle-debug'));
+toggleSwitch(document.getElementById('toggle-debug'));
 /*
           $( '#app_directory-container' ).slideDown( "slow", function() {
            // Animation complete.
           });
 */
-        <?php } else if (!empty($_GET)) { ?>
+        <?php } else if (!empty($_GET) && $_GET['client'] == '') { ?>
 
           document.getElementById('toggle-debug').checked = true;
             
@@ -1381,7 +1383,9 @@ $( '#app_directory-container' ).slideUp( "slow", function() {
 
           <?php } } ?>
         }
-      });
+});
+
+
       
       <?= !isset($apps['console']['script'])?: $apps['console']['script']; ?>
       

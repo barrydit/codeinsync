@@ -257,6 +257,10 @@ END
     if (APP_SELF != APP_PATH_SERVER && in_array(APP_PATH_PUBLIC, get_included_files()) /*APP_SELF == APP_PATH_PUBLIC*/)
       require_once dirname(__DIR__) . DIRECTORY_SEPARATOR . 'config' . DIRECTORY_SEPARATOR . 'classes' . DIRECTORY_SEPARATOR . 'class.sockets.php';
 
+    // if (APP_SELF !== APP_PATH_SERVER) {}
+
+    //(APP_SELF !== APP_PATH_SERVER) and $socketInstance = Sockets::getInstance();
+    //$socketInstance->handleClientRequest("composer self-update\n");
     // Resolve host to IP and check internet connection
     if (isset($_SERVER['SOCKET']) && is_resource($_SERVER['SOCKET']) && !empty($_SERVER['SOCKET']) && $_SERVER['REQUEST_METHOD'] != 'POST') {
       $errors['server-1'] = "Connected to Server: " . SERVER_HOST . ':' . SERVER_PORT . "\n";
@@ -265,7 +269,7 @@ END
       $errors['server-2'] = 'Client request: ' . $message = "cmd: app connected\n";
   
       fwrite($_SERVER['SOCKET'], $message);
-      $output[] = trim($message) . ': ';
+      $output[] = trim($message); // . ': '
       // Read response from the server
       while (!feof($_SERVER['SOCKET'])) {
           $response = fgets($_SERVER['SOCKET'], 1024);
@@ -273,6 +277,8 @@ END
           if (isset($output[end($output)])) $output[end($output)] .= $response = trim($response);
           //if (!empty($response)) break;
       }
+      // Close and reopen socket
+      //fclose($socketInstance->getSocket());
       if (!empty($response))
         switch ((bool) $response) {
           case true:

@@ -1,6 +1,5 @@
 <?php
 
-
 //die($_SERVER['REQUEST_METHOD']);
 
 //if ($_SERVER['REQUEST_METHOD'] == 'POST') 
@@ -350,9 +349,11 @@ if (stripos(PHP_OS, 'WIN') === 0) { // DO NOT REMOVE! { .. }
 //exec('whoami', $output, $returnCode); // or $errors['COMPOSER-WHOAMI'] = $output;
 //if (APP_DEBUG) {
 
-$output[0] = stripos(PHP_OS, 'WIN') === 0 ? realpath(shell_exec(APP_SUDO . 'where composer')) : realpath(shell_exec(APP_SUDO . 'which composer'));
-
-$output[1] = shell_exec(APP_SUDO . 'composer --version') ?: $errors['COMPOSER-VERSION'] = $output[1];
+//$output = [];
+$output = [ // Exception: [] operator not supported for strings
+  stripos(PHP_OS, 'WIN') === 0 ? realpath(shell_exec(APP_SUDO . 'where composer')) : realpath(shell_exec(APP_SUDO . 'which composer')),
+  shell_exec(APP_SUDO . 'composer --version') ?: $errors['COMPOSER-VERSION'] = $output[1]
+];
 
 if (stripos(PHP_OS, 'WIN') === 0) {
   if (!preg_match('/Composer(?: version)? (\d+\.\d+\.\d+) (\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2})/', $output[1], $matches)) {
@@ -766,51 +767,57 @@ if (defined('COMPOSER_VERSION') && defined('COMPOSER_LATEST')) { // defined('APP
 //  if (is_file($path = APP_PATH . 'composer.lock') && is_writable($path)) 
 //    unlink($path);
 
-  if (version_compare(COMPOSER_LATEST, COMPOSER_VERSION, '>') != 0) {
-    //dd(basename(COMPOSER_EXEC['bin']) . ' self-update;'); // (stripos(PHP_OS, 'WIN') === 0 ? '' : APP_SUDO) . 
 
-    if (!isset($_SERVER['SOCKET']) || !is_resource($_SERVER['SOCKET']) || empty($_SERVER['SOCKET'])) {
-      $proc = proc_open((stripos(PHP_OS, 'WIN') === 0 ? '' : APP_SUDO . '-u www-data ') . basename(COMPOSER_EXEC['bin']) . ' self-update', [["pipe", "r"], ["pipe", "w"], ["pipe", "w"]], $pipes);
-    
-      [$stdout, $stderr, $exitCode] = [stream_get_contents($pipes[1]), stream_get_contents($pipes[2]), proc_close($proc)];
-    
-      if ($exitCode !== 0) {
-        if (empty($stdout)) {
-          if (!empty($stderr)) {
-            $errors['COMPOSER-SELF-UPDATE'] = $stderr;
-            error_log($stderr);
-          }
-        } else {
-          $errors['COMPOSER-SELF-UPDATE'] = $stdout;
+if (version_compare(COMPOSER_LATEST, COMPOSER_VERSION, '>') != 0) {
+  //dd(basename(COMPOSER_EXEC['bin']) . ' self-update;'); // (stripos(PHP_OS, 'WIN') === 0 ? '' : APP_SUDO) . 
+  (APP_SELF !== APP_PATH_SERVER) and $socketInstance = Sockets::getInstance();
+  //$socketInstance->handleClientRequest("composer self-update\n");
+  if (!isset($_SERVER['SOCKET']) || !is_resource($_SERVER['SOCKET']) || empty($_SERVER['SOCKET'])) {
+    $proc = proc_open((stripos(PHP_OS, 'WIN') === 0 ? '' : APP_SUDO . '-u www-data ') . basename(COMPOSER_EXEC['bin']) . ' self-update', [["pipe", "r"], ["pipe", "w"], ["pipe", "w"]], $pipes);
+  
+    [$stdout, $stderr, $exitCode] = [stream_get_contents($pipes[1]), stream_get_contents($pipes[2]), proc_close($proc)];
+  
+    if ($exitCode !== 0) {
+      if (empty($stdout)) {
+        if (!empty($stderr)) {
+          $errors['COMPOSER-SELF-UPDATE'] = $stderr;
+          error_log($stderr);
         }
-      }
-    
-    } else {
-      $errors['server-1'] = "Connected to Server: " . SERVER_HOST . ':' . SERVER_PORT . "\n";
-      
-      // Send a message to the server
-      $errors['server-2'] = 'Client request: ' . $message = "cmd: " . basename(COMPOSER_EXEC['bin']) . " self-update\n";
-      /* Known socket  Error / Bug is mis-handled and An established connection was aborted by the software in your host machine */
-      fwrite($_SERVER['SOCKET'], $message);
-      $output[] = trim($message) . ': ';
-      // Read response from the server
-      while (!feof($_SERVER['SOCKET'])) {
-        $response = fgets($_SERVER['SOCKET'], 1024);
-        $errors['server-3'] = "Server responce: $response\n";
-        if (isset($output[end($output)])) $output[end($output)] .= $response = trim($response);
-        //if (!empty($response)) break;
+      } else {
+        $errors['COMPOSER-SELF-UPDATE'] = $stdout;
       }
     }
+  } else {
+    $errors['server-1'] = "Connected to Server: " . SERVER_HOST . ':' . SERVER_PORT . "\n";
     
-    
-    //$proc = proc_open(basename(COMPOSER_EXEC['bin']) . ' self-update;', [["pipe", "r"], ["pipe", "w"], ["pipe", "w"]], $pipes);
+    // Send a message to the server
+    $errors['server-2'] = 'Client request: ' . $message = "cmd: " . basename(COMPOSER_EXEC['bin']) . " self-update\n";
+    /* Known socket  Error / Bug is mis-handled and An established connection was aborted by the software in your host machine */
+
+    fwrite($_SERVER['SOCKET'], $message);
+
+    $output[] = trim($message) . ': ';
+    // Read response from the server
+    while (!feof($_SERVER['SOCKET'])) {
+      $response = fgets($_SERVER['SOCKET'], 1024);
+      $errors['server-3'] = "Server responce: $response\n";
+      if (isset($output[end($output)])) $output[end($output)] .= $response = trim($response);
+      //if (!empty($response)) break;
+    }
+    // Close and reopen socket
+    fclose($socketInstance->getSocket());
+  }
+
+  //dd(get_required_files(), false);
+  
+  //$proc = proc_open(basename(COMPOSER_EXEC['bin']) . ' self-update;', [["pipe", "r"], ["pipe", "w"], ["pipe", "w"]], $pipes);
 /*
 
-  if (isset($_POST['composer']['self-update']) || file_exists(APP_PATH . 'composer.phar')) {
-    if (!file_exists(APP_PATH . 'composer-setup.php'))
-      copy('https://getcomposer.org/installer', 'composer-setup.php');
-    exec('php composer-setup.php');
-  }
+if (isset($_POST['composer']['self-update']) || file_exists(APP_PATH . 'composer.phar')) {
+  if (!file_exists(APP_PATH . 'composer-setup.php'))
+    copy('https://getcomposer.org/installer', 'composer-setup.php');
+  exec('php composer-setup.php');
+}
 
 //fwrite($pipes[0], "yes");
 //fclose($pipes[0]);
@@ -822,14 +829,16 @@ fclose($pipes[1]);
 fclose($pipes[2]);
 */
 /*
-    [$stdout, $stderr, $exitCode] = [stream_get_contents($pipes[1]), stream_get_contents($pipes[2]), proc_close($proc)];
-    
-    if (empty($stdout)) {
-      if (!empty($stderr))
-        $errors['COMPOSER_UPDATE'] = $stderr;
-    } else $errors['COMPOSER_UPDATE'] = $stdout;
+  [$stdout, $stderr, $exitCode] = [stream_get_contents($pipes[1]), stream_get_contents($pipes[2]), proc_close($proc)];
+  
+  if (empty($stdout)) {
+    if (!empty($stderr))
+      $errors['COMPOSER_UPDATE'] = $stderr;
+  } else $errors['COMPOSER_UPDATE'] = $stdout;
 */
-  }
+}
+
+  //die(var_dump($_SERVER['SOCKET']));
 
   if (!is_dir(APP_PATH . APP_ROOT . APP_BASE['vendor']) || !is_file(APP_PATH . APP_ROOT . APP_BASE['vendor'] . 'autoload.php'))
     exec((stripos(PHP_OS, 'WIN') === 0 ? '' : APP_SUDO) . COMPOSER_EXEC['bin'] . ' dump-autoload', $output, $returnCode) or $errors['COMPOSER-DUMP-AUTOLOAD'] = $output;
@@ -911,12 +920,34 @@ fclose($pipes[2]);
 
       //if (!isset($_SERVER['SOCKET']) || !$_SERVER['SOCKET']) $_SERVER['SOCKET'] = openSocket(APP_HOST, 12345); // 
 //dd($_SERVER['SOCKET']);
+      (APP_SELF !== APP_PATH_SERVER) and $socketInstance = Sockets::getInstance();
+      //$socketInstance->handleClientRequest("composer self-update\n");
       if (!isset($_SERVER['SOCKET']) || !is_resource($_SERVER['SOCKET']) || empty($_SERVER['SOCKET'])) {
+
+        $proc = proc_open((stripos(PHP_OS, 'WIN') === 0 ? '' : APP_SUDO . '-u www-data ') . basename(COMPOSER_EXEC['bin']) . ' update', [["pipe", "r"], ["pipe", "w"], ["pipe", "w"]], $pipes);
+        
+        [$stdout, $stderr, $exitCode] = [stream_get_contents($pipes[1]), stream_get_contents($pipes[2]), proc_close($proc)];
+      
+        if ($exitCode !== 0) {
+          if (empty($stdout)) {
+            if (!empty($stderr)) {
+              $errors['COMPOSER-UPDATE'] = $stderr;
+              error_log($stderr);
+            }
+          } else {
+            $errors['COMPOSER-UPDATE'] = $stdout;
+          }
+        }
+            
+        (preg_match('/Composer is operating significantly slower than normal because you do not have the PHP curl extension enabled./m', $stdout))
+        and $errors['PHP-ext/curl'] = "PHP cURL needs to be installed and enabled.\n";
+
+      } else {
 
         $errors['server-1'] = "Connected to Server: " . SERVER_HOST . ':' . SERVER_PORT . "\n";
   
         // Send a message to the server
-        $errors['server-2'] = 'Client request: ' . $message = "cmd: composer update\n";
+        $errors['server-2'] = 'Client request: ' . $message = "cmd: " . basename(COMPOSER_EXEC['bin']) . " update\n";
     
         fwrite($_SERVER['SOCKET'], $message);
         $output[] = trim($message) . ': ';
@@ -927,6 +958,8 @@ fclose($pipes[2]);
             if (isset($output[end($output)])) $output[end($output)] .= $response = trim($response);
             //if (!empty($response)) break;
         }
+        // Close and reopen socket
+        fclose($socketInstance->getSocket());
 /*
 list($server, $port) = explode(PATH_SEPARATOR, SERVER_HOST . PATH_SEPARATOR . SERVER_PORT); // 127.0.0.1:12345   
 $errors['server-1'] = "Connected to Server: " . $server . PATH_SEPARATOR . $port . "\n"; // APP_PATH_SERVER || APP_HOST
@@ -946,42 +979,6 @@ while (!feof($_SERVER['SOCKET'])) {
 // Close the connection
 //fclose($_SERVER['SOCKET']);
 */
-      } else {
-
-        if (!isset($_SERVER['SOCKET']) || !is_resource($_SERVER['SOCKET']) || empty($_SERVER['SOCKET'])) {
-          $proc = proc_open((stripos(PHP_OS, 'WIN') === 0 ? '' : APP_SUDO . '-u www-data ') . basename(COMPOSER_EXEC['bin']) . ' update', [["pipe", "r"], ["pipe", "w"], ["pipe", "w"]], $pipes);
-        
-          [$stdout, $stderr, $exitCode] = [stream_get_contents($pipes[1]), stream_get_contents($pipes[2]), proc_close($proc)];
-        
-          if ($exitCode !== 0) {
-            if (empty($stdout)) {
-              if (!empty($stderr)) {
-                $errors['composer-update'] = $stderr;
-                error_log($stderr);
-              }
-            } else {
-              $errors['composer-update'] = $stdout;
-            }
-          }
-              
-          (preg_match('/Composer is operating significantly slower than normal because you do not have the PHP curl extension enabled./m', $stdout))
-          and $errors['PHP-ext/curl'] = "PHP cURL needs to be installed and enabled.\n";
-        
-        } else {
-          $errors['server-1'] = "Connected to Server: " . SERVER_HOST . ':' . SERVER_PORT . "\n";
-          
-          // Send a message to the server
-          $errors['server-2'] = 'Client request: ' . $message = "cmd: " . basename(COMPOSER_EXEC['bin']) . " update\n";
-            
-          fwrite($_SERVER['SOCKET'], $message);
-          $output[] = trim($message) . ': ';
-          // Read response from the server
-          while (!feof($_SERVER['SOCKET'])) {
-            $response = fgets($_SERVER['SOCKET'], 1024);
-            $errors['server-3'] = "Server responce: $response\n";
-            if (isset($output[end($output)])) $output[end($output)] .= $response = trim($response);
-            //if (!empty($response)) break;
-          }
         }
 /*
         //$proc = proc_open((stripos(PHP_OS, 'WIN') === 0 ? '' : APP_SUDO) . COMPOSER_EXEC['bin'] . ' update', [["pipe", "r"], ["pipe", "w"], ["pipe", "w"]], $pipes);
@@ -1121,6 +1118,8 @@ while (!feof($_SERVER['SOCKET'])) {
 
     putenv('COMPOSER_HOME='); // TESTING
 
+    (APP_SELF !== APP_PATH_SERVER) and $socketInstance = Sockets::getInstance();
+    //$socketInstance->handleClientRequest("composer self-update\n");
     if (!isset($_SERVER['SOCKET']) || !is_resource($_SERVER['SOCKET']) || empty($_SERVER['SOCKET'])) {
       $proc = proc_open((stripos(PHP_OS, 'WIN') === 0 ? '' : APP_SUDO) . COMPOSER_EXEC['bin'] . ' install -o', [["pipe", "r"], ["pipe", "w"], ["pipe", "w"]], $pipes);
     
@@ -1152,6 +1151,8 @@ while (!feof($_SERVER['SOCKET'])) {
         if (isset($output[end($output)])) $output[end($output)] .= $response = trim($response);
         //if (!empty($response)) break;
       }
+      // Close and reopen socket
+      fclose($socketInstance->getSocket());
     }
     
     
@@ -1203,7 +1204,6 @@ while (!feof($_SERVER['SOCKET'])) {
     //dd($errors);
   }
 */
-}
 
 
 //if (strpos($output, 'No errors or warnings detected') !== false)
