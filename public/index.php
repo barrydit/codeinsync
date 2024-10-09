@@ -89,7 +89,7 @@ if (isset($_SERVER['REQUEST_METHOD']))
             break;
         }
         $_ENV['APP_ENV'] = APP_ENV;
-        die('testing ' . $_SERVER['REQUEST_METHOD'] );
+        //die('testing ' . $_SERVER['REQUEST_METHOD'] );
         Shutdown::setEnabled(false)->setShutdownMessage(function() {
           return header('Location: ' . APP_URL); // -wow
         })->shutdown();

@@ -30,11 +30,10 @@ if ($path) {
 
 $previousFilename = '';
 
-$dirs = [/* APP_PATH . APP_BASE['config'] . 'php.php' */];
+$dirs = [APP_PATH . APP_BASE['config'] . 'php.php']; /* */
 
 !isset($_GET['app']) || $_GET['app'] != 'git' ?:
-  (APP_SELF != APP_PATH_PUBLIC ?: 
-    $dirs[] = APP_PATH . APP_BASE['config'] . 'git.php');
+  (APP_SELF != APP_PATH_PUBLIC ?: $dirs[] = APP_PATH . APP_BASE['config'] . 'git.php');
 
 !isset($_GET['app']) || $_GET['app'] != 'composer' ?:
   $dirs = (APP_SELF != APP_PATH_PUBLIC) 
@@ -62,7 +61,11 @@ $dirs = [/* APP_PATH . APP_BASE['config'] . 'php.php' */];
 unset($include);
 
 usort($dirs, function ($a, $b) {
-  if (dirname($a) . DIRECTORY_SEPARATOR . basename($a) === APP_PATH . APP_BASE['config'] . 'composer.php') // DIRECTORY_SEPARATOR
+  if (dirname($a) . DIRECTORY_SEPARATOR . basename($a) === APP_PATH . APP_BASE['config'] . 'php.php')
+    return -1; // $a comes after $b
+  elseif (dirname($b) . DIRECTORY_SEPARATOR . basename($b) === APP_PATH . APP_BASE['config'] . 'php.php')
+    return 1; // $a comes before $b
+  elseif (dirname($a) . DIRECTORY_SEPARATOR . basename($a) === APP_PATH . APP_BASE['config'] . 'composer.php') // DIRECTORY_SEPARATOR
     return -1; // $a comes after $b
   elseif (dirname($b) . DIRECTORY_SEPARATOR . basename($b) === APP_PATH . APP_BASE['config'] . 'composer.php')
     return 1; // $a comes before $b

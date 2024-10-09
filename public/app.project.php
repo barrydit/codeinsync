@@ -1,20 +1,16 @@
 <?php
 
-if (__FILE__ == get_required_files()[0] && __FILE__ == $_SERVER["SCRIPT_FILENAME"]) {
-  if ($path = basename(dirname(get_required_files()[0])) == 'public') { // (basename(getcwd())
-    if (is_file($path = realpath('../config/config.php'))) {
-      require_once $path;
-    }
-  } elseif (is_file($path = realpath('config/config.php'))) {
+if (__FILE__ == get_required_files()[0] && __FILE__ == realpath($_SERVER["SCRIPT_FILENAME"]))
+if ($path = basename(dirname(get_required_files()[0])) == 'public') { // (basename(getcwd())
+  if (is_file($path = realpath('index.php'))) {
     require_once $path;
-  } else {
-    die(var_dump("Path was not found. file=$path"));
   }
-}
+} else die(var_dump("Path was not found. file=$path"));
+
 
 if (!$path = realpath(APP_PATH . 'projects/index.php')) {
   // file_put_contents($path, $_POST['contents']);
-  $errors['project.php'] = 'projects/index.php was missing. Using template.' . "\n";
+  $errors['project.php'] = "projects/index.php was missing. Using template.\n";
 }
 
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
@@ -106,7 +102,7 @@ input {
 ob_end_clean(); 
 
 ob_start(); ?>
-  <div id="app_project-container" class="absolute <?= (get_included_files()[0] == __FILE__ || (isset($_GET['project']) && !$_GET['project']) && !isset($_GET['path']) ? 'selected' : '') ?>" style="z-index: 1; width: 724px; background-color: rgba(255,255,255,0.8); padding: 10px;">
+  <div id="app_project-container" class="absolute <?= get_included_files()[0] == __FILE__ || (isset($_GET['project']) && !$_GET['project']) && !isset($_GET['path']) ? 'selected' : '' ?>" style="z-index: 1; width: 724px; background-color: rgba(255,255,255,0.8); padding: 10px;">
     <div style="position: relative; margin: 0 auto; width: 704px; height: 506px; border: 3px dashed #DD0000; background-color: #FBF7F1;">
       <div class="absolute ui-widget-header" style="position: absolute; display: inline-block; width: 100%; height: 25px; margin: -50px 0 25px 0; padding: 24px 0; border-bottom: 1px solid #000; z-index: 3;">
         <label class="npm-home" style="cursor: pointer;">
@@ -115,7 +111,7 @@ ob_start(); ?>
           </div>
         </label>
         <div style="display: inline;">
-          <span style="background-color: white; color: #DD0000;">Project <?= /* (version_compare(NPM_LATEST, NPM_VERSION, '>') != 0 ? 'v'.substr(NPM_LATEST, 0, similar_text(NPM_LATEST, NPM_VERSION)) . '<span class="update" style="color: green; cursor: pointer;">' . substr(NPM_LATEST, similar_text(NPM_LATEST, NPM_VERSION)) . '</span>' : 'v'.NPM_VERSION ); */ NULL; ?></span> <span style="background-color: #0078D7; color: white;"><code class="text-sm" style="background-color: white; color: #0078D7;">$ <?= (defined('PHP_EXEC') ? 'projects/index.php' : null); ?></code></span>
+          <span style="background-color: white; color: #DD0000;">Project <?= /* (version_compare(NPM_LATEST, NPM_VERSION, '>') != 0 ? 'v'.substr(NPM_LATEST, 0, similar_text(NPM_LATEST, NPM_VERSION)) . '<span class="update" style="color: green; cursor: pointer;">' . substr(NPM_LATEST, similar_text(NPM_LATEST, NPM_VERSION)) . '</span>' : 'v'.NPM_VERSION ); */ NULL; ?></span> <span style="background-color: #0078D7; color: white;"><code class="text-sm" style="background-color: white; color: #0078D7;">$ <?= defined('PHP_EXEC') ? 'projects/index.php' : null; ?></code></span>
         </div>
         
         <div style="display: inline; float: right; text-align: center; color: blue;"><code style="background-color: white; color: #0078D7;"><a style="cursor: pointer; font-size: 13px;" onclick="document.getElementById('app_project-container').style.display='none';">[X]</a></code></div> 

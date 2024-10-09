@@ -138,10 +138,18 @@ class Sockets
             $pid = file_get_contents($pidFile);
             exec("tasklist /FI \"PID eq $pid\" 2>NUL | find /I \"$pid\" >NUL", $output, $status);
             if ($status === 0) {
-                shell_exec("taskkill /PID $pid /F") and unlink($pidFile);
+                // Process is already running, return
+                //shell_exec("taskkill /PID $pid /F") and unlink($pidFile);
+                return;
+            } else {
+                // Process is not running, remove the PID file
+                unlink($pidFile);
             }
         }
-        pclose(popen((defined('APP_PATH') ? APP_PATH : dirname(__DIR__) . DIRECTORY_SEPARATOR) . 'bin/psexec.exe -d C:\xampp\php\php.exe -f ' . APP_PATH . 'server.php', "r"));
+        // Start a new process and store the PID
+        $process = popen((defined('APP_PATH') ? APP_PATH : dirname(__DIR__) . DIRECTORY_SEPARATOR) . 'bin/psexec.exe -d C:\xampp\php\php.exe -f ' . APP_PATH . 'server.php', "r");
+        $pid = proc_get_status($process)['pid'];
+        file_put_contents($pidFile, $pid);
     }
 
     public static function getInstance()

@@ -104,8 +104,8 @@ if (isset($_ENV['SHELL']['EXPR_DOMAIN']) && !defined('DOMAIN_EXPR'))
 elseif(!defined('DOMAIN_EXPR'))
   define('DOMAIN_EXPR', '/(?:[a-z]+\:\/\/)?(?:[a-z0-9\-]+\.)+[a-z]{2,6}(?:\/\S*)?/i'); // /(?:\.(?:([-a-z0-9]+){1,}?)?)?\.[a-z]{2,6}$/';
 
-if (isset($_ENV['SHELL']['PHP_EXEC']) && !defined('PHP_EXEC'))
-  define('PHP_EXEC', $_ENV['SHELL']['PHP_EXEC'] ?? '/usr/bin/php'); // const DOMAIN_EXPR = 'string only/non-block/ternary';
+if (isset($_ENV['COMPOSER']['PHP_EXEC']) && !defined('PHP_EXEC'))
+  define('PHP_EXEC', $_ENV['COMPOSER']['PHP_EXEC'] ?? '/usr/bin/php'); // const DOMAIN_EXPR = 'string only/non-block/ternary';
 // /(?:\.(?:([-a-z0-9]+){1,}?)?)?\.[a-z]{2,6}$/';
 
 //die(var_dump($_SERVER['PHP_SELF'] . DIRECTORY_SEPARATOR . basename($_SERVER['PHP_SELF'])));

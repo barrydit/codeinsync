@@ -180,13 +180,13 @@ function clientInputHandler($input) {
     $output = '';
     
     if (is_file(PID_FILE))
-      $pid = file_get_contents(PID_FILE /*$pidFile = APP_PATH . 'server.pid'*/);
+      $pid = file_get_contents(PID_FILE /* APP_PATH . 'server.pid' */);
 
     if (preg_match('/^cmd:\s*(shutdown|restart|server\s*(shutdown|restart))\s*?(?:(-f))(?=\r?\n$)?/si', $input, $matches)) { 
       //signalHandler(SIGTERM); // $running = false;
       $output = "Shutting down... Written by Barry Dick (2024)";
       //$output .= var_export($matches, true);
-      if ($matches[3] == '-f') { signalHandler(SIGTERM) and unlink($pidFile); /* exit(1); */ }
+      if ($matches[3] == '-f') { signalHandler(SIGTERM) and unlink(PID_FILE); /* exit(1); */ }
     } elseif (preg_match('/^cmd:\s*server\s*status(?=\r?\n$)?/si', $input)) {
       $output = "Server is running... PID=$pid";
     } elseif (preg_match('/^cmd:\s*chdir\s*(.*)(?=\r?\n$)?/si', $input, $matches)) {
