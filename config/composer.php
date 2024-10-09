@@ -1123,7 +1123,7 @@ while (!feof($_SERVER['SOCKET'])) {
     putenv('COMPOSER_HOME='); // TESTING
 
 
-    dd(get_required_files());
+    //dd(get_required_files());
 
     (APP_SELF !== APP_PATH_SERVER) and $socketInstance = Sockets::getInstance();
     //$socketInstance->handleClientRequest("composer self-update\n");
