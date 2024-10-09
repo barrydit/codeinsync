@@ -1,5 +1,5 @@
 <?php
-
+global $errors;
 //die($_SERVER['REQUEST_METHOD']);
 
 //if ($_SERVER['REQUEST_METHOD'] == 'POST') 
@@ -249,7 +249,7 @@ if (isset($installedPackages) && !empty($installedPackages)) {
 
 $composerUser = $_ENV['COMPOSER']['USER'] ?? '';  
 $componetPkg = $_ENV['COMPOSER']['PACKAGE'] ?? '';
-$user = getenv('USERNAME') ?: (getenv('APACHE_RUN_USER') ?: getenv('USER') ?: '');
+$user = getenv('USERNAME') ?? getenv('APACHE_RUN_USER') ?? getenv('USER') ?? '';
 
 // Determine the Composer home path based on the OS and user
 $composerHome = (stripos(PHP_OS, 'WIN') === 0) ? "C:/Users/$user/AppData/Roaming/Composer/" : ($user === 'root' ? '/root/.composer/' : '/var/www/.composer/');
@@ -268,7 +268,7 @@ if (!file_exists(APP_PATH . 'composer.phar')) {
   (!file_exists(APP_PATH . 'composer-setup.php'))
     and copy('https://getcomposer.org/installer', 'composer-setup.php');
   
-  $error = shell_exec('php composer-setup.php'); // php -d register_argc_argv=1
+  $error = shell_exec($_ENV['COMPOSER']['PHP_EXEC'] . ' composer-setup.php'); // php -d register_argc_argv=1
 
   $errors['COMPOSER-PHAR'] = 'Composer setup was executed and ' . (file_exists(APP_PATH.'composer.phar') ? 'does' : 'does not') . ' exist. version='.shell_exec('php composer.phar -V') . '  error=' . $error;
 } else {
@@ -298,7 +298,7 @@ if (stripos(PHP_OS, 'WIN') === 0) { // DO NOT REMOVE! { .. }
 */
     (realpath($composer_which = trim(shell_exec(APP_SUDO  . /*-u www-data */ 'which composer')))) or $errors['COMPOSER-WHICH'] = "which did not find composer. Err=$composer_which";
 
-    foreach([ /*'/usr/local/bin/composer',*/ 'php ' . APP_PATH . 'composer.phar', $composer_which] as $key => $bin) {
+    foreach([ /*'/usr/local/bin/composer',*/ basename(PHP_EXEC) . ' ' . APP_PATH . 'composer.phar', $composer_which] as $key => $bin) {
       !isset($composer) and $composer = [];
 /*//*/
       if (preg_match('/^php.*composer\.phar$/', $bin)) !defined('COMPOSER_PHAR') and define('COMPOSER_PHAR', ['bin' => "php $bin"]);
@@ -770,7 +770,11 @@ if (defined('COMPOSER_VERSION') && defined('COMPOSER_LATEST')) { // defined('APP
 
 if (version_compare(COMPOSER_LATEST, COMPOSER_VERSION, '>') != 0) {
   //dd(basename(COMPOSER_EXEC['bin']) . ' self-update;'); // (stripos(PHP_OS, 'WIN') === 0 ? '' : APP_SUDO) . 
-  (APP_SELF !== APP_PATH_SERVER) and $socketInstance = Sockets::getInstance();
+  //(APP_SELF !== APP_PATH_SERVER) and 
+
+  //unset($socketInstance);
+
+  $socketInstance = Sockets::getInstance();
   //$socketInstance->handleClientRequest("composer self-update\n");
   if (!isset($_SERVER['SOCKET']) || !is_resource($_SERVER['SOCKET']) || empty($_SERVER['SOCKET'])) {
     $proc = proc_open((stripos(PHP_OS, 'WIN') === 0 ? '' : APP_SUDO . '-u www-data ') . basename(COMPOSER_EXEC['bin']) . ' self-update', [["pipe", "r"], ["pipe", "w"], ["pipe", "w"]], $pipes);
@@ -1117,6 +1121,9 @@ while (!feof($_SERVER['SOCKET'])) {
 
 
     putenv('COMPOSER_HOME='); // TESTING
+
+
+    dd(get_required_files());
 
     (APP_SELF !== APP_PATH_SERVER) and $socketInstance = Sockets::getInstance();
     //$socketInstance->handleClientRequest("composer self-update\n");
