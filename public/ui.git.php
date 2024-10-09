@@ -1,4 +1,7 @@
 <?php
+
+global $errors;
+
 switch (__FILE__) {
   case get_required_files()[0]:
     if ($path = (basename(getcwd()) == 'public') ? (is_file('config.php') ? 'config.php' : '../config/config.php') : '') require_once $path;
@@ -88,8 +91,21 @@ ob_end_clean(); ?>
 
 ob_start(); ?>
 
-#app_git-container { position: absolute; display: none;  left: 832px; top: 96px; margin: 0 auto;  }
-#app_git-container.selected { display: block; z-index: 1; 
+#app_git-container {
+  position: absolute;
+  display: none;
+  top: 20%;
+  left: 40%; //right: 50%;
+  margin-left: -[212px]; //margin-right: -[212px];
+  margin-top: -[153px];
+  //transform: translate(-50%, -50%);
+  //margin: 0 auto;
+}
+
+#app_git-container.selected {
+  display: block;
+
+  z-index: 1; 
   /* Add your desired styling for the selected container */
   /*
   // background-color: rgb(240, 224, 198); //  240, 224, 198, .75    #FBF7F1; // rgba(240, 224, 198, .25);
@@ -144,9 +160,9 @@ ob_end_clean();
 
 ob_start();
 !defined('GIT_VERSION') and define('GIT_VERSION', '1.0.0');
-!defined('GIT_LATEST') and define('GIT_LATEST', GIT_VERSION);
-?>
-  <div id="app_git-container" class="absolute <?= (__FILE__ ==  get_required_files()[0] || isset($_GET['app']) && $_GET['app'] == 'git' ? 'selected' : (version_compare(GIT_LATEST, GIT_VERSION, '>') != 0 ? (isset($_GET['app']) && $_GET['app'] != 'git' ? '' : '') :  '')) ?>" style="z-index: 1; width: 424px; background-color: rgba(255,255,255,0.8); padding: 10px;">
+!defined('GIT_LATEST') and define('GIT_LATEST', GIT_VERSION); ?>
+
+  <div id="app_git-container" class="absolute <?= (__FILE__ ==  get_required_files()[0] || isset($_GET['app']) && $_GET['app'] == 'git' || isset($errors['GIT_UPDATE']) ? 'selected' : (version_compare(GIT_LATEST, GIT_VERSION, '>') != 0 ? (isset($_GET['app']) && $_GET['app'] != 'git' ? '' : '') :  '')) ?>" style="z-index: 1; width: 424px; background-color: rgba(255,255,255,0.8); padding: 10px;">
 <div style="position: relative; margin: 0 auto; width: 404px; height: 306px; border: 3px dashed #F05033; background-color: #FBF7F1;">
 
       <div class="absolute ui-widget-header" style="position: absolute; display: inline-block; width: 100%; height: 25px; margin: -50px 0 25px 0; padding: 24px 0; border-bottom: 1px solid #000; z-index: 3;">
@@ -259,7 +275,8 @@ ob_start();
           <div style="display: inline-block; width: 32%; text-align: center; border: 1px dashed #F05033; height: 44px; padding: 7px;">
             <select id="app_git-frameSelector">
               <!-- <option value="">---</option> -->
-              <option value="init" <?= (is_dir(APP_PATH . APP_ROOT . '.git') ? 'disabled' : 'selected' ); ?>>init</option>
+              <option value="init" <?= is_dir(APP_PATH . APP_ROOT . '.git') ? 'disabled' : 'selected'; ?>>init</option>
+              <?php if (isset($errors['GIT_UPDATE'])) { ?><option value="pull">pull</option><?php } ?>
               <option value="status">status</option>
               <option value="config">config</option>
               <option value="commit">commit</option>
@@ -292,7 +309,7 @@ ob_start();
       </div>
 
       <div id="app_git-frameStatus" class="app_git-frame-container absolute" style="overflow: hidden; height: 270px;">
-    <form autocomplete="off" spellcheck="false" action="?<?=http_build_query(APP_QUERY + array( 'app' => 'git')) . (defined('APP_ENV') && APP_ENV == 'development' ? '#!' : '') /* $c_or_p . '=' . (empty($_GET[$c_or_p]) ? '' : $$c_or_p->name) . '&amp;app=git' */ ?>" method="POST">
+    <form autocomplete="off" spellcheck="false" action="?<?=http_build_query(APP_QUERY + ['app' => 'git']) . (defined('APP_ENV') && APP_ENV == 'development' ? '#!' : '') /* $c_or_p . '=' . (empty($_GET[$c_or_p]) ? '' : $$c_or_p->name) . '&amp;app=git' */ ?>" method="POST">
       <div style="display: inline-block; width: 100%; margin: -10px 0 10px 0; background-color: rgb(225,196,151,.75);">
         <div class="text-sm" style="display: inline;">
           <label id="gitStatusLabel" for="gitStatus" style="background-color: #6781B2; color: white;">&#9650; <code>Status</code></label>
@@ -309,7 +326,7 @@ ob_start();
       </div>
       
       <div id="app_git-frameConfig" class="app_git-frame-container absolute" style="overflow: hidden; height: 270px;">
-    <form autocomplete="off" spellcheck="false" action="?<?=http_build_query(APP_QUERY + array( 'app' => 'git')) . (defined('APP_ENV') && APP_ENV == 'development' ? '#!' : '') /* $c_or_p . '=' . (empty($_GET[$c_or_p]) ? '' : $$c_or_p->name) . '&amp;app=git' */ ?>" method="POST">
+    <form autocomplete="off" spellcheck="false" action="?<?=http_build_query(APP_QUERY + ['app' => 'git']) . (defined('APP_ENV') && APP_ENV == 'development' ? '#!' : '') /* $c_or_p . '=' . (empty($_GET[$c_or_p]) ? '' : $$c_or_p->name) . '&amp;app=git' */ ?>" method="POST">
       <div style="position: absolute; right: 0; float: right; text-align: center;">
         <button id="gitConfigSubmit" class="btn absolute" style="position: absolute; top: 0; right: 0; z-index: 2;" type="submit" value>Modify</button>
       </div> 

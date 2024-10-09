@@ -559,7 +559,7 @@ $(function() {
 $app['html'] = ob_get_contents();
 ob_end_clean();
 
-if (__FILE__ == get_required_files()[0] && __FILE__ == realpath($_SERVER["SCRIPT_FILENAME"]) ) {
+if (__FILE__ == get_required_files()[0] && __FILE__ == realpath($_SERVER["SCRIPT_FILENAME"])) {
   print $app['html'];
 } elseif (in_array(__FILE__, get_required_files()) && isset($_GET['app']) && $_GET['app'] == 'ace_editor' && APP_DEBUG) {
   return $app['html'];

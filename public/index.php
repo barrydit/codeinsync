@@ -322,6 +322,9 @@ if (!empty($paths))
                 return ob_get_clean(); // redundant ob_end_clean();
               })(); */
               //dd($realpath, false);
+
+              //require_once APP_PATH . APP_BASE['config'] . 'git.php';
+
               $returnedValue = (function() use ($realpath, &$app) {
                 //dd($realpath, false);
                 ob_start();

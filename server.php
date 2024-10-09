@@ -4,7 +4,7 @@
 
 !defined('APP_PATH') and define('APP_PATH', __DIR__ . DIRECTORY_SEPARATOR);
 
-require_once APP_PATH . DIRECTORY_SEPARATOR . 'index.php';
+require_once APP_PATH . 'index.php';
 
 ini_set('error_log', APP_PATH . 'server.log');
 ini_set('log_errors', 'true');
@@ -38,30 +38,31 @@ file_put_contents(PID_FILE, $pid = getmypid());
 if (PHP_SAPI === 'cli' && stripos(PHP_OS, 'LIN') === 0 ) {
   (!extension_loaded('posix') || !extension_loaded('pcntl')) and die('posix && pcntl required. exiting');
 
-!is_writable('/tmp')
-  and die('must be able to write to /tmp to continue. exiting.');
-
-/**
- * Set the title of our script that ps(1) sees
- */
-if (!cli_set_process_title($title = basename(__FILE__))) {
-  echo "Unable to set process title for PID $pid...\n";
-  exit(1);
-} else {
-  echo "The process title '$title' has been set for your process!\n";
+  !is_writable('/tmp')
+    and die('must be able to write to /tmp to continue. exiting.');
 
   /**
-   * Summary of cli_set_process_name
-   * @param mixed $title
-   * @throws Exception
-   * @return void
+   * Set the title of our script that ps(1) sees
    */
-  function cli_set_process_name($title)
-  {
-    file_put_contents('/proc/'.getmypid().'/comm',$title);
+  if (!cli_set_process_title($title = basename(__FILE__))) {
+    echo "Unable to set process title for PID $pid...\n";
+    exit(1);
+  } else {
+    echo "The process title '$title' has been set for your process!\n";
+
+    /**
+     * Summary of cli_set_process_name
+     * @param mixed $title
+     * @throws Exception
+     * @return void
+     */
+    function cli_set_process_name($title)
+    {
+      file_put_contents('/proc/'.getmypid().'/comm',$title);
+    }
   }
-}
-stripos(PHP_OS, 'LIN') === 0 and cli_set_process_name($title);
+
+  stripos(PHP_OS, 'LIN') === 0 and cli_set_process_name($title);
   // ps aux | grep server.php
   // kill -SIGTERM <PID>
   // kill -SIGINT <PID>
@@ -163,6 +164,12 @@ defined('SERVER_PORT') or define('SERVER_PORT', '8080'); // 9000
 !empty($parsed_args = parseargs())
   and print("Argv(s): " . var_export($parsed_args, true) . "\n");
 
+/**
+ * Summary of clientInputHandler
+ * @param mixed $input
+ * @throws \Exception
+ * @return mixed
+ */
 function clientInputHandler($input) {
     global $socket, $stream, $running, $manager;
 
@@ -171,8 +178,9 @@ function clientInputHandler($input) {
     echo 'Client [Input]: ' . trim($input) . "\n";
     //$input = trim($input);
     $output = '';
-
-    $pid = file_get_contents($pidFile = APP_PATH . 'server.pid');
+    
+    if (is_file(PID_FILE))
+      $pid = file_get_contents(PID_FILE /*$pidFile = APP_PATH . 'server.pid'*/);
 
     if (preg_match('/^cmd:\s*(shutdown|restart|server\s*(shutdown|restart))\s*?(?:(-f))(?=\r?\n$)?/si', $input, $matches)) { 
       //signalHandler(SIGTERM); // $running = false;
@@ -280,6 +288,8 @@ function clientInputHandler($input) {
     } elseif (preg_match('/^cmd:\s*composer\s*(.*)(?=\r?\n$)?/si', $input, $matches)) {
       //$output = shell_exec($matches[1]);
 
+      require_once APP_PATH . APP_BASE['config'] . 'composer.php';
+
       $proc = proc_open('env COMPOSER_ALLOW_SUPERUSER=' . COMPOSER_ALLOW_SUPERUSER . '; ' . (stripos(PHP_OS, 'WIN') === 0 ? '' : APP_SUDO . '-u www-data ') . "composer $matches[1]",
       [
         ["pipe", "r"],
@@ -291,7 +301,7 @@ function clientInputHandler($input) {
       [$stdout, $stderr, $exitCode] = [stream_get_contents($pipes[1]), stream_get_contents($pipes[2]), proc_close($proc)];
       $output = !isset($stdout) ? NULL : $stdout . (isset($stderr) && $stderr === '' ? NULL : " Error: $stderr") . (isset($exitCode) && $exitCode == 0 ? NULL : "Exit Code: $exitCode");
       $output .= "\n" . (stripos(PHP_OS, 'WIN') === 0 ? '' : APP_SUDO . '-u www-data ') . "composer $matches[1]";
-
+/**/
     } elseif (preg_match('/^cmd:\s*(composer(\s+.*|))(?=\r?\n$)?/si', $input, $matches)) { // ?(?=\r?\n$) // ?
       $cmd = $matches[1]; // $input
       $output = var_export($matches, true);
@@ -366,6 +376,11 @@ $interval = 10;
 
 Logger::init();
 
+/**
+ * Summary of checkFileModification
+ * @throws \Exception
+ * @return string
+ */
 function checkFileModification() {
   global $socket, $stream, $running;
 
@@ -407,9 +422,8 @@ function checkFileModification() {
       echo "Client [Output]: $output\n";
 
       signalHandler(SIGTERM);
-
-      return $output;
   }
+  return $output;
 }
 
 // Define some example notification functions
@@ -532,7 +546,7 @@ try {
       // Retrieve client information
       $clientName = stream_socket_get_name($stream, true);
       [$clientAddress, $clientPort] = explode(':', $clientName);
-      echo "Client connected: IP {$clientAddress}:{$clientPort} Port \n";
+      echo "Client connected (stream): IP {$clientAddress}:{$clientPort} Port \n";
 
       // Read and process client data
       $data = processClientData(fread($stream, 1024));
@@ -642,13 +656,13 @@ try {
   //Logger::error($e->getMessage());
   //Shutdown::triggerShutdown($e->getMessage());
 } finally {
-  require_once APP_PATH . 'config/classes/class.sockets.php';
+  require_once APP_PATH . 'config' . DIRECTORY_SEPARATOR . 'classes' . DIRECTORY_SEPARATOR . 'class.sockets.php';
 
   if (stripos(PHP_OS, 'LIN') === 0) Sockets::handleLinuxSocketConnection(true);
   else if (stripos(PHP_OS, 'WIN') === 0) Sockets::handleWindowsSocketConnection();
 
   print "Written by Barry Dick (2024)\n";
-
+/**/
   if (isset($socket) && is_resource($socket) && !empty($socket)) {
     if (extension_loaded('sockets')) {
       socket_close($socket);

@@ -266,7 +266,7 @@ register_shutdown_function([Shutdown::class, 'handleParseError']);
  *
  * @return void Returns void if execution is stopped; otherwise, returns the result of var_dump().
  */
-function dd($param = null, bool $die = true, bool $debug = true): void{
+function dd($param = null, bool $die = true, bool $debug = true): void {
     // Prepare the output with execution time information
     $output = ($debug == true && !defined('APP_END') ? 
               'Execution time: <b>'  . round(microtime(true) - APP_START, 3) . '</b> secs' : 

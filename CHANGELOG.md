@@ -16,6 +16,12 @@ $componetPkg = !isset($_ENV['COMPOSER']['PACKAGE']) ?: $_ENV['COMPOSER']['PACKAG
 $user = getenv('USERNAME') ?: (getenv('APACHE_RUN_USER') ?: getenv('USER') ?: '');
 
 
+
+(APP_SELF !== APP_PATH_SERVER) and $socketInstance = Sockets::getInstance();
+//$socketInstance->handleClientRequest("composer self-update\n");
+fclose($socketInstance->getSocket());
+
+
 .htpasswd
 
 /*
@@ -50,6 +56,13 @@ switch (__FILE__) {
   default:
 }
 
+PHP
+
+  $cmd = 'test';
+
+  $msg = (FALSE == FALSE) . 1 ? : 'another test'; // 11
+
+  die($msg);
 
 
 
