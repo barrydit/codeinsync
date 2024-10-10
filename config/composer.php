@@ -5,7 +5,6 @@ global $errors;
 //if ($_SERVER['REQUEST_METHOD'] == 'POST') 
 //  die(var_dump($_GET));
 
-
 use Composer\InstalledVersions;
 
 if (isset($_ENV['COMPOSER']['EXPR_NAME']) && !defined('COMPOSER_EXPR_NAME'))
@@ -351,10 +350,11 @@ if (stripos(PHP_OS, 'WIN') === 0) { // DO NOT REMOVE! { .. }
 
 //$output = [];
 $output = [ // Exception: [] operator not supported for strings
-  stripos(PHP_OS, 'WIN') === 0 ? realpath(shell_exec(APP_SUDO . 'where composer')) : realpath(shell_exec(APP_SUDO . 'which composer')),
-  shell_exec(APP_SUDO . 'composer --version') ?: $errors['COMPOSER-VERSION'] = $output[1]
+  stripos(PHP_OS, 'WIN') === 0 ? realpath('C:\\composer\\composer.bat' /*shell_exec('where composer')*/) : realpath(shell_exec(APP_SUDO . 'which composer')),
+  shell_exec('composer --version') ?: $errors['COMPOSER-VERSION'] = ''
 ];
 
+if (!empty($output[1]))
 if (stripos(PHP_OS, 'WIN') === 0) {
   if (!preg_match('/Composer(?: version)? (\d+\.\d+\.\d+) (\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2})/', $output[1], $matches)) {
     $errors['COMPOSER-VERSION'] = $output[1];
@@ -363,7 +363,7 @@ if (stripos(PHP_OS, 'WIN') === 0) {
   preg_match('/Composer(?: version)? (\d+\.\d+\.\d+) (\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2})/', $output[1], $matches) or $errors['COMPOSER-VERSION'] = $output[1];
 }
 
-defined('COMPOSER_EXEC') or define('COMPOSER_EXEC', (isset($_GET['exec']) && $_GET['exec'] == 'phar' ? COMPOSER_PHAR : (defined('COMPOSER_BIN') ? ['bin' => basename(COMPOSER_BIN['bin']), 'version' => ($matches[1] ?? '')] : '')) ?? COMPOSER_PHAR);
+defined('COMPOSER_EXEC') or define('COMPOSER_EXEC', (isset($_GET['exec']) && $_GET['exec'] == 'phar' ? COMPOSER_PHAR : (defined('COMPOSER_BIN') ? ['bin' => basename(COMPOSER_BIN['bin']), 'version' => ($matches[1] ?? '')] : ['bin' => 'composer', 'version' => $matches[1]])) ?? COMPOSER_PHAR);
 
 if (is_array(COMPOSER_EXEC))
   define('COMPOSER_VERSION', COMPOSER_EXEC['version']);
@@ -397,6 +397,7 @@ if (!file_exists($authJsonPath)) {
     }
 }
 
+ 
 if (realpath($authJsonPath)) {
   putenv('COMPOSER_AUTH=' . (filesize($authJsonPath) == 0 || trim(file_get_contents($authJsonPath)) == false ? '{"github-oauth": {"github.com": ""}}' : trim(str_replace([' ', "\r\n", "\n", "\r"], '', file_get_contents($authJsonPath)))));
 
@@ -509,7 +510,7 @@ if (defined('APP_ENV') and APP_ENV == 'development') {
 */
     }
   }
-  
+ 
 /*
   Suggested packages to be added later:
     composer/packagist
@@ -553,7 +554,6 @@ if (!realpath(APP_PATH . APP_ROOT . APP_BASE['vendor'])) {
   }
 }
 /* Consider writing a gui that would handle the composer traffic ... */
-
 
 // dd(getcwd());
 
