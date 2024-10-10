@@ -491,7 +491,7 @@ ob_start(); ?>
       <code class="text-sm" style="background-color: #fff; color: #0078D7;">$ 
         <input type="hidden" name="app" value="composer" />
         <select name="exec" onchange="this.form.submit();">
-          <option <?= (COMPOSER_EXEC == COMPOSER_BIN ? 'selected' : '') ?> value="bin"><?= COMPOSER_BIN['bin']; ?></option>
+          <?php if (defined('COMPOSER_BIN')) { ?><option <?= (COMPOSER_EXEC == COMPOSER_BIN ? 'selected' : '') ?> value="bin"><?= COMPOSER_BIN['bin']; ?></option><?php } ?>
           <option <?= (COMPOSER_EXEC == COMPOSER_PHAR ? 'selected' : '') ?> value="phar"><?= 'php composer.phar' /*COMPOSER_PHAR['bin']*/; ?></option>
         </select>
       </code>
