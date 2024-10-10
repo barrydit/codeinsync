@@ -536,7 +536,7 @@ $path = APP_PATH . APP_ROOT . ($_GET['path'] ?? '');
               if (is_dir($path)) {
 
                 if (strtoupper(substr(PHP_OS, 0, 3)) === 'WIN') {
-                  $relativePath = str_replace('\\', '/', $relativePath) . '/';
+                  $relativePath = str_replace('\\', '\\\\', str_replace('\\', '/', $relativePath)) . '/';
                 } elseif (stripos(PHP_OS, 'LIN') === 0) {
                   $relativePath = str_replace(DIRECTORY_SEPARATOR, '/', $relativePath) . DIRECTORY_SEPARATOR;
                 }
