@@ -534,7 +534,13 @@ $path = APP_PATH . APP_ROOT . ($_GET['path'] ?? '');
 
               echo "<td style=\"border: 0 solid #000; text-align: center;\" class=\"text-xs\">\n";
               if (is_dir($path)) {
-                $relativePath = str_replace(DIRECTORY_SEPARATOR, '/', $relativePath . DIRECTORY_SEPARATOR);
+
+                if (strtoupper(substr(PHP_OS, 0, 3)) === 'WIN') {
+                  $relativePath = str_replace(DIRECTORY_SEPARATOR, '\\', $relativePath) . DIRECTORY_SEPARATOR;
+                } elseif (stripos(PHP_OS, 'LIN') === 0) {
+                  $relativePath = str_replace(DIRECTORY_SEPARATOR, '/', $relativePath) . DIRECTORY_SEPARATOR;
+                }
+
                 switch (basename($path)) {
                   case '.git':
                     echo '<div style="position: relative; border: 4px dashed #F05033;">'
