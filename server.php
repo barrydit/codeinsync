@@ -129,7 +129,6 @@ if (PHP_SAPI === 'cli' && stripos(PHP_OS, 'LIN') === 0 ) {
   (!extension_loaded('sockets')) and die('sockets required. exiting');
 }
 
-
 /**
  * Summary of safe_chdir
  * @param mixed $path

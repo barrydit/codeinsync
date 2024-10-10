@@ -767,7 +767,6 @@ if (defined('COMPOSER_VERSION') && defined('COMPOSER_LATEST')) { // defined('APP
 //  if (is_file($path = APP_PATH . 'composer.lock') && is_writable($path)) 
 //    unlink($path);
 
-
 if (version_compare(COMPOSER_LATEST, COMPOSER_VERSION, '>') != 0) {
   //dd(basename(COMPOSER_EXEC['bin']) . ' self-update;'); // (stripos(PHP_OS, 'WIN') === 0 ? '' : APP_SUDO) . 
   //(APP_SELF !== APP_PATH_SERVER) and 

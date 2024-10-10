@@ -51,7 +51,7 @@ if (preg_match('/^app\.([\w\-.]+)\.php$/', basename(__FILE__), $matches))
           //die(header('Location: ' . APP_URL_BASE . '?app=text_editor&filename='.$_POST['cmd']));
           //$output[] = "Changing directory to " . $path;
 /**/
-          if ($path = realpath(APP_PATH . APP_ROOT . rtrim(trim($match[1]), '/'))) {
+          if ($path = realpath(APP_PATH . APP_ROOT . rtrim(trim($match[1]), DIRECTORY_SEPARATOR))) {
             // Define the root directory you don't want to go past
             $root_dir = realpath(APP_PATH . APP_ROOT);
 

@@ -530,11 +530,11 @@ $path = APP_PATH . APP_ROOT . ($_GET['path'] ?? '');
           if (!empty($paths))
             foreach($paths as $key => $path) {
               // Adjust the path to be relative to the current directory
-              $relativePath = basename(str_replace(APP_PATH . APP_ROOT, '', rtrim($path, DIRECTORY_SEPARATOR)));
+              $relativePath = str_replace(APP_PATH . APP_ROOT, '', rtrim($path, DIRECTORY_SEPARATOR));
 
               echo "<td style=\"border: 0 solid #000; text-align: center;\" class=\"text-xs\">\n";
               if (is_dir($path)) {
-                $relativePath = $relativePath . '/';
+                $relativePath = $relativePath . DIRECTORY_SEPARATOR;
                 switch (basename($path)) {
                   case '.git':
                     echo '<div style="position: relative; border: 4px dashed #F05033;">'
