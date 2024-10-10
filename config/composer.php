@@ -363,7 +363,7 @@ if (stripos(PHP_OS, 'WIN') === 0) {
   preg_match('/Composer(?: version)? (\d+\.\d+\.\d+) (\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2})/', $output[1], $matches) or $errors['COMPOSER-VERSION'] = $output[1];
 }
 
-defined('COMPOSER_EXEC') or define('COMPOSER_EXEC', (isset($_GET['exec']) && $_GET['exec'] == 'phar' ? COMPOSER_PHAR : (defined('COMPOSER_BIN') ? ['bin' => basename(COMPOSER_BIN['bin']), 'version' => ($matches[1] ?? '')] : COMPOSER_BIN)) ?? COMPOSER_PHAR);
+defined('COMPOSER_EXEC') or define('COMPOSER_EXEC', (isset($_GET['exec']) && $_GET['exec'] == 'phar' ? COMPOSER_PHAR : (defined('COMPOSER_BIN') ? ['bin' => basename(COMPOSER_BIN['bin']), 'version' => ($matches[1] ?? '')] : '')) ?? COMPOSER_PHAR);
 
 if (is_array(COMPOSER_EXEC))
   define('COMPOSER_VERSION', COMPOSER_EXEC['version']);
