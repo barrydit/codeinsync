@@ -151,8 +151,8 @@ if (!function_exists('dd')) {
 }
 
 if (!empty($_GET['client']) || !empty($_GET['domain'])) {
-  $path = /*'../../'.*/ 'clientele/' . ($_GET['client'] ?? '') . '/';
-  $dirs = array_filter(glob(dirname(__DIR__) . "/$path*"), 'is_dir');
+  $path = /*'../../'.*/ 'clientele' . DIRECTORY_SEPARATOR . ($_GET['client'] ?? '') . DIRECTORY_SEPARATOR;
+  $dirs = array_filter(glob(dirname(__DIR__) . DIRECTORY_SEPARATOR . "$path*"), 'is_dir');
 
   if (count($dirs) == 1) {
     foreach($dirs as $dir) {
@@ -167,7 +167,7 @@ if (!empty($_GET['client']) || !empty($_GET['domain'])) {
     }
   }
 
-  $dirs = array_filter(glob(dirname(__DIR__) . '/' . $path . '*'), 'is_dir');
+  $dirs = array_filter(glob(dirname(__DIR__) . DIRECTORY_SEPARATOR . $path . '*'), 'is_dir');
 
   if (!empty($_GET['domain'])) {
     foreach($dirs as $key => $dir) {
@@ -209,11 +209,12 @@ if (!empty($_GET['client']) || !empty($_GET['domain'])) {
 unset($dirs);
 
 if (!defined('APP_ROOT')) {
-  $path = !isset($_GET['client']) ? (!isset($_GET['project']) ? '' : 'projects/' . $_GET['project'] . '/') : 'clientele/' . $_GET['client'] . '/' . (isset($_GET['domain']) ? ($_GET['domain'] != '' ? $_GET['domain'] . '/' : '') : ''); /* ($_GET['path'] . '/' ?? '')*/
+  $path = !isset($_GET['client']) ? (!isset($_GET['project']) ? '' : 'projects' . DIRECTORY_SEPARATOR . $_GET['project']) : 'clientele' . DIRECTORY_SEPARATOR . $_GET['client'] . DIRECTORY_SEPARATOR . (isset($_GET['domain']) ? ($_GET['domain'] != '' ? $_GET['domain'] : '') : '') . DIRECTORY_SEPARATOR; /* ($_GET['path'] . '/' ?? '')*/
   //die($path);
   //is_dir(APP_PATH . $_GET['path']) 
   define('APP_ROOT', !empty(realpath(APP_PATH . ($path = rtrim($path, DIRECTORY_SEPARATOR)) ) && $path != '') ? (string) $path . DIRECTORY_SEPARATOR : '');  // basename() does not like null
 }
+
 /*
 if (isset($_GET['path']) && $_GET['path'] != '' && realpath($_GET['path']) && is_dir($_GET['path']))
   $_GET['path'] = rtrim(ltrim($_GET['path'], '/'), '/'); 

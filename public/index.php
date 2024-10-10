@@ -28,6 +28,7 @@ if (__FILE__ == get_required_files()[0] && __FILE__ == realpath($_SERVER["SCRIPT
 //$path = "/path/to/your/logfile.log"; // Replace with your actual log file path
 if (is_readable($path = APP_PATH . APP_ROOT . $_ENV['ERROR_LOG_FILE']) && filesize($path) >= 0 ) {
   $errors['ERROR_PATH'] = "\n$path\n";
+
   //if (stripos(PHP_OS, 'WIN') === 0) {
   //  $errors['ERROR_LOG'] = shell_exec("powershell Get-Content -Tail 10 $path") . "\n";
   //} else {
