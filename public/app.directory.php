@@ -534,7 +534,7 @@ $path = APP_PATH . APP_ROOT . ($_GET['path'] ?? '');
 
               echo "<td style=\"border: 0 solid #000; text-align: center;\" class=\"text-xs\">\n";
               if (is_dir($path)) {
-                $relativePath .= DIRECTORY_SEPARATOR; // 
+                $relativePath = str_replace(DIRECTORY_SEPARATOR, '/', $relativePath . DIRECTORY_SEPARATOR);
                 switch (basename($path)) {
                   case '.git':
                     echo '<div style="position: relative; border: 4px dashed #F05033;">'
