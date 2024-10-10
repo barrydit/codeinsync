@@ -536,7 +536,7 @@ $path = APP_PATH . APP_ROOT . ($_GET['path'] ?? '');
               if (is_dir($path)) {
 
                 if (strtoupper(substr(PHP_OS, 0, 3)) === 'WIN') {
-                  $relativePath = str_replace('\\', '\\\\', str_replace('\\', '/', $relativePath)) . '/';
+                  $relativePath = str_replace('\\', '/', $relativePath) . '/'; //
                 } elseif (stripos(PHP_OS, 'LIN') === 0) {
                   $relativePath = str_replace(DIRECTORY_SEPARATOR, '/', $relativePath) . DIRECTORY_SEPARATOR;
                 }
@@ -592,7 +592,7 @@ $path = APP_PATH . APP_ROOT . ($_GET['path'] ?? '');
                     . '/</a></div>' . "\n";
                     break;
                   default:
-                    echo '<a href="?' . (!defined('APP_ROOT') || empty(APP_ROOT) ? '' : (array_key_first($_GET) == 'client' ? 'client=' . $_GET['client'] . '&' . (isset($_GET['domain']) ? 'domain=' . ($_GET['domain'] != '' ? $_GET['domain'] . '&' : '') : '') : (array_key_first($_GET) == 'project' ? 'project=' . $_GET['project'] . '&' : ''))) . 'path=' . $relativePath . '" onclick="handleClick(event, \'' . $relativePath . '\')">'
+                    echo '<a href="?' . (!defined('APP_ROOT') || empty(APP_ROOT) ? '' : (array_key_first($_GET) == 'client' ? 'client=' . $_GET['client'] . '&' . (isset($_GET['domain']) ? 'domain=' . ($_GET['domain'] != '' ? $_GET['domain'] . '&' : '') : '') : (array_key_first($_GET) == 'project' ? 'project=' . $_GET['project'] . '&' : ''))) . 'path=' . $relativePath . '" onclick="handleClick(event, \'' . str_replace('\\', '\\\\', $relativePath ) . '\')">'
                     // (!isset($_GET['path']) ? '' : $_GET['path'] . ($_GET['path'] == '' ? '' : '/' )) . basename($path)
                     . '<img src="resources/images/directory.png" width="50" height="32" /><br />' . basename($path) . '/</a>';
                     break;
