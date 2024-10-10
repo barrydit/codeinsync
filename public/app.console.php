@@ -60,7 +60,7 @@ if (preg_match('/^app\.([\w\-.]+)\.php$/', basename(__FILE__), $matches))
                 // Proceed with your existing logic if the path is valid
                 $resultValue = (function() use ($path): string {
                     // Replace the escaped APP_PATH and APP_ROOT with the actual directory path
-                    if (realpath($_GET['path'] = preg_replace('/' . preg_quote(APP_PATH . APP_ROOT, '/') . '/', '', $path)) == realpath(APP_PATH . APP_ROOT)) {
+                    if (realpath($_GET['path'] = preg_replace('/' . preg_quote(APP_PATH . APP_ROOT, DIRECTORY_SEPARATOR) . '/', '', $path)) == realpath(APP_PATH . APP_ROOT)) {
                         $_GET['path'] = '';
                     }
                     ob_start();
