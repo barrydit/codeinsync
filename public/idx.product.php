@@ -12,9 +12,7 @@ if (!headers_sent()) {
   header("Cache-Control: no-store, no-cache, must-revalidate, max-age=0");
   header("Expires: Sat, 26 Jul 1997 05:00:00 GMT");
   header("Pragma: no-cache");
-}
-
- ?>
+} ?>
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -23,7 +21,7 @@ if (!headers_sent()) {
 
     <script src="https://d3js.org/d3.v7.min.js"></script>
 
-    <base href="<?=(!is_array(APP_URL) ? APP_URL : APP_URL_BASE) . (preg_match('/^\/(?!\?)$/', ($_SERVER['REQUEST_URI'] ?? '')) ? '?' : '') . (!defined('APP_DEBUG') ? '#' : '?' . (APP_URL_BASE['query'] != '' ? APP_URL_BASE['query'] : '')) . (defined('APP_ENV') && APP_ENV == 'development' ? '#!' : ''); ?>">
+    <base href="<?=(!is_array(APP_URL) ? APP_URL : APP_URL_BASE) . (preg_match('/^\/(?!\?)$/', $_SERVER['REQUEST_URI'] ?? '') ? '?' : '') . (!defined('APP_DEBUG') ? '#' : '?' . (APP_URL_BASE['query'] != '' ? APP_URL_BASE['query'] : '')) . (defined('APP_ENV') && APP_ENV == 'development' ? '#!' : ''); ?>">
 
     <title>Multiple Ace Editor Instances</title>
 
@@ -32,17 +30,17 @@ if (!headers_sent()) {
 // <link rel="stylesheet" href="https://code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css">
 // <link rel="stylesheet" href="resources/css/output.css">
 
-if (!is_file($path = APP_PATH . APP_BASE['resources'] . 'js/tailwindcss-3.3.5.js') || ceil(abs((strtotime(date('Y-m-d')) - strtotime(date('Y-m-d',strtotime('+5 days',filemtime($path))))) / 86400)) <= 0  ) {
+if (!is_file($path = APP_PATH . APP_BASE['resources'] . 'js' . DIRECTORY_SEPARATOR . 'tailwindcss-3.3.5.js') || ceil(abs((strtotime(date('Y-m-d')) - strtotime(date('Y-m-d',strtotime('+5 days',filemtime($path))))) / 86400)) <= 0  ) {
     $url = 'https://cdn.tailwindcss.com';
     $handle = curl_init($url);
     curl_setopt($handle, CURLOPT_RETURNTRANSFER, true);
 
     if (!empty($js = curl_exec($handle)))
-        file_put_contents($path, $js) or $errors['JS-TAILWIND'] = $url . ' returned empty.';
+        file_put_contents($path, $js) or $errors['JS-TAILWIND'] = "$url returned empty.";
 }
 
 if (is_file($path)) { ?>
-    <script src="<?= APP_BASE['resources'] . 'js/tailwindcss-3.3.5.js' ?? $url ?>"></script>
+    <script src="<?= 'resources/js/tailwindcss-3.3.5.js' ?? $url ?>"></script>
 <?php }
 unset($path);
 ?>
@@ -106,17 +104,17 @@ unset($path);
       <?= defined('UI_ACE_EDITOR') ? UI_ACE_EDITOR['style'] : null; ?>
       <?= defined('UI_NODES') ? UI_NODES['style'] : null; ?>
 
-      <?= ($apps['browser']['style'] ?? ''); ?>
-      <?= ($apps['github']['style'] ?? ''); ?>
-      <?= ($apps['packagist']['style'] ?? ''); ?>
-      <?= ($apps['whiteboard']['style'] ?? ''); ?>
-      <?= ($apps['notes']['style'] ?? ''); ?> 
-      <?= ($apps['pong']['style'] ?? ''); ?>
+      <?= $apps['browser']['style'] ?? ''; ?>
+      <?= $apps['github']['style'] ?? ''; ?>
+      <?= $apps['packagist']['style'] ?? ''; ?>
+      <?= $apps['whiteboard']['style'] ?? ''; ?>
+      <?= $apps['notes']['style'] ?? ''; ?> 
+      <?= $apps['pong']['style'] ?? ''; ?>
 
       <?= /*$appBackup['style']*/ NULL; ?>
-      <?= ($apps['console']['style'] ?? ''); ?>
-      <?= ($apps['timesheet']['style'] ?? ''); ?>
-      <?= ($apps['project']['style'] ?? ''); ?>
+      <?= $apps['console']['style'] ?? ''; ?>
+      <?= $apps['timesheet']['style'] ?? ''; ?>
+      <?= $apps['project']['style'] ?? ''; ?>
 
       ( ?? '')
       .container2 {

@@ -3,7 +3,7 @@
 // 
 
 switch (PHP_BINARY) {
-    case $_ENV['COMPOSER']['PHP_EXEC']:
+    case $_ENV['COMPOSER']['PHP_EXEC']: // isset issue
         define('PHP_EXEC', PHP_BINARY);
         break;
     default:
