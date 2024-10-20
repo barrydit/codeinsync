@@ -1,9 +1,11 @@
 <?php
 
-if ($path = (basename(getcwd()) == 'public') ? (is_file('../config/config.php') ? '../config/config.php' : 'config.php') :
-  (is_file('config.php') ? 'config.php' : dirname(__DIR__, 1) . DIRECTORY_SEPARATOR . 'config' . DIRECTORY_SEPARATOR . 'config.php' ))
-  require_once $path;
-else die(var_dump("$path was not found. file=config.php"));
+if (__FILE__ == get_required_files()[0] && __FILE__ == realpath($_SERVER["SCRIPT_FILENAME"]))
+if ($path = basename(dirname(get_required_files()[0])) == 'public') { // (basename(getcwd())
+  if (is_file($path = realpath('index.php'))) {
+    require_once $path;
+  }
+} else die(var_dump("Path was not found. file=$path"));
 
 
 //require_once APP_PATH . APP_ROOT . APP_BASE['vendor'] . 'autoload.php';

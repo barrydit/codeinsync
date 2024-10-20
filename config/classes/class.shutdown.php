@@ -213,12 +213,22 @@ class Shutdown
         return isset(self::$instance) ? static::instance() : self::instance();
     }
 
+    /**
+     * Summary of setShutdownMessage
+     * @param mixed $message
+     * @return Shutdown
+     */
     public static function setShutdownMessage($message): self
     {
         self::$shutdownMessage = $message;
         return isset(self::$instance) ? static::instance() : self::instance();
     }
 
+    /**
+     * Summary of shutdown
+     * @param mixed $die
+     * @return void
+     */
     public function shutdown($die = true)
     {
         if (!self::$enabled) {
@@ -232,22 +242,42 @@ class Shutdown
         }
     }
 
+    /**
+     * Summary of handleError
+     * @param mixed $errno
+     * @param mixed $errstr
+     * @param mixed $errfile
+     * @param mixed $errline
+     * @return bool
+     */
     public static function handleError($errno, $errstr, $errfile, $errline)
     {
         self::triggerShutdown("Error: [$errno] $errstr - $errfile:$errline");
         return true; // To prevent PHP's internal error handler from running
     }
 
+    /**
+     * Summary of handleException
+     * @param mixed $exception
+     * @return void
+     */
     public static function handleException($exception)
     {
-        self::triggerShutdown("Exception: " . $exception->getMessage());
+        $message = "Exception: " . $exception->getMessage() . " in " . $exception->getFile() . " on line " . $exception->getLine();
+        self::triggerShutdown($message);
     }
 
+    /**
+     * Summary of handleParseError
+     * @return void
+     */
     public static function handleParseError()
     {
         $error = error_get_last();
+
         if ($error !== null) {
-            self::triggerShutdown("Fatal error: " . $error['message']);
+            $message = "Fatal error: {$error['message']} in {$error['file']} on line {$error['line']}";
+            self::triggerShutdown($message);
         }
     }
 }
@@ -255,7 +285,9 @@ class Shutdown
 // Register custom error and exception handlers
 set_error_handler([Shutdown::class, 'handleError']);
 set_exception_handler([Shutdown::class, 'handleException']);
-register_shutdown_function([Shutdown::class, 'handleParseError']);
+register_shutdown_function(function() {
+    Shutdown::handleParseError();
+});
 
 /**
  * Dumps a variable with formatting and optionally stops execution.

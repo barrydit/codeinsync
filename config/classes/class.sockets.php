@@ -82,7 +82,7 @@ class Sockets
         global $errors, $output;
 
         if (!$this->isSocketAvailable()) {
-            $errors['SOCKET'] = 'Socket not available.';
+            $errors['SOCKET'] = 'Socket is not available.';
             return;
         }
 
@@ -179,7 +179,7 @@ class Sockets
     public function __destruct()
     {
         if ($this->isSocketAvailable()) {
-            fclose($this->socket);
+           fclose($this->socket);
         }
     }
 }
@@ -207,7 +207,7 @@ if (isset($socketInstance) && is_a($socketInstance, Sockets::class) && is_resour
         if (!posix_kill($pid, 0)) {
           Sockets::handleLinuxSocketConnection();
           //error_log("Server is already running with PID $pid\n");
-          //echo "Server is already running with PID $pid\n";
+          echo "Server is already running with PID $pid\n";
           //exit(1);
         }
       }
