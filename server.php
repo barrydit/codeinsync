@@ -62,7 +62,8 @@ if (PHP_SAPI === 'cli' && stripos(PHP_OS, 'LIN') === 0 ) {
     }
   }
 
-  stripos(PHP_OS, 'LIN') === 0 and cli_set_process_name($title);
+  //stripos(PHP_OS, 'LIN') === 0
+  cli_set_process_name($title);
   // ps aux | grep server.php
   // kill -SIGTERM <PID>
   // kill -SIGINT <PID>
@@ -670,5 +671,10 @@ try {
     } 
   }
 }
+
+register_shutdown_function(function() {
+  !is_file(PID_FILE) ?: unlink(PID_FILE);
+});
+
 
 (PHP_SAPI !== 'cli' || !is_file(PID_FILE) ?: unlink(PID_FILE)) or die('EOF');

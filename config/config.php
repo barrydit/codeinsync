@@ -102,11 +102,34 @@ endif;
 // Directory of this script
 $isFile = function ($path) use (&$paths) {
   if (is_file($path)) {
-    $paths[] = $path;
+    require_once $path; // $paths[] = $path;
   }
 };
 
-$isFile(__DIR__ . DIRECTORY_SEPARATOR . 'functions.php') ?: $isFile('config/functions.php') ?: $isFile('functions.php');
+$isFile(__DIR__ . DIRECTORY_SEPARATOR . 'functions.php') ?: 
+$isFile('config/functions.php') ?: 
+$isFile('functions.php');
+
+$isFile(__DIR__ . DIRECTORY_SEPARATOR . 'constants.php') ?: $isFile('config/constants.php') ?: $isFile('constants.php');
+
+// Check if the dd function exists
+if (!function_exists('dd')) {
+  $errors['FUNCTIONS'] = 'functions.php failed to load. Therefore function dd() does not exist (yet).';
+}
+
+
+$_ENV = (function($file = '../.env') {
+
+
+
+  if (!file_exists($file)) {
+    throw new \RuntimeException(sprintf('%s file does not exist', $file));
+  }
+  return parse_ini_file_multi($file);
+})();
+
+
+$isFile(__DIR__ . DIRECTORY_SEPARATOR . 'php.php') ?: $isFile('config/php.php') ?: $isFile('php.php');
 
 //if (empty($paths)) {
 //  die(var_dump("functions.php was not found."));
@@ -119,19 +142,6 @@ while ($path = array_shift($paths)) {
     die(var_dump(basename($path) . ' was not found. file=' . $path));
   }
 }
-
-// Check if the dd function exists
-if (!function_exists('dd')) {
-  $errors['FUNCTIONS'] = 'functions.php failed to load. Therefore function dd() does not exist (yet).';
-}
-
-
-$_ENV = (function($file = APP_PATH . '.env') {
-  if (!file_exists($file)) {
-    throw new \RuntimeException(sprintf('%s file does not exist', $file));
-  }
-  return parse_ini_file_multi($file);
-})();
 
 if (isset($_ENV['SHELL']['EXPR_DOMAIN']) && $_ENV['SHELL']['EXPR_DOMAIN'] != '' && !defined('DOMAIN_EXPR'))
   define('DOMAIN_EXPR', $_ENV['SHELL']['EXPR_DOMAIN']); // const DOMAIN_EXPR = 'string only/non-block/ternary';
@@ -308,8 +318,8 @@ if (basename($dir = getcwd()) != 'config') {
 
   chdir(APP_PATH . APP_ROOT);
   if (is_file($file = APP_PATH . APP_ROOT . '.env')) {
-    $env = parse_ini_file_multi($file);
-    $_ENV = array_merge_recursive_distinct($_ENV, $env);
+    $parsedEnv = parse_ini_file_multi($file);
+    $_ENV = array_merge_recursive_distinct($_ENV, $parsedEnv);
 
 /*
         foreach($env as $key => $value) {

@@ -387,8 +387,8 @@ if (preg_match('/^app\.([\w\-.]+)\.php$/', basename(__FILE__), $matches))
               $errors['server-1'] = "Connected to " . SERVER_HOST . " on port " . SERVER_PORT . "\n";
 
               if (preg_match('/^composer\s+(:?(.*))/i', $_POST['cmd'], $match))
-                $errors['server-2'] = 'Client request: ' . $message = "cmd: composer " . $match[1] . ' --working-dir"' . APP_PATH . APP_ROOT . '"'. "\n";
-              else if (preg_match('/^git\s+(:?(.*))/i', $_POST['cmd'], $match))
+                $errors['server-2'] = 'Client request: ' . $message = "cmd: composer " . $match[1] . ' --working-dir="' . APP_PATH . APP_ROOT . '"'. "\n";
+              elseif (preg_match('/^git\s+(:?(.*))/i', $_POST['cmd'], $match))
                 $errors['server-2'] = 'Client request: ' . $message = "cmd: git " . $match[1] . ' --git-dir="' . APP_PATH . APP_ROOT . '.git" --work-tree="' . APP_PATH . APP_ROOT  . '"' . "\n";
               else $errors['server-2'] = 'Client request: ' . $message = "cmd: " . $_POST['cmd'] . "\n";
             

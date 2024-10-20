@@ -772,10 +772,13 @@ if (version_compare(COMPOSER_LATEST, COMPOSER_VERSION, '>') != 0) {
   //(APP_SELF !== APP_PATH_SERVER) and 
 
   //unset($socketInstance);
+  if (!isset($socketInstance)) {
+    $socketInstance = Sockets::getInstance();
+  }
 
-  $socketInstance = Sockets::getInstance();
   //$socketInstance->handleClientRequest("composer self-update\n");
   if (!isset($_SERVER['SOCKET']) || !is_resource($_SERVER['SOCKET']) || empty($_SERVER['SOCKET'])) {
+
     $proc = proc_open((stripos(PHP_OS, 'WIN') === 0 ? '' : APP_SUDO . '-u www-data ') . basename(COMPOSER_EXEC['bin']) . ' self-update', [["pipe", "r"], ["pipe", "w"], ["pipe", "w"]], $pipes);
   
     [$stdout, $stderr, $exitCode] = [stream_get_contents($pipes[1]), stream_get_contents($pipes[2]), proc_close($proc)];
@@ -791,6 +794,7 @@ if (version_compare(COMPOSER_LATEST, COMPOSER_VERSION, '>') != 0) {
       }
     }
   } else {
+    // Connect to the server
     $errors['server-1'] = "Connected to Server: " . SERVER_HOST . ':' . SERVER_PORT . "\n";
     
     // Send a message to the server
@@ -806,9 +810,11 @@ if (version_compare(COMPOSER_LATEST, COMPOSER_VERSION, '>') != 0) {
       $errors['server-3'] = "Server responce: $response\n";
       if (isset($output[end($output)])) $output[end($output)] .= $response = trim($response);
       //if (!empty($response)) break;
-    }
+    }    
+
     // Close and reopen socket
     fclose($socketInstance->getSocket());
+
   }
 
   //dd(get_required_files(), false);

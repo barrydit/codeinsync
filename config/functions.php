@@ -1,6 +1,5 @@
 <?php
 
-require_once __DIR__ . DIRECTORY_SEPARATOR . 'constants.php'; 
 // Get all PHP files in the 'classes' directory
 $paths = array_filter(glob(__DIR__ . DIRECTORY_SEPARATOR . 'classes/*.php'), 'is_file');
 
@@ -660,3 +659,5 @@ function getElementsByClass(&$parentNode, $tagName, $className) {
 
     return $nodes;
 }
+
+require_once __DIR__ . DIRECTORY_SEPARATOR . 'constants.php';

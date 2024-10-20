@@ -6,7 +6,7 @@ https://stackoverflow.com/questions/17694894/different-timezone-types-on-datetim
 
 */
 
-
+/**/
 if (__FILE__ == get_required_files()[0] && __FILE__ == realpath($_SERVER["SCRIPT_FILENAME"]))
   if ($path = basename(dirname(get_required_files()[0])) == 'public') { // (basename(getcwd())
     if (is_file($path = realpath('index.php'))) {
@@ -14,6 +14,10 @@ if (__FILE__ == get_required_files()[0] && __FILE__ == realpath($_SERVER["SCRIPT
     }
   } else
     die(var_dump("Path was not found. file=$path"));
+
+    
+//dd(get_required_files());
+
 
 if (preg_match('/^app\.([\w\-.]+)\.php$/', basename(__FILE__), $matches))
   ${$matches[1]} = $matches[1];
