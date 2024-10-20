@@ -99,13 +99,46 @@ if (count(get_included_files()) == ((version_compare(PHP_VERSION, '5.0.0', '>=')
   exit('Direct access is not allowed.');
 endif;
 
-if (isset($_ENV['SHELL']['EXPR_DOMAIN']) && !defined('DOMAIN_EXPR'))
+// Directory of this script
+$isFile = function ($path) use (&$paths) {
+  if (is_file($path)) {
+    $paths[] = $path;
+  }
+};
+
+$isFile(__DIR__ . DIRECTORY_SEPARATOR . 'functions.php') ?: $isFile('config/functions.php') ?: $isFile('functions.php');
+
+//if (empty($paths)) {
+//  die(var_dump("functions.php was not found."));
+//}
+
+while ($path = array_shift($paths)) {
+  if (is_file($path = realpath($path))) {
+    require_once $path;
+  } else {
+    die(var_dump(basename($path) . ' was not found. file=' . $path));
+  }
+}
+
+// Check if the dd function exists
+if (!function_exists('dd')) {
+  $errors['FUNCTIONS'] = 'functions.php failed to load. Therefore function dd() does not exist (yet).';
+}
+
+
+$_ENV = (function($file = APP_PATH . '.env') {
+  if (!file_exists($file)) {
+    throw new \RuntimeException(sprintf('%s file does not exist', $file));
+  }
+  return parse_ini_file_multi($file);
+})();
+
+if (isset($_ENV['SHELL']['EXPR_DOMAIN']) && $_ENV['SHELL']['EXPR_DOMAIN'] != '' && !defined('DOMAIN_EXPR'))
   define('DOMAIN_EXPR', $_ENV['SHELL']['EXPR_DOMAIN']); // const DOMAIN_EXPR = 'string only/non-block/ternary';
-elseif(!defined('DOMAIN_EXPR'))
+elseif (!defined('DOMAIN_EXPR'))
   define('DOMAIN_EXPR', '/(?:[a-z]+\:\/\/)?(?:[a-z0-9\-]+\.)+[a-z]{2,6}(?:\/\S*)?/i'); // /(?:\.(?:([-a-z0-9]+){1,}?)?)?\.[a-z]{2,6}$/';
 
-if (isset($_ENV['COMPOSER']['PHP_EXEC']) && !defined('PHP_EXEC'))
-  define('PHP_EXEC', $_ENV['COMPOSER']['PHP_EXEC'] ?? '/usr/bin/php'); // const DOMAIN_EXPR = 'string only/non-block/ternary';
+// const DOMAIN_EXPR = 'string only/non-block/ternary';
 // /(?:\.(?:([-a-z0-9]+){1,}?)?)?\.[a-z]{2,6}$/';
 
 //die(var_dump($_SERVER['PHP_SELF'] . DIRECTORY_SEPARATOR . basename($_SERVER['PHP_SELF'])));
@@ -121,34 +154,9 @@ if (isset($_ENV['COMPOSER']['PHP_EXEC']) && !defined('PHP_EXEC'))
 
 // Retrieve the latest commit SHA of the main branch from the remote repository
 
-// Directory of this script
-$isFile = function ($path) use (&$paths) {
-  if (is_file($path)) {
-    $paths[] = $path;
-  }
-};
-
-$isFile(__DIR__ . DIRECTORY_SEPARATOR . 'functions.php') ?: $isFile('config/functions.php') ?: $isFile('functions.php');
-
-if (empty($paths)) {
-  die(var_dump("functions.php was not found."));
-}
 
 // Load the required files
 //$paths[] = __DIR__ . DIRECTORY_SEPARATOR . 'constants.php'; //require('constants.php'); 
-
-while ($path = array_shift($paths)) {
-  if (is_file($path = realpath($path))) {
-    require_once $path;
-  } else {
-    die(var_dump(basename($path) . ' was not found. file=' . $path));
-  }
-}
-
-// Check if the dd function exists
-if (!function_exists('dd')) {
-  $errors['FUNCTIONS'] = 'functions.php failed to load. Therefore function dd() does not exist (yet).';
-}
 
 if (!empty($_GET['client']) || !empty($_GET['domain'])) {
   $path = /*'../../'.*/ 'clientele' . DIRECTORY_SEPARATOR . ($_GET['client'] ?? '') . DIRECTORY_SEPARATOR;
@@ -274,12 +282,7 @@ if (!is_file($file = APP_PATH . 'projects/index.php')) {
 // Load the environment variables from the .env file
 // = loadEnvConfig(APP_PATH . '.env');
 
-$_ENV = (function($file = APP_PATH . '.env') {
-  if (!file_exists($file)) {
-    throw new \RuntimeException(sprintf('%s file does not exist', $file));
-  }
-  return parse_ini_file_multi($file);
-})();
+
 
 // Access the variables from the parsed .env file
 $domain = $_ENV['SHELL']['DOMAIN'] ?? APP_DOMAIN ?? 'localhost';
