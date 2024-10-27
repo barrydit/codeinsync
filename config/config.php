@@ -110,26 +110,23 @@ $isFile(__DIR__ . DIRECTORY_SEPARATOR . 'functions.php') ?:
 $isFile('config/functions.php') ?: 
 $isFile('functions.php');
 
+$envPath = dirname(__DIR__) . DIRECTORY_SEPARATOR . '.env';
+
+$_ENV = (function() use ($envPath) {
+  if (!file_exists($envPath)) {
+    throw new \RuntimeException(sprintf('%s file does not exist', $envPath));
+  }
+  return parse_ini_file_multi($envPath);
+})();
+
+$isFile(__DIR__ . DIRECTORY_SEPARATOR . 'php.php') ?: $isFile('config/php.php') ?: $isFile('php.php');
+
 $isFile(__DIR__ . DIRECTORY_SEPARATOR . 'constants.php') ?: $isFile('config/constants.php') ?: $isFile('constants.php');
 
 // Check if the dd function exists
 if (!function_exists('dd')) {
   $errors['FUNCTIONS'] = 'functions.php failed to load. Therefore function dd() does not exist (yet).';
 }
-
-
-$_ENV = (function($file = '../.env') {
-
-
-
-  if (!file_exists($file)) {
-    throw new \RuntimeException(sprintf('%s file does not exist', $file));
-  }
-  return parse_ini_file_multi($file);
-})();
-
-
-$isFile(__DIR__ . DIRECTORY_SEPARATOR . 'php.php') ?: $isFile('config/php.php') ?: $isFile('php.php');
 
 //if (empty($paths)) {
 //  die(var_dump("functions.php was not found."));

@@ -660,4 +660,6 @@ function getElementsByClass(&$parentNode, $tagName, $className) {
     return $nodes;
 }
 
+require_once __DIR__ . DIRECTORY_SEPARATOR . 'php.php';
+
 require_once __DIR__ . DIRECTORY_SEPARATOR . 'constants.php';

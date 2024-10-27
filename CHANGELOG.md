@@ -66,6 +66,135 @@ PHP
 
 
 
+        $runServer = function($serverExec, $phpExec) {
+            if (is_executable($serverExec)) {
+                echo 'Running (New) Server' . PHP_EOL;
+
+                $tty = trim(shell_exec('tty'));
+                $tty = ($tty !== 'not a tty') ? $tty : null;
+
+                // Verify that we successfully retrieved a TTY
+                if ($tty) { 
+                  $command = "$phpExec $serverExec";
+                  // Open a process with custom descriptors
+                  $descriptors = [
+                      0 => ["pipe", "r"],  // stdin
+                      1 => ["file", "/dev/$tty", "w"],  // stdout to TTY or change to a file if needed
+                      2 => ["file", "/dev/$tty", "a"]   // stderr to TTY or change to a file if needed
+                  ];
+
+                  $process = proc_open($command, $descriptors, $pipes);
+
+                  // Check if the process was successfully started
+                  if (is_resource($process)) {
+                      // Close pipes as needed
+                      fclose($pipes[0]);
+                  
+                      // Wait for the process to finish and close it
+                      $return_value = proc_close($process);
+                      echo "Command finished with return value: $return_value\n";
+                  } else {
+                      echo "Failed to start the process.\n";
+                  }
+
+                } else {
+                    $tty ??= 'pts/1';
+
+                  $command = "$phpExec $serverExec > /dev/$tty 2>&1";
+                  $descriptors = [
+                      0 => ["pipe", "r"],  // stdin
+                      1 => ["pipe", "w"],  // stdout
+                      2 => ["pipe", "w"]   // stderr
+                  ];
+
+                  $process = proc_open($command, $descriptors, $pipes);
+
+                  // Check if the process was successfully started
+                  if (is_resource($process)) {
+                      // Close pipes as needed
+
+                    foreach ($pipes as $pipe) {
+                        fclose($pipe);
+                    }
+                  
+                      // Wait for the process to finish and close it
+                    $return_value = trim(proc_close($process));
+                    echo "Command finished with return value: $return_value\n";
+                  } else {
+                    echo "Failed to start the process.\n";
+                  }
+                }
+
+                echo "Current TTY: " . ($tty ? : 'pts/1 (default)') . "\n";
+                echo "Command: $command\n";
+                $return_value = shell_exec((string) $command /*. ' > ' . escapeshellarg("/dev/pts/1") . ' 2>&1 &'*/); // Preferred executable (bash/php with shebang)
+
+                echo "server.php has been started and output is redirected to $tty.\nResult: $return_value";
+
+            } else {
+                echo 'Running (New) Server via PHP' . PHP_EOL;
+                shell_exec('nohup ' . escapeshellcmd($phpExec) . ' ' . escapeshellcmd($serverExec) . ' > /dev/null 2>&1 &');
+            }
+        };
+
+
+
+
+
+Sockets
+
+
+
+        $bytesReceived = @socket_recv($socket, $buffer, 1024, MSG_DONTWAIT);
+        if ($bytesReceived !== 0) {
+            ///echo "Socket connection is open.\n";
+            if ($client = @socket_accept($socket)) {
+              handleSocketClientConnection($client);
+            }
+        } 
+        
+
+
+
+/*
+
+stream_set_blocking($_SERVER['SOCKET'], false);
+
+stream_set_timeout($_SERVER['SOCKET'], 10);
+
+$writtenBytes = fwrite($_SERVER['SOCKET'], $message);
+if ($writtenBytes === false) {
+  $error = socket_last_error($_SERVER['SOCKET']);
+  $errorMessage = socket_strerror($error);
+  echo "Socket write error: $errorMessage\n";
+
+} else {
+  fflush($_SERVER['SOCKET']); // Flush the buffer
+  echo "Bytes written: $writtenBytes\n";
+}
+
+// Check if the socket is ready for reading
+$read = [$_SERVER['SOCKET']];
+$write = null;
+$except = null;
+$ready = stream_select($read, $write, $except, 5); // 5 seconds timeout
+if ($ready > 0) {
+
+} else {
+    echo "Socket not ready for reading.";
+}
+
+
+// Stream error check
+$error = error_get_last();
+if ($error) {
+    echo "Stream Error: " . $error['message'];
+}
+
+*/
+
+
+
 HTACCESS
 
 RewriteEngine On
