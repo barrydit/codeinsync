@@ -166,28 +166,62 @@ class Sockets
     public static function handleLinuxSocketConnection($start = false)
     {
 
-
-        
         $pidFile = (defined('APP_PATH') ? APP_PATH : dirname(__DIR__) . DIRECTORY_SEPARATOR) . 'server.pid';
         $serverExec = defined('APP_PATH_SERVER') ? APP_PATH_SERVER : dirname(__DIR__) . DIRECTORY_SEPARATOR . 'server.php';
         $phpExec = /*APP_SUDO . '-u root ' .*/ PHP_EXEC ?? 'php';
         $temp = tempnam('/tmp', 'server');
+        $sudo = 'sudo -u root ';
+        $path = APP_PATH;
 
+        if (is_file($file = "{$temp}") || @touch($file)) // unlink($file)
+          file_put_contents($file, <<<END
+<?php
+\$runServer = function (\$serverExec, \$phpExec) {
+    chdir('$path');
+    \$temp = '$temp';
+    if (!is_executable(\$serverExec)) {
+        echo 'Running (New) Server via PHP' . PHP_EOL;
+        shell_exec('nohup ' . '$sudo' . escapeshellcmd("\$phpExec \$serverExec") . ' > /dev/null 2>&1 &');
+        return;
+    }
+
+    echo 'Running (New) Server' . PHP_EOL;
+
+    \$tty = trim(shell_exec('tty'));
+\$tty = (\$tty !== 'not a tty') ? \$tty : '/dev/pts/1'; // Default to 'pts/1' if not a TTY
+    echo "Current TTY: \$tty" . PHP_EOL;
+    // Define command
+
+    echo "Command: " . (\$command = \$serverExec) . PHP_EOL;
+
+    shell_exec('$sudo' . escapeshellcmd("\$command") . ' > ' . \$tty . ' 2>&1 &');
 /*
+    // Set up descriptors based on TTY availability
+    \$descriptors = [
+        0 => ["pipe", "r"],  // stdin
+        1 => ["file", "\$tty", "w"],  // stdout
+        2 => ["file", "\$tty", "a"]   // stderr
+    ];
 
-
-dd();
-
-
-        if (!is_file($file = "{$temp}") || unlink($file))
-          if (@touch($file))
-            file_put_contents($file, <<<END
-
-    END
-    );
+    // Execute process with proc_open
+    \$process = proc_open(\$command, \$descriptors, \$pipes);
+    if (is_resource(\$process)) {
+        fclose(\$pipes[0]);  // Close stdin pipe
+        \$return_value = proc_close(\$process);
+        echo "Command finished with return value: \$return_value" . PHP_EOL;
+    } else {
+        echo "Failed to start the process." . PHP_EOL;
+    }
 */
+    echo "server.php has been started and output is redirected to \$tty." . PHP_EOL;
 
+    unlink(\$temp);
+    exit(1);
+};
 
+\$runServer('$serverExec', '$phpExec');
+END
+);
     
         // Function to check if the server is already running
         $isServerRunning = function($pidFile) {
@@ -204,40 +238,22 @@ dd();
     
         // Run the server using the preferred executable (either serverExec or php server.php)
 
-        $runServer = function ($serverExec, $phpExec) {        
+        $runServer = function ($serverExec, $phpExec) use ($temp, $sudo) {
+            if (is_file($temp)) {
+                dd(shell_exec($sudo . escapeshellcmd("$phpExec $temp") . ' > /dev/null 2>&1 &'));
+                if (unlink($temp) && is_file($temp)) dd("$temp should have been deleted?");
+
+                dd('did it work?', false);
+                return;
+            }
             if (!is_executable($serverExec)) {
                 echo 'Running (New) Server via PHP' . PHP_EOL;
                 shell_exec('nohup ' . escapeshellcmd("$phpExec $serverExec") . ' > /dev/null 2>&1 &');
                 return;
             }
-        
-            echo 'Running (New) Server' . PHP_EOL;
-        
-            $tty = trim(shell_exec('tty'));
-            $tty = ($tty !== 'not a tty') ? $tty : 'pts/1'; // Default to 'pts/1' if not a TTY
-            echo "Current TTY: $tty\n";
-            // Define command
+            //include_once $temp; $runServer($serverExec, $phpExec);
 
-            echo "Command: " . ($command = $serverExec) . "\n";
-        
-            // Set up descriptors based on TTY availability
-            $descriptors = [
-                0 => ["pipe", "r"],  // stdin
-                1 => ["file", "/dev/$tty", "w"],  // stdout
-                2 => ["file", "/dev/$tty", "a"]   // stderr
-            ];
-        
-            // Execute process with proc_open
-            $process = proc_open($command, $descriptors, $pipes);
-            if (is_resource($process)) {
-                fclose($pipes[0]);  // Close stdin pipe
-                $return_value = proc_close($process);
-                echo "Command finished with return value: $return_value\n";
-            } else {
-                echo "Failed to start the process.\n";
-            }
-        
-            echo "server.php has been started and output is redirected to $tty.\n";
+            
         };
     
         // Main logic
