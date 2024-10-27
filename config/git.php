@@ -7,6 +7,10 @@ if ($path = realpath((basename(__DIR__) != 'config' ? NULL : __DIR__ . DIRECTORY
   require_once $path;
 }
 
+
+if (!is_dir($dirname = (defined('APP_PATH') ? APP_PATH : dirname(__DIR__) . DIRECTORY_SEPARATOR) . '.ssh')) 
+  (@!mkdir($dirname, 0755, true) ?: $errors['APP_BASE'][basename($dirname)] = "$dirname could not be created." );
+
 define('GIT_EXEC', stripos(PHP_OS, 'WIN') === 0 ? 'git.exe' : '/usr/local/bin/git');
 
 if (isset($_ENV['GITHUB']['EXPR_VERSION'])) {

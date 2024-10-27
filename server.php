@@ -1,15 +1,18 @@
 #!/usr/bin/env php
 <?php 
-//declare(strict_types=1, ticks=1); // First Line Only!
+declare(/*strict_types=1,*/ ticks=1); // First Line Only!
 
 !defined('APP_PATH') and define('APP_PATH', __DIR__ . DIRECTORY_SEPARATOR);
+
+!defined('PID_FILE') and define('PID_FILE', /*getcwd() .*/(!defined('APP_PATH') ? __DIR__ . DIRECTORY_SEPARATOR : APP_PATH ) . 'server.pid');
 
 require_once APP_PATH . 'index.php';
 
 ini_set('error_log', APP_PATH . 'server.log');
 ini_set('log_errors', 'true');
 
-!defined('PID_FILE') and define('PID_FILE', /*getcwd() . */ APP_PATH . 'server.pid');
+/*
+!defined('PID_FILE') and define('PID_FILE', APP_PATH . 'server.pid'); // getcwd()
 
 if (file_exists(PID_FILE) && $pid = (int) file_get_contents(PID_FILE)) {
   if (stripos(PHP_OS, 'WIN') === 0) {
@@ -31,15 +34,12 @@ if (file_exists(PID_FILE) && $pid = (int) file_get_contents(PID_FILE)) {
   exit(1);
 }
 file_put_contents(PID_FILE, $pid = getmypid());
-
+*/
 
 //!file_exists($file = posix_getpwuid(posix_getuid())['dir'].'/.aws/credentials')
 //  and die('an aws credentials file is required. exiting file=' . $file);
 if (PHP_SAPI === 'cli' && stripos(PHP_OS, 'LIN') === 0 ) {
   (!extension_loaded('posix') || !extension_loaded('pcntl')) and die('posix && pcntl required. exiting');
-
-  !is_writable('/tmp')
-    and die('must be able to write to /tmp to continue. exiting.');
 
   /**
    * Set the title of our script that ps(1) sees
@@ -48,6 +48,7 @@ if (PHP_SAPI === 'cli' && stripos(PHP_OS, 'LIN') === 0 ) {
     echo "Unable to set process title for PID $pid...\n";
     exit(1);
   } else {
+    //cli_set_process_name($title);
     echo "The process title '$title' has been set for your process!\n";
 
     /**
@@ -63,7 +64,7 @@ if (PHP_SAPI === 'cli' && stripos(PHP_OS, 'LIN') === 0 ) {
   }
 
   //stripos(PHP_OS, 'LIN') === 0
-  cli_set_process_name($title);
+
   // ps aux | grep server.php
   // kill -SIGTERM <PID>
   // kill -SIGINT <PID>
@@ -89,18 +90,34 @@ if (PHP_SAPI === 'cli' && stripos(PHP_OS, 'LIN') === 0 ) {
           // Reap child processes
         }
         break;
+        
+      case SIGHUP:
+        // Restart the server
+        restartServer();
+        break;
+      
       case SIGTERM:
+          //echo "Process received SIGTERM. Terminating...\n";
+          //exit; // Gracefully exit after handling
       case SIGINT:
-        echo 'Shutting down server... PID=' . getmypid() . "\n";
+        echo "Process received SIGINT (Ctrl+C). Terminating...\n";
+        //require_once APP_PATH . 'config/classes/class.sockets.php';
+        echo '   Shutting down server... PID=' . getmypid() . PHP_EOL;
         Logger::error('Shutting down server... PID=' . getmypid());
         //fclose($server); 
         $file = PID_FILE;
         !is_file($file)?: unlink($file);
         
-        if (isset($socket) && is_resource($socket) && !empty($socket)) {
+        if ($socket) {
           socket_close($socket);
         } elseif (isset($stream) && is_resource($stream) && get_resource_type($stream) == 'stream') {
           fclose($stream);
+        }
+        if ($server) {
+          fclose($server); // Close server file descriptor if open
+        }
+        if ($stream) {
+          fclose($stream); // Close stream if applicable
         }
 /*
         if (!empty($socket) && is_resource($stream)) {
@@ -116,13 +133,14 @@ if (PHP_SAPI === 'cli' && stripos(PHP_OS, 'LIN') === 0 ) {
         $running = false;
         break;
     }
-    exit(1);
+    //exit(1);
   }
 
   pcntl_async_signals(true); // Turn on asynchronous signal handling
 
   // Register signal handlerfor SIGCHLD, SIGTERM, and SIGINT
-  //pcntl_signal(SIGCHLD, 'signalHandler'); // hangs on sockets with empty cmd: on loop
+  pcntl_signal(SIGCHLD, 'signalHandler'); // hangs on sockets with empty cmd: on loop
+  pcntl_signal(SIGHUP, 'signalHandler');
   pcntl_signal(SIGTERM, 'signalHandler');
   pcntl_signal(SIGINT, 'signalHandler');
 
@@ -130,6 +148,22 @@ if (PHP_SAPI === 'cli' && stripos(PHP_OS, 'LIN') === 0 ) {
   (!extension_loaded('sockets')) and die('sockets required. exiting');
 }
 
+function restartServer() {
+  global $running, $socket, $server;
+  
+  // Close existing socket and other resources
+  socket_close($socket);
+  
+  // Restart logic
+  echo str_replace('{{STATUS}}', 'Restarting the Server... PID=' . getmypid() . str_pad('',12," "), APP_DASHBOARD) . PHP_EOL;
+
+  require_once APP_PATH . 'config/classes/class.sockets.php';
+
+  unlink(PID_FILE);
+
+  Sockets::handleSocketConnection(true);  // exec( (PHP_EXEC ?? 'php') . ' ' . basename(__FILE__) . ' &'); // Restart server script in the background
+  exit(0); // Terminate the current instance
+}
 /**
  * Summary of safe_chdir
  * @param mixed $path
@@ -178,17 +212,40 @@ function clientInputHandler($input) {
     echo 'Client [Input]: ' . trim($input) . "\n";
     //$input = trim($input);
     $output = '';
-    
-    if (is_file(PID_FILE))
-      $pid = file_get_contents(PID_FILE /* APP_PATH . 'server.pid' */);
 
-    if (preg_match('/^cmd:\s*(shutdown|restart|server\s*(shutdown|restart))\s*?(?:(-f))(?=\r?\n$)?/si', $input, $matches)) { 
+    if (is_file($pid_file = (PID_FILE ?? APP_PATH . 'server.pid')) && $pid = file_get_contents($pid_file)) {
+      if (stripos(PHP_OS, 'WIN') === 0) {
+        exec("tasklist /FI \"PID eq $pid\" 2>NUL | find /I \"$pid\" >NUL", $output, $status);
+        if ($status === 0) {
+          $output = "Server is already running with PID $pid\n";
+          echo $output;
+          return $output;
+        }
+      } else {
+        if (extension_loaded('pcntl') && function_exists('posix_kill') && posix_kill($pid, 0)) {
+          $output = "Server is already running with PID $pid\n";
+          echo $output;
+          return $output;
+        }
+      }
+    } else if (isset($_SERVER['SUPERVISOR_ENABLED']) && $_SERVER['SUPERVISOR_ENABLED'] == '1') {
+      file_put_contents($pid_file, $pid = getmypid());
+      return $output;
+    }
+
+    if (preg_match('/^cmd:\s*(shutdown|server\s*(shutdown))\s*(?:(-f))?(?=\r?\n$)?/si', $input, $matches)) { 
       //signalHandler(SIGTERM); // $running = false;
-      $output = "Shutting down... Written by Barry Dick (2024)";
+      //$output .= "Shutting down... \n"; // Written by Barry Dick (2024)";
+      $output .= str_replace('{{STATUS}}', 'Shutting down... PID=' . getmypid() . str_pad('',15," "), APP_DASHBOARD) . PHP_EOL;
+      $running = false;
       //$output .= var_export($matches, true);
       if ($matches[3] == '-f') { signalHandler(SIGTERM) and unlink(PID_FILE); /* exit(1); */ }
+      return $output;
+    } elseif (preg_match('/^cmd:\s*server\s*restart(?=\r?\n$)?/si', $input, $matches)) {
+      signalHandler(SIGHUB); // SIGCHLD
+      $output = str_replace('{{STATUS}}', 'Server Restarting... PID=' . getmypid() . str_pad('',12," "), APP_DASHBOARD) . PHP_EOL;
     } elseif (preg_match('/^cmd:\s*server\s*status(?=\r?\n$)?/si', $input)) {
-      $output = "Server is running... PID=$pid";
+      $output .= str_replace('{{STATUS}}', 'Server is running... PID=' . getmypid() . str_pad('',12," "), APP_DASHBOARD) . PHP_EOL;
     } elseif (preg_match('/^cmd:\s*chdir\s*(.*)(?=\r?\n$)?/si', $input, $matches)) {
       ini_set('log_errors', 'false');
       $output = "Changing directory to " . ($path = APP_PATH . APP_ROOT . trim($matches[1]) . '/');
@@ -214,74 +271,107 @@ function clientInputHandler($input) {
       $output = ($file = rtrim(realpath(APP_PATH . APP_ROOT . $_GET['path'] ?? ''), '/') . '/' . trim($matches[1])) ? file_get_contents($file) : "File not found: $file";
       ini_set('log_errors', 'true');
     } elseif (preg_match('/^cmd:\s*server\s*backup(?=\r?\n$)?/si', $input, $matches)) {
-      require_once 'public/idx.product.php';
+      //$input = trim($input);
+      $output = '';
 
-      $files = get_required_files();
-      $baseDir = APP_PATH;
-      $organizedFiles = [];
-      $directoriesToScan = [];
-      
-      // Collect directories from the list of files
-      foreach ($files as $file) {
-          $relativePath = str_replace($baseDir, '', $file);
-          $directory = dirname($relativePath);
-          if (!in_array($directory, $directoriesToScan)) {
-              $directoriesToScan[] = $directory;
-          }
-          // Add the relative path to the organizedFiles array if it is a .php file and not already present
-          if (pathinfo($relativePath, PATHINFO_EXTENSION) == 'php' && !in_array($relativePath, $organizedFiles)) {
-            $organizedFiles[] = $relativePath;
-          } else if (pathinfo($relativePath, PATHINFO_EXTENSION) == 'htaccess' && !in_array($relativePath, $organizedFiles)) {
-            $organizedFiles[] = $relativePath;
-          }
-      }
-            
-      // Add non-recursive scanning for the root baseDir for *.php files
-      $rootPhpFiles = glob("{$baseDir}{*.php,.env.bck,.gitignore,.htaccess,*.md,LICENSE,*.js,composer.json,package.json,settings.json}", GLOB_BRACE);
-      foreach ($rootPhpFiles as $file) {
-          if (is_file($file)) {
-              $relativePath = str_replace($baseDir, '', $file);
-              // Add the relative path to the array if it is a .php file and not already present
-              if (pathinfo($relativePath, PATHINFO_EXTENSION) == 'php' && !in_array($relativePath, $organizedFiles)) {
-                  if ($relativePath == 'composer-setup.php') continue;
+      $file = APP_PATH . APP_BASE['var'] . 'source_code.json';
+
+      // Retrieve file metadata using stat()
+      $fileStats = stat($file);
+
+      // Extract the last modification time from the stat results
+      $statMtime = $fileStats['mtime']; // filemtime(__FILE__);
+
+      // Clear the file status cache
+      clearstatcache(true, $file);
+    
+      // Clear OPcache if enabled
+      //if (function_exists('opcache_invalidate')) opcache_invalidate(__FILE__, true);
+    
+      // Get the current date (without time)
+      $currentDate = date('Y-m-d');
+
+      // Get the modification date of the file (without time)
+      $fileModDate = date('Y-m-d', $statMtime);
+
+      // Compare the dates
+      if ($fileModDate !== $currentDate) {
+        // Run your code only if the file was not modified today
+        $output = "File was modified on: " . date('F d Y H:i:s', $statMtime) . "\n";
+        require_once 'public/idx.product.php';
+
+        $files = get_required_files();
+        $baseDir = APP_PATH;
+        $organizedFiles = [];
+        $directoriesToScan = [];
+        
+        // Collect directories from the list of files
+        foreach ($files as $file) {
+            $relativePath = str_replace($baseDir, '', $file);
+            $directory = dirname($relativePath);
+            if (!in_array($directory, $directoriesToScan)) {
+                $directoriesToScan[] = $directory;
+            }
+            // Add the relative path to the organizedFiles array if it is a .php file and not already present
+            if (pathinfo($relativePath, PATHINFO_EXTENSION) == 'php' && !in_array($relativePath, $organizedFiles)) {
+              $organizedFiles[] = $relativePath;
+            } else if (pathinfo($relativePath, PATHINFO_EXTENSION) == 'htaccess' && !in_array($relativePath, $organizedFiles)) {
+              $organizedFiles[] = $relativePath;
+            }
+        }
+              
+        // Add non-recursive scanning for the root baseDir for *.php files
+        $rootPhpFiles = glob("{$baseDir}{*.php,.env.bck,.gitignore,.htaccess,*.md,LICENSE,*.js,composer.json,package.json,settings.json}", GLOB_BRACE);
+        foreach ($rootPhpFiles as $file) {
+            if (is_file($file)) {
+                $relativePath = str_replace($baseDir, '', $file);
+                // Add the relative path to the array if it is a .php file and not already present
+                if (pathinfo($relativePath, PATHINFO_EXTENSION) == 'php' && !in_array($relativePath, $organizedFiles)) {
+                    if ($relativePath == 'composer-setup.php') continue;
+                    $organizedFiles[] = $relativePath;
+                } elseif (pathinfo($relativePath, PATHINFO_EXTENSION) == 'bck' && !in_array($relativePath, $organizedFiles)) {
+                  if (preg_match('/^\.env\.bck/', $relativePath)) $organizedFiles[] = $relativePath;
+                } elseif (pathinfo($relativePath, PATHINFO_EXTENSION) == 'gitignore' && !in_array($relativePath, $organizedFiles)) {
                   $organizedFiles[] = $relativePath;
-              } elseif (pathinfo($relativePath, PATHINFO_EXTENSION) == 'bck' && !in_array($relativePath, $organizedFiles)) {
-                if (preg_match('/^\.env\.bck/', $relativePath)) $organizedFiles[] = $relativePath;
-              } elseif (pathinfo($relativePath, PATHINFO_EXTENSION) == 'gitignore' && !in_array($relativePath, $organizedFiles)) {
-                $organizedFiles[] = $relativePath;
-              } elseif (pathinfo($relativePath, PATHINFO_EXTENSION) == 'htaccess' && !in_array($relativePath, $organizedFiles)) {
-                $organizedFiles[] = $relativePath;
-              } elseif (pathinfo($relativePath, PATHINFO_EXTENSION) == 'md' && !in_array($relativePath, $organizedFiles)) {
-                $organizedFiles[] = $relativePath;
-              } elseif (pathinfo($relativePath, PATHINFO_EXTENSION) == 'LICENSE' && !in_array($relativePath, $organizedFiles)) {
-                $organizedFiles[] = $relativePath;
-              } elseif (pathinfo($relativePath, PATHINFO_EXTENSION) == 'js' && !in_array($relativePath, $organizedFiles)) {
-                $organizedFiles[] = $relativePath;
-              } elseif (pathinfo($relativePath, PATHINFO_EXTENSION) == 'json' && !in_array($relativePath, $organizedFiles)) {
-                $organizedFiles[] = $relativePath;
-              }
-          }
-      }
-      
-      // Scan the specified directories
-      scanDirectories($directoriesToScan, $baseDir, $organizedFiles);
-      
-      // Display the results
-      $sortedArray = customSort($organizedFiles);
+                } elseif (pathinfo($relativePath, PATHINFO_EXTENSION) == 'htaccess' && !in_array($relativePath, $organizedFiles)) {
+                  $organizedFiles[] = $relativePath;
+                } elseif (pathinfo($relativePath, PATHINFO_EXTENSION) == 'md' && !in_array($relativePath, $organizedFiles)) {
+                  $organizedFiles[] = $relativePath;
+                } elseif (pathinfo($relativePath, PATHINFO_EXTENSION) == 'LICENSE' && !in_array($relativePath, $organizedFiles)) {
+                  $organizedFiles[] = $relativePath;
+                } elseif (pathinfo($relativePath, PATHINFO_EXTENSION) == 'js' && !in_array($relativePath, $organizedFiles)) {
+                  $organizedFiles[] = $relativePath;
+                } elseif (pathinfo($relativePath, PATHINFO_EXTENSION) == 'json' && !in_array($relativePath, $organizedFiles)) {
+                  $organizedFiles[] = $relativePath;
+                }
+            }
+        }
+        
+        // Scan the specified directories
+        scanDirectories($directoriesToScan, $baseDir, $organizedFiles);
+        
+        // Display the results
+        $sortedArray = customSort($organizedFiles);
 
-      $output = var_export($sortedArray, true);
+        $output = var_export($sortedArray, true);
 
-      $json = "{\n";  // Display the sorted array
+        $json = "{\n";  // Display the sorted array
 
-      while ($path = array_shift($sortedArray)) {
-        $json .= match ($path) {
-          '.env.bck' => '".env" : ' . json_encode(file_get_contents($path)) . (end($sortedArray) != $path ? ',' : '') . "\n",
-          default => '"' . $path . '" : ' . json_encode(file_get_contents($path)) . (end($sortedArray) != $path && !empty($sortedArray) ? ',' : '') . "\n",
-        };
-      }
-      $json .= "}\n";
+        while ($path = array_shift($sortedArray)) {
+          $json .= match ($path) {
+            '.env.bck' => '".env" : ' . json_encode(file_get_contents($path)) . (end($sortedArray) != $path ? ',' : '') . "\n",
+            default => '"' . $path . '" : ' . json_encode(file_get_contents($path)) . (end($sortedArray) != $path && !empty($sortedArray) ? ',' : '') . "\n",
+          };
+        }
+        $json .= "}\n";
 
-      file_put_contents(APP_PATH . APP_BASE['var'] . 'source_code.json', $json, LOCK_EX);
+        file_put_contents(APP_PATH . APP_BASE['var'] . 'source_code.json', $json, LOCK_EX);    
+      // Update the file's modification time if necessary (or other actions)
+      // touch($file); // Optional, to update the modification time to current time
+    } else {
+      $output = "File was already modified today.\n";
+    }
+
 /**/
     } elseif (preg_match('/^cmd:\s*app(\s*connected)?(?=\r?\n$)?/si', $input)) {
       $output = var_export(APP_CONNECTED, true);
@@ -307,7 +397,74 @@ function clientInputHandler($input) {
       $output = var_export($matches, true);
       //$output = 'test ' . trim(shell_exec($cmd));
       //$output .= " $input";
-    } elseif (preg_match('/^cmd:\s*server(\s*variables|)(?=\r?\n$)?/si', $input)) {
+    } elseif (preg_match('/^cmd:\s*git\s*(.*)(?=\r?\n$)?/si', $input, $gitMatches)) {
+      //$output = shell_exec($matches[1]);
+
+      require_once APP_PATH . APP_BASE['config'] . 'git.php';
+
+      $parsedUrl = parse_url($_ENV['GITHUB']['ORIGIN_URL']);
+
+      //$output[] = $command = $_POST['cmd'] . ' --git-dir="' . APP_PATH . APP_ROOT . '.git" --work-tree="' . APP_PATH . APP_ROOT . '" https://' . $_ENV['GITHUB']['OAUTH_TOKEN'] . '@' . $parsedUrl['host'] . $parsedUrl['path'] . '.git';
+
+      $output = 'www-data@localhost:' . getcwd() . '# ' . $command = ((stripos(PHP_OS, 'WIN') === 0) ? '' : APP_SUDO . '-u www-data ') . (defined('GIT_EXEC') ? GIT_EXEC : 'git' ) . ' ' . trim($gitMatches[1]) . ' https://' . $_ENV['GITHUB']['OAUTH_TOKEN'] . '@' . $parsedUrl['host'] . $parsedUrl['path'] . '.git';
+
+      // (is_dir($path = APP_PATH . APP_ROOT . '.git') || APP_PATH . APP_ROOT != APP_PATH ? ' --git-dir="' . $path . '" --work-tree="' . dirname($path) . '"': '' ) 
+
+      /*//$err =  */
+
+      $proc = proc_open($command,
+      [
+        ["pipe", "r"],
+        ["pipe", "w"],
+        ["pipe", "w"]
+      ],
+      $pipes);
+
+      if (is_resource($proc)) {
+        // Read stdout and stderr
+        $stdout = stream_get_contents($pipes[1]);
+        fclose($pipes[1]);
+
+    
+        $stderr = stream_get_contents($pipes[2]);
+        fclose($pipes[2]);
+    
+        // Close the process and get the exit code
+        $exitCode = proc_close($proc);
+    
+        // Construct the output string
+        //$output = '';
+    
+        if (!empty($stdout)) {
+            $output .= $stdout;
+        }
+    
+        if (!empty($stderr)) {
+            $output .= " Error: $stderr";
+        }
+    
+        if ($exitCode !== 0) {
+            $output .= " Exit Code: $exitCode";
+        }
+
+        // Debugging info for the final executed command
+        //$output .= "\n" . /*(stripos(PHP_OS, 'WIN') === 0 ? '' : APP_SUDO . '-u www-data ') . */ "git $gitMatches[1]";
+/*
+        socket_write($clientSocket, $stdout);
+        return $output;
+*/
+    } else {
+      $output .= "Failed to open process.";
+    }
+
+
+      //$output = var_export(shell_exec('ls'), true); 
+      
+      //[$stdout, $stderr, $exitCode] = [stream_get_contents($pipes[1]), stream_get_contents($pipes[2]), proc_close($proc)];
+      //$output = !isset($stdout) ? NULL : $stdout . (isset($stderr) && $stderr === '' ? NULL : " Error: $stderr") . (isset($exitCode) && $exitCode == 0 ? NULL : "Exit Code: $exitCode");
+      //$output .= "\n" . /*(stripos(PHP_OS, 'WIN') === 0 ? '' : APP_SUDO . '-u www-data ')*/ . "git $gitMatches[1]";
+/**/
+    } elseif (preg_match('/^cmd:\s*server\s*(variables|)(?=\r?\n$)?/si', $input)) {
       $output = var_export($_SERVER, true);
     } elseif (preg_match('/^cmd:\s*(add\s*notification)(?=\r?\n$)?/si', $input)) {    
       $output = 'Added notification...';
@@ -358,9 +515,12 @@ function clientInputHandler($input) {
     //$_POST['cmd'] = $cmd;
 
     //require_once('public/app.console.php');
-    error_log("Client [Output]: " . (strlen($output) > 50 ? substr($output, 0, 20) . '...' : $output));
 
-    echo "Client [Output]: " . (strlen($output) > 50 ? substr($output, 0, 20) . "...\n" : $output);
+    //ob_start(); // Start output buffering    ob_end_flush();
+
+    error_log("Client [Output]: " . (strlen($output) > 50 ? substr($output, 0, 20) . '...' : $output));
+    echo "Client [Output]: " . /*(strlen($output) > 50 ? substr($output, 0, 20) . "...\n" : $output)*/ $output;
+
     return $output;
 }
 
@@ -406,7 +566,7 @@ function checkFileModification() {
       . 'Server is running... PID=' . getmypid() . "\n"
       . 'Server backup...' . "\n";
 
-      $output .= clientInputHandler('cmd: server backup' . PHP_EOL);
+      $output .= clientInputHandler('cmd: server backup' . "\r" . PHP_EOL);
 
       //$lastModifiedTime = filemtime(__FILE__);
 /*
@@ -467,8 +627,12 @@ try {
    * @return bool|resource|Socket
    */
   function createServerSocket($address, $port) {
+
+    echo str_replace('{{STATUS}}', 'Starting...\'' . basename(__FILE__) . '\' PID=' . ($pid ?? getmypid()) . str_pad('',8," "), APP_DASHBOARD) . PHP_EOL;
+
     // Create the socket
-    if (!$socket = @socket_create(AF_INET, SOCK_STREAM, SOL_TCP)) {
+    $socket = @socket_create(AF_INET, SOCK_STREAM, SOL_TCP);
+    if ($socket === false) {
         throw new Exception("Error: Unable to create server socket: " . socket_strerror(socket_last_error()));
     }
 
@@ -476,25 +640,43 @@ try {
     socket_set_option($socket, SOL_SOCKET, SO_REUSEADDR, 1);
 
     // Bind the socket to the address and port
-    if (!@socket_bind($socket, $address, $port)) {
+    if (@socket_bind($socket, $address, $port) === false) {
         throw new Exception("Could not bind to socket: " . socket_strerror(socket_last_error()));
     }
 
     // Listen for incoming connections
-    if (!@socket_listen($socket)) {
+    if (@socket_listen($socket) === false) {
         throw new Exception("Could not listen on socket: " . socket_strerror(socket_last_error()));
     }
 
     // Set the socket to non-blocking mode
-    socket_set_nonblock($socket);
+    if ($_ENV['PHP']['SOCK_BLOCK']) {
+      // Blocking mode with a 5-second timeout
+      socket_set_option($socket, SOL_SOCKET, SO_RCVTIMEO, ["sec" => 5, "usec" => 0]);
+    } else {
+      // Non-blocking mode
+      socket_set_nonblock($socket);
+    }
+    $blockingMode = $_ENV['PHP']['SOCK_BLOCK'] ? "blocking" : "non-blocking";
+    echo PHP_EOL . "Connected to Server: $address:$port (The socket is in $blockingMode mode.)\n";
 
+
+
+/*
+    $timeout = socket_get_option($socket, SOL_SOCKET, SO_RCVTIMEO);
+
+    if ($timeout['sec'] === 0 && $timeout['usec'] === 0) {
+      echo "The socket is in non-blocking mode.\n";
+    } else {
+      echo "The socket is in blocking mode.\n";
+    }
+*/
     return $socket;
   }
 
   if (extension_loaded('sockets')) {
     // Create server socket using the Sockets extension
     $socket = createServerSocket(SERVER_HOST, SERVER_PORT);
-
     echo '(Socket) ';
   } elseif (get_resource_type($socket) == 'stream') {
     // Create a TCP/IP server socket using stream_socket_server
@@ -505,12 +687,11 @@ try {
     }
 
     echo in_array('tcp', stream_get_wrappers()) ? '' : "TCP was NOT found in stream_get_wrappers()\n";
-    // Set the socket to non-blocking mode
-    stream_set_blocking($socket, false);  
+
     // Display server information  
     echo '(' . get_resource_type($socket) . ') ';
   } 
-  echo 'Server started on ' . SERVER_HOST . ':' . SERVER_PORT . ' (' . PHP_OS . ") PID=$pid\n\n";
+  echo 'Server started on ' . SERVER_HOST . ':' . SERVER_PORT . ' (' . PHP_OS . ") PID=" . ($pid ?? getmypid()) . "\n\n";
 
   /**
    * Manages the scheduled task based on a given interval.
@@ -549,7 +730,7 @@ try {
       echo "Client connected (stream): IP {$clientAddress}:{$clientPort} Port \n";
 
       // Read and process client data
-      $data = processClientData(fread($stream, 1024));
+      $data = processClientData($stream);
 
       // Send processed data back to the client
       sendDataToClient($stream, $data);
@@ -565,32 +746,69 @@ try {
   function handleSocketClientConnection($client) {
       // Get the client's address and port
       if (socket_getpeername($client, $clientAddress, $clientPort)) {
-          echo "Client connected: IP $clientAddress, Port $clientPort\n";
+        echo "\nClient connected: IP $clientAddress, Port $clientPort\n";
       } else {
-          $errorCode = socket_last_error($client);
-          $errorMsg = socket_strerror($errorCode);
-          echo "Unable to get client's address and port: [$errorCode] $errorMsg\n";
+        $errorCode = socket_last_error($client);
+        $errorMsg = socket_strerror($errorCode);
+        echo "\nUnable to get client's address and port: [$errorCode] $errorMsg\n";
+        return;
       }
 
-      // Read and process client data
-      $data = processClientData(socket_read($client, 1024));
+      // Prepare the data
+      $jsonData = json_encode(processClientData($client));
+      $length = strlen($jsonData);
 
-      // Send processed data back to the client
-      socket_write($client, $data);
+      try {
 
-      // Close the client connection
-      socket_close($client);
-      echo "Client Disconnected: IP $clientAddress, Port $clientPort\n\n";
+        $data = "hello\n"; // Include termination sequence if needed
+        dd($bytesWritten = socket_write($client, $data), false);
+    
+        if ($bytesWritten === false) {
+            echo "Failed to write to socket: " . socket_strerror(socket_last_error($client));
+        }
+
+        //usleep(100000); // Delay in microseconds (100ms)
+        // Send the length first so the client knows how much data to expect
+        if (!$client || socket_write($client, "$length\n") === false) {
+          dd('Failed to send message length', false);
+          throw new Exception('Failed to send message length');
+        }
+
+        // Split and send the actual data
+        $data = str_split($jsonData, 1024);
+        foreach ($data as $chunk) {
+          if (socket_write($client, $chunk) === false) {
+              dd('Socket write failed', false);
+              throw new Exception('Socket write failed');
+
+          }
+        }
+
+        // Send end-of-transmission signal
+        socket_write($client, "\r\n");
+
+      } catch (Exception $e) {
+        echo "Error: " . $e->getMessage() . "\n";
+      } finally {
+        // Close the client connection
+        socket_close($client);
+        echo "\nClient Disconnected 123: IP $clientAddress, Port $clientPort\n\n";
+      }
   }
 
   /**
    * Processes the data received from the client.
    */
-  function processClientData($clientMsg) {
+  function processClientData($client) {
+
+      if (extension_loaded('sockets')) {
+        $clientMsg = socket_read($client, 1024);
+      } elseif (get_resource_type($client) == 'stream') {
+        $clientMsg = fread($client, 1024);
+      }
 
       // Process the client message
       $data = clientInputHandler($clientMsg);
-
 
       // Normalize line breaks
       $dataArray = explode("\n", $data ?? '');
@@ -620,48 +838,120 @@ try {
       fflush($stream); // Ensure all data is sent
   }
 
+//  if (!is_resource($socket) || get_resource_type($socket) !== ('stream' ?? 'socket'))
+//    echo "Socket is not connected or is invalid." . PHP_EOL;
+
   while ($running) {
-      // Check notifications at the start of each loop
-      $manager->checkNotifications();
+    // Perform scheduled tasks
+    $manager->checkNotifications(); // Check notifications at the start of each loop
+    manageScheduledTask($lastExecutionTime, $interval); // Print the time left until the next scheduled execution
 
-      // Print the time left until the next scheduled execution
-      manageScheduledTask($lastExecutionTime, $interval);
+    //dd(get_resource_type($socket)); // var_export($socket, true) == Socket::__set_state(array( )) != resource
+    //PHP7 >= (is_resource($socket) && get_resource_type($socket) === 'Socket')
 
-      if (extension_loaded('sockets')) {
+    if ($socket instanceof Socket) {
+      // Proceed with socket operations
+      $client = @socket_accept($socket);
+      if ($client === false) {
+        $error = socket_last_error($socket);
+
+        if ($error && $error != SOCKET_EAGAIN && $error != SOCKET_EWOULDBLOCK) {
+            // Handle unexpected errors
+            echo "Socket error during accept: " . socket_strerror($error) . "\n";
+            socket_clear_error($socket);
+            break;
+        }
+        
+        // No new connections; continue the loop if non-blocking mode
+        usleep(100000); // Optional delay to reduce CPU usage
+        continue;
+      } elseif ($client instanceof Socket) { // is_resource($client)
+        // Connection established; handle client communication
+        handleSocketClientConnection($client);
+      } else {
+        echo "Socket connection closed or invalid.\n";
+        break;
+      }
+
+    } elseif (get_resource_type($socket) == 'stream') {
+      // Accept incoming client connections using streams
+      if ($stream = @stream_socket_accept($socket, -1)) {
+        handleStreamClientConnection($stream);
+      }
+    } else {
+      echo "Socket is not connected or is invalid.\n";
+      // Optionally handle reconnection or exit
+    }
+
+/*
+    if (is_resource($socket) && get_resource_type($socket) === 'socket') {
+*/
+
+
+
+/*
         // Accept incoming client connections using sockets
-        if ($client = @socket_accept($socket)) {
-          handleSocketClientConnection($client);
-        }
-      } elseif (get_resource_type($socket) == 'stream') {
-        // Accept incoming client connections using streams
-        if ($stream = @stream_socket_accept($socket, -1)) {
-          handleStreamClientConnection($stream);
-        }
-      } 
 
+        // resource if (!feof($socket)) { }
+
+    // Non-blocking check for data on the socket
+    if (is_resource($socket) && get_resource_type($socket) === 'socket') {
+    if (extension_loaded('sockets')) {
+
+    } 
+        // elseif ($bytesReceived === false)
+            //echo "An error occurred: " . socket_strerror(socket_last_error($socket)) . "\n";
+  
+*/
       // Dispatch any pending signals
       (stripos(PHP_OS, 'LIN') === 0) and pcntl_signal_dispatch();
 
       // Sleep for a short time to prevent busy-waiting
-      usleep(100000); // 100 ms = 0.1 s
+      //usleep(100000); // 100 ms = 0.1 s
   }
 
-  // extension_loaded('sockets') && socket_close($socket);
+  // Close the server socket
   if (extension_loaded('sockets')) {
-    socket_close($socket);
+    $buffer = '';
+    (!$socket) and socket_close($socket);
+
+  } elseif (get_resource_type($socket) == 'stream') {
+    (!$socket) and fclose($socket);
+  }
+
+  echo "Socket closed.\n";
+/*
+    $bytesReceived = @socket_recv($socket, $buffer, 1024, MSG_DONTWAIT);
+    if ($bytesReceived === false) {
+      $error = socket_last_error($socket);
+
+      if ($error == SOCKET_EAGAIN || $error == SOCKET_EWOULDBLOCK) {
+          // No data available, continue without blocking
+          usleep(100000); // Optional: add a slight delay to prevent CPU overuse
+          continue;
+      } else {
+          // Handle unexpected errors
+          echo "Socket error: " . socket_strerror($error) . "\n";
+          socket_clear_error($socket);
+          break;
+      }
+    } elseif ($bytesReceived === 0) {
+      // Peer has closed the connection
+      echo "Socket connection closed by peer." . PHP_EOL;
+    } else {
+      socket_close($socket);
+    }
   } elseif (get_resource_type($socket) == 'stream') {
     fclose($socket);
   }
+*/
 } catch (Exception $e) {
-  //Logger::error($e->getMessage());
-  //Shutdown::triggerShutdown($e->getMessage());
+  Logger::error($e->getMessage());
+  Shutdown::triggerShutdown($e->getMessage());
 } finally {
-  require_once APP_PATH . 'config' . DIRECTORY_SEPARATOR . 'classes' . DIRECTORY_SEPARATOR . 'class.sockets.php';
-
-  if (stripos(PHP_OS, 'LIN') === 0) Sockets::handleLinuxSocketConnection(true);
-  else if (stripos(PHP_OS, 'WIN') === 0) Sockets::handleWindowsSocketConnection();
-
-  print "Written by Barry Dick (2024)\n";
+  //require_once APP_PATH . 'config' . DIRECTORY_SEPARATOR . 'classes' . DIRECTORY_SEPARATOR . 'class.sockets.php';
+  // if (stripos(PHP_OS, 'LIN') === 0) Sockets::handleLinuxSocketConnection(true); else
+  if (stripos(PHP_OS, 'WIN') === 0) Sockets::handleWindowsSocketConnection();
 /**/
   if (isset($socket) && is_resource($socket) && !empty($socket)) {
     if (extension_loaded('sockets')) {
@@ -673,8 +963,8 @@ try {
 }
 
 register_shutdown_function(function() {
-  !is_file(PID_FILE) ?: unlink(PID_FILE);
+  PHP_SAPI !== 'cli' || !is_file(PID_FILE) ?: unlink(PID_FILE) /*or die('EOF')*/;
+  !is_file(PID_FILE) and print 'Unlinking PID file... ' . PID_FILE . PHP_EOL;
+  //!is_file(PID_FILE) ?: unlink(PID_FILE);
+  die(str_replace('{{STATUS}}', 'Server has stopped... PID=' . getmypid() . str_pad('',10," "), APP_DASHBOARD) . PHP_EOL);
 });
-
-
-(PHP_SAPI !== 'cli' || !is_file(PID_FILE) ?: unlink(PID_FILE)) or die('EOF');

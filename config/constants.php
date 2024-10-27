@@ -57,6 +57,29 @@ const APP_NAME = 'Dashboard';
 !is_string(APP_NAME)
   and $errors['APP_NAME'] = 'APP_NAME is not a string => ' . var_export(APP_NAME, true); // print('Name: ' . APP_NAME  . ' v' . APP_VERSION . "\n");
 
+
+define('APP_DASHBOARD', sprintf(<<<EOL
+%s
+      ______   _______  _______           ______   _______  _______  _______  ______  
+     (  __  \ (  ___  )(  ____ \|\     /|(  ___ \ (  ___  )(  ___  )(  ____ )(  __  \ 
+     | (  \  )| (   ) || (    \/| )   ( || (   ) )| (   ) || (   ) || (    )|| (  \  )
+     | |   ) || (___) || (_____ | (___) || (__/ / | |   | || (___) || (____)|| |   ) |
+     | |   | ||  ___  |(_____  )|  ___  ||  __ (  | |   | ||  ___  ||     __)| |   | |
+     | |   ) || (   ) |      ) || (   ) || (  \ \ | |   | || (   ) || (\ (   | |   ) |
+     | (__/  )| )   ( |/\____) || )   ( || )___) )| (___) || )   ( || ) \ \__| (__/  )
+     (______/ |/     \|\_______)|/     \||/ \___/ (_______)|/     \||/   \__/(______/ 
+     {{STATUS}}            Written by Barry Dick (2024)
+%s
+EOL, $padding = str_pad('', 90, '='), $padding));
+
+/*
+define('SOCKET_INFO', sprintf(<<<EOD
+%s
+EOD, 'test'));
+*/
+
+
+
   // Check if the request is using HTTPS
 if (isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] == 'on') { // $_SERVER['REQUEST_SCHEME']   
   define('APP_HTTPS', TRUE);
@@ -257,6 +280,8 @@ END
     if (APP_SELF != APP_PATH_SERVER && in_array(APP_PATH_PUBLIC, get_included_files()) /*APP_SELF == APP_PATH_PUBLIC*/)
       require_once dirname(__DIR__) . DIRECTORY_SEPARATOR . 'config' . DIRECTORY_SEPARATOR . 'classes' . DIRECTORY_SEPARATOR . 'class.sockets.php';
 
+    //error_log(var_export(get_required_files(), true));
+
     // if (APP_SELF !== APP_PATH_SERVER) {}
 
     //(APP_SELF !== APP_PATH_SERVER) and $socketInstance = Sockets::getInstance();
@@ -275,6 +300,7 @@ END
           $response = fgets($_SERVER['SOCKET'], 1024);
           $errors['server-3'] = "Server responce: $response\n";
           if (isset($output[end($output)])) $output[end($output)] .= $response = trim($response);
+          else $output[1] = "$response\n";
           //if (!empty($response)) break;
       }
       // Close and reopen socket

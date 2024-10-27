@@ -2,18 +2,24 @@
 
 global $shell_prompt, $auto_clear, $errors;
 
-  /*
-      realpath ? Returns canonicalized absolute pathname
-      is_writable ? Tells whether the filename is writable
-      unlink ? Deletes a file
-  */
-  //die(var_dump(get_required_files()));
-  if (__FILE__ == get_required_files()[0] && __FILE__ == realpath($_SERVER["SCRIPT_FILENAME"]))
-    if ($path = basename(dirname(get_required_files()[0])) == 'public') { // (basename(getcwd())
-      if (is_file($path = realpath('index.php'))) {
-        require_once $path;
-      }
-    } else die(var_dump("Path was not found. file=$path"));
+
+/*
+    realpath ? Returns canonicalized absolute pathname
+    is_writable ? Tells whether the filename is writable
+    unlink ? Deletes a file
+*/
+
+//die(var_dump(get_required_files()));
+if (__FILE__ == get_required_files()[0] && __FILE__ == realpath($_SERVER["SCRIPT_FILENAME"]))
+  if ($path = basename(dirname(get_required_files()[0])) == 'public') { // (basename(getcwd())
+    if (is_file($path = realpath('index.php'))) {
+      require_once $path;
+    }
+  } else die(var_dump("Path was not found. file=$path"));
+
+
+//require_once APP_PATH . APP_BASE['config'] . 'classes' . DIRECTORY_SEPARATOR . 'class.sockets.php';
+
 
 if (preg_match('/^app\.([\w\-.]+)\.php$/', basename(__FILE__), $matches))
   ${$matches[1]} = $matches[1];
@@ -32,18 +38,39 @@ if (preg_match('/^app\.([\w\-.]+)\.php$/', basename(__FILE__), $matches))
 
 
   if ($_SERVER['REQUEST_METHOD'] == 'POST') {
+
     if (isset($_POST['cmd'])) {
       chdir(APP_PATH . APP_ROOT);
+
+      $output = [];
+
+      //$output[] = $shell_prompt = 'www-data@localhost:' . getcwd() . '# ' . $_POST['cmd'];
+      //$socketInstance = Sockets::getInstance();
+      //$_SERVER['SOCKET'] = $socketInstance->getSocket();
+
+      //$output[] = var_export(is_resource($_SERVER['SOCKET']), true);
+
+      
+
+      $_SERVER['SOCKET'] = fsockopen(SERVER_HOST, SERVER_PORT, $errno, $errstr, 5);
+
+
       if ($_POST['cmd'] && $_POST['cmd'] != '') 
         if (preg_match('/^help/i', $_POST['cmd']))
           $output[] = implode(', ', ['install', 'php', 'composer', 'git', 'npm', 'whoami', 'wget', 'tail', 'cat', 'echo', 'env', 'sudo']);
         else if (preg_match('/^server\s*start$/i', $_POST['cmd'])) {
+          //require_once APP_PATH . 'server.php';
+
+          Sockets::handleSocketConnection(true);
+
+/*
           if (file_exists($pidFile = APP_PATH . 'server.pid')) {
             $output[] = 'Server already running ...';
           } else {
-            Sockets::handleLinuxSocketConnection(true);
+            handleLinuxSocketConnection(true);
             $output[] = 'Sockets started ...';
           }
+*/
         } //else if (preg_match('/^install/i', $_POST['cmd']))
           //include 'templates/' . preg_split("/^install (\s*+)/i", $_POST['cmd'])[1] . '.php';
         else if (preg_match('/^chdir\s+(:?(.*))/i', $_POST['cmd'], $match)) {
@@ -199,6 +226,7 @@ if (preg_match('/^app\.([\w\-.]+)\.php$/', basename(__FILE__), $matches))
           //(function() use ($path) {
           //  ob_start();
             require_once APP_PATH . 'config/git.php';
+
           //  ob_end_clean();
           //  return '';
           //})();
@@ -280,28 +308,63 @@ if (preg_match('/^app\.([\w\-.]+)\.php$/', basename(__FILE__), $matches))
   */
   }
   
-  $output[] = $command = $_POST['cmd'] . ' --git-dir="' . APP_PATH . APP_ROOT . '.git" --work-tree="' . APP_PATH . APP_ROOT . '" https://' . $_ENV['GITHUB']['OAUTH_TOKEN'] .'@github.com/barrydit/codeinsync.git';
+  $parsedUrl = parse_url($_ENV['GITHUB']['ORIGIN_URL']);
+
+  $output[] = $command = $_POST['cmd'] . ' --git-dir="' . APP_PATH . APP_ROOT . '.git" --work-tree="' . APP_PATH . APP_ROOT . '" https://' . $_ENV['GITHUB']['OAUTH_TOKEN'] . '@' . $parsedUrl['host'] . $parsedUrl['path'] . '.git';
   
   /**/
+ 
   if (isset($github_repo) && !empty($github_repo)) {
+
+  if (!isset($_SERVER['SOCKET']) || !is_resource($_SERVER['SOCKET']) || empty($_SERVER['SOCKET'])) {
+
+    $proc = proc_open((stripos(PHP_OS, 'WIN') === 0 ? '' : APP_SUDO . '-u www-data ') . $command, [["pipe", "r"], ["pipe", "w"], ["pipe", "w"]], $pipes);
   
-  $proc = proc_open($command,
-  array(
-    array("pipe","r"),
-    array("pipe","w"),
-    array("pipe","w")
-  ),
-  $pipes);
+    [$stdout, $stderr, $exitCode] = [stream_get_contents($pipes[1]), stream_get_contents($pipes[2]), proc_close($proc)];
   
-  list($stdout, $stderr, $exitCode) = [stream_get_contents($pipes[1]), stream_get_contents($pipes[2]), proc_close($proc)];
-  $output[] = !isset($stdout) ? NULL : $stdout . (isset($stderr) && $stderr === '' ? NULL : (isset($exitCode) && $exitCode == 0 ? NULL : "Exit Code: $exitCode"));
+    if ($exitCode !== 0) {
+      if (empty($stdout)) {
+        if (!empty($stderr)) {
+          $errors["GIT-" . $_POST['cmd']] = $stderr;
+          error_log($stderr);
+        }
+      } else {
+        $errors["GIT-" . $_POST['cmd']] = $stdout;
+      }
+    }
+    $output[] = !isset($stdout) ? NULL : $stdout . (isset($stderr) && $stderr === '' ? NULL : (isset($exitCode) && $exitCode == 0 ? NULL : "Exit Code: $exitCode"));
   
+  } else {
+    // Connect to the server
+    $errors['server-1'] = "Connected to Server: " . SERVER_HOST . ':' . SERVER_PORT . "\n";
+    
+    // Send a message to the server
+    $errors['server-2'] = 'Client request: ' . $message = "cmd: $command\n";
+    /* Known socket  Error / Bug is mis-handled and An established connection was aborted by the software in your host machine */
+
+    fwrite($_SERVER['SOCKET'], $message);
+
+    //$output[] = trim($message) . ': ';
+    // Read response from the server
+    while (!feof($_SERVER['SOCKET'])) {
+      $response = fgets($_SERVER['SOCKET'], 1024);
+      $errors['server-3'] = "Server responce: $response\n";
+      if (isset($output[end($output)])) $output[end($output)] .= $response = trim("$response");
+      //if (!empty($response)) break;
+    }    
+
+    // Close and reopen socket
+    fclose($_SERVER['SOCKET']);
+
+  }
+
   }
   
   // exec((stripos(PHP_OS, 'WIN') === 0 ? '' : APP_SUDO)  . 'git --git-dir="' . APP_PATH . APP_ROOT . '.git" --work-tree="' . APP_PATH . APP_ROOT . '" remote add origin ' . $github_repo[2], $output);
   
           } else {
-  
+
+            
           // git --git-dir=/var/www/.git --work-tree=/var/www pull
           
           // $GIT_DIR environment variable
@@ -314,17 +377,124 @@ if (preg_match('/^app\.([\w\-.]+)\.php$/', basename(__FILE__), $matches))
   
           //dd($_ENV['GITHUB']['REMOTE_SHA']);
   
-          $output[] = 'www-data@localhost:' . getcwd() . '# ' . $command = ((stripos(PHP_OS, 'WIN') === 0) ? '' : APP_SUDO) . (defined('GIT_EXEC') ? GIT_EXEC : 'git' ) . (is_dir($path = APP_PATH . APP_ROOT . '.git') || APP_PATH . APP_ROOT != APP_PATH ? ' --git-dir="' . $path . '" --work-tree="' . dirname($path) . '"': '' ) . ' ' . $match[1];
+          //$output[] = 'www-data@localhost:' . getcwd() . '# ' . 
+          
+          $command = (defined('GIT_EXEC') ? basename(GIT_EXEC) : 'git' ) . (is_dir($path = APP_PATH . APP_ROOT . '.git') || APP_PATH . APP_ROOT != APP_PATH ? ' --git-dir="' . $path . '" --work-tree="' . dirname($path) . '"': '' ) . ' ' . $match[1];
   
-  $proc=proc_open($command,
-  array(
-    array("pipe","r"),
-    array("pipe","w"),
-    array("pipe","w")
-  ),
-  $pipes);
-  
-          list($stdout, $stderr, $exitCode) = [stream_get_contents($pipes[1]), stream_get_contents($pipes[2]), proc_close($proc)];
+          if (!isset($_SERVER['SOCKET']) || !is_resource($_SERVER['SOCKET']) || empty($_SERVER['SOCKET'])) {
+
+            $proc = proc_open($command, [["pipe", "r"], ["pipe", "w"], ["pipe", "w"]], $pipes);
+          
+            [$stdout, $stderr, $exitCode] = [stream_get_contents($pipes[1]), stream_get_contents($pipes[2]), proc_close($proc)];
+          
+            if ($exitCode !== 0) {
+              if (empty($stdout)) {
+                if (!empty($stderr)) {
+                  $errors["GIT-" . $_POST['cmd']] = $stderr;
+                  error_log($stderr);
+                }
+              } else {
+                $errors["GIT-" . $_POST['cmd']] = $stdout;
+              }
+            }
+            $output[] = !isset($stdout) ? NULL : $stdout . (isset($stderr) && $stderr === '' ? NULL : (isset($exitCode) && $exitCode == 0 ? NULL : "Exit Code: $exitCode"));
+          
+          } else {
+            // Connect to the server
+            $errors['server-1'] = "Connected to Server: " . SERVER_HOST . ':' . SERVER_PORT . "\n";
+            
+            // Send a message to the server
+            $errors['server-2'] = 'Client request: ' . $message = "cmd: $command\n";
+            /* Known socket  Error / Bug is mis-handled and An established connection was aborted by the software in your host machine */
+
+            //$socketInstance = Sockets::getInstance(); // new Sockets();
+
+            //$_SERVER['SOCKET'] = $socketInstance->getSocket();
+
+            //socket_getpeername($_SERVER['SOCKET'], $addr, $port);
+
+            //dd(get_required_files(), false);
+
+            stream_set_blocking($_SERVER['SOCKET'], ($_ENV['PHP']['SOCK_BLOCK'] ?? false) ? 1 : 0);
+            stream_set_timeout($_SERVER['SOCKET'], 10);
+
+            //stream_set_timeout($_SERVER['SOCKET'], 10);
+
+            //fwrite($_SERVER['SOCKET'], $message);
+
+/*
+            $writtenBytes = fwrite($_SERVER['SOCKET'], $message);
+            if ($writtenBytes === false) {
+                $error = socket_last_error($_SERVER['SOCKET']);
+                $errorMessage = socket_strerror($error);
+                echo "Socket write error: $errorMessage\n";
+
+                dd(var_export(stream_socket_get_name($_SERVER['SOCKET'], true), true), false);
+                dd(socket_last_error(),false);
+            } else {
+                fflush($_SERVER['SOCKET']); // Flush the buffer
+                echo "Bytes written: $writtenBytes\n";
+                dd([feof($_SERVER['SOCKET']), fgets($_SERVER['SOCKET'], 1024)], false);
+            }
+*/
+            fwrite($_SERVER['SOCKET'], $message);
+            fflush($_SERVER['SOCKET']); // Flush the buffer
+            
+            $response = '';
+            $output[] = '';
+// Check if the socket is ready for reading
+$read = [$_SERVER['SOCKET']];
+$write = null;
+$except = null;
+$ready = stream_select($read, $write, $except, 5); // 5 seconds timeout
+
+if ($ready > 0) {
+    // Start reading the socket if it's ready
+    while (!feof($_SERVER['SOCKET'])) {
+        $chunk = fgets($_SERVER['SOCKET'], 1024); // Read chunks of 1024 bytes
+        
+        dd(var_export($chunk, true), false); // Debug the chunk
+        
+        if ($chunk === false) {
+            // Handle any reading error
+            echo '$chunk is false';
+            break;
+        }
+    
+        // Append the chunk to the response
+        $response .= $chunk;
+    
+        // Stop reading when the termination sequence is detected
+        if (strpos($chunk, "\r\n") !== false) {
+            break;
+        }
+    }
+
+    $response = trim($response); // Remove any extra whitespace
+
+    if ($response === '') {
+        // Handle empty response
+        echo 'Empty response wtf';
+    } else {
+        // Handle response
+        $decodedResponse = json_decode($response, true); // Decode JSON response
+        // Output decoded response for debugging
+        dd($decodedResponse, false);
+    }
+} else {
+    echo "Socket not ready for reading.";
+}
+
+// Stream error check
+$error = error_get_last();
+if ($error) {
+    echo "Stream Error: " . $error['message'];
+}
+
+            // Close and reopen socket
+            fclose($_SERVER['SOCKET']);
+          }
+
           preg_match('/\/(.*)\//', DOMAIN_EXPR, $matches);  
           $output[] = !isset($stdout) ? NULL : $stdout . (isset($stderr) && $stderr === '' ? NULL : (preg_match("/^To\\s$matches[1]/", $stderr) ? $stderr : "Error: $stderr")) . (isset($exitCode) && $exitCode == 0 ? NULL : "Exit Code: $exitCode");
           //$output[] = $_POST['cmd'];     
@@ -382,6 +552,7 @@ if (preg_match('/^app\.([\w\-.]+)\.php$/', basename(__FILE__), $matches))
 
             } else {
               $output[] = 'Server is not connected. Command not found: ' . $_POST['cmd'];
+              die();
             }
             } else {
               $errors['server-1'] = "Connected to " . SERVER_HOST . " on port " . SERVER_PORT . "\n";
@@ -392,18 +563,73 @@ if (preg_match('/^app\.([\w\-.]+)\.php$/', basename(__FILE__), $matches))
                 $errors['server-2'] = 'Client request: ' . $message = "cmd: git " . $match[1] . ' --git-dir="' . APP_PATH . APP_ROOT . '.git" --work-tree="' . APP_PATH . APP_ROOT  . '"' . "\n";
               else $errors['server-2'] = 'Client request: ' . $message = "cmd: " . $_POST['cmd'] . "\n";
             
-              fwrite($_SERVER['SOCKET'], $message);
+
+
+              //$socketInstance = Sockets::getInstance(); // new Sockets();
+
+              //$_SERVER['SOCKET'] = $socketInstance->getSocket();
+
               $output = []; //$_POST['cmd'] . ' test3: ';
+
+              fwrite($_SERVER['SOCKET'], $message);
 
               $buffer = '';
   
+              $response = '';
+
               // Read response from the server
+              while (!feof($_SERVER['SOCKET'])) {
+                $chunk = fgets($_SERVER['SOCKET'], 1024); // Read chunks of 1024 bytes
+                echo ' test 123';  
+                if ($chunk === false) {
+                    // Handle any reading error
+                    echo '$chunk is false';
+                    break;
+                }
+            
+                // Append the chunk to the response
+                $response .= $chunk;
+            
+                // Optional: If the server is sending a known termination sequence like \r\n, stop reading when detected
+                if (strpos($chunk, "\r\n") !== false) {
+                    break;
+                }
+              }
+   
+              $response = trim($response); // Remove any extra whitespace
+
+              if ($response === '') {
+                // Handle empty response
+                echo 'Empty response 123';
+              } else {
+                // Handle response
+                $decodedResponse = json_decode($response, true); // Decode JSON response
+              }
+            
+              if ($decodedResponse === null && json_last_error() !== JSON_ERROR_NONE) {
+                // Handle JSON decoding error
+                echo $errors['server-3'] = "Error decoding JSON: " . json_last_error_msg();
+              } else {
+                $errors['server-3'] = "Server response: $decodedResponse\n";
+              }
+  
+              // Append response to the output array
+              if (isset($output[count($output) - 1])) { // end()
+                $output[count($output) - 1] .= $decodedResponse;
+              }
+
+              //$buffer = $decodedResponse;
+
+
+
+              // Read response from the server
+/*
               while (!feof($_SERVER['SOCKET'])) {
                 $response = fgets($_SERVER['SOCKET'], 1024); // Read in chunks of 1024 bytes
                 if ($response !== false) {
                     $buffer .= $response; // Accumulate the response
                 }
-/*
+
                   $response = fgets($_SERVER['SOCKET'], 1024); // Reading the response 1024 bytes at a time
                   $errors['server-3'] = "Server response: $response\n";
           
@@ -418,8 +644,8 @@ if (preg_match('/^app\.([\w\-.]+)\.php$/', basename(__FILE__), $matches))
                   if (!empty($response)) {
                       break; // Exit loop on receiving a non-empty response, or continue based on your logic
                   }
-*/
               }
+*/
               //die(var_dump($_SERVER['SOCKET']));
 
               fclose($_SERVER['SOCKET']);
@@ -501,7 +727,7 @@ margin: 0 auto;
 background-color: #D0D0D0; /* rgba(200,200,200,0.85) */
 color: black;
 cursor: pointer;
-height: 75px;
+height: 235px;
 }
 
 input {
@@ -680,7 +906,7 @@ ob_start(); ?>
 
         </div>
         <button id="changePositionBtn" style="float: right; margin: 5px 10px 0 0;" type="submit">&#9650;</button>
-        <textarea id="responseConsole" spellcheck="false" rows="14" cols="85" name="responseConsole" readonly=""><?php
+        <textarea id="responseConsole" spellcheck="false" rows="14" cols="92" name="responseConsole" style="font-family: Monospace;" readonly=""><?php
 //$errors->{'CONSOLE'}  = 'wtf';
 
 //dd($errors);
@@ -698,7 +924,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
   else echo "$shell_prompt\n";
 
 }
-//dd($errors);
+echo str_replace('{{STATUS}}', 'Server is running... PID=' . getmypid() . str_pad('',12," "), APP_DASHBOARD) . PHP_EOL;
 if (!empty($errors))
   foreach($errors as $key => $error) {
       if (!is_array($error))
@@ -882,7 +1108,7 @@ show_console();
     consoleContainer.style.transform = 'translate(-50%, -50%)';
     consoleContainer.style.zIndex = '999';
 
-    respCon.style.height = '165px';
+    respCon.style.height = '220px';
 
     changePositionBtn.innerHTML = '&#9660;';
   }
@@ -1168,7 +1394,7 @@ setTimeout(() => {
       startScroll(newProcess);
     };
     // Send post request
-    $.post('<?= APP_URL; /*$projectRoot*/?>', { cmd: argv });
+    // $.post('<?= basename(__FILE__) . '?' . $_SERVER['QUERY_STRING']; /*$projectRoot*/ ?>', { cmd: argv });
   }
 }, 3000);
 

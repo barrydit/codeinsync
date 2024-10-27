@@ -85,6 +85,8 @@ usort($dirs, function ($a, $b) {
     return strcmp(basename($a), basename($b)); // Compare other filenames alphabetically
 });
 
+//dd($dirs, false);
+
 foreach ($dirs as $includeFile) {
   $path = dirname($includeFile);
 
