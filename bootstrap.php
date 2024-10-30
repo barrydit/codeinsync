@@ -1,36 +1,47 @@
 <?php
 
+// Define APP_PATH constant
+!defined('APP_PATH') and define('APP_PATH', __DIR__ . DIRECTORY_SEPARATOR) and is_string(APP_PATH) ?: $errors['APP_PATH'] = 'APP_PATH is not a valid string value.';
+
+if (!defined('APP_ROOT')) {
+  $path = !isset($_GET['client']) ? (!isset($_GET['project']) ? '' : 'projects' . DIRECTORY_SEPARATOR . $_GET['project']) : 'clientele' . DIRECTORY_SEPARATOR . $_GET['client'] . DIRECTORY_SEPARATOR . (isset($_GET['domain']) ? ($_GET['domain'] != '' ? $_GET['domain'] : '') : '') . DIRECTORY_SEPARATOR; /* ($_GET['path'] . '/' ?? '')*/
+  //die($path);
+  //is_dir(APP_PATH . $_GET['path']) 
+  define('APP_ROOT', !empty(realpath(APP_PATH . ($path = rtrim($path, DIRECTORY_SEPARATOR)) ) && $path != '') ? (string) $path . DIRECTORY_SEPARATOR : '');  // basename() does not like null
+}
+
 // Check if the config file exists in various locations based on the current working directory
 $path = null;
-$publicDir = basename(getcwd()) == 'public';
 
 // Determine the path based on current location and check if file exists
-if ($publicDir) {
-    // We are in the public directory
-    if (is_file('../config/config.php')) {
-        $path = realpath('../config/config.php');
-    } elseif (is_file('config.php')) {
-        $path = realpath('config.php');
-    }
-} else {
-    // We are not in the public directory
-    if (is_file('config/config.php')) {
-        $path = realpath('config/config.php');
-    } elseif (is_file(dirname(__DIR__, 1) . DIRECTORY_SEPARATOR . 'config' . DIRECTORY_SEPARATOR . 'config.php')) {
-        $path = realpath(dirname(__DIR__, 1) . DIRECTORY_SEPARATOR . 'config' . DIRECTORY_SEPARATOR . 'config.php');
-    }
+switch (basename(__DIR__)) { // getcwd()
+  case 'public':
+    chdir(dirname(__DIR__));
+    require_once 'config/php.php';
+
+    if (is_file($config = APP_PATH . 'config/config.php')) {
+      $path = $config;
+    }  // elseif (is_file('config.php')) { $path = $config; }
+    break;
+  default:
+    require_once 'config/php.php';
+
+    if (is_file($config = APP_PATH . 'config/config.php')) {
+      $path = $config;
+    } // elseif (is_file($config = 'config.php')) { $path = $config; }
+    break;
 }
 
 // Load the config file if found
 if ($path) {
     require_once $path;
 } else {
-    die(var_dump("Config file was not found."));
+    die(var_dump($path));
 }
 
 $previousFilename = '';
 
-$dirs = [APP_PATH . APP_BASE['config'] . 'php.php']; /* */
+$dirs = [APP_PATH . APP_BASE['config'] . 'php.php'];
 
 !isset($_GET['app']) || $_GET['app'] != 'git' ?:
   (APP_SELF != APP_PATH_PUBLIC ?: $dirs[] = APP_PATH . APP_BASE['config'] . 'git.php');

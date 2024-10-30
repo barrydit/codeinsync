@@ -2,6 +2,10 @@
 
 //if (!in_array(dirname(__DIR__) . DIRECTORY_SEPARATOR . 'constants.php', get_required_files()))
 //  die($errors['CONSTANTS'] = 'Missing config/constants.php from required files');
+//require_once dirname(__DIR__, 1) . DIRECTORY_SEPARATOR . 'config.php';
+require dirname(__DIR__, 1) . DIRECTORY_SEPARATOR . 'php.php';
+
+//dd(get_defined_constants(true)['user']);
 
 class SocketException extends Exception {}
 

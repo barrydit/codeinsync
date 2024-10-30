@@ -1,6 +1,8 @@
 <?php
 
-// 
+require_once 'config.php';
+require_once 'constants.php';
+require_once 'functions.php';
 
 if (isset($_ENV['COMPOSER']['PHP_EXEC']) && $_ENV['COMPOSER']['PHP_EXEC'] != '' && !defined('PHP_EXEC'))
   switch (PHP_BINARY) {
@@ -15,7 +17,7 @@ if (isset($_ENV['COMPOSER']['PHP_EXEC']) && $_ENV['COMPOSER']['PHP_EXEC'] != '' 
 if (!defined('PHP_EXEC'))
   define('PHP_EXEC', stripos(PHP_OS, 'LIN') === 0 ? '/usr/bin/php' : dirname(__DIR__) . DIRECTORY_SEPARATOR . 'bin/psexec.exe -d C:\xampp\php\php.exe -f ' );
 
-
+//dd(get_defined_constants(true)['user']);
 
 //dd($_SERVER);
 //define('PHP_EXEC', $_ENV['COMPOSER']['PHP_EXEC'] ?? '/usr/bin/php'); // const PHP_EXEC = 'string only/non-block/ternary';

@@ -42,6 +42,7 @@ function customErrorHandler($errno, $errstr, $errfile, $errline) {
       break;
     }
   }
+  dd($errors, false);
   return false;
 }
 // Set the custom error handler
@@ -110,7 +111,12 @@ $isFile(__DIR__ . DIRECTORY_SEPARATOR . 'functions.php') ?:
 $isFile('config/functions.php') ?: 
 $isFile('functions.php');
 
-$envPath = dirname(__DIR__) . DIRECTORY_SEPARATOR . '.env';
+// Check if the dd function exists
+if (!function_exists('dd')) {
+  $errors['FUNCTIONS'] = 'functions.php failed to load. Therefore function dd() does not exist (yet).';
+}
+
+$envPath = APP_PATH . '.env';
 
 $_ENV = (function() use ($envPath) {
   if (!file_exists($envPath)) {
@@ -123,15 +129,10 @@ $isFile(__DIR__ . DIRECTORY_SEPARATOR . 'php.php') ?: $isFile('config/php.php') 
 
 $isFile(__DIR__ . DIRECTORY_SEPARATOR . 'constants.php') ?: $isFile('config/constants.php') ?: $isFile('constants.php');
 
-// Check if the dd function exists
-if (!function_exists('dd')) {
-  $errors['FUNCTIONS'] = 'functions.php failed to load. Therefore function dd() does not exist (yet).';
-}
-
 //if (empty($paths)) {
 //  die(var_dump("functions.php was not found."));
 //}
-
+/*
 while ($path = array_shift($paths)) {
   if (is_file($path = realpath($path))) {
     require_once $path;
@@ -139,6 +140,7 @@ while ($path = array_shift($paths)) {
     die(var_dump(basename($path) . ' was not found. file=' . $path));
   }
 }
+*/
 
 if (isset($_ENV['SHELL']['EXPR_DOMAIN']) && $_ENV['SHELL']['EXPR_DOMAIN'] != '' && !defined('DOMAIN_EXPR'))
   define('DOMAIN_EXPR', $_ENV['SHELL']['EXPR_DOMAIN']); // const DOMAIN_EXPR = 'string only/non-block/ternary';
@@ -222,14 +224,6 @@ if (!empty($_GET['client']) || !empty($_GET['domain'])) {
   }*/
 }
 unset($dirs);
-
-if (!defined('APP_ROOT')) {
-  $path = !isset($_GET['client']) ? (!isset($_GET['project']) ? '' : 'projects' . DIRECTORY_SEPARATOR . $_GET['project']) : 'clientele' . DIRECTORY_SEPARATOR . $_GET['client'] . DIRECTORY_SEPARATOR . (isset($_GET['domain']) ? ($_GET['domain'] != '' ? $_GET['domain'] : '') : '') . DIRECTORY_SEPARATOR; /* ($_GET['path'] . '/' ?? '')*/
-  //die($path);
-  //is_dir(APP_PATH . $_GET['path']) 
-  define('APP_ROOT', !empty(realpath(APP_PATH . ($path = rtrim($path, DIRECTORY_SEPARATOR)) ) && $path != '') ? (string) $path . DIRECTORY_SEPARATOR : '');  // basename() does not like null
-}
-
 
 /*
 if (isset($_GET['path']) && $_GET['path'] != '' && realpath($_GET['path']) && is_dir($_GET['path']))

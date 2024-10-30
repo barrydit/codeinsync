@@ -18,11 +18,11 @@ if (realpath($_SERVER["SCRIPT_FILENAME"]) == get_required_files()[0] && in_array
 }
 */
 
-if (is_file(dirname(__DIR__, 1) . DIRECTORY_SEPARATOR . 'index.php')) {
-  require_once realpath(dirname(__DIR__, 1) . DIRECTORY_SEPARATOR . 'index.php');
+if (is_file($bootstrap = dirname(__DIR__, 1) . DIRECTORY_SEPARATOR . 'bootstrap.php')) {
+  require_once $bootstrap;
 }
 
-//dd(get_required_files());
+dd(get_required_files());
 
 //if (isset($_ENV['COMPOSER']['AUTOLOAD']) && (bool) $_ENV['COMPOSER']['AUTOLOAD'] === true)
 require_once APP_PATH . APP_BASE['vendor'] . 'autoload.php';

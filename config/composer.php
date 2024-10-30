@@ -1,4 +1,22 @@
 <?php
+/*
+{
+  "autoload": {
+      "psr-4": {
+          "App\\": "src/"
+      } ...
+      "classmap": [
+            "src/"
+      ] ...
+      "files": [
+            "src/helpers.php",
+            "src/constants.php"
+      ]
+  }
+}
+*/
+
+
 global $errors;
 //die($_SERVER['REQUEST_METHOD']);
 
@@ -53,43 +71,75 @@ class ComposerConfig {
   private $name;
   private $version;
   private $description;
-  // Add more properties as needed
-  
+
+  // Properties initialized with default values
+  private $type = '';
+  private $keywords = [];
+  private $homepage = '';
+  private $readme = '';
+  private $time = '';
+  private $license = '';
+  private $authors = [];
+  private $repositories = [];
+  private $require;
+  private $requireDev;
+  private $autoload;
+  private $autoloadDev;
+  private $minimumStability = '';
+  private $preferStable = false;
+  private $config;
+
   public function __construct($config = ['name' => 'default', 'version' => '1.0.0', 'description' => 'Default description']) {
-      $this->name = $config['name'];
-      $this->version = $config['version'];
-      $this->description = $config['description'];
-      // Assign more properties from the config array
+      $this->name = $config['name'] ?? 'default';
+      $this->version = $config['version'] ?? '1.0.0';
+      $this->description = $config['description'] ?? 'Default description';
 
-      foreach(['name', 'version', 'description', 'type', 'keywords', 'homepage', 'readme', 'time', 'license', 'authors', 'repositories', 'require', 'require-dev', 'autoload', 'autoload-dev', 'minimum-stability', 'prefer-stable', 'config'] as $property) {
-          if (!isset($this->{$property})) {
-              // throw new Exception("Missing property: $property");
-              $this->__set($property, '');
-
-              if ($property == 'require' || $property == 'require-dev') {
-                $this->{$property} = new stdClass();
-              } elseif ($property == 'autoload' || $property == 'autoload-dev') {
-                $this->{$property} = new stdClass();
-              } elseif ($property == 'repositories') {
-                $this->{$property} = new stdClass();
-              } elseif ($property == 'authors') {
-                $this->{$property} = new stdClass();
-                $this->{$property}[] = new stdClass();
-                $lastAuthor = end($this->{$property});
-                $lastAuthor->name = $_ENV['COMPOSER']['AUTHOR'];
-                $lastAuthor->email = $_ENV['COMPOSER']['EMAIL'];
-              } elseif ($property == 'config') {
-                $this->{$property} = new stdClass();
-                $this->{$property}->{'platform-check'} = false;
-                $this->{$property}->{'platform'} = new stdClass();
-                $this->{$property}->{'platform'}->{'php'} = '7.4.0';
-              } else {
-                $this->{$property} = '';
-              }
-          }
-      }
+      // Initialize all other required properties with defaults
+      $this->initializeProperties();
   }
-  
+
+  private function initializeProperties() {
+      // Default configurations for properties with specific types or nested structures
+      $this->require = new stdClass();
+      $this->requireDev = new stdClass();
+      $this->autoload = new stdClass();
+      $this->autoloadDev = new stdClass();
+      $this->repositories = [];
+
+      $this->authors[] = (object)[
+          'name' => $_ENV['COMPOSER']['AUTHOR'] ?? 'Default Author',
+          'email' => $_ENV['COMPOSER']['EMAIL'] ?? 'author@example.com'
+      ];
+
+      $this->config = (object)[
+          'platform-check' => false,
+          'platform' => (object)['php' => '7.4.0']
+      ];
+  }
+
+  public function toArray(): array {
+      return [
+          'name' => $this->name,
+          'version' => $this->version,
+          'description' => $this->description,
+          'type' => $this->type,
+          'keywords' => $this->keywords,
+          'homepage' => $this->homepage,
+          'readme' => $this->readme,
+          'time' => $this->time,
+          'license' => $this->license,
+          'authors' => $this->authors,
+          'repositories' => $this->repositories,
+          'require' => $this->require,
+          'require-dev' => $this->requireDev,
+          'autoload' => $this->autoload,
+          'autoload-dev' => $this->autoloadDev,
+          'minimum-stability' => $this->minimumStability,
+          'prefer-stable' => $this->preferStable,
+          'config' => $this->config
+      ];
+  }
+
   // Add getter methods for each property
   public function getName() {
       return $this->name;
@@ -102,29 +152,21 @@ class ComposerConfig {
   public function getDescription() {
       return $this->description;
   }
-  
-  // Add more getter methods for other properties
-  
-  // Add setter methods if needed
-  
-  // Add other methods as needed
-  
-  public function __get($property) {
-      $property = str_replace('-', '_', $property);
-      $method = 'get' . ucfirst($property);
-      if (method_exists($this, $method)) {
-          return $this->$method();
-      }
-      return null;
-  }
-  
-  public function __set($property, $value) {
-      $property = str_replace('-', '_', $property);
-      $method = 'set' . ucfirst($property);
-      if (method_exists($this, $method)) {
-          $this->$method($value);
-      }
-  }
+
+/*
+  setProperty – Set or update a specific property in the configuration.
+  addAuthor – Add an author to the authors array.
+  addRepository – Add a repository to the repositories array.
+  addRequirement – Add a requirement to require or require-dev.
+  setAutoload – Configure autoload settings.
+  validateConfig – Check if required fields are set and valid.
+  toArray – Convert the config object to an array format.
+  toJson – Convert the config to a JSON string.
+  saveToFile – Save the JSON output to a file.
+  loadFromFile – Load configuration data from a JSON file.
+  mergeConfig – Merge additional configurations or override existing values.
+  resetConfig – Reset properties to default values.
+*/
 }
 
 class composerSchema {

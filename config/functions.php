@@ -1,4 +1,499 @@
 <?php
+/* function parse_ini_file_multi($file) {
+  // parse_ini_string(file_get_contents($file), true, INI_SCANNER_NORMAL))) 
+  $data = parse_ini_file($file, true, INI_SCANNER_TYPED); 
+  $output = [];
+  foreach($data as $key => $value) {
+    $keys = explode('.', $key);
+    $temp = &$output;
+    foreach($keys as $key) {
+      $temp = &$temp[$key];
+    }
+    $temp = $value;
+  }
+  return $output;
+}
+function parse_ini_file_multi($file) {
+  $data = parse_ini_file($file, true, INI_SCANNER_TYPED);
+  $output = [];
+
+  foreach($data as $section => $values) {
+    if (is_array($values)) {
+      foreach($values as $key => $value) {
+        $keys = explode('.', $key);
+        $temp = &$output[$section];
+        foreach($keys as $key_part) {
+          $temp = &$temp[$key_part];
+        }
+        $temp = $value;
+      }
+    } else {
+      $keys = explode('.', $section);
+      $temp = &$output;
+      foreach($keys as $key_part) {
+        $temp = &$temp[$key_part];
+      }
+      $temp = $values;
+    }
+  }
+  
+  return $output;
+}
+function parse_ini_file_multi($file) {
+  $data = parse_ini_file($file, true, INI_SCANNER_TYPED);
+  $output = [];
+
+  foreach ($data as $section => $values) {
+    if (is_array($values)) {
+      $output[$section] = [];
+      foreach ($values as $key => $value) {
+        $output[$section][$key] = str_replace(['\'', '"'], '', var_export($value, true));
+      }
+    } else {
+      $output[$section] = str_replace(['\'', '"'], '', var_export($values, true));
+    }
+  }
+
+  return $output;
+}
+
+function parse_ini_file_multi($file) {
+  $data = parse_ini_file($file, true, INI_SCANNER_TYPED);
+  $output = [];
+
+  foreach ($data as $section => $values) {
+      if (is_array($values)) {
+          $output[$section] = [];
+          foreach ($values as $key => $value) {
+              // Check if the value is a regular expression
+              if (preg_match('/^\/.*\/$/', $value)) {
+                  $output[$section][$key] = $value;
+              } else {
+                  // If not a regular expression, add slashes to escape special characters
+                  $output[$section][$key] = addcslashes($value, '"\\');
+              }
+          }
+      } else {
+          // Add slashes to non-array values
+          $output[$section] = addcslashes($values, '"\\');
+      }
+  }
+
+  return $output;
+}
+
+function parse_ini_file_multi($file) {
+  $data = parse_ini_file($file, true, INI_SCANNER_TYPED);
+  $output = [];
+
+  foreach ($data as $section => $values) {
+      if (is_array($values)) {
+          $output[$section] = [];
+          foreach ($values as $key => $value) {
+              // Do not escape regular expressions
+              if (preg_match('/^\/.*\/[a-z]*$/i', $value)) {
+                  $output[$section][$key] = $value;
+              } else {
+                  // Escape only non-regular expression values
+                  $output[$section][$key] = addcslashes($value, '"\\');
+              }
+          }
+      } else {
+          // Escape only non-regular expression values
+          if (preg_match('/^\/.*\/[a-z]*$/i', $values)) {
+              $output[$section] = $values;
+          } else {
+              $output[$section] = addcslashes($values, '"\\');
+          }
+      }
+  }
+
+  return $output;
+} */
+
+function parse_ini_file_multi($file): array {
+  $data = (array) parse_ini_file($file, true, INI_SCANNER_TYPED);
+  $output = [];
+
+  foreach ($data as $section => $values) {
+    if (is_array($values)) {
+      $output[$section] = [];
+      foreach ($values as $key => $value) {
+        // Do not escape regular expressions
+        $output[$section][$key] = preg_match('/^\/.*\/[a-z]*$/i', $value) ? $value : (is_bool($value) ? $value : addcslashes($value, '"\\'));
+      }
+    } else {
+      // Do not escape regular expressions
+      // Unparenthesized `a ? b : c ? d : e` is not supported.
+      // $output[$section] = (preg_match('/^\/.*\/[a-z]*$/i', $values)) ? $values : (is_bool($values)) ? $values ? 'true' : 'false' : addcslashes($values, '"\\');
+      $output[$section] = (preg_match('/^\/.*\/[a-z]*$/i', $values)) ? $values : ((is_bool($values)) ? ($values ? true : false) : addcslashes($values, '"\\'));
+
+    }
+  }
+  return $output;
+}
+
+
+function array_merge_recursive_distinct(array &$array1, array &$array2) {
+  $merged = $array1;
+
+  foreach ($array2 as $key => &$value) {
+    if (is_array($value) && isset($merged[$key]) && is_array($merged[$key])) {
+      $merged[$key] = array_merge_recursive_distinct($merged[$key], $value);
+    } else {
+      $merged[$key] = $value;
+    }
+  }
+
+  return $merged;
+}
+
+function array_intersect_key_recursive(array $array1, array $array2) {
+  $result = [];
+  foreach ($array1 as $key => $value) {
+    if (array_key_exists($key, $array2)) {
+      if (is_array($value) && is_array($array2[$key])) {
+        $result[$key] = array_intersect_key_recursive($value, $array2[$key]);
+      } else {
+        $result[$key] = $value;
+      }
+    }
+  }
+  return $result;
+}
+
+
+
+/**
+ * Summary of Shutdown
+ */
+class Shutdown
+{
+    private static $instance = false;
+    /**
+     * Summary of functions
+     * @var 
+     */
+    private static $functions;
+    private static $enabled = true;
+    private static $shutdownMessage = null;
+
+    /**
+     * Summary of __construct
+     */
+    private function __construct()
+    {
+        error_log("Shutdown constructor called."); // Log message to error log
+        self::$functions = [];
+        defined('APP_END') or define('APP_END', microtime(true));
+        $this->initializeEnv();
+    }
+
+    /**
+     * Summary of initializeEnv
+     * @return void
+     */
+    private static function initializeEnv()
+    {
+        $iniString = '';
+//error_log( APP_PATH . '.env');
+        // Backup the current .env file if it's not empty
+        if (filesize($envFile = APP_PATH . '.env') > 0) { // dirname(getcwd(), 1) . '/.env'
+            $envContent = file_get_contents($envFile);
+    
+            // Parse the .env content and filter out GITHUB OAUTH_TOKEN
+            $parsedEnv = parse_ini_string($envContent, true);
+            if (isset($parsedEnv['GITHUB']) && isset($parsedEnv['GITHUB']['OAUTH_TOKEN'])) {
+                $parsedEnv['GITHUB']['OAUTH_TOKEN'] = null;
+            }
+    
+            $backupEnvContent = '';
+            foreach ($parsedEnv as $section => $data) {
+                if (is_array($data)) {
+                    $backupEnvContent .= "[$section]\n";
+                    foreach ($data as $key => $value) {
+                        $value = self::convertBooleanToString($value);
+                        $value = self::processNestedValue($value);
+                        $backupEnvContent .= "$key = $value\n";
+                    }
+                } else {
+                    $data = self::convertBooleanToString($data);
+                    $data = self::processNestedValue($data);
+                    $backupEnvContent .= "$section = $data\n";
+                }
+            }
+
+            file_put_contents(APP_PATH . '.env.bck', $backupEnvContent);
+
+        }
+
+        // Process the main .env file
+        $file = APP_PATH . APP_ROOT . '.env';
+
+        //die(APP_ROOT);
+
+
+        if (is_file($file)) {
+            $_ENV = array_intersect_key_recursive($_ENV, parse_ini_file_multi($file));
+    
+            if (!empty($_ENV)) {
+                foreach ($_ENV as $key => $value) {
+                    // Convert boolean values to strings
+                    $value = self::convertBooleanToString($value);
+                    if (is_array($value)) {
+                        $iniString .= "[$key]\n";
+                        foreach ($value as $nestedKey => $nestedValue) {
+                            $nestedValue = self::processNestedValue($nestedValue);
+                            $iniString .= "$nestedKey = $nestedValue\n";
+                        }
+                    } else {
+                        $value = self::processNestedValue($value);
+                        $iniString .= "$key = $value\n";
+                    }
+                }
+            }
+            if ($iniString !== '')
+              file_put_contents($file, $iniString);
+        } else {
+            //file_put_contents($file, $envContent);
+        }
+    }
+
+    /**
+     * Summary of convertBooleanToString
+     * @param mixed $value
+     * @return mixed
+     */
+    private static function convertBooleanToString($value)
+    {
+        if ($value === true || $value === false || is_bool($value)) {
+            return $value ? 'true' : 'false';
+        }
+        return $value;
+    }
+
+    /**
+     * Summary of processNestedValue
+     * @param mixed $value
+     * @return string
+     */
+    private static function processNestedValue($value)
+    {
+        if (is_string($value) && !is_numeric($value) && preg_match('/^\/.*\/[a-z]*$/i', $value)) {
+            return "\"$value\"";
+        }
+        if (is_bool($value)) {
+            return $value ? 'true' : 'false';
+        }
+        return !$value ?: addslashes($value);
+    }
+
+    /**
+     * Summary of triggerShutdown
+     * @param mixed $message
+     * @return void
+     */
+    public static function triggerShutdown($message)
+    {
+        self::$shutdownMessage = $message;
+        register_shutdown_function([self::class, 'onShutdown']);
+    }
+
+    /**
+     * Summary of instance
+     * @return bool|Shutdown
+     */
+    public static function instance()
+    {
+        if (self::$instance == false) {
+            self::$instance = new self();
+        }
+
+        return self::$instance;
+    }
+
+    /**
+     * Summary of onShutdown
+     * @return void
+     */
+    public static function onShutdown()
+    {
+        if (self::$enabled && self::$shutdownMessage !== null) {
+            if (is_callable(self::$shutdownMessage)) {
+                echo call_user_func(self::$shutdownMessage);
+            } else {
+                echo self::$shutdownMessage;
+            }
+        } elseif (!self::$enabled) {
+            foreach (self::$functions as $fnc) {
+                $fnc(self::$shutdownMessage);
+            }
+        }
+    }
+
+    /**
+     * Summary of create
+     * @return Shutdown
+     */
+    public static function create()
+    {
+        return new self();
+    }
+
+    /**
+     * Summary of setInstance
+     * @param mixed $instance
+     * @return void
+     */
+    public static function setInstance($instance)
+    {
+        self::$instance = $instance;
+    }
+
+    /**
+     * Summary of setFunctions
+     * @param mixed $functions
+     * @return Shutdown
+     */
+    public function setFunctions($functions): self
+    {
+        self::$functions = $functions;
+        return $this;
+    }
+
+    /**
+     * Summary of getEnabled
+     * @return mixed
+     */
+    public static function getEnabled()
+    {
+        return self::$enabled;
+    }
+
+    /**
+     * Summary of setEnabled
+     * @param mixed $enabled
+     * @return bool|Shutdown
+     */
+    public static function setEnabled($enabled)
+    {
+        self::$enabled = $enabled;
+        return isset(self::$instance) ? static::instance() : self::instance();
+    }
+
+    /**
+     * Summary of setShutdownMessage
+     * @param mixed $message
+     * @return Shutdown
+     */
+    public static function setShutdownMessage($message): self
+    {
+        self::$shutdownMessage = $message;
+        return isset(self::$instance) ? static::instance() : self::instance();
+    }
+
+    /**
+     * Summary of shutdown
+     * @param mixed $die
+     * @return void
+     */
+    public function shutdown($die = true)
+    {
+        if (!self::$enabled) {
+            foreach (self::$functions as $fnc) {
+                $fnc(self::$shutdownMessage);
+            }
+        }
+        $message = is_callable(self::$shutdownMessage) ? call_user_func(self::$shutdownMessage) : self::$shutdownMessage;
+        if ($die == true) {
+            exit($message);
+        }
+    }
+
+    /**
+     * Summary of handleError
+     * @param mixed $errno
+     * @param mixed $errstr
+     * @param mixed $errfile
+     * @param mixed $errline
+     * @return bool
+     */
+    public static function handleError($errno, $errstr, $errfile, $errline)
+    {
+        //echo 'Does this work? handleError()';
+        self::triggerShutdown("Error: [$errno] $errstr - $errfile:$errline");
+        return true; // To prevent PHP's internal error handler from running
+    }
+
+    /**
+     * Summary of handleException
+     * @param mixed $exception
+     * @return void
+     */
+    public static function handleException($exception)
+    {
+        //echo "Does this work? handleException()";
+        $message = "Exception: " . $exception->getMessage() . " in " . $exception->getFile() . " on line " . $exception->getLine();
+        self::triggerShutdown($message);
+    }
+
+    /**
+     * Summary of handleParseError
+     * @return void
+     */
+    public static function handleParseError()
+    {
+        $error = error_get_last();
+        //echo 'Does this work? handleParseError()';
+        if ($error !== null) {
+            $message = "Fatal error: {$error['message']} in {$error['file']} on line {$error['line']}";
+            self::triggerShutdown($message);
+        }
+
+    }
+}
+
+// Register custom error and exception handlers
+set_error_handler([Shutdown::class, 'handleError']);
+set_exception_handler([Shutdown::class, 'handleException']);
+register_shutdown_function(function() {
+    Shutdown::handleParseError();
+});
+
+/**
+ * Dumps a variable with formatting and optionally stops execution.
+ *
+ * @param mixed $param The variable to be dumped. Default is null.
+ * @param bool $die Whether to stop execution after dumping the variable. Default is true.
+ * @param bool $debug Whether to include debug information in the output. Default is true.
+ *
+ * @return void Returns void if execution is stopped; otherwise, returns the result of var_dump().
+ */
+
+function dd(mixed $param = null, bool $die = true, bool $debug = true): void {
+    // Define start time if not defined
+    defined('APP_START') || define('APP_START', $_SERVER['REQUEST_TIME_FLOAT'] ?? microtime(true));
+
+    // Calculate execution time
+    $execTime = round((defined('APP_END') ? APP_END : microtime(true)) - APP_START, 3);
+    $output = "Execution time: <b>{$execTime}</b> secs<br />" . PHP_EOL;
+
+    // Format the dump output
+    $formattedOutput = '<pre><code>' . htmlspecialchars(var_export($param, true)) . '</code></pre>' . $output;
+
+    if ($die) {
+        // Set shutdown function to handle output when $die is true
+        Shutdown::setEnabled(false)
+            ->setShutdownMessage(fn() => $formattedOutput)
+            ->shutdown();
+        echo 'test';
+    } else {
+        // Otherwise, output immediately
+        echo $formattedOutput;
+    }
+}
+
+//dd(get_required_files(), false);
 
 // Get all PHP files in the 'classes' directory
 $paths = array_filter(glob(__DIR__ . DIRECTORY_SEPARATOR . 'classes/*.php'), 'is_file');
@@ -310,169 +805,6 @@ function readlinkToEnd(string $linkFilename): string {
           return $final;
       }
   }
-}
-
-/* function parse_ini_file_multi($file) {
-  // parse_ini_string(file_get_contents($file), true, INI_SCANNER_NORMAL))) 
-  $data = parse_ini_file($file, true, INI_SCANNER_TYPED); 
-  $output = [];
-  foreach($data as $key => $value) {
-    $keys = explode('.', $key);
-    $temp = &$output;
-    foreach($keys as $key) {
-      $temp = &$temp[$key];
-    }
-    $temp = $value;
-  }
-  return $output;
-}
-function parse_ini_file_multi($file) {
-  $data = parse_ini_file($file, true, INI_SCANNER_TYPED);
-  $output = [];
-
-  foreach($data as $section => $values) {
-    if (is_array($values)) {
-      foreach($values as $key => $value) {
-        $keys = explode('.', $key);
-        $temp = &$output[$section];
-        foreach($keys as $key_part) {
-          $temp = &$temp[$key_part];
-        }
-        $temp = $value;
-      }
-    } else {
-      $keys = explode('.', $section);
-      $temp = &$output;
-      foreach($keys as $key_part) {
-        $temp = &$temp[$key_part];
-      }
-      $temp = $values;
-    }
-  }
-  
-  return $output;
-}
-function parse_ini_file_multi($file) {
-  $data = parse_ini_file($file, true, INI_SCANNER_TYPED);
-  $output = [];
-
-  foreach ($data as $section => $values) {
-    if (is_array($values)) {
-      $output[$section] = [];
-      foreach ($values as $key => $value) {
-        $output[$section][$key] = str_replace(['\'', '"'], '', var_export($value, true));
-      }
-    } else {
-      $output[$section] = str_replace(['\'', '"'], '', var_export($values, true));
-    }
-  }
-
-  return $output;
-}
-
-function parse_ini_file_multi($file) {
-  $data = parse_ini_file($file, true, INI_SCANNER_TYPED);
-  $output = [];
-
-  foreach ($data as $section => $values) {
-      if (is_array($values)) {
-          $output[$section] = [];
-          foreach ($values as $key => $value) {
-              // Check if the value is a regular expression
-              if (preg_match('/^\/.*\/$/', $value)) {
-                  $output[$section][$key] = $value;
-              } else {
-                  // If not a regular expression, add slashes to escape special characters
-                  $output[$section][$key] = addcslashes($value, '"\\');
-              }
-          }
-      } else {
-          // Add slashes to non-array values
-          $output[$section] = addcslashes($values, '"\\');
-      }
-  }
-
-  return $output;
-}
-
-function parse_ini_file_multi($file) {
-  $data = parse_ini_file($file, true, INI_SCANNER_TYPED);
-  $output = [];
-
-  foreach ($data as $section => $values) {
-      if (is_array($values)) {
-          $output[$section] = [];
-          foreach ($values as $key => $value) {
-              // Do not escape regular expressions
-              if (preg_match('/^\/.*\/[a-z]*$/i', $value)) {
-                  $output[$section][$key] = $value;
-              } else {
-                  // Escape only non-regular expression values
-                  $output[$section][$key] = addcslashes($value, '"\\');
-              }
-          }
-      } else {
-          // Escape only non-regular expression values
-          if (preg_match('/^\/.*\/[a-z]*$/i', $values)) {
-              $output[$section] = $values;
-          } else {
-              $output[$section] = addcslashes($values, '"\\');
-          }
-      }
-  }
-
-  return $output;
-} */
-
-function parse_ini_file_multi($file): array {
-  $data = (array) parse_ini_file($file, true, INI_SCANNER_TYPED);
-  $output = [];
-
-  foreach ($data as $section => $values) {
-    if (is_array($values)) {
-      $output[$section] = [];
-      foreach ($values as $key => $value) {
-        // Do not escape regular expressions
-        $output[$section][$key] = preg_match('/^\/.*\/[a-z]*$/i', $value) ? $value : (is_bool($value) ? $value : addcslashes($value, '"\\'));
-      }
-    } else {
-      // Do not escape regular expressions
-      // Unparenthesized `a ? b : c ? d : e` is not supported.
-      // $output[$section] = (preg_match('/^\/.*\/[a-z]*$/i', $values)) ? $values : (is_bool($values)) ? $values ? 'true' : 'false' : addcslashes($values, '"\\');
-      $output[$section] = (preg_match('/^\/.*\/[a-z]*$/i', $values)) ? $values : ((is_bool($values)) ? ($values ? true : false) : addcslashes($values, '"\\'));
-
-    }
-  }
-  return $output;
-}
-
-
-function array_merge_recursive_distinct(array &$array1, array &$array2) {
-  $merged = $array1;
-
-  foreach ($array2 as $key => &$value) {
-    if (is_array($value) && isset($merged[$key]) && is_array($merged[$key])) {
-      $merged[$key] = array_merge_recursive_distinct($merged[$key], $value);
-    } else {
-      $merged[$key] = $value;
-    }
-  }
-
-  return $merged;
-}
-
-function array_intersect_key_recursive(array $array1, array $array2) {
-  $result = [];
-  foreach ($array1 as $key => $value) {
-    if (array_key_exists($key, $array2)) {
-      if (is_array($value) && is_array($array2[$key])) {
-        $result[$key] = array_intersect_key_recursive($value, $array2[$key]);
-      } else {
-        $result[$key] = $value;
-      }
-    }
-  }
-  return $result;
 }
 
 
