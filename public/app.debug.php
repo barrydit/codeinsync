@@ -383,48 +383,48 @@ if (basename($_SERVER['PHP_SELF']) == basename(__FILE__)) { // ($_SERVER["SCRIPT
     die('PHP_SELF: ' . $_SERVER['PHP_SELF']);
 */
 
-  $indicesServer = array(
-    'PHP_SELF',
-    'argv',
-    'argc',
-    'GATEWAY_INTERFACE',
-    'SERVER_ADDR',
-    'SERVER_NAME',
-    'SERVER_SOFTWARE',
-    'SERVER_PROTOCOL',
-    'REQUEST_METHOD',
-    'REQUEST_TIME',
-    'REQUEST_TIME_FLOAT',
-    'QUERY_STRING',
-    'DOCUMENT_ROOT', // /var/www/public
-    'HTTP_ACCEPT',
-    'HTTP_ACCEPT_CHARSET',
-    'HTTP_ACCEPT_ENCODING',
-    'HTTP_ACCEPT_LANGUAGE',
-    'HTTP_CONNECTION',
-    'HTTP_HOST',
-    'HTTP_REFERER',
-    'HTTP_USER_AGENT',
-    'HTTPS',
-    'REMOTE_ADDR',
-    'REMOTE_HOST',
-    'REMOTE_PORT',
-    'REMOTE_USER',
-    'REDIRECT_REMOTE_USER',
-    'SCRIPT_FILENAME',
-    'SERVER_ADMIN',
-    'SERVER_PORT',
-    'SERVER_SIGNATURE',
-    'PATH_TRANSLATED',
-    'SCRIPT_NAME',
-    'REQUEST_URI',
-    'PHP_AUTH_DIGEST',
-    'PHP_AUTH_USER',
-    'PHP_AUTH_PW',
-    'AUTH_TYPE',
-    'PATH_INFO',
-    'ORIG_PATH_INFO'
-  );
+  $indicesServer = [
+      'PHP_SELF',
+      'argv',
+      'argc',
+      'GATEWAY_INTERFACE',
+      'SERVER_ADDR',
+      'SERVER_NAME',
+      'SERVER_SOFTWARE',
+      'SERVER_PROTOCOL',
+      'REQUEST_METHOD',
+      'REQUEST_TIME',
+      'REQUEST_TIME_FLOAT',
+      'QUERY_STRING',
+      'DOCUMENT_ROOT', // /var/www/public
+      'HTTP_ACCEPT',
+      'HTTP_ACCEPT_CHARSET',
+      'HTTP_ACCEPT_ENCODING',
+      'HTTP_ACCEPT_LANGUAGE',
+      'HTTP_CONNECTION',
+      'HTTP_HOST',
+      'HTTP_REFERER',
+      'HTTP_USER_AGENT',
+      'HTTPS',
+      'REMOTE_ADDR',
+      'REMOTE_HOST',
+      'REMOTE_PORT',
+      'REMOTE_USER',
+      'REDIRECT_REMOTE_USER',
+      'SCRIPT_FILENAME',
+      'SERVER_ADMIN',
+      'SERVER_PORT',
+      'SERVER_SIGNATURE',
+      'PATH_TRANSLATED',
+      'SCRIPT_NAME',
+      'REQUEST_URI',
+      'PHP_AUTH_DIGEST',
+      'PHP_AUTH_USER',
+      'PHP_AUTH_PW',
+      'AUTH_TYPE',
+      'PATH_INFO',
+      'ORIG_PATH_INFO'
+    ];
 
   echo '<table cellpadding="10">';
   foreach ($indicesServer as $arg) {
@@ -432,7 +432,7 @@ if (basename($_SERVER['PHP_SELF']) == basename(__FILE__)) { // ($_SERVER["SCRIPT
       echo '<tr><td>'.$arg.'</td><td>' . $_SERVER[$arg] . '</td></tr>';
     }
     else {
-      echo '<tr><td>'.$arg.'</td><td>-</td></tr>';
+      echo "<tr><td>$arg</td><td>-</td></tr>";
     }
   }
   foreach (array_keys($_SESSION) as $arg) {
@@ -440,15 +440,15 @@ if (basename($_SERVER['PHP_SELF']) == basename(__FILE__)) { // ($_SERVER["SCRIPT
       echo '<tr><td>'.$arg.'</td><td>' . $_SESSION[$arg] . '</td></tr>';
     }
     else {
-      echo '<tr><td>'.$arg.'</td><td>-</td></tr>';
+      echo "<tr><td>$arg</td><td>-</td></tr>";
     }
   }
   foreach (array_keys($_REQUEST) as $arg) {
     if (isset($_REQUEST[$arg])) {
-      echo '<tr><td>'.$arg.'</td><td>' . $_REQUEST[$arg] . '</td></tr>';
+      echo '<tr><td>'.$arg.'</td><td>' . "{$_REQUEST[$arg]}" . '</td></tr>';
     }
     else {
-      echo '<tr><td>'.$arg.'</td><td>-</td></tr>';
+      echo "<tr><td>$arg</td><td>-</td></tr>";
     }
   }
   foreach (array_keys($_FILES) as $arg) {
@@ -456,7 +456,7 @@ if (basename($_SERVER['PHP_SELF']) == basename(__FILE__)) { // ($_SERVER["SCRIPT
       echo '<tr><td>'.$arg.'</td><td>' . $_FILES[$arg] . '</td></tr>';
     }
     else {
-      echo '<tr><td>'.$arg.'</td><td>-</td></tr>';
+      echo "<tr><td>$arg</td><td>-</td></tr>";
     }
   }
   echo '</table>';

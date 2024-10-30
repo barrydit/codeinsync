@@ -227,6 +227,41 @@ if (preg_match('/^app\.([\w\-.]+)\.php$/', basename(__FILE__), $matches))
           //  ob_start();
             require_once APP_PATH . 'config/git.php';
 
+            $command = (stripos(PHP_OS, 'WIN') === 0 ? '' : APP_SUDO . '-u www-data ') . 'git commit --allow-empty --dry-run';
+
+            // Append `; echo $?` to capture the exit code in the output
+            $shellOutput = shell_exec("$command ; echo $?");
+            
+            // Split the output to separate the actual output from the exit code
+            $outputLines = explode("\n", trim($shellOutput));
+            $exitCode = array_pop($outputLines);  // The last line will be the exit code
+            
+            // Reconstruct the output without the exit code
+            $commandOutput = implode("\n", $outputLines);
+            
+            // Display the result
+            //echo "Command Output:\n$commandOutput\n";
+            //echo "Exit Code: $exitCode\n";
+
+            if ($exitCode == 128) {
+              $proc = proc_open($command, [["pipe", "r"], ["pipe", "w"], ["pipe", "w"]], $pipes);
+
+              [$stdout, $stderr, $exitCode] = [stream_get_contents($pipes[1]), stream_get_contents($pipes[2]), proc_close($proc)];
+
+              if ($exitCode !== 0) {
+                if (empty($stdout)) {
+                  if (!empty($stderr)) {
+                    $errors["GIT-" . $_POST['cmd']] = $stderr;
+                    error_log($stderr);
+                  }
+                } else {
+                  $errors["GIT-" . $_POST['cmd']] = $stdout;
+                }
+              }
+              $output[] = !isset($stdout) ? NULL : $stdout . (isset($stderr) && $stderr === '' ? NULL : (isset($exitCode) && $exitCode == 0 ? NULL : "Exit Code: $command")); // $exitCode
+            }
+
+
           //  ob_end_clean();
           //  return '';
           //})();
@@ -313,15 +348,15 @@ if (preg_match('/^app\.([\w\-.]+)\.php$/', basename(__FILE__), $matches))
   $output[] = $command = $_POST['cmd'] . ' --git-dir="' . APP_PATH . APP_ROOT . '.git" --work-tree="' . APP_PATH . APP_ROOT . '" https://' . $_ENV['GITHUB']['OAUTH_TOKEN'] . '@' . $parsedUrl['host'] . $parsedUrl['path'] . '.git';
   
   /**/
- 
+
   if (isset($github_repo) && !empty($github_repo)) {
 
   if (!isset($_SERVER['SOCKET']) || !is_resource($_SERVER['SOCKET']) || empty($_SERVER['SOCKET'])) {
 
     $proc = proc_open((stripos(PHP_OS, 'WIN') === 0 ? '' : APP_SUDO . '-u www-data ') . $command, [["pipe", "r"], ["pipe", "w"], ["pipe", "w"]], $pipes);
-  
+
     [$stdout, $stderr, $exitCode] = [stream_get_contents($pipes[1]), stream_get_contents($pipes[2]), proc_close($proc)];
-  
+
     if ($exitCode !== 0) {
       if (empty($stdout)) {
         if (!empty($stderr)) {
@@ -332,12 +367,13 @@ if (preg_match('/^app\.([\w\-.]+)\.php$/', basename(__FILE__), $matches))
         $errors["GIT-" . $_POST['cmd']] = $stdout;
       }
     }
+
     $output[] = !isset($stdout) ? NULL : $stdout . (isset($stderr) && $stderr === '' ? NULL : (isset($exitCode) && $exitCode == 0 ? NULL : "Exit Code: $exitCode"));
-  
+
   } else {
     // Connect to the server
     $errors['server-1'] = "Connected to Server: " . SERVER_HOST . ':' . SERVER_PORT . "\n";
-    
+
     // Send a message to the server
     $errors['server-2'] = 'Client request: ' . $message = "cmd: $command\n";
     /* Known socket  Error / Bug is mis-handled and An established connection was aborted by the software in your host machine */
@@ -351,7 +387,7 @@ if (preg_match('/^app\.([\w\-.]+)\.php$/', basename(__FILE__), $matches))
       $errors['server-3'] = "Server responce: $response\n";
       if (isset($output[end($output)])) $output[end($output)] .= $response = trim("$response");
       //if (!empty($response)) break;
-    }    
+    }
 
     // Close and reopen socket
     fclose($_SERVER['SOCKET']);
@@ -359,28 +395,33 @@ if (preg_match('/^app\.([\w\-.]+)\.php$/', basename(__FILE__), $matches))
   }
 
   }
-  
+
   // exec((stripos(PHP_OS, 'WIN') === 0 ? '' : APP_SUDO)  . 'git --git-dir="' . APP_PATH . APP_ROOT . '.git" --work-tree="' . APP_PATH . APP_ROOT . '" remote add origin ' . $github_repo[2], $output);
   
           } else {
 
-            
           // git --git-dir=/var/www/.git --work-tree=/var/www pull
-          
+
           // $GIT_DIR environment variable
           if (preg_match('/^(init)(:?\s+)?/i', $match[1])) 
             if (!is_file($path = APP_PATH . APP_ROOT . '.gitignore')) touch($path);
-  
+
           if ($match[1] == 'pull') $_ENV['GITHUB']['REMOTE_SHA'] = git_origin_sha_update(); // git_origin_sha();
-  
+
           //var_dump($_ENV['GITHUB']['REMOTE_SHA']);
-  
+
           //dd($_ENV['GITHUB']['REMOTE_SHA']);
-  
-          //$output[] = 'www-data@localhost:' . getcwd() . '# ' . 
+
+          chdir(APP_PATH);
+
+          $parsedUrl = parse_url($_ENV['GITHUB']['ORIGIN_URL']);
           
-          $command = (defined('GIT_EXEC') ? basename(GIT_EXEC) : 'git' ) . (is_dir($path = APP_PATH . APP_ROOT . '.git') || APP_PATH . APP_ROOT != APP_PATH ? ' --git-dir="' . $path . '" --work-tree="' . dirname($path) . '"': '' ) . ' ' . $match[1];
-  
+          $output[] = 'www-data@localhost:' . getcwd() . '# ' . $command = (stripos(PHP_OS, 'WIN') === 0 ? '' : APP_SUDO . '-u www-data ') . (defined('GIT_EXEC') ? basename(GIT_EXEC) : 'git' ) . (is_dir($path = APP_PATH . APP_ROOT . '.git') || APP_PATH . APP_ROOT != APP_PATH ? ' --git-dir="' . $path . '" --work-tree="' . dirname($path) . '"': '' ) . ' ' . $match[1];
+
+          if (preg_match('/(push|pull)/', $match[1]))
+            $command .= ' https://' . $_ENV['GITHUB']['OAUTH_TOKEN'] . '@' . $parsedUrl['host'] . $parsedUrl['path'] . '.git';
+
+
           if (!isset($_SERVER['SOCKET']) || !is_resource($_SERVER['SOCKET']) || empty($_SERVER['SOCKET'])) {
 
             $proc = proc_open($command, [["pipe", "r"], ["pipe", "w"], ["pipe", "w"]], $pipes);
@@ -402,7 +443,7 @@ if (preg_match('/^app\.([\w\-.]+)\.php$/', basename(__FILE__), $matches))
           } else {
             // Connect to the server
             $errors['server-1'] = "Connected to Server: " . SERVER_HOST . ':' . SERVER_PORT . "\n";
-            
+
             // Send a message to the server
             $errors['server-2'] = 'Client request: ' . $message = "cmd: $command\n";
             /* Known socket  Error / Bug is mis-handled and An established connection was aborted by the software in your host machine */
@@ -439,7 +480,7 @@ if (preg_match('/^app\.([\w\-.]+)\.php$/', basename(__FILE__), $matches))
 */
             fwrite($_SERVER['SOCKET'], $message);
             fflush($_SERVER['SOCKET']); // Flush the buffer
-            
+
             $response = '';
             $output[] = '';
 // Check if the socket is ready for reading
