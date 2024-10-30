@@ -8,6 +8,9 @@ if ($path = realpath((basename(__DIR__) != 'config' ? NULL : __DIR__ . DIRECTORY
 }
 
 $gitconfig = <<<END
+[safe]
+    directory = /mnt/c/www
+
 [user]
     name = <Your Name>
     email = <your.email@example.com>

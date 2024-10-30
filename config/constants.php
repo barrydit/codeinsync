@@ -15,18 +15,37 @@ $user = ''; // www-data
 $password = ''; // password
 $use_sudo = $_ENV['SHELL']['SUDO'] ?? true;
 
-const CONSOLE = true;
+//dd('hello world');
+
+if (!defined('APP_SUDO')) {
+  if (stripos(PHP_OS, 'WIN') === 0) {
+      // Windows command (insert specific command if needed)
+      define('APP_SUDO', '' /*'runas /user:Administrator "cmd /c" '*/);
+  } else {
+      // Linux command setup
+      $sudoCommand = $use_sudo ? 'sudo -S ' : '';
+      $passwordPart = $password ? 'echo ' . escapeshellarg($password) . ' | ' : '';
+      $userPart = $user ? '-u ' . escapeshellarg($user) . ' ' : '';
+
+      define('APP_SUDO', "{$passwordPart}{$sudoCommand}{$userPart}");
+  }
+}
+
+
 
 // Define APP_SUDO constant based on OS
 !defined('APP_SUDO') and define('APP_SUDO', stripos(PHP_OS, 'WIN') === 0
-  ? '' /*'runas /user:Administrator "cmd /c" '*/ // For Windows, you can insert the appropriate command 
+  ? ''  // For Windows, you can insert the appropriate command 
   : ($use_sudo 
-    ? 'echo ' . escapeshellarg($password ?? '') . ' | sudo -S '/* . ($user ? "-u $user" : '') . ' ' */// For Linux, you can insert the appropriate command
+    ? (!isset($password) && !$password
+      ?: 'echo ' . escapeshellarg($password ?? '') . ' | ' . escapeshellarg($password ?? '')) . 'sudo -S ' . (!isset($user) && !$user ?: '-u ' . escapeshellarg($user ?? '') . ' ') // For Linux, you can insert the appropriate command
     : '')
 );
 
+const CONSOLE = true;
+
 // Define APP_START constant
-!defined('APP_START') and define('APP_START', microtime(true)) ?: is_float(APP_START) or $errors['APP_START'] = 'APP_START is not a valid float value.';
+!defined('APP_START') and define('APP_START', $_SERVER['REQUEST_TIME_FLOAT'] ?? microtime(true)) ?: is_float(APP_START) or $errors['APP_START'] = 'APP_START is not a valid float value.';
 
 // Define APP_SELF constant
 !defined('APP_SELF') and define('APP_SELF', get_included_files()[0] ?? __FILE__) and is_string(APP_SELF) ?: $errors['APP_SELF'] = 'APP_SELF is not a valid string value.';
@@ -118,7 +137,7 @@ const SERVER_HOST = APP_HOST ?? '0.0.0.0';
 const SERVER_PORT = '8080'; // 9000
 !is_int((int) SERVER_PORT) and $errors['SERVER_PORT'] = 'SERVER_PORT is not valid. (' . SERVER_PORT . ')' . "\n";
 
-!defined('APP_PATH_SERVER') and define('APP_PATH_SERVER', (defined('APP_PATH') ? APP_PATH : __DIR__ . DIRECTORY_SEPARATOR) . str_replace(defined('APP_PATH') ? APP_PATH : __DIR__ . DIRECTORY_SEPARATOR , '', dirname(basename(APP_SELF)) == 'public' ? basename(APP_SELF) : 'server.php'));
+!defined('APP_PATH_SERVER') and define('APP_PATH_SERVER', (defined('APP_PATH') ? APP_PATH : __DIR__ . DIRECTORY_SEPARATOR) . str_replace(defined('APP_PATH') ? APP_PATH : __DIR__ . DIRECTORY_SEPARATOR , '', basename(dirname(APP_SELF)) == 'public' ? basename(APP_SELF) : 'server.php'));
 
 // Define APP_TIMEOUT constant
 define('APP_TIMEOUT', strtotime("1970-01-01 08:00:00GMT"));
@@ -275,7 +294,14 @@ END
 
 //(defined('APP_PATH') && truepath(APP_PATH)) and $errors['APP_PATH'] = truepath(APP_PATH); // print('App Path: ' . APP_PATH . "\n" . "\t" . '$_SERVER[\'DOCUMENT_ROOT\'] => ' . $_SERVER['DOCUMENT_ROOT'] . "\n");
 
-    define('APP_PATH_PUBLIC', (defined('APP_PATH') ? APP_PATH : __DIR__ . DIRECTORY_SEPARATOR)  . APP_BASE['public'] . str_replace(defined('APP_PATH') ? APP_PATH : __DIR__ . DIRECTORY_SEPARATOR , '', APP_BASE['public'] . dirname(basename($_SERVER['PHP_SELF'])) == 'public' ? basename($_SERVER['PHP_SELF']) : 'index.php')); // APP_PATH . 'public' . DIRECTORY_SEPARATOR . 'index.php'
+    define('APP_PATH_PUBLIC', (defined('APP_PATH')
+      ? APP_PATH
+      : __DIR__ . DIRECTORY_SEPARATOR)  . APP_BASE['public'] . str_replace(defined('APP_PATH')
+        ? APP_PATH
+        : __DIR__ . DIRECTORY_SEPARATOR , '', APP_BASE['public'] . basename(dirname($_SERVER['PHP_SELF'])) == 'public'
+          ? basename($_SERVER['PHP_SELF'])
+          : 'index.php')
+    ); // APP_PATH . 'public' . DIRECTORY_SEPARATOR . 'index.php'
 
     if (APP_SELF != APP_PATH_SERVER && in_array(APP_PATH_PUBLIC, get_included_files()) /*APP_SELF == APP_PATH_PUBLIC*/)
       require_once dirname(__DIR__) . DIRECTORY_SEPARATOR . 'config' . DIRECTORY_SEPARATOR . 'classes' . DIRECTORY_SEPARATOR . 'class.sockets.php';

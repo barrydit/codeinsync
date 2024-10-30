@@ -1,12 +1,43 @@
 <?php
 
+$htaccess = <<<END
+# Enable Rewrite Engine
+RewriteEngine On
+
+# Set the base directory (adjust if your application is in a subfolder)
+RewriteBase /
+
+# Redirect all requests to index.php except if the file or directory exists
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteCond %{REQUEST_FILENAME} !-d
+RewriteRule ^(.*)$ index.php/$1 [L]
+END;
+
+
   // if ($path = (basename(getcwd()) == 'public') chdir('..');
 //APP_PATH == dirname(APP_PATH_PUBLIC)
 
-if (is_file(dirname(__DIR__, 1) . DIRECTORY_SEPARATOR . 'index.php')) {
-  require_once realpath(dirname(__DIR__, 1) . DIRECTORY_SEPARATOR . 'index.php'); // APP_PATH . 'index.php'
+if (is_file($bootstrap = dirname(__DIR__, 1) . DIRECTORY_SEPARATOR . 'bootstrap.php')) {
+  require_once $bootstrap; // APP_PATH . 'index.php'
+} else {
+  die(var_dump($bootstrap . ' was not found.'));
 }
 
+require_once 'config/config.php';
+/*
+switch ($_SERVER['REQUEST_URI']) {
+  case '/notes':
+      require_once __DIR__ . '/app.notes.php';
+      break;
+  case '/console':
+      require_once __DIR__ . '/app.console.php';
+      break;
+  default:
+      require_once __DIR__ . '/app.browser.php';
+      break;
+}
+
+*/
 /*
 if ($path = (basename(getcwd()) == 'public') ? (is_file('../config/config.php') ? '../config/config.php' : 'config.php') :
   (is_file('config.php') ? 'config.php' : dirname(__DIR__, 1) . DIRECTORY_SEPARATOR . 'config' . DIRECTORY_SEPARATOR . 'config.php' ))
@@ -183,6 +214,10 @@ if (isset($_SERVER['REQUEST_METHOD']))
   /**/
   //dd('req method==' . $_SERVER['REQUEST_METHOD'], false);
 
+  
+  //dd(get_required_files());
+
+  
   if ($_SERVER['REQUEST_METHOD'] == 'GET')
   if (defined('APP_QUERY') && empty(APP_QUERY) || isset($_GET['CLIENT']) || isset($_GET['DOMAIN']) && !defined('APP_ROOT')) {
 
@@ -202,7 +237,6 @@ if (isset($_SERVER['REQUEST_METHOD']))
       $_GET = array_merge($_GET, APP_QUERY);
   }
 
-  
   //dd(__DIR__ . DIRECTORY_SEPARATOR);
 
  if (APP_SELF == APP_PATH_PUBLIC) {

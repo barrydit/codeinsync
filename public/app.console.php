@@ -96,7 +96,7 @@ if (preg_match('/^app\.([\w\-.]+)\.php$/', basename(__FILE__), $matches))
                       //if (isset($_ENV['COMPOSER']['AUTOLOAD']) && (bool) $_ENV['COMPOSER']['AUTOLOAD'] === TRUE)
                     //  require_once $include;
 
-                    require 'app.directory.php';
+                    require_once 'app.directory.php';
                     $tableValue = $tableGen();
                     ob_end_clean();
                     return $tableValue; // $app['directory']['body'];
@@ -415,19 +415,18 @@ if (preg_match('/^app\.([\w\-.]+)\.php$/', basename(__FILE__), $matches))
           chdir(APP_PATH);
 
           $parsedUrl = parse_url($_ENV['GITHUB']['ORIGIN_URL']);
-          
+
           $output[] = 'www-data@localhost:' . getcwd() . '# ' . $command = (stripos(PHP_OS, 'WIN') === 0 ? '' : APP_SUDO . '-u www-data ') . (defined('GIT_EXEC') ? basename(GIT_EXEC) : 'git' ) . (is_dir($path = APP_PATH . APP_ROOT . '.git') || APP_PATH . APP_ROOT != APP_PATH ? ' --git-dir="' . $path . '" --work-tree="' . dirname($path) . '"': '' ) . ' ' . $match[1];
 
           if (preg_match('/(push|pull)/', $match[1]))
             $command .= ' https://' . $_ENV['GITHUB']['OAUTH_TOKEN'] . '@' . $parsedUrl['host'] . $parsedUrl['path'] . '.git';
 
-
           if (!isset($_SERVER['SOCKET']) || !is_resource($_SERVER['SOCKET']) || empty($_SERVER['SOCKET'])) {
 
             $proc = proc_open($command, [["pipe", "r"], ["pipe", "w"], ["pipe", "w"]], $pipes);
-          
+
             [$stdout, $stderr, $exitCode] = [stream_get_contents($pipes[1]), stream_get_contents($pipes[2]), proc_close($proc)];
-          
+
             if ($exitCode !== 0) {
               if (empty($stdout)) {
                 if (!empty($stderr)) {
@@ -439,7 +438,7 @@ if (preg_match('/^app\.([\w\-.]+)\.php$/', basename(__FILE__), $matches))
               }
             }
             $output[] = !isset($stdout) ? NULL : $stdout . (isset($stderr) && $stderr === '' ? NULL : (isset($exitCode) && $exitCode == 0 ? NULL : "Exit Code: $exitCode"));
-          
+
           } else {
             // Connect to the server
             $errors['server-1'] = "Connected to Server: " . SERVER_HOST . ':' . SERVER_PORT . "\n";

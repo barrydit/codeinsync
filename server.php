@@ -2,11 +2,11 @@
 <?php 
 declare(/*strict_types=1,*/ ticks=1); // First Line Only!
 
+require_once 'bootstrap.php';
+
 !defined('APP_PATH') and define('APP_PATH', __DIR__ . DIRECTORY_SEPARATOR);
 
 !defined('PID_FILE') and define('PID_FILE', /*getcwd() .*/(!defined('APP_PATH') ? __DIR__ . DIRECTORY_SEPARATOR : APP_PATH ) . 'server.pid');
-
-require_once APP_PATH . 'index.php';
 
 ini_set('error_log', APP_PATH . 'server.log');
 ini_set('log_errors', 'true');
@@ -45,7 +45,7 @@ if (PHP_SAPI === 'cli' && stripos(PHP_OS, 'LIN') === 0 ) {
    * Set the title of our script that ps(1) sees
    */
   if (!cli_set_process_title($title = basename(__FILE__))) {
-    echo "Unable to set process title for PID $pid...\n";
+    echo "Unable to set process title for PID " . file_get_contents(PID_FILE ?? APP_PATH . 'server.pid') . "...\n";
     exit(1);
   } else {
     //cli_set_process_name($title);
@@ -213,7 +213,7 @@ function clientInputHandler($input) {
     //$input = trim($input);
     $output = '';
 
-    if (is_file($pid_file = (PID_FILE ?? APP_PATH . 'server.pid')) && $pid = file_get_contents($pid_file)) {
+    if (is_file($pid_file = PID_FILE ?? APP_PATH . 'server.pid') && $pid = (int) file_get_contents($pid_file)) {
       if (stripos(PHP_OS, 'WIN') === 0) {
         exec("tasklist /FI \"PID eq $pid\" 2>NUL | find /I \"$pid\" >NUL", $output, $status);
         if ($status === 0) {
@@ -627,6 +627,7 @@ try {
    * @return bool|resource|Socket
    */
   function createServerSocket($address, $port) {
+    is_file($pid_file = PID_FILE ?? APP_PATH . 'server.pid') && $pid = (int) file_get_contents($pid_file);
 
     echo str_replace('{{STATUS}}', 'Starting...\'' . basename(__FILE__) . '\' PID=' . ($pid ?? getmypid()) . str_pad('',8," "), APP_DASHBOARD) . PHP_EOL;
 
@@ -690,7 +691,9 @@ try {
 
     // Display server information  
     echo '(' . get_resource_type($socket) . ') ';
-  } 
+  }
+
+  is_file($pid_file = PID_FILE ?? APP_PATH . 'server.pid') && $pid = (int) file_get_contents($pid_file);
   echo 'Server started on ' . SERVER_HOST . ':' . SERVER_PORT . ' (' . PHP_OS . ") PID=" . ($pid ?? getmypid()) . "\n\n";
 
   /**

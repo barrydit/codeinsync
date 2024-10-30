@@ -1,11 +1,11 @@
 <?php
 
 if (__FILE__ == get_required_files()[0] && __FILE__ == realpath($_SERVER["SCRIPT_FILENAME"]))
-if ($path = basename(dirname(get_required_files()[0])) == 'public') { // (basename(getcwd())
-  if (is_file($path = realpath('index.php'))) {
-    require_once $path;
-  }
-} else die(var_dump("Path was not found. file=$path"));
+  if ($path = basename(dirname(get_required_files()[0])) == 'public') { // (basename(getcwd())
+    if (is_file($bootstrap = dirname(__DIR__, 1) . DIRECTORY_SEPARATOR . 'bootstrap.php')) {
+      require_once $bootstrap;
+    }
+  } else die(var_dump("Path was not found. file=$path"));
 
 
 if (!$path = realpath(APP_PATH . 'projects/index.php')) {

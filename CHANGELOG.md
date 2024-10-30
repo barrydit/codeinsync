@@ -22,6 +22,43 @@ $user = getenv('USERNAME') ?: (getenv('APACHE_RUN_USER') ?: getenv('USER') ?: ''
 fclose($socketInstance->getSocket());
 
 
+config/config.php
+
+die(getcwd() . ' == ' . __DIR__); // /mnt/c/www/public == /mnt/c/www/config/classes
+
+
+get_required_files() == 
+  ===
+  [0] => "/mnt/c/www/server.php" (Socket Server 0.0.0.0:8080) || Web Application "/mnt/c/www/public/index.php" ,.. app.console.php, app.browser.php, app.notes.php, app.directory.php 
+  ===
+  1  "/mnt/c/www/index.php" (inaccessbile index.php file used to include config.php)
+  2    "/mnt/c/www/config/config.php"
+  3      "/mnt/c/www/config/functions.php"
+  4        "/mnt/c/www/config/classes/class.clientorproj.php"
+  5        "/mnt/c/www/config/classes/class.logger.php"
+  6        "/mnt/c/www/config/classes/class.notification.php"
+  7        "/mnt/c/www/config/classes/class.shutdown.php"
+  8      "/mnt/c/www/config/constants.php"
+  9      "/mnt/c/www/config/php.php"
+  10        "/mnt/c/www/config/classes/class.sockets.php"
+
+get_required_files() == 
+ [0]=> "/mnt/c/www/server.php" (Socket Server 0.0.0.0:8080) ||
+       "/mnt/c/www/public/index.php" Web Application ,.. app.console.php, app.browser.php, app.notes.php, app.directory.php 
+ [1]=>   "/mnt/c/www/bootstrap.php"
+ [2]=>     "/mnt/c/www/config/php.php"
+ [3]=>       "/mnt/c/www/config/config.php"
+ [4]=>       "/mnt/c/www/config/functions.php"
+ [5]=>         "/mnt/c/www/config/classes/class.clientorproj.php"
+ [6]=>         "/mnt/c/www/config/classes/class.logger.php"
+ [7]=>         "/mnt/c/www/config/classes/class.notification.php"
+ [8]=>       "/mnt/c/www/config/constants.php"
+ [9]=>         "/mnt/c/www/config/classes/class.sockets.php"
+ [10]=>    "/mnt/c/www/public/ui.ace_editor.php"
+ [11]=>    "/mnt/c/www/public/ui.composer.php"
+ [12]=>    "/mnt/c/www/config/composer.php"
+ [13]=>      "/mnt/c/www/vendor/autoload.php"
+
 .htpasswd
 
 /*
