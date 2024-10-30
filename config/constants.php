@@ -13,7 +13,7 @@
 
 $user = ''; // www-data
 $password = ''; // password
-$use_sudo = true;
+$use_sudo = $_ENV['SHELL']['SUDO'] ?? true;
 
 const CONSOLE = true;
 

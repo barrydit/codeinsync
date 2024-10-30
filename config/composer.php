@@ -255,7 +255,7 @@ $composerHome = (stripos(PHP_OS, 'WIN') === 0) ? "C:/Users/$user/AppData/Roaming
 
 if (!realpath($composerHome)) {
   if (@!mkdir($composerHome, 0755, true))
-    $errors['COMPOSER_HOME'] = $composerHome . ' does not exist. Path: ' . $composerHome;
+    $errors['COMPOSER_HOME'] = "$composerHome does not exist. Path: $composerHome";
 } else define('COMPOSER_HOME', $composerHome);
 
 //dd($errors);

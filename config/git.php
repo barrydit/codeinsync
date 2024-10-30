@@ -7,6 +7,24 @@ if ($path = realpath((basename(__DIR__) != 'config' ? NULL : __DIR__ . DIRECTORY
   require_once $path;
 }
 
+$gitconfig = <<<END
+[user]
+    name = <Your Name>
+    email = <your.email@example.com>
+
+[core]
+    editor = vim
+    autocrlf = input
+
+[alias]
+    co = checkout
+    br = branch
+    ci = commit
+    st = status
+
+[color]
+    ui = auto
+END;
 
 if (!is_dir($dirname = (defined('APP_PATH') ? APP_PATH : dirname(__DIR__) . DIRECTORY_SEPARATOR) . '.ssh')) 
   (@!mkdir($dirname, 0755, true) ?: $errors['APP_BASE'][basename($dirname)] = "$dirname could not be created." );
