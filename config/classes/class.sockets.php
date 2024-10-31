@@ -289,8 +289,23 @@ END
         // Start a new process and store the PID
 
         $process = popen((defined('PHP_EXEC') ? PHP_EXEC : dirname(__DIR__) . DIRECTORY_SEPARATOR . 'bin/psexec.exe -d C:\xampp\php\php.exe -f ') . APP_PATH . 'server.php', "r");
-        (is_resource($process)) and
-          file_put_contents($pidFile, $pid = @proc_get_status($process)['pid']);
+        //(is_resource($process)) and file_put_contents($pidFile, $pid = @proc_get_status($process)['pid']); // Exception
+
+        try {
+            if (is_resource($process)) {
+                $status = @proc_get_status($process); // The '@' suppresses any warnings/errors
+                if ($status && $status['running']) {
+                    file_put_contents($pidFile, $status['pid']);
+                } else {
+                    throw new Exception("Process is not running or status could not be fetched.");
+                }
+            } else {
+                throw new Exception("Invalid process resource.");
+            }
+        } catch (Exception $e) {
+            error_log("Failed to retrieve process ID: " . $e->getMessage());
+            // Optionally handle the error or retry
+        }
     }
 
     public static function getInstance()
