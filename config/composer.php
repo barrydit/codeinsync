@@ -576,7 +576,6 @@ defined('COMPOSER_JSON') or define('COMPOSER_JSON', [
 ]);
 
 ob_start(); ?>
-
 <?= $composer_exec; ?> init --quiet --no-interaction --working-dir="<?= APP_PATH . APP_ROOT; ?>" --name="<?= $composerUser . '/' . str_replace('.', '_', basename(APP_ROOT) ?? $componetPkg); ?>" --description="General Description" --author="Barry Dick <barryd.it@gmail.com>" --type="project" --homepage="https://github.com/<?= $composerUser . '/' . str_replace('.', '_', basename(APP_ROOT) ?? $componetPkg); ?>" --require="php:^7.4||^8.0" --require="composer/composer:^1.0" --require-dev="pds/skeleton:^1.0" --stability="dev" --license="WTFPL"
 <?php
 defined('COMPOSER_INIT_PARAMS')
@@ -836,6 +835,7 @@ if (version_compare(COMPOSER_LATEST, COMPOSER_VERSION, '>') != 0) {
       }
     }
   } else {
+
     // Connect to the server
     $errors['server-1'] = "Connected to Server: " . SERVER_HOST . ':' . SERVER_PORT . "\n";
     
@@ -913,7 +913,7 @@ fclose($pipes[2]);
                 //strcmp("git.php", basename($package) !== 0);
                 if (!in_array(APP_PATH . APP_ROOT . APP_BASE['vendor'] . $package, array_filter(glob(APP_PATH . APP_ROOT . APP_BASE['vendor'] . dirname($package) . '/*'), 'is_dir')))
                   if ($oldpath = preg_grep('/^vendor\/' . preg_quote($package, '/') . '/i', glob(APP_PATH . APP_ROOT . APP_BASE['vendor'] . dirname($package) . '/*'))[0])
-                    rename($oldpath, APP_PATH . APP_ROOT . APP_BASE['vendor'] . $package) or $errors['COMPOSER-INSTALL'] = $package . ' has a vendor/package installed, but the letter case spelling did not pass.';
+                    rename($oldpath, APP_PATH . APP_ROOT . APP_BASE['vendor'] . $package) or $errors['COMPOSER-INSTALL'] = "$package has a vendor/package installed, but the letter case spelling did not pass.";
                 $repository = new stdClass();
                 $repository->type = 'path';
                 $repository->url = APP_BASE['vendor'] . $package;

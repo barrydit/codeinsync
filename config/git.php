@@ -78,7 +78,7 @@ function git_origin_sha_update() {
     $latest_remote_commit_url = 'https://api.github.com/repos/' . $_ENV['GITHUB']['USER'] . '/' . $_ENV['COMPOSER']['PACKAGE'] . '/git/refs/heads/main';
   }
 
-  $response = defined('APP_CONNECTED') && check_http_status($_ENV['GITHUB']['ORIGIN_URL']) === true && !check_http_status($latest_remote_commit_url, 404) ? file_get_contents($latest_remote_commit_url, false, $context) : '{}';
+  $response = defined('APP_IS_ONLINE') && check_http_status($_ENV['GITHUB']['ORIGIN_URL']) === true && !check_http_status($latest_remote_commit_url, 404) ? file_get_contents($latest_remote_commit_url, false, $context) : '{}';
   $errorDetails = error_get_last();
   if (isset($http_response_header) && strpos($http_response_header[0], '401') !== false) {
     $errors['git-unauthorized'] = "[git] You are not authorized. The token may have expired.\n";

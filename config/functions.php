@@ -634,11 +634,11 @@ function check_internet_connection($ip = '8.8.8.8') {
       exec(APP_SUDO . "/bin/ping -c 1 -W 1 " . escapeshellarg($ip), $output, $status); // var_dump(\$status)
 
   // If ping fails, try fsockopen as a fallback
-  if ($status !== 0 && defined('APP_CONNECTED')) {
+  if ($status !== 0 && defined('APP_IS_ONLINE')) {
 
     $connection = @fsockopen('www.google.com', 80, $errno, $errstr, 10);
     if (!$connection) {
-        $errors['APP_CONNECTIVITY'] = 'No internet connection.';
+        $errors['APP_NO_INTERNET_CONNECTION'] = 'No internet connection.';
     } else {
         fclose($connection);
     }
@@ -657,10 +657,11 @@ function check_internet_connection($ip = '8.8.8.8') {
  * @return bool True if the URL does not return the specified status, false otherwise.
  */
 function check_http_status($url = 'http://8.8.8.8', $statusCode = 200) {
-  if (defined('APP_CONNECTED')) {
+  if (defined('APP_IS_ONLINE')) {
     if ($url !== 'http://8.8.8.8' && !preg_match('/^https?:\/\//', $url))
       $url = "http://$url";
-    $headers = get_headers($url);
+    (!defined('APP_NO_INTERNET_CONNECTION'))
+      or $headers = get_headers($url);
     return !empty($headers) && strpos($headers[0], (string)$statusCode) === false;
   } else return false;
   return true; // Special case for the default URL or if not connected

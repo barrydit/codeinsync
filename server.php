@@ -374,7 +374,7 @@ function clientInputHandler($input) {
 
 /**/
     } elseif (preg_match('/^cmd:\s*app(\s*connected)?(?=\r?\n$)?/si', $input)) {
-      $output = var_export(APP_CONNECTED, true);
+      $output = var_export(APP_IS_ONLINE, true);
     } elseif (preg_match('/^cmd:\s*composer\s*(.*)(?=\r?\n$)?/si', $input, $matches)) {
       //$output = shell_exec($matches[1]);
 
@@ -772,18 +772,20 @@ try {
 
         //usleep(100000); // Delay in microseconds (100ms)
         // Send the length first so the client knows how much data to expect
-        if (!$client || socket_write($client, "$length\n") === false) {
-          dd('Failed to send message length', false);
-          throw new Exception('Failed to send message length');
-        }
+//        if (!$client || socket_write($client, "$length\n") === false) {
+//          dd('Failed to send message length', false);
+//          throw new Exception('Failed to send message length');
+//        }
 
         // Split and send the actual data
-        $data = str_split($jsonData, 1024);
-        foreach ($data as $chunk) {
-          if (socket_write($client, $chunk) === false) {
+        if ($data != '') {
+          $data = str_split($jsonData, 1024);
+          foreach ($data as $chunk) {
+            if (socket_write($client, $chunk) === false) {
               dd('Socket write failed', false);
               throw new Exception('Socket write failed');
 
+            }
           }
         }
 
@@ -852,7 +854,7 @@ try {
     //dd(get_resource_type($socket)); // var_export($socket, true) == Socket::__set_state(array( )) != resource
     //PHP7 >= (is_resource($socket) && get_resource_type($socket) === 'Socket')
 
-    if ($socket instanceof Socket) {
+    if ($socket instanceof Socket && $socket) {
       // Proceed with socket operations
       $client = @socket_accept($socket);
       if ($client === false) {

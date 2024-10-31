@@ -289,8 +289,8 @@ END
         // Start a new process and store the PID
 
         $process = popen((defined('PHP_EXEC') ? PHP_EXEC : dirname(__DIR__) . DIRECTORY_SEPARATOR . 'bin/psexec.exe -d C:\xampp\php\php.exe -f ') . APP_PATH . 'server.php', "r");
-        $pid = proc_get_status($process)['pid'];
-        file_put_contents($pidFile, $pid);
+        (is_resource($process)) and
+          file_put_contents($pidFile, $pid = proc_get_status($process)['pid']);
     }
 
     public static function getInstance()

@@ -1717,7 +1717,7 @@ is_dir(dirname($path)) or mkdir(dirname($path), 0755, true);
 $url = 'https://cdn.tailwindcss.com';
 
 // Check if the file exists and if it needs to be updated
-if (defined('APP_CONNECTED') && APP_CONNECTED)
+if (defined('APP_IS_ONLINE') && APP_IS_ONLINE)
   if (!is_file($path) || (time() - filemtime($path)) > 5 * 24 * 60 * 60) { // ceil(abs((strtotime(date('Y-m-d')) - strtotime(date('Y-m-d',strtotime('+5 days',filemtime($path . 'tailwindcss-3.3.5.js'))))) / 86400)) <= 0 
     // Download the file from the CDN
     $handle = curl_init($url);
@@ -1732,7 +1732,7 @@ if (defined('APP_CONNECTED') && APP_CONNECTED)
   }
 ?>
 
-  <script src="<?= !defined('APP_CONNECTED') || !APP_CONNECTED ? '':  (check_http_status($url) ? substr($url, strpos($url, parse_url($url)['host']) + strlen(parse_url($url)['host'])) : substr($path, strpos($path, dirname(APP_BASE['resources'] . 'js')))) ?>"></script>     
+  <script src="<?= !defined('APP_IS_ONLINE') || !APP_IS_ONLINE ? '':  (check_http_status($url) ? substr($url, strpos($url, parse_url($url)['host']) + strlen(parse_url($url)['host'])) : substr($path, strpos($path, dirname(APP_BASE['resources'] . 'js')))) ?>"></script>     
 
 <style type="text/tailwindcss">
 <?= $app[$console]['style']; ?>
