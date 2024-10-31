@@ -313,6 +313,15 @@ END
     //(APP_SELF !== APP_PATH_SERVER) and $socketInstance = Sockets::getInstance();
     //$socketInstance->handleClientRequest("composer self-update\n");
     // Resolve host to IP and check internet connection
+
+    $ip = resolve_host_to_ip('google.com');
+    if (check_internet_connection($ip)) {
+      define('APP_IS_ONLINE', true);
+    } else {
+      define('APP_NO_INTERNET_CONNECTION', "Not connected to the internet."); // APP_CONNECTIVITY
+    }
+
+/*
     if (isset($_SERVER['SOCKET']) && is_resource($_SERVER['SOCKET']) && !empty($_SERVER['SOCKET']) && $_SERVER['REQUEST_METHOD'] != 'POST') {
       $errors['server-1'] = "Connected to Server: " . SERVER_HOST . ':' . SERVER_PORT . "\n";
   
@@ -334,28 +343,28 @@ END
       if (!empty($response))
         switch ((bool) $response) {
           case true:
-            define('APP_CONNECTED', true);
-            define('APP_CONNECTIVITY', "Network is connected to the Internet, via Server.");
+            define('APP_IS_ONLINE', true);
+            define('APP_NO_INTERNET_CONNECTION', "Network is connected to the Internet, via Server.");
             break;
           default:
-            define('APP_CONNECTIVITY', "Not connected to the internet.");
+            define('APP_NO_INTERNET_CONNECTION', "Not connected to the internet.");
             break;
         }
     } elseif (!isset($_SERVER['SOCKET']) || !$_SERVER['SOCKET']) {
       $ip = resolve_host_to_ip('google.com');
       if (check_internet_connection($ip)) {
-        define('APP_CONNECTED', true);
+        define('APP_IS_ONLINE', true);
       } else {
-        define('APP_CONNECTIVITY', "Not connected to the internet.");
+        define('APP_NO_INTERNET_CONNECTION', "Not connected to the internet.");
       }
     } else {
       $ip = resolve_host_to_ip('google.com');
-      define('APP_CONNECTIVITY', "Failed to resolve host to IP=$ip");
+      define('APP_NO_INTERNET_CONNECTION', "Failed to resolve host to IP=$ip");
     }
-  
+  */
     // Set connectivity error if not connected
-    defined('APP_CONNECTIVITY') and
-      !defined('APP_CONNECTED') and $errors['APP_CONNECTIVITY'] = 'APP Connect(ed): ' . var_export(APP_CONNECTIVITY, true) . "\n"; // print('Connectivity: ' . APP_CONNECTIVITY . "\n");
+    defined('APP_NO_INTERNET_CONNECTION') and
+      !defined('APP_IS_ONLINE') and $errors['APP_NO_INTERNET_CONNECTION'] = 'APP Connect(ed): ' . var_export(APP_NO_INTERNET_CONNECTION, true) . "\n"; // print('Connectivity: ' . APP_NO_INTERNET_CONNECTION . "\n");
 
     break;
 }

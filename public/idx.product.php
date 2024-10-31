@@ -14,6 +14,8 @@ if (!headers_sent()) {
   header("Pragma: no-cache");
 }
 
+// dd(get_defined_constants(true)['user']);
+
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -1277,6 +1279,11 @@ function makeDraggable(windowId) {
             document.getElementById('iWindow').src = uri_location;
         }
         $(document).ready(function(){
+
+          <?= (!defined('APP_NO_INTERNET_CONNECTION'))?: 'alert(\'The internet is not connected.\');' ?>
+
+
+
         $( "#app_console-container").css('display', 'none');
 
         <?php if (isset($_GET['path'])) { ?>

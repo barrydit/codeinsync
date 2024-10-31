@@ -188,8 +188,8 @@ END
 );
 
       if (isset($_POST['composer']['install'])) {
-        exec((stripos(PHP_OS, 'WIN') === 0 ? '' : 'sudo ') . 'composer require ' . $_POST['composer']['package'], $output, $returnCode) or $errors['COMPOSER-REQUIRE'] = $output;
-        exec((stripos(PHP_OS, 'WIN') === 0 ? '' : 'sudo ') . 'composer update ' . $_POST['composer']['package'], $output, $returnCode) or $errors['COMPOSER-UPDATE'] = $output;
+        exec((stripos(PHP_OS, 'WIN') === 0 ? '' : APP_SUDO) . 'composer require ' . $_POST['composer']['package'], $output, $returnCode) or $errors['COMPOSER-REQUIRE'] = $output;
+        exec((stripos(PHP_OS, 'WIN') === 0 ? '' : APP_SUDO) . 'composer update ' . $_POST['composer']['package'], $output, $returnCode) or $errors['COMPOSER-UPDATE'] = $output;
       }
 
       exit(header('Location: ' . APP_URL_BASE . '?' . http_build_query(APP_QUERY))); // , '', '&amp;'
