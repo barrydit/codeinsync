@@ -11,7 +11,7 @@ switch (__FILE__) {
   default:
 }
 
-if (is_file($path = APP_PATH . APP_BASE['config'] . 'git.php') ? $path : '' )
+if ($path = realpath(APP_PATH . APP_BASE['config'] . 'git.php'))
   require_once $path; 
 else die(var_dump("$path path was not found. file=git.php"));
 
@@ -86,9 +86,7 @@ $repo->push('origin', 'master');
 <?php ob_start(); ?>
 <HTML ...>
 <?php $app['css'] = ob_get_contents();
-ob_end_clean(); ?>
-*/ 
-
+ob_end_clean(); ?> */ 
 ob_start(); ?>
 
 #app_git-container {
@@ -213,13 +211,13 @@ ob_start();
         <!--<h3>Main Menu</h3> <h4>Update - Edit Config - Initalize - Install</h4> -->
         <div style="position: absolute; right: 10px; float: right; z-index: 1;">
           <div class="text-sm" style="display: inline-block; margin: 0 auto;">
-            <form class="app_git-push" action="<?= APP_URL . '?' . http_build_query(APP_QUERY + array( 'app' => 'git')) . (defined('APP_ENV') && in_array(APP_ENV, ['development', 'production']) ? '#!' : '') /* $c_or_p . '=' . (empty($_GET[$c_or_p]) ? '' : $$c_or_p->name) . '&amp;app=git' */ ?>" method="POST">
+            <form class="app_git-push" action="<?= APP_URL . '?' . http_build_query(APP_QUERY + ['app' => 'git']) . (defined('APP_ENV') && in_array(APP_ENV, ['development', 'production']) ? '#!' : '') /* $c_or_p . '=' . (empty($_GET[$c_or_p]) ? '' : $$c_or_p->name) . '&amp;app=git' */ ?>" method="POST">
               <!-- <input type="hidden"  /> -->
               <button type="submit" name="cmd" value="push"><img src="resources/images/green_arrow.fw.png" width="20" height="25" style="cursor: pointer; margin-left: 6px;" /><br />Push</button>
             </form>
           </div>
           <div class="text-sm" style="display: inline-block; margin: 0 auto;">
-            <form class="app_git-pull" action="<?= APP_URL . '?' . http_build_query(APP_QUERY + array( 'app' => 'git')) . (defined('APP_ENV') && in_array(APP_ENV, ['development', 'production']) ? '#!' : '') /* $c_or_p . '=' . (empty($_GET[$c_or_p]) ? '' : $$c_or_p->name) . '&amp;app=git' */ ?>" method="POST">
+            <form class="app_git-pull" action="<?= APP_URL . '?' . http_build_query(APP_QUERY + ['app' => 'git']) . (defined('APP_ENV') && in_array(APP_ENV, ['development', 'production']) ? '#!' : '') /* $c_or_p . '=' . (empty($_GET[$c_or_p]) ? '' : $$c_or_p->name) . '&amp;app=git' */ ?>" method="POST">
               <!-- <input type="hidden"  /> -->
               <button type="submit" name="cmd" value="pull"><img src="resources/images/red_arrow.fw.png" width="20" height="25" style="cursor: pointer; margin-left: 4px;" /><br />Pull</button>
             </form>
@@ -292,7 +290,7 @@ ob_start();
       </div>
 
       <div id="app_git-frameInit" class="app_git-frame-container absolute" style="overflow: hidden; height: 270px;">
-    <form autocomplete="off" spellcheck="false" action="?<?=http_build_query(APP_QUERY + array( 'app' => 'git')) . (defined('APP_ENV') && APP_ENV == 'development' ? '#!' : '') /* $c_or_p . '=' . (empty($_GET[$c_or_p]) ? '' : $$c_or_p->name) . '&amp;app=git' */ ?>" method="POST">
+    <form autocomplete="off" spellcheck="false" action="?<?=http_build_query(APP_QUERY + ['app' => 'git']) . (defined('APP_ENV') && APP_ENV == 'development' ? '#!' : '') /* $c_or_p . '=' . (empty($_GET[$c_or_p]) ? '' : $$c_or_p->name) . '&amp;app=git' */ ?>" method="POST">
       <div style="position: absolute; right: 0; float: right; text-align: center;">
         <input id="gitInitSubmit" class="btn" type="submit" value="Init/Run" />
       </div> 
@@ -391,7 +389,7 @@ ob_start();
 
 
       <div id="app_git-frameCommit" class="app_git-frame-container absolute" style="overflow: hidden; height: 270px;">
-    <form autocomplete="off" spellcheck="false" action="?<?=http_build_query(APP_QUERY + array( 'app' => 'git')) . (defined('APP_ENV') && APP_ENV == 'development' ? '#!' : '') /* $c_or_p . '=' . (empty($_GET[$c_or_p]) ? '' : $$c_or_p->name) . '&amp;app=git' */ ?>" method="POST">
+    <form autocomplete="off" spellcheck="false" action="?<?=http_build_query(APP_QUERY + ['app' => 'git']) . (defined('APP_ENV') && APP_ENV == 'development' ? '#!' : '') /* $c_or_p . '=' . (empty($_GET[$c_or_p]) ? '' : $$c_or_p->name) . '&amp;app=git' */ ?>" method="POST">
       <div style="display: inline-block; width: 100%; margin: -10px 0 10px 0; background-color: rgb(225,196,151,.75);">
         <div class="text-sm" style="display: inline;">
           <label id="gitStatusLabel" for="gitStatus" style="background-color: hsl(343, 100%, 42%); color: white;">&#9650; <code>Stage / Commit</code></label>
@@ -408,7 +406,7 @@ ob_start();
       </div>
 
       <div id="app_git-frameUpdate" class="app_git-frame-container absolute" style="overflow: hidden; height: 270px;">
-    <form autocomplete="off" spellcheck="false" action="?<?= http_build_query(APP_QUERY + array('app' => 'git')) . (defined('APP_ENV') && APP_ENV == 'development' ? '#!' : '') /* $c_or_p . '=' . (empty($_GET[$c_or_p]) ? '' : $$c_or_p->name) . '&amp;app=git' */ ?>" method="POST">
+    <form autocomplete="off" spellcheck="false" action="?<?= http_build_query(APP_QUERY + ['app' => 'git']) . (defined('APP_ENV') && APP_ENV == 'development' ? '#!' : '') /* $c_or_p . '=' . (empty($_GET[$c_or_p]) ? '' : $$c_or_p->name) . '&amp;app=git' */ ?>" method="POST">
       <div style="display: inline-block; width: 100%; margin: -10px 0 10px 0; background-color: rgb(225,196,151,.75);">
         <div class="text-sm" style="display: inline;">
           <label id="gitStatusLabel" for="gitStatus" style="background-color:hsl(89, 100%, 42%); color: white;">&#9650; <code>Update</code></label>

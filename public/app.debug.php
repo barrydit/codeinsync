@@ -291,7 +291,7 @@ HTML;
 /*
 if (basename($_SERVER['PHP_SELF']) == basename(__FILE__)) { // ($_SERVER["SCRIPT_NAME"] != APP_ROOT_URL . 'index.php') 
   require_once dirname(__DIR__, 1) . '/config/session.php';
-  header('Location: ' . APP_URL_BASE . '?' . http_build_query( array( 'file' => 'debug' ) ));
+  header('Location: ' . APP_URL_BASE . '?' . http_build_query(['file' => 'debug']));
   exit();
 }
 */

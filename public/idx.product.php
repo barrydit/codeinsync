@@ -2,11 +2,13 @@
 
 //dd(get_defined_constants(true)['user']); dd(get_included_files());
 
-if (__FILE__ == get_required_files()[0] && __FILE__ == realpath($_SERVER["SCRIPT_FILENAME"]))
+//if (__FILE__ == get_required_files()[0] && __FILE__ == realpath($_SERVER["SCRIPT_FILENAME"]))
+if (dirname(get_required_files()[0]) == getcwd()) {
   if ($path = basename(dirname(get_required_files()[0])) == 'public') { // (basename(getcwd())
-    if (is_file($path = realpath('config.php'))) require_once $path;
-  } else die(var_dump("Path was not found. file=$path"));
-
+    if (is_file($path = realpath('config/config.php'))) require_once $path;
+    else die(var_dump("Path was not found. file=$path"));
+  }
+}
 if (!headers_sent()) {
   header("Content-Type: text/html");
   header("Cache-Control: no-store, no-cache, must-revalidate, max-age=0");
@@ -329,7 +331,7 @@ unset($path);
       </div>
     </div>
 
-      
+
       <div style="position: absolute; top: 40px; left: -15px; z-index: 1; background-color: white; border: <?= defined('APP_ROOT') && APP_ROOT != '' || isset($_GET['path']) ? '2px dashed red' : '1px solid #000'; ?>;">
         <div style="display: inline; margin-top: -7px; float: left; "><a style="font-size: 18pt; font-weight: bold; padding: 0 3px;" href="<?= isset($_GET['path']) ? '/' : '/?path' ?>" onclick="<?= isset($_GET['path']) ? '' : 'handleClick(event, \'/\')' ?>">&#8962; </a></div>
         <?php $path = realpath(APP_ROOT . (isset($_GET['path']) ? DIRECTORY_SEPARATOR . $_GET['path'] : '')) . DIRECTORY_SEPARATOR; // getcwd()
@@ -337,7 +339,7 @@ unset($path);
         <!-- <input type="hidden" name="path" value="<?= $_GET['path']; ?>" /> -->
         <?php } ?>
         <?= 
-          //APP_URL_BASE . /*basename(__FILE__) .*/ '?' . http_build_query(APP_QUERY /*+ array( 'app' => 'ace_editor')*/) . (defined('APP_ENV') && APP_ENV == 'development' ? '#!' : '') 
+          //APP_URL_BASE . /*basename(__FILE__) .*/ '?' . http_build_query(APP_QUERY /*+ ['app' => 'ace_editor']*/) . (defined('APP_ENV') && APP_ENV == 'development' ? '#!' : '') 
           
           /* $c_or_p . '=' . (empty($_GET[$c_or_p]) ? '' : $$c_or_p->name) . '&amp;app=composer' */ NULL; ?>
         <?= "          <button id=\"displayDirectoryBtn\" style=\"margin: 2px 5px 0 0;\" type=\"\">&nbsp;&#9660;</button> \n"; ?>
@@ -345,10 +347,10 @@ unset($path);
           $main_cat = '        <form style="display: inline;" autocomplete="off" spellcheck="false" action="" method="GET">/'  . "\n"
           . '            <select name="category" onchange="this.form.submit();">' . "\n"
           
-          . '              <option value="" ' . (empty(APP_QUERY) ? 'selected' : '') . '>' . basename(parse_url(($_SERVER['REQUEST_URI'] ?? ''), PHP_URL_PATH)) . '</option>' . "\n"
+          . '              <option value="" ' . (empty(APP_QUERY) ? 'selected' : '') . '>' . basename(parse_url($_SERVER['REQUEST_URI'] ?? '', PHP_URL_PATH)) . '</option>' . "\n"
           . '              <option value="application" ' . (isset($_GET['application']) ? 'selected' : '') . ' ' . (realpath(APP_PATH . /*'../../'.*/ 'applications/') ? '' : 'disabled') . '>applications</option>' . "\n"
           . '              <option value="client" ' . (isset($_GET['client']) ? 'selected' : '') . '>clientele</option>' . "\n"
-          . '              <option value="projects" ' . (isset($_GET['project']) && $_GET['project'] || preg_match('/(?:^|&)project(?:[^&]*=)/', ($_SERVER['QUERY_STRING'] ?? '')) ? 'selected' : '') . '>projects</option>' . "\n"
+          . '              <option value="projects" ' . (isset($_GET['project']) && $_GET['project'] || preg_match('/(?:^|&)project(?:[^&]*=)/', $_SERVER['QUERY_STRING'] ?? '') ? 'selected' : '') . '>projects</option>' . "\n"
           . '              <option value="node_module" ' . (isset($_GET['node_module']) && !$_GET['node_module'] && preg_match('/(?:^|&)node_module(?![^&]*=)/', $_SERVER['QUERY_STRING']) ? 'selected' : '') . '>./node_modules</option>' . "\n"
           . '              <option value="resources" ' . (isset($_GET['path']) && $_GET['path'] == 'resources' ? 'selected' : '') . '>./resources</option>' . "\n"
           . '              <option value="project" ' . (isset($_GET['project']) && !$_GET['project'] && preg_match('/(?:^|&)project(?![^&]*=)/', $_SERVER['QUERY_STRING']) ? 'selected' : '') . '>./project</option>' . "\n"
@@ -397,7 +399,7 @@ unset($path);
           $dirs = array_filter(glob(dirname(__DIR__) . /*'../../'.*/ '/clientele/' . $_GET['client'] . '/*'), 'is_dir'); ?><form style="display: inline;" autocomplete="off" spellcheck="false" action="" method="GET"><?= isset($_GET['client']) && !$_GET['client'] ? '' : '<input type="hidden" name="client" value="' . $_GET['client'] . '" / >' ?><select id="domain" name="domain" onchange="this.form.submit();">
             <option value="" <?= (isset($_GET['domain']) && $_GET['domain'] == '' ? 'selected' : '') ?>>---</option>
             <?php foreach ($dirs as $dir) { ?>
-            <option <?= (isset($_GET['domain']) && $_GET['domain'] == basename($dir) ? 'selected' : '') ?>><?= basename($dir); ?></option>
+            <option <?= isset($_GET['domain']) && $_GET['domain'] == basename($dir) ? 'selected' : '' ?>><?= basename($dir); ?></option>
             <?php } ?>
           </select> / <a href="#" onclick="document.getElementById('info').style.display = 'block';">+</a></form>
           <?php } ?>

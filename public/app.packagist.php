@@ -42,8 +42,8 @@ $output[] = 'Composer: ' . (!isset($stdout) ? NULL : $stdout . (!isset($stderr) 
 $output[] = $_POST['cmd'];
 
         } else if (preg_match('/^git(:?(.*))/i', $_POST['cmd'], $match)) {
-        $output[] = 'sudo ' . GIT_EXEC . ' ' . $match[1];
-$proc=proc_open('sudo ' . GIT_EXEC . ' ' . $match[1],
+        $output[] = APP_SUDO . GIT_EXEC . ' ' . $match[1];
+$proc=proc_open(APP_SUDO . GIT_EXEC . ' ' . $match[1],
   array(
     array("pipe","r"),
     array("pipe","w"),

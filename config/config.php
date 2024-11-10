@@ -1,9 +1,27 @@
 <?php
 declare(strict_types=1); // First Line Only!
 
+require_once 'functions.php'; 
+
 date_default_timezone_set('America/Vancouver');
 
 $errors = []; // (object)
+
+// Directory of this script
+$isFile = function ($path) use (&$paths) {
+  if (is_file($path)) {
+    require_once $path; // $paths[] = $path;
+  }
+};
+
+$isFile(__DIR__ . DIRECTORY_SEPARATOR . 'php.php') ?: 
+$isFile('config/php.php') ?: 
+$isFile('php.php');
+
+// Check if the dd function exists
+if (!function_exists('dd')) {
+  $errors['FUNCTIONS'] = 'functions.php failed to load. Therefore function dd() does not exist (yet).';
+}
 
 // Custom error handler
 /**
@@ -14,7 +32,7 @@ $errors = []; // (object)
  * @param mixed $errline
  * @return bool
  */
-function customErrorHandler($errno, $errstr, $errfile, $errline) {
+/*function customErrorHandler($errno, $errstr, $errfile, $errline) {
   global $errors;
   !defined('APP_ERROR') and define('APP_ERROR', true); // $hasErrors = true;
   !defined('APP_DEBUG') and define('APP_DEBUG', APP_ERROR);
@@ -47,7 +65,7 @@ function customErrorHandler($errno, $errstr, $errfile, $errline) {
 }
 // Set the custom error handler
 set_error_handler("customErrorHandler");
-
+*/
 // Enable debugging and error handling based on APP_DEBUG and APP_ERROR constants
 !defined('APP_ERROR') and define('APP_ERROR', false);
 !defined('APP_DEBUG') and define('APP_DEBUG', isset($_GET['debug']) ? TRUE : FALSE);
@@ -100,22 +118,6 @@ if (count(get_included_files()) == ((version_compare(PHP_VERSION, '5.0.0', '>=')
   exit('Direct access is not allowed.');
 endif;
 
-// Directory of this script
-$isFile = function ($path) use (&$paths) {
-  if (is_file($path)) {
-    require_once $path; // $paths[] = $path;
-  }
-};
-
-$isFile(__DIR__ . DIRECTORY_SEPARATOR . 'functions.php') ?: 
-$isFile('config/functions.php') ?: 
-$isFile('functions.php');
-
-// Check if the dd function exists
-if (!function_exists('dd')) {
-  $errors['FUNCTIONS'] = 'functions.php failed to load. Therefore function dd() does not exist (yet).';
-}
-
 $envPath = APP_PATH . '.env';
 
 $_ENV = (function() use ($envPath) {
@@ -142,10 +144,10 @@ while ($path = array_shift($paths)) {
 }
 */
 
-if (isset($_ENV['SHELL']['EXPR_DOMAIN']) && $_ENV['SHELL']['EXPR_DOMAIN'] != '' && !defined('DOMAIN_EXPR'))
-  define('DOMAIN_EXPR', $_ENV['SHELL']['EXPR_DOMAIN']); // const DOMAIN_EXPR = 'string only/non-block/ternary';
-elseif (!defined('DOMAIN_EXPR'))
-  define('DOMAIN_EXPR', '/(?:[a-z]+\:\/\/)?(?:[a-z0-9\-]+\.)+[a-z]{2,6}(?:\/\S*)?/i'); // /(?:\.(?:([-a-z0-9]+){1,}?)?)?\.[a-z]{2,6}$/';
+if (!defined('DOMAIN_EXPR')) {
+  // const DOMAIN_EXPR = 'string only/non-block/ternary';
+  define('DOMAIN_EXPR', $_ENV['SHELL']['EXPR_DOMAIN'] ?? '/(?:[a-z]+\:\/\/)?(?:[a-z0-9\-]+\.)+[a-z]{2,6}(?:\/\S*)?/i'); // /(?:\.(?:([-a-z0-9]+){1,}?)?)?\.[a-z]{2,6}$/';
+}
 
 // const DOMAIN_EXPR = 'string only/non-block/ternary';
 // /(?:\.(?:([-a-z0-9]+){1,}?)?)?\.[a-z]{2,6}$/';
@@ -166,6 +168,8 @@ elseif (!defined('DOMAIN_EXPR'))
 
 // Load the required files
 //$paths[] = __DIR__ . DIRECTORY_SEPARATOR . 'constants.php'; //require('constants.php'); 
+
+$path = null;
 
 if (!empty($_GET['client']) || !empty($_GET['domain'])) {
   $path = /*'../../'.*/ 'clientele' . DIRECTORY_SEPARATOR . ($_GET['client'] ?? '') . DIRECTORY_SEPARATOR;
@@ -206,8 +210,8 @@ if (!empty($_GET['client']) || !empty($_GET['domain'])) {
   if (is_dir(APP_PATH . $path)) {
     defined('APP_CLIENT') ?: define('APP_CLIENT', new clientOrProj($path));
   }
-} else if (!empty($_GET['project']) && is_dir(APP_PATH . 'projects/' . $_GET['project'])) {
-  $path = /*'../../'.*/ 'projects/' . $_GET['project'] . '/';
+} else if (!empty($_GET['project']) && is_dir(APP_PATH . $path)) {
+  $path = /*'../../'.*/ 'projects' . DIRECTORY_SEPARATOR . $_GET['project'] . DIRECTORY_SEPARATOR;
   //$dirs = array_filter(glob(dirname(__DIR__) . '/' . $path . '*'), 'is_dir');
 /*
   if (count($dirs) == 1) {
@@ -223,6 +227,16 @@ if (!empty($_GET['client']) || !empty($_GET['domain'])) {
     }
   }*/
 }
+
+//!defined('APP_ROOT')) ?: define('APP_ROOT', !empty(realpath(APP_PATH . APP_ROOT)) ? (string) APP_ROOT . DIRECTORY_SEPARATOR : '');
+
+if (!defined('APP_ROOT')) {
+  $errors['APP_ROOT'] = 'APP_ROOT was NOT defined.';
+  define('APP_ROOT', (!$path || !is_dir($path)) ? '' : $path);
+}
+
+//dd($_GET);
+
 unset($dirs);
 
 /*
@@ -270,7 +284,7 @@ if (!is_file($file = APP_PATH . 'projects/index.php')) {
     }
   }
   unset($source_file);
-} elseif (is_file(APP_PATH . 'projects/index.php') && isset($_GET['project']) && $_GET['project'] == 'show') {
+} elseif (is_file(APP_PATH . 'projects' . DIRECTORY_SEPARATOR . 'index.php') && isset($_GET['project']) && $_GET['project'] == 'show') {
   Shutdown::setEnabled(false)->setShutdownMessage(function() {
     return eval('?>' . file_get_contents(APP_PATH . 'projects/index.php'));
   })->shutdown();
@@ -306,6 +320,7 @@ if (basename($dir = getcwd()) != 'config') {
   if (in_array(basename($dir), ['public', 'public_html']))
     chdir('../');
 
+  require_once 'bootstrap.php';
 
   chdir(APP_PATH . APP_ROOT);
   if (is_file($file = APP_PATH . APP_ROOT . '.env')) {
@@ -332,8 +347,8 @@ if (basename($dir = getcwd()) != 'config') {
 } elseif (basename(dirname(APP_SELF)) == 'public_html') { // basename(__DIR__) == 'public_html'
   $errors['APP_PATH_PUBLIC'] = "The `public_html` scenario was detected.\n";
   
-  if (is_dir(dirname(APP_SELF, 2) . '/config')) {
-    $errors['APP_PATH_PUBLIC'] .= "\t" . dirname(APP_SELF, 2) . '/config/*' . ' was found. This is not generally safe-scenario.'; 
+  if (is_dir(dirname(APP_SELF, 2) . DIRECTORY_SEPARATOR. 'config')) {
+    $errors['APP_PATH_PUBLIC'] .= "\t" . dirname(APP_SELF, 2) . DIRECTORY_SEPARATOR . 'config' . DIRECTORY_SEPARATOR . '*' . ' was found. This is not generally safe-scenario.'; 
   }
 
   chdir(dirname(__DIR__, 1));  //dd(getcwd());
@@ -583,13 +598,13 @@ if (is_array($errors) && !empty($errors)) { ?>
   die();
 } */
 
-use vlucas\phpdotenv;
+//use vlucas\phpdotenv;
 
 if (class_exists('Dotenv')) {
   $dotenv = Dotenv\Dotenv::createImmutable(dirname(__DIR__, 1));
   $dotenv->safeLoad();
 }
-//dd($_ENV);
+//dd($_ENV));
 
 // $dotenv->load();
 
@@ -600,6 +615,5 @@ $dotenv->safeLoad();
 */
 define('APP_ERRORS', $errors ?? (($error = ob_get_contents()) == null ? null : "ob_get_contents() maybe populated/defined/errors... error=$error" ));
 ob_end_clean();
-
 
 //(defined('APP_DEBUG') && APP_DEBUG) and $errors['APP_DEBUG'] = (bool) var_export(APP_DEBUG, APP_DEBUG); // print('Debug (Mode): ' . var_export(APP_DEBUG, true) . "\n");

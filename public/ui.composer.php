@@ -152,9 +152,9 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     if (!is_dir($path = APP_PATH . 'project'))
       (@!mkdir($path, 0755, true) ?: $errors['COMPOSER-PROJECT'] = 'project/ could not be created.' );
     if ($matches[1] == 'laravel' && $matches[2] == 'laravel')  
-      exec((stripos(PHP_OS, 'WIN') === 0 ? '' : 'sudo ') . 'composer create-project ' . $_POST['composer']['package'] . ' project/laravel', $output, $returnCode) or $errors['COMPOSER-PROJECT-LARAVEL'] = $output;
+      exec((stripos(PHP_OS, 'WIN') === 0 ? '' : APP_SUDO) . 'composer create-project ' . $_POST['composer']['package'] . ' project/laravel', $output, $returnCode) or $errors['COMPOSER-PROJECT-LARAVEL'] = $output;
     elseif ($matches[1] == 'symfony' && $matches[2] == 'skeleton')  
-      exec((stripos(PHP_OS, 'WIN') === 0 ? '' : 'sudo ') . 'composer create-project ' . $_POST['composer']['package'] . ' project/symfony', $output, $returnCode) or $errors['COMPOSER-PROJECT-SYMFONY'] = $output;
+      exec((stripos(PHP_OS, 'WIN') === 0 ? '' : APP_SUDO) . 'composer create-project ' . $_POST['composer']['package'] . ' project/symfony', $output, $returnCode) or $errors['COMPOSER-PROJECT-SYMFONY'] = $output;
 
     unset($_POST['composer']['package']);
     unset($_POST['composer']['create-project']);
@@ -283,7 +283,7 @@ END
   }
 
   if (isset($_POST['composer']['init']) && !empty($_POST['composer']['init'])) {
-    $proc = proc_open('env COMPOSER_ALLOW_SUPERUSER=' . COMPOSER_ALLOW_SUPERUSER . '; ' . (stripos(PHP_OS, 'WIN') === 0 ? '' : 'sudo ')  . str_replace(array("\r\n", "\r", "\n"), ' ', $_POST['composer']['init']) . '; ' . (stripos(PHP_OS, 'WIN') === 0 ? '' : 'sudo ') . COMPOSER_EXEC['bin'] . ' update;', array( array("pipe","r"), array("pipe","w"), array("pipe","w")), $pipes);
+    $proc = proc_open('env COMPOSER_ALLOW_SUPERUSER=' . COMPOSER_ALLOW_SUPERUSER . '; ' . (stripos(PHP_OS, 'WIN') === 0 ? '' : APP_SUDO)  . str_replace(array("\r\n", "\r", "\n"), ' ', $_POST['composer']['init']) . '; ' . (stripos(PHP_OS, 'WIN') === 0 ? '' : APP_SUDO) . COMPOSER_EXEC['bin'] . ' update;', [["pipe", "r"], ["pipe", "w"], ["pipe", "w"]], $pipes);
 
     [$stdout, $stderr, $exitCode] = [stream_get_contents($pipes[1]), stream_get_contents($pipes[2]), proc_close($proc)];
 
@@ -294,7 +294,7 @@ END
 
       //dd($errors);
   }
-    //dd('env COMPOSER_ALLOW_SUPERUSER=' . COMPOSER_ALLOW_SUPERUSER . '; ' . (stripos(PHP_OS, 'WIN') === 0 ? '' : 'sudo ') . COMPOSER_EXEC . ' install ' . (isset($_POST['composer']['config']) ? '-o' : (isset($_POST['composer']['optimize-classes']) ? '-o': '')) . ';');
+    //dd('env COMPOSER_ALLOW_SUPERUSER=' . COMPOSER_ALLOW_SUPERUSER . '; ' . (stripos(PHP_OS, 'WIN') === 0 ? '' : APP_SUDO) . COMPOSER_EXEC . ' install ' . (isset($_POST['composer']['config']) ? '-o' : (isset($_POST['composer']['optimize-classes']) ? '-o': '')) . ';');
     
   isset($_POST['composer']['lock'])
     and unlink(APP_PATH . 'composer.lock');
@@ -303,7 +303,7 @@ END
     
   if (isset($_POST['composer']['install'])) {
 
-    $proc = proc_open('env COMPOSER_ALLOW_SUPERUSER=' . COMPOSER_ALLOW_SUPERUSER . '; ' . (stripos(PHP_OS, 'WIN') === 0 ? '' : 'sudo ') . COMPOSER_EXEC['bin'] . ' install ' . (isset($_POST['composer']['config']) ? '-o' : (isset($_POST['composer']['optimize-classes']) ? '-o': '')) . ';', array( array("pipe","r"), array("pipe","w"), array("pipe","w")), $pipes);
+    $proc = proc_open('env COMPOSER_ALLOW_SUPERUSER=' . COMPOSER_ALLOW_SUPERUSER . '; ' . (stripos(PHP_OS, 'WIN') === 0 ? '' : APP_SUDO) . COMPOSER_EXEC['bin'] . ' install ' . (isset($_POST['composer']['config']) ? '-o' : (isset($_POST['composer']['optimize-classes']) ? '-o': '')) . ';', [["pipe", "r"], ["pipe", "w"], ["pipe", "w"]], $pipes);
 
     [$stdout, $stderr, $exitCode] = [stream_get_contents($pipes[1]), stream_get_contents($pipes[2]), proc_close($proc)];
 
@@ -331,7 +331,7 @@ update [--with WITH] [--prefer-source] [--prefer-dist] [--prefer-install PREFER-
       exec('php composer-setup.php');
     }
       // If this process isn't working, its because you have an invalid composer.json file
-    $proc = proc_open('env COMPOSER_ALLOW_SUPERUSER=' . COMPOSER_ALLOW_SUPERUSER . '; ' . (stripos(PHP_OS, 'WIN') === 0 ? '' : 'sudo ') . COMPOSER_EXEC['bin'] . ' update'  , array( array("pipe","r"), array("pipe","w"), array("pipe","w")), $pipes);
+    $proc = proc_open('env COMPOSER_ALLOW_SUPERUSER=' . COMPOSER_ALLOW_SUPERUSER . '; ' . (stripos(PHP_OS, 'WIN') === 0 ? '' : APP_SUDO) . COMPOSER_EXEC['bin'] . ' update'  , [["pipe", "r"], ["pipe", "w"], ["pipe", "w"]], $pipes);
 
     [$stdout, $stderr, $exitCode] = [stream_get_contents($pipes[1]), stream_get_contents($pipes[2]), proc_close($proc)];
 
@@ -342,7 +342,7 @@ update [--with WITH] [--prefer-source] [--prefer-dist] [--prefer-install PREFER-
 
     if (defined('COMPOSER_VERSION') && defined('COMPOSER_LATEST'))
       if (version_compare(COMPOSER_LATEST, COMPOSER_VERSION, '>') != 0) {
-        $proc = proc_open('env COMPOSER_ALLOW_SUPERUSER=' . COMPOSER_ALLOW_SUPERUSER . '; ' . (stripos(PHP_OS, 'WIN') === 0 ? '' : 'sudo ') . COMPOSER_EXEC['bin'] . ' self-update;', array( array("pipe","r"), array("pipe","w"), array("pipe","w")), $pipes);
+        $proc = proc_open('env COMPOSER_ALLOW_SUPERUSER=' . COMPOSER_ALLOW_SUPERUSER . '; ' . (stripos(PHP_OS, 'WIN') === 0 ? '' : APP_SUDO) . COMPOSER_EXEC['bin'] . ' self-update;', [["pipe", "r"], ["pipe", "w"], ["pipe", "w"]], $pipes);
 
         [$stdout, $stderr, $exitCode] = [stream_get_contents($pipes[1]), stream_get_contents($pipes[2]), proc_close($proc)];
     
@@ -485,7 +485,7 @@ ob_start(); ?>
     <span style="background-color: #B0B0B0; color: white;">Composer <?= (version_compare(COMPOSER_LATEST, COMPOSER_VERSION, '>') != 0 ? 'v'.substr(COMPOSER_LATEST, 0, similar_text(COMPOSER_LATEST, COMPOSER_VERSION)) . '<span class="update" style="color: green; cursor: pointer;">' . substr(COMPOSER_LATEST, similar_text(COMPOSER_LATEST, COMPOSER_VERSION)) . '</span>' : 'v'.COMPOSER_VERSION ); ?> </span>
 
 
-    <form style="display: inline;" autocomplete="off" spellcheck="false" action="<?= APP_URL . '?' . http_build_query(APP_QUERY + array( 'app' => 'composer')) . (defined('APP_ENV') && APP_ENV == 'development' ? '#!' : '') /* $c_or_p . '=' . (empty($_GET[$c_or_p]) ? '' : $$c_or_p->name) . '&amp;app=composer' */ ?>" method="GET">
+    <form style="display: inline;" autocomplete="off" spellcheck="false" action="<?= APP_URL . '?' . http_build_query(APP_QUERY + ['app' => 'composer']) . (defined('APP_ENV') && APP_ENV == 'development' ? '#!' : '') /* $c_or_p . '=' . (empty($_GET[$c_or_p]) ? '' : $$c_or_p->name) . '&amp;app=composer' */ ?>" method="GET">
       <?php if (isset($_GET['debug'])) { ?> <input type="hidden" name="debug" value="" /> <?php } ?>
 
       <code class="text-sm" style="background-color: #fff; color: #0078D7;">$ 
@@ -603,7 +603,7 @@ if (preg_match('/(.*)\/.*/', $key, $match))
 </div>
 <?php ob_start(); ?>
 <div id="app_composer-frameUpdate" class="app_composer-frame-container absolute" style="overflow: scroll; background-color: rgb(225,196,151,.75);">
-<form autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" action="<?= APP_URL . '?' . http_build_query(APP_QUERY + array( 'app' => 'composer')) . (defined('APP_ENV') && APP_ENV == 'development' ? '#!' : '') /* $c_or_p . '=' . (empty($_GET[$c_or_p]) ? '' : $$c_or_p->name) . '&amp;app=composer' */ ?>" method="POST">
+<form autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" action="<?= APP_URL . '?' . http_build_query(APP_QUERY + ['app' => 'composer']) . (defined('APP_ENV') && APP_ENV == 'development' ? '#!' : '') /* $c_or_p . '=' . (empty($_GET[$c_or_p]) ? '' : $$c_or_p->name) . '&amp;app=composer' */ ?>" method="POST">
 <input type="hidden" name="composer[update]" value="" />
 <div style="position: absolute; right: 0; float: right; text-align: center;">
   <input class="btn" id="composerSetupSubmit" type="submit" value="self-update">
@@ -625,7 +625,7 @@ if (preg_match('/(.*)\/.*/', $key, $match))
   <textarea style="width: 100%" cols="40" rows="5" name="composer[cmd]">php -r "copy('https://getcomposer.org/installer', 'composer-setup.php');"
 php composer-setup.php
 php composer.phar -v
-<?= stripos(PHP_OS, 'WIN') === 0 ? '' : 'sudo ' ?>composer self-update</textarea>
+<?= stripos(PHP_OS, 'WIN') === 0 ? '' : APP_SUDO ?>composer self-update</textarea>
 </div>
 </form>
 </div>
@@ -637,7 +637,7 @@ ob_end_clean(); ?>
 
 <div id="app_composer-frameInit" class="app_composer-frame-container absolute <?= (realpath(COMPOSER_JSON['path']) ? '' : (defined('COMPOSER')  && is_object(COMPOSER) && count((array)COMPOSER) !== 0 ? '' : 'selected')); ?>" style="overflow: hidden; height: 270px;">
 <?php if (!defined('CONSOLE') && CONSOLE != true) { ?>
-<form autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" action="<?= APP_URL_BASE . '?' . http_build_query(APP_QUERY + array( 'app' => 'composer')) . (defined('APP_ENV') && APP_ENV == 'development' ? '#!' : '') /* $c_or_p . '=' . (empty($_GET[$c_or_p]) ? '' : $$c_or_p->name) . '&amp;app=composer' */ ?>" method="POST">
+<form autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" action="<?= APP_URL_BASE . '?' . http_build_query(APP_QUERY + ['app' => 'composer']) . (defined('APP_ENV') && APP_ENV == 'development' ? '#!' : '') /* $c_or_p . '=' . (empty($_GET[$c_or_p]) ? '' : $$c_or_p->name) . '&amp;app=composer' */ ?>" method="POST">
 <?php } ?>
 <div style="position: absolute; right: 0; float: right; text-align: center;">
     <button id="app_composer-init-submit" class="btn" type="submit" value>Init/Run</button>
@@ -657,7 +657,7 @@ ob_end_clean(); ?>
 </div>
 
 <div id="app_composer-frameConf" class="app_composer-frame-container absolute <?= (!defined('COMPOSER') && is_file(APP_PATH . 'composer.json') ? 'selected' : ''); ?>" style="overflow-x: hidden; overflow-y: auto; height: 230px;">
-<form autocomplete="off" spellcheck="false" action="<?= (!defined('APP_URL_BASE') ? '//' . APP_DOMAIN . APP_URL_PATH . '?' . http_build_query(APP_QUERY, '', '&amp;') : APP_URL . '?' . http_build_query(APP_QUERY + array('app' => 'composer'), '', '&amp;')) . (defined('APP_ENV') && APP_ENV == 'development' ? '#!' : '') ?>" method="POST">
+<form autocomplete="off" spellcheck="false" action="<?= (!defined('APP_URL_BASE') ? '//' . APP_DOMAIN . APP_URL_PATH . '?' . http_build_query(APP_QUERY, '', '&amp;') : APP_URL . '?' . http_build_query(APP_QUERY + ['app' => 'composer'], '', '&amp;')) . (defined('APP_ENV') && APP_ENV == 'development' ? '#!' : '') ?>" method="POST">
 <input type="hidden" name="composer[config]" value="" />
 
 <div style="position: absolute; right: 0; float: right; text-align: center; z-index: 2;">
@@ -1150,7 +1150,7 @@ if (preg_match('/(.*\/.*)/', $key, $match))
 
 ?>
 <div id="app_composer-frameInstall" class="app_composer-frame-container absolute <?= $count > 0 ? 'selected' : ''; ?>" style="overflow: scroll; width: 400px; height: 270px;">
-<form autocomplete="off" spellcheck="false" action="<?= APP_URL . '?' . http_build_query(APP_QUERY + array( 'app' => 'composer')) . (defined('APP_ENV') && APP_ENV == 'development' ? '#!' : '')  /* $c_or_p . '=' . (empty($_GET[$c_or_p]) ? '' : $$c_or_p->name) . '&amp;app=composer' */ ?>" method="POST">  
+<form autocomplete="off" spellcheck="false" action="<?= APP_URL . '?' . http_build_query(APP_QUERY + ['app' => 'composer']) . (defined('APP_ENV') && APP_ENV == 'development' ? '#!' : '')  /* $c_or_p . '=' . (empty($_GET[$c_or_p]) ? '' : $$c_or_p->name) . '&amp;app=composer' */ ?>" method="POST">  
 <div style="display: inline-block; width: 100%; background-color: rgb(225,196,151,.75);">
   <input type="hidden" name="composer[install]" value="" />
   <div style="position: absolute; right: 0; float: right; text-align: center; z-index: 1;">

@@ -313,9 +313,9 @@ END
     //(APP_SELF !== APP_PATH_SERVER) and $socketInstance = Sockets::getInstance();
     //$socketInstance->handleClientRequest("composer self-update\n");
     // Resolve host to IP and check internet connection
-
+/**/
     $ip = resolve_host_to_ip('google.com');
-    if (check_internet_connection($ip)) {
+    if (APP_SELF == APP_PATH_PUBLIC && check_internet_connection($ip)) {
       define('APP_IS_ONLINE', true);
     } else {
       define('APP_NO_INTERNET_CONNECTION', "Not connected to the internet."); // APP_CONNECTIVITY
