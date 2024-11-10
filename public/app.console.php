@@ -12,10 +12,16 @@ global $shell_prompt, $auto_clear, $errors;
 //die(var_dump(get_required_files()));
 if (__FILE__ == get_required_files()[0] && __FILE__ == realpath($_SERVER["SCRIPT_FILENAME"]))
   if ($path = basename(dirname(get_required_files()[0])) == 'public') { // (basename(getcwd())
-    if (is_file($path = realpath('index.php'))) {
+    chdir('../');
+    if (is_file($path = realpath('config/php.php'))) {
+      //dd('does this do anything?');
       require_once $path;
     }
   } else die(var_dump("Path was not found. file=$path"));
+else
+  require_once APP_PATH . 'config/config.php';
+
+//dd(APP_PATH . APP_ROOT);
 
 
 //require_once APP_PATH . APP_BASE['config'] . 'classes' . DIRECTORY_SEPARATOR . 'class.sockets.php';
@@ -77,21 +83,23 @@ if (preg_match('/^app\.([\w\-.]+)\.php$/', basename(__FILE__), $matches))
           //exec($_POST['cmd'], $output);
           //die(header('Location: ' . APP_URL_BASE . '?app=text_editor&filename='.$_POST['cmd']));
           //$output[] = "Changing directory to " . $path;
-/**/
+          $path = APP_ROOT ; //realpath();
+/**/      error_log("Path: $path");
           if ($path = realpath(APP_PATH . APP_ROOT . rtrim(trim($match[1]), DIRECTORY_SEPARATOR))) {
             // Define the root directory you don't want to go past
-            $root_dir = realpath(APP_PATH . APP_ROOT);
+
+            $root_dir = realpath(dirname(APP_PATH . APP_ROOT));
 
             // Check if the resolved path is within the allowed root
             if (strpos($path, $root_dir) === 0 && strlen($path) >= strlen($root_dir)) {
                 // Proceed with your existing logic if the path is valid
                 $resultValue = (function() use ($path): string {
+
                     // Replace the escaped APP_PATH and APP_ROOT with the actual directory path
                     if (realpath($_GET['path'] = preg_replace('/' . preg_quote(APP_PATH . APP_ROOT, DIRECTORY_SEPARATOR) . '/', '', $path)) == realpath(APP_PATH . APP_ROOT)) {
                         $_GET['path'] = '';
                     }
                     ob_start();
-
                     //if (is_file($include = APP_PATH . APP_ROOT . APP_BASE['vendor'] . 'autoload.php'))
                       //if (isset($_ENV['COMPOSER']['AUTOLOAD']) && (bool) $_ENV['COMPOSER']['AUTOLOAD'] === TRUE)
                     //  require_once $include;

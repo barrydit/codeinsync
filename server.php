@@ -781,10 +781,12 @@ try {
         if ($data != '') {
           $data = str_split($jsonData, 1024);
           foreach ($data as $chunk) {
-            if (socket_write($client, $chunk) === false) {
-              dd('Socket write failed', false);
-              throw new Exception('Socket write failed');
+            if ($client instanceof Socket && $client && is_resource($client)) {
+              if (socket_write($client, $chunk) === false) {
+                dd('Socket write failed', false);
+                throw new Exception('Socket write failed');
 
+              }
             }
           }
         }
@@ -806,10 +808,10 @@ try {
    */
   function processClientData($client) {
 
-      if (extension_loaded('sockets')) {
-        $clientMsg = socket_read($client, 1024);
-      } elseif (get_resource_type($client) == 'stream') {
+      if (get_resource_type($client) == 'stream') {
         $clientMsg = fread($client, 1024);
+      } elseif (extension_loaded('sockets')) {
+        $clientMsg = socket_read($client, 1024);
       }
 
       // Process the client message
@@ -916,12 +918,11 @@ try {
   }
 
   // Close the server socket
-  if (extension_loaded('sockets')) {
+  if (get_resource_type($socket) == 'stream') {
+    (!$socket) and fclose($socket);
+  } elseif (extension_loaded('sockets')) {
     $buffer = '';
     (!$socket) and socket_close($socket);
-
-  } elseif (get_resource_type($socket) == 'stream') {
-    (!$socket) and fclose($socket);
   }
 
   echo "Socket closed.\n";
@@ -959,11 +960,11 @@ try {
   if (stripos(PHP_OS, 'WIN') === 0) Sockets::handleWindowsSocketConnection();
 /**/
   if (isset($socket) && is_resource($socket) && !empty($socket)) {
-    if (extension_loaded('sockets')) {
-      socket_close($socket);
-    } elseif (get_resource_type($socket) == 'stream') {
+    if (get_resource_type($socket) == 'stream') {
       fclose($socket);
-    } 
+    } elseif (extension_loaded('sockets')) {
+      socket_close($socket);
+    }
   }
 }
 
@@ -971,5 +972,5 @@ register_shutdown_function(function() {
   PHP_SAPI !== 'cli' || !is_file(PID_FILE) ?: unlink(PID_FILE) /*or die('EOF')*/;
   !is_file(PID_FILE) and print 'Unlinking PID file... ' . PID_FILE . PHP_EOL;
   //!is_file(PID_FILE) ?: unlink(PID_FILE);
-  die(str_replace('{{STATUS}}', 'Server has stopped... PID=' . getmypid() . str_pad('',10," "), APP_DASHBOARD) . PHP_EOL);
+  return str_replace('{{STATUS}}', 'Server has stopped... PID=' . getmypid() . str_pad('', 10, " "), APP_DASHBOARD) . PHP_EOL;
 });

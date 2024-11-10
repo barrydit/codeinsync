@@ -4,10 +4,11 @@
 !defined('APP_PATH') and define('APP_PATH', __DIR__ . DIRECTORY_SEPARATOR) and is_string(APP_PATH) ?: $errors['APP_PATH'] = 'APP_PATH is not a valid string value.';
 
 if (!defined('APP_ROOT')) {
-  $path = !isset($_GET['client']) ? (!isset($_GET['project']) ? '' : 'projects' . DIRECTORY_SEPARATOR . $_GET['project']) : 'clientele' . DIRECTORY_SEPARATOR . $_GET['client'] . DIRECTORY_SEPARATOR . (isset($_GET['domain']) ? ($_GET['domain'] != '' ? $_GET['domain'] : '') : '') . DIRECTORY_SEPARATOR; /* ($_GET['path'] . '/' ?? '')*/
+  $path = !isset($_GET['client']) ? (!isset($_GET['project']) ? '' : 'projects' . DIRECTORY_SEPARATOR . $_GET['project']) : 'clientele' . DIRECTORY_SEPARATOR . $_GET['client'] . DIRECTORY_SEPARATOR . (isset($_GET['domain']) && $_GET['domain'] != '' ? $_GET['domain'] : '') . DIRECTORY_SEPARATOR; /* ($_GET['path'] . '/' ?? '')*/
   //die($path);
-  //is_dir(APP_PATH . $_GET['path']) 
-  define('APP_ROOT', !empty(realpath(APP_PATH . ($path = rtrim($path, DIRECTORY_SEPARATOR)) ) && $path != '') ? (string) $path . DIRECTORY_SEPARATOR : '');  // basename() does not like null
+  //is_dir(APP_PATH . $_GET['path'])
+  !$path || !is_dir(APP_PATH . $path) ?:  
+    define('APP_ROOT', !empty(realpath(APP_PATH . ($path = rtrim($path, DIRECTORY_SEPARATOR)) ) && $path != '') ? (string) $path . DIRECTORY_SEPARATOR : '');  // basename() does not like null
 }
 
 // Check if the config file exists in various locations based on the current working directory
@@ -19,14 +20,14 @@ switch (basename(__DIR__)) { // getcwd()
     chdir(dirname(__DIR__));
     require_once 'config/php.php';
 
-    if (is_file($config = APP_PATH . 'config/config.php')) {
+    if ($config = realpath(APP_PATH . 'config/config.php')) {
       $path = $config;
     }  // elseif (is_file('config.php')) { $path = $config; }
     break;
   default:
     require_once 'config/php.php';
 
-    if (is_file($config = APP_PATH . 'config/config.php')) {
+    if ($config = realpath(APP_PATH . 'config/config.php')) {
       $path = $config;
     } // elseif (is_file($config = 'config.php')) { $path = $config; }
     break;
@@ -149,6 +150,8 @@ if (filter_input(INPUT_GET, 'logout')) { // ?logout=true
   // Optional: Clear any existing headers related to authorization
   if (function_exists('header_remove')) {
     header_remove('HTTP_AUTHORIZATION');
+    //header_remove('PHP_AUTH_USER');
+    //header_remove('PHP_AUTH_PW');
   }
 
   // Provide feedback to the user and exit the script

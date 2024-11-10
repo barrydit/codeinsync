@@ -56,8 +56,8 @@ $output[] = 'Composer: ' . (!isset($stdout) ? NULL : $stdout . (!isset($stderr) 
 $output[] = $_POST['cmd'];
 
         } else if (preg_match('/^git(:?(.*))/i', $_POST['cmd'], $match)) {
-        $output[] = 'sudo ' . GIT_EXEC . ' ' . $match[1];
-$proc=proc_open('sudo ' . GIT_EXEC . ' ' . $match[1],
+        $output[] = APP_SUDO . GIT_EXEC . ' ' . $match[1];
+$proc=proc_open(APP_SUDO . GIT_EXEC . ' ' . $match[1],
   array(
     array("pipe","r"),
     array("pipe","w"),
@@ -94,11 +94,11 @@ $proc=proc_open('sudo ' . GIT_EXEC . ' ' . $match[1],
 
 if (defined('GIT_EXEC'))
   if (is_dir($path = APP_PATH . APP_BASE['resources'] . 'js/ace') && empty(glob($path)))
-    exec((stripos(PHP_OS, 'WIN') === 0 ? '' : 'sudo ') . GIT_EXEC . ' clone https://github.com/ajaxorg/ace-builds.git resources/js/ace', $output, $returnCode) or $errors['GIT-CLONE-ACE'] = $output;
+    exec((stripos(PHP_OS, 'WIN') === 0 ? '' : APP_SUDO) . GIT_EXEC . ' clone https://github.com/ajaxorg/ace-builds.git resources/js/ace', $output, $returnCode) or $errors['GIT-CLONE-ACE'] = $output;
   elseif (!is_dir($path)) {
     if (!mkdir($path, 0755, true))
       $errors['GIT-CLONE-ACE'] = ' resources/js/ace does not exist.';
-    exec((stripos(PHP_OS, 'WIN') === 0 ? '' : 'sudo ') . GIT_EXEC . ' clone https://github.com/ajaxorg/ace-builds.git resources/js/ace', $output, $returnCode) or $errors['GIT-CLONE-ACE'] = $output;
+    exec((stripos(PHP_OS, 'WIN') === 0 ? '' : APP_SUDO) . GIT_EXEC . ' clone https://github.com/ajaxorg/ace-builds.git resources/js/ace', $output, $returnCode) or $errors['GIT-CLONE-ACE'] = $output;
   }
 
 ob_start(); ?>
@@ -272,7 +272,7 @@ if (!empty($paths))
 <div id="ui_ace_editor" class="ace_editor" style="display: <?= isset($_GET['file']) && isset($_GET['path']) && is_file($_GET['path'] . $_GET['file']) ? 'block' : 'block'?>; z-index: 1;"></div><textarea id="ace_contents" name="ace_contents" class="ace_text-input" autocorrect="off" autocapitalize="none" spellcheck="false" style="display: none; opacity: 0; font-size: 1px; height: 1px; width: 1px; top: 28px; left: 86px;" wrap="on"></textarea></form>
     <!-- div style="position: relative; display: inline-block; width: 100%; height: 100%; padding-left: 10px;">
 
-      <form style="display: inline;" autocomplete="off" spellcheck="false" action="<?= APP_URL . /*basename(__FILE__) .*/ '?' . http_build_query(APP_QUERY /*+ array( 'app' => 'ace_editor')*/) . (defined('APP_ENV') && APP_ENV == 'development' ? '#!' : '') /* $c_or_p . '=' . (empty($_GET[$c_or_p]) ? '' : $$c_or_p->name) . '&amp;app=composer' */ ?>" method="GET">
+      <form style="display: inline;" autocomplete="off" spellcheck="false" action="<?= APP_URL . /*basename(__FILE__) .*/ '?' . http_build_query(APP_QUERY /*+ ['app' => 'ace_editor']*/) . (defined('APP_ENV') && APP_ENV == 'development' ? '#!' : '') /* $c_or_p . '=' . (empty($_GET[$c_or_p]) ? '' : $$c_or_p->name) . '&amp;app=composer' */ ?>" method="GET">
         <input type="hidden" name="app" value="ace_editor" />
       <?php $path = realpath(getcwd() . (isset($_GET['path']) ? DIRECTORY_SEPARATOR . $_GET['path'] : '')) . DIRECTORY_SEPARATOR;
       if (isset($_GET['path'])) { ?>
@@ -291,7 +291,7 @@ if ($path)
       </form>
  / <input type="text" name="file" value="index.php" /> 
 
-      <form style="display: inline;" autocomplete="off" spellcheck="false" action="<?= APP_URL . /*basename(__FILE__) .*/ '?' . http_build_query(APP_QUERY /*+ array( 'app' => 'ace_editor')*/) . (defined('APP_ENV') && APP_ENV == 'development' ? '#!' : '') /* $c_or_p . '=' . (empty($_GET[$c_or_p]) ? '' : $$c_or_p->name) . '&amp;app=composer' */ ?>" method="GET">
+      <form style="display: inline;" autocomplete="off" spellcheck="false" action="<?= APP_URL . /*basename(__FILE__) .*/ '?' . http_build_query(APP_QUERY /*+ ['app' => 'ace_editor']*/) . (defined('APP_ENV') && APP_ENV == 'development' ? '#!' : '') /* $c_or_p . '=' . (empty($_GET[$c_or_p]) ? '' : $$c_or_p->name) . '&amp;app=composer' */ ?>" method="GET">
       <input type="hidden" name="app" value="ace_editor" />
 
       <input type="hidden" name="path" value="<?= (isset($_GET['path']) ? $_GET['path'] : '') ?>" />

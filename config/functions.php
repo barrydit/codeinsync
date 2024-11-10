@@ -134,29 +134,33 @@ function parse_ini_file_multi($file): array {
 }
 
 
+/**
+ * Summary of array_merge_recursive_distinct
+ * @param array $array1
+ * @param array $array2
+ * @return array
+ */
 function array_merge_recursive_distinct(array &$array1, array &$array2) {
   $merged = $array1;
 
   foreach ($array2 as $key => &$value) {
-    if (is_array($value) && isset($merged[$key]) && is_array($merged[$key])) {
-      $merged[$key] = array_merge_recursive_distinct($merged[$key], $value);
-    } else {
-      $merged[$key] = $value;
-    }
+    $merged[$key] = (is_array($value) && isset($merged[$key]) && is_array($merged[$key])) ? array_merge_recursive_distinct($merged[$key], $value) : $value;
   }
 
   return $merged;
 }
 
+/**
+ * Summary of array_intersect_key_recursive
+ * @param array $array1
+ * @param array $array2
+ * @return array
+ */
 function array_intersect_key_recursive(array $array1, array $array2) {
   $result = [];
   foreach ($array1 as $key => $value) {
     if (array_key_exists($key, $array2)) {
-      if (is_array($value) && is_array($array2[$key])) {
-        $result[$key] = array_intersect_key_recursive($value, $array2[$key]);
-      } else {
-        $result[$key] = $value;
-      }
+      $result[$key] = (is_array($value) && is_array($array2[$key])) ? array_intersect_key_recursive($value, $array2[$key]) : $value;
     }
   }
   return $result;
@@ -227,15 +231,15 @@ class Shutdown
 
         }
 
-        // Process the main .env file
-        $file = APP_PATH . APP_ROOT . '.env';
-
         //die(APP_ROOT);
 
 
+        // Process the main .env file
+        $file = APP_PATH . APP_ROOT . '.env';
+
         if (is_file($file)) {
             $_ENV = array_intersect_key_recursive($_ENV, parse_ini_file_multi($file));
-    
+
             if (!empty($_ENV)) {
                 foreach ($_ENV as $key => $value) {
                     // Convert boolean values to strings
@@ -631,11 +635,10 @@ function check_internet_connection($ip = '8.8.8.8') {
   if (stripos(PHP_OS, 'WIN') === 0)
       exec("ping -n 1 -w 1 " . /*-W 20 */ escapeshellarg($ip), $output, $status);  // parse_url($ip, PHP_URL_HOST)
   else
-      exec(APP_SUDO . "/bin/ping -c 1 -W 1 " . escapeshellarg($ip), $output, $status); // var_dump(\$status)
+      exec(APP_SUDO . (!is_file('/usr/bin/ping')? '' : '/usr/bin/') . "ping -c 1 -W 1 " . escapeshellarg($ip), $output, $status); // var_dump(\$status)
 
   // If ping fails, try fsockopen as a fallback
   if ($status !== 0 && defined('APP_IS_ONLINE')) {
-
     $connection = @fsockopen('www.google.com', 80, $errno, $errstr, 10);
     if (!$connection) {
         $errors['APP_NO_INTERNET_CONNECTION'] = 'No internet connection.';
@@ -888,7 +891,7 @@ function truepath($path){
     // resolve path parts (single dot, double dot and double delimiters)
     $path = str_replace(['/', '\\'], DIRECTORY_SEPARATOR, $path);
     $parts = array_filter(explode(DIRECTORY_SEPARATOR, $path), 'strlen');
-    $absolutes = array();
+    $absolutes = [];
     foreach ($parts as $part) {
       if ('.'  == $part) continue;
       switch ('..') {
@@ -944,28 +947,28 @@ function convertToBytes($value) {
 function FileSizeConvert($bytes)
 {
   $bytes = floatval($bytes);
-  $arBytes = array(
-    0 => array(
+  $arBytes = [
+    0 => [
       "UNIT" => "TB",
       "VALUE" => pow(1024, 4)
-    ),
-    1 => array(
+    ],
+    1 => [
       "UNIT" => "GB",
       "VALUE" => pow(1024, 3)
-    ),
-    2 => array(
+    ],
+    2 => [
       "UNIT" => "MB",
       "VALUE" => pow(1024, 2)
-    ),
-    3 => array(
+    ],
+    3 => [
       "UNIT" => "KB",
       "VALUE" => 1024
-    ),
-    4 => array(
+    ],
+    4 => [
       "UNIT" => "B",
       "VALUE" => 1
-    ),
-  );
+    ],
+  ];
 
   foreach($arBytes as $arItem)
   {

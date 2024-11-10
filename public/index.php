@@ -13,17 +13,28 @@ RewriteCond %{REQUEST_FILENAME} !-d
 RewriteRule ^(.*)$ index.php/$1 [L]
 END;
 
-
   // if ($path = (basename(getcwd()) == 'public') chdir('..');
 //APP_PATH == dirname(APP_PATH_PUBLIC)
 
-if (is_file($bootstrap = dirname(__DIR__, 1) . DIRECTORY_SEPARATOR . 'bootstrap.php')) {
-  require_once $bootstrap; // APP_PATH . 'index.php'
-} else {
-  die(var_dump($bootstrap . ' was not found.'));
+//
+
+!defined('APP_SELF') and define('APP_SELF', !empty(get_included_files())?get_included_files()[0]:__FILE__);
+
+switch (APP_SELF) {
+  case __FILE__:
+    require_once dirname(__DIR__, 1) . DIRECTORY_SEPARATOR . 'bootstrap.php';
+    require_once dirname(__DIR__, 1) . DIRECTORY_SEPARATOR . 'config/constants.php';
+    break;
+  default:
+    if ($bootstrap = realpath(dirname(__DIR__, 1) . DIRECTORY_SEPARATOR . 'config/php.php')) {
+      require_once $bootstrap; // APP_PATH . 'index.php'
+    } else {
+      die(var_dump("$bootstrap was not found."));
+    }
+    break;
 }
 
-require_once 'config/config.php';
+
 /*
 switch ($_SERVER['REQUEST_URI']) {
   case '/notes':
@@ -128,7 +139,6 @@ if (isset($_SERVER['REQUEST_METHOD']))
       }
       break;
     case 'GET':
-
       if (isset($_ENV['APP_ENV']) && !empty($_ENV)) !defined('APP_ENV') and define('APP_ENV', $_ENV['APP_ENV']);
       //if (!empty($_GET['path']) && !isset($_GET['app'])) !!infinite loop
       //  exit(header('Location: ' . APP_URL . $_GET['path']));
@@ -160,10 +170,8 @@ if (isset($_SERVER['REQUEST_METHOD']))
           return header('Location: ' . APP_URL); // -wow
         })->shutdown();
       }
-        
 
       if (isset($_GET['category']) && !empty($_GET['category'])) {
-        
         if ($_GET['category'] == 'projects')
           exit(header('Location: ' . APP_URL . '?project='));
         if ($_GET['category'] == 'vendor')
@@ -173,10 +181,8 @@ if (isset($_SERVER['REQUEST_METHOD']))
         exit(header('Location: ' . APP_URL . '?' . $_GET['category']));
       } elseif (isset($_GET['category']) && empty($_GET['category']))
         exit(header('Location: ' . APP_URL . '?path'));
-        
       if (isset($_GET['path']) && !is_dir(APP_PATH . APP_ROOT)) {
         //dd(APP_PATH . APP_ROOT . ' test');
-
         die(header('Location: ' . APP_URL_BASE));
       }
       break;
@@ -214,10 +220,8 @@ if (isset($_SERVER['REQUEST_METHOD']))
   /**/
   //dd('req method==' . $_SERVER['REQUEST_METHOD'], false);
 
-  
   //dd(get_required_files());
 
-  
   if ($_SERVER['REQUEST_METHOD'] == 'GET')
   if (defined('APP_QUERY') && empty(APP_QUERY) || isset($_GET['CLIENT']) || isset($_GET['DOMAIN']) && !defined('APP_ROOT')) {
 
@@ -236,10 +240,10 @@ if (isset($_SERVER['REQUEST_METHOD']))
     else
       $_GET = array_merge($_GET, APP_QUERY);
   }
-
+  //dd($_GET);
   //dd(__DIR__ . DIRECTORY_SEPARATOR);
 
- if (APP_SELF == APP_PATH_PUBLIC) {
+if (APP_SELF == APP_PATH_PUBLIC) {
 
   $appPaths = array_filter(glob(__DIR__ . DIRECTORY_SEPARATOR . 'app.*.php'), 'is_file'); // public/
   
@@ -290,8 +294,8 @@ if (isset($_SERVER['REQUEST_METHOD']))
         unset($appPaths[$key]);
   
   $uiPaths = array_filter(glob(__DIR__ . DIRECTORY_SEPARATOR . '{ui}.*.php', GLOB_BRACE), 'is_file');
-  
-  
+
+
   /*
   if (in_array(APP_PATH . APP_BASE['public'] . 'ui.composer.php', $uiPaths))
     foreach ($uiPaths as $key => $file)
