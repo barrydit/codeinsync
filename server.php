@@ -808,11 +808,11 @@ try {
    */
   function processClientData($client) {
 
-      if (get_resource_type($client) == 'stream') {
-        $clientMsg = fread($client, 1024);
-      } elseif (extension_loaded('sockets')) {
+      if (extension_loaded('sockets')) {
         $clientMsg = socket_read($client, 1024);
-      }
+      } elseif (get_resource_type($client) == 'stream') { // Do not load first. -Barry
+        $clientMsg = fread($client, 1024);
+      } 
 
       // Process the client message
       $data = clientInputHandler($clientMsg);
