@@ -1,15 +1,69 @@
 <?php
 
 // Define APP_PATH constant
-!defined('APP_PATH') and define('APP_PATH', __DIR__ . DIRECTORY_SEPARATOR) and is_string(APP_PATH) ?: $errors['APP_PATH'] = 'APP_PATH is not a valid string value.';
-
+!defined('APP_PATH') and define('APP_PATH', __DIR__ . DIRECTORY_SEPARATOR) and is_string(APP_PATH) ? '' : $errors['APP_PATH'] = 'APP_PATH is not a valid string value.';
+/*
 if (!defined('APP_ROOT')) {
   $path = !isset($_GET['client']) ? (!isset($_GET['project']) ? '' : 'projects' . DIRECTORY_SEPARATOR . $_GET['project']) : 'clientele' . DIRECTORY_SEPARATOR . $_GET['client'] . DIRECTORY_SEPARATOR . (isset($_GET['domain']) && $_GET['domain'] != '' ? $_GET['domain'] : '') . DIRECTORY_SEPARATOR; /* ($_GET['path'] . '/' ?? '')*/
   //die($path);
   //is_dir(APP_PATH . $_GET['path'])
-  !$path || !is_dir(APP_PATH . $path) ?:  
+/*  !$path || !is_dir(APP_PATH . $path) ?:  
     define('APP_ROOT', !empty(realpath(APP_PATH . ($path = rtrim($path, DIRECTORY_SEPARATOR)) ) && $path != '') ? (string) $path . DIRECTORY_SEPARATOR : '');  // basename() does not like null
+}*/
+
+
+$path = null;
+
+if (!empty($_GET['client']) || !empty($_GET['domain'])) {
+    $clientFolder = 'clientele' . DIRECTORY_SEPARATOR . ($_GET['client'] ?? '') . DIRECTORY_SEPARATOR;
+    $clientPath = __DIR__ . DIRECTORY_SEPARATOR . $clientFolder;
+
+    // Retrieve directories that match the client path
+    $dirs = array_filter(glob("$clientPath*"), 'is_dir');
+
+    // Attempt to resolve the domain if only one directory is found
+    if (count($dirs) === 1) {
+        $dirName = strtolower(basename(reset($dirs)));
+        if (preg_match(DOMAIN_EXPR, $dirName)) {
+            $_GET['domain'] = $dirName;
+        }
+    }
+
+    // Set the path based on the domain if provided
+    if (!empty($_GET['domain'])) {
+        foreach ($dirs as $dir) {
+            if (basename($dir) === $_GET['domain']) {
+                $path = $clientFolder . basename($dir) . DIRECTORY_SEPARATOR;
+                break;
+            }
+        }
+    } elseif (count($dirs) == 1) {
+        // Default to the first available directory if no specific domain is provided
+        $firstDir = reset($dirs);
+        $_GET['domain'] = basename($firstDir);
+        $path = $clientFolder . basename($firstDir) . DIRECTORY_SEPARATOR;
+    } else {
+        $path = $clientFolder;
+    }
+
+    if ($path && is_dir($path)) {
+        //defined('APP_CLIENT') ?: define('APP_CLIENT', new clientOrProj($path));
+        defined('APP_ROOT') ?: define('APP_ROOT', $path ?? $clientFolder);
+    }
+
+} elseif (!empty($_GET['project'])) {
+    $projectFolder = 'projects' . DIRECTORY_SEPARATOR . $_GET['project'] . DIRECTORY_SEPARATOR;
+    $projectPath = APP_PATH . $projectFolder;
+
+    if (is_dir($projectPath)) {
+        $path = $projectFolder;
+        defined('APP_PROJECT') ?: define('APP_PROJECT', new clientOrProj($path));
+    }
 }
+
+//die(var_dump($path));
+
+defined('APP_ROOT') ?: define('APP_ROOT', $path ?? '');
 
 // Check if the config file exists in various locations based on the current working directory
 $path = null;
@@ -42,7 +96,7 @@ if ($path) {
 
 $previousFilename = '';
 
-$dirs = [APP_PATH . APP_BASE['config'] . 'php.php'];
+$dirs = [APP_PATH . 'config' . DIRECTORY_SEPARATOR . 'php.php'];
 
 !isset($_GET['app']) || $_GET['app'] != 'git' ?:
   (APP_SELF != APP_PATH_PUBLIC ?: $dirs[] = APP_PATH . APP_BASE['config'] . 'git.php');

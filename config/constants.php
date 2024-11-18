@@ -303,7 +303,7 @@ END
           : 'index.php')
     ); // APP_PATH . 'public' . DIRECTORY_SEPARATOR . 'index.php'
 
-    if (APP_SELF != APP_PATH_SERVER && in_array(APP_PATH_PUBLIC, get_included_files()) /*APP_SELF == APP_PATH_PUBLIC*/)
+    if (APP_SELF != APP_PATH_SERVER || PHP_SAPI !== 'cli' && in_array(APP_PATH_PUBLIC, get_included_files()) /*APP_SELF == APP_PATH_PUBLIC*/)
       require_once dirname(__DIR__) . DIRECTORY_SEPARATOR . 'config' . DIRECTORY_SEPARATOR . 'classes' . DIRECTORY_SEPARATOR . 'class.sockets.php';
 
     //error_log(var_export(get_required_files(), true));

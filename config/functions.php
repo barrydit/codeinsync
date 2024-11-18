@@ -460,9 +460,8 @@ class Shutdown
 // Register custom error and exception handlers
 set_error_handler([Shutdown::class, 'handleError']);
 set_exception_handler([Shutdown::class, 'handleException']);
-register_shutdown_function(function() {
-    Shutdown::handleParseError();
-});
+register_shutdown_function(function() { Shutdown::handleParseError(); });
+
 
 /**
  * Dumps a variable with formatting and optionally stops execution.
@@ -483,7 +482,9 @@ function dd(mixed $param = null, bool $die = true, bool $debug = true): void {
     $output = "Execution time: <b>{$execTime}</b> secs<br />" . PHP_EOL;
 
     // Format the dump output
-    $formattedOutput = '<pre><code>' . htmlspecialchars(var_export($param, true)) . '</code></pre>' . $output;
+    $formattedOutput = PHP_SAPI !== 'cli'
+      ? '<pre><code>' . htmlspecialchars(var_export($param, true)) . '</code></pre>' . $output
+      : var_export($param, true) . $output;
 
     if ($die) {
         // Set shutdown function to handle output when $die is true
@@ -499,33 +500,6 @@ function dd(mixed $param = null, bool $die = true, bool $debug = true): void {
 
 //dd(get_required_files(), false);
 
-// Get all PHP files in the 'classes' directory
-$paths = array_filter(glob(__DIR__ . DIRECTORY_SEPARATOR . 'classes/*.php'), 'is_file');
-
-// Define the filenames to be excluded
-$excludedFiles = [
-    'class.sockets.php',
-    'class.websocketserver.php'
-];
-
-// Remove excluded files from $paths
-$paths = array_filter($paths, function ($path) use ($excludedFiles) {
-    return !in_array(basename($path), $excludedFiles);
-});
-
-// Sort $paths alphabetically by filename
-usort($paths, function ($a, $b) {
-    return strcmp(basename($a), basename($b));
-});
-
-// Require each file in $paths
-foreach ($paths as $path) {
-    if ($resolvedPath = realpath($path)) {
-        require_once $resolvedPath;
-    } else {
-        die(var_dump(basename($path) . ' was not found. file=' . $path));
-    }
-}
 
 /*
         $curl = curl_init($url);
@@ -601,6 +575,7 @@ function custom_log($message) {
   $logMessage = sprintf("%s - %s%s", $timestamp, $message, PHP_EOL);
   file_put_contents(ini_get('error_log'), $logMessage, FILE_APPEND);
 }
+
 /**
  * Validates an IP address.
  *
@@ -635,7 +610,7 @@ function check_internet_connection($ip = '8.8.8.8') {
   if (stripos(PHP_OS, 'WIN') === 0)
       exec("ping -n 1 -w 1 " . /*-W 20 */ escapeshellarg($ip), $output, $status);  // parse_url($ip, PHP_URL_HOST)
   else
-      exec(APP_SUDO . (!is_file('/usr/bin/ping')? '' : '/usr/bin/') . "ping -c 1 -W 1 " . escapeshellarg($ip), $output, $status); // var_dump(\$status)
+      exec(APP_SUDO . (!is_file('/usr/bin/ping') ? '' : '/usr/bin/') . "ping -c 1 -W 1 " . escapeshellarg($ip), $output, $status); // var_dump(\$status)
 
   // If ping fails, try fsockopen as a fallback
   if ($status !== 0 && defined('APP_IS_ONLINE')) {
@@ -667,7 +642,7 @@ function check_http_status($url = 'http://8.8.8.8', $statusCode = 200) {
       or $headers = get_headers($url);
     return !empty($headers) && strpos($headers[0], (string)$statusCode) === false;
   } else return false;
-  return true; // Special case for the default URL or if not connected
+  //return true; // Special case for the default URL or if not connected
 }
 
 /**
@@ -699,7 +674,7 @@ function packagist_return_source($vendor, $package) {
   }
   // $initial_url = "https://github.com/php-fig/log/tree/3.0.0/";
 
-  if (preg_match('/^https:\/\/(?:www.?)github.com\//', $initial_url)) {
+  if (preg_match('/^https:\/\/(?:www\.)?github.com\//', $initial_url)) {
 
   // Extract username, repository, and version from the initial URL
     $parts = explode("/", rtrim($initial_url, "/"));
@@ -725,17 +700,16 @@ function packagist_return_source($vendor, $package) {
  * @return string|null The sanitized string. Returns null if the input is null.
  */
 function htmlsanitize(mixed $input = '') {
-
     if (is_array($input)) $input = var_export($input, true);
-    
+
     if (is_null($input)) return;
 
     // Convert HTML entities to their corresponding characters
     $decoded = html_entity_decode($input, ENT_QUOTES, 'UTF-8');
-    
+
     // Remove any invalid UTF-8 characters
     $cleaned = mb_convert_encoding($decoded, 'UTF-8', 'UTF-8');
-    
+
     // Convert special characters to HTML entities
     $sanitized = htmlspecialchars($cleaned, ENT_QUOTES, 'UTF-8');
 
@@ -998,4 +972,4 @@ function getElementsByClass(&$parentNode, $tagName, $className) {
 
 require_once __DIR__ . DIRECTORY_SEPARATOR . 'php.php';
 
-require_once __DIR__ . DIRECTORY_SEPARATOR . 'constants.php';
+//require_once __DIR__ . DIRECTORY_SEPARATOR . 'constants.php';

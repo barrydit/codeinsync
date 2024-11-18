@@ -2,14 +2,20 @@
 <?php 
 declare(/*strict_types=1,*/ ticks=1); // First Line Only!
 
-require_once 'bootstrap.php';
+$_GET['client'] = '000-Raymant,David';
+//$_GET['domain'] = 'davidraymant.ca';
+
+
+require_once 'config/php.php';
 
 !defined('APP_PATH') and define('APP_PATH', __DIR__ . DIRECTORY_SEPARATOR);
 
-!defined('PID_FILE') and define('PID_FILE', /*getcwd() .*/(!defined('APP_PATH') ? __DIR__ . DIRECTORY_SEPARATOR : APP_PATH ) . 'server.pid');
+!defined('PID_FILE') and define('PID_FILE', /*getcwd() .*/APP_PATH . 'server.pid');
 
 ini_set('error_log', APP_PATH . 'server.log');
 ini_set('log_errors', 'true');
+
+//dd(APP_ROOT);
 
 /*
 !defined('PID_FILE') and define('PID_FILE', APP_PATH . 'server.pid'); // getcwd()
@@ -38,118 +44,123 @@ file_put_contents(PID_FILE, $pid = getmypid());
 
 //!file_exists($file = posix_getpwuid(posix_getuid())['dir'].'/.aws/credentials')
 //  and die('an aws credentials file is required. exiting file=' . $file);
-if (PHP_SAPI === 'cli' && stripos(PHP_OS, 'LIN') === 0 ) {
-  (!extension_loaded('posix') || !extension_loaded('pcntl')) and die('posix && pcntl required. exiting');
-
-  /**
-   * Set the title of our script that ps(1) sees
-   */
-  if (!cli_set_process_title($title = basename(__FILE__))) {
-    echo "Unable to set process title for PID " . file_get_contents(PID_FILE ?? APP_PATH . 'server.pid') . "...\n";
-    exit(1);
-  } else {
-    //cli_set_process_name($title);
-    echo "The process title '$title' has been set for your process!\n";
+if (PHP_SAPI === 'cli')
+  if (stripos(PHP_OS, 'LIN') === 0 ) {
+    (!extension_loaded('posix') || !extension_loaded('pcntl')) and die('Extenions posix && pcntl are required. exiting.');
+    (!extension_loaded('sockets')) and die('sockets required. exiting');
 
     /**
-     * Summary of cli_set_process_name
-     * @param mixed $title
-     * @throws Exception
-     * @return void
+     * Set the title of our script that ps(1) sees
      */
-    function cli_set_process_name($title)
-    {
-      file_put_contents('/proc/'.getmypid().'/comm',$title);
+    if (!cli_set_process_title($title = basename(__FILE__))) {
+      echo "Unable to set process title for PID " . file_get_contents(PID_FILE ?? APP_PATH . 'server.pid') . "...\n";
+      exit(1);
+    } else {
+      //cli_set_process_name($title);
+      echo "The process title '$title' has been set for your process!\n";
+
+      /**
+       * Summary of cli_set_process_name
+       * @param mixed $title
+       * @throws Exception
+       * @return void
+       */
+      function cli_set_process_name($title)
+      {
+        file_put_contents('/proc/'.getmypid().'/comm',$title);
+      }
     }
-  }
 
-  //stripos(PHP_OS, 'LIN') === 0
+    //stripos(PHP_OS, 'LIN') === 0
 
-  // ps aux | grep server.php
-  // kill -SIGTERM <PID>
-  // kill -SIGINT <PID>
-  // kill -SIGSTOP <PID>
-  // kill -SIGCONT <PID>
-  
-  // [1]+  Stopped                 php server.php
-  // kill -SIGKILL / -9 <PID>
-  // [1]+  Killed                  php server.php
+    // ps aux | grep server.php
+    // kill -SIGTERM <PID>
+    // kill -SIGINT <PID>
+    // kill -SIGSTOP <PID>
+    // kill -SIGCONT <PID>
+    
+    // [1]+  Stopped                 php server.php
+    // kill -SIGKILL / -9 <PID>
+    // [1]+  Killed                  php server.php
 
-  // Signal handler to gracefully shutdown
-  /**
-   * Summary of signalHandler
-   * @param mixed $signal
-   * @throws \Exception
-   * @return never
-   */
-  function signalHandler($signal) {
-    global $running, $socket, $server, $stream;
-    switch ($signal) {
-      case SIGCHLD:
-        while (pcntl_waitpid(-1, $status, WNOHANG) > 0) {
-          // Reap child processes
-        }
-        break;
-        
-      case SIGHUP:
-        // Restart the server
-        restartServer();
-        break;
-      
-      case SIGTERM:
-          //echo "Process received SIGTERM. Terminating...\n";
-          //exit; // Gracefully exit after handling
-      case SIGINT:
-        echo "Process received SIGINT (Ctrl+C). Terminating...\n";
-        //require_once APP_PATH . 'config/classes/class.sockets.php';
-        echo '   Shutting down server... PID=' . getmypid() . PHP_EOL;
-        Logger::error('Shutting down server... PID=' . getmypid());
-        //fclose($server); 
-        $file = PID_FILE;
-        !is_file($file)?: unlink($file);
-        
-        if ($socket) {
-          socket_close($socket);
-        } elseif (isset($stream) && is_resource($stream) && get_resource_type($stream) == 'stream') {
-          fclose($stream);
-        }
-        if ($server) {
-          fclose($server); // Close server file descriptor if open
-        }
-        if ($stream) {
-          fclose($stream); // Close stream if applicable
-        }
-/*
-        if (!empty($socket) && is_resource($stream)) {
-          if (extension_loaded('sockets')) {
-            socket_write($socket, 'Shutting down server... PID=' . getmypid());
-            socket_close($socket);
-          } elseif (get_resource_type($socket) == 'stream') {
-            fwrite($socket, 'Shutting down server... PID=' . getmypid());
-            fclose($socket);
+    // Signal handler to gracefully shutdown
+    /**
+     * Summary of signalHandler
+     * @param mixed $signal
+     * @throws \Exception
+     * @return never
+     */
+    function signalHandler($signal) {
+      global $running, $socket, $stream;
+      switch ($signal) {
+        case SIGCHLD:
+          while (pcntl_waitpid(-1, $status, WNOHANG) > 0) {
+            // Reap child processes
           }
-        }
-*/
-        $running = false;
-        break;
+          break;
+          
+        case SIGHUP:
+          // Restart the server
+          restartServer();
+          break;
+        
+        case SIGTERM:
+            //echo "Process received SIGTERM. Terminating...\n";
+            //exit; // Gracefully exit after handling
+        case SIGINT:
+          echo "Process received SIGINT (Ctrl+C). Terminating...\n";
+          //require_once APP_PATH . 'config/classes/class.sockets.php';
+          echo '   Shutting down server... PID=' . getmypid() . PHP_EOL;
+          Logger::error('Shutting down server... PID=' . getmypid());
+
+          $file = PID_FILE;
+          !is_file($file)?: unlink($file);
+          
+          if ($socket) {
+            socket_close($socket);
+          } elseif (isset($stream) && is_resource($stream) && get_resource_type($stream) == 'stream') {
+            fclose($stream);
+          }
+          //if ($server)
+          //  fclose($server); // Close server file descriptor if open
+
+          //if ($stream)
+          //  fclose($stream); // Close stream if applicable
+
+  /*
+          if (!empty($socket) && is_resource($stream)) {
+            if (extension_loaded('sockets')) {
+              socket_write($socket, 'Shutting down server... PID=' . getmypid());
+              socket_close($socket);
+            } elseif (get_resource_type($socket) == 'stream') {
+              fwrite($socket, 'Shutting down server... PID=' . getmypid());
+              fclose($socket);
+            }
+          }
+  */
+          $running = false;
+          break;
+      }
+      //exit(1);
     }
-    //exit(1);
+
+    pcntl_async_signals(true); // Turn on asynchronous signal handling
+
+    // Register signal handlerfor SIGCHLD, SIGTERM, and SIGINT
+    pcntl_signal(SIGCHLD, 'signalHandler'); // hangs on sockets with empty cmd: on loop
+    pcntl_signal(SIGHUP, 'signalHandler');
+    pcntl_signal(SIGTERM, 'signalHandler');
+    pcntl_signal(SIGINT, 'signalHandler');
+
+  } elseif (stripos(PHP_OS, 'WIN') === 0 ) {
+    // Windows
+    //exec('taskkill /F /PID ' . getmypid());
+    //exec('taskkill /F /IM php.exe');
+    //exec('taskkill /F /IM php-cgi
   }
-
-  pcntl_async_signals(true); // Turn on asynchronous signal handling
-
-  // Register signal handlerfor SIGCHLD, SIGTERM, and SIGINT
-  pcntl_signal(SIGCHLD, 'signalHandler'); // hangs on sockets with empty cmd: on loop
-  pcntl_signal(SIGHUP, 'signalHandler');
-  pcntl_signal(SIGTERM, 'signalHandler');
-  pcntl_signal(SIGINT, 'signalHandler');
-
-} else if (PHP_SAPI === 'cli' && stripos(PHP_OS, 'WIN') === 0 ) {
-  (!extension_loaded('sockets')) and die('sockets required. exiting');
-}
 
 function restartServer() {
-  global $running, $socket, $server;
+  global $running, $socket;
   
   // Close existing socket and other resources
   socket_close($socket);
@@ -661,8 +672,6 @@ try {
     $blockingMode = $_ENV['PHP']['SOCK_BLOCK'] ? "blocking" : "non-blocking";
     echo PHP_EOL . "Connected to Server: $address:$port (The socket is in $blockingMode mode.)\n";
 
-
-
 /*
     $timeout = socket_get_option($socket, SOL_SOCKET, SO_RCVTIMEO);
 
@@ -679,7 +688,7 @@ try {
     // Create server socket using the Sockets extension
     $socket = createServerSocket(SERVER_HOST, SERVER_PORT);
     echo '(Socket) ';
-  } elseif (get_resource_type($socket) == 'stream') {
+  } else { // if (get_resource_type($socket) == 'stream')
     // Create a TCP/IP server socket using stream_socket_server
     if (!$socket = @stream_socket_server('tcp://' . SERVER_HOST . ':' . SERVER_PORT, $errno, $errstr)) {
       echo "Error: Unable to create server socket: $errstr ($errno)\n";
@@ -785,7 +794,6 @@ try {
               if (socket_write($client, $chunk) === false) {
                 dd('Socket write failed', false);
                 throw new Exception('Socket write failed');
-
               }
             }
           }
@@ -918,11 +926,11 @@ try {
   }
 
   // Close the server socket
-  if (get_resource_type($socket) == 'stream') {
-    (!$socket) and fclose($socket);
-  } elseif (extension_loaded('sockets')) {
+  if (extension_loaded('sockets')) {
     $buffer = '';
     (!$socket) and socket_close($socket);
+  } elseif (get_resource_type($socket) == 'stream') {
+    (!$socket) and fclose($socket);
   }
 
   echo "Socket closed.\n";
@@ -969,8 +977,14 @@ try {
 }
 
 register_shutdown_function(function() {
-  PHP_SAPI !== 'cli' || !is_file(PID_FILE) ?: unlink(PID_FILE) /*or die('EOF')*/;
-  !is_file(PID_FILE) and print 'Unlinking PID file... ' . PID_FILE . PHP_EOL;
-  //!is_file(PID_FILE) ?: unlink(PID_FILE);
-  return str_replace('{{STATUS}}', 'Server has stopped... PID=' . getmypid() . str_pad('', 10, " "), APP_DASHBOARD) . PHP_EOL;
+  if (PHP_SAPI === 'cli' && is_file(PID_FILE)) {
+      unlink(PID_FILE);
+      echo 'Unlinking PID file... ' . PID_FILE . PHP_EOL;
+  }
+
+  echo str_replace(
+      '{{STATUS}}',
+      'Server has stopped... PID=' . getmypid() . str_pad('', 10, " "),
+      APP_DASHBOARD
+  ) . PHP_EOL;
 });
