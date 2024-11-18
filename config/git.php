@@ -67,7 +67,7 @@ function git_origin_sha_update() {
   $context = stream_context_create($options);
 
   if (!empty($_GET['client']) || !empty($_GET['domain'])) {
-    $latest_remote_commit_url = 'https://api.github.com/repos/' . $_ENV['GITHUB']['USER'] . '/' . $_GET['domain'] . '/git/refs/heads/main';
+    $latest_remote_commit_url = 'https://api.github.com/repos/' . $_ENV['GITHUB']['USER'] . '/' . ($_GET['domain'] ?? $_ENV['DEFAULT_DOMAIN']) . '/git/refs/heads/main';
   } elseif (!empty($_GET['project'])) {
     $path = 'projects' . DIRECTORY_SEPARATOR . $_GET['project'] . DIRECTORY_SEPARATOR;   
     if (is_dir(APP_PATH . $path)) {

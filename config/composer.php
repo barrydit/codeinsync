@@ -16,7 +16,6 @@
 }
 */
 
-
 global $errors;
 //die($_SERVER['REQUEST_METHOD']);
 
@@ -57,15 +56,18 @@ foreach ($array = preg_split("/\r\n|\n|\r/", exec(APP_SUDO  . -u www-data /usr/l
 
 // '(win) set VARIABLE / (linux/macos) export VARIABLE '
 
+const COMPOSER_DISABLE_NETWORK = 1; 
+putenv('COMPOSER_DISABLE_NETWORK=' . (bool) COMPOSER_DISABLE_NETWORK);
+
 const COMPOSER_ALLOW_SUPERUSER = true;
 putenv('COMPOSER_ALLOW_SUPERUSER=' . (bool) COMPOSER_ALLOW_SUPERUSER);
+
+//dd(getenv('COMPOSER_ALLOW_SUPERUSER'));
 
 const COMPOSER_ALLOW_XDEBUG = false; // didn't work
 putenv('COMPOSER_ALLOW_XDEBUG=' . (bool) COMPOSER_ALLOW_XDEBUG);
 
 putenv('COMPOSER_DISABLE_XDEBUG_WARN=' . (bool) true);
-
-//dd(getenv('COMPOSER_ALLOW_SUPERUSER'));
 
 class ComposerConfig {
   private $name;

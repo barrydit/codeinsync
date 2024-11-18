@@ -1,5 +1,7 @@
 <?php
 
+//require_once dirname(__DIR__, 1) . DIRECTORY_SEPARATOR . 'bootstrap.php';
+
 $htaccess = <<<END
 # Enable Rewrite Engine
 RewriteEngine On
@@ -13,27 +15,35 @@ RewriteCond %{REQUEST_FILENAME} !-d
 RewriteRule ^(.*)$ index.php/$1 [L]
 END;
 
-  // if ($path = (basename(getcwd()) == 'public') chdir('..');
+// if ($path = (basename(getcwd()) == 'public') chdir('..');
 //APP_PATH == dirname(APP_PATH_PUBLIC)
 
 //
 
-!defined('APP_SELF') and define('APP_SELF', !empty(get_included_files())?get_included_files()[0]:__FILE__);
+!defined('APP_SELF') and define('APP_SELF', !empty(get_included_files()) ? get_included_files()[0] : __FILE__);
 
 switch (APP_SELF) {
   case __FILE__:
     require_once dirname(__DIR__, 1) . DIRECTORY_SEPARATOR . 'bootstrap.php';
-    require_once dirname(__DIR__, 1) . DIRECTORY_SEPARATOR . 'config/constants.php';
+    //require_once dirname(__DIR__, 1) . DIRECTORY_SEPARATOR . 'config/constants.php';
     break;
   default:
-    if ($bootstrap = realpath(dirname(__DIR__, 1) . DIRECTORY_SEPARATOR . 'config/php.php')) {
-      require_once $bootstrap; // APP_PATH . 'index.php'
+    if ($php = realpath(dirname(__DIR__, 1) . DIRECTORY_SEPARATOR . 'config/php.php')) {
+      require_once $php; // APP_PATH . 'index.php'
     } else {
-      die(var_dump("$bootstrap was not found."));
+      die(var_dump("$php was not found."));
     }
     break;
 }
 
+//dd($_ENV, false);
+
+
+
+
+//die(var_dump(APP_ROOT));
+
+//die(var_dump(get_required_files()));
 
 /*
 switch ($_SERVER['REQUEST_URI']) {

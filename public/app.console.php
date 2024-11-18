@@ -13,7 +13,7 @@ global $shell_prompt, $auto_clear, $errors;
 if (__FILE__ == get_required_files()[0] && __FILE__ == realpath($_SERVER["SCRIPT_FILENAME"]))
   if ($path = basename(dirname(get_required_files()[0])) == 'public') { // (basename(getcwd())
     chdir('../');
-    if (is_file($path = realpath('config/php.php'))) {
+    if ($path = realpath('config/config.php')) { // is_file(config/php.php
       //dd('does this do anything?');
       require_once $path;
     }
@@ -23,6 +23,7 @@ else
 
 //dd(APP_PATH . APP_ROOT);
 
+//dd(get_required_files());
 
 //require_once APP_PATH . APP_BASE['config'] . 'classes' . DIRECTORY_SEPARATOR . 'class.sockets.php';
 
@@ -56,10 +57,7 @@ if (preg_match('/^app\.([\w\-.]+)\.php$/', basename(__FILE__), $matches))
 
       //$output[] = var_export(is_resource($_SERVER['SOCKET']), true);
 
-      
-
       $_SERVER['SOCKET'] = fsockopen(SERVER_HOST, SERVER_PORT, $errno, $errstr, 5);
-
 
       if ($_POST['cmd'] && $_POST['cmd'] != '') 
         if (preg_match('/^help/i', $_POST['cmd']))
@@ -88,16 +86,20 @@ if (preg_match('/^app\.([\w\-.]+)\.php$/', basename(__FILE__), $matches))
           if ($path = realpath(APP_PATH . APP_ROOT . rtrim(trim($match[1]), DIRECTORY_SEPARATOR))) {
             // Define the root directory you don't want to go past
 
-            $root_dir = realpath(dirname(APP_PATH . APP_ROOT));
+            $root_dir = realpath(APP_PATH . APP_ROOT . $match[1]);
 
             // Check if the resolved path is within the allowed root
             if (strpos($path, $root_dir) === 0 && strlen($path) >= strlen($root_dir)) {
                 // Proceed with your existing logic if the path is valid
                 $resultValue = (function() use ($path): string {
 
+                    define('APP_CLIENT', $path);
+
                     // Replace the escaped APP_PATH and APP_ROOT with the actual directory path
-                    if (realpath($_GET['path'] = preg_replace('/' . preg_quote(APP_PATH . APP_ROOT, DIRECTORY_SEPARATOR) . '/', '', $path)) == realpath(APP_PATH . APP_ROOT)) {
+                    if (realpath(preg_replace('/' . preg_quote(APP_PATH . APP_ROOT, DIRECTORY_SEPARATOR) . '/', '', $path)) == realpath(APP_PATH . APP_ROOT)) {
                         $_GET['path'] = '';
+                    } elseif (realpath(preg_replace('/' . preg_quote(APP_PATH . APP_ROOT, DIRECTORY_SEPARATOR) . '/', '', $path))) {
+
                     }
                     ob_start();
                     //if (is_file($include = APP_PATH . APP_ROOT . APP_BASE['vendor'] . 'autoload.php'))
@@ -235,7 +237,7 @@ if (preg_match('/^app\.([\w\-.]+)\.php$/', basename(__FILE__), $matches))
           //  ob_start();
             require_once APP_PATH . 'config/git.php';
 
-            $command = (stripos(PHP_OS, 'WIN') === 0 ? '' : APP_SUDO . '-u www-data ') . 'git commit --allow-empty --dry-run';
+            $command = (stripos(PHP_OS, 'WIN') === 0 ? '' : APP_SUDO . '-u www-data ') . 'git ' . ' --git-dir="' . APP_PATH . APP_ROOT . '.git" --work-tree="' . APP_PATH . APP_ROOT . '" commit --allow-empty --dry-run';
 
             // Append `; echo $?` to capture the exit code in the output
             $shellOutput = shell_exec("$command ; echo $?");

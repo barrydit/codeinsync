@@ -1,28 +1,28 @@
 <?php
 declare(strict_types=1); // First Line Only!
 
-require_once 'functions.php'; 
+require_once 'functions.php';
+
+!defined('APP_PATH') and define('APP_PATH', dirname(__DIR__) . DIRECTORY_SEPARATOR);
 
 date_default_timezone_set('America/Vancouver');
 
 $errors = []; // (object)
 
 // Directory of this script
-$isFile = function ($path) use (&$paths) {
+$isFile = function ($path) /*use (&$paths)*/ {
   if (is_file($path)) {
     require_once $path; // $paths[] = $path;
   }
 };
 
-$isFile(__DIR__ . DIRECTORY_SEPARATOR . 'php.php') ?: 
+$isFile(APP_PATH . 'php.php') ?: 
 $isFile('config/php.php') ?: 
 $isFile('php.php');
 
 // Check if the dd function exists
 if (!function_exists('dd')) {
   $errors['FUNCTIONS'] = 'functions.php failed to load. Therefore function dd() does not exist (yet).';
-}
-
 // Custom error handler
 /**
  * Summary of customErrorHandler
@@ -32,7 +32,7 @@ if (!function_exists('dd')) {
  * @param mixed $errline
  * @return bool
  */
-/*function customErrorHandler($errno, $errstr, $errfile, $errline) {
+function customErrorHandler($errno, $errstr, $errfile, $errline) {
   global $errors;
   !defined('APP_ERROR') and define('APP_ERROR', true); // $hasErrors = true;
   !defined('APP_DEBUG') and define('APP_DEBUG', APP_ERROR);
@@ -60,12 +60,13 @@ if (!function_exists('dd')) {
       break;
     }
   }
-  dd($errors, false);
+  var_dump($errors);
   return false;
 }
 // Set the custom error handler
 set_error_handler("customErrorHandler");
-*/
+}
+
 // Enable debugging and error handling based on APP_DEBUG and APP_ERROR constants
 !defined('APP_ERROR') and define('APP_ERROR', false);
 !defined('APP_DEBUG') and define('APP_DEBUG', isset($_GET['debug']) ? TRUE : FALSE);
@@ -80,7 +81,10 @@ if (APP_DEBUG || APP_ERROR) {
   defined('PHP_ZTS') and $errors['PHP_ZTS'] = "PHP was built with ZTS enabled.\n";
   defined('PHP_DEBUG') and $errors['PHP_DEBUG'] = "PHP was built with DEBUG enabled.\n";
   defined('PHP_VERSION') and $errors['PHP_VERSION'] = "PHP Version: " . PHP_VERSION . "\n";
+  // PHP_MAJOR_VERSION, PHP_MINOR_VERSION, PHP_RELEASE_VERSION, PHP_EXTRA_VERSION, PHP_VERSION_ID
   defined('PHP_OS') and $errors['PHP_OS'] = "PHP_OS: " . PHP_OS . "\n";
+  // PHP_OS_FAMILY
+  // PHP_EXEC
   defined('PHP_SAPI') and $errors['PHP_SAPI'] = "PHP_SAPI: " . PHP_SAPI . "\n";
   defined('PHP_BINARY') and $errors['PHP_BINARY'] = "PHP_BINARY: " . PHP_BINARY . "\n";
   defined('PHP_BINDIR') and $errors['PHP_BINDIR'] = "PHP_BINDIR: " . PHP_BINDIR . "\n";
@@ -90,10 +94,12 @@ if (APP_DEBUG || APP_ERROR) {
   defined('PHP_EOL') and $errors['PHP_EOL'] = 'PHP_EOL: ' . json_encode(PHP_EOL) . "\n";
   defined('PHP_INT_MIN') and $errors['PHP_INT_MIN'] = "PHP_INT_MIN: " . PHP_INT_MIN . "\n"; // -/+ 2147483648 32-bit
   defined('PHP_INT_MAX') and $errors['PHP_INT_MAX'] = "PHP_INT_MAX: " . PHP_INT_MAX . "\n"; // -/+ 9223372036854775808 64-bit
+  // PHP_INT_SIZE
   defined('PHP_FLOAT_DIG') and $errors['PHP_FLOAT_DIG'] = "PHP_FLOAT_DIG: " . PHP_FLOAT_DIG . "\n";
   defined('PHP_FLOAT_EPSILON') and $errors['PHP_FLOAT_EPSILON'] = "PHP_FLOAT_EPSILON: " . PHP_FLOAT_EPSILON . "\n";
   defined('PHP_FLOAT_MIN') and $errors['PHP_FLOAT_MIN'] = "PHP_FLOAT_MIN: " . PHP_FLOAT_MIN . "\n";
   defined('PHP_FLOAT_MAX') and $errors['PHP_FLOAT_MAX'] = "PHP_FLOAT_MAX: " . PHP_FLOAT_MAX . "\n";
+  // PHP_FD_SETSIZE
 
 } else {
   ini_set('display_errors', 1);
@@ -101,7 +107,7 @@ if (APP_DEBUG || APP_ERROR) {
   error_reporting(E_ALL/*E_STRICT |*/);
 }
 
-ini_set('error_log', is_dir($path = dirname(__DIR__, 1) . DIRECTORY_SEPARATOR . 'config') ? dirname($path, 1) . DIRECTORY_SEPARATOR . 'error_log' : 'error_log');
+ini_set('error_log', is_dir($path = APP_PATH . 'config') ? dirname($path, 1) . DIRECTORY_SEPARATOR . 'error_log' : 'error_log');
 ini_set('log_errors', 'true');
 
 ini_set('xdebug.debug', '0'); // remote_enable
@@ -126,10 +132,6 @@ $_ENV = (function() use ($envPath) {
   }
   return parse_ini_file_multi($envPath);
 })();
-
-$isFile(__DIR__ . DIRECTORY_SEPARATOR . 'php.php') ?: $isFile('config/php.php') ?: $isFile('php.php');
-
-$isFile(__DIR__ . DIRECTORY_SEPARATOR . 'constants.php') ?: $isFile('config/constants.php') ?: $isFile('constants.php');
 
 //if (empty($paths)) {
 //  die(var_dump("functions.php was not found."));
@@ -169,71 +171,72 @@ if (!defined('DOMAIN_EXPR')) {
 // Load the required files
 //$paths[] = __DIR__ . DIRECTORY_SEPARATOR . 'constants.php'; //require('constants.php'); 
 
-$path = null;
+if (!defined('APP_ROOT')) {
 
-if (!empty($_GET['client']) || !empty($_GET['domain'])) {
-  $path = /*'../../'.*/ 'clientele' . DIRECTORY_SEPARATOR . ($_GET['client'] ?? '') . DIRECTORY_SEPARATOR;
-  $dirs = array_filter(glob(dirname(__DIR__) . DIRECTORY_SEPARATOR . "$path*"), 'is_dir');
+  // Determine base paths for client, domain, or project
+  $clientPath = isset($_GET['client'])
+      ? 'clientele' . DIRECTORY_SEPARATOR . $_GET['client'] . DIRECTORY_SEPARATOR
+      : (!empty($_ENV['DEFAULT_CLIENT']) && isset($_GET['client']) ? 'clientele' . DIRECTORY_SEPARATOR . $_ENV['DEFAULT_CLIENT'] . DIRECTORY_SEPARATOR : '');
 
-  if (count($dirs) == 1) {
-    foreach($dirs as $dir) {
-      $dirs[0] = $dirs[array_key_first($dirs)];
-      if (preg_match(DOMAIN_EXPR, strtolower(basename($dirs[0])))) {
-        $_GET['domain'] = basename($dirs[0]);
-        break;
-      } else {
-        unset($dirs[array_key_first($dirs)]);
-        continue;
-      }
-    }
+  $domainPath = isset($_GET['domain']) && $_GET['domain'] !== ''
+      ? (isset($_GET['client']) 
+          ? $clientPath . $_GET['domain'] . DIRECTORY_SEPARATOR
+          : 'clientele' . DIRECTORY_SEPARATOR . $_GET['domain'] . DIRECTORY_SEPARATOR)
+      : (!empty($_ENV['DEFAULT_DOMAIN']) ? 'clientele' . DIRECTORY_SEPARATOR . $_ENV['DEFAULT_CLIENT'] . DIRECTORY_SEPARATOR . ($_GET['domain'] = $_ENV['DEFAULT_DOMAIN']) . DIRECTORY_SEPARATOR : '')/*''*/;
+
+  $projectPath = isset($_GET['project'])
+      ? 'projects' . DIRECTORY_SEPARATOR . $_GET['project'] . DIRECTORY_SEPARATOR
+      : '';
+
+  // Final path prioritizing client/domain and falling back to project if present
+  $path = $domainPath ?: $clientPath ?: $projectPath;
+        //
+  //die($path);
+  // Validate path and define APP_ROOT if valid
+  if ($path && is_dir(APP_PATH . $path)) {
+      if (realpath($resolvedPath = rtrim($path, DIRECTORY_SEPARATOR)) !== false) {
+        define('APP_ROOT', $resolvedPath ? $resolvedPath . DIRECTORY_SEPARATOR : '');
+      } 
+  } else {
+      define('APP_ROOT', '');
+      $errors['APP_ROOT'] = 'APP_ROOT was NOT defined.';
   }
-
-  $dirs = array_filter(glob(dirname(__DIR__) . DIRECTORY_SEPARATOR . $path . '*'), 'is_dir');
-
-  if (!empty($_GET['domain'])) {
-    foreach($dirs as $key => $dir) {
-      if (basename($dir) == $_GET['domain']) {
-        //if (is_dir($dirs[$key].'/public/')) $path .= basename($dirs[$key]).'/public/';
-        $path .= basename($dirs[$key]) . DIRECTORY_SEPARATOR;
-        break;
-      }
-    }
-  } else if (!isset($_GET['domain']) && count($dirs) >= 1) {
-    if (preg_match(DOMAIN_EXPR, strtolower(basename(array_values($dirs)[0])))) {
-      $_GET['domain'] = basename(array_values($dirs)[0]);
-      $path .= basename(array_values($dirs)[0]) . DIRECTORY_SEPARATOR;
-    } else {
-      $path .= ($_GET['domain'] = basename(array_values($dirs)[0])) . DIRECTORY_SEPARATOR;
-    }
-  }
-
-  if (is_dir(APP_PATH . $path)) {
-    defined('APP_CLIENT') ?: define('APP_CLIENT', new clientOrProj($path));
-  }
-} else if (!empty($_GET['project']) && is_dir(APP_PATH . $path)) {
-  $path = /*'../../'.*/ 'projects' . DIRECTORY_SEPARATOR . $_GET['project'] . DIRECTORY_SEPARATOR;
-  //$dirs = array_filter(glob(dirname(__DIR__) . '/' . $path . '*'), 'is_dir');
-/*
-  if (count($dirs) == 1) {
-    foreach($dirs as $dir) {
-      $dirs[0] = $dirs[array_key_first($dirs)];
-      if (preg_match(DOMAIN_EXPR, strtolower(basename($dirs[0])))) {
-        $_GET['domain'] = basename($dirs[0]);
-        break;
-      } else {
-        unset($dirs[array_key_first($dirs)]);
-        continue;
-      }
-    }
-  }*/
 }
+
+//dd(APP_ROOT, false);
 
 //!defined('APP_ROOT')) ?: define('APP_ROOT', !empty(realpath(APP_PATH . APP_ROOT)) ? (string) APP_ROOT . DIRECTORY_SEPARATOR : '');
 
-if (!defined('APP_ROOT')) {
+//if (!defined('APP_ROOT'))
+  //define('APP_ROOT', (!$path || !is_dir($path)) ? '' : $path);
+
+
+/* if (!defined('APP_ROOT')) {
   $errors['APP_ROOT'] = 'APP_ROOT was NOT defined.';
-  define('APP_ROOT', (!$path || !is_dir($path)) ? '' : $path);
-}
+  // Determine base paths for client, domain, or project
+  $clientPath = isset($_GET['client'])
+      ? 'clientele' . DIRECTORY_SEPARATOR . $_GET['client'] . DIRECTORY_SEPARATOR
+      : (!empty($_ENV['DEFAULT_CLIENT']) ? 'clientele' . DIRECTORY_SEPARATOR . $_ENV['DEFAULT_CLIENT'] . DIRECTORY_SEPARATOR : '');
+
+  $domainPath = isset($_GET['domain']) && $_GET['domain'] !== ''
+      ? (isset($_GET['client']) 
+          ? $clientPath . $_GET['domain'] . DIRECTORY_SEPARATOR
+          : 'clientele' . DIRECTORY_SEPARATOR . $_GET['domain'] . DIRECTORY_SEPARATOR)
+      : (!empty($_ENV['DEFAULT_DOMAIN']) ? 'clientele' . DIRECTORY_SEPARATOR . $_ENV['DEFAULT_DOMAIN'] . DIRECTORY_SEPARATOR : '');
+
+  $projectPath = isset($_GET['project'])
+      ? 'projects' . DIRECTORY_SEPARATOR . $_GET['project'] . DIRECTORY_SEPARATOR
+      : '';
+
+  // Final path prioritizing client/domain and falling back to project if present
+  $path = $domainPath ?: $clientPath ?: $projectPath;
+
+  // Validate path and define APP_ROOT if valid
+  if ($path && is_dir($path)) {
+      $resolvedPath = realpath(rtrim($path, DIRECTORY_SEPARATOR));
+      define('APP_ROOT', $resolvedPath ? $resolvedPath . DIRECTORY_SEPARATOR : '');
+  }
+}*/
 
 //dd($_GET);
 
@@ -244,8 +247,9 @@ if (isset($_GET['path']) && $_GET['path'] != '' && realpath($_GET['path']) && is
   $_GET['path'] = rtrim(ltrim($_GET['path'], '/'), '/'); 
 */
 
-isset($_GET['path'])
-  and $_GET['path'] = !empty(realpath(APP_PATH . APP_ROOT . ($path = rtrim(ltrim($_GET['path'], DIRECTORY_SEPARATOR), DIRECTORY_SEPARATOR)) ) && $path != '') ? (string) $path . DIRECTORY_SEPARATOR : '';
+if (isset($_GET['path']))
+  if (realpath(APP_PATH . APP_ROOT . ($path = rtrim(ltrim($_GET['path'], DIRECTORY_SEPARATOR), DIRECTORY_SEPARATOR)) ) && $path != '')
+    $_GET['path'] = (string) $path . DIRECTORY_SEPARATOR;
 
 // dd(getenv('PATH') . ' -> ' . PATH_SEPARATOR);
 

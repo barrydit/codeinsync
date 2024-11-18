@@ -3,7 +3,14 @@
 //if (!in_array(dirname(__DIR__) . DIRECTORY_SEPARATOR . 'constants.php', get_required_files()))
 //  die($errors['CONSTANTS'] = 'Missing config/constants.php from required files');
 //require_once dirname(__DIR__, 1) . DIRECTORY_SEPARATOR . 'config.php';
-require dirname(__DIR__, 1) . DIRECTORY_SEPARATOR . 'php.php';
+
+// Define the path to php.php once to avoid repetition
+$phpFilePath = dirname(__DIR__, 1) . DIRECTORY_SEPARATOR . 'php.php';
+
+// Ensure this file is loaded and php.php is not yet loaded
+if (in_array(__FILE__, get_required_files()) && !in_array($phpFilePath, get_required_files())) {
+    require $phpFilePath;
+}
 
 //dd(get_defined_constants(true)['user']);
 
