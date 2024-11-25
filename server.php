@@ -263,8 +263,15 @@ function clientInputHandler($input) {
       if ($path = realpath($path)) {
         $output = "Changing step 2 directory to $matches[1]";
         $resultValue = (function() use ($path) {
+          $basePath = rtrim(APP_PATH . APP_ROOT, DIRECTORY_SEPARATOR); // Normalize base path
+          $_GET['path'] = preg_replace(
+              '#' . preg_quote($basePath, '#') . '#',
+              '',
+              $path
+          );
+
           // Replace the escaped APP_PATH and APP_ROOT with the actual directory path
-          if (realpath($_GET['path'] = preg_replace('/' . preg_quote(APP_PATH . APP_ROOT, '/') . '/', '', $path)) == realpath(APP_PATH . APP_ROOT))
+          if (realpath($_GET['path']) == realpath($basePath))
             $_GET['path'] = '';
 
           //dd('Path: ' . $_GET['path'] . "\n", false);
@@ -982,6 +989,7 @@ register_shutdown_function(function() {
       echo 'Unlinking PID file... ' . PID_FILE . PHP_EOL;
   }
 
+  if (get_required_files()[0] == __FILE__)
   echo str_replace(
       '{{STATUS}}',
       'Server has stopped... PID=' . getmypid() . str_pad('', 10, " "),

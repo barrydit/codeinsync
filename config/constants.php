@@ -199,6 +199,8 @@ switch (basename(__DIR__)) {
       $errors['MISSING_PATHS'] = 'Directories not added to the base paths: ' . implode(', ', $missingPaths) . "\n";
     }
 
+    $errors['BASE_PATHS'] = 'Directories were added to the base paths: ' . implode(', ', $base_paths) . "\n";
+
     // Process common directories and prepare APP_BASE definition
     $processedCommon = [];
 
