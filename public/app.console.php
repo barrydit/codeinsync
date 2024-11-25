@@ -81,26 +81,41 @@ if (preg_match('/^app\.([\w\-.]+)\.php$/', basename(__FILE__), $matches))
           //exec($_POST['cmd'], $output);
           //die(header('Location: ' . APP_URL_BASE . '?app=text_editor&filename='.$_POST['cmd']));
           //$output[] = "Changing directory to " . $path;
-          $path = APP_ROOT ; //realpath();
+
 /**/      error_log("Path: $path");
-          if ($path = realpath(APP_PATH . APP_ROOT . rtrim(trim($match[1]), DIRECTORY_SEPARATOR))) {
+          if (realpath($path = APP_PATH . APP_ROOT . rtrim(trim($match[1]), DIRECTORY_SEPARATOR))) {
             // Define the root directory you don't want to go past
 
-            $root_dir = realpath(APP_PATH . APP_ROOT . $match[1]);
+            $rootDir = realpath(APP_PATH . APP_ROOT . ($match[1] ?? ''));
 
             // Check if the resolved path is within the allowed root
-            if (strpos($path, $root_dir) === 0 && strlen($path) >= strlen($root_dir)) {
+            if (strpos($path, $rootDir) === 0 && strlen($path) >= strlen($rootDir)) {
                 // Proceed with your existing logic if the path is valid
                 $resultValue = (function() use ($path): string {
 
                     define('APP_CLIENT', $path);
 
-                    // Replace the escaped APP_PATH and APP_ROOT with the actual directory path
-                    if (realpath(preg_replace('/' . preg_quote(APP_PATH . APP_ROOT, DIRECTORY_SEPARATOR) . '/', '', $path)) == realpath(APP_PATH . APP_ROOT)) {
-                        $_GET['path'] = '';
-                    } elseif (realpath(preg_replace('/' . preg_quote(APP_PATH . APP_ROOT, DIRECTORY_SEPARATOR) . '/', '', $path))) {
+                    $basePath = rtrim(APP_PATH . APP_ROOT, DIRECTORY_SEPARATOR);
 
+                    $path = preg_replace('#^' . preg_quote($basePath, '#') . '/?#', '', $path);
+
+                    // Replace the escaped APP_PATH and APP_ROOT with the actual directory path
+                    if (realpath(preg_replace('#^' . preg_quote($basePath, '#') . '/?#', '', $path)) == realpath($basePath)) {
+                        $_GET['path'] = '';
+                    } elseif (
+                        realpath(
+                          $newPath = preg_replace(
+                            '#^' . preg_quote(rtrim(APP_PATH . APP_ROOT . ($_GET['domain'] ?? ''), DIRECTORY_SEPARATOR), '#') . '/?#',
+                            '', $path
+                          )
+                        )
+                      ) {
+                        ($newPath === '../' ? $_GET['path'] = '' : $_GET['path'] = "$newPath/");  ///  preg_replace('/' . preg_quote(APP_PATH . APP_ROOT, DIRECTORY_SEPARATOR) . '/', '', $path)
+                    } else {
+                      $_GET['path'] = '';
                     }
+                    //$_GET['path'] =  . '>>' . APP_CLIENT . ($_GET['domain'] ?? '');
+
                     ob_start();
                     //if (is_file($include = APP_PATH . APP_ROOT . APP_BASE['vendor'] . 'autoload.php'))
                       //if (isset($_ENV['COMPOSER']['AUTOLOAD']) && (bool) $_ENV['COMPOSER']['AUTOLOAD'] === TRUE)
@@ -114,7 +129,7 @@ if (preg_match('/^app\.([\w\-.]+)\.php$/', basename(__FILE__), $matches))
                 $output[] = (string) $resultValue;
             } else {
                 // Handle the case where the path is trying to go past the root directory
-                $output[] = "Cannot go past the root directory: $root_dir";
+                $output[] = "Cannot go past the root directory: $rootDir >> $path";
             }
           }
 /*

@@ -1,8 +1,8 @@
 <?php
 
 if (isset($_GET['json'])) {
-  header('Content-Type: application/json');
 
+  header('Content-Type: application/json');
   function get_required_files_in_script($script) {
     ob_start();
     include $script;
@@ -34,7 +34,11 @@ $files = array_map(function($path) {
     }, get_required_files_in_script('server.php'))),
     // ["config/config.php","config/functions.php","config/constants.php","config/composer.php","config/classes/class.clientorproj.php","config/classes/class.logger.php","config/classes/class.notification.php","config/classes/class.shutdown.php","config/classes/class.websocketserver.php"],
     'public/index.php' => $files,
-    'vendor/autoload.php' => array_merge(array_values(array_map(function($file){ if (preg_match('/\/mnt\/c\/www\/vendor\/.*/', $file)) return preg_replace('/^' . preg_quote('/mnt/c/www/', '/') . '/', '', $file); }, get_required_files_in_script('vendor/autoload.php'))), ['config/composer.php'])
+    //'public/index.php' => get_required_files_in_script('idx.product.php') + ['public/index.php'],
+    'public/idx.product.php' => array_merge(array_values(array_map(function($file){ if (preg_match('/\/mnt\/c\/www\/.*/', $file)) return preg_replace('/^' . preg_quote('/mnt/c/www/', '/') . '/', '', $file); }, get_required_files_in_script('public/idx.product.php'))), ['public/index.php']),
+
+    'config/composer.php' => array_merge(array_values(array_map(function($file){ if (preg_match('/\/mnt\/c\/www\/.*/', $file)) return preg_replace('/^' . preg_quote('/mnt/c/www/', '/') . '/', '', $file); }, get_required_files_in_script('config/composer.php')))),
+    //'vendor/autoload.php' => array_merge(array_values(array_map(function($file){ if (preg_match('/\/mnt\/c\/www\/vendor\/.*/', $file)) return preg_replace('/^' . preg_quote('/mnt/c/www/', '/') . '/', '', $file); }, get_required_files_in_script('vendor/autoload.php'))), ['config/composer.php'])
   ]);
 
   die();
@@ -371,6 +375,24 @@ unset($path);
 </head>
 <body>
 <?= $app['body']; ?>
+
+<script src="<?= check_http_status('https://code.jquery.com/jquery-3.7.1.min.js') ? 'https://code.jquery.com/jquery-3.7.1.min.js' : APP_BASE['resources'] . 'js/jquery/' . 'jquery-3.7.1.min.js' ?>"></script>
+<?php
+if (!is_file($path = APP_PATH . APP_BASE['resources'] . 'js/jquery-ui/' . 'jquery-ui-1.12.1.js') || ceil(abs((strtotime(date('Y-m-d')) - strtotime(date('Y-m-d',strtotime('+5 days',filemtime($path))))) / 86400)) <= 0 ) {
+  if (!realpath($pathdir = dirname($path)))
+    if (!mkdir($pathdir, 0755, true)) $errors['DOCS'] = $pathdir . ' does not exist';
+
+    $url = 'https://code.jquery.com/ui/1.12.1/jquery-ui.min.js';
+    $handle = curl_init($url);
+    curl_setopt($handle, CURLOPT_RETURNTRANSFER, true);
+
+    if (!empty($js = curl_exec($handle)))
+      file_put_contents($path, $js) or $errors['JS-JQUERY-UI'] = "$url returned empty.";
+}?>
+
+    <script src="<?= check_http_status('https://code.jquery.com/ui/1.12.1/jquery-ui.min.js') ? 'https://code.jquery.com/ui/1.12.1/jquery-ui.min.js' : APP_BASE['resources'] . 'js/jquery-ui/' . 'jquery-ui-1.12.1.js' ?>"></script> 
+
+    <script src="https://d3js.org/d3.v4.min.js"></script>
 
 <script>
 let isDragging = false;

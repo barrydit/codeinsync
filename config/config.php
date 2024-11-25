@@ -173,37 +173,39 @@ if (!defined('DOMAIN_EXPR')) {
 
 if (!defined('APP_ROOT')) {
 
-  // Determine base paths for client, domain, or project
-  $clientPath = isset($_GET['client'])
-      ? 'clientele' . DIRECTORY_SEPARATOR . $_GET['client'] . DIRECTORY_SEPARATOR
-      : (!empty($_ENV['DEFAULT_CLIENT']) && isset($_GET['client']) ? 'clientele' . DIRECTORY_SEPARATOR . $_ENV['DEFAULT_CLIENT'] . DIRECTORY_SEPARATOR : '');
+  if (array_key_first($_GET) != 'path') {
 
-  $domainPath = isset($_GET['domain']) && $_GET['domain'] !== ''
-      ? (isset($_GET['client']) 
-          ? $clientPath . $_GET['domain'] . DIRECTORY_SEPARATOR
-          : 'clientele' . DIRECTORY_SEPARATOR . $_GET['domain'] . DIRECTORY_SEPARATOR)
-      : (!empty($_ENV['DEFAULT_DOMAIN']) ? 'clientele' . DIRECTORY_SEPARATOR . $_ENV['DEFAULT_CLIENT'] . DIRECTORY_SEPARATOR . ($_GET['domain'] = $_ENV['DEFAULT_DOMAIN']) . DIRECTORY_SEPARATOR : '')/*''*/;
+    // Determine base paths for client, domain, or project
+    $clientPath = isset($_GET['client'])
+        ? 'clientele' . DIRECTORY_SEPARATOR . $_GET['client'] . DIRECTORY_SEPARATOR
+        : (!empty($_ENV['DEFAULT_CLIENT']) && isset($_GET['client']) ? 'clientele' . DIRECTORY_SEPARATOR . $_ENV['DEFAULT_CLIENT'] . DIRECTORY_SEPARATOR : '');
 
-  $projectPath = isset($_GET['project'])
-      ? 'projects' . DIRECTORY_SEPARATOR . $_GET['project'] . DIRECTORY_SEPARATOR
-      : '';
+    $domainPath = isset($_GET['domain']) && $_GET['domain'] !== ''
+        ? (isset($_GET['client']) 
+            ? $clientPath . $_GET['domain'] . DIRECTORY_SEPARATOR
+            : 'clientele' . DIRECTORY_SEPARATOR . $_GET['domain'] . DIRECTORY_SEPARATOR)
+        : (!empty($_ENV['DEFAULT_DOMAIN']) ? 'clientele' . DIRECTORY_SEPARATOR . $_ENV['DEFAULT_CLIENT'] . DIRECTORY_SEPARATOR . (array_key_first($_GET) == 'path' ? '' : ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['cmd']) && in_array($_POST['cmd'], ['cd ../', 'chdir ../']) ? '' : $_ENV['DEFAULT_DOMAIN']) . DIRECTORY_SEPARATOR ) : '')/*''*/;
 
-  // Final path prioritizing client/domain and falling back to project if present
-  $path = $domainPath ?: $clientPath ?: $projectPath;
-        //
-  //die($path);
-  // Validate path and define APP_ROOT if valid
-  if ($path && is_dir(APP_PATH . $path)) {
-      if (realpath($resolvedPath = rtrim($path, DIRECTORY_SEPARATOR)) !== false) {
-        define('APP_ROOT', $resolvedPath ? $resolvedPath . DIRECTORY_SEPARATOR : '');
-      } 
+    $projectPath = isset($_GET['project'])
+        ? 'projects' . DIRECTORY_SEPARATOR . $_GET['project'] . DIRECTORY_SEPARATOR
+        : '';
+
+    // Final path prioritizing client/domain and falling back to project if present
+    $path = $domainPath ?: $clientPath ?: $projectPath;
+          //
+    //die($path);
+    // Validate path and define APP_ROOT if valid
+    if ($path && is_dir(APP_PATH . $path)) {
+        if (realpath($resolvedPath = rtrim($path, DIRECTORY_SEPARATOR)) !== false) {
+          define('APP_ROOT', $resolvedPath ? $resolvedPath . DIRECTORY_SEPARATOR : '');
+        } 
+    }
+    
   } else {
       define('APP_ROOT', '');
       $errors['APP_ROOT'] = 'APP_ROOT was NOT defined.';
   }
 }
-
-//dd(APP_ROOT, false);
 
 //!defined('APP_ROOT')) ?: define('APP_ROOT', !empty(realpath(APP_PATH . APP_ROOT)) ? (string) APP_ROOT . DIRECTORY_SEPARATOR : '');
 

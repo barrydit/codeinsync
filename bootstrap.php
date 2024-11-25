@@ -2,6 +2,12 @@
 
 // Define APP_PATH constant
 !defined('APP_PATH') and define('APP_PATH', __DIR__ . DIRECTORY_SEPARATOR) and is_string(APP_PATH) ? '' : $errors['APP_PATH'] = 'APP_PATH is not a valid string value.';
+
+if (!defined('DOMAIN_EXPR')) {
+  // const DOMAIN_EXPR = 'string only/non-block/ternary';
+  define('DOMAIN_EXPR', $_ENV['SHELL']['EXPR_DOMAIN'] ?? '/(?:[a-z]+\:\/\/)?(?:[a-z0-9\-]+\.)+[a-z]{2,6}(?:\/\S*)?/i'); // /(?:\.(?:([-a-z0-9]+){1,}?)?)?\.[a-z]{2,6}$/';
+}
+
 /*
 if (!defined('APP_ROOT')) {
   $path = !isset($_GET['client']) ? (!isset($_GET['project']) ? '' : 'projects' . DIRECTORY_SEPARATOR . $_GET['project']) : 'clientele' . DIRECTORY_SEPARATOR . $_GET['client'] . DIRECTORY_SEPARATOR . (isset($_GET['domain']) && $_GET['domain'] != '' ? $_GET['domain'] : '') . DIRECTORY_SEPARATOR; /* ($_GET['path'] . '/' ?? '')*/
@@ -72,6 +78,7 @@ $path = null;
 switch (basename(__DIR__)) { // getcwd()
   case 'public':
     chdir(dirname(__DIR__));
+
     require_once 'config/php.php';
 
     if ($config = realpath(APP_PATH . 'config/config.php')) {

@@ -45,11 +45,71 @@ $tableGen = function(): string {
 
   //dd(get_required_files(), false);
 
-  echo '<div style="position: absolute; top: 2px; left: 2px;  width: 100%;"><a href="?path" ' . (isset($_GET['path']) && !isset($_GET['client']) ? 'onclick="handleClick(event, \'/\')"' : '') . '><img src="resources/images/directory-www.fw.png" width="50" height="32">' .  rtrim(APP_PATH, DIRECTORY_SEPARATOR) /* */ . '</a>' . (isset($_GET['client']) ? '<a href="?client" ' . (isset($_GET['path']) ? 'onclick="handleClick(event, \'../\')"' : '') . '>' . DIRECTORY_SEPARATOR . 'clientele' . DIRECTORY_SEPARATOR . '</a><a href="?client=' . $_GET['client'] . '" onclick="handleClick(event, \'../\')">' . $_GET['client'] . '</a>' : '') . (isset($_GET['domain']) ? '<a href="?' . (isset($_GET['client']) ? 'client=' . $_GET['client'] . '&' : '') . 'domain=' . $_GET['domain'] . '" onclick="handleClick(event, \'/\')">' . /*DIRECTORY_SEPARATOR .*/ (basename(APP_ROOT) != $_GET['domain'] ? '' : DIRECTORY_SEPARATOR . $_GET['domain']) . '</a>' : /*($_GET['client'] ?? '') .*/ (isset($_GET['domain']) ? DIRECTORY_SEPARATOR . $_GET['domain'] : '') ?? ($_GET['project'])) . (isset($_GET['project']) ? '<a onclick="handleClick(event, \'/\')">' . DIRECTORY_SEPARATOR . 'projects' . (DIRECTORY_SEPARATOR . $_GET['project'] ?? '') . '</a>' : '') . DIRECTORY_SEPARATOR . (isset($_GET['path']) && $_GET['path'] && $_GET['path'] !== '/' ? '<a href="?path=' . trim($_GET['path'], DIRECTORY_SEPARATOR) . '" onclick="handleClick(event, \'' . $_GET['path'] . '/\')">' . /*DIRECTORY_SEPARATOR .*/ trim($_GET['path'], DIRECTORY_SEPARATOR) . DIRECTORY_SEPARATOR . '</a>' : '' /*DIRECTORY_SEPARATOR*/) . '</div><div style="height: 25px;"></div>';
+// Base navigation path
+$basePath = rtrim(APP_PATH, DIRECTORY_SEPARATOR);
+$clientPath = $_GET['client'] ?? null;
+$domainPath = $_GET['domain'] ?? null;
+$projectPath = $_GET['project'] ?? null;
+$relativePath = isset($_GET['path']) ? trim($_GET['path'], DIRECTORY_SEPARATOR) : null;
+
+// Base link
+$navigation = '<div style="position: absolute; top: 2px; left: 2px; width: 100%;">';
+$navigation .= '<a href="?path" ' . 
+    (!isset($_GET['client']) && isset($_GET['path']) ? 'onclick="handleClick(event, \'/\')"' : '') . 
+    '><img src="resources/images/directory-www.fw.png" width="50" height="32">' . 
+    $basePath . DIRECTORY_SEPARATOR . 
+    '</a>';
+
+// Client navigation
+if ($clientPath) {
+    $navigation .= '<a href="?client="' . ($clientPath ?? '')  . 
+        (isset($_GET['path']) || isset($_GET['client']) ? 'onclick="' : '') . 
+        '>' . DIRECTORY_SEPARATOR . 'clientele' . DIRECTORY_SEPARATOR . 
+        '</a>';
+    $navigation .= '<a href="?client=' . $clientPath . '" onclick="">' . 
+        $clientPath . 
+        '</a>';
+}
+
+// Domain navigation
+if ($domainPath) {
+    $navigation .= '<a href="?' . 
+        (isset($clientPath) ? 'client=' . $clientPath . '&' : '') . 
+        'domain=' . $domainPath . '" onclick="handleClick(event, \'/\')">' . 
+        (basename(APP_ROOT) !== $domainPath ? '' : DIRECTORY_SEPARATOR . $domainPath) . 
+        '</a>';
+} elseif ($clientPath) {
+    $navigation .= DIRECTORY_SEPARATOR . $domainPath;
+}
+
+// Project navigation
+if ($projectPath) {
+    $navigation .= '<a onclick="handleClick(event, \'/\')">' . 
+        DIRECTORY_SEPARATOR . 'projects' . 
+        (DIRECTORY_SEPARATOR . $projectPath ?? '') . 
+        '</a>';
+}
+
+// Path navigation
+if ($relativePath && $relativePath !== '/') {
+    $navigation .= '<a href="?path=' . $relativePath . '" onclick="handleClick(event, \'' . $relativePath . '/\')">' . 
+        $relativePath . DIRECTORY_SEPARATOR . 
+        '</a>';
+}
+
+$navigation .= '</div><div style="height: 25px;"></div>';
+echo $navigation;
+
+/*
+  dd(get_required_files(), false);
+dd($_GET, false);
+dd($_POST, false);
+dd(APP_PATH . APP_ROOT, false);*/
+//dd(APP_CLIENT, false);
 
 if (isset($_GET['path']) && preg_match('/^vendor\/?/', $_GET['path'])) {
 
-    //if ($_ENV['COMPOSER']['AUTOLOAD'] == true)
+  //if ($_ENV['COMPOSER']['AUTOLOAD'] == true)
   require_once APP_PATH . APP_ROOT . APP_BASE['vendor'] . 'autoload.php';
   require_once APP_PATH . APP_BASE['config'] . 'composer.php';
   //dd(get_required_files());
@@ -104,7 +164,7 @@ if (defined('COMPOSER_VENDORS')) {
           if ($projIndex = realpath(APP_PATH . 'projects' . DIRECTORY_SEPARATOR . 'index.php'))
             $handle = fopen($projIndex, 'r');
           $pkgs_matched = [];
-          
+
           if (@$handle) {
               while (($line = fgets($handle)) !== false) {
                   if (preg_match('/^use\s+(.+?);/', $line, $matches)) {
@@ -117,7 +177,7 @@ if (defined('COMPOSER_VENDORS')) {
           }
 
           $dirs = [];
-          
+
           foreach (array_filter( glob( APP_PATH . APP_BASE['var'] . 'packages' . DIRECTORY_SEPARATOR . '*.php'), 'is_file') as $key => $dir) {
             if (preg_match('/^(.*)-(.*).php$/', basename($dir), $matches)) {
               $name = $matches[1];
@@ -127,12 +187,12 @@ if (defined('COMPOSER_VENDORS')) {
               }
             }
           }
-          
+
           $count = 1;
           $lastKey = array_key_last($paths);
           if (!empty($paths))
             foreach ($paths as $vendor => $packages) {
-          
+
               echo "          <td style=\"text-align: center; border: none;\" class=\"text-xs\">\n            <div class=\"container2\">\n";
           
               $show_notice = true;
@@ -469,7 +529,7 @@ if (defined('COMPOSER_VENDORS')) {
 
 // >>>
 
-  $path = (defined('APP_ROOT') && APP_ROOT) ? APP_PATH . APP_ROOT . ($_GET['path'] ?? '') : dirname(APP_PATH . APP_ROOT) . DIRECTORY_SEPARATOR . ($_GET['path'] ?? '');
+  $path = defined('APP_ROOT') && APP_ROOT ? APP_PATH . APP_ROOT : (APP_ROOT == '' ? APP_PATH . APP_ROOT : dirname(APP_PATH . APP_ROOT) . DIRECTORY_SEPARATOR);
 
 //$path = dirname(APP_PATH . APP_ROOT) . DIRECTORY_SEPARATOR . ($_GET['path'] ?? '');
 
@@ -478,7 +538,7 @@ if (defined('COMPOSER_VENDORS')) {
 
 // <<<
 
-    if (!realpath($path)) { dd($_GET, false);?>
+    if (!realpath($path . ($_GET['path'] ?? ''))) { ?>
       
       <?= "<br /><br />Missing directory $path"; ?>
   
@@ -489,12 +549,12 @@ if (defined('COMPOSER_VENDORS')) {
 
           //dd(APP_CLIENT, false);
       
-          $path = (defined('APP_CLIENT')) ? APP_CLIENT : APP_PATH . (!isset($_GET['domain']) && isset($_GET['client']) ? APP_ROOT : APP_ROOT);
+          //$path = (defined('APP_CLIENT')) ? APP_CLIENT : APP_PATH . (!isset($_GET['domain']) && isset($_GET['client']) ? APP_ROOT : APP_ROOT);
 
           //echo dirname($pathAvail) . DIRECTORY_SEPARATOR . ($_GET['path'] ?? '');
 
           //$paths = ['thgsgfhfgh.php']; // dirname(APP_PATH . APP_ROOT) . DIRECTORY_SEPARATOR 
-          $paths = glob(rtrim($path . DIRECTORY_SEPARATOR . ($_GET['path'] ?? ''), DIRECTORY_SEPARATOR) . DIRECTORY_SEPARATOR . '{.[!.]*,*}', GLOB_BRACE | GLOB_MARK);
+          $paths = glob(rtrim($path . ($_GET['path'] ?? ''), DIRECTORY_SEPARATOR) . DIRECTORY_SEPARATOR . '{.[!.]*,*}', GLOB_BRACE | GLOB_MARK);
 
           unset($path);
           //dd(urldecode($_GET['path']));
@@ -579,7 +639,7 @@ if (defined('COMPOSER_VENDORS')) {
                   case 'clients':
                   case 'clientele':
                     echo '<div style="position: relative; border: 4px dashed orange;">'
-                    . '<a href="?' . (!defined('APP_ROOT') || empty(APP_ROOT) ? '' : (array_key_first($_GET) == 'client' ? 'client=' . $_GET['client'] . '&' . (isset($_GET['domain']) ? 'domain=' . ($_GET['domain'] != '' ? $_GET['domain'] . '&' : '') : '') : (array_key_first($_GET) == 'project' ? 'project=' . $_GET['project'] . '&' : ''))) . 'path=' . $relativePath . '" onclick="handleClick(event, \'' . $relativePath . '\')">'
+                    . '<a href="?client' /*. (!defined('APP_ROOT') || empty(APP_ROOT) ? '' : (array_key_first($_GET) == 'client' ? 'client=' . $_GET['client'] . '&' . (isset($_GET['domain']) ? 'domain=' . ($_GET['domain'] != '' ? $_GET['domain'] . '&' : '') : '') : (array_key_first($_GET) == 'project' ? 'project=' . $_GET['project'] . '&' : ''))) . 'path=' . $relativePath*/ . '" onclick="handleClick(event, \'' . $relativePath . '\')">'
                     // (!isset($_GET['path']) ? '' : $_GET['path'] . ($_GET['path'] == '' ? '' : '/' )) . basename($path)
                     . '<img src="resources/images/directory.png" width="50" height="32" /><br />' . basename($path) . '/</a></div>' . "\n";
                     break;
@@ -631,7 +691,7 @@ $pathParam = "path=" . preg_replace('#^' . preg_quote(rtrim(APP_PATH . APP_ROOT,
 $url = "?$clientParam$domainParam$pathParam";
 
 // Render the link
-echo '<a href="' . htmlspecialchars($url) . '" ' . ($_ENV['DEFAULT_DOMAIN'] == basename($path) ? ' onclick="handleClick(event, \'/\')"' : '') . '><img src="resources/images/directory.png" width="50" height="32" /><br />' . basename($path) . '/</a>';
+echo '<a href="' . htmlspecialchars($url) . '/" ' . ' onclick="handleClick(event, \'' . (!isset($_GET['path']) ? '' : $_GET['path'] ) . ($_ENV['DEFAULT_DOMAIN'] != basename($path) ? basename($path) : '') . '/\')"' . '><img src="resources/images/directory.png" width="50" height="32" /><br />' . basename($path) . '/</a>';
 
 
 /*
