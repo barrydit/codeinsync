@@ -1,7 +1,5 @@
 <?php
 
-//dd(get_required_files());
-
 //if (isset($_GET['path']) && isset($_GET['file']) && $path = realpath($_GET['path'] . $_GET['file']))
 
 //$errors->{'TEXT_MANAGER'} = $path . "\n" . 'File Modified:    Rights:    Date of creation: ';

@@ -53,7 +53,5 @@ foreach ($paths as $path) {
 
 //dd(APP_ROOT, false);
 
-//dd(get_required_files());
-
 //dd($_SERVER);
 //define('PHP_EXEC', $_ENV['COMPOSER']['PHP_EXEC'] ?? '/usr/bin/php'); // const PHP_EXEC = 'string only/non-block/ternary';

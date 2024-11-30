@@ -17,7 +17,6 @@
 */
 
 global $errors;
-//die($_SERVER['REQUEST_METHOD']);
 
 //if ($_SERVER['REQUEST_METHOD'] == 'POST') 
 //  die(var_dump($_GET));
@@ -60,9 +59,7 @@ const COMPOSER_DISABLE_NETWORK = 1;
 putenv('COMPOSER_DISABLE_NETWORK=' . (bool) COMPOSER_DISABLE_NETWORK);
 
 const COMPOSER_ALLOW_SUPERUSER = true;
-putenv('COMPOSER_ALLOW_SUPERUSER=' . (bool) COMPOSER_ALLOW_SUPERUSER);
-
-//dd(getenv('COMPOSER_ALLOW_SUPERUSER'));
+putenv('COMPOSER_ALLOW_SUPERUSER=' . (bool) COMPOSER_ALLOW_SUPERUSER); //dd(getenv('COMPOSER_ALLOW_SUPERUSER'));
 
 const COMPOSER_ALLOW_XDEBUG = false; // didn't work
 putenv('COMPOSER_ALLOW_XDEBUG=' . (bool) COMPOSER_ALLOW_XDEBUG);
@@ -283,12 +280,9 @@ if (isset($installedPackages) && !empty($installedPackages)) {
   define('COMPOSER_VENDORS', $uniqueVendors);
 }
 
-//dd(COMPOSER_VENDORS, true);
-
 /*
   Must be defined before the composer-setup.php can be preformed.
 */
-//dd(get_included_files());
 
 $composerUser = $_ENV['COMPOSER']['USER'] ?? '';  
 $componetPkg = $_ENV['COMPOSER']['PACKAGE'] ?? '';
@@ -302,7 +296,6 @@ if (!realpath($composerHome)) {
     $errors['COMPOSER_HOME'] = "$composerHome does not exist. Path: $composerHome";
 } else define('COMPOSER_HOME', $composerHome);
 
-//dd($errors);
 //dd('Composer Home: ' . $composerHome, 0);
 
 putenv("COMPOSER_HOME=$composerHome" ?? $_SERVER['HOME'] . '/.composer/');
@@ -598,14 +591,10 @@ if (!realpath(APP_PATH . APP_ROOT . APP_BASE['vendor'])) {
 }
 /* Consider writing a gui that would handle the composer traffic ... */
 
-// dd(getcwd());
-
-//dd(get_required_files(), true);
 
 // moved to config.php load (last)
 // is_file(APP_BASE['vendor'] . 'autoload.php') and require_once APP_BASE['vendor'] . 'autoload.php'; // Include Composer's autoloader
 
-//dd(get_required_files());
 /*
 
 use Composer\Console\Application;
@@ -675,10 +664,6 @@ foreach ($installedPackages['packages']  as $package) { //
 }
 */
 
-//dd(get_declared_classes());
-
-
-
 
 /* This code starts here */
 
@@ -736,18 +721,11 @@ if ($latestPackage !== null) {
 
 //defined('PHP_WINDOWS_VERSION_MAJOR') ? 'APPDATA' : 'HOME';
 
-
-//dd(APP_PATH);
-
 //require __DIR__ . DIRECTORY_SEPARATOR . APP_BASE['vendor'] . 'Git.php/src/Git.php';
 //require __DIR__ . DIRECTORY_SEPARATOR . APP_BASE['vendor'] . 'Git.php/src/GitRepo.php';
 
 //use Kbjr\Git\Git;
 //use Kbjr\Git\GitRepo;
-
-//dd(var_dump(APP_BASE));
-
-//dd(APP_PATH . APP_BASE['var']);
 
 // file has to exists first
 
@@ -862,8 +840,6 @@ if (version_compare(COMPOSER_LATEST, COMPOSER_VERSION, '>') != 0) {
     fclose($socketInstance->getSocket());
 
   }
-
-  //dd(get_required_files(), false);
   
   //$proc = proc_open(basename(COMPOSER_EXEC['bin']) . ' self-update;', [["pipe", "r"], ["pipe", "w"], ["pipe", "w"]], $pipes);
 /*
@@ -969,12 +945,10 @@ fclose($pipes[2]);
       $dirs_diff = [];
     //else //dd($dirs_diff);
 
-//dd($vendors);
-
     if (!empty(array_diff($vendors, $dirs_diff)) ) {
 
       //if (!isset($_SERVER['SOCKET']) || !$_SERVER['SOCKET']) $_SERVER['SOCKET'] = openSocket(APP_HOST, 12345); // 
-//dd($_SERVER['SOCKET']);
+
       (APP_SELF !== APP_PATH_SERVER) and $socketInstance = Sockets::getInstance();
       //$socketInstance->handleClientRequest("composer self-update\n");
       if (!isset($_SERVER['SOCKET']) || !is_resource($_SERVER['SOCKET']) || empty($_SERVER['SOCKET'])) {
@@ -1173,9 +1147,6 @@ while (!feof($_SERVER['SOCKET'])) {
 
     putenv('COMPOSER_HOME='); // TESTING
 
-
-    //dd(get_required_files());
-
     (APP_SELF !== APP_PATH_SERVER) and $socketInstance = Sockets::getInstance();
     //$socketInstance->handleClientRequest("composer self-update\n");
     if (!isset($_SERVER['SOCKET']) || !is_resource($_SERVER['SOCKET']) || empty($_SERVER['SOCKET'])) {
@@ -1301,8 +1272,6 @@ if (!defined('VENDOR_JSON') && isset(COMPOSER['json']->{'require'}->{'composer'}
   ]);
 }
 
-//dd(COMPOSER);
-//dd(COMPOSER);
 //dd(VENDOR_JSON['path']);
 
   //else $errors['COMPOSER-VALIDATE'] = $output;

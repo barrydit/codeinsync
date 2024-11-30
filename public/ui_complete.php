@@ -1,8 +1,6 @@
 <?php
 
 
-//dd(get_required_files());
-
 //if (isset($_GET['path']) && isset($_GET['file']) && $path = realpath($_GET['path'] . $_GET['file']))
 
 //$errors->{'TEXT_MANAGER'} = $path . "\n" . 'File Modified:    Rights:    Date of creation: ';
@@ -417,8 +415,6 @@ Publishes a Node.js package to GitHub Packages.
 
 
 /** Loading Time: 5.1s **/
-  
-  //dd(get_required_files(), true);
 
 if (!in_array(APP_PATH . APP_BASE['config'] . 'composer.php', get_required_files()))
 if ($path = (basename(getcwd()) == 'public')
@@ -653,8 +649,6 @@ update [--with WITH] [--prefer-source] [--prefer-dist] [--prefer-install PREFER-
     exit(header('Location: ' . APP_URL_BASE));
   }
 }
-
-// dd(get_required_files(), true);
 
 /*
 <?php ob_start(); ?>
@@ -1826,8 +1820,7 @@ $(document).ready(function() {
 ob_end_clean();
 
 /** Loading Time: 5.03s **/
-  
-  //dd(get_required_files(), true);
+
 
 ob_start(); ?>
 <!DOCTYPE html>
@@ -1888,8 +1881,7 @@ if (__FILE__ == APP_SELF || in_array(__FILE__, get_required_files()) && isset($_
   die($appComposer['html']);
 
 /** Loading Time: 7.0s **/
-  
-  //dd(get_required_files(), true);
+
 // 5.025 @ 4.992
 dd('composer init time: ', false);
 /****   END of ui.composer.php   ****/

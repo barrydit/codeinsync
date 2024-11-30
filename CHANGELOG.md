@@ -1,6 +1,40 @@
 CHANGELOG
 
-angular, node, npm, json, react, git, vue, api
+Ace Editor => (themed) text editor for editing any file on the system (web app. or client/project)
+    It is easier to comprehend code with a themed text editor is used for a particular language
+
+* Backup => Recovery files from var/source_code.json using Ace Editor
+
+Weekly Time Clock-in  => Count the amount of time the user spends on programming clients/projects.
+    A lot of valueable time can go into application. debugging, feature writing, application building
+
+Multiple computer language / terminal emu. So People can learn to program by 1 liners, and be able to do 10-100 lines at 1 click
+  [php eval(), python, perl, npm, sql]
+    angular, node, npm, json, react, git, vue, api
+
+Server (Socket) -> Web Socket (future) for real time exchange of commands and data from the web application.
+
+Git/Hub => Source code sharing
+    Clients can have the source code to the application, and git pull/download fresh updates.
+
+* Build a workflow / process task list for a particular procedure for the ui / app
+
+Composer/Packagist => 375,000+ applications avail. to install with the api/ui ... the user just needs to know how to customize, and create a project.
+    [of course where is to many, should it be segmented, and easily install packages on demand]
+      depend on vendor/ or node_modules/ and any other library dependencies
+
+-> Unto this point that it should become a ... [project/[client/[domain]]]
+
+  App/[client/[domain/]][project] - Structure for domain, clients, projects
+
+    APP_PATH = /mnt/c/www/ . APP_ROOT = projects/project_name/ . $_GET['path']
+    APP_PATH = /mnt/c/www/ . APP_ROOT = clientele/client_name/domain.com/ . $_GET['path']
+    APP_PATH = /mnt/c/www/ . APP_ROOT = clientele/domain.com/ . $_GET['path']
+
+These are just the tools needed to turn on a PHP web site.        Next is organizing and accessing client applications, and projects that benefit the application. an IDE. I mean there are already online vs code editors that already do every thing I have listed. But their not open source.
+
+
+
 
 
 .git/config

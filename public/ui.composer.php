@@ -33,10 +33,7 @@ dd(get_included_files(), false);
     die(var_dump("$path path was not found. file=composer.php"));
 }*/
 
-// dd(get_required_files());
 // require APP_BASE['vendor'] . 'autoload.php'; // Include Composer's autoloader
-
-// dd(get_required_files());
 
 /*
 use Composer\Factory;
@@ -100,8 +97,7 @@ Publishes a Node.js package to GitHub Packages.
 
 
 /** Loading Time: 5.1s **/
-  
-  //dd(get_required_files(), true);
+
 /*
 if (!in_array(APP_PATH . APP_BASE['config'] . 'composer.php', get_required_files())) {
   require_once APP_PATH . APP_ROOT . APP_BASE['vendor'] . 'autoload.php';
@@ -269,8 +265,6 @@ END
       
     $composer->{'prefer-stable'} = true;
 
-      //dd();
-
     if (COMPOSER_AUTH['token'] != $_POST['auth']['github_oauth']) {
       $tmp_auth = json_decode(COMPOSER_AUTH['json']);
       $tmp_auth->{'github-oauth'}->{'github.com'} = $_POST['auth']['github_oauth'];
@@ -363,8 +357,6 @@ update [--with WITH] [--prefer-source] [--prefer-dist] [--prefer-install PREFER-
 }
 
 /** Loading Time: 4.99s **/
-  
-  //dd(get_required_files(), true);
 
 
 /*
@@ -1541,8 +1533,6 @@ ob_end_clean();
 
 
 /** Loading Time: 6.73s **/
-  
-  //dd(get_required_files(), true);
 
   ob_start(); ?>
   <!DOCTYPE html>
@@ -1607,5 +1597,3 @@ if (__FILE__ ==  get_required_files()[0] || in_array(__FILE__, get_required_file
 }
 
 /** Loading Time: 7.0s **/
-  
-  //dd(get_required_files(), true);

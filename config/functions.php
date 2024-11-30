@@ -498,9 +498,6 @@ function dd(mixed $param = null, bool $die = true, bool $debug = true): void {
     }
 }
 
-//dd(get_required_files(), false);
-
-
 /*
         $curl = curl_init($url);
         curl_setopt($curl, CURLOPT_RETURNTRANSFER, true);

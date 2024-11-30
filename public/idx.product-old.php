@@ -261,7 +261,6 @@ do {
     if (empty($paths)) unset($paths);
 } while (isset($paths) && !empty($paths));
 */
-// dd(get_defined_vars(), true);
 
 do {
     // Check if $paths is not empty
@@ -298,9 +297,6 @@ do {
     // Unset $paths if it is empty
     if (empty($paths)) unset($paths);
 } while (isset($paths) && !empty($paths));
-
-
-//dd(get_defined_constants(true)['user']);
 
 /* 9.69 secs
   while ($path = array_shift($paths)) {
@@ -366,8 +362,7 @@ do {
 /** Loading Time: 4.95s **/
   //dd(null, true);
 /*  */
-  
-//  dd(get_required_files(), false);
+
 
 //dd('you know you\'re going to be mine !');
 /*
@@ -440,8 +435,7 @@ elseif (!empty($_GET['project']))
 */  
 //dd(null, true);
 /** Loading Time: 11.27s **/
-  
-  //dd(get_required_files(), true);
+
 /* Checkboxes hold their state under cache */
 header("Content-Type: text/html");
 header("Cache-Control: no-store, no-cache, must-revalidate, max-age=0");
@@ -2409,5 +2403,5 @@ if (is_dir($path = APP_PATH . APP_BASE['resources'] . 'js/ace')) { ?>
 
 <?= 
  NULL; /** Loading Time: 15.0s **/
-//  dd(get_required_files(), true); 
+
 ?>

@@ -2,9 +2,6 @@
 <?php 
 declare(/*strict_types=1,*/ ticks=1); // First Line Only!
 
-$_GET['client'] = '000-Raymant,David';
-//$_GET['domain'] = 'davidraymant.ca';
-
 require_once 'config/php.php';
 
 !defined('APP_PATH') and define('APP_PATH', __DIR__ . DIRECTORY_SEPARATOR);

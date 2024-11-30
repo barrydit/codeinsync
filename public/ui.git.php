@@ -197,6 +197,7 @@ ob_start();
       </div>
       <div style="position: absolute; top: 0; left: 0; right: 0; margin: 10px auto; opacity: 1.0; text-align: center; cursor: pointer; z-index: 1; ">
         <img class="<?= (version_compare(GIT_LATEST, GIT_VERSION, '>') != 0 ? 'git-menu' : 'git-update') ?>" src="resources/images/git_logo.gif<?= /*.fw.png*/ NULL; ?>" style="" width="229" height="96" />
+
       </div>
       <div class="absolute" style="position: absolute; bottom: 24px; left: 0; right: 0; width: 100%; text-align: center;">
         <span style="text-decoration-line: underline; text-decoration-style: solid;">Git is a distributed version control system</span>
