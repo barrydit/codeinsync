@@ -1,7 +1,5 @@
 <?php
 
-//dd(get_defined_constants(true)['user']); dd(get_included_files());
-
 //if (__FILE__ == get_required_files()[0] && __FILE__ == realpath($_SERVER["SCRIPT_FILENAME"]))
 if (dirname(get_required_files()[0]) == getcwd()) {
   if ($path = basename(dirname(get_required_files()[0])) == 'public') { // (basename(getcwd())
@@ -15,8 +13,6 @@ if (!headers_sent()) {
   header("Expires: Sat, 26 Jul 1997 05:00:00 GMT");
   header("Pragma: no-cache");
 }
-
-// dd(get_defined_constants(true)['user']);
 
 ?>
 <!DOCTYPE html>
@@ -578,9 +574,6 @@ if (defined('APP_WHOIS') && !empty(APP_WHOIS)) {
 } else {
   echo 'Unknown';
 }
-
-//dd(get_required_files());
-
 
             echo !empty($result) && isset($result['regrinfo']['domain']['expires']) ? $result['regrinfo']['domain']['expires'] : 'Unknown';
              ?>" style="text-align: right;"/></span><br /><br />
@@ -1554,5 +1547,5 @@ function confirmAction(isConfirmed) {
 
 <?= 
  NULL; /** Loading Time: 15.0s **/
-//  dd(get_required_files(), true); 
+
 ?>

@@ -13,17 +13,16 @@ global $shell_prompt, $auto_clear, $errors;
 if (__FILE__ == get_required_files()[0] && __FILE__ == realpath($_SERVER["SCRIPT_FILENAME"]))
   if ($path = basename(dirname(get_required_files()[0])) == 'public') { // (basename(getcwd())
     chdir('../');
-    if ($path = realpath('config/config.php')) { // is_file(config/php.php
+    if ($_SERVER['REQUEST_METHOD'] == 'POST')
+      require_once realpath('bootstrap.php');
+    elseif ($path = realpath('config/config.php')) { // is_file(config/php.php
       //dd('does this do anything?');
       require_once $path;
     }
   } else die(var_dump("Path was not found. file=$path"));
-else
-  require_once APP_PATH . 'config/config.php';
+else require_once APP_PATH . 'config/config.php';
 
 //dd(APP_PATH . APP_ROOT);
-
-//dd(get_required_files());
 
 //require_once APP_PATH . APP_BASE['config'] . 'classes' . DIRECTORY_SEPARATOR . 'class.sockets.php';
 
@@ -32,8 +31,7 @@ if (preg_match('/^app\.([\w\-.]+)\.php$/', basename(__FILE__), $matches))
   ${$matches[1]} = $matches[1];
   
     //require_once realpath(__DIR__ . DIRECTORY_SEPARATOR . '..' . DIRECTORY_SEPARATOR  . 'config' . DIRECTORY_SEPARATOR . 'classes' . DIRECTORY_SEPARATOR . 'class.sockets.php');
-  
-  //dd(get_required_files());
+
     //if (__FILE__ == $_SERVER["SCRIPT_FILENAME"]) {
     //  echo "called directly";
     //} else {
@@ -75,96 +73,9 @@ if (preg_match('/^app\.([\w\-.]+)\.php$/', basename(__FILE__), $matches))
             $output[] = 'Sockets started ...';
           }
 */
-        } //else if (preg_match('/^install/i', $_POST['cmd']))
+        }  //else if (preg_match('/^install/i', $_POST['cmd']))
           //include 'templates/' . preg_split("/^install (\s*+)/i", $_POST['cmd'])[1] . '.php';
-        else if (preg_match('/^chdir\s+(:?(.*))/i', $_POST['cmd'], $match)) {
-          //exec($_POST['cmd'], $output);
-          //die(header('Location: ' . APP_URL_BASE . '?app=text_editor&filename='.$_POST['cmd']));
-          //$output[] = "Changing directory to " . $path;
-
-/**/      error_log("Path: $path");
-          if (realpath($path = APP_PATH . APP_ROOT . rtrim(trim($match[1]), DIRECTORY_SEPARATOR))) {
-            // Define the root directory you don't want to go past
-
-            $rootDir = realpath(APP_PATH . APP_ROOT . ($match[1] ?? ''));
-
-            // Check if the resolved path is within the allowed root
-            if (strpos($path, $rootDir) === 0 && strlen($path) >= strlen($rootDir)) {
-                // Proceed with your existing logic if the path is valid
-                $resultValue = (function() use ($path): string {
-
-                    define('APP_CLIENT', $path);
-
-                    $basePath = rtrim(APP_PATH . APP_ROOT, DIRECTORY_SEPARATOR);
-
-                    $path = preg_replace('#^' . preg_quote($basePath, '#') . '/?#', '', $path);
-
-                    // Replace the escaped APP_PATH and APP_ROOT with the actual directory path
-                    if (realpath(preg_replace('#^' . preg_quote($basePath, '#') . '/?#', '', $path)) == realpath($basePath)) {
-                        $_GET['path'] = '';
-                    } elseif (
-                        realpath(
-                          $newPath = preg_replace(
-                            '#^' . preg_quote(rtrim(APP_PATH . APP_ROOT . ($_GET['domain'] ?? ''), DIRECTORY_SEPARATOR), '#') . '/?#',
-                            '', $path
-                          )
-                        )
-                      ) {
-                        ($newPath === '../' ? $_GET['path'] = '' : $_GET['path'] = "$newPath/");  ///  preg_replace('/' . preg_quote(APP_PATH . APP_ROOT, DIRECTORY_SEPARATOR) . '/', '', $path)
-                    } else {
-                      $_GET['path'] = '';
-                    }
-                    //$_GET['path'] =  . '>>' . APP_CLIENT . ($_GET['domain'] ?? '');
-
-                    ob_start();
-                    //if (is_file($include = APP_PATH . APP_ROOT . APP_BASE['vendor'] . 'autoload.php'))
-                      //if (isset($_ENV['COMPOSER']['AUTOLOAD']) && (bool) $_ENV['COMPOSER']['AUTOLOAD'] === TRUE)
-                    //  require_once $include;
-
-                    require_once 'app.directory.php';
-                    $tableValue = $tableGen();
-                    ob_end_clean();
-                    return $tableValue; // $app['directory']['body'];
-                })();
-                $output[] = (string) $resultValue;
-            } else {
-                // Handle the case where the path is trying to go past the root directory
-                $output[] = "Cannot go past the root directory: $rootDir >> $path";
-            }
-          }
-/*
-          if ($path = realpath(APP_PATH . APP_ROOT . rtrim(trim($match[1]), '/'))) {
-            // Define the root directory you don't want to go past
-            $root_dir = realpath(APP_PATH . APP_ROOT);
-  
-            // Resolve the parent directory path
-            $parent_dir = realpath("$path/../");
-  
-            // Check if the parent directory is within the allowed root
-            if (strpos($parent_dir, $root_dir) === 0 && strlen($parent_dir) >= strlen($root_dir)) {
-              // Proceed with your existing logic if the path is valid
-              $resultValue = (function() use ($path): string {
-                // Replace the escaped APP_PATH and APP_ROOT with the actual directory path
-                if (realpath($_GET['path'] = preg_replace('/' . preg_quote(APP_PATH . APP_ROOT, '/') . '/', '', $path)) == realpath(APP_PATH . APP_ROOT))
-                  $_GET['path'] = '';
-                ob_start();
-                require 'app.directory.php';
-                $tableValue = $tableGen();
-                ob_end_clean();
-                return $tableValue; // $app['directory']['body'];
-              })();
-              $output[] = (string) $resultValue;
-            } else {
-              // Handle the case where the path is trying to go past the root directory
-              $output[] = "Cannot go past the root directory: $root_dir";
-            }
-          }
-*/
-        } else if (preg_match('/^edit\s+(:?(.*))/i', $_POST['cmd'], $match))
-          //exec($_POST['cmd'], $output);
-          //die(header('Location: ' . APP_URL_BASE . '?app=text_editor&filename='.$_POST['cmd']));
-          $output[] = is_file($file = APP_PATH . APP_ROOT . trim($match[1])) ? file_get_contents($file) : "File not found: $file";
-        else if (preg_match('/^php\s+(:?(.*))/i', $_POST['cmd'], $match)) {
+          else if (preg_match('/^php\s+(:?(.*))/i', $_POST['cmd'], $match)) 
           if (preg_match('/^php\s+(?!(-r))/i', $_POST['cmd'])) {
             $match[1] = trim($match[1], '"');
             $output[] = eval($match[1] . (substr($match[1], -1) != ';' ? ';' : ''));
@@ -193,7 +104,7 @@ if (preg_match('/^app\.([\w\-.]+)\.php$/', basename(__FILE__), $matches))
             //$output[] = $_POST['cmd'];
           }
   
-        } /* else if (preg_match('/^composer\s+(:?(.*))/i', $_POST['cmd'], $match)) {
+         /* else if (preg_match('/^composer\s+(:?(.*))/i', $_POST['cmd'], $match)) {
 
           if (!isset($_SERVER['SOCKET']) || !$_SERVER['SOCKET']) {
 
@@ -308,9 +219,6 @@ if (preg_match('/^app\.([\w\-.]+)\.php$/', basename(__FILE__), $matches))
 
 
 
-
-
-
   $proc=proc_open($command,
   array(
     array("pipe","r"),
@@ -322,14 +230,6 @@ if (preg_match('/^app\.([\w\-.]+)\.php$/', basename(__FILE__), $matches))
           list($stdout, $stderr, $exitCode) = [stream_get_contents($pipes[1]), stream_get_contents($pipes[2]), proc_close($proc)];
           preg_match('/\/(.*)\//', DOMAIN_EXPR, $matches);   
           $output[] = !isset($stdout) ? NULL : $stdout . (isset($stderr) && $stderr === '' ? NULL : (preg_match("/^To\\s$matches[1]/", $stderr) ? $stderr : "Error: $stderr")) . (isset($exitCode) && $exitCode == 0 ? NULL : "Exit Code: $exitCode");
-
-
-
-
-
-
-
-
 
           } else if (preg_match('/^git\s+(update)(:?\s+)?/i', $_POST['cmd'])) {
             $output[] = git_origin_sha_update();
@@ -477,8 +377,6 @@ if (preg_match('/^app\.([\w\-.]+)\.php$/', basename(__FILE__), $matches))
             //$_SERVER['SOCKET'] = $socketInstance->getSocket();
 
             //socket_getpeername($_SERVER['SOCKET'], $addr, $port);
-
-            //dd(get_required_files(), false);
 
             stream_set_blocking($_SERVER['SOCKET'], ($_ENV['PHP']['SOCK_BLOCK'] ?? false) ? 1 : 0);
             stream_set_timeout($_SERVER['SOCKET'], 10);
@@ -1419,6 +1317,7 @@ if (isset($config['remote origin']['url']) && preg_match('/(?:[a-z]+\:\/\/)?([^\
     $('#requestInput').val('');
   });
 
+  $('#requestSubmit').href = 'javascript:void(0);';
 
   $('#requestSubmit').click(function() {
     let matches = null;
@@ -1530,12 +1429,13 @@ console.log = function() {
         const filename = filePath.substring(lastSlashIndex + 1);
 
 
-        $.post("<?= basename(__FILE__) . '?' . $_SERVER['QUERY_STRING'] ; //APP_URL_BASE; $projectRoot ?>",
+        $.post(<?= 'DirQueryParams'; /*'"app.directory.php' . '?' . $_SERVER['QUERY_STRING'] . '' ;"*/ ?>,
       {
         cmd: argv
       },
       function(data, status) {
         console.log("Data: " + data + "Status: " + status);
+        console.log("Web Query: " + DirQueryParams);
         //data = data.trim(); // replace(/(\r\n|\n|\r)/gm, "")
 
         if (matches = argv.match(/edit(\s+(:?.*)?|)/gm)) {
@@ -1564,11 +1464,14 @@ console.log = function() {
         $('#responseConsole').val('<?= $shell_prompt; ?>' + argv + "\n" + $('#responseConsole').val());
       }
 
-      $.post("<?= basename(__FILE__) . '?' . $_SERVER['QUERY_STRING']  ; //APP_URL_BASE; $projectRoot ?>",
+// $('#requestSubmit').href = 'javascript:void(0);';
+
+      $.post(<?= 'DirQueryParams' /*'"' . basename(__FILE__). '?' . $_SERVER['QUERY_STRING']. '"'*/ ; ?>,
       {
         cmd: argv
       },
       function(data, status) {
+        console.log("Web Query: " + DirQueryParams);
         console.log("Data: " + data + "Status: " + status);
 
         //data = data.trim(); // replace(/(\r\n|\n|\r)/gm, "")

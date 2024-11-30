@@ -75,8 +75,6 @@ if (__FILE__ == get_required_files()[0] && __FILE__ == realpath($_SERVER["SCRIPT
     //? (is_file('../config.php') ? '../config.php' : 'config.php')
     //: (is_file('config.php') ? 'config.php' : (is_file('config/config.php') ? 'config/config.php' : null)))
 
-//dd(get_defined_constants(true)['user']);
-
 //$path = "/path/to/your/logfile.log"; // Replace with your actual log file path
 if (is_readable($path = APP_PATH . APP_ROOT . $_ENV['ERROR_LOG_FILE']) && filesize($path) >= 0 ) {
   $errors['ERROR_PATH'] = "\nwww-data@localhost:" . getcwd() . '# ' . basename($path) . "\n";
@@ -124,8 +122,7 @@ if (is_readable($path = APP_PATH . APP_ROOT . $_ENV['ERROR_LOG_FILE']) && filesi
 
 if (isset($_SERVER['REQUEST_METHOD']))
   switch ($_SERVER['REQUEST_METHOD']) {
-    case 'POST':    
-      //dd(get_required_files(), false);
+    case 'POST':
       //dd($_POST);
       //dd('what the heck is going on here?', false);
       if (isset($_POST['environment'])) {
@@ -229,8 +226,6 @@ if (isset($_SERVER['REQUEST_METHOD']))
   //}
   /**/
   //dd('req method==' . $_SERVER['REQUEST_METHOD'], false);
-
-  //dd(get_required_files());
 
   if ($_SERVER['REQUEST_METHOD'] == 'GET')
   if (defined('APP_QUERY') && empty(APP_QUERY) || isset($_GET['CLIENT']) || isset($_GET['DOMAIN']) && !defined('APP_ROOT')) {
@@ -340,10 +335,8 @@ if (APP_SELF == APP_PATH_PUBLIC) {
       if (empty($paths)) unset($paths);
   } while (isset($paths) && !empty($paths));
   */
-  // dd(get_defined_vars(), true);
   
   //$path = '';
-
 
 $app = $apps = [];
 
@@ -364,7 +357,6 @@ if (!empty($paths))
   
               // Include the file using the function
               //dd("path is $realpath\n", false);
-              //dd(get_required_files(), false);
               /* $returnedValue = (function() use ($realpath) {
                 ob_start();
                 require_once $realpath;
@@ -396,14 +388,12 @@ if (!empty($paths))
 
                 //dd($realpath . ' created?', false);
               })();
-              //dd(get_required_files(), false);
         
               //$returnedValue = require_once $realpath;
 
               //dd($app, false);
               //ob_start(); $ob_contents = ob_get_contents(); ob_end_clean();
               //dd($ob_contents, false);
-              //dd(get_required_files(), false);
               //dd($returnedValue, false);
   
               // Check the type of the returned value
@@ -429,9 +419,9 @@ if (!empty($paths))
   
   } // isset($paths) && !empty($paths)
   //dd(array_keys($apps['console']));
-      //dd(get_defined_vars(), true); // Check that $files remains unchanged
+
       //dd($appDirectory['body']); 
-//dd(get_required_files());
+
 if (defined('APP_ENV'))
   switch (APP_ENV) {
     case 'development':

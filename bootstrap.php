@@ -35,8 +35,15 @@ if (!empty($_GET['client']) || !empty($_GET['domain'])) {
         }
     }
 
+//    die(var_dump($_GET));
     // Set the path based on the domain if provided
-    if (!empty($_GET['domain'])) {
+    if (!empty($_GET['domain']) || !empty($_GET['path'])) {
+        if (isset($_GET['path']) && in_array($_GET['path'], $dirs)) {
+
+            $_GET['domain'] = $_GET['path'];
+            $path = $clientFolder . $_GET['domain'] . DIRECTORY_SEPARATOR;
+            unset($_GET['path']);
+        } else
         foreach ($dirs as $dir) {
             if (basename($dir) === $_GET['domain']) {
                 $path = $clientFolder . basename($dir) . DIRECTORY_SEPARATOR;

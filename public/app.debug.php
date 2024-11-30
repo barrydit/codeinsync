@@ -2,7 +2,6 @@
 
 //require_once('session.php');
 
-// dd(get_required_files());
 //dd( dirname(__DIR__) . '/config/config.php');
 
 if (__FILE__ == get_required_files()[0]) { //die(getcwd());
@@ -29,7 +28,7 @@ if (defined('APP_ENV'))
   elseif (APP_ENV == 'development' && APP_DEBUG == false)
     die(header('Location: ' . (!defined('APP_URL_BASE') and 'http://' . APP_DOMAIN . APP_URL_PATH) .  '?debug'));
 // is_array($ob_content)
-  //$report_errors = true; /// dd(APP_ERRORS); // get_defined_constants(true)['user']'
+  //$report_errors = true; 
 
  // realpath($path) == "/mnt/c/www/public/composer" ... $path == "[/var/www/public]/composer/" == $_SERVER['DOCUMENT_ROOT'] . parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH)
 

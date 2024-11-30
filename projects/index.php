@@ -22,8 +22,6 @@ if (is_file($bootstrap = dirname(__DIR__, 1) . DIRECTORY_SEPARATOR . 'bootstrap.
   require_once $bootstrap;
 }
 
-dd(get_required_files());
-
 //if (isset($_ENV['COMPOSER']['AUTOLOAD']) && (bool) $_ENV['COMPOSER']['AUTOLOAD'] === true)
 require_once APP_PATH . APP_BASE['vendor'] . 'autoload.php';
 

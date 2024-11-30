@@ -150,7 +150,6 @@ do {
     if (empty($paths)) unset($paths);
 } while (isset($paths) && !empty($paths));
 */
-// dd(get_defined_vars(), true);
 
 do {
     // Check if $paths is not empty
@@ -187,8 +186,6 @@ do {
     // Unset $paths if it is empty
     if (empty($paths)) unset($paths);
 } while (isset($paths) && !empty($paths));
-
-//dd(get_defined_constants(true)['user']);
 
 /* 9.69 secs
   while ($path = array_shift($paths)) {
@@ -315,8 +312,7 @@ do {
   else die(var_dump($path . ' was not found. file=app.console.php'));
 
 /** Loading Time: 12.2s **/
-  
-  //dd(get_required_files(), true);
+
 
 //  header("Content-Type: text/html");
 //  header("Cache-Control: no-store, no-cache, must-revalidate, max-age=0");
@@ -515,7 +511,7 @@ do {
           if (!empty($_GET['domain']))
             foreach($dirs as $key => $dir) {
               if (basename($dir) == $_GET['domain']) {
-                //$path .= 'davidraymant.ca/';
+
         
                 if (is_dir($dirs[$key].'/public/'))
                   $path .= basename($dirs[$key]).'/public/';
@@ -814,7 +810,7 @@ do {
             <span style="">
               Domain: 
               <select>
-                <option>davidraymant.ca</option>
+                <option></option>
               </select>
             </span>
             <br />
@@ -1423,5 +1419,5 @@ do {
 </html>
 
 <?= NULL; /** Loading Time: 15.0s **/
-//  dd(get_required_files(), true); 
+
 ?>
