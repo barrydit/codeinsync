@@ -306,18 +306,47 @@ if (!file_exists(APP_PATH . 'composer.phar')) {
   
   $error = shell_exec($_ENV['COMPOSER']['PHP_EXEC'] . ' composer-setup.php'); // php -d register_argc_argv=1
 
-  $errors['COMPOSER-PHAR'] = 'Composer setup was executed and ' . (file_exists(APP_PATH.'composer.phar') ? 'does' : 'does not') . ' exist. version='.shell_exec('php composer.phar -V') . '  error=' . $error;
-} else {
+  $errors['COMPOSER-PHAR'] = 'Composer setup was executed and ' . (file_exists(APP_PATH.'composer.phar') ? 'does' : 'does not') . ' exist.';
 
-  if (preg_match('/Composer(?: version)? (\d+\.\d+\.\d+) (\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2})/', exec(($bin = 'php composer.phar') . ' -V'), $matches))
-    define('COMPOSER_PHAR', ['bin' => $bin, 'version' => $matches[1], 'date' => $matches[2]]);
-}
+  //defined('PHP_EXEC') ? $errors['COMPOSER-PHAR'] .= ' version='. shell_exec(PHP_EXEC . ' composer.phar -V') . '  error=' . $error : '';
+} else
+
+  //if (preg_match('/Composer(?: version)? (\d+\.\d+\.\d+) (\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2})/', exec(($bin = 'php composer.phar') . ' -V'), $matches))
+  //  define('COMPOSER_PHAR', ['bin' => $bin, 'version' => $matches[1], 'date' => $matches[2]]);
+
 
 if (stripos(PHP_OS, 'WIN') === 0) { // DO NOT REMOVE! { .. }
-  if (file_exists('C:\ProgramData\ComposerSetup\bin\composer.phar')) {
-    if (preg_match('/Composer(?: version)? (\d+\.\d+\.\d+) (\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2})/', exec($bin = "php C:\\ProgramData\\ComposerSetup\\bin\\composer.phar -V"), $matches))
-      !defined('COMPOSER_PHAR') and define('COMPOSER_PHAR', ['bin' => $bin, 'version' => $matches[1], 'date' => $matches[2]]);
-    !defined('COMPOSER_BIN') && defined('COMPOSER_PHAR') and define('COMPOSER_BIN', COMPOSER_PHAR);
+  // Check if PHP is in the system's PATH and executable
+  $phpCheckOutput = null;
+  $phpCheckResult = null;
+
+  defined('PHP_EXEC') ? exec(PHP_EXEC . ' -v', $phpCheckOutput, $phpCheckResult) : exec('php -v', $phpCheckOutput, $phpCheckResult);
+
+  if ($phpCheckResult !== 0) {
+      $errors['PHP_PATH'] = 'PHP is not within the system\'s PATH or is not executable.';
+      !defined('COMPOSER_PHAR') and define('COMPOSER_PHAR', ['bin' => PHP_EXEC . 'composer.phar', 'version' => null, 'date' => null]);
+      !defined('COMPOSER_BIN') && defined('COMPOSER_PHAR') and define('COMPOSER_BIN', COMPOSER_PHAR);
+  } else {
+      // Check if Composer is installed and accessible
+      if (file_exists('C:\ProgramData\ComposerSetup\bin\composer.phar')) {
+          if (preg_match(
+              '/Composer(?: version)? (\d+\.\d+\.\d+) (\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2})/', 
+              exec($bin = "php C:\\ProgramData\\ComposerSetup\\bin\\composer.phar -V"), 
+              $matches
+          )) {
+              !defined('COMPOSER_PHAR') and define('COMPOSER_PHAR', ['bin' => $bin, 'version' => $matches[1], 'date' => $matches[2]]);
+              !defined('COMPOSER_BIN') && defined('COMPOSER_PHAR') and define('COMPOSER_BIN', COMPOSER_PHAR);
+          }
+      } else {
+          if (preg_match(
+              '/Composer(?: version)? (\d+\.\d+\.\d+) (\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2})/', 
+              exec($bin = "php C:\\www\\composer.phar -V"), 
+              $matches
+          )) {
+              !defined('COMPOSER_PHAR') and define('COMPOSER_PHAR', ['bin' => 'composer.phar', 'version' => $matches[1], 'date' => $matches[2]]);
+              !defined('COMPOSER_BIN') && defined('COMPOSER_PHAR') and define('COMPOSER_BIN', COMPOSER_PHAR);
+          }
+      }
   }
 } else {
 
@@ -332,12 +361,12 @@ if (stripos(PHP_OS, 'WIN') === 0) { // DO NOT REMOVE! { .. }
     define('COMPOSER_BIN', '/usr/local/bin/composer');
   }
 */
-    (realpath($composer_which = trim(shell_exec(APP_SUDO  . /*-u www-data */ 'which composer')))) or $errors['COMPOSER-WHICH'] = "which did not find composer. Err=$composer_which";
+    realpath($composer_which = trim(shell_exec(APP_SUDO  . /*-u www-data */ 'which composer'))) or $errors['COMPOSER-WHICH'] = "which did not find composer. Err=$composer_which";
 
     foreach([ /*'/usr/local/bin/composer',*/ basename(PHP_EXEC) . ' ' . APP_PATH . 'composer.phar', $composer_which] as $key => $bin) {
       !isset($composer) and $composer = [];
 /*//*/
-      if (preg_match('/^php.*composer\.phar$/', $bin)) !defined('COMPOSER_PHAR') and define('COMPOSER_PHAR', ['bin' => "php $bin"]);
+      if (preg_match('/^php.*composer\.phar$/', $bin)) !defined('COMPOSER_PHAR') and define('COMPOSER_PHAR', ['bin' => PHP_EXEC . " $bin"]);
       else {
 
         $proc = proc_open('env COMPOSER_ALLOW_SUPERUSER=' . COMPOSER_ALLOW_SUPERUSER . '; ' . (stripos(PHP_OS, 'WIN') === 0 ? '' : APP_SUDO ) . basename($bin) . ' --version;', [["pipe", "r"], ["pipe", "w"], ["pipe", "w"]], $pipes);

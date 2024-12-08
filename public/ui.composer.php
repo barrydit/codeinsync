@@ -16,6 +16,8 @@ if (in_array(__FILE__, get_required_files())) {
     if (is_file($path = realpath('index.php'))) require_once $path;
   } else die(var_dump("Path was not found. file=$path"));
 
+//dd(get_required_files());
+
 /*
 if (__FILE__ == get_required_files()[0])
   if ($path = (basename(getcwd()) == 'public')
@@ -1175,7 +1177,7 @@ if (!empty($match) && !is_dir(APP_BASE['vendor'] . $match[1].'/')) echo '<li sty
 <div style="display: inline-block; width: 100%;">
   <label>Self-update <!--(C:\ProgramData\ComposerSetup\bin\composer.phar)--></label>
   <div style="float: right;">
-    <input type="checkbox" name="composer[self-update]" value="true" <?= (!file_exists(APP_PATH . 'composer.phar') ? '' : 'checked=""') ?>/>
+    <input type="checkbox" name="composer[self-update]" value="true" <?= !file_exists(APP_PATH . 'composer.phar') ? '' : 'checked=""' ?>/>
   </div>
 </div>
 <div style="display: inline-block; width: 100%;">

@@ -301,9 +301,10 @@ END
 
         try {
             if (is_resource($process)) {
-                $status = @proc_get_status($process); // The '@' suppresses any warnings/errors
-                if ($status && $status['running']) {
-                    file_put_contents($pidFile, $status['pid']);
+                $status = (stripos(PHP_OS, 'WIN') === 0) ?: @proc_get_status($process); // The '@' suppresses any warnings/errors
+                if ($status && isset($status['running'])) {
+                    if (isset($status['pid']))
+                        file_put_contents($pidFile, $status['pid']);
                 } else {
                     throw new Exception("Process is not running or status could not be fetched.");
                 }
