@@ -6,26 +6,34 @@
 
 if (__FILE__ == get_required_files()[0] && __FILE__ == realpath($_SERVER["SCRIPT_FILENAME"])) 
   if ($path = basename(dirname(get_required_files()[0])) == 'public') { // (basename(getcwd())
-    if (is_file($path = realpath('index.php'))) {
+    if (is_file($path = realpath('../bootstrap.php'))) {
       require_once $path;
     }
   } else {
     die(var_dump("Path was not found. file=$path"));
   }
 
+//dd(get_required_files(), false);
 
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
-  if (isset($_GET['app']) && $_GET['app'] == 'ace_editor') 
-    if (isset($_POST['ace_path']) && realpath($path = APP_PATH . APP_ROOT . ($_POST['ace_path'] ?? $_GET['file']) ) ) { //     
+
+//dd($_POST, false);
+
+  if (isset($_GET['app']) && $_GET['app'] == 'ace_editor' && isset($_POST['ace_save'])) 
+    if (isset($_POST['ace_path']) && realpath($path = APP_PATH . APP_ROOT . ($_POST['ace_path'] ?? $_GET['file']) ) ) {
+      //dd($path, false);   
       if (isset($_POST['ace_contents']))
-        //dd($path);
+        //dd($_POST['ace_contents']);
         file_put_contents($path, $_POST['ace_contents']);
 
       //dd($_POST, true);
       //http://localhost/Array?app=ace_editor&path=&file=test.txt    obj.prop.second = value    obj->prop->second = value
       //dd( APP_URL . '1234?' . http_build_query(['path' => dirname( $_POST['ace_path']), 'app' => 'ace_editor', 'file' => basename($path)]), true);
 
-      die(header('Location: ' . APP_URL . '?' . http_build_query(APP_QUERY + ['path' => dirname($_POST['ace_path']), 'file' => basename($path)])));
+
+      //dd(APP_URL_BASE);
+
+      die(header('Location: ' . APP_URL_BASE['scheme'] . '://' . APP_URL_BASE['host'] . '/?' . http_build_query(APP_QUERY + ['path' => dirname($_POST['ace_path']), 'file' => basename($path)])));
     } else dd("Path: $path was not found.", true);
   //dd($_POST);
 
@@ -189,9 +197,8 @@ ob_start(); ?>
       <div style="display: inline; float: right; text-align: center; color: blue;"><code style="background-color: white; color: #0078D7;"><a style="cursor: pointer; font-size: 13px;" onclick="document.getElementById('app_ace_editor-container').style.display='none';">[X]</a></code></div> 
     </div>
 
-    <form id="" name="ace_form" style="position: relative; width: 100%; height: 100%; border: 3px dashed #38B1FF; background-color: rgba(56,177,255,0.6);" action="<?= APP_URL . '?' . http_build_query(APP_QUERY + ['app' => 'ace_editor']) . (defined('APP_ENV') && APP_ENV == 'development' ? '#!' : '') /* $c_or_p . '=' . (empty($_GET[$c_or_p]) ? '' : $$c_or_p->name) . '&amp;app=composer' */ ?>" method="POST" onsubmit="syncAceContent()">
+    <form id="" name="ace_form" style="position: relative; width: 100%; height: 100%; border: 3px dashed #38B1FF; background-color: rgba(56,177,255,0.6);" action="<?= basename(__FILE__) . '?' . http_build_query(APP_QUERY + ['app' => 'ace_editor']) . (defined('APP_ENV') && APP_ENV == 'development' ? '#!' : '') /* $c_or_p . '=' . (empty($_GET[$c_or_p]) ? '' : $$c_or_p->name) . '&amp;app=composer' */ ?>" method="POST" onsubmit="syncAceContent()">
       <input type="hidden" name="ace_path" value="<?= /* APP_PATH . APP_BASE['public']; */ NULL; ?>" />
-
 
       <div class="ui-widget-content" style="position: relative; display: block; margin: 0 auto; width: calc(100% - 2px); height: 50px; background-color: rgba(251,247,241);">
         <div style="display: inline-block; text-align: left; width: 125px;">
