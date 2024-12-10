@@ -291,10 +291,10 @@ $user = getenv('USERNAME') ?? getenv('APACHE_RUN_USER') ?? getenv('USER') ?? '';
 // Determine the Composer home path based on the OS and user
 $composerHome = (stripos(PHP_OS, 'WIN') === 0) ? "C:/Users/$user/AppData/Roaming/Composer/" : ($user === 'root' ? '/root/.composer/' : '/var/www/.composer/');
 
-if (!realpath($composerHome)) {
-  if (@!mkdir($composerHome, 0755, true))
-    $errors['COMPOSER_HOME'] = "$composerHome does not exist. Path: $composerHome";
-} else define('COMPOSER_HOME', $composerHome);
+if (!realpath($composerHome) && @!mkdir($composerHome, 0755, true)) {
+  $errors['COMPOSER_HOME'] = "$composerHome does not exist. Path: $composerHome";
+} 
+define('COMPOSER_HOME', $composerHome);
 
 //dd('Composer Home: ' . $composerHome, 0);
 
@@ -466,13 +466,13 @@ if (!file_exists($authJsonPath)) {
  
 if (realpath($authJsonPath)) {
   putenv('COMPOSER_AUTH=' . (filesize($authJsonPath) == 0 || trim(file_get_contents($authJsonPath)) == false ? '{"github-oauth": {"github.com": ""}}' : trim(str_replace([' ', "\r\n", "\n", "\r"], '', file_get_contents($authJsonPath)))));
-
-  define('COMPOSER_AUTH', [
-    'json' => getenv('COMPOSER_AUTH'),
-    'path' => $authJsonPath,
-    'token' => json_decode(getenv('COMPOSER_AUTH')/*, true */)->{'github-oauth'}->{'github.com'}
-    ]);
 }
+
+define('COMPOSER_AUTH', [
+  'json' => getenv('COMPOSER_AUTH'),
+  'path' => $authJsonPath,
+  'token' => json_decode(getenv('COMPOSER_AUTH')/*, true */)->{'github-oauth'}->{'github.com'}
+]);
 
 putenv('COMPOSER_TOKEN=' . (COMPOSER_AUTH['token'] ?? 'static token')); // <GITHUB_ACCESS_TOKEN>
 

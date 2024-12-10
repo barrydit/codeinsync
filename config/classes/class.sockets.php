@@ -12,8 +12,6 @@ if (in_array(__FILE__, get_required_files()) && !in_array($phpFilePath, get_requ
     require $phpFilePath;
 }
 
-//dd(get_defined_constants(true)['user']);
-
 class SocketException extends Exception {}
 
 /**
@@ -68,7 +66,7 @@ class Sockets
         }*/
 
         // Check for passed socket, or use the class property
-        $socketToCheck = $socket ?? ($_SERVER['SOCKET'] ?? Self::$socket);
+        $socketToCheck = $socket ?? $_SERVER['SOCKET'] ?? Self::$socket;
 
         // Return true if the socket is set and is a valid resource
         return isset($socketToCheck) && is_resource($socketToCheck);
@@ -344,7 +342,7 @@ END
     public function __destruct()
     {
         if ($this->isSocketAvailable()) {
-           fclose(self::$socket);
+           //fclose(self::$socket);
            self::$socket = null; // Ensure the socket is null after closing
         }
     }

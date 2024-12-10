@@ -315,14 +315,14 @@ END
     //(APP_SELF !== APP_PATH_SERVER) and $socketInstance = Sockets::getInstance();
     //$socketInstance->handleClientRequest("composer self-update\n");
     // Resolve host to IP and check internet connection
-/**/
+/*
     $ip = resolve_host_to_ip('google.com');
     if (APP_SELF == APP_PATH_PUBLIC && check_internet_connection($ip)) {
       define('APP_IS_ONLINE', true);
     } else {
       define('APP_NO_INTERNET_CONNECTION', "Not connected to the internet."); // APP_CONNECTIVITY
     }
-
+*/
 /*
     if (isset($_SERVER['SOCKET']) && is_resource($_SERVER['SOCKET']) && !empty($_SERVER['SOCKET']) && $_SERVER['REQUEST_METHOD'] != 'POST') {
       $errors['server-1'] = "Connected to Server: " . SERVER_HOST . ':' . SERVER_PORT . "\n";

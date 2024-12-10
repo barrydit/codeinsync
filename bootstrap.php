@@ -61,8 +61,10 @@ if (!empty($_GET['client']) || !empty($_GET['domain'])) {
 
     if ($path && is_dir($path)) {
         //defined('APP_CLIENT') ?: define('APP_CLIENT', new clientOrProj($path));
-        defined('APP_ROOT') ?: define('APP_ROOT', $path ?? $clientFolder);
+        defined('APP_ROOT') ?: define('APP_ROOT', isset($_GET['domain']) && $_GET['domain'] != '' ? $path : preg_replace('#^' . preg_quote($clientFolder, '#') . '/?#', '', $path));
     }
+
+    defined('APP_ROOT') ?: define('APP_ROOT', isset($_GET['domain']) && $_GET['domain'] != '' ? $path : preg_replace('#^' . preg_quote($clientFolder, '#') . '/?#', '', $path));
 
 } elseif (!empty($_GET['project'])) {
     $projectFolder = 'projects' . DIRECTORY_SEPARATOR . $_GET['project'] . DIRECTORY_SEPARATOR;
@@ -72,11 +74,9 @@ if (!empty($_GET['client']) || !empty($_GET['domain'])) {
         $path = $projectFolder;
         defined('APP_PROJECT') ?: define('APP_PROJECT', new clientOrProj($path));
     }
+
+    defined('APP_ROOT') ?: define('APP_ROOT', isset($_GET['domain']) && $_GET['domain'] != '' ? $path : preg_replace('#^' . preg_quote($projectFolder, '#') . '/?#', '', $path));
 }
-
-//die(var_dump($path));
-
-defined('APP_ROOT') ?: define('APP_ROOT', $path ?? '');
 
 // Check if the config file exists in various locations based on the current working directory
 $path = null;

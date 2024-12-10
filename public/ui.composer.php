@@ -675,7 +675,7 @@ ob_end_clean(); ?>
 <div style="position: relative; display: inline-block; width: 100%; background-color: rgb(225,196,151,.25); z-index: 1;">
   <div class="text-sm" style="display: inline;">
     <!-- <input id="composerJson" type="checkbox" style="cursor: pointer;" name="composerJson" value="true" checked=""> -->
-    <label for="composerJson" id="appComposerConfigLabel" title="<?= (defined('COMPOSER_CONFIG') && realpath(COMPOSER_CONFIG['path']) ? COMPOSER_CONFIG['path'] : COMPOSER_CONFIG['path']) /*NULL*/;?>" style="background-color: #6B4329; <?= (defined('COMPOSER_CONFIG') && realpath(COMPOSER_CONFIG['path']) ? 'color: #F0E0C6; text-decoration: underline; ' : 'color: red; text-decoration: underline; text-decoration: line-through;') ?> cursor: pointer; font-weight: bold;" >&#9660; <code>COMPOSER_HOME/config.json</code></label>
+    <label for="composerJson" id="appComposerConfigLabel" title="<?= defined('COMPOSER_CONFIG') && realpath(COMPOSER_CONFIG['path']) ? COMPOSER_CONFIG['path'] : COMPOSER_CONFIG['path'] /*NULL*/;?>" style="background-color: #6B4329; <?= defined('COMPOSER_CONFIG') && realpath(COMPOSER_CONFIG['path']) ? 'color: #F0E0C6; text-decoration: underline; ' : 'color: red; text-decoration: underline; text-decoration: line-through;' ?> cursor: pointer; font-weight: bold;" >&#9660; <code>COMPOSER_HOME/config.json</code></label>
   </div>
 </div>
 <div id="appComposerConfigJsonForm" style="display: none; padding: 10px; background-color: rgb(235,216,186,.80); border: 1px dashed #0078D7;">
