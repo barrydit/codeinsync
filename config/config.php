@@ -2,6 +2,7 @@
 declare(strict_types=1); // First Line Only!
 
 require_once 'functions.php';
+require_once 'constants.php';
 
 !defined('APP_PATH') and define('APP_PATH', dirname(__DIR__) . DIRECTORY_SEPARATOR);
 
@@ -206,6 +207,8 @@ if (!defined('APP_ROOT')) {
       $errors['APP_ROOT'] = 'APP_ROOT was NOT defined.';
   }
 }
+
+!defined('APP_ROOT') and define('APP_ROOT', '');
 
 //!defined('APP_ROOT')) ?: define('APP_ROOT', !empty(realpath(APP_PATH . APP_ROOT)) ? (string) APP_ROOT . DIRECTORY_SEPARATOR : '');
 

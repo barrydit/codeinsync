@@ -489,7 +489,23 @@ jQuery, jQuery-ui, ace-editor, requirejs
     <script src="https://d3js.org/d3-hierarchy.v1.min.js"></script>
 
 
+APP_DOMAIN config.php:310
+COMPOSER_HOME composer.php:297
+COMPOSER_AUTH['token'] composer.php:477
+COMPOSER_CONFIG ui.composer.php:678
 
+
+Documentation
+
+Clients who have 1 folder under a [client]/ directory can only see 1 [domain]/ at the moment.
+This could benifit directories that have 1 website within the directory, with no extension.
+
+This means that the filter maybe excluding directories that don't look like a parseable url, but
+if the website was under a [client]/ as a single directory, It maybe then seen as a client web site.
+No matter the name.
+
+When listing websites that are behind [client]/ directories or websites without [client]/, its going
+to be important to show their absolute path, because I want to be able to show websites w/o [client]'s.
 
 
 
