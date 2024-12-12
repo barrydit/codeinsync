@@ -277,8 +277,26 @@ unset($path);
           $path .= 'public/';
         }
         //die(var_dump($path));
+      } else {
+
+        foreach($dirs as $dir) {
+          $dirs[0] = $dirs[array_key_first($dirs)];
+          if (preg_match(DOMAIN_EXPR, strtolower(basename($dirs[0])))) {
+            $_GET['domain'] = basename($dirs[0]);
+            break;
+          }
+          else unset($dirs[array_key_first($dirs)]);
+          continue;
+        }
+
+
+        $_GET['domain'] = $_GET['domain'] ?? $_ENV['DEFAULT_DOMAIN'];
+        $path .= basename($_GET['domain'] = array_values($dirs)[0]) . DIRECTORY_SEPARATOR;
+
+        if (is_dir(dirname(__DIR__) . $path . 'public/')) {
+          $path .= 'public/';
+        }
       }
-        //else 
         //exit(header('Location: http://localhost/clientele/' . $_GET['client']));    
     
       //$path = '?path=' . $path;

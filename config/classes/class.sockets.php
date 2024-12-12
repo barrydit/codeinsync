@@ -4,13 +4,8 @@
 //  die($errors['CONSTANTS'] = 'Missing config/constants.php from required files');
 //require_once dirname(__DIR__, 1) . DIRECTORY_SEPARATOR . 'config.php';
 
-// Define the path to php.php once to avoid repetition
-$phpFilePath = dirname(__DIR__, 1) . DIRECTORY_SEPARATOR . 'php.php';
-
 // Ensure this file is loaded and php.php is not yet loaded
-if (in_array(__FILE__, get_required_files()) && !in_array($phpFilePath, get_required_files())) {
-    require $phpFilePath;
-}
+require_once dirname(__DIR__, 1) . DIRECTORY_SEPARATOR . 'php.php';
 
 class SocketException extends Exception {}
 
@@ -174,7 +169,6 @@ class Sockets
      */
     public static function handleLinuxSocketConnection($start = false)
     {
-
         $pidFile = (defined('APP_PATH') ? APP_PATH : dirname(__DIR__) . DIRECTORY_SEPARATOR) . 'server.pid';
         $serverExec = defined('APP_PATH_SERVER') ? APP_PATH_SERVER : dirname(__DIR__) . DIRECTORY_SEPARATOR . 'server.php';
         $phpExec = /*APP_SUDO . '-u root ' .*/ PHP_EXEC ?? 'php';

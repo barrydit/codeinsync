@@ -36,6 +36,52 @@ These are just the tools needed to turn on a PHP web site.        Next is organi
 
 Error: [2] socket_write(): unable to write to socket [32]: Broken pipe - /mnt/c/www/server.php:806
 
+If APP_ROOT is populated / !empty and I am changing the directory to the client label, I wish the default directory would go to the domain, rather then the label directory.
+
+www-data@localhost:/var/www$ chdir dist/ -> fails ???
+www-data@localhost:/var/www$ chdir / -> mnt/c/www/clientele/000-Raymant,David/davidraymant.ca
+what is/does the url look like http://localhost/app.directory.php?  
+
+
+
+--  0 => '/mnt/c/www/public/app.directory.php',
+--  1 => '/mnt/c/www/bootstrap.php',
+--  2 => '/mnt/c/www/config/php.php',
+  3 => '/mnt/c/www/config/functions.php',  
+  
+  packagist_return_source()
+  
+--  4 => '/mnt/c/www/config/config.php',
+
+  5 => '/mnt/c/www/config/constants.php',
+  
+  319:  resolve_host_to_ip() << - Takes twice as long 22, to load the page
+    APP_IS_ONLINE / APP_NO_INTERNET_CONNECTION
+    
+    Could this function be made after the site is loaded?
+  
+    
+  check_http_status() 
+
+  check_internet_connection()
+  
+--  6 => '/mnt/c/www/config/classes/class.sockets.php',
+  
+  345 - //fclose(self::$socket);
+  
+  
+  createsocket
+  
+    fsockopen
+  
+--  7 => '/mnt/c/www/config/classes/class.clientorproj.php',
+--  8 => '/mnt/c/www/config/classes/class.logger.php',
+--  9 => '/mnt/c/www/config/classes/class.notification.php',
+
+
+Alert when php/composer/git, .env file are not available
+
+
 
 Framework Suggestions
   Frontend Frameworks (for dynamic updates, avoiding screen refreshes):
@@ -506,6 +552,4 @@ No matter the name.
 
 When listing websites that are behind [client]/ directories or websites without [client]/, its going
 to be important to show their absolute path, because I want to be able to show websites w/o [client]'s.
-
-
 

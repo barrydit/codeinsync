@@ -197,7 +197,7 @@ ob_start(); ?>
       <div style="display: inline; float: right; text-align: center; color: blue;"><code style="background-color: white; color: #0078D7;"><a style="cursor: pointer; font-size: 13px;" onclick="document.getElementById('app_ace_editor-container').style.display='none';">[X]</a></code></div> 
     </div>
 
-    <form id="" name="ace_form" style="position: relative; width: 100%; height: 100%; border: 3px dashed #38B1FF; background-color: rgba(56,177,255,0.6);" action="<?= basename(__FILE__) . '?' . http_build_query(APP_QUERY + ['app' => 'ace_editor']) . (defined('APP_ENV') && APP_ENV == 'development' ? '#!' : '') /* $c_or_p . '=' . (empty($_GET[$c_or_p]) ? '' : $$c_or_p->name) . '&amp;app=composer' */ ?>" method="POST" onsubmit="syncAceContent()">
+    <form id="" name="ace_form" style="position: relative; width: 100%; height: 100%; border: 3px dashed #38B1FF; background-color: rgba(56,177,255,0.6);" action="app.directory.php<?= /*basename(__FILE__) . */'?' . http_build_query(APP_QUERY + ['app' => 'ace_editor']) . (defined('APP_ENV') && APP_ENV == 'development' ? '#!' : '') /* $c_or_p . '=' . (empty($_GET[$c_or_p]) ? '' : $$c_or_p->name) . '&amp;app=composer' */ ?>" method="POST" onsubmit="syncAceContent()">
       <input type="hidden" name="ace_path" value="<?= /* APP_PATH . APP_BASE['public']; */ NULL; ?>" />
 
       <div class="ui-widget-content" style="position: relative; display: block; margin: 0 auto; width: calc(100% - 2px); height: 50px; background-color: rgba(251,247,241);">
@@ -382,7 +382,7 @@ if (is_dir($path = APP_PATH . APP_BASE['resources'] . 'js/ace')) { ?>
       });
 
       // Set initial content to the editor on load
-    var initialContent = `<?= isset($_GET['file']) && is_file($filename = APP_PATH . APP_ROOT . (!isset($_GET['path']) ? '' : $_GET['path'] . ($_GET['path'] == '' ? '' : '/' )) . $_GET['file']) ? str_replace(['`', '\\'], ['\\`', '\\\\'], file_get_contents($filename)) : "<?php
+    var initialContent = `<?= isset($_GET['file']) && is_file($filename = APP_PATH . (APP_ROOT != '' ? APP_ROOT : APP_BASE['clientele'] . (!isset($_GET['client']) ? (!isset($_GET['domain']) ? '' : $_GET['domain'] . ($_GET['domain'] == '' ? '' : '/' )) : $_GET['client'] . ($_GET['client'] == '' ? '' : '/' )) . (!isset($_GET['domain']) ? '' : $_GET['domain'] . ($_GET['domain'] == '' ? '' : '/' )) ) . (!isset($_GET['path']) ? '' : $_GET['path'] . ($_GET['path'] == '' ? '' : '/' )) . $_GET['file']) ? str_replace(['`', '\\'], ['\\`', '\\\\'], file_get_contents($filename)) : "<?php
 
 /* This is an example of ACE Editor working */
 

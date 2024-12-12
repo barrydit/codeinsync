@@ -2,7 +2,7 @@
 declare(strict_types=1); // First Line Only!
 
 require_once 'functions.php';
-require_once 'constants.php';
+//require_once 'constants.php';
 
 !defined('APP_PATH') and define('APP_PATH', dirname(__DIR__) . DIRECTORY_SEPARATOR);
 

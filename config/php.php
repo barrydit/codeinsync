@@ -1,7 +1,8 @@
 <?php
 
-require_once 'functions.php'; 
+require_once 'functions.php';
 require_once 'config.php';
+
 
 if (isset($_ENV['COMPOSER']['PHP_EXEC']) && $_ENV['COMPOSER']['PHP_EXEC'] != '' && !defined('PHP_EXEC'))
   switch (PHP_BINARY) {
@@ -25,7 +26,7 @@ $paths = array_filter(glob(__DIR__ . DIRECTORY_SEPARATOR . 'classes/*.php'), 'is
 
 // Define the filenames to be excluded
 $excludedFiles = [
-    'class.sockets.php',
+    //'class.sockets.php',
     'class.websocketserver.php'
 ];
 
