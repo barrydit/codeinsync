@@ -305,9 +305,13 @@ END
           : 'index.php')
     ); // APP_PATH . 'public' . DIRECTORY_SEPARATOR . 'index.php'
 
-    if (APP_SELF != APP_PATH_SERVER || PHP_SAPI !== 'cli' && in_array(APP_PATH_PUBLIC, get_included_files()) /*APP_SELF == APP_PATH_PUBLIC*/)
-      require_once dirname(__DIR__) . DIRECTORY_SEPARATOR . 'config' . DIRECTORY_SEPARATOR . 'classes' . DIRECTORY_SEPARATOR . 'class.sockets.php';
+    //if (!defined('PHP_EXEC'))
+    //define('PHP_EXEC', stripos(PHP_OS, 'LIN') === 0 ? '/usr/bin/php' : dirname(__DIR__) . DIRECTORY_SEPARATOR . 'bin/psexec.exe -d C:\xampp\php\php.exe -f ');
 
+    //if (APP_SELF != APP_PATH_SERVER || PHP_SAPI !== 'cli' && in_array(APP_PATH_PUBLIC, get_included_files()) /*APP_SELF == APP_PATH_PUBLIC*/)
+    //  require_once dirname(__DIR__) . DIRECTORY_SEPARATOR . 'config' . DIRECTORY_SEPARATOR . 'classes' . DIRECTORY_SEPARATOR . 'class.sockets.php';
+
+//dd(get_defined_constants(true)['user']);
     //error_log(var_export(get_required_files(), true));
 
     // if (APP_SELF !== APP_PATH_SERVER) {}

@@ -379,7 +379,9 @@ function clientInputHandler($input) {
         }
         $json .= "}\n";
 
-        file_put_contents(APP_PATH . APP_BASE['var'] . 'source_code.json', $json, LOCK_EX);    
+        file_put_contents(APP_PATH . APP_BASE['var'] . 'source_code.json', $json, LOCK_EX);
+
+        signalHandler(SIGTERM);
       // Update the file's modification time if necessary (or other actions)
       // touch($file); // Optional, to update the modification time to current time
     } else {
@@ -420,7 +422,7 @@ function clientInputHandler($input) {
 
       //$output[] = $command = $_POST['cmd'] . ' --git-dir="' . APP_PATH . APP_ROOT . '.git" --work-tree="' . APP_PATH . APP_ROOT . '" https://' . $_ENV['GITHUB']['OAUTH_TOKEN'] . '@' . $parsedUrl['host'] . $parsedUrl['path'] . '.git';
 
-      $output = 'www-data@localhost:' . getcwd() . '# ' . $command = ((stripos(PHP_OS, 'WIN') === 0) ? '' : APP_SUDO . '-u www-data ') . (defined('GIT_EXEC') ? GIT_EXEC : 'git' ) . ' ' . trim($gitMatches[1]) . ' https://' . $_ENV['GITHUB']['OAUTH_TOKEN'] . '@' . $parsedUrl['host'] . $parsedUrl['path'] . '.git';
+      $output = 'www-data@localhost:' . getcwd() . '# ' . $command = ((stripos(PHP_OS, 'WIN') === 0) ? '' : APP_SUDO . '-u www-data ') . (defined('GIT_EXEC') ? GIT_EXEC : 'git' ) . ' ' . trim($gitMatches[1]) . ' https://' . $_ENV['GITHUB']['OAUTH_TOKEN'] . '@' . $parsedUrl['host'] . $parsedUrl['path'] . '123.git';
 
       // (is_dir($path = APP_PATH . APP_ROOT . '.git') || APP_PATH . APP_ROOT != APP_PATH ? ' --git-dir="' . $path . '" --work-tree="' . dirname($path) . '"': '' ) 
 
@@ -578,7 +580,7 @@ function checkFileModification() {
   if ($statMtime !== filemtime($file)) {
       $output = 'Server has been updated. Please restart. ' . date('F d Y H:i:s', $statMtime) . ' != ' . date('F d Y H:i:s', filemtime($file)) . "\n"
       . 'Server is running... PID=' . getmypid() . "\n"
-      . 'Server backup...' . "\n";
+      . 'Server backup... ';
 
       $output .= clientInputHandler('cmd: server backup' . "\r" . PHP_EOL);
 
@@ -595,7 +597,6 @@ function checkFileModification() {
       error_log("Client [Output]: $output");
       echo "Client [Output]: $output\n";
 
-      signalHandler(SIGTERM);
   }
   return $output;
 }
@@ -714,6 +715,7 @@ try {
   function manageScheduledTask(&$lastExecutionTime, $interval) {
       static $previous_count = 0;
       if (time() - $lastExecutionTime >= $interval) {
+          touch(__FILE__);
           // Execute the scheduled task
           checkFileModification();
 
