@@ -185,7 +185,7 @@ if (!defined('APP_ROOT')) {
         ? (isset($_GET['client']) 
             ? $clientPath . $_GET['domain'] . DIRECTORY_SEPARATOR
             : 'clientele' . DIRECTORY_SEPARATOR . $_GET['domain'] . DIRECTORY_SEPARATOR)
-        : (!empty($_ENV['DEFAULT_DOMAIN']) ? 'clientele' . DIRECTORY_SEPARATOR . $_ENV['DEFAULT_CLIENT'] . DIRECTORY_SEPARATOR . (array_key_first($_GET) == 'path' ? '' : ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['cmd']) && in_array($_POST['cmd'], ['cd ../', 'chdir ../']) ? '' : $_ENV['DEFAULT_DOMAIN']) . DIRECTORY_SEPARATOR ) : '')/*''*/;
+        : (!empty($_ENV['DEFAULT_DOMAIN']) ? 'clientele' . DIRECTORY_SEPARATOR . $_ENV['DEFAULT_CLIENT'] . DIRECTORY_SEPARATOR . (array_key_first($_GET) == 'path' ? '' : (isset($_SERVER['REQUEST_METHOD']) && $_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['cmd']) && in_array($_POST['cmd'], ['cd ../', 'chdir ../']) ? '' : $_ENV['DEFAULT_DOMAIN']) . DIRECTORY_SEPARATOR ) : '')/*''*/;
 
     $projectPath = isset($_GET['project'])
         ? 'projects' . DIRECTORY_SEPARATOR . $_GET['project'] . DIRECTORY_SEPARATOR

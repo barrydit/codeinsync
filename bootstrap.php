@@ -21,7 +21,7 @@ if (!defined('APP_ROOT')) {
 $path = null;
 
 if (!empty($_GET['client']) || !empty($_GET['domain'])) {
-    $clientFolder = 'clientele' . DIRECTORY_SEPARATOR . ($_GET['client'] ?? '') . DIRECTORY_SEPARATOR;
+    $clientFolder = 'clientele' . DIRECTORY_SEPARATOR . ($_GET['client'] ?? '') ;
     $clientPath = __DIR__ . DIRECTORY_SEPARATOR . $clientFolder;
 
     // Retrieve directories that match the client path
@@ -50,15 +50,17 @@ if (!empty($_GET['client']) || !empty($_GET['domain'])) {
                 break;
             }
         }
+
     } elseif (count($dirs) == 1) {
         // Default to the first available directory if no specific domain is provided
         $firstDir = reset($dirs);
         $_GET['domain'] = basename($firstDir);
-        $path = $clientFolder . basename($firstDir) . DIRECTORY_SEPARATOR;
+        $path = $clientFolder . DIRECTORY_SEPARATOR . basename($firstDir);
+
     } else {
         $path = $clientFolder;
     }
-
+    //die('$path = ' . $path);
     if ($path && is_dir($path)) {
         //defined('APP_CLIENT') ?: define('APP_CLIENT', new clientOrProj($path));
         defined('APP_ROOT') ?: define('APP_ROOT', isset($_GET['domain']) && $_GET['domain'] != '' ? $path : preg_replace('#^' . preg_quote($clientFolder, '#') . '/?#', '', $path));

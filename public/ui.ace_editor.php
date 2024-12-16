@@ -4,6 +4,7 @@
 
 //$errors->{'TEXT_MANAGER'} = $path . "\n" . 'File Modified:    Rights:    Date of creation: ';
 
+
 if (__FILE__ == get_required_files()[0] && __FILE__ == realpath($_SERVER["SCRIPT_FILENAME"])) 
   if ($path = basename(dirname(get_required_files()[0])) == 'public') { // (basename(getcwd())
     if (is_file($path = realpath('../bootstrap.php'))) {
@@ -20,7 +21,8 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 //dd($_POST, false);
 
   if (isset($_GET['app']) && $_GET['app'] == 'ace_editor' && isset($_POST['ace_save'])) 
-    if (isset($_POST['ace_path']) && realpath($path = APP_PATH . APP_ROOT . ($_POST['ace_path'] ?? $_GET['file']) ) ) {
+
+    if (isset($_POST['ace_path']) && realpath($path = APP_PATH . APP_ROOT . ($_GET['path'] . '/' . $_GET['file'] ?? $_POST['ace_path']) ) ) {
       //dd($path, false);   
       if (isset($_POST['ace_contents']))
         //dd($_POST['ace_contents']);
@@ -274,7 +276,7 @@ if (!empty($paths))
 <!--   A (<?= /* $path */ ''; ?>) future note: keep ace-editor nice and tight ... no spaces, as it interferes with the content window.
  https://scribbled.space/ace-editor-setup-usage/ -->
 
-<div id="ui_ace_editor" class="ace_editor" style="display: <?= isset($_GET['file']) && isset($_GET['path']) && is_file($_GET['path'] . $_GET['file']) ? 'block' : 'block'?>; z-index: 1;"></div><textarea id="ace_contents" name="ace_contents" class="ace_text-input" autocorrect="off" autocapitalize="none" spellcheck="false" style="display: none; opacity: 0; font-size: 1px; height: 1px; width: 1px; top: 28px; left: 86px;" wrap="on"></textarea></form>
+<div id="ui_ace_editor" class="ace_editor" style="display: <?= isset($_GET['file']) && isset($_GET['path']) && is_file($_GET['path'] . $_GET['file']) ? 'block' : 'block'?>; z-index: 1;"></div><textarea id="ace_contents" name="ace_contents" class="ace_text-input" autocorrect="off" autocapitalize="none" spellcheck="false" style="display: none; opacity: 0; font-size: 1px; height: 1px; width: 1px; top: 28px; left: 86px;" wrap="on"></textarea></div></form>
     <!-- div style="position: relative; display: inline-block; width: 100%; height: 100%; padding-left: 10px;">
 
       <form style="display: inline;" autocomplete="off" spellcheck="false" action="<?= APP_URL . /*basename(__FILE__) .*/ '?' . http_build_query(APP_QUERY /*+ ['app' => 'ace_editor']*/) . (defined('APP_ENV') && APP_ENV == 'development' ? '#!' : '') /* $c_or_p . '=' . (empty($_GET[$c_or_p]) ? '' : $$c_or_p->name) . '&amp;app=composer' */ ?>" method="GET">
@@ -342,8 +344,6 @@ foreach (array_filter( glob($path . DIRECTORY_SEPARATOR . '*.php'), 'is_file') a
       
 
       </div>
-    </div>
-  </div>
 <?php
 
 $app['body'] = ob_get_contents();

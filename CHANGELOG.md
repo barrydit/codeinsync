@@ -34,6 +34,50 @@ Composer/Packagist => 375,000+ applications avail. to install with the api/ui ..
 These are just the tools needed to turn on a PHP web site.        Next is organizing and accessing client applications, and projects that benefit the application. an IDE. I mean there are already online vs code editors that already do every thing I have listed. But their not open source.
 
 
+
+Tasks:
+
+    Create a skeleton for .env file for the file to referer to bool/string/value filler
+    
+    --Fix the composer.json file open / php exec problem
+    --path is returning to app direction under client/domain
+    --double forward slashes on child directories under domains
+    --Create customized code to open/handle Client=000&domain=&...file=file
+    Code properally opens directories and files now.
+    
+      .htaccess Base Rewrite / Resources
+
+
+Feature:
+
+      Use Ace editor as editor to edit realtime multi line code
+      
+      Feature move files new locations?
+      
+      Feature outside folder range !== APP_PATH . APP_ROOT
+
+
+Bug:
+      <b>Fatal error</b>: Uncaught TypeError: fclode(): supplied resource is not a valid stream resource in 
+/mnt/c/www/config/classes/class.sockets.php:347
+Stack trace:
+#0 /mnt/c/www/config/classes/class.sockets.php(347): fclose()
+#1 [internal function]: Sockets-&gt;__destrtuct()
+#2 {main}
+      thrown in <b>/mnt/c/www/config/classes/class.sockets.php</b> on line <b>347</b><br />
+      
+      Error: [2] socket_write(): unable to write to socket [32]: Broken pipe - /mnt/c/www/server.php:806
+      
+      /clientele/000-Raymant,David/davidraymant.ca/public/ POST index.php retreats to /clientele/000-Raymant,David/
+      
+      php and any other commands are not responding because of the custom href ... need to figure out where it needs to go,
+      assuming that its app.console.php , while the other link is for app.directory.php
+      
+      ace editor form appears to be GET method, rather then POST to submit the contents. This could cause loss of data
+      
+
+
+
 Error: [2] socket_write(): unable to write to socket [32]: Broken pipe - /mnt/c/www/server.php:806
 
 If APP_ROOT is populated / !empty and I am changing the directory to the client label, I wish the default directory would go to the domain, rather then the label directory.
