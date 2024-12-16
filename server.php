@@ -799,13 +799,10 @@ try {
               if (socket_write($client, $chunk) === false) {
                 dd('Socket write failed', false);
                 throw new Exception('Socket write failed');
-              }
+              } else socket_write($client, "\r\n"); // Send end-of-transmission signal
             }
           }
         }
-
-        // Send end-of-transmission signal
-        socket_write($client, "\r\n");
 
       } catch (Exception $e) {
         echo "Error: " . $e->getMessage() . "\n";

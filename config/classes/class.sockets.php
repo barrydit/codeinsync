@@ -6,7 +6,6 @@
 
 // Ensure this file is loaded and php.php is not yet loaded
 require_once dirname(__DIR__, 1) . DIRECTORY_SEPARATOR . 'php.php';
-
 class SocketException extends Exception {}
 
 /**
