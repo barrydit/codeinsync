@@ -17,69 +17,63 @@ if (!defined('APP_ROOT')) {
     define('APP_ROOT', !empty(realpath(APP_PATH . ($path = rtrim($path, DIRECTORY_SEPARATOR)) ) && $path != '') ? (string) $path . DIRECTORY_SEPARATOR : '');  // basename() does not like null
 }*/
 
+$clientFolder = 'clientele' . DIRECTORY_SEPARATOR . ($_GET['client'] ?? '');
+$clientPath = __DIR__ . DIRECTORY_SEPARATOR . $clientFolder;
 
-$path = null;
+// Retrieve directories that match the client path
+$dirs = array_filter(glob($clientPath . DIRECTORY_SEPARATOR . '*'), 'is_dir');
 
-if (!empty($_GET['client']) || !empty($_GET['domain'])) {
-    $clientFolder = 'clientele' . DIRECTORY_SEPARATOR . ($_GET['client'] ?? '') ;
-    $clientPath = __DIR__ . DIRECTORY_SEPARATOR . $clientFolder;
-
-    // Retrieve directories that match the client path
-    $dirs = array_filter(glob("$clientPath*"), 'is_dir');
-
-    // Attempt to resolve the domain if only one directory is found
-    if (count($dirs) === 1) {
-        $dirName = strtolower(basename(reset($dirs)));
-        if (preg_match(DOMAIN_EXPR, $dirName)) {
-            $_GET['domain'] = $dirName;
-        }
-    }
-
-//    die(var_dump($_GET));
-    // Set the path based on the domain if provided
-    if (!empty($_GET['domain']) || !empty($_GET['path'])) {
-        if (isset($_GET['path']) && in_array($_GET['path'], $dirs)) {
-
-            $_GET['domain'] = $_GET['path'];
-            $path = $clientFolder . $_GET['domain'] . DIRECTORY_SEPARATOR;
-            unset($_GET['path']);
-        } else
+/**
+ * Resolve domain from available directories or fallback to the client folder.
+ */
+function resolveDomain($dirs, $requestedDomain = null)
+{
+    // Match requested domain to available directories
+    if ($requestedDomain) {
         foreach ($dirs as $dir) {
-            if (basename($dir) === $_GET['domain']) {
-                $path = $clientFolder . basename($dir) . DIRECTORY_SEPARATOR;
-                break;
+            if (basename($dir) === $requestedDomain) {
+                return basename($dir);
             }
         }
-
-    } elseif (count($dirs) == 1) {
-        // Default to the first available directory if no specific domain is provided
-        $firstDir = reset($dirs);
-        $_GET['domain'] = basename($firstDir);
-        $path = $clientFolder . DIRECTORY_SEPARATOR . basename($firstDir);
-
-    } else {
-        $path = $clientFolder;
-    }
-    //die('$path = ' . $path);
-    if ($path && is_dir($path)) {
-        //defined('APP_CLIENT') ?: define('APP_CLIENT', new clientOrProj($path));
-        defined('APP_ROOT') ?: define('APP_ROOT', isset($_GET['domain']) && $_GET['domain'] != '' ? $path : preg_replace('#^' . preg_quote($clientFolder, '#') . '/?#', '', $path));
     }
 
-    defined('APP_ROOT') ?: define('APP_ROOT', isset($_GET['domain']) && $_GET['domain'] != '' ? $path : preg_replace('#^' . preg_quote($clientFolder, '#') . '/?#', '', $path));
-
-} elseif (!empty($_GET['project'])) {
-    $projectFolder = 'projects' . DIRECTORY_SEPARATOR . $_GET['project'] . DIRECTORY_SEPARATOR;
-    $projectPath = APP_PATH . $projectFolder;
-
-    if (is_dir($projectPath)) {
-        $path = $projectFolder;
-        defined('APP_PROJECT') ?: define('APP_PROJECT', new clientOrProj($path));
+    // If no domain requested and exactly one directory exists, use it
+    if (count($dirs) === 1) {
+        return basename(reset($dirs));
     }
 
-    defined('APP_ROOT') ?: define('APP_ROOT', isset($_GET['domain']) && $_GET['domain'] != '' ? $path : preg_replace('#^' . preg_quote($projectFolder, '#') . '/?#', '', $path));
+    // No valid domain found
+    return null;
 }
 
+// Main Logic
+$path = null;
+$domain = resolveDomain($dirs, $_GET['domain'] ?? null);
+
+if ($domain) {
+    $path = $clientFolder . DIRECTORY_SEPARATOR . $domain . DIRECTORY_SEPARATOR;
+} //elseif (!empty($_GET['path'])) {
+    // Use path if provided
+    //$path = $clientFolder . DIRECTORY_SEPARATOR . trim($_GET['path'], DIRECTORY_SEPARATOR);
+//}
+elseif (count($dirs) === 1) {
+    // Default to the only directory if one exists
+    $path = reset($dirs);
+} else {
+    // Fallback to the client folder
+    $path = ''; //$clientFolder;
+}
+
+$path = preg_replace(
+  '#' . preg_quote(APP_PATH, '#') . '#',
+  '',
+  $path
+);
+
+// Define APP_ROOT using the directory of the resolved path
+defined('APP_ROOT') || define('APP_ROOT', is_dir($path) ? $path : '');
+
+//die(APP_ROOT);
 // Check if the config file exists in various locations based on the current working directory
 $path = null;
 

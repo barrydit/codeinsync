@@ -65,7 +65,7 @@ if ($clientPath) {
     //    '</a>';
     $navigation .= '<a href="?client&path=clientele/">' . 'clientele</a>' . DIRECTORY_SEPARATOR . '<a href="' . basename(__FILE__) . '?client=' . ($clientPath ?? '') . '" onclick="handleClick(event, \'/\')">' . 
         $clientPath . 
-        '</a><a href="' . basename(__FILE__) . '?client=' . ($clientPath ?? '') . '&domain=' . ($domainPath ?? '') . '" onclick="handleClick(event, \'/\')">' .  ((!empty($domainPath) ? DIRECTORY_SEPARATOR . $domainPath : '') ?? '') . DIRECTORY_SEPARATOR .
+        '</a><a href="' . basename(__FILE__) . '?client=' . ($clientPath ?? '') . '&domain=' . ($domainPath ?? '') . '" onclick="handleClick(event, \'/\')">' . ((!empty($domainPath) ? DIRECTORY_SEPARATOR . $domainPath : '') ?? '') . DIRECTORY_SEPARATOR .
         '</a>';
 
 } else 
@@ -90,7 +90,7 @@ if ($projectPath) {
 
 // Path navigation
 if ($relativePath && $relativePath !== '/') {
-    $navigation .= '<a href="' . basename(__FILE__) . '?' . (isset($_GET['client']) || isset($_GET['domain']) ? 'client=' . ($clientPath ?? '') /* . '&domain=' . ($domainPath ?? '') . '&'*/  : '' ). 'path=' . dirname($relativePath, 1) . '" onclick="handleClick(event, \'' . dirname($relativePath, 1) . '/\')">' . 
+    $navigation .= '<a href="' . basename(__FILE__) . '?' . (isset($_GET['client']) || isset($_GET['domain']) ? 'client=' . ($clientPath ?? '') /* . '&domain=' . ($domainPath ?? '') . '&'*/  : '' ) . '&path=" onclick="handleClick(event, \'' . $relativePath . '/\')">' . 
         $relativePath . DIRECTORY_SEPARATOR . 
         '</a>';
 }
