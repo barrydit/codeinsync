@@ -282,8 +282,17 @@ function clientInputHandler($input) {
       ini_set('log_errors', 'true');
     } elseif (preg_match('/^cmd:\s*edit\s*(.*)(?=\r?\n$)?/si', $input, $matches)) {
       ini_set('log_errors', 'false');
-      $output = ($file = rtrim(realpath(APP_PATH . APP_ROOT . $_GET['path'] ?? ''), '/') . '/' . trim($matches[1])) ? file_get_contents($file) : "File not found: $file";
-      ini_set('log_errors', 'true');
+      //$output = ($file = rtrim(realpath(APP_PATH . ($_GET['path'] ?? '')), '/') . '/' . trim($matches[1])) ? file_get_contents($file) : "File not found: $file";
+
+      $file = realpath(APP_PATH . ($_GET['path'] ?? '')) . trim($matches[1]);
+
+      if (file_exists($file) && is_file($file)) {
+        $output = file_get_contents($file);
+      } else {
+        $output = "File not found: $file";
+        ini_set('log_errors', 'true'); // Ensure logging is enabled
+        error_log("File not found: $file");
+      }
     } elseif (preg_match('/^cmd:\s*server\s*backup(?=\r?\n$)?/si', $input, $matches)) {
       //$input = trim($input);
       $output = '';
