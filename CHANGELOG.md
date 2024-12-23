@@ -33,8 +33,19 @@ Composer/Packagist => 375,000+ applications avail. to install with the api/ui ..
 
 These are just the tools needed to turn on a PHP web site.        Next is organizing and accessing client applications, and projects that benefit the application. an IDE. I mean there are already online vs code editors that already do every thing I have listed. But their not open source.
 
+~~~~
+php does not work, along with other cmds
 
+projects/*project1* opens clientele/ when it should be projects/
 
+?domain=example.com produces a extra forward-slash->/example.com/
+
+   http://localhost/app.directory.php?path=&app=ace_editor&file=composer.json
+   http://localhost/app.directory.php?domain=example.com&path=&app=ace_editor&file=composer.json
+
+vendor/package1
+  should open its directory/contents
+~~~
 Tasks:
 
     Create a skeleton for .env file for the file to referer to bool/string/value filler

@@ -6,7 +6,9 @@
 
 // Ensure this file is loaded and php.php is not yet loaded
 require_once dirname(__DIR__, 1) . DIRECTORY_SEPARATOR . 'php.php';
-class SocketException extends Exception {}
+class SocketException extends Exception
+{
+}
 
 /**
  * Summary of Sockets
@@ -25,7 +27,7 @@ class Sockets
     public function __construct()
     {
         try {
-            Self::$socket = $this->openSocket(SERVER_HOST, SERVER_PORT);
+            self::$socket = $this->openSocket(SERVER_HOST, SERVER_PORT);
 
             // Attempt to open a socket if it's not already set in $_SERVER
             if (!$this->isSocketAvailable()) {
@@ -35,7 +37,7 @@ class Sockets
                 // If the app is not running on the server path, handle client requests
                 $this->handleClientRequest($_POST['cmd'] ?? null);
 
-                if (!Self::$socket) {
+                if (!self::$socket) {
                     throw new SocketException("Failed to connect to socket at " . SERVER_HOST . ':' . SERVER_PORT);
                 }
             }
@@ -52,15 +54,15 @@ class Sockets
      */
     public static function isSocketAvailable($socket = null)
     {
-/*
-        if ($socket !== null) {
-            return isset($_SERVER['SOCKET']) && is_resource($_SERVER['SOCKET']);
-        } else {
-            return isset(Self::$socket) && is_resource(Self::$socket);
-        }*/
+        /*
+                if ($socket !== null) {
+                    return isset($_SERVER['SOCKET']) && is_resource($_SERVER['SOCKET']);
+                } else {
+                    return isset(Self::$socket) && is_resource(Self::$socket);
+                }*/
 
         // Check for passed socket, or use the class property
-        $socketToCheck = $socket ?? $_SERVER['SOCKET'] ?? Self::$socket;
+        $socketToCheck = $socket ?? $_SERVER['SOCKET'] ?? self::$socket;
 
         // Return true if the socket is set and is a valid resource
         return isset($socketToCheck) && is_resource($socketToCheck);
@@ -121,26 +123,26 @@ class Sockets
     public function handleClientRequest($command = null)
     {
         global $errors, $output;
-    
+
         // Check if socket is available
         if (!$this->isSocketAvailable()) {
             $errors['SOCKET'] = 'Socket is not available.';
             return;
         }
-    
+
         // Use provided command or default to the current script's filename
         $message = "cmd: " . ($command ?? $_SERVER["SCRIPT_FILENAME"]) . "\n";
-    
+
         // Log the server connection and client request
         $errors['server-1'] = "Connected to Server: " . SERVER_HOST . ':' . SERVER_PORT . "\n";
         $errors['server-2'] = "Client request: $message";
-    
+
         // Send the message to the server
         fwrite(self::$socket, $message);
-        
+
         // Add to output array (either POSTed command or the constructed message)
         $output[] = $_POST['cmd'] ?? $message;
-    
+
         // Read the server's response
         while (!feof(self::$socket)) {
             $response = fgets(self::$socket, 1024);
@@ -176,7 +178,9 @@ class Sockets
         $path = APP_PATH;
 
         if (is_file($file = "{$temp}") || @touch($file)) // unlink($file)
-          file_put_contents($file, <<<END
+            file_put_contents(
+                $file,
+                <<<END
 <?php
 \$runServer = function (\$serverExec, \$phpExec) {
     chdir('$path');
@@ -223,10 +227,10 @@ class Sockets
 
 \$runServer('$serverExec', '$phpExec');
 END
-);
-    
+            );
+
         // Function to check if the server is already running
-        $isServerRunning = function($pidFile) {
+        $isServerRunning = function ($pidFile) {
             if (file_exists($pidFile)) {
                 $pid = file_get_contents($pidFile);
                 if (posix_kill($pid, 0)) {
@@ -237,13 +241,14 @@ END
             }
             return false; // Server not running
         };
-    
+
         // Run the server using the preferred executable (either serverExec or php server.php)
 
         $runServer = function ($serverExec, $phpExec) use ($temp, $sudo) {
             if (is_file($temp)) {
                 dd(shell_exec($sudo . escapeshellcmd("$phpExec $temp") . ' > /dev/null 2>&1 &'));
-                if (unlink($temp) && is_file($temp)) dd("$temp should have been deleted?");
+                if (unlink($temp) && is_file($temp))
+                    dd("$temp should have been deleted?");
 
                 dd('did it work?', false);
                 return;
@@ -255,14 +260,14 @@ END
             }
             //include_once $temp; $runServer($serverExec, $phpExec);
 
-            
+
         };
-    
+
         // Main logic
         if ($isServerRunning($pidFile)) {
             return; // Server is already running, exit early
         }
-    
+
         if ($start && !$isServerRunning($pidFile)) {
             // Start the server if not running or explicitly requested
             $runServer($serverExec, $phpExec);
@@ -315,15 +320,15 @@ END
 
         // If no instance exists, create a new one
         if ($instance === null) {
-           $instance = new self();  // Reinitialize and open socket
+            $instance = new self();  // Reinitialize and open socket
         } else {
-           // Check if the socket is available and open it if necessary
-           if (!self::isSocketAvailable()) {
-               // Reopen the socket if it is not available
-               $_SERVER['SOCKET'] = self::$socket = $instance->openSocket(SERVER_HOST, SERVER_PORT);
-           }
+            // Check if the socket is available and open it if necessary
+            if (!self::isSocketAvailable()) {
+                // Reopen the socket if it is not available
+                $_SERVER['SOCKET'] = self::$socket = $instance->openSocket(SERVER_HOST, SERVER_PORT);
+            }
         }
-   
+
         return $instance; // Return the singleton instance
     }
 
@@ -335,8 +340,8 @@ END
     public function __destruct()
     {
         if ($this->isSocketAvailable()) {
-           //fclose(self::$socket);
-           self::$socket = null; // Ensure the socket is null after closing
+            //fclose(self::$socket);
+            self::$socket = null; // Ensure the socket is null after closing
         }
     }
 }
@@ -348,40 +353,40 @@ $socketInstance = Sockets::getInstance(); // new Sockets();
 // Check if the socket was initialized properly
 if (isset($socketInstance) && is_a($socketInstance, Sockets::class) && is_resource($_SERVER['SOCKET'] = $socketInstance->getSocket())) {
 
-  if (!isset($_SERVER['SOCKET']) || empty($_SERVER['SOCKET'])) {
-    !defined('PID_FILE') and define('PID_FILE', /*getcwd() .*/(!defined('APP_PATH') ? __DIR__ . DIRECTORY_SEPARATOR : APP_PATH ) . 'server.pid');
+    if (!isset($_SERVER['SOCKET']) || empty($_SERVER['SOCKET'])) {
+        !defined('PID_FILE') and define('PID_FILE', /*getcwd() .*/ (!defined('APP_PATH') ? __DIR__ . DIRECTORY_SEPARATOR : APP_PATH) . 'server.pid');
 
-    if (file_exists(PID_FILE)) {
-      $pid = (int) file_get_contents(PID_FILE);
-      //unlink(PID_FILE);
-      if (strpos(PHP_OS, 'WIN') === 0) {
-        exec("tasklist /FI \"PID eq $pid\" 2>NUL | find /I \"$pid\" >NUL", $output, $status);
-        if ($status !== 0) {
-          Sockets::handleWindowsSocketConnection();
-          //error_log("Server is already running with PID $pid\n");
-          //echo "Server is already running with PID $pid\n";
-          //exit(1);
+        if (file_exists(PID_FILE)) {
+            $pid = (int) file_get_contents(PID_FILE);
+            //unlink(PID_FILE);
+            if (strpos(PHP_OS, 'WIN') === 0) {
+                exec("tasklist /FI \"PID eq $pid\" 2>NUL | find /I \"$pid\" >NUL", $output, $status);
+                if ($status !== 0) {
+                    Sockets::handleWindowsSocketConnection();
+                    //error_log("Server is already running with PID $pid\n");
+                    //echo "Server is already running with PID $pid\n";
+                    //exit(1);
+                }
+            } else {
+                if (!posix_kill($pid, 0)) {
+                    Sockets::handleLinuxSocketConnection();
+                    //error_log("Server is already running with PID $pid\n");
+                    echo "Server is already running with PID $pid\n";
+                    //exit(1);
+                }
+            }
         }
-      } else {
-        if (!posix_kill($pid, 0)) {
-          Sockets::handleLinuxSocketConnection();
-          //error_log("Server is already running with PID $pid\n");
-          echo "Server is already running with PID $pid\n";
-          //exit(1);
-        }
-      }
+
+
+        die($errors['APP_SOCKET'] = 'Have you checked your server.php file lately?');
     }
-
-
-    die($errors['APP_SOCKET'] = 'Have you checked your server.php file lately?');
-  }
 } else {
     //die('Socket connection failed.');
 
     $errors['APP_SOCKET'] = "Socket is not being created: Define \$_SERVER['SOCKET']\n";
-  
+
     //if (APP_DEBUG) { 
-      //var_dump(trim($errors['APP_SOCKET']));
+    //var_dump(trim($errors['APP_SOCKET']));
     //}
 }
 

@@ -16,12 +16,14 @@ if (preg_match('/^app\.([\w\-.]+)\.php$/', basename(__FILE__), $matches))
   ${$matches[1]} = $matches[1];
 
 if (!realpath($path = APP_BASE['resources'] . 'js/pong/'))
-  (@!mkdir(APP_PATH . $path, 0755, true) ?: $errors['APP_PONG'] = "$path could not be created." );
+  (@!mkdir(APP_PATH . $path, 0755, true) ?: $errors['APP_PONG'] = "$path could not be created.");
 
 if ($path) {
   if (!is_file($file = "{$path}ball.js"))
     if (@touch($file))
-      file_put_contents($file, <<<END
+      file_put_contents(
+        $file,
+        <<<END
 export default class Ball {
   constructor (ctx, x, y) {
     this.ctx = ctx;
@@ -39,11 +41,13 @@ export default class Ball {
   }
 }
 END
-);
+      );
 
   if (!is_file($file = "{$path}board.js"))
     if (@touch($file))
-      file_put_contents($file, <<<END
+      file_put_contents(
+        $file,
+        <<<END
 export default class Board {
   constructor (ctx) {
     this.ctx = ctx
@@ -96,11 +100,13 @@ export default class Board {
   }
 }
 END
-);
+      );
 
   if (!is_file($file = "{$path}game.js"))
     if (@touch($file))
-      file_put_contents($file, <<<END
+      file_put_contents(
+        $file,
+        <<<END
 import Board from './board.js'
 import Paddle from './paddle.js'
 import Ball from './ball.js'
@@ -204,11 +210,13 @@ class Game {
 
 export default Game
 END
-);
+      );
 
   if (!is_file($file = "{$path}index.js"))
     if (@touch($file))
-      file_put_contents($file, <<<END
+      file_put_contents(
+        $file,
+        <<<END
 import Game from './game.js'
 
 window.onload = () => {
@@ -218,11 +226,13 @@ window.onload = () => {
   game.play()
 }
 END
-);
+      );
 
   if (!is_file($file = "{$path}paddle.js"))
     if (@touch($file))
-      file_put_contents($file, <<<END
+      file_put_contents(
+        $file,
+        <<<END
 export default class Paddle {
   constructor (ctx, x, y, fillStyle) {
     this.ctx = ctx;
@@ -269,11 +279,13 @@ export default class Paddle {
   }
 }
 END
-);
+      );
 
   if (!is_file($file = "{$path}score.js"))
     if (@touch($file))
-      file_put_contents($file, <<<END
+      file_put_contents(
+        $file,
+        <<<END
 export default class Score {
   constructor (left = 0, right = 0) {
     this.left = left
@@ -293,20 +305,24 @@ export default class Score {
   }
 }
 END
-);
+      );
 
   if (!is_file($file = APP_BASE['resources'] . 'js/' . 'app.js'))
     if (@touch($file))
-      file_put_contents($file, <<<END
+      file_put_contents(
+        $file,
+        <<<END
 import './bootstrap';
 import './pong';
 END
-);
+      );
 
 
   if (!is_file($file = APP_BASE['resources'] . 'js/' . 'bootstrap.js'))
     if (@touch($file))
-      file_put_contents($file, <<<END
+      file_put_contents(
+        $file,
+        <<<END
 import _ from 'lodash';
 window._ = _;
 
@@ -343,7 +359,7 @@ window.axios.defaults.headers.common['X-Requested-With'] = 'XMLHttpRequest';
 //     enabledTransports: ['ws', 'wss'],
 // });
 END
-);
+      );
 }
 
 
@@ -351,20 +367,21 @@ ob_start(); ?>
 
 /* Styles for the absolute div */
 #app_pong-container {
-position: absolute;
-display: none;
-top: 5%;
+position : absolute;
+display : none;
+top : 5%;
 //bottom: 60px;
-left: 50%;
-transform: translateX(-50%);
-width: auto;
-height: 400px;
-background-color: rgba(255, 255, 255, 0.9);
-color: black;
-text-align: center;
-padding: 10px;
-z-index: 1;
+left : 50%;
+transform : translateX(-50%);
+width : auto;
+height : 400px;
+background-color : rgba(255, 255, 255, 0.9);
+color : black;
+text-align : center;
+padding : 10px;
+z-index : 1;
 }
+
 
 <?php $app[$pong]['style'] = ob_get_contents();
 ob_end_clean();
@@ -372,32 +389,41 @@ ob_end_clean();
 ob_start(); ?>
 
 <!-- <div class="container" style="border: 1px solid #000;"> -->
-<div id="app_pong-container" class="<?= __FILE__ == get_required_files()[0] || (isset($_GET['app']) && $_GET['app'] == 'pong') ? 'selected' : '' ?>" style="border: 1px solid #000; overflow-x: scroll;">
-    <div class="header ui-widget-header">
-      <div style="display: inline-block;">Pong</div>
-      <div style="display: inline; float: right; text-align: center;">[<a style="cursor: pointer; font-size: 13px;" onclick="document.getElementById('app_pong-container').style.display='none';">X</a>]</div> 
-    </div>
-
-      <div style="display: inline-block; width: auto;">
-        <iframe src="<?= (is_dir($path = APP_PATH . APP_BASE['public']) && getcwd() == realpath($path) ? APP_BASE['public']:'' ) . basename(__FILE__) ?>" style="height: 350px; width: 750px;"></iframe>
-      </div>
-      <!-- <pre id="ace-editor" class="ace_editor"></pre> -->
+<div id="app_pong-container"
+  class="<?= __FILE__ == get_required_files()[0] || (isset($_GET['app']) && $_GET['app'] == 'pong') ? 'selected' : '' ?>"
+  style="border: 1px solid #000; overflow-x: scroll;">
+  <div class="header ui-widget-header">
+    <div style="display: inline-block;">Pong</div>
+    <div style="display: inline; float: right; text-align: center;">[<a style="cursor: pointer; font-size: 13px;"
+        onclick="document.getElementById('app_pong-container').style.display='none';">X</a>]</div>
   </div>
+
+  <div style="display: inline-block; width: auto;">
+    <iframe
+      src="<?= (is_dir($path = APP_PATH . APP_BASE['public']) && getcwd() == realpath($path) ? APP_BASE['public'] : '') . basename(__FILE__) ?>"
+      style="height: 350px; width: 750px;"></iframe>
+  </div>
+  <!-- <pre id="ace-editor" class="ace_editor"></pre> -->
+</div>
 <!-- </div> -->
 
 <?php $app[$pong]['body'] = ob_get_contents();
 ob_end_clean();
 
+if (false) { ?>
+  <script type="text/javascript">
+  <?php }
 ob_start(); ?>
+  // Javascript comment
+  <?php $app[$pong]['script'] = ob_get_contents();
+  ob_end_clean();
 
-
-<?php $app[$pong]['script'] = ob_get_contents();
-ob_end_clean(); ?>
-
-<?php //dd($_SERVER);
-ob_start(); ?>
+  if (false) { ?></script><?php }
+  //dd($_SERVER);
+  ob_start(); ?>
 <!DOCTYPE html>
 <html>
+
 <head>
   <meta http-equiv="content-type" content="text/html; charset=UTF-8">
   <title>Pong 2.0</title>
@@ -407,32 +433,32 @@ ob_start(); ?>
   <link rel="stylesheet" href="resources/css/app.css" />
   <link rel="stylesheet" href="//code.jquery.com/ui/1.12.1/themes/smoothness/jquery-ui.css" />
 
-<?php
-// (check_http_status('https://cdn.tailwindcss.com') ? 'https://cdn.tailwindcss.com' : APP_URL . 'resources/js/tailwindcss-3.3.5.js')?
-is_dir($path = APP_PATH . APP_BASE['resources'] . 'js/') or mkdir($path, 0755, true);
-if (is_file("{$path}tailwindcss-3.3.5.js")) {
-  if (ceil(abs((strtotime(date('Y-m-d')) - strtotime(date('Y-m-d',strtotime('+5 days',filemtime($path . 'tailwindcss-3.3.5.js'))))) / 86400)) <= 0 ) {
+  <?php
+  // (check_http_status('https://cdn.tailwindcss.com') ? 'https://cdn.tailwindcss.com' : APP_URL . 'resources/js/tailwindcss-3.3.5.js')?
+  is_dir($path = APP_PATH . APP_BASE['resources'] . 'js/') or mkdir($path, 0755, true);
+  if (is_file("{$path}tailwindcss-3.3.5.js")) {
+    if (ceil(abs((strtotime(date('Y-m-d')) - strtotime(date('Y-m-d', strtotime('+5 days', filemtime($path . 'tailwindcss-3.3.5.js'))))) / 86400)) <= 0) {
+      $url = 'https://cdn.tailwindcss.com';
+      $handle = curl_init($url);
+      curl_setopt($handle, CURLOPT_RETURNTRANSFER, true);
+
+      if (!empty($js = curl_exec($handle)))
+        file_put_contents("{$path}tailwindcss-3.3.5.js", $js) or $errors['JS-TAILWIND'] = "$url returned empty.";
+    }
+  } else {
     $url = 'https://cdn.tailwindcss.com';
     $handle = curl_init($url);
     curl_setopt($handle, CURLOPT_RETURNTRANSFER, true);
 
-    if (!empty($js = curl_exec($handle))) 
+    if (!empty($js = curl_exec($handle)))
       file_put_contents("{$path}tailwindcss-3.3.5.js", $js) or $errors['JS-TAILWIND'] = "$url returned empty.";
   }
-} else {
-  $url = 'https://cdn.tailwindcss.com';
-  $handle = curl_init($url);
-  curl_setopt($handle, CURLOPT_RETURNTRANSFER, true);
-
-  if (!empty($js = curl_exec($handle))) 
-    file_put_contents("{$path}tailwindcss-3.3.5.js", $js) or $errors['JS-TAILWIND'] = "$url returned empty.";
-}
-?>
+  ?>
 
   <script src="<?= 'resources/js/tailwindcss-3.3.5.js' ?? $url ?>"></script>
 
-<style type="text/tailwindcss">
-<?= /*$appWhiteboard['style'];*/ NULL; ?>
+  <style type="text/tailwindcss">
+    <?= /*$appWhiteboard['style'];*/ NULL; ?>
 * { margin: 0; padding: 0; } /* to remove the top and left whitespace */
 
 html, body { width: 100%; height: 100%; <?= $_SERVER['SCRIPT_FILENAME'] == __FILE__ ? 'overflow:hidden;' : '' ?> } /* just to be sure these are full screen*/
@@ -478,10 +504,11 @@ html, body { width: 100%; height: 100%; <?= $_SERVER['SCRIPT_FILENAME'] == __FIL
   <script type="module" src="resources/js/pong/index.js"></script>
   <script type="module" src="resources/js/bootstrap.js"></script>
 </body>
+
 </html>
-<?php $app[$pong]['html'] = ob_get_contents(); 
+<?php $app[$pong]['html'] = ob_get_contents();
 ob_end_clean();
 
 //check if file is included or accessed directly
-if (__FILE__ == realpath($_SERVER["SCRIPT_FILENAME"]) || in_array(__FILE__, get_required_files()) && isset($_GET['app']) && $_GET['app'] == 'pong' && APP_DEBUG )
+if (__FILE__ == realpath($_SERVER["SCRIPT_FILENAME"]) || in_array(__FILE__, get_required_files()) && isset($_GET['app']) && $_GET['app'] == 'pong' && APP_DEBUG)
   die($app[$pong]['html']);

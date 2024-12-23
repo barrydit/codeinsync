@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -12,15 +13,16 @@
         }
     </style>
 </head>
+
 <body>
     <div id="editor1" class="editor">This is the first editor.</div>
     <div id="editor2" class="editor">This is the second editor.</div>
 
-    <script src="resources/js/ace/src/ace.js" type="text/javascript" charset="utf-8"></script> 
+    <script src="resources/js/ace/src/ace.js" type="text/javascript" charset="utf-8"></script>
     <script src="resources/js/ace/src/ext-language_tools.js" type="text/javascript" charset="utf-8"></script>
 
     <script>
-        document.addEventListener("DOMContentLoaded", function() {
+        document.addEventListener("DOMContentLoaded", function () {
             var editor1 = ace.edit("editor1");
             editor1.setTheme("ace/theme/monokai");
             editor1.session.setMode("ace/mode/javascript");
@@ -31,4 +33,5 @@
         });
     </script>
 </body>
+
 </html>

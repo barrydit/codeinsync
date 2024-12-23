@@ -5,7 +5,6 @@ class Logger
     {
         // Initialize your logger here (e.g., Monolog)
     }
-
     public static function error($message)
     {
         // Log your error message

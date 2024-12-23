@@ -1,9 +1,10 @@
-<?php 
+<?php
 require_once __DIR__ . '/config/config.php';
 ?>
 
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -25,15 +26,23 @@ require_once __DIR__ . '/config/config.php';
       margin: 5px 0;
       display: block;
       position: relative;
-      white-space: nowrap; /* Prevent wrapping of the text */
-      width: fit-content; /* Set the width to fit the content */
-      clear: both; /* Ensure each process starts on a new line */
+      white-space: nowrap;
+      /* Prevent wrapping of the text */
+      width: fit-content;
+      /* Set the width to fit the content */
+      clear: both;
+      /* Ensure each process starts on a new line */
       overflow: hidden;
     }
 
     @keyframes scroll {
-      0% { transform: translateX(50%); }
-      100% { transform: translateX(-50%); }
+      0% {
+        transform: translateX(50%);
+      }
+
+      100% {
+        transform: translateX(-50%);
+      }
     }
 
     .scrolling {
@@ -41,6 +50,7 @@ require_once __DIR__ . '/config/config.php';
     }
   </style>
 </head>
+
 <body>
   <div id="process-list" class="process-list" onmouseout="stopScroll()"></div>
   <input type="text" id="command-input" placeholder="Enter command">
@@ -59,14 +69,14 @@ require_once __DIR__ . '/config/config.php';
       newProcess.innerHTML = `<a href="#" onclick="deleteProcess(this)">[X]</a> ${command}`;
 
       // Add mouseover event
-      newProcess.onmouseover = function() {
+      newProcess.onmouseover = function () {
         setTimeout(() => { startScroll(newProcess); }, 3000);
       };
- 
+
       setTimeout(() => {
         if (newProcess.parentNode) { // Check if process still exists
           newProcess.textContent = command;
-          newProcess.onmouseover = function() {
+          newProcess.onmouseover = function () {
             startScroll(newProcess);
           };
           // Send post request
@@ -99,4 +109,5 @@ require_once __DIR__ . '/config/config.php';
     }
   </script>
 </body>
+
 </html>
