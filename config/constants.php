@@ -17,30 +17,28 @@ $use_sudo = $_ENV['SHELL']['SUDO'] ?? true;
 
 //dd('hello world');
 
+// Define APP_SUDO constant based on OS
 if (!defined('APP_SUDO')) {
   if (stripos(PHP_OS, 'WIN') === 0) {
-      // Windows command (insert specific command if needed)
-      define('APP_SUDO', '' /*'runas /user:Administrator "cmd /c" '*/);
+    // Windows command (insert specific command if needed)
+    define('APP_SUDO', null /*'runas /user:Administrator "cmd /c" '*/);
   } else {
-      // Linux command setup
-      $sudoCommand = $use_sudo ? 'sudo -S ' : '';
-      $passwordPart = $password ? 'echo ' . escapeshellarg($password) . ' | ' : '';
-      $userPart = $user ? '-u ' . escapeshellarg($user) . ' ' : '';
+    // Linux command setup
+    $sudoCommand = $use_sudo ? 'sudo -S ' : '';
+    $passwordPart = $password ? 'echo ' . escapeshellarg($password) . ' | ' : '';
+    $userPart = $user ? '-u ' . escapeshellarg($user) . ' ' : '';
 
-      define('APP_SUDO', "{$passwordPart}{$sudoCommand}{$userPart}");
+    define('APP_SUDO', "{$passwordPart}{$sudoCommand}{$userPart}");
   }
 }
-
-
-
-// Define APP_SUDO constant based on OS
+/*
 !defined('APP_SUDO') and define('APP_SUDO', stripos(PHP_OS, 'WIN') === 0
   ? ''  // For Windows, you can insert the appropriate command 
   : ($use_sudo 
     ? (!isset($password) && !$password
       ?: 'echo ' . escapeshellarg($password ?? '') . ' | ' . escapeshellarg($password ?? '')) . 'sudo -S ' . (!isset($user) && !$user ?: '-u ' . escapeshellarg($user ?? '') . ' ') // For Linux, you can insert the appropriate command
     : '')
-);
+);*/
 
 const CONSOLE = true;
 
@@ -99,7 +97,7 @@ EOD, 'test'));
 
 
 
-  // Check if the request is using HTTPS
+// Check if the request is using HTTPS
 if (isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] == 'on') { // $_SERVER['REQUEST_SCHEME']   
   define('APP_HTTPS', TRUE);
 }
@@ -113,10 +111,11 @@ if (php_sapi_name() === 'cli' || defined('STDIN')) {
   define('APP_URL', 'http://localhost/');
 } else {
   // HTTP environment: construct the URL dynamically
-  define('APP_URL', 
-      'http' . (defined('APP_HTTPS') ? 's' : '') . '://' .
-      ($_SERVER['SERVER_NAME'] ?? $_SERVER['HTTP_HOST'] ?? $_SERVER['SERVER_ADDR'] ?? 'localhost') . 
-      parse_url($_SERVER['REQUEST_URI'] ?? '', PHP_URL_PATH)
+  define(
+    'APP_URL',
+    'http' . (defined('APP_HTTPS') ? 's' : '') . '://' .
+    ($_SERVER['SERVER_NAME'] ?? $_SERVER['HTTP_HOST'] ?? $_SERVER['SERVER_ADDR'] ?? 'localhost') .
+    parse_url($_SERVER['REQUEST_URI'] ?? '', PHP_URL_PATH)
   );
 }
 
@@ -137,7 +136,7 @@ const SERVER_HOST = APP_HOST ?? '0.0.0.0';
 const SERVER_PORT = '8080'; // 9000
 !is_int((int) SERVER_PORT) and $errors['SERVER_PORT'] = 'SERVER_PORT is not valid. (' . SERVER_PORT . ')' . "\n";
 
-!defined('APP_PATH_SERVER') and define('APP_PATH_SERVER', (defined('APP_PATH') ? APP_PATH : __DIR__ . DIRECTORY_SEPARATOR) . str_replace(defined('APP_PATH') ? APP_PATH : __DIR__ . DIRECTORY_SEPARATOR , '', basename(dirname(APP_SELF)) == 'public' ? basename(APP_SELF) : 'server.php'));
+!defined('APP_PATH_SERVER') and define('APP_PATH_SERVER', (defined('APP_PATH') ? APP_PATH : __DIR__ . DIRECTORY_SEPARATOR) . str_replace(defined('APP_PATH') ? APP_PATH : __DIR__ . DIRECTORY_SEPARATOR, '', basename(dirname(APP_SELF)) == 'public' ? basename(APP_SELF) : 'server.php'));
 
 // Define APP_TIMEOUT constant
 define('APP_TIMEOUT', strtotime("1970-01-01 08:00:00GMT"));
@@ -159,7 +158,8 @@ switch (basename(__DIR__)) {
   case 'config':
   default:
 
-    if (empty(APP_HOST) || APP_HOST == '127.0.0.1' || APP_DOMAIN == 'localhost') $errors['WHOIS'] = "WHOIS is disabled on localhost.\n";
+    if (empty(APP_HOST) || APP_HOST == '127.0.0.1' || APP_DOMAIN == 'localhost')
+      $errors['WHOIS'] = "WHOIS is disabled on localhost.\n";
 
     // Define base paths
     $base_paths = [ // https://stackoverflow.com/questions/8037266/get-the-url-of-a-file-included-by-php
@@ -199,7 +199,7 @@ switch (basename(__DIR__)) {
       $errors['MISSING_PATHS'] = 'Directories not added to the base paths: ' . implode(', ', $missingPaths) . "\n";
     }
 
-    $errors['BASE_PATHS'] = 'Directories were added to the base paths: ' . implode(', ', $base_paths) . "\n";
+    $errors['BASE_PATHS'] = $base_paths; // 'Directories were added to the base paths: ' . implode(', ', $base_paths) . "\n";
 
     // Process common directories and prepare APP_BASE definition
     $processedCommon = [];
@@ -212,16 +212,16 @@ switch (basename(__DIR__)) {
           continue;
         }
 
-        if (!is_dir((defined('APP_PATH') ? APP_PATH : __DIR__ . DIRECTORY_SEPARATOR)  . $dirname) && APP_DEBUG) {
+        if (!is_dir((defined('APP_PATH') ? APP_PATH : __DIR__ . DIRECTORY_SEPARATOR) . $dirname) && APP_DEBUG) {
 
-          (@!mkdir((defined('APP_PATH') ? APP_PATH : __DIR__ . DIRECTORY_SEPARATOR) . $dirname, 0755, true) ?: $errors['APP_BASE'][$key] = "$dirname could not be created." );
+          (@!mkdir((defined('APP_PATH') ? APP_PATH : __DIR__ . DIRECTORY_SEPARATOR) . $dirname, 0755, true) ?: $errors['APP_BASE'][$key] = "$dirname could not be created.");
         }
         $processedCommon[$dirname] = $dirname . DIRECTORY_SEPARATOR;
       }
     }
 
     // Get directories in the base path and filter them
-    foreach(array_map('basename', array_filter(glob("{$basePath}{.env, .htaccess, .gitignore, LICENSE, *.md}", GLOB_BRACE), 'is_file')) as $filename) {
+    foreach (array_map('basename', array_filter(glob("{$basePath}{.env, .htaccess, .gitignore, LICENSE, *.md}", GLOB_BRACE), 'is_file')) as $filename) {
       if (!is_file($file = APP_PATH . $filename)) {
         if (@touch($file)) {
           if (is_file($source_file = APP_PATH . 'var/source_code.json'))
@@ -243,45 +243,45 @@ switch (basename(__DIR__)) {
                   break;
                 default:
 
-/*
-if (!realpath($path = APP_PATH . 'docs/')) {
-  if (!mkdir($path, 0755, true))
-    $errors['DOCS'] = $path . ' does not exist';
+                  /*
+                  if (!realpath($path = APP_PATH . 'docs/')) {
+                    if (!mkdir($path, 0755, true))
+                      $errors['DOCS'] = $path . ' does not exist';
 
-  if (!is_file($path . 'getting-started.md'))
-    if (@touch($path . 'getting-started.md'))   // https://github.com/auraphp/Aura.Session/docs/getting-started.md
-      file_put_contents($path . 'getting-started.md', <<<END
-getting-started
-END
-);
-}
+                    if (!is_file($path . 'getting-started.md'))
+                      if (@touch($path . 'getting-started.md'))   // https://github.com/auraphp/Aura.Session/docs/getting-started.md
+                        file_put_contents($path . 'getting-started.md', <<<END
+                  getting-started
+                  END
+                  );
+                  }
 
-if (!realpath($path = APP_PATH . APP_BASE['public'] . 'policies/')) {
-  if (!mkdir($path, 0755, true))
-    $errors['POLICIES'] = $path . ' does not exist';
+                  if (!realpath($path = APP_PATH . APP_BASE['public'] . 'policies/')) {
+                    if (!mkdir($path, 0755, true))
+                      $errors['POLICIES'] = $path . ' does not exist';
 
-  if (!is_file($path . 'privacy-policy'))
-    if (@touch($path . 'privacy-policy'))
-      file_put_contents($path . 'privacy-policy', <<<END
-Privacy Policy
-END
-);
+                    if (!is_file($path . 'privacy-policy'))
+                      if (@touch($path . 'privacy-policy'))
+                        file_put_contents($path . 'privacy-policy', <<<END
+                  Privacy Policy
+                  END
+                  );
 
-  if (!is_file($path . 'terms-of-use'))
-    if (@touch($path . 'terms-of-use'))
-      file_put_contents($path . 'terms-of-use', <<<END
-Terms of Use
-END
-);
+                    if (!is_file($path . 'terms-of-use'))
+                      if (@touch($path . 'terms-of-use'))
+                        file_put_contents($path . 'terms-of-use', <<<END
+                  Terms of Use
+                  END
+                  );
 
-  if (!is_file($path . 'legal/cookies'))
-    if (@touch($path . 'legal/cookies'))
-      file_put_contents($path . 'legal/cookies', <<<END
-Cookies
-END
-);
-}
-*/
+                    if (!is_file($path . 'legal/cookies'))
+                      if (@touch($path . 'legal/cookies'))
+                        file_put_contents($path . 'legal/cookies', <<<END
+                  Cookies
+                  END
+                  );
+                  }
+                  */
                   file_put_contents($file, $source_file->{$filename});
                   break;
               }
@@ -294,15 +294,17 @@ END
     // Define APP_BASE
     define('APP_BASE', $processedCommon);
 
-//(defined('APP_PATH') && truepath(APP_PATH)) and $errors['APP_PATH'] = truepath(APP_PATH); // print('App Path: ' . APP_PATH . "\n" . "\t" . '$_SERVER[\'DOCUMENT_ROOT\'] => ' . $_SERVER['DOCUMENT_ROOT'] . "\n");
+    //(defined('APP_PATH') && truepath(APP_PATH)) and $errors['APP_PATH'] = truepath(APP_PATH); // print('App Path: ' . APP_PATH . "\n" . "\t" . '$_SERVER[\'DOCUMENT_ROOT\'] => ' . $_SERVER['DOCUMENT_ROOT'] . "\n");
 
-    define('APP_PATH_PUBLIC', (defined('APP_PATH')
-      ? APP_PATH
-      : __DIR__ . DIRECTORY_SEPARATOR)  . APP_BASE['public'] . str_replace(defined('APP_PATH')
+    define(
+      'APP_PATH_PUBLIC',
+      (defined('APP_PATH')
         ? APP_PATH
-        : __DIR__ . DIRECTORY_SEPARATOR , '', APP_BASE['public'] . basename(dirname($_SERVER['PHP_SELF'])) == 'public'
-          ? basename($_SERVER['PHP_SELF'])
-          : 'index.php')
+        : __DIR__ . DIRECTORY_SEPARATOR) . APP_BASE['public'] . str_replace(defined('APP_PATH')
+        ? APP_PATH
+        : __DIR__ . DIRECTORY_SEPARATOR, '', APP_BASE['public'] . basename(dirname($_SERVER['PHP_SELF'])) == 'public'
+        ? basename($_SERVER['PHP_SELF'])
+        : 'index.php')
     ); // APP_PATH . 'public' . DIRECTORY_SEPARATOR . 'index.php'
 
     //if (!defined('PHP_EXEC'))
@@ -311,7 +313,7 @@ END
     //if (APP_SELF != APP_PATH_SERVER || PHP_SAPI !== 'cli' && in_array(APP_PATH_PUBLIC, get_included_files()) /*APP_SELF == APP_PATH_PUBLIC*/)
     //  require_once dirname(__DIR__) . DIRECTORY_SEPARATOR . 'config' . DIRECTORY_SEPARATOR . 'classes' . DIRECTORY_SEPARATOR . 'class.sockets.php';
 
-//dd(get_defined_constants(true)['user']);
+    //dd(get_defined_constants(true)['user']);
     //error_log(var_export(get_required_files(), true));
 
     // if (APP_SELF !== APP_PATH_SERVER) {}
@@ -327,47 +329,47 @@ END
       define('APP_NO_INTERNET_CONNECTION', "Not connected to the internet."); // APP_CONNECTIVITY
     }
 */
-/*
-    if (isset($_SERVER['SOCKET']) && is_resource($_SERVER['SOCKET']) && !empty($_SERVER['SOCKET']) && $_SERVER['REQUEST_METHOD'] != 'POST') {
-      $errors['server-1'] = "Connected to Server: " . SERVER_HOST . ':' . SERVER_PORT . "\n";
-  
-      // Send a message to the server
-      $errors['server-2'] = 'Client request: ' . $message = "cmd: app connected\n";
-  
-      fwrite($_SERVER['SOCKET'], $message);
-      $output[] = trim($message); // . ': '
-      // Read response from the server
-      while (!feof($_SERVER['SOCKET'])) {
-          $response = fgets($_SERVER['SOCKET'], 1024);
-          $errors['server-3'] = "Server responce: $response\n";
-          if (isset($output[end($output)])) $output[end($output)] .= $response = trim($response);
-          else $output[1] = "$response\n";
-          //if (!empty($response)) break;
-      }
-      // Close and reopen socket
-      //fclose($socketInstance->getSocket());
-      if (!empty($response))
-        switch ((bool) $response) {
-          case true:
+    /*
+        if (isset($_SERVER['SOCKET']) && is_resource($_SERVER['SOCKET']) && !empty($_SERVER['SOCKET']) && $_SERVER['REQUEST_METHOD'] != 'POST') {
+          $errors['server-1'] = "Connected to Server: " . SERVER_HOST . ':' . SERVER_PORT . "\n";
+      
+          // Send a message to the server
+          $errors['server-2'] = 'Client request: ' . $message = "cmd: app connected\n";
+      
+          fwrite($_SERVER['SOCKET'], $message);
+          $output[] = trim($message); // . ': '
+          // Read response from the server
+          while (!feof($_SERVER['SOCKET'])) {
+              $response = fgets($_SERVER['SOCKET'], 1024);
+              $errors['server-3'] = "Server responce: $response\n";
+              if (isset($output[end($output)])) $output[end($output)] .= $response = trim($response);
+              else $output[1] = "$response\n";
+              //if (!empty($response)) break;
+          }
+          // Close and reopen socket
+          //fclose($socketInstance->getSocket());
+          if (!empty($response))
+            switch ((bool) $response) {
+              case true:
+                define('APP_IS_ONLINE', true);
+                define('APP_NO_INTERNET_CONNECTION', "Network is connected to the Internet, via Server.");
+                break;
+              default:
+                define('APP_NO_INTERNET_CONNECTION', "Not connected to the internet.");
+                break;
+            }
+        } elseif (!isset($_SERVER['SOCKET']) || !$_SERVER['SOCKET']) {
+          $ip = resolve_host_to_ip('google.com');
+          if (check_internet_connection($ip)) {
             define('APP_IS_ONLINE', true);
-            define('APP_NO_INTERNET_CONNECTION', "Network is connected to the Internet, via Server.");
-            break;
-          default:
+          } else {
             define('APP_NO_INTERNET_CONNECTION', "Not connected to the internet.");
-            break;
+          }
+        } else {
+          $ip = resolve_host_to_ip('google.com');
+          define('APP_NO_INTERNET_CONNECTION', "Failed to resolve host to IP=$ip");
         }
-    } elseif (!isset($_SERVER['SOCKET']) || !$_SERVER['SOCKET']) {
-      $ip = resolve_host_to_ip('google.com');
-      if (check_internet_connection($ip)) {
-        define('APP_IS_ONLINE', true);
-      } else {
-        define('APP_NO_INTERNET_CONNECTION', "Not connected to the internet.");
-      }
-    } else {
-      $ip = resolve_host_to_ip('google.com');
-      define('APP_NO_INTERNET_CONNECTION', "Failed to resolve host to IP=$ip");
-    }
-  */
+      */
     // Set connectivity error if not connected
     defined('APP_NO_INTERNET_CONNECTION') and
       !defined('APP_IS_ONLINE') and $errors['APP_NO_INTERNET_CONNECTION'] = 'APP Connect(ed): ' . var_export(APP_NO_INTERNET_CONNECTION, true) . "\n"; // print('Connectivity: ' . APP_NO_INTERNET_CONNECTION . "\n");
@@ -378,11 +380,11 @@ END
 //define('APP_ENV', 'production');
 
 if (defined('APP_DOMAIN') && !in_array(APP_DOMAIN, [/*'localhost',*/ '127.0.0.1', '::1'])) {
-/* if (!is_file($file = APP_PATH . '.env') && @touch($file)) file_put_contents($file, "DB_UNAME=\nDB_PWORD="); */
-//  defined('APP_ENV') or define('APP_ENV', 'production');
+  /* if (!is_file($file = APP_PATH . '.env') && @touch($file)) file_put_contents($file, "DB_UNAME=\nDB_PWORD="); */
+  //  defined('APP_ENV') or define('APP_ENV', 'production');
 } else {
-/* if (!is_file($file = APP_PATH . '.env') && @touch($file)) file_put_contents($file, "DB_UNAME=\nDB_PWORD="); */
-//  defined('APP_ENV') or define('APP_ENV', 'development'); // development
+  /* if (!is_file($file = APP_PATH . '.env') && @touch($file)) file_put_contents($file, "DB_UNAME=\nDB_PWORD="); */
+  //  defined('APP_ENV') or define('APP_ENV', 'development'); // development
 } // APP_DEV |  APP_PROD
 
 if (defined('APP_ENV') && !is_string(APP_ENV)) {
@@ -468,9 +470,14 @@ define('APP_URL_PATH', is_array(APP_URL) ? APP_URL['path'] : APP_URL); // substr
 define('APP_QUERY', !empty(parse_url($_SERVER['REQUEST_URI'] ?? '')['query']) ? (parse_str(parse_url($_SERVER['REQUEST_URI'])['query'], $query) ? [] : $query) : []);
 
 !is_array(APP_URL)
-  or define('APP_URI',   // BASEURL
-    preg_replace('!([^:])(//)!', "$1/",
-      str_replace('\\', '/',
+  or define(
+    'APP_URI',   // BASEURL
+    preg_replace(
+      '!([^:])(//)!',
+      "$1/",
+      str_replace(
+        '\\',
+        '/',
         htmlspecialchars(APP_URL['scheme'] . '://' . (isset($_SERVER['PHP_AUTH_USER']) ? APP_URL['user'] . PATH_SEPARATOR . APP_URL['pass'] . '@' : '') . APP_URL['host'] . (APP_URL['port'] !== '80' ? PATH_SEPARATOR . APP_URL['port'] : '') . APP_URL['path'] . (!basename($_SERVER["SCRIPT_NAME"]) ? '' : basename($_SERVER["SCRIPT_NAME"])) . (!empty(APP_QUERY) ? '?' . http_build_query(APP_QUERY) : '')) // dirname($_SERVER['PHP_SELF'])  dirname($_SERVER['REQUEST_URI'])
       )
     )
@@ -518,7 +525,7 @@ switch(get_included_files()[0]) {
 */
 //die('hello world');
 //if (basename(get_included_files()[0]) == 'jquery.tinymce-config.js.php') {
-  //exit;
+//exit;
 //} else if (basename($_SERVER["SCRIPT_FILENAME"]) !== 'index.php') {
 //  header('Location: ' . APP_BASE_URL . basename($_SERVER["SCRIPT_FILENAME"]));
 //  exit;
@@ -542,8 +549,8 @@ TEXT;
 //Ternary operator vs Null coalescing operator in PHP 
 // ($condition) ?? "NULL";
 
-//die();
- 
+//exit;
+
 //print <<<EOD
 //{$outputVar}
 //<h3>This is not SSL</h3>

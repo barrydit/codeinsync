@@ -29,13 +29,13 @@ $gitconfig = <<<END
     ui = auto
 END;
 
-if (!is_dir($dirname = (defined('APP_PATH') ? APP_PATH : dirname(__DIR__) . DIRECTORY_SEPARATOR) . '.ssh')) 
-  (@!mkdir($dirname, 0755, true) ?: $errors['APP_BASE'][basename($dirname)] = "$dirname could not be created." );
+if (!is_dir($dirname = (defined('APP_PATH') ? APP_PATH : dirname(__DIR__) . DIRECTORY_SEPARATOR) . '.ssh'))
+  (@!mkdir($dirname, 0755, true) ?: $errors['APP_BASE'][basename($dirname)] = "$dirname could not be created.");
 
 define('GIT_EXEC', stripos(PHP_OS, 'WIN') === 0 ? 'git.exe' : '/usr/local/bin/git');
 
 if (isset($_ENV['GITHUB']['EXPR_VERSION'])) {
-  (function() {
+  (function () {
     $gitVersion = exec(GIT_EXEC . ' --version');
     // match will interferer with any included files
     if (preg_match($_ENV['GITHUB']['EXPR_VERSION'], $gitVersion, $match)) {
@@ -51,16 +51,17 @@ $latest_remote_commit_sha = $latest_remote_commit_data['object']['sha']; */
  * Summary of git_origin_sha_update
  * @return bool|string
  */
-function git_origin_sha_update() {
+function git_origin_sha_update()
+{
   global $errors;
   $latest_local_commit_sha = exec(GIT_EXEC . ' --git-dir="' . APP_PATH . APP_ROOT . '.git" --work-tree="' . APP_PATH . APP_ROOT . '" rev-parse main');
   $errors['GIT_UPDATE'] = "Local main branch is not up-to-date with origin/main\n";
 
   $options = [
     'http' => [
-        'method' => 'GET',
-        'header' => 'Authorization: token ' . ($_ENV['GITHUB']['OAUTH_TOKEN'] ?? '') . "\r\n" . 
-          "User-Agent: My-App\r\n",
+      'method' => 'GET',
+      'header' => 'Authorization: token ' . ($_ENV['GITHUB']['OAUTH_TOKEN'] ?? '') . "\r\n" .
+        "User-Agent: My-App\r\n",
     ],
   ];
 
@@ -69,7 +70,7 @@ function git_origin_sha_update() {
   if (!empty($_GET['client']) || !empty($_GET['domain'])) {
     $latest_remote_commit_url = 'https://api.github.com/repos/' . $_ENV['GITHUB']['USER'] . '/' . ($_GET['domain'] ?? $_ENV['DEFAULT_DOMAIN']) . '/git/refs/heads/main';
   } elseif (!empty($_GET['project'])) {
-    $path = 'projects' . DIRECTORY_SEPARATOR . $_GET['project'] . DIRECTORY_SEPARATOR;   
+    $path = 'projects' . DIRECTORY_SEPARATOR . $_GET['project'] . DIRECTORY_SEPARATOR;
     if (is_dir(APP_PATH . $path)) {
       define('APP_PROJECT', new clientOrProj($path));
       $latest_remote_commit_url = 'https://api.github.com/repos/' . $_ENV['GITHUB']['USER'] . '/' . $_GET['project'] . '/git/refs/heads/main';
@@ -92,7 +93,7 @@ function git_origin_sha_update() {
     $latest_remote_commit_sha = $data['object']['sha'];
 
     if ($latest_local_commit_sha !== $latest_remote_commit_sha) {
-      $errors['GIT_UPDATE'] = $errors['GIT_UPDATE'] . $latest_local_commit_sha . '  ' . $latest_remote_commit_sha  . "\n"; 
+      $errors['GIT_UPDATE'] = $errors['GIT_UPDATE'] . $latest_local_commit_sha . '  ' . $latest_remote_commit_sha . "\n";
     } else {
       $errors[] = 'Remote SHA ($_ENV[\'GITHUB\'][\'REMOTE_SHA\']) was updated.' . "\n" . $errors['GIT_UPDATE'] . "\n";
       $_ENV['GITHUB']['REMOTE_SHA'] = $latest_remote_commit_sha;
@@ -107,16 +108,16 @@ function git_origin_sha_update() {
 }
 
 //dd($latest_remote_commit_url);
- if (is_file($file = APP_PATH . APP_ROOT . '.env') && date('Y-m-d', filemtime($file)) != date('Y-m-d')) {
-    if (isset($_ENV['GITHUB']['REMOTE_SHA']) && git_origin_sha_update() !== $_ENV['GITHUB']['REMOTE_SHA']) {
-      //
-    }
+if (is_file($file = APP_PATH . APP_ROOT . '.env') && date('Y-m-d', filemtime($file)) != date('Y-m-d')) {
+  if (isset($_ENV['GITHUB']['REMOTE_SHA']) && git_origin_sha_update() !== $_ENV['GITHUB']['REMOTE_SHA']) {
+    //
+  }
 }
 
 // file has to exists first
 is_dir(APP_PATH . APP_BASE['var']) or mkdir(APP_PATH . APP_BASE['var'], 0755);
 if (is_file(APP_PATH . APP_BASE['var'] . 'git-scm.com.html')) {
-  if (ceil(abs((strtotime(date('Y-m-d')) - strtotime(date('Y-m-d',strtotime('+5 days',filemtime(APP_PATH . APP_BASE['var'] . 'git-scm.com.html'))))) / 86400)) <= 0 ) {
+  if (ceil(abs((strtotime(date('Y-m-d')) - strtotime(date('Y-m-d', strtotime('+5 days', filemtime(APP_PATH . APP_BASE['var'] . 'git-scm.com.html'))))) / 86400)) <= 0) {
     $url = 'https://git-scm.com/downloads';
     $handle = curl_init($url);
     curl_setopt($handle, CURLOPT_RETURNTRANSFER, true);

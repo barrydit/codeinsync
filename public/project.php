@@ -6,6 +6,4 @@
 
 $path = realpath('../projects/index.php') or die('<!DOCTYPE html>');
 
-//die($path);
-
-die(require_once $path); //  
+die(require_once $path);
