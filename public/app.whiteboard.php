@@ -10,14 +10,12 @@ https://leimao.github.io/blog/HTML-Canvas-Mouse-Touch-Drawing/
 
 if (__FILE__ == get_required_files()[0] && __FILE__ == realpath($_SERVER["SCRIPT_FILENAME"])) {
   if ($path = basename(dirname(get_required_files()[0])) == 'public') { // (basename(getcwd())
-    if (is_file($path = realpath('../config/config.php'))) {
+    if (is_file($path = realpath('../config/config.php')))
       require_once $path;
-    }
-  } elseif (is_file($path = realpath('config/config.php'))) {
+  } elseif (is_file($path = realpath('config/config.php')))
     require_once $path;
-  } else {
+  else
     die(var_dump("Path was not found. file=$path"));
-  }
 }
 
 /*
@@ -53,7 +51,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
       array("pipe","w")
     ),
     $pipes);
-  list($stdout, $stderr, $exitCode) = [stream_get_contents($pipes[1]), stream_get_contents($pipes[2]), proc_close($proc)];
+  [$stdout, $stderr, $exitCode] = [stream_get_contents($pipes[1]), stream_get_contents($pipes[2]), proc_close($proc)];
   $output[] = 'Composer: ' . (!isset($stdout) ? NULL : $stdout . (!isset($stderr) ? NULL : ' Error: ' . $stderr) . (!isset($exitCode) ? NULL : ' Exit Code: ' . $exitCode));
   $output[] = $_POST['cmd'];
 
@@ -66,7 +64,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
       array("pipe","w")
     ),
     $pipes);
-  list($stdout, $stderr, $exitCode) = [stream_get_contents($pipes[1]), stream_get_contents($pipes[2]), proc_close($proc)];
+  [$stdout, $stderr, $exitCode] = [stream_get_contents($pipes[1]), stream_get_contents($pipes[2]), proc_close($proc)];
   $output[] = 'Composer: ' . (!isset($stdout) ? NULL : $stdout . (!isset($stderr) ? NULL : ' Error: ' . $stderr) . (!isset($exitCode) ? NULL : ' Exit Code: ' . $exitCode));
   $output[] = $_POST['cmd'];
 
@@ -109,7 +107,7 @@ ob_start(); ?>
 
 <!-- <div class="container" style="border: 1px solid #000;"> -->
 <div id="app_whiteboard-container"
-  class="<?= (APP_SELF == __FILE__ || (isset($_GET['app']) && $_GET['app'] == 'whiteboard') ? 'selected' : '') ?>"
+  class="<?= APP_SELF == __FILE__ || (isset($_GET['app']) && $_GET['app'] == 'whiteboard') ? 'selected' : '' ?>"
   style="border: 1px solid #000;">
   <div class="header ui-widget-header">
     <div style="display: inline-block;">Whiteboard</div>
@@ -285,7 +283,7 @@ ob_start(); ?>
   // (check_http_status('https://cdn.tailwindcss.com') ? 'https://cdn.tailwindcss.com' : APP_URL . 'resources/js/tailwindcss-3.3.5.js')?
   is_dir($path = APP_PATH . APP_BASE['resources'] . 'js/') or mkdir($path, 0755, true);
   if (is_file("{$path}tailwindcss-3.3.5.js")) {
-    if (ceil(abs((strtotime(date('Y-m-d')) - strtotime(date('Y-m-d', strtotime('+5 days', filemtime($path . 'tailwindcss-3.3.5.js'))))) / 86400)) <= 0) {
+    if (ceil(abs((strtotime(date('Y-m-d')) - strtotime(date('Y-m-d', strtotime('+5 days', filemtime("{$path}tailwindcss-3.3.5.js"))))) / 86400)) <= 0) {
       $url = 'https://cdn.tailwindcss.com';
       $handle = curl_init($url);
       curl_setopt($handle, CURLOPT_RETURNTRANSFER, true);
@@ -309,7 +307,7 @@ ob_start(); ?>
     <?= /*$appWhiteboard['style'];*/ NULL; ?>
 * { margin: 0; padding: 0; } /* to remove the top and left whitespace */
 
-html, body { width: 100%; height: 100%; overflow:hidden; } /* just to be sure these are full screen*/
+html, body { width: 100%; height: 100%; overflow: hidden; } /* just to be sure these are full screen*/
 
 #canvasDiv {
   position: absolute;
@@ -337,7 +335,7 @@ canvas
   <?= /* $appWhiteboard['body'];*/ ''; ?>
 
   <?php
-  if (isset($HTTP_RAW_POST_DATA) && !is_null($HTTP_RAW_POST_DATA)) {
+  if (isset($HTTP_RAW_POST_DATA) && !$HTTP_RAW_POST_DATA === null) {
     /*
       $query = "INSERT INTO `abatepai_abate`.`whiteboard` ( `id` , `board` , `date` , `php_sess` , `data` ) VALUES ( NULL , '" . $_SESSION['board'] . "', NULL, '" . session_id() . "', '" . mysql_real_escape_string(stripcslashes($HTTP_RAW_POST_DATA)) . "');";
 
@@ -356,7 +354,7 @@ canvas
     <p style="font-family: Tahoma, Geneva, sans-serif; font-weight: bold;">WhiteBoard 0.1b</p>
     <p>(C) Barry Dick</p>
     <p>Participant: <?php echo session_id(); ?></p>
-    <p style="font-weight: bold;">Board: <?= isset($_SESSION['board']) ? $_SESSION['board'] : '&lt;blank&gt;' ?></p>
+    <p style="font-weight: bold;">Board: <?= $_SESSION['board'] ?? '&lt;blank&gt;' ?></p>
   </div>
   <canvas id="canvas"></canvas>
 

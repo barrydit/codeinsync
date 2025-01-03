@@ -1,5 +1,50 @@
 CHANGELOG
 
+
+sudo /usr/local/bin/git status
+Error: fatal: detected dubious ownership in repository at '/mnt/c/www/clientele/000-Client1/domain.ca'
+To add an exception for this directory, call:
+
+	git config --global --add safe.directory /mnt/c/www/clientele/000-Client1/domain.ca
+
+
+Exit Code: 128Error: [2] preg_match(): Unknown modifier '(' - /mnt/c/www/clientele/000-Client1/domain.ca/src/app.console.php:66
+www-data@localhost:/var/www$ git status
+
+
+
+Basic
+CSS HTML JAVASCRIPT
+
+Front-end/ Framework
+Angular.js React.js Vue.js
+
+Back-end/ framework
+Meteor.js Next.js Node.js Express.js Ghost.js
+
+Database
+MySql NoSQL MongoDB PostreSQL
+
+Hybrid/cross platform
+Electron React-Native Ionic-Vue Ionic NativeScript
+
+API -> Application Programming Interface
+JSON -> JavaScript Object Notation
+XML -> Extensible Markup Language
+AJAX -> Asynchronous JavaScript and XML
+REST -> Representational State Transfer
+
+Web Dev.
+HTML, CSS, JS, PHP, ASP.net, python, java, Ruby, sql, xml
+
+Software Dev
+C, C++, C#, Java, Ruby, VB.Script, Python, SQL
+
+Machine Learning
+Python, C++, JavaScript, Java, C#, Alaa, Julia, Shell, R, TypeScript, Scala
+
+
+
 Ace Editor => (themed) text editor for editing any file on the system (web app. or client/project)
     It is easier to comprehend code with a themed text editor is used for a particular language
 
@@ -235,7 +280,7 @@ get_required_files() ==
 .htpasswd
 
 /*
-list($_SERVER['PHP_AUTH_USER'], $_SERVER['PHP_AUTH_PW']) = 
+[$_SERVER['PHP_AUTH_USER'], $_SERVER['PHP_AUTH_PW']] = 
   explode(':', base64_decode(substr($_SERVER['HTTP_AUTHORIZATION'], 6)));
 
 if (!isset($_SERVER['PHP_AUTH_USER'])) {
@@ -492,7 +537,7 @@ exec() shell_exec() escapeshellarg()
           array("pipe","w")
         ),
         $pipes);
-                list($stdout, $stderr, $exitCode) = [stream_get_contents($pipes[1]), stream_get_contents($pipes[2]), proc_close($proc)];
+                [$stdout, $stderr, $exitCode] = [stream_get_contents($pipes[1]), stream_get_contents($pipes[2]), proc_close($proc)];
                 $output[] = !isset($stdout) ? NULL : $stdout . (isset($stderr) && $stderr === '' ? NULL : " Error: $stderr") . (isset($exitCode) && $exitCode == 0 ? NULL : "Exit Code: $exitCode");
 
 
@@ -608,3 +653,65 @@ No matter the name.
 When listing websites that are behind [client]/ directories or websites without [client]/, its going
 to be important to show their absolute path, because I want to be able to show websites w/o [client]'s.
 
+
+
+  
+  
+
+// Check if the user has requested logout
+if (filter_input(INPUT_GET, 'logout')) { // ?logout=true
+  // Set headers to force browser to drop Basic Auth credentials
+  header('WWW-Authenticate: Basic realm="Logged Out"');
+  header('HTTP/1.0 401 Unauthorized');
+    
+  // Add cache control headers to prevent caching of the authorization details
+  header("Cache-Control: no-store, no-cache, must-revalidate, max-age=0");
+  header("Expires: Sat, 26 Jul 1997 05:00:00 GMT");
+  header("Pragma: no-cache");
+    
+  // Unset the authentication details in the server environment
+  unset($_SERVER['HTTP_AUTHORIZATION'], $_SERVER['PHP_AUTH_USER'], $_SERVER['PHP_AUTH_PW']);
+    
+  // Optional: Clear any existing headers related to authorization
+  if (function_exists('header_remove')) {
+    header_remove('HTTP_AUTHORIZATION');
+    //header_remove('PHP_AUTH_USER');
+    //header_remove('PHP_AUTH_PW');
+  }
+
+  // Provide feedback to the user and exit the script
+  //header('Location: http://test:123@localhost/');
+  exit('You have been logged out.');
+}
+
+//die(var_dump($_SERVER));
+if (PHP_SAPI !== 'cli') {
+  // Ensure the HTTP_AUTHORIZATION header exists
+  if (!empty($_SERVER['HTTP_AUTHORIZATION'])) {
+    // Decode the HTTP Authorization header
+    $authHeader = base64_decode(substr($_SERVER['HTTP_AUTHORIZATION'], 6));
+    if ($authHeader) {
+      // Split the decoded authorization string into user and password
+      [$user, $password] = explode(':', $authHeader);
+
+      // Set the PHP_AUTH_USER and PHP_AUTH_PW if available
+      $_SERVER['PHP_AUTH_USER'] = $user ?? '';
+      $_SERVER['PHP_AUTH_PW'] = $password ?? '';
+    }
+  }
+
+  // Check if user credentials are provided
+  if (empty($_SERVER['PHP_AUTH_USER'])) {
+    // Prompt for Basic Authentication if credentials are missing
+    header('WWW-Authenticate: Basic realm="Dashboard"');
+    header('HTTP/1.0 401 Unauthorized');
+  
+    // Stop further script execution
+    exit('Authentication required.');
+  } else {
+    // Display the authenticated user's details
+    //echo "<p>Hello, {$_SERVER['PHP_AUTH_USER']}.</p>";
+    //echo "<p>You entered '{$_SERVER['PHP_AUTH_PW']}' as your password.</p>";
+    //echo "<p>Authorization header: {$_SERVER['HTTP_AUTHORIZATION']}</p>";
+  }
+}

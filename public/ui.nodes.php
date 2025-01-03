@@ -11,7 +11,7 @@ if (isset($_GET['json'])) {
    */
   function getRequiredFilesFromScript(string $script): array
   {
-    ob_start();
+    ob_start(); // /mnt/c/www
     require_once $script;
     ob_end_clean();
     return get_required_files();
@@ -33,10 +33,10 @@ if (isset($_GET['json'])) {
   }
 
   $baseDir = '/mnt/c/www/';
-
+  //die(getcwd());
   // Define scripts to process
   $requiredFiles = [
-    'server.php' => '../server.php',
+    'server.php' => 'server.php',
     'public/index.php' => 'public/index.php',
     //'config/php.php' => 'config/php.php',
     'config/composer.php' => 'config/composer.php',

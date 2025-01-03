@@ -154,10 +154,9 @@ ob_start(); ?>
 
             <?php $path = realpath(getcwd() . (isset($_GET['path']) ? DIRECTORY_SEPARATOR . $_GET['path'] : '')) . DIRECTORY_SEPARATOR; ?>
             <div id="app_project_editor" class="editor"
-              style="display: <?= isset($_GET['file']) && isset($_GET['path']) && is_file($_GET['path'] . $_GET['file']) ? 'block' : 'block'; ?>; width: 778px; height: 287px; z-index: 2;">
-              <textarea name="contents" class="ace_text-input" autocomplete="off" autocorrect="off" autocapitalize="off"
+              style="display: <?= isset($_GET['file']) && isset($_GET['path']) && is_file($_GET['path'] . $_GET['file']) ? 'block' : 'block'; ?>; width: 778px; height: 287px; z-index: 2;"><textarea name="contents" class="ace_text-input" autocomplete="off" autocorrect="off" autocapitalize="off"
                 spellcheck="false" style="opacity: 0; font-size: 1px; height: 1px; width: 1px; top: 28px; left: 86px;"
-                wrap="off"><?= htmlsanitize(is_file('projects/index.php') ? file_get_contents('projects/index.php') : '') /*   'clientele/' . $_GET['client'] . '/' . $_GET['domain'] . '/' .  */ ?></textarea>
+                wrap="off" placeholder="hello you&#10;Second line&#10;Third line"><?= htmlsanitize(is_file('projects/index.php') ? file_get_contents('projects/index.php') : '') /*   'clientele/' . $_GET['client'] . '/' . $_GET['domain'] . '/' .  */ ?></textarea>
             </div>
           </div>
         </form>

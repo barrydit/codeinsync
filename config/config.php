@@ -110,14 +110,14 @@ if (count(get_included_files()) == ((version_compare(PHP_VERSION, '5.0.0', '>=')
 endif;
 
 $envPath = APP_PATH . '.env';
-
+/*
 $_ENV = (function () use ($envPath) {
   if (!file_exists($envPath) || !is_file($envPath)) {
     throw new \RuntimeException(sprintf('%s file does not exist', $envPath));
   }
-  return parse_ini_file_multi($envPath);
+  return Shutdown::parse_ini_file_multi($envPath);
 })();
-
+*/
 //if (empty($paths)) {
 //  die(var_dump("functions.php was not found."));
 //}
@@ -288,9 +288,15 @@ if (!is_file($file = APP_PATH . 'projects/index.php')) {
 // Load the environment variables from the .env file
 // = loadEnvConfig(APP_PATH . '.env');
 
+require_once 'constants.php';
+
+// dd(get_required_files());
+//include 'dotenv.php';
+
+//die(var_export(get_required_files(), true));
 
 // Access the variables from the parsed .env file
-$domain = $_ENV['SHELL']['DOMAIN'] ?? APP_DOMAIN ?? 'localhost';
+$domain = $_ENV['DOMAIN'] ?? APP_DOMAIN ?? 'localhost';
 $defaultUser = $_ENV['SHELL']['DEFAULT_USER'] ?? 'www-data';
 $documentRoot = $_ENV['SHELL']['DOCUMENT_ROOT'] ?? $_SERVER['DOCUMENT_ROOT'];
 $homePathEnv = $_ENV['SHELL']['HOME_PATH'] ?? $_SERVER['HOME'] ?? $_SERVER['USERPROFILE'] ?? '';
@@ -316,7 +322,7 @@ if (basename($dir = getcwd()) != 'config') {
 
   chdir(APP_PATH . APP_ROOT);
   if (is_file($file = APP_PATH . APP_ROOT . '.env')) {
-    $parsedEnv = parse_ini_file_multi($file);
+    $parsedEnv = Shutdown::parse_ini_file_multi($file);
     $_ENV = array_merge_recursive_distinct($_ENV, $parsedEnv);
 
     /*
@@ -595,7 +601,6 @@ if (is_array($errors) && !empty($errors)) { ?>
 } */
 
 //use vlucas\phpdotenv;
-
 
 
 

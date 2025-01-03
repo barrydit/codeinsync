@@ -58,7 +58,7 @@ ob_start(); ?>
         <span style="background-color: white; color: #DD0000;">Node.js
           <?= /* (version_compare(NPM_LATEST, NPM_VERSION, '>') != 0 ? 'v'.substr(NPM_LATEST, 0, similar_text(NPM_LATEST, NPM_VERSION)) . '<span class="update" style="color: green; cursor: pointer;">' . substr(NPM_LATEST, similar_text(NPM_LATEST, NPM_VERSION)) . '</span>' : 'v'.NPM_VERSION ); */ NULL; ?></span>
         <span style="background-color: #0078D7; color: white;"><code class="text-sm"
-            style="background-color: white; color: #0078D7;">$ <?= (defined('NPM_EXEC') ? NPM_EXEC : null); ?></code></span>
+            style="background-color: white; color: #0078D7;">$ <?= defined('NPM_EXEC') ? NPM_EXEC : null; ?></code></span>
       </div>
 
       <div style="display: inline; float: right; text-align: center; color: blue;"><code
@@ -296,8 +296,7 @@ ob_start(); ?>
 ob_end_clean();
 
 if (false) { ?>
-  <script type="text/javascript">
-  <?php }
+  <script type="text/javascript"><?php }
 ob_start(); ?>
   // Javascript comment
   <?php $app['script'] = ob_get_contents();
@@ -321,31 +320,28 @@ ob_start(); ?>
 
     <?php
     // (check_http_status('https://cdn.tailwindcss.com') ? 'https://cdn.tailwindcss.com' : APP_URL . 'resources/js/tailwindcss-3.3.5.js')?
-    is_dir($path = APP_PATH . APP_BASE['resources'] . 'js/') or mkdir($path, 0755, true);
-    if (is_file($path . 'tailwindcss-3.3.5.js')) {
-      if (ceil(abs((strtotime(date('Y-m-d')) - strtotime(date('Y-m-d', strtotime('+5 days', filemtime($path . 'tailwindcss-3.3.5.js'))))) / 86400)) <= 0) {
-        $url = 'https://cdn.tailwindcss.com';
-        $handle = curl_init($url);
-        curl_setopt($handle, CURLOPT_RETURNTRANSFER, true);
+  
+    $path = APP_PATH . APP_BASE['resources'] . 'js/';
+    $filename = 'tailwindcss-3.3.5.js';
+    $filePath = "{$path}{$filename}";
+    $url = 'https://cdn.tailwindcss.com';
+    $errors = [];
 
-        if (!empty($js = curl_exec($handle)))
-          file_put_contents($path . 'tailwindcss-3.3.5.js', $js) or $errors['JS-TAILWIND'] = $url . ' returned empty.';
-      }
-    } else {
-      $url = 'https://cdn.tailwindcss.com';
-      $handle = curl_init($url);
-      curl_setopt($handle, CURLOPT_RETURNTRANSFER, true);
-
-      if (!empty($js = curl_exec($handle)))
-        file_put_contents($path . 'tailwindcss-3.3.5.js', $js) or $errors['JS-TAILWIND'] = $url . ' returned empty.';
+    // Ensure directory exists
+    if (!is_dir($path)) {
+      mkdir($path, 0755, true);
     }
-    ?>
 
-    <script src="<?= 'resources/js/tailwindcss-3.3.5.js' ?? $url ?>"></script>
+    // Check if the file should be updated or downloaded
+    if (shouldUpdateFile($filePath)) {
+      downloadFile($url, $path, $filename, $errors);
+    } ?>
+
+    <script src="<?= APP_BASE['resources'] . "js/{$filename}" ?? $url ?>"></script>
 
     <style type="text/tailwindcss">
       <?= $app['style']; ?>
-              </style>
+        </style>
   </head>
 
   <body>

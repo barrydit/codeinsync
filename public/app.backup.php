@@ -16,10 +16,9 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
   if (isset($_GET['app']) && $_GET['app'] == 'backup')
     if (isset($_POST['path']) && isset($_GET['filename']) && $path = realpath($_POST['path'] . $_GET['filename']))
       file_put_contents($path, $_POST['editor']);
-
 }
 
-define('APP_BACKUP_PATH', (isset($_SERVER['HOME']) ? $_SERVER['HOME'] : $_SERVER['DOCUMENT_ROOT']) . '/backup/'); // symlink(/mnt/d)
+define('APP_BACKUP_PATH', ($_SERVER['HOME'] ?? $_SERVER['DOCUMENT_ROOT']) . '/backup/'); // symlink(/mnt/d)
 
 if (preg_match('/^app\.([\w\-.]+)\.php$/', basename(__FILE__), $matches))
   ${$matches[1]} = $matches[1];
@@ -159,8 +158,8 @@ ob_start(); ?>
 
         ?>
         <form action method="POST">
-          <?= (!isset($_GET['client']) ?: '<input type="hidden" name="client" value="' . $_GET['client'] . '" />') ?>
-          <?= (!isset($_GET['domain']) ?: '<input type="hidden" name="domain" value="' . $_GET['domain'] . '" />') ?>
+          <?= !isset($_GET['client']) ?: '<input type="hidden" name="client" value="' . $_GET['client'] . '" />' ?>
+          <?= !isset($_GET['domain']) ?: '<input type="hidden" name="domain" value="' . $_GET['domain'] . '" />' ?>
           <div style="padding-left: 50px; text-align: right;">
             <?php
             $dirs = array_filter(glob(dirname(__DIR__) . '/../../clientele/' . $_GET['client'] . '/' . $_GET['domain'] . '/*'), 'is_dir');

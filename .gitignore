@@ -13,6 +13,7 @@
 /resources/js
 /resources/reels
 /resources/project
+/tests
 /vendor
 /var/*.html
 /var/*.php

@@ -107,8 +107,8 @@ class Sockets
         restore_error_handler(); // Restore the original error handler
 
         if ($socket === false) {
-            $errors['SOCKET'] = "Error: [$this->errno] $this->errstr - Could not connect to $host:$port\n";
-            error_log("Error: [$this->errno] $this->errstr - Could not connect to $host:$port");
+            $errors['SOCKET'] = "[$this->errno] $this->errstr - Could not connect to $host:$port\n";
+            error_log("[$this->errno] $this->errstr - Could not connect to $host:$port");
             return false;
         }
 
@@ -347,8 +347,6 @@ END
 }
 
 $socketInstance = Sockets::getInstance(); // new Sockets();
-
-//die('test');
 
 // Check if the socket was initialized properly
 if (isset($socketInstance) && is_a($socketInstance, Sockets::class) && is_resource($_SERVER['SOCKET'] = $socketInstance->getSocket())) {

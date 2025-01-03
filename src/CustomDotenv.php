@@ -101,7 +101,7 @@ class CustomParser implements ParserInterface
         foreach ($lines as $line) {
             $line = trim($line);
             if (!empty($line) && strpos($line, '=') !== false) {
-                list($name, $value) = explode('=', $line, 2);
+                [$name, $value] = explode('=', $line, 2);
                 $entries[$name] = $value;
             }
         }
@@ -138,18 +138,18 @@ class CustomDotenv extends Dotenv
         $entries = $this->loader->load($this->repository, $this->parser->parse($envContent));
 
         foreach ($entries as $name => $value) {
-           $_ENV[$name] = $value;
+            $_ENV[$name] = $value;
         }
 
-/*
-        foreach ($entries as $entry) {
-            if (is_array($entry) && count($entry) >= 2) {
-                list($name, $value) = $this->loader->load($this->repository, [$entry]);
-                putenv("$name=$value");
-                $_ENV[$name] = $value;
-            }
-        }
-*/
+        /*
+                foreach ($entries as $entry) {
+                    if (is_array($entry) && count($entry) >= 2) {
+                        [$name, $value] = $this->loader->load($this->repository, [$entry]);
+                        putenv("$name=$value");
+                        $_ENV[$name] = $value;
+                    }
+                }
+        */
         return $entries;
     }
 
@@ -159,12 +159,12 @@ class CustomDotenv extends Dotenv
         putenv("$name=$value"); // Update the environment variable
         $_ENV[$name] = $value; // Update $_ENV as well
     }
-    
+
     public function save()
     {
         $envFilePath = $this->store->getFilePath(); // Get the file path from the store
 
-            if (!file_exists($envFilePath) || !is_writable($envFilePath)) {
+        if (!file_exists($envFilePath) || !is_writable($envFilePath)) {
             return false;
         }
 
@@ -181,7 +181,7 @@ class CustomDotenv extends Dotenv
         }
 
         // Save the environment variables to the .env file
-        $result = (bool)file_put_contents($envFilePath, $envContent);
+        $result = (bool) file_put_contents($envFilePath, $envContent);
 
         // Load the environment variables back into $_ENV
         $this->loadEnv();
