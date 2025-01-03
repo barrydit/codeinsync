@@ -76,7 +76,7 @@ if (__FILE__ == get_required_files()[0] && __FILE__ == realpath($_SERVER["SCRIPT
 //: (is_file('config.php') ? 'config.php' : (is_file('config/config.php') ? 'config/config.php' : null)))
 
 //$path = "/path/to/your/logfile.log"; // Replace with your actual log file path
-if (is_readable($path = APP_PATH . APP_ROOT . $_ENV['ERROR_LOG_FILE']) && filesize($path) >= 0) {
+if (isset($_ENV['PHP']['LOG_PATH']) && is_readable($path = APP_PATH . APP_ROOT . $_ENV['PHP']['LOG_PATH']) && filesize($path) >= 0) {
   $errors['ERROR_PATH'] = "\nwww-data@localhost:" . getcwd() . '# ' . basename($path) . "\n";
 
   //if (stripos(PHP_OS, 'WIN') === 0) {

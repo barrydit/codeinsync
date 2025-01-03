@@ -18,6 +18,10 @@
 
 global $errors;
 
+// include 'constants.php';
+
+//dd(get_required_files(), false);
+
 //if ($_SERVER['REQUEST_METHOD'] == 'POST') 
 //  die(var_dump($_GET));
 
@@ -206,7 +210,7 @@ if (is_file($include = APP_PATH . APP_ROOT . APP_BASE['vendor'] . 'autoload.php'
   else if (isset($_ENV['COMPOSER']['AUTOLOAD']) && (bool) $_ENV['COMPOSER']['AUTOLOAD'] === TRUE)
     require_once $include;
 } else
-  $errors['COMPOSER_AUTOLOAD'] = 'Composer autoload is disabled.';
+  $errors['COMPOSER_AUTOLOAD'] = "Composer autoload is disabled.\n";
 
 if (!defined('APP_PATH_CONFIG') || !in_array(APP_PATH_CONFIG, get_required_files()))
   die(APP_PATH_CONFIG . ' is missing. Presumed that this file was opened on its own.');
@@ -214,13 +218,15 @@ if (!defined('APP_PATH_CONFIG') || !in_array(APP_PATH_CONFIG, get_required_files
 if (!function_exists('get_declared_classes')) {
   $autoloadContent = file_get_contents($include);
   if (!preg_match('/class\s+ComposerAutoloaderInit([a-f0-9]+)/', $autoloadContent, $matches))
-    $errors['COMPOSER-AutoloaderInit'] = 'ComposerAutoloaderInit failed to be matched.';
+    $errors['COMPOSER-AutoloaderInit'] = 'ComposerAutoloaderInit failed to be matched. Check for autoload.php\n';
 } else if (!empty($classes = get_declared_classes())) {
   foreach ($classes as $key => $class) {
     if (preg_match('/(ComposerAutoloaderInit[a-f0-9]+)/', $class, $matches))
       break;
     if ($class == end($classes))
-      $errors['COMPOSER-AutoloaderInit'] = "ComposerAutloaderInit2 failed to be matched.\n";
+      $errors['COMPOSER-AutoloaderInit'] = "ComposerAutloaderInit2 failed to be matched. Check for autoload.php\n";
+
+    // composer dump-autoload
   }
   /*
   Check oauth github
@@ -273,7 +279,6 @@ $vendors = [];
 
 // Print information about each package
 if (isset($installedPackages) && !empty($installedPackages)) {
-
   foreach ($installedPackages as $key => $package) { //
     if (preg_match(COMPOSER_EXPR_NAME, $package, $matches))
       $vendors[$key] = $matches[1];
@@ -311,8 +316,7 @@ define('COMPOSER_HOME', $composerHome);
 putenv("COMPOSER_HOME=$composerHome" ?? $_SERVER['HOME'] . '/.composer/');
 
 if (!file_exists(APP_PATH . 'composer.phar')) {
-  (!file_exists(APP_PATH . 'composer-setup.php'))
-    and copy('https://getcomposer.org/installer', 'composer-setup.php');
+  copy('https://getcomposer.org/installer', 'composer-setup.php');
 
   $error = shell_exec($_ENV['COMPOSER']['PHP_EXEC'] . ' composer-setup.php'); // php -d register_argc_argv=1
 
@@ -933,7 +937,8 @@ fclose($pipes[2]);
       else
         if (!empty($composer_obj->{'require'}))
           foreach ($composer_obj->{'require'} as $package => $version) {
-            if (preg_match(COMPOSER_EXPR_NAME . 'i', $package))
+            // dd($_ENV['COMPOSER']['EXPR_NAME']);
+            if (preg_match($_ENV['COMPOSER']['EXPR_NAME'] . 'i', $package))
               continue;  // $package == 'php'
             elseif (in_array($package, ['php',]))
               continue;
@@ -1059,7 +1064,7 @@ fclose($pipes[2]);
           // Close and reopen socket
           fclose($socketInstance->getSocket());
           /*
-          list($server, $port) = explode(PATH_SEPARATOR, SERVER_HOST . PATH_SEPARATOR . SERVER_PORT); // 127.0.0.1:12345   
+          [$server, $port] = explode(PATH_SEPARATOR, SERVER_HOST . PATH_SEPARATOR . SERVER_PORT); // 127.0.0.1:12345   
           $errors['server-1'] = "Connected to Server: " . $server . PATH_SEPARATOR . $port . "\n"; // APP_PATH_SERVER || APP_HOST
 
           // Send a message to the server
@@ -1281,7 +1286,7 @@ fclose($pipes[2]);
     
     // poss. err './composer.json is valid but your composer.lock has some errors'   checks composer.lock
 /*
-  list($stdout, $stderr, $exitCode) = [stream_get_contents($pipes[1]), stream_get_contents($pipes[2]), proc_close($proc)];
+  [$stdout, $stderr, $exitCode] = [stream_get_contents($pipes[1]), stream_get_contents($pipes[2]), proc_close($proc)];
 
   if ($exitCode !== 0) {
     if (!empty($stdout)) {

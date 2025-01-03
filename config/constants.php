@@ -87,7 +87,11 @@ define('APP_DASHBOARD', sprintf(<<<EOL
      (______/ |/     \|\_______)|/     \||/ \___/ (_______)|/     \||/   \__/(______/ 
      {{STATUS}}            Written by Barry Dick (2024)
 %s
-EOL, $padding = str_pad('', 90, '='), $padding));
+EOL
+  ,
+  $padding = str_pad('', 90, '='),
+  $padding
+));
 
 /*
 define('SOCKET_INFO', sprintf(<<<EOD
@@ -189,36 +193,34 @@ switch (basename(__DIR__)) {
 
     // Identify missing base paths
     $missingBasePaths = array_diff($base_paths, $common);
-    if (!empty($missingBasePaths)) {
+    if (!empty($missingBasePaths))
       $errors['MISSING_BASE_PATHS'] = 'Directories missing base path: ' . implode(', ', $missingBasePaths) . "\n";
-    }
 
     // Identify missing base paths
     $missingPaths = array_diff($dirpaths, $common);
-    if (!empty($missingPaths)) {
+    if (!empty($missingPaths))
       $errors['MISSING_PATHS'] = 'Directories not added to the base paths: ' . implode(', ', $missingPaths) . "\n";
-    }
 
-    $errors['BASE_PATHS'] = $base_paths; // 'Directories were added to the base paths: ' . implode(', ', $base_paths) . "\n";
+
+    $errors['BASE_PATHS'] = json_encode($base_paths) . "\n"; // 'Directories were added to the base paths: ' . implode(', ', $base_paths) . "\n";
 
     // Process common directories and prepare APP_BASE definition
     $processedCommon = [];
 
     if (empty($common))
-      $errors['APP_BASE'] = json_encode(array_keys($common));
-    else {
+      $errors['APP_BASE'] = json_encode(array_keys($common), JSON_PRETTY_PRINT) . "";
+    else
       foreach ($common as $key => $dirname) {
-        if (basename(__DIR__) == 'public' && $dirname == 'public') {
+        if (basename(__DIR__) == 'public' && $dirname == 'public')
           continue;
-        }
 
         if (!is_dir((defined('APP_PATH') ? APP_PATH : __DIR__ . DIRECTORY_SEPARATOR) . $dirname) && APP_DEBUG) {
 
-          (@!mkdir((defined('APP_PATH') ? APP_PATH : __DIR__ . DIRECTORY_SEPARATOR) . $dirname, 0755, true) ?: $errors['APP_BASE'][$key] = "$dirname could not be created.");
+          (@!mkdir((defined('APP_PATH') ? APP_PATH : __DIR__ . DIRECTORY_SEPARATOR) . $dirname, 0755, true)
+            ? '' : $errors['APP_BASE'][$key] = "$dirname could not be created.");
         }
         $processedCommon[$dirname] = $dirname . DIRECTORY_SEPARATOR;
       }
-    }
 
     // Get directories in the base path and filter them
     foreach (array_map('basename', array_filter(glob("{$basePath}{.env, .htaccess, .gitignore, LICENSE, *.md}", GLOB_BRACE), 'is_file')) as $filename) {
@@ -235,11 +237,10 @@ switch (basename(__DIR__)) {
             if (isset($source_file->{$filename}))
               switch ($filename) {
                 case 'LICENSE':
-                  if (check_http_status('http://www.wtfpl.net/txt/copying')) {
+                  if (check_http_status('http://www.wtfpl.net/txt/copying'))
                     file_put_contents($file, file_get_contents('http://www.wtfpl.net/txt/copying'));
-                  } else {
+                  else
                     file_put_contents($file, $source_file->{$filename});
-                  }
                   break;
                 default:
 

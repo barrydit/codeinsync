@@ -20,7 +20,8 @@
         "phpstan/phpstan": "^1.12.5",
         "vimeo/psalm": "^5.26.1",
         "phpmd/phpmd": "^2.15.0",
-        "friendsofphp/php-cs-fixer": "^3.64.0"
+        "friendsofphp/php-cs-fixer": "^3.64.0",
+        "phpunit/phpunit": "^10.5"
     },
     "license": "WTFPL",
     "authors": [

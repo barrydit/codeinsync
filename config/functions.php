@@ -1,4 +1,33 @@
 <?php
+
+function downloadFile(string $url, string $path, string $filename, array &$errors): void
+{
+  $handle = curl_init($url);
+  curl_setopt($handle, CURLOPT_RETURNTRANSFER, true);
+  $content = curl_exec($handle);
+  curl_close($handle);
+
+  if (!empty($content)) {
+    if (!file_put_contents("{$path}{$filename}", $content)) {
+      $errors['JS-LIBRARY'] = "$url could not be written to {$path}{$filename}.";
+    }
+  } else {
+    $errors['JS-LIBRARY'] = "$url returned empty content.";
+  }
+}
+
+function shouldUpdateFile(string $filepath, int $expiryDays = 5): bool
+{
+  if (!is_file($filepath)) {
+    return true; // File doesn't exist; needs to be downloaded.
+  }
+
+  $fileModifiedTime = filemtime($filepath);
+  $expiryTime = strtotime("+{$expiryDays} days", $fileModifiedTime);
+
+  return time() > $expiryTime; // Check if the file is older than expiry days.
+}
+
 /* function parse_ini_file_multi($file) {
   // parse_ini_string(file_get_contents($file), true, INI_SCANNER_NORMAL))) 
   $data = parse_ini_file($file, true, INI_SCANNER_TYPED); 
@@ -109,7 +138,7 @@ function parse_ini_file_multi($file) {
   }
 
   return $output;
-} */
+}
 
 function parse_ini_file_multi($file): array
 {
@@ -132,8 +161,7 @@ function parse_ini_file_multi($file): array
     }
   }
   return $output;
-}
-
+} */
 
 /**
  * Summary of array_merge_recursive_distinct
@@ -196,74 +224,208 @@ class Shutdown
     $this->initializeEnv();
   }
 
+  public static function parse_ini_file_multi($file): array
+  {
+    $data = (array) parse_ini_file($file, true, INI_SCANNER_TYPED);
+    $output = [];
+
+    foreach ($data as $section => $values) {
+      if (is_array($values)) {
+        $output[$section] = [];
+        foreach ($values as $key => $value) {
+          // Parse array-like strings
+          $parsedValue = self::parseArrayValueString($value);
+          $output[$section][$key] = ($parsedValue !== null) ? $parsedValue : self::processValue($value);
+        }
+      } else {
+        // Parse array-like strings
+        $parsedValue = self::parseArrayValueString($values);
+        $output[$section] = ($parsedValue !== null) ? $parsedValue : self::processValue($values);
+      }
+    }
+    return $output;
+  }
   /**
    * Summary of initializeEnv
    * @return void
    */
+  /**
+   * Initialize and process the .env files.
+   *
+   * @return void
+   */
   private static function initializeEnv()
   {
+    // Process and backup the main .env file
+    $envFile = APP_PATH . '.env';
+    if (self::isNonEmptyFile($envFile)) {
+      self::backupAndProcessEnv($envFile);
+    }
+
+    // Process the application-specific .env file
+    $appEnvFile = APP_PATH . APP_ROOT . '.env';
+    if (is_file($appEnvFile)) {
+      self::processAppEnvFile($appEnvFile);
+    }
+  }
+
+  /**
+   * Check if a file exists and is not empty.
+   *
+   * @param string $filePath
+   * @return bool
+   */
+  private static function isNonEmptyFile(string $filePath): bool
+  {
+    return is_file($filePath) && filesize($filePath) > 0;
+  }
+
+  /**
+   * Backup and process the main .env file.
+   *
+   * @param string $filePath
+   * @return void
+   */
+  private static function backupAndProcessEnv(string $filePath): void
+  {
+    $envContent = file_get_contents($filePath);
+
+    // Parse the .env file content
+    $parsedEnv = parse_ini_string($envContent, true);
+    $parsedEnv = self::processParsedEnv($parsedEnv);
+
+    // Generate and save the backup content
+    $backupContent = self::buildEnvContent($parsedEnv);
+
+
+    die(var_dump($backupContent));
+
+
+    file_put_contents("$filePath.bck", $backupContent);
+  }
+
+  /**
+   * Process the application-specific .env file.
+   *
+   * @param string $filePath
+   * @return void
+   */
+  private static function processAppEnvFile(string $filePath): void
+  {
+    $_ENV = array_intersect_key_recursive($_ENV, self::parseIniFileMulti($filePath));
+
+    if (!empty($_ENV)) {
+      $iniString = self::buildEnvContent($_ENV);
+
+      if ($iniString !== '') {
+        file_put_contents($filePath, $iniString);
+      }
+    }
+  }
+
+  /**
+   * Process a parsed .env array to infer array, null, or boolean values.
+   *
+   * @param array $parsedEnv
+   * @return array
+   */
+  private static function processParsedEnv(array $parsedEnv): array
+  {
+    foreach ($parsedEnv as $section => $data) {
+      if (is_array($data)) {
+        foreach ($data as $key => $value) {
+          $parsedEnv[$section][$key] = self::inferArrayValue($value);
+        }
+      } else {
+        $parsedEnv[$section] = self::inferArrayValue($data);
+      }
+    }
+    return $parsedEnv;
+  }
+
+  /**
+   * Build the .env content from the environment array.
+   *
+   * @param array $envData
+   * @return string
+   */
+  private static function buildEnvContent(array $envData): string
+  {
     $iniString = '';
-    //error_log( APP_PATH . '.env');
-    // Backup the current .env file if it's not empty
-    if (filesize($envFile = APP_PATH . '.env') > 0) { // dirname(getcwd(), 1) . '/.env'
-      $envContent = file_get_contents($envFile);
 
-      // Parse the .env content and filter out GITHUB OAUTH_TOKEN
-      $parsedEnv = parse_ini_string($envContent, true);
-      if (isset($parsedEnv['GITHUB']) && isset($parsedEnv['GITHUB']['OAUTH_TOKEN'])) {
-        $parsedEnv['GITHUB']['OAUTH_TOKEN'] = null;
-      }
-
-      $backupEnvContent = '';
-      foreach ($parsedEnv as $section => $data) {
-        if (is_array($data)) {
-          $backupEnvContent .= "[$section]\n";
-          foreach ($data as $key => $value) {
-            $value = self::convertBooleanToString($value);
-            $value = self::processNestedValue($value);
-            $backupEnvContent .= "$key = $value\n";
-          }
-        } else {
-          $data = self::convertBooleanToString($data);
-          $data = self::processNestedValue($data);
-          $backupEnvContent .= "$section = $data\n";
+    foreach ($envData as $key => $value) {
+      // Convert boolean values to strings
+      $value = self::convertBooleanToString($value);
+      //dd();
+      if (is_array($value)) {
+        $iniString .= "[$key]\n";
+        foreach ($value as $nestedKey => $nestedValue) {
+          $nestedValue = self::processNestedValue($nestedValue);
+          $iniString .= "$nestedKey = $nestedValue\n";
         }
+
+      } elseif (preg_match('/^Array\[(.*?)\]$/', $value, $matches)) {
+        // Process nested array values
+        $iniString = "$key = $value\n";
+        foreach ($value as $nestedValue) {
+          $nestedValue = self::processNestedValue($nestedValue);
+          $iniString .= "$nestedValue, ";
+        }
+        //$iniString .= "]\n";
+      } else {
+        // Process scalar or null values
+        $value = self::processNestedValue($value);
+        $iniString .= "$key = $value\n";
       }
-
-      file_put_contents(APP_PATH . '.env.bck', $backupEnvContent);
-
     }
 
-    //die(APP_ROOT);
 
+    return $iniString;
+  }
 
-    // Process the main .env file
-    $file = APP_PATH . APP_ROOT . '.env';
+  /**
+   * Detect and convert array-like strings, null, or boolean values.
+   *
+   * @param mixed $value
+   * @return mixed
+   */
+  private static function inferArrayValue($value)
+  {
+    // Detect and process array-like strings: Array['0', '1', '2', ...]
+    if (is_string($value) && preg_match('/^Array\[(.*?)\]$/', $value, $matches)) {
+      $arrayString = $matches[1];
+      $elements = preg_split('/\s*,\s*/', $arrayString);
 
-    if (is_file($file)) {
-      $_ENV = array_intersect_key_recursive($_ENV, parse_ini_file_multi($file));
-
-      if (!empty($_ENV)) {
-        foreach ($_ENV as $key => $value) {
-          // Convert boolean values to strings
-          $value = self::convertBooleanToString($value);
-          if (is_array($value)) {
-            $iniString .= "[$key]\n";
-            foreach ($value as $nestedKey => $nestedValue) {
-              $nestedValue = self::processNestedValue($nestedValue);
-              $iniString .= "$nestedKey = $nestedValue\n";
-            }
-          } else {
-            $value = self::processNestedValue($value);
-            $iniString .= "$key = $value\n";
-          }
-        }
-      }
-      if ($iniString !== '')
-        file_put_contents($file, $iniString);
-    } else {
-      //file_put_contents($file, $envContent);
+      return array_map(fn($item) => trim($item, "'\" "), $elements);
     }
+
+    // Convert specific strings to null or boolean
+    if (is_string($value)) {
+      $lowerValue = strtolower($value);
+      if ($lowerValue === 'null') {
+        return null;
+      }
+      if ($lowerValue === 'true') {
+        return true;
+      }
+      if ($lowerValue === 'false') {
+        return false;
+      }
+    }
+
+    return $value;
+  }
+
+  /**
+   * Parse a multi-section .ini file.
+   *
+   * @param string $file
+   * @return array
+   */
+  private static function parseIniFileMulti(string $file): array
+  {
+    // Implement or include the parse_ini_file_multi logic here
+    return parse_ini_file($file, true);
   }
 
   /**
@@ -280,19 +442,69 @@ class Shutdown
   }
 
   /**
+   * Process a value to handle boolean, null, and escaping.
+   *
+   * @param mixed $value
+   * @return mixed
+   */
+  private static function processValue($value)
+  {
+    // Convert specific strings to null or boolean
+    if (is_string($value)) {
+      $lowerValue = strtolower($value);
+      if ($lowerValue === 'null') {
+        return null;
+      }
+      if ($lowerValue === 'true') {
+        return true;
+      }
+      if ($lowerValue === 'false') {
+        return false;
+      }
+      return addcslashes($value, '"'); // Escape for strings
+    }
+    return $value; // Return as is for non-string values
+  }
+
+  /**
    * Summary of processNestedValue
    * @param mixed $value
    * @return string
    */
   private static function processNestedValue($value)
   {
-    if (is_string($value) && !is_numeric($value) && preg_match('/^\/.*\/[a-z]*$/i', $value)) {
+    if ($value == null)
+      return (string) $value;
+    elseif (is_array($value)) {
+      // Convert array to the desired format: Array['0', '1', '2', ...]
+      $escapedValues = array_map(
+        fn($item) => is_numeric($item) ? $item : "'" . addslashes((string) $item) . "'",
+        $value
+      );
+      return 'Array[' . implode(', ', $escapedValues) . ']';
+    } elseif (is_string($value) && !is_numeric($value) && preg_match('/^\/.*\/[a-z]*$/i', $value)) {
       return "\"$value\"";
-    }
-    if (is_bool($value)) {
+    } elseif (is_string($value) && !is_numeric($value) && preg_match('/\s/i', $value)) {
+      return "\"$value\"";
+    } elseif (is_bool($value)) {
       return $value ? 'true' : 'false';
     }
     return !$value ?: addslashes($value);
+  }
+
+  private static function parseArrayValueString($input)
+  {
+    // Match the key and the array-like value
+    if (preg_match('/^Array\[(.*?)\]$/', trim($input), $matches)) {
+      $key = trim($matches[1]);
+      $arrayString = $matches[2] ?? '';
+
+      // Split the array values and trim quotes
+      $elements = preg_split('/\s*,\s*/', $arrayString);
+      return [$key => array_map(fn($item) => trim($item, "'\" "), $elements)];
+    }
+
+    return null; // Return null if the format doesn't match
   }
 
   /**
@@ -464,7 +676,8 @@ class Shutdown
 set_error_handler([Shutdown::class, 'handleError']);
 set_exception_handler([Shutdown::class, 'handleException']);
 register_shutdown_function(function () {
-  Shutdown::handleParseError(); });
+  Shutdown::handleParseError();
+});
 
 
 /**
@@ -484,22 +697,35 @@ function dd(mixed $param = null, bool $die = true, bool $debug = true): void
 
   // Calculate execution time
   $execTime = round((defined('APP_END') ? APP_END : microtime(true)) - APP_START, 3);
-  $output = "Execution time: <b>{$execTime}</b> secs<br />" . PHP_EOL;
+  $memoryUsage = round(memory_get_peak_usage(true) / 1024 / 1024, 2);
+  $output = "Execution time: <b>{$execTime}</b> secs | Memory usage: <b>{$memoryUsage}</b> MB" . PHP_EOL;
 
   // Format the dump output
-  $formattedOutput = PHP_SAPI !== 'cli'
-    ? '<pre><code>' . htmlspecialchars(var_export($param, true)) . '</code></pre>' . $output
-    : var_export($param, true) . $output;
+  $isCLI = PHP_SAPI === 'cli';
+  $dump = is_array($param) || is_object($param)
+    ? json_encode($param, JSON_PRETTY_PRINT)
+    : var_export($param, true);
+
+  $formattedOutput = $isCLI
+    ? '<pre><code>' . htmlspecialchars($dump) . '</code></pre>' . $output
+    : $dump . PHP_EOL . $output;
 
   if ($die) {
-    // Set shutdown function to handle output when $die is true
-    Shutdown::setEnabled(false)
-      ->setShutdownMessage(fn() => $formattedOutput)
-      ->shutdown();
-    echo 'test';
+    // Graceful shutdown with error handling
+    try {
+      Shutdown::setEnabled(false)
+        ->setShutdownMessage(fn() => $formattedOutput)
+        ->shutdown();
+    } catch (Throwable $e) {
+      echo "Error handling shutdown: ", $e->getMessage();
+      echo $formattedOutput;
+    }
   } else {
-    // Otherwise, output immediately
+    // Immediate output
     echo $formattedOutput;
+    if ($debug) {
+      error_log($formattedOutput);
+    }
   }
 }
 
@@ -735,23 +961,17 @@ function htmlsanitize(mixed $input = '')
 
 
 /**
-This function takes in two parameters: $base and $path, which represent the base path and the path to be made relative, respectively.
+ * This function takes in two parameters: $base and $path, which represent the base path and the path to be made relative, respectively.
+ * It first detects the directory separator used in the base path, then splits both paths into arrays using that separator. It then removes the common base elements from the beginning of the path array, leaving only the difference.
+ * Finally, it returns the relative path by joining the remaining elements in the path array using the separator detected earlier, with the separator prepended to the resulting string.
 
-It first detects the directory separator used in the base path, then splits both paths into arrays using that separator. It then removes the common base elements from the beginning of the path array, leaving only the difference.
-
-Finally, it returns the relative path by joining the remaining elements in the path array using the separator detected earlier, with the separator prepended to the resulting string.
-
-* Return a relative path to a file or directory using base directory. 
-* When you set $base to /website and $path to /website/store/library.php
-* this function will return /store/library.php
-* 
-* Remember: All paths have to start from "/" or "\" this is not Windows compatible.
-* 
-* @param   string   $base   A base path used to construct relative path. For example /website
-* @param   string   $path   A full path to file or directory used to construct relative path. For example /website/store/library.php
-* 
-* @return  string
-*/
+ * Return a relative path to a file or directory using base directory. 
+ * When you set $base to /website and $path to /website/store/library.php
+ * this function will return /store/library.php
+ * @param mixed $base   A base path used to construct relative path. For example /website
+ * @param mixed $path   A full path to file or directory used to construct relative path. For example /website/store/library.php
+ * @return string
+ */
 function getRelativePath($base, $path)
 {
   // Detect directory separator

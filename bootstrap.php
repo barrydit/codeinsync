@@ -18,8 +18,35 @@ if (!defined('APP_ROOT')) {
     define('APP_ROOT', !empty(realpath(APP_PATH . ($path = rtrim($path, DIRECTORY_SEPARATOR)) ) && $path != '') ? (string) $path . DIRECTORY_SEPARATOR : '');  // basename() does not like null
 }*/
 
+$projectFolder = 'projects' . DIRECTORY_SEPARATOR . ($_GET['project'] ?? '');
+$projectPath = __DIR__ . DIRECTORY_SEPARATOR . $projectFolder;
+
 $clientFolder = 'clientele' . DIRECTORY_SEPARATOR . ($_GET['client'] ?? '');
 $clientPath = __DIR__ . DIRECTORY_SEPARATOR . $clientFolder;
+
+/**
+ * Resolve domain from available directories or fallback to the client folder.
+ */
+function resolveProject($dirs, $requestedProject = null)
+{
+  // Match requested domain to available directories
+  if ($requestedProject) {
+    foreach ($dirs as $dir) {
+      if (basename($dir) === $requestedProject) {
+        return basename($dir);
+      }
+    }
+  }
+
+  // If no domain requested and exactly one directory exists, use it
+  if (count($dirs) === 1) {
+    return basename(reset($dirs));
+  }
+
+  // No valid domain found
+  return null;
+}
+
 
 /**
  * Resolve domain from available directories or fallback to the client folder.
@@ -37,7 +64,7 @@ function resolveDomain($dirs, $requestedDomain = null)
 
   // If no domain requested and exactly one directory exists, use it
   if (count($dirs) === 1) {
-    return basename(reset($dirs));
+    return $_GET['domain'] = basename(reset($dirs));
   }
 
   // No valid domain found
@@ -58,16 +85,25 @@ function resolveClient($clientFolder)
   return '';
 }
 
+
+// Retrieve directories that match the client path
+$proj_dirs = array_filter(glob(dirname($projectPath) . DIRECTORY_SEPARATOR . '*'), 'is_dir');
+
 // Retrieve directories that match the client path
 $dirs = array_filter(glob($clientPath . DIRECTORY_SEPARATOR . '*'), 'is_dir');
 
 // Main logic to resolve the path
 $path = null;
+$project = resolveProject($proj_dirs, $_GET['project'] ?? null);
 $domain = resolveDomain($dirs, $_GET['domain'] ?? null);
 
-if ($domain) {
+//die(var_dump($_GET['domain']));
+//die(var_dump($projectFolder));
+if ($project) {
+  $path = $projectFolder . DIRECTORY_SEPARATOR;
+} elseif ($domain) {
   // Resolve path based on domain
-  $path = $clientFolder . DIRECTORY_SEPARATOR . $domain . DIRECTORY_SEPARATOR;
+  $path = rtrim($clientFolder, DIRECTORY_SEPARATOR) . DIRECTORY_SEPARATOR . $domain . DIRECTORY_SEPARATOR;
 } elseif (!empty($_GET['client'])) {
   // Special case: resolve based on client folder
   $path = ''; // resolveClient($clientFolder);
@@ -180,9 +216,7 @@ if (APP_SELF != APP_PATH_PUBLIC) {
     // Fallback: Compare alphabetically by basename
     return strcmp(basename($a), basename($b));
   });
-
 }
-
 
 
 //dd($dirs, false);

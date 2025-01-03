@@ -113,7 +113,7 @@ if (!is_dir(NODE_MODULES_PATH)) {
       array("pipe","w")
     ),
     $pipes);
-    list($stdout, $stderr, $exitCode) = [stream_get_contents($pipes[1]), stream_get_contents($pipes[2]), proc_close($proc)];
+    [$stdout, $stderr, $exitCode] = [stream_get_contents($pipes[1]), stream_get_contents($pipes[2]), proc_close($proc)];
     $errors['NPM-UPDATE']= (!isset($stdout) ? NULL : $stdout . (isset($stderr) && $stderr === '' ? NULL : ' Error: ' . $stderr) . (isset($exitCode) && $exitCode == 0 ? NULL : 'Exit Code: ' . $exitCode));
     
      // Error: npm WARN using --force Recommended protections disabled.
@@ -149,7 +149,7 @@ if (!is_dir(NODE_MODULES_PATH)) {
         ],
         $pipes
       );
-      list($stdout, $stderr, $exitCode) = [stream_get_contents($pipes[1]), stream_get_contents($pipes[2]), proc_close($proc)];
+      [$stdout, $stderr, $exitCode] = [stream_get_contents($pipes[1]), stream_get_contents($pipes[2]), proc_close($proc)];
       $errors['NPM-INSTALL-JQUERY'] = !isset($stdout) ? NULL : $stdout . (isset($stderr) && $stderr === '' ? NULL : " Error: $stderr") . (isset($exitCode) && $exitCode == 0 ? NULL : "Exit Code: $exitCode");
     }
 
@@ -164,8 +164,8 @@ if (!is_dir(NODE_MODULES_PATH)) {
       ],
       $pipes
     );
-    list($stdout, $stderr, $exitCode) = [stream_get_contents($pipes[1]), stream_get_contents($pipes[2]), proc_close($proc)];
-    $errors['NPM-WEBPACK'] = (!isset($stdout) ? NULL : ltrim($stdout) . (isset($stderr) && $stderr === '' ? NULL : (preg_match('/sudo:\swebpack:\scommand\snot\sfound/', $stderr) ? '`webpack` is not currently installed (locally) on this computer.' . "\n" : ' Error: ' . $stderr)) . (isset($exitCode) && $exitCode == 0 ? NULL : /* 'Exit Code: ' . $exitCode*/ ''));
+    [$stdout, $stderr, $exitCode] = [stream_get_contents($pipes[1]), stream_get_contents($pipes[2]), proc_close($proc)];
+    $errors['NPM-WEBPACK'] = !isset($stdout) ? NULL : ltrim($stdout) . (isset($stderr) && $stderr === '' ? NULL : (preg_match('/sudo:\swebpack:\scommand\snot\sfound/', $stderr) ? "`webpack` is not currently installed (locally) on this computer.\n" : " Error: $stderr")) . (isset($exitCode) && $exitCode == 0 ? NULL : /* 'Exit Code: ' . $exitCode*/ '');
 
     if (!isset($errors['NPM-WEBPACK']) && !empty($errors['NPM-WEBPACK'])) {
 
@@ -179,8 +179,8 @@ if (!is_dir(NODE_MODULES_PATH)) {
           ],
           $pipes
         );
-        list($stdout, $stderr, $exitCode) = [stream_get_contents($pipes[1]), stream_get_contents($pipes[2]), proc_close($proc)];
-        $errors['NPM-INSTALL-WEBPACK[-cli]'] = (!isset($stdout) ? NULL : $stdout . (isset($stderr) && $stderr === '' ? NULL : ' Error: ' . $stderr) . (isset($exitCode) && $exitCode == 0 ? NULL : 'Exit Code: ' . $exitCode));
+        [$stdout, $stderr, $exitCode] = [stream_get_contents($pipes[1]), stream_get_contents($pipes[2]), proc_close($proc)];
+        $errors['NPM-INSTALL-WEBPACK[-cli]'] = !isset($stdout) ? NULL : $stdout . (isset($stderr) && $stderr === '' ? NULL : " Error: $stderr") . (isset($exitCode) && $exitCode == 0 ? NULL : "Exit Code: $exitCode");
       } else {
         // webpack.config.js
         if (is_dir(NODE_MODULES_PATH . 'webpack')) {
@@ -225,8 +225,8 @@ END
             ],
             $pipes
           );
-          list($stdout, $stderr, $exitCode) = [stream_get_contents($pipes[1]), stream_get_contents($pipes[2]), proc_close($proc)];
-          $errors['NPM-INSTALL-BABEL-LOADER'] = (!isset($stdout) ? NULL : $stdout . (isset($stderr) && $stderr === '' ? NULL : ' Error: ' . $stderr) . (isset($exitCode) && $exitCode == 0 ? NULL : 'Exit Code: ' . $exitCode));
+          [$stdout, $stderr, $exitCode] = [stream_get_contents($pipes[1]), stream_get_contents($pipes[2]), proc_close($proc)];
+          $errors['NPM-INSTALL-BABEL-LOADER'] = !isset($stdout) ? NULL : $stdout . (isset($stderr) && $stderr === '' ? NULL : " Error: $stderr") . (isset($exitCode) && $exitCode == 0 ? NULL : "Exit Code: $exitCode");
         } else {
           if (!is_file(APP_PATH . '.babelrc'))
             if (@touch(APP_PATH . '.babelrc'))
@@ -262,8 +262,8 @@ END
             ],
             $pipes
           );
-          list($stdout, $stderr, $exitCode) = [stream_get_contents($pipes[1]), stream_get_contents($pipes[2]), proc_close($proc)];
-          $errors['NPM-RUN-BUILD[bundle.js]'] = !isset($stdout) ? NULL : $stdout . (isset($stderr) && $stderr === '' ? NULL : ' Error: ' . $stderr) . (isset($exitCode) && $exitCode == 0 ? NULL : "Exit Code: $exitCode");
+          //list(stdout, $stderr, $exitCode) = [stream_get_contents($pipes[1]), stream_get_contents($pipes[2]), proc_close($proc)];
+          $errors['NPM-RUN-BUILD[bundle.js]'] = !isset($stdout) ? NULL : $stdout . (isset($stderr) && $stderr === '' ? NULL : " Error: $stderr") . (isset($exitCode) && $exitCode == 0 ? NULL : "Exit Code: $exitCode");
         }
       }
 

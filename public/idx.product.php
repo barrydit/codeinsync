@@ -59,9 +59,9 @@ margin : 0;
 padding : 0;
 box-sizing : border-box;
 <?php if (isset($_GET['debug'])) { ?>
-          border: 1px dashed #FF0000;
+        border: 1px dashed #FF0000;
 <?php } else { ?> 
-          /* border: 1px dashed #FF0000; */
+        /* border: 1px dashed #FF0000; */
 <?php } ?>
 }
 *:focus {
@@ -376,7 +376,7 @@ cursor : pointer;
               //APP_URL_BASE . /*basename(__FILE__) .*/ '?' . http_build_query(APP_QUERY /*+ ['app' => 'ace_editor']*/) . (defined('APP_ENV') && APP_ENV == 'development' ? '#!' : '') 
             
               /* $c_or_p . '=' . (empty($_GET[$c_or_p]) ? '' : $$c_or_p->name) . '&amp;app=composer' */ NULL; ?>
-            <?= "          <button id=\"displayDirectoryBtn\" style=\"margin: 2px 5px 0 0;\" type=\"\">&nbsp;&#9660;</button> \n"; ?>
+            <?= "          <button id=\"displayDirectoryBtn\" style=\"margin: 2px 5px 0 0;\" type=\"\">&nbsp;&#9650;</button> \n"; ?>
             <?php
             $main_cat = '        <form style="display: inline;" autocomplete="off" spellcheck="false" action="" method="GET">/' . "\n"
               . '            <select name="category" onchange="this.form.submit();">' . "\n"
@@ -643,9 +643,8 @@ cursor : pointer;
               </span>
             </div>
             <div style="display: inline; float: right; text-align: center; ">
-              <code style=" background-color: white; color: #0078D7;">
-                                                                                                                                              <a style="cursor: pointer; font-size: 13px;" onclick="document.getElementById('app_client-container').style.display='none';">[X]</a>
-                                                                                                                                              </code>
+              <code
+                style=" background-color: white; color: #0078D7;"><a style="cursor: pointer; font-size: 13px;" onclick="document.getElementById('app_client-container').style.display='none';">[X]</a></code>
             </div>
             <div style="margin: 0 10px;">
               <div style="display: inline-block; float: left; width: 49%;">
@@ -891,7 +890,7 @@ cursor : pointer;
 
         <?= $apps['directory']['body'] ?? ''; ?>
 
-        <div id="app_notes-container"
+        <div id="app_whois-container"
           style="position: absolute; display: none; top: 100px; margin: 0 auto; width: 800px; height: 600px; background-color: rgba(255, 255, 255, 0.9); overflow-x: scroll;">
           <div style="display: inline;">
             <span style="background-color: #B0B0B0; color: white;">
@@ -965,7 +964,7 @@ cursor : pointer;
   include 'app.debug.php';
   ?>
 
-  <?= (APP_SELF !== APP_PATH_SERVER) and $socketInstance = Sockets::getInstance(); ?>
+  <?php (APP_SELF !== APP_PATH_SERVER) and $socketInstance = Sockets::getInstance(); ?>
   <div id="details-container"
     style="position: fixed; display: <?= isset($_SERVER['SOCKET']) && is_resource($_SERVER['SOCKET']) && isset($_GET['client']) ? 'none' : 'block' ?>; top: 0; left: 0; padding: 4px; z-index: 1; text-align: right; border: 1px solid #000; height: auto; background-color: #FFF; width: 245px;">
     <div style="float: left;">

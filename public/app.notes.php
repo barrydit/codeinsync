@@ -47,7 +47,7 @@ $proc=proc_open('env COMPOSER_ALLOW_SUPERUSER=' . COMPOSER_ALLOW_SUPERUSER . '; 
     array("pipe","w")
   ),
   $pipes);
-list($stdout, $stderr, $exitCode) = [stream_get_contents($pipes[1]), stream_get_contents($pipes[2]), proc_close($proc)];
+[$stdout, $stderr, $exitCode] = [stream_get_contents($pipes[1]), stream_get_contents($pipes[2]), proc_close($proc)];
 $output[] = 'Composer: ' . (!isset($stdout) ? NULL : $stdout . (!isset($stderr) ? NULL : ' Error: ' . $stderr) . (!isset($exitCode) ? NULL : ' Exit Code: ' . $exitCode));
 $output[] = $_POST['cmd'];
 
@@ -60,7 +60,7 @@ $proc=proc_open(APP_SUDO . GIT_EXEC . ' ' . $match[1],
     array("pipe","w")
   ),
   $pipes);
-list($stdout, $stderr, $exitCode) = [stream_get_contents($pipes[1]), stream_get_contents($pipes[2]), proc_close($proc)];
+[$stdout, $stderr, $exitCode] = [stream_get_contents($pipes[1]), stream_get_contents($pipes[2]), proc_close($proc)];
 $output[] = 'Composer: ' . (!isset($stdout) ? NULL : $stdout . (!isset($stderr) ? NULL : ' Error: ' . $stderr) . (!isset($exitCode) ? NULL : ' Exit Code: ' . $exitCode));
 $output[] = $_POST['cmd'];
 
@@ -396,8 +396,8 @@ pre {
             onchange="this.form.submit();"></button>
         </div>
         <pre style="margin: 0px;"><code class="language-<?= $sample['language']; ?>"><?= $snippet['code']; ?></code>
-                            <?= $snippet['description']; ?>
-                              </pre>
+                                    <?= $snippet['description']; ?>
+                                      </pre>
       </form>
       <div style=" margin-left: 15px;">
 

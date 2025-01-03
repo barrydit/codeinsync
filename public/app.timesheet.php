@@ -6,6 +6,17 @@ https://stackoverflow.com/questions/17694894/different-timezone-types-on-datetim
 
 */
 
+if (isset($_GET['json'])) {
+  header('Content-Type: application/json');
+
+  require_once 'bootstrap.php';
+
+  $jsonData = file_get_contents(APP_PATH . APP_BASE['var'] . 'weekly-timesheet-' . date('Y-m') . '.json');
+
+  echo $jsonData; //json_encode()
+  exit;
+}
+
 /**/
 if (__FILE__ == get_required_files()[0] && __FILE__ == realpath($_SERVER["SCRIPT_FILENAME"]))
   if ($path = basename(dirname(get_required_files()[0])) == 'public') { // (basename(getcwd())
@@ -14,6 +25,7 @@ if (__FILE__ == get_required_files()[0] && __FILE__ == realpath($_SERVER["SCRIPT
     }
   } else
     die(var_dump("Path was not found. file=$path"));
+
 
 if (preg_match('/^app\.([\w\-.]+)\.php$/', basename(__FILE__), $matches))
   ${$matches[1]} = $matches[1];
@@ -113,9 +125,8 @@ $matches = (array) [];
 if (!empty($json_data))
   foreach ($json_data as $key => $idleTimes) {
 
-    if ($key)
-      if ($dateTime = new DateTime($key))
-        preg_match('/^(\d{4}-\d{2}-\d{2})T(\d{2}:\d{2}:\d{2})[-+](\d{2}:\d{2})$/', $key, $matches);
+    if ($key && $dateTime = new DateTime($key))
+      preg_match('/^(\d{4}-\d{2}-\d{2})T(\d{2}:\d{2}:\d{2})[-+](\d{2}:\d{2})$/', $key, $matches);
 
     $date = new DateTime();
 
@@ -140,8 +151,8 @@ if (!empty($json_data))
       $periodStart = $matches[2];
       $periodEnd = $matches[3];
 
-      $firstPeriodStart = new DateTime($date . ' ' . $periodStart);
-      $firstPeriodEnd = new DateTime($date . ' ' . $periodEnd);
+      $firstPeriodStart = new DateTime("$date $periodStart");
+      $firstPeriodEnd = new DateTime("$date $periodEnd");
 
       foreach ($timeRanges as $index => $range) {
         $working_time = new DateInterval('PT0S'); // Initialize working time interval
@@ -191,7 +202,7 @@ if (!empty($json_data))
 
             // Create a new DateInterval with the updated values
 // Create a new DateInterval with the updated values
-            $endTime = new DateTime($date . ' ' . "$hrs:$min:$sec");
+            $endTime = new DateTime("$date $hrs:$min:$sec");
             $weeklyHours[$date][$rotationIndex][1] = new DateInterval("PT{$addHrs}H{$addMin}M{$addSec}S"); // ::createFromDateString("$totalSeconds seconds")
 
             // ---
@@ -215,7 +226,7 @@ if (!empty($json_data))
 
             $newHours += $carryHours;
 
-            $errors['TIME'] = 'Total hours time has been appended ' . $newHours . '+=' . $hrs . '  index: (' . $rotationIndex . ')';
+            $errors['TIME'] = "Total hours time has been appended $newHours+=$hrs  index: ($rotationIndex)";
 
             // Create a new DateInterval
             $totalHours[$rotationIndex][1] = new DateInterval("PT{$newHours}H{$newMinutes}M{$newSeconds}S");
@@ -312,15 +323,15 @@ if (!empty($json_data))
 
                       if ($idleTime = new DateTime($date . ' ' . $idleTime)) { // DateInterval("PT{$hrs}H{$min}M{$sec}S")
                       
-                        //list($hrs, $min, $sec) = explode(':', $idleTime);
+                        // [$hrs, $min, $sec] = explode(':', $idleTime);
 
                         //var_dump($idleTime);
 
-                        //list($hrs, $min, $sec) = explode(':', $timestamp->format('H:i:s'));
+                        // [$hrs, $min, $sec] = explode(':', $timestamp->format('H:i:s'));
 
                         //$timestamp->add(new DateInterval("PT{$hrs}H{$min}M{$sec}S"));
 
-                        list($hrs, $min, $sec) = explode(':', $timestamp->format('H:i:s'));
+                        [$hrs, $min, $sec] = explode(':', $timestamp->format('H:i:s'));
 
                         //if ($timestamp = new DateInterval("PT{$hrs}H{$min}M{$sec}S")) {
 
@@ -334,7 +345,7 @@ if (!empty($json_data))
                         
                         }
 
-                          //list($hrs, $min, $sec) = explode(':', $firstRangeEnd->format('H:i:s'));
+                          // [$hrs, $min, $sec] = explode(':', $firstRangeEnd->format('H:i:s'));
                           
                           //$idleTime->sub("PT{$hrs}H{$min}M{$sec}S");
                           
@@ -515,7 +526,7 @@ $weeklyHours = [
 ***
         foreach ($idleTimes as $timestamp => $idleTime) {
 
-          list($hrs, $min, $sec) = explode(':', $timestamp);
+          [$hrs, $min, $sec] = explode(':', $timestamp);
 
           if ($timestamp = new DateTime($date . ' ' . $timestamp)) // DateInterval("PT{$hrs}H{$min}M{$sec}S")
 
@@ -525,15 +536,15 @@ $weeklyHours = [
 
             if ($idleTime = new DateTime($date . ' ' . $idleTime)) { // DateInterval("PT{$hrs}H{$min}M{$sec}S")
             
-              //list($hrs, $min, $sec) = explode(':', $idleTime);
+              // [$hrs, $min, $sec] = explode(':', $idleTime);
 
               //var_dump($idleTime);
 
-              //list($hrs, $min, $sec) = explode(':', $timestamp->format('H:i:s'));
+              // [$hrs, $min, $sec] = explode(':', $timestamp->format('H:i:s'));
 
               //$timestamp->add(new DateInterval("PT{$hrs}H{$min}M{$sec}S"));
 
-              list($hrs, $min, $sec) = explode(':', $timestamp->format('H:i:s'));
+              [$hrs, $min, $sec] = explode(':', $timestamp->format('H:i:s'));
 
               //if ($timestamp = new DateInterval("PT{$hrs}H{$min}M{$sec}S")) {
 
@@ -547,7 +558,7 @@ $weeklyHours = [
               
               }
 
-                //list($hrs, $min, $sec) = explode(':', $firstRangeEnd->format('H:i:s'));
+                // [$hrs, $min, $sec] = explode(':', $firstRangeEnd->format('H:i:s'));
                 
                 //$idleTime->sub("PT{$hrs}H{$min}M{$sec}S");
                 
@@ -774,7 +785,7 @@ ob_start(); ?>
         ];
 
         // Use the selected rotation index to determine the time periods
-        list($firstPeriod, $secondPeriod) = $timePeriods[$rotationIndex];
+        [$firstPeriod, $secondPeriod] = $timePeriods[$rotationIndex];
 
         $currentTime = $currentDate;
 
@@ -1168,7 +1179,7 @@ END;
         dataType: 'json',
         success: function (msg) {
           console.log(msg);
-          $.getJSON("var/weekly-timesheet-<?= date('Y-m'); ?>.json", function (json_decode) {
+          $.getJSON("app.timesheet.php?json", function (json_decode) {
             var count_idle = 0;
             console.log(json_decode); // this will show the info it in console //json_decode=//JSON.parse(JSON.stringify(json));
             Object.keys(json_decode).forEach(key => { Object.keys(json_decode[key]).forEach(key1 => { count_idle += 1; }); });

@@ -291,15 +291,16 @@ function clientInputHandler($input)
     ini_set('log_errors', 'false');
     //$output = ($file = rtrim(realpath(APP_PATH . ($_GET['path'] ?? '')), '/') . '/' . trim($matches[1])) ? file_get_contents($file) : "File not found: $file";
 
-    $file = realpath(APP_PATH . ($_GET['path'] ?? '')) . trim($matches[1]);
+    $file = realpath(APP_PATH . ($_GET['path'] ?? '')) . DIRECTORY_SEPARATOR . trim($matches[1]);
 
     if (file_exists($file) && is_file($file)) {
       $output = file_get_contents($file);
     } else {
-      $output = "File not found: $file";
+      $output = "File not found test: $file";
       ini_set('log_errors', 'true'); // Ensure logging is enabled
-      error_log("File not found: $file");
+      error_log($output);
     }
+
   } elseif (preg_match('/^cmd:\s*server\s*backup(?=\r?\n$)?/si', $input, $matches)) {
     //$input = trim($input);
     $output = '';
@@ -325,7 +326,7 @@ function clientInputHandler($input)
     $fileModDate = date('Y-m-d', $statMtime);
 
     // Compare the dates
-    if ($fileModDate !== $currentDate) {
+    if ($fileModDate === $currentDate) {
       // Run your code only if the file was not modified today
       $output = "File was modified on: " . date('F d Y H:i:s', $statMtime) . "\n";
       require_once 'public/idx.product.php';
@@ -387,17 +388,45 @@ function clientInputHandler($input)
 
       $output = var_export($sortedArray, true);
 
-      $json = "{\n";  // Display the sorted array
+      $json = "{\n";
 
       while ($path = array_shift($sortedArray)) {
+
         $json .= match ($path) {
-          '.env.bck' => '".env" : ' . json_encode(file_get_contents($path)) . (end($sortedArray) != $path ? ',' : '') . "\n",
+          '.env' => (function () use ($path) {
+              return '".env" : ' . json_encode(file_get_contents($path)) . (end($sortedArray) != $path ? ',' : '') . "\n";
+            })(),
           default => '"' . $path . '" : ' . json_encode(file_get_contents($path)) . (end($sortedArray) != $path && !empty($sortedArray) ? ',' : '') . "\n",
         };
       }
+
       $json .= "}\n";
 
-      file_put_contents(APP_PATH . APP_BASE['var'] . 'source_code.json', $json, LOCK_EX);
+      /*
+
+            $json = "{\n";  // Display the sorted array
+
+            //dd($path);
+
+            while ($path = array_shift($sortedArray)) {
+              $json .= match ($path) {
+                '.env.bck' => '".env" : ' . json_encode(file_get_contents($path)) . (end($sortedArray) != $path ? ',' : '') . "\n",
+                default => '"' . $path . '" : ' . json_encode(file_get_contents($path)) . (end($sortedArray) != $path && !empty($sortedArray) ? ',' : '') . "\n",
+              };
+            }
+            $json .= "}\n";
+      */
+
+      //die($path);
+      // Read and sanitize the `.env` file contents
+      $envContents = $json;
+      $sanitizedContents = preg_replace(
+        '/' . $_ENV['GITHUB']['OAUTH_TOKEN'] . '/m',
+        '***REDACTED***',
+        $envContents
+      );
+
+      file_put_contents(APP_PATH . APP_BASE['var'] . 'source_code.json', $sanitizedContents, LOCK_EX);
 
       signalHandler(SIGTERM);
       // Update the file's modification time if necessary (or other actions)
@@ -544,7 +573,7 @@ function clientInputHandler($input)
           ["pipe", "w"]
         ],
         $pipes);
-        list($stdout, $stderr, $exitCode) = [stream_get_contents($pipes[1]), stream_get_contents($pipes[2]), proc_close($proc)];
+        [$stdout, $stderr, $exitCode] = [stream_get_contents($pipes[1]), stream_get_contents($pipes[2]), proc_close($proc)];
         $output = !isset($stdout) ? NULL : $stdout . (isset($stderr) && $stderr === '' ? NULL : " Error: $stderr") . (!isset($exitCode) && $exitCode == 0 ? NULL : " Exit Code: $exitCode");
 
         //$output = shell_exec($cmd);
@@ -690,14 +719,14 @@ if (PHP_SAPI === 'cli')
         }
 
         // Set the socket to non-blocking mode
-        if ($_ENV['PHP']['SOCK_BLOCK']) {
+        if ($_ENV['PHP']['SOCKET_BLOCK']) {
           // Blocking mode with a 5-second timeout
           socket_set_option($socket, SOL_SOCKET, SO_RCVTIMEO, ["sec" => 5, "usec" => 0]);
         } else {
           // Non-blocking mode
           socket_set_nonblock($socket);
         }
-        $blockingMode = $_ENV['PHP']['SOCK_BLOCK'] ? "blocking" : "non-blocking";
+        $blockingMode = $_ENV['PHP']['SOCKET_BLOCK'] ? "blocking" : "non-blocking";
         echo PHP_EOL . "Connected to Server: $address:$port (The socket is in $blockingMode mode.)\n";
 
         /*
