@@ -3,6 +3,8 @@
 if (isset($_GET['json'])) {
   header('Content-Type: application/json');
 
+  require_once '../bootstrap.php';
+
   /**
    * Get required files from a script and return their paths
    *
@@ -43,7 +45,7 @@ if (isset($_GET['json'])) {
     //'config/git.php' => 'config/git.php',
     'public/idx.product.php' => 'public/idx.product.php',
   ];
-
+  //dd($requiredFiles);
   // Prepare JSON data
   $jsonData = [];
   foreach ($requiredFiles as $key => $scriptPath) {
@@ -87,21 +89,15 @@ if (isset($_GET['json'])) {
   exit;
 }
 
-
-
 if (__FILE__ == get_required_files()[0] && __FILE__ == realpath($_SERVER["SCRIPT_FILENAME"]))
   if ($path = basename(dirname(get_required_files()[0])) == 'public') { // (basename(getcwd())
     if (is_file($path = realpath('index.php')))
       require_once $path;
-  } else {
+  } else
     die(var_dump("Path was not found. file=$path"));
-  }
-
 
 //if ($_SERVER['REQUEST_METHOD'] == 'POST')
 //  if (isset($_GET['app']) && $_GET['app'] == 'nodes')
-
-
 
 if (defined('GIT_EXEC'))
   if (is_dir($path = APP_PATH . APP_BASE['resources'] . 'js/ace') && empty(glob($path)))
@@ -144,9 +140,11 @@ font-weight: bold;
 }
 
 #visualization {
+margin-top: -60px;
 width : 100%;
-height : calc(100% - 80px);
+height : calc(100% - 260px);
 position : absolute;
+z-index : 1;
 }
 
 .node circle {
@@ -190,7 +188,7 @@ ob_start(); ?>
           style="background-color: white; color: #0078D7;"></code></span>
     </div>
 
-    <div style="display: inline; float: right; text-align: center; color: blue;"><code
+    <div style="display: inline; float: right; text-align: center; color: blue; z-index: -1;"><code
         style="background-color: white; color: #0078D7;"><a style="cursor: pointer; font-size: 13px;" onclick="document.getElementById('app_nodes-container').style.display='none';">[X]</a></code>
     </div>
   </div>
@@ -311,7 +309,7 @@ ob_start(); ?>
     .then(data => createVisualization(data));
 
   function createVisualization(data) {
-    const width = 900, height = 550;
+    const width = 940, height = 680;
 
     const nodes = [];
     const links = [];
@@ -521,10 +519,9 @@ $return_contents = ob_get_contents();
 
 ob_end_clean();
 
-if (__FILE__ == get_required_files()[0] && __FILE__ == realpath($_SERVER["SCRIPT_FILENAME"])) {
+if (__FILE__ == get_required_files()[0] && __FILE__ == realpath($_SERVER["SCRIPT_FILENAME"]))
   print $return_contents;
-} elseif (in_array(__FILE__, get_required_files()) && isset($_GET['app']) && $_GET['app'] == 'nodes' && APP_DEBUG) {
+elseif (in_array(__FILE__, get_required_files()) && isset($_GET['app']) && $_GET['app'] == 'nodes' && APP_DEBUG)
   return $return_contents;
-} else {
+else
   return $app;
-}

@@ -13,6 +13,45 @@ www-data@localhost:/var/www$ git status
 
 
 
+To remove the last two commits and push the updated history to your remote repository, follow these steps:
+
+1. Check Your Current Git History
+Run the following command to review your commit history:
+
+git log --oneline
+Identify the two commits you want to remove (they should be at the top of the history).
+
+2. Remove the Last Two Commits
+To remove the last two commits while preserving your working directory:
+
+git reset --soft HEAD~2
+HEAD~2 means "go back two commits."
+The --soft flag keeps your changes staged, so you can make any edits or recommit.
+
+3. Check the Current State
+To verify the changes, run:
+
+git status
+This will show the files from the removed commits as staged for commit.
+
+4. Create a New Commit Without the Token
+Edit any sensitive files (e.g., .env) to ensure the token is removed. Then, create a new commit:
+
+git commit -m "Remove sensitive token"
+
+5. Force Push the Updated History
+Since you’ve rewritten history, you’ll need to force push:
+
+git push --force
+⚠️ Warning: A force push rewrites the history on the remote. Ensure no one else is working on the same branch, or coordinate with your team before doing this.
+
+6. Optional: Verify the Push
+Check the remote repository to confirm the updates were applied:
+
+git log origin/main --oneline
+
+
+
 Basic
 CSS HTML JAVASCRIPT
 

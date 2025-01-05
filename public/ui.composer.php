@@ -754,7 +754,7 @@ php composer.phar -v
             <label>Composer Command</label>
             <textarea id="app_composer-init-input" style="width: 100%" cols="40" rows="6" name="composer[init]"
               autocomplete="off" autocorrect="off" autocapitalize="off"
-              spellcheck="false"><?= preg_replace('/\s--/', "\n--", COMPOSER_INIT_PARAMS); ?></textarea>
+              spellcheck="false"><?= preg_replace('/\n\s*--/', "--", COMPOSER_INIT_PARAMS); ?></textarea>
           </div>
           <?php if (!defined('CONSOLE') && CONSOLE != true) { ?>
           </form>

@@ -86,12 +86,14 @@ if (PHP_SAPI === 'cli')
      * @throws \Exception
      * @return never
      */
-    function signalHandler($signal)
+    function signalHandler($signal): void
     {
       global $running, $socket, $stream;
+      // define('WNOHANG', 0);
+
       switch ($signal) {
         case SIGCHLD:
-          while (pcntl_waitpid(-1, $status, WNOHANG) > 0) {
+          while (pcntl_waitpid(-1, $running, WNOHANG) > 0) {
             // Reap child processes
           }
           break;
@@ -110,14 +112,14 @@ if (PHP_SAPI === 'cli')
           echo '   Shutting down server... PID=' . getmypid() . PHP_EOL;
           Logger::error('Shutting down server... PID=' . getmypid());
 
-          $file = PID_FILE;
-          !is_file($file) ?: unlink($file);
+          //$file = PID_FILE;
+          !is_file(PID_FILE) ?: unlink(PID_FILE);
 
-          if ($socket) {
+          if ($socket)
             socket_close($socket);
-          } elseif (isset($stream) && is_resource($stream) && get_resource_type($stream) == 'stream') {
+          elseif (isset($stream) && is_resource($stream) && get_resource_type($stream) == 'stream')
             fclose($stream);
-          }
+
           //if ($server)
           //  fclose($server); // Close server file descriptor if open
 
@@ -326,7 +328,7 @@ function clientInputHandler($input)
     $fileModDate = date('Y-m-d', $statMtime);
 
     // Compare the dates
-    if ($fileModDate === $currentDate) {
+    if ($fileModDate !== $currentDate) {
       // Run your code only if the file was not modified today
       $output = "File was modified on: " . date('F d Y H:i:s', $statMtime) . "\n";
       require_once 'public/idx.product.php';
@@ -340,15 +342,14 @@ function clientInputHandler($input)
       foreach ($files as $file) {
         $relativePath = str_replace($baseDir, '', $file);
         $directory = dirname($relativePath);
-        if (!in_array($directory, $directoriesToScan)) {
+        if (!in_array($directory, $directoriesToScan))
           $directoriesToScan[] = $directory;
-        }
+
         // Add the relative path to the organizedFiles array if it is a .php file and not already present
-        if (pathinfo($relativePath, PATHINFO_EXTENSION) == 'php' && !in_array($relativePath, $organizedFiles)) {
+        if (pathinfo($relativePath, PATHINFO_EXTENSION) == 'php' && !in_array($relativePath, $organizedFiles))
           $organizedFiles[] = $relativePath;
-        } else if (pathinfo($relativePath, PATHINFO_EXTENSION) == 'htaccess' && !in_array($relativePath, $organizedFiles)) {
+        elseif (pathinfo($relativePath, PATHINFO_EXTENSION) == 'htaccess' && !in_array($relativePath, $organizedFiles))
           $organizedFiles[] = $relativePath;
-        }
       }
 
       // Add non-recursive scanning for the root baseDir for *.php files
@@ -389,17 +390,14 @@ function clientInputHandler($input)
       $output = var_export($sortedArray, true);
 
       $json = "{\n";
-
       while ($path = array_shift($sortedArray)) {
-
         $json .= match ($path) {
-          '.env' => (function () use ($path) {
+          '.env.bck' => (function () use ($path, $sortedArray) {
               return '".env" : ' . json_encode(file_get_contents($path)) . (end($sortedArray) != $path ? ',' : '') . "\n";
             })(),
           default => '"' . $path . '" : ' . json_encode(file_get_contents($path)) . (end($sortedArray) != $path && !empty($sortedArray) ? ',' : '') . "\n",
         };
       }
-
       $json .= "}\n";
 
       /*

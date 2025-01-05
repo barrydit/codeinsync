@@ -6,23 +6,25 @@ https://stackoverflow.com/questions/17694894/different-timezone-types-on-datetim
 
 */
 
-if (isset($_GET['json'])) {
-  header('Content-Type: application/json');
-
-  require_once 'bootstrap.php';
-
-  $jsonData = file_get_contents(APP_PATH . APP_BASE['var'] . 'weekly-timesheet-' . date('Y-m') . '.json');
-
-  echo $jsonData; //json_encode()
-  exit;
-}
 
 /**/
 if (__FILE__ == get_required_files()[0] && __FILE__ == realpath($_SERVER["SCRIPT_FILENAME"]))
   if ($path = basename(dirname(get_required_files()[0])) == 'public') { // (basename(getcwd())
-    if (is_file($path = realpath('index.php'))) {
-      require_once $path;
+    if (isset($_GET['json'])) {
+      header('Content-Type: application/json');
+
+      require_once '../bootstrap.php';
+
+      $jsonData = file_get_contents($file = APP_PATH . APP_BASE['var'] . 'weekly-timesheet-' . date('Y-m') . '.json');
+
+      echo $jsonData; //json_encode()
+      //die(var_dump($file));
+
+      exit;
     }
+    if (is_file($path = realpath('index.php')))
+      require_once $path;
+
   } else
     die(var_dump("Path was not found. file=$path"));
 
@@ -390,7 +392,6 @@ if (!empty($json_data))
     */
 
     //}
-
     //dd();
 
     if (!empty($idleTimes))
@@ -596,29 +597,65 @@ $weeklyHours = [
 //dd();
 
 
+// Create a DateTime object for the current date and hour with a custom time zone offset
+$timezoneOffset = '-' . $timeRanges[4][2] . ':00';
+$now = new DateTime('now', new DateTimeZone($timezoneOffset));
+$now->setTime((int) date('H'), 0); // Set minute and second to 0
+
+//dd($now->format('Y-m-d H:i:s'));
+
+// Define the path to the weekly timesheet JSON file
+$filePath = APP_PATH . APP_BASE['var'] . 'weekly-timesheet-' . date('Y-m') . '.json';
+
+// Initialize or load the JSON data
+if (!is_file($filePath)) {
+  // File does not exist, attempt to create it
+  if (!@touch($filePath)) {
+    // Unable to create file, use a default JSON structure
+    $jsonData = json_encode([$now->format(DATE_RFC3339) => []]);
+  } else {
+    // Successfully created file, write default JSON structure to it
+    $jsonData = json_encode([$now->format(DATE_RFC3339) => []]);
+    @file_put_contents($filePath, $jsonData, LOCK_EX);
+  }
+} elseif (filesize($filePath) === 0) {
+  // File is empty, write default JSON structure to it
+  $jsonData = json_encode([$now->format(DATE_RFC3339) => []]);
+  @file_put_contents($filePath, $jsonData, LOCK_EX);
+} else {
+  // File exists, attempt to load its contents
+  $fileContents = file_get_contents($filePath, true);
+  $jsonData = $fileContents !== false ? $fileContents : json_encode([$now->format(DATE_RFC3339) => []]);
+}
+
+// Now $jsonData contains the JSON data to be used
+
+/*
 $Now = new DateTime(date('Y-m-d') . 'T' . date('H') . ':00:00', new DateTimeZone('-' . $timeRanges[4][2] . ':00')); // date('H') + 6 now
 
-//dd($Now->format('Y-m-d H:i:s'));
-
-$json = (!is_file(APP_PATH . APP_BASE['var'] . 'weekly-timesheet-' . date('Y-m') . '.json') ?
-  (!@touch(APP_PATH . APP_BASE['var'] . 'weekly-timesheet-' . date('Y-m') . '.json') ?
-    (!file_get_contents(APP_PATH . APP_BASE['var'] . 'weekly-timesheet-' . date('Y-m') . '.json', true) ? json_encode([$Now->format(DATE_RFC3339) => []]) : file_get_contents(APP_PATH . APP_BASE['var'] . 'weekly-timesheet-' . date('Y-m') . '.json', true)) :
-    (!@file_put_contents(APP_PATH . APP_BASE['var'] . 'weekly-timesheet-' . date('Y-m') . '.json', $json = json_encode([$Now->format(DATE_RFC3339) => []]), LOCK_EX) ?: $json)
-  ) :
-  (!file_get_contents(APP_PATH . APP_BASE['var'] . 'weekly-timesheet-' . date('Y-m') . '.json', true) ? json_encode([$Now->format(DATE_RFC3339) => []]) : file_get_contents(APP_PATH . APP_BASE['var'] . 'weekly-timesheet-' . date('Y-m') . '.json', true))
-);
+$json = !is_file($file = APP_PATH . APP_BASE['var'] . 'weekly-timesheet-' . date('Y-m') . '.json')
+  ? (!@touch($file)
+    ? (!file_get_contents($file, true)
+      ? json_encode([$Now->format(DATE_RFC3339) => []])
+      : file_get_contents($file, true))
+    : (!@file_put_contents($file, $json = json_encode([$Now->format(DATE_RFC3339) => []]), LOCK_EX)
+      ?: $json))
+  : (!file_get_contents($file, true)
+    ? json_encode([$Now->format(DATE_RFC3339) => []])
+    : file_get_contents($file, true));
+*/
 
 //file_get_contents('var/weekly-timesheet-' . date('Y-m') . '.json', true) :  : (!@touch('timesheet.json') ? '' . json_encode([$Now->format(DATE_RFC3339) => []]), 'timesheet.json', LOCK_EX) : file_get_contents('timesheet.json', true)));
 
 //die(var_dump($json));
 
-$json_decode = json_decode($json, true);
+$json_decode = json_decode($jsonData, true);
 
 switch ($_SERVER['REQUEST_METHOD']) {
   case 'POST':
     if (isset($_POST['idletime'])) {
       $_POST['idletime']['time'] = trim($_POST['idletime']['time']);
-      $_POST['idletime']['idle'] = (is_null($_POST['idletime']['idle']) ? NULL : trim($_POST['idletime']['idle']));
+      $_POST['idletime']['idle'] = $_POST['idletime']['idle'] === null ? NULL : trim($_POST['idletime']['idle']);
 
       if (!empty($json_decode))
         foreach ($json_decode as $weekday_key => $weekday) {
@@ -632,10 +669,10 @@ switch ($_SERVER['REQUEST_METHOD']) {
               }
               if (isset($json_decode[$weekday_key][$idletime_key]) && $json_decode[$weekday_key][$idletime_key] !== $_POST['idletime']['time']) // $Now->format('H:i:s')
                 if (!isset($json_decode[$weekday_key][$_POST['idletime']['time']])) // $Now->format('H:i:s')
-                  $json_decode[$weekday_key][$_POST['idletime']['time']] = (isset($_POST['idletime']['idle']) ? $_POST['idletime']['idle'] : NULL);  // $Now->format('H:i:s')
+                  $json_decode[$weekday_key][$_POST['idletime']['time']] = $_POST['idletime']['idle'] ?? NULL;  // $Now->format('H:i:s')
             } else {
               //$json_decode[$Now->format(DATE_RFC3339)] = [$_POST['idletime']['time'] => (isset($_POST['idletime']['idle']) && !is_null($_POST['idletime']['idle']) ? $_POST['idletime']['idle'] : NULL)];
-              $json_decode[$weekday_key][$_POST['idletime']['time']] = (isset($_POST['idletime']['idle']) && !is_null($_POST['idletime']['idle']) ? $_POST['idletime']['idle'] : NULL); // $Now->format('H:i:s')
+              $json_decode[$weekday_key][$_POST['idletime']['time']] = isset($_POST['idletime']['idle']) && !$_POST['idletime']['idle'] === null ? $_POST['idletime']['idle'] : NULL; // $Now->format('H:i:s')
             }
           } else {
             $json_decode[$Now->format('Y-m-d\TH:i:sP')] = [date('H:i:s') => '']; // DATE_RFC3339

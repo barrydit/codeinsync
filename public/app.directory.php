@@ -45,7 +45,7 @@ $tableGen = function (): string {
 
   <?php
   //$path = APP_PATH . APP_ROOT . ($_GET['path'] ?? '');
-
+  //dd($_GET);
   // Base navigation path
   $basePath = rtrim(APP_PATH, DIRECTORY_SEPARATOR);
   $clientPath = $_GET['client'] ?? null;
@@ -57,7 +57,7 @@ $tableGen = function (): string {
   $navigation = '<div style="position: absolute; top: 2px; left: 2px; width: 100%;">';
   $navigation .= '<a href="' . '?path" ' .
     (!isset($_GET['client']) && isset($_GET['path']) ? 'onclick="handleClick(event, \'/\')"' : '') .
-    '>' . '<img src="resources/images/directory-www.fw.png" width="50" height="32">' . (!isset($_GET['client']) && isset($_GET['path']) || !isset($_GET['project']) ? $basePath . DIRECTORY_SEPARATOR : '') . '</a>';
+    '>' . '<img src="resources/images/directory-www.fw.png" width="50" height="32">' . (!isset($_GET['client']) && isset($_GET['path']) || !isset($_GET['project']) ? $basePath . DIRECTORY_SEPARATOR : '') . (!isset($_GET['app']) ? '' : '') . '</a>';
 
 
   // dd(get_required_files());
@@ -141,7 +141,10 @@ $tableGen = function (): string {
       </div>
     </div>
 
-    <?= /*var_dump(COMPOSER_VENDORS);*/ null; ?>
+    <?= /*var_dump(COMPOSER_VENDORS);*/ null;
+    dd($_GET, false); ?>
+
+
     <table style="width: inherit; border: none;">
       <tr style=" border: none;">
         <?php
@@ -575,7 +578,7 @@ $tableGen = function (): string {
               $link = basename($link);
 
               echo "<td style=\"text-align: center; border: none;\" class=\"text-xs\">\n"
-                . "<a class=\"pkg_dir\" href=\"?" . (isset($_ENV['DEFAULT_CLIENT']) && $_ENV['DEFAULT_CLIENT'] == $link ? '' : "client=$link") . "\" onclick=\"\"><img src=\"resources/images/directory.png\" width=\"50\" height=\"32\" style=\"\" /><br />$link/</a><br /></td>\n";
+                . "<a class=\"pkg_dir\" href=\"?" . (isset($_ENV['DEFAULT_CLIENT']) && $_ENV['DEFAULT_CLIENT'] == $link ? '' : "client=$link") . "\" onclick=\"\"><img src=\"resources/images/directory.png\" width=\"50\" height=\"32\" style=\"\" /><br />$statusCode-Client$count/</a><br /></td>\n";
 
               if ($count >= 6)
                 echo '</tr><tr>';
@@ -610,7 +613,7 @@ $tableGen = function (): string {
 
     // >>>
 
-    $path = defined('APP_ROOT') && APP_ROOT ? APP_PATH . APP_ROOT : (APP_ROOT == '' ? APP_PATH . (isset($_GET['client']) || isset($_GET['domain']) ? 'clientele' . DIRECTORY_SEPARATOR . (isset($_GET['client']) ? $_GET['client'] . DIRECTORY_SEPARATOR : '') . (isset($_GET['domain']) ? $_GET['domain'] . DIRECTORY_SEPARATOR : '') : (isset($_GET['path']) ? '' : 'clientele' . DIRECTORY_SEPARATOR . (isset($_GET['client']) ? $_GET['client'] . DIRECTORY_SEPARATOR : ''))) : APP_PATH . APP_ROOT);
+    $path = defined('APP_ROOT') && APP_ROOT ? APP_PATH . APP_ROOT : (APP_ROOT == '' ? APP_PATH . (isset($_GET['client']) || isset($_GET['domain']) ? 'clientele' . DIRECTORY_SEPARATOR . (isset($_GET['client']) ? $_GET['client'] . DIRECTORY_SEPARATOR : '') . (isset($_GET['domain']) ? $_GET['domain'] . DIRECTORY_SEPARATOR : '') : (isset($_GET['path']) ? '' : 'vendor' . DIRECTORY_SEPARATOR . (isset($_GET['client']) ? $_GET['client'] . DIRECTORY_SEPARATOR : ''))) : APP_PATH . APP_ROOT);
 
 
 
@@ -732,7 +735,7 @@ $tableGen = function (): string {
                     break;
                   case 'node_modules':
                     echo '<div style="position: relative; border: 4px dashed #E14747;">'
-                      . '<a href="#!" onclick="document.getElementById(\'app_npm-container\').style.display=\'block\';"><img src="resources/images/directory-npm.png" width="50" height="32" /></a><br />'
+                      . '<a href="#!" onclick="handleClick(event, \'' . $relativePath . '\');document.getElementById(\'app_npm-container\').style.display=\'block\';"><img src="resources/images/directory-npm.png" width="50" height="32" /></a><br />'
                       . '<a href="' . basename(__FILE__) . '?' . (APP_ROOT != '' && isset($_GET[array_key_first($_GET)]) ? array_key_first($_GET) . '=' . $_GET[array_key_first($_GET)] . '&' : '') . 'path=' . $relativePath . '" onclick="handleClick(event, \'' . $relativePath . '\')">' . basename($path)  // "?path=' . basename($path) . '"         
                       . '/</a></div>' . "\n";
                     break;
@@ -756,11 +759,11 @@ $tableGen = function (): string {
                     break;
                   case 'vendor':
                     echo '<div style="position: relative; border: 4px dashed #6B4329;">'
-                      . '<a href="#!" onclick="document.getElementById(\'app_composer-container\').style.display=\'block\';"><img src="resources/images/directory-composer.png" width="50" height="32" /></a><br />'
-                      . '<a href="' . basename(__FILE__) . '?' . (isset($_GET['client']) ? 'client=' . $_GET['client'] . '&' : '') . (isset($_GET['domain']) ? 'domain=' . $_GET['domain'] . '&' : '') . 'app=composer&path=' . $relativePath . '" onclick="handleClick(event, \'' . $relativePath . '\'); document.getElementById(\'app_composer-container\').style.display=\'block\';">' . basename($path)  // "?path=' . basename($path) . '"         
+                      . '<a href="#!" onclick="handleClick(event, \'' . $relativePath . '\');document.getElementById(\'app_composer-container\').style.display=\'block\';">' . '<img src="resources/images/directory-composer.png" width="50" height="32" /></a><br />'
+                      . '<a href="' . basename(__FILE__) . '?' . (isset($_GET['client']) ? 'client=' . $_GET['client'] . '&' : '') . (isset($_GET['domain']) ? 'domain=' . $_GET['domain'] . '&' : '') . 'app=composer&path=' . $relativePath . '" onclick="handleClick(event, \'' . $relativePath . '\');" >' . basename($path)  // "?path=' . basename($path) . '"         
                       . '/</a></div>' . "\n";
                     break;
-                  default:
+                   default:
                     // Ensure the path excludes the domain if present in the folder structure
     
                     $relativePath = rtrim($relativePath, DIRECTORY_SEPARATOR);
@@ -1016,7 +1019,7 @@ $tableGen = function (): string {
                       break;
                   }
                 } elseif (preg_match('/^package(?:-lock)?\.(json)/', basename($path))) {
-                  echo '<div style="position: relative; border: 4px dashed #E14747;"><a href="' . basename(__FILE__) . '?' . (!isset($_GET['client']) ? (!isset($_GET['project']) ? '' : 'project=' . $_GET['project'] . '&') : 'client=' . $_GET['client'] . '&') . (!isset($_GET['path']) ? '' : 'path=' . $_GET['path'] . '&') . 'app=ace_editor&' . /*'path=' . (basename(dirname($path)) == basename(parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH) ? 'failed' : basename(dirname($path)))) .*/ 'file=' . basename($path) . '" onclick="handleClick(event, \'' . basename($relativePath) . '\')">';
+                  echo '<div style="position: relative; border: 4px dashed #E14747;"><a href="' . basename(__FILE__) . '?' . (!isset($_GET['client']) ? (!isset($_GET['project']) ? '' : 'project=' . $_GET['project'] . '&') : 'client=' . $_GET['client'] . '&') . (!isset($_GET['path']) ? '' : 'path=' . $_GET['path'] . '&') . 'app=ace_editor&' . /*'path=' . (basename(dirname($path)) == basename(parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH) ? 'failed' : basename(dirname($path)))) .*/ 'file=' . basename($path) . '" onclick="handleClick(event, \'' . basename($relativePath) . '\'); document.getElementById(\'app_npm-container\').style.display=\'block\';">';
 
                   switch (basename($path)) {
                     case 'package.json':
@@ -1034,12 +1037,12 @@ $tableGen = function (): string {
                   }
 
                 } elseif (preg_match('/^composer(?:-setup)?\.(json|lock|php|phar)/', basename($path))) {
-                  echo '<div style="position: relative;"><div style="position: relative; border: 4px dashed #6B4329;"><a href="' . basename(__FILE__) . '?' . (!isset($_GET['client']) ? (!isset($_GET['project']) ? '' : 'project=' . $_GET['project'] . '&') : 'client=' . $_GET['client'] . '&') . (!isset($_GET['path']) ? '' : 'path=' . $_GET['path'] . '&') . 'app=ace_editor&' . /*'path=' . (basename(dirname($path)) == basename(parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH) ? 'failed' : basename(dirname($path)))) .*/ 'file=' . basename($path) . '" onclick="handleClick(event, \'' . basename($relativePath) . '\')">';
+                  echo '<div style="position: relative;"><div style="position: relative; border: 4px dashed #6B4329;"><a href="' . basename(__FILE__) . '?' . (!isset($_GET['client']) ? (!isset($_GET['project']) ? '' : 'project=' . $_GET['project'] . '&') : 'client=' . $_GET['client'] . '&') . (!isset($_GET['path']) ? '' : 'path=' . $_GET['path'] . '&') . 'app=ace_editor&' . /*'path=' . (basename(dirname($path)) == basename(parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH) ? 'failed' : basename(dirname($path)))) .*/ 'file=' . basename($path) . '" onclick="handleClick(event, \'' . basename($relativePath) . '\'); document.getElementById(\'app_composer-container\').style.display=\'block\';">';
 
                   switch (basename($path)) {
                     case 'composer.json':
                       echo '<img src="resources/images/composer_json_file.gif" width="40" height="50" /></a><br />'
-                        . '<a href="' . htmlspecialchars($url) . '" onclick="handleClick(event, \'' . basename($relativePath) . '\')">' . basename($path) . '</a>'
+                        . '<a href="' . htmlspecialchars($url) . '" onclick="handleClick(event, \'' . basename($relativePath) . '\');">' . basename($path) . '</a>'
                         . (isset($errors['COMPOSER-VALIDATE-JSON']) ? '<div style="position: absolute; right: 8px; top: -6px; color: red; font-weight: bold;">[1]</div>' : '')
                         . '</div></div>' . "\n";
                       break;

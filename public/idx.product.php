@@ -3,7 +3,7 @@
 //if (__FILE__ == get_required_files()[0] && __FILE__ == realpath($_SERVER["SCRIPT_FILENAME"]))
 if (dirname(get_required_files()[0]) == getcwd()) {
   if ($path = basename(dirname(get_required_files()[0])) == 'public') { // (basename(getcwd())
-    if (is_file($path = realpath('config/config.php')))
+    if (is_file($path = realpath('config/php.php')))
       require_once $path;
     else
       die(var_dump("Path was not found. file=$path"));
@@ -292,7 +292,7 @@ cursor : pointer;
       
         //$path = '?path=' . $path;
       } elseif (!empty($_GET['project'])) {
-        $path = '/projects/' . $_GET['project'] . '/';
+        $path = '/projects/' . $_GET['project'] . '/' . (!is_dir('projects' . DIRECTORY_SEPARATOR . $_GET['project'] . DIRECTORY_SEPARATOR . 'public') ?: 'public');
         //$dirs = array_filter(glob(dirname(__DIR__) . '/projects/' . $_GET['project'] . '/*'), 'is_dir');
       
       } else {
@@ -1702,7 +1702,4 @@ $(document).ready(function() {
 
 </html>
 
-<?=
-  NULL; /** Loading Time: 15.0s **/
-
-?>
+<?= NULL; /** Loading Time: 15.0s **/ ?>
