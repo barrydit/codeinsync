@@ -299,7 +299,7 @@ if (isset($installedPackages) && !empty($installedPackages)) {
   Must be defined before the composer-setup.php can be preformed.
 */
 
-$composerUser = $_ENV['COMPOSER']['USER'] ?? '';
+$composerUser = $_ENV['COMPOSER']['VENDOR'] ?? '';
 $componetPkg = $_ENV['COMPOSER']['PACKAGE'] ?? '';
 $user = getenv('USERNAME') ?? getenv('APACHE_RUN_USER') ?? getenv('USER') ?? '';
 

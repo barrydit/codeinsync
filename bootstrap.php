@@ -3,9 +3,9 @@
 // Define APP_PATH constant
 !defined('APP_PATH')
   and define('APP_PATH', __DIR__ . DIRECTORY_SEPARATOR)
-    and is_string(APP_PATH) 
-    ? ''
-    : $errors['APP_PATH'] = 'APP_PATH is not a valid string value.' . "\n";
+  and is_string(APP_PATH)
+  ? ''
+  : $errors['APP_PATH'] = 'APP_PATH is not a valid string value.' . "\n";
 
 /*
 !defined('DOMAIN_EXPR') and 
@@ -336,7 +336,10 @@ function sendAuthPrompt(): void
 {
   header('WWW-Authenticate: Basic realm="Dashboard"');
   header('HTTP/1.0 401 Unauthorized');
-  exit('Authentication required.');
+  exit(<<<END
+
+<div style="position: absolute; left: 50%; right: 50%; width: 200px; border: 1px solid #ffb;">Authentication Required</div>
+END);
 }
 
 

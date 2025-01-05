@@ -25,6 +25,7 @@ function shouldUpdateFile(string $filepath, int $expiryDays = 5): bool
   return time() > $expiryTime; // Check if the file is older than expiry days.
 }
 
+
 /* function parse_ini_file_multi($file) {
   // parse_ini_string(file_get_contents($file), true, INI_SCANNER_NORMAL))) 
   $data = parse_ini_file($file, true, INI_SCANNER_TYPED); 
@@ -160,45 +161,18 @@ function parse_ini_file_multi($file): array
   return $output;
 } */
 
-/**
- * Summary of array_merge_recursive_distinct
- * @param array $array1
- * @param array $array2
- * @return array
- */
-function array_merge_recursive_distinct(array &$array1, array &$array2)
-{
-  $merged = $array1;
-
-  foreach ($array2 as $key => &$value) {
-    $merged[$key] = (is_array($value) && isset($merged[$key]) && is_array($merged[$key]))
-      ? array_merge_recursive_distinct($merged[$key], $value)
-      : $value;
-  }
-
-  return $merged;
-}
-
-/**
- * Summary of array_intersect_key_recursive
- * @param array $array1
- * @param array $array2
- * @return array
- */
-function array_intersect_key_recursive(array $array1, array $array2)
-{
-  $result = [];
-  foreach ($array1 as $key => $value) {
-    if (array_key_exists($key, $array2)) {
-      $result[$key] = (is_array($value) && is_array($array2[$key]))
-        ? array_intersect_key_recursive($value, $array2[$key])
-        : $value;
-    }
-  }
-  return $result;
-}
 
 
+// Usage Example
+//$globalPath = APP_PATH . '.env'; // Global .env
+//$clientPath = APP_PATH . APP_ROOT . '.env'; // Client-specific .env
+//$envData = EnvLoader::loadEnvFiles($globalPath, $clientPath);
+
+// Populate $_ENV with the merged values
+//$_ENV = array_merge($_ENV, $envData);
+
+// Debugging Output
+// print_r($_ENV);
 
 /**
  * Summary of Shutdown
@@ -206,465 +180,205 @@ function array_intersect_key_recursive(array $array1, array $array2)
 class Shutdown
 {
   private static $instance = false;
-  /**
-   * Summary of functions
-   * @var 
-   */
-  private static $functions;
-  private static $enabled = true;
+  private static array $functions = [];
+  private static bool $enabled = true;
   private static $shutdownMessage = null;
 
-  /**
-   * Summary of __construct
-   */
   private function __construct()
   {
-    error_log("Shutdown constructor called."); // Log message to error log
-    self::$functions = [];
+    error_log("EnvManager initialized.");
     defined('APP_END') or define('APP_END', microtime(true));
     $this->initializeEnv();
   }
 
-  public static function parse_ini_file_multi($file): array
+  public static function instance(): self
   {
-    $data = (array) parse_ini_file($file, true, INI_SCANNER_TYPED);
-    $output = [];
-
-    foreach ($data as $section => $values) {
-      if (is_array($values)) {
-        $output[$section] = [];
-        foreach ($values as $key => $value) {
-          // Parse array-like strings
-          $parsedValue = self::parseArrayValueString($value);
-          $output[$section][$key] = ($parsedValue !== null) ? $parsedValue : self::processValue($value);
-        }
-      } else {
-        // Parse array-like strings
-        $parsedValue = self::parseArrayValueString($values);
-        $output[$section] = ($parsedValue !== null) ? $parsedValue : self::processValue($values);
-      }
+    if (!self::$instance) {
+      self::$instance = new self();
     }
-    return $output;
-  }
-  /**
-   * Summary of initializeEnv
-   * @return void
-   */
-  /**
-   * Initialize and process the .env files.
-   *
-   * @return void
-   */
-  private static function initializeEnv()
-  {
-    // Process and backup the main .env file
-    $envFile = APP_PATH . '.env';
-    if (self::isNonEmptyFile($envFile)) {
-      self::backupAndProcessEnv($envFile);
-    }
-
-    // Process the application-specific .env file
-    $appEnvFile = APP_PATH . APP_ROOT . '.env';
-    if (is_file($appEnvFile)) {
-      self::processAppEnvFile($appEnvFile);
-    }
+    return self::$instance;
   }
 
-  /**
-   * Check if a file exists and is not empty.
-   *
-   * @param string $filePath
-   * @return bool
-   */
-  private static function isNonEmptyFile(string $filePath): bool
-  {
-    return is_file($filePath) && filesize($filePath) > 0;
-  }
-
-  /**
-   * Backup and process the main .env file.
-   *
-   * @param string $filePath
-   * @return void
-   */
-  private static function backupAndProcessEnv(string $filePath): void
-  {
-    $envContent = file_get_contents($filePath);
-
-    // Parse the .env file content
-    $parsedEnv = parse_ini_string($envContent, true);
-
-    if ($parsedEnv === false) {
-      // Log an error message if the .env file is invalid
-      error_log("Error parsing the .env file at $filePath.");
-      die('Error parsing the .env ' . var_dump($parsedEnv));
-      return;
-    }
-
-    $parsedEnv = self::processParsedEnv($parsedEnv);
-
-    // Generate and save the backup content
-    $backupContent = self::buildEnvContent($parsedEnv);
-
-    file_put_contents("$filePath.bck", $backupContent);
-  }
-
-  /**
-   * Process the application-specific .env file.
-   *
-   * @param string $filePath
-   * @return void
-   */
-  private static function processAppEnvFile(string $filePath): void
-  {
-    $_ENV = array_intersect_key_recursive($_ENV, self::parseIniFileMulti($filePath));
-
-    if (!empty($_ENV)) {
-      $iniString = self::buildEnvContent($_ENV);
-
-      if ($iniString !== '') {
-        file_put_contents($filePath, $iniString);
-      }
-    }
-  }
-
-  /**
-   * Process a parsed .env array to infer array, null, or boolean values.
-   *
-   * @param array $parsedEnv
-   * @return array
-   */
-  private static function processParsedEnv(array $parsedEnv): array
-  {
-    foreach ($parsedEnv as $section => $data) {
-      if (is_array($data)) {
-        foreach ($data as $key => $value) {
-          $parsedEnv[$section][$key] = self::inferArrayValue($value);
-        }
-      } else {
-        $parsedEnv[$section] = self::inferArrayValue($data);
-      }
-    }
-    return $parsedEnv;
-  }
-
-  /**
-   * Build the .env content from the environment array.
-   *
-   * @param array $envData
-   * @return string
-   */
-  private static function buildEnvContent(array $envData): string
-  {
-    $iniString = '';
-
-    foreach ($envData as $key => $value) {
-      // Convert boolean values to strings
-      $value = self::convertBooleanToString($value);
-      //dd();
-      if (is_array($value)) {
-        $iniString .= "[$key]\n";
-        foreach ($value as $nestedKey => $nestedValue) {
-          $nestedValue = self::processNestedValue($nestedValue);
-          $iniString .= "$nestedKey = $nestedValue\n";
-        }
-
-      } elseif (preg_match('/^Array\[(.*?)\]$/', $value, $matches)) {
-        // Process nested array values
-        $iniString = "$key = $value\n";
-        foreach ($value as $nestedValue) {
-          $nestedValue = self::processNestedValue($nestedValue);
-          $iniString .= "$nestedValue, ";
-        }
-        //$iniString .= "]\n";
-      } else {
-        // Process scalar or null values
-        $value = self::processNestedValue($value);
-        $iniString .= "$key = $value\n";
-      }
-    }
-
-
-    return $iniString;
-  }
-
-  /**
-   * Detect and convert array-like strings, null, or boolean values.
-   *
-   * @param mixed $value
-   * @return mixed
-   */
-  private static function inferArrayValue($value)
-  {
-    // Detect and process array-like strings: Array['0', '1', '2', ...]
-    if (is_string($value) && preg_match('/^Array\[(.*?)\]$/', $value, $matches)) {
-      $arrayString = $matches[1];
-      $elements = preg_split('/\s*,\s*/', $arrayString);
-
-      return array_map(fn($item) => trim($item, "'\" "), $elements);
-    }
-
-    // Convert specific strings to null or boolean
-    if (is_string($value)) {
-      $lowerValue = strtolower($value);
-      if ($lowerValue === 'null') {
-        return null;
-      }
-      if ($lowerValue === 'true') {
-        return true;
-      }
-      if ($lowerValue === 'false') {
-        return false;
-      }
-    }
-
-    return $value;
-  }
-
-  /**
-   * Parse a multi-section .ini file.
-   *
-   * @param string $file
-   * @return array
-   */
-  private static function parseIniFileMulti(string $file): array
-  {
-    // Implement or include the parse_ini_file_multi logic here
-    return parse_ini_file($file, true);
-  }
-
-  /**
-   * Summary of convertBooleanToString
-   * @param mixed $value
-   * @return mixed
-   */
-  private static function convertBooleanToString($value)
-  {
-    if ($value === true || $value === false || is_bool($value)) {
-      return $value ? 'true' : 'false';
-    }
-    return $value;
-  }
-
-  /**
-   * Process a value to handle boolean, null, and escaping.
-   *
-   * @param mixed $value
-   * @return mixed
-   */
-  private static function processValue($value)
-  {
-    // Convert specific strings to null or boolean
-    if (is_string($value)) {
-      $lowerValue = strtolower($value);
-      if ($lowerValue === 'null') {
-        return null;
-      }
-      if ($lowerValue === 'true') {
-        return true;
-      }
-      if ($lowerValue === 'false') {
-        return false;
-      }
-      return addcslashes($value, '"'); // Escape for strings
-    }
-    return $value; // Return as is for non-string values
-  }
-
-  /**
-   * Summary of processNestedValue
-   * @param mixed $value
-   * @return string
-   */
-  private static function processNestedValue($value)
-  {
-    if ($value == null)
-      return (string) $value;
-    elseif (is_array($value)) {
-      // Convert array to the desired format: Array['0', '1', '2', ...]
-      $escapedValues = array_map(
-        fn($item) => is_numeric($item) ? $item : "'" . addslashes((string) $item) . "'",
-        $value
-      );
-      return 'Array[' . implode(', ', $escapedValues) . ']';
-    } elseif (is_string($value) && !is_numeric($value) && preg_match('/^\/.*\/[a-z]*$/i', $value)) {
-      return "\"$value\"";
-    } elseif (is_string($value) && !is_numeric($value) && preg_match('/\s/i', $value)) {
-      return "\"$value\"";
-    } elseif (is_bool($value)) {
-      return $value ? 'true' : 'false';
-    }
-    return !$value ?: addslashes($value);
-  }
-
-  private static function parseArrayValueString($input)
-  {
-    // Match the key and the array-like value
-    if (preg_match('/^Array\[(.*?)\]$/', trim($input), $matches)) {
-      $key = trim($matches[1]);
-      $arrayString = $matches[2] ?? '';
-
-      // Split the array values and trim quotes
-      $elements = preg_split('/\s*,\s*/', $arrayString);
-      return [$key => array_map(fn($item) => trim($item, "'\" "), $elements)];
-    }
-
-    return null; // Return null if the format doesn't match
-  }
-
-  /**
-   * Summary of triggerShutdown
-   * @param mixed $message
-   * @return void
-   */
-  public static function triggerShutdown($message)
+  public static function triggerShutdown($message): void
   {
     self::$shutdownMessage = $message;
     register_shutdown_function([self::class, 'onShutdown']);
   }
 
-  /**
-   * Summary of instance
-   * @return bool|Shutdown
-   */
-  public static function instance()
-  {
-    if (self::$instance == false) {
-      self::$instance = new self();
-    }
-
-    return self::$instance;
-  }
-
-  /**
-   * Summary of onShutdown
-   * @return void
-   */
-  public static function onShutdown()
+  public static function onShutdown(): void
   {
     if (self::$enabled && self::$shutdownMessage !== null) {
-      if (is_callable(self::$shutdownMessage)) {
-        echo call_user_func(self::$shutdownMessage);
-      } else {
-        echo self::$shutdownMessage;
-      }
+      echo is_callable(self::$shutdownMessage)
+        ? call_user_func(self::$shutdownMessage)
+        : self::$shutdownMessage;
     } elseif (!self::$enabled) {
-      foreach (self::$functions as $fnc) {
-        $fnc(self::$shutdownMessage);
+      foreach (self::$functions as $function) {
+        $function(self::$shutdownMessage);
       }
     }
   }
 
-  /**
-   * Summary of create
-   * @return Shutdown
-   */
-  public static function create()
-  {
-    return new self();
-  }
-
-  /**
-   * Summary of setInstance
-   * @param mixed $instance
-   * @return void
-   */
-  public static function setInstance($instance)
-  {
-    self::$instance = $instance;
-  }
-
-  /**
-   * Summary of setFunctions
-   * @param mixed $functions
-   * @return Shutdown
-   */
-  public function setFunctions($functions): self
-  {
-    self::$functions = $functions;
-    return $this;
-  }
-
-  /**
-   * Summary of getEnabled
-   * @return mixed
-   */
-  public static function getEnabled()
-  {
-    return self::$enabled;
-  }
-
-  /**
-   * Summary of setEnabled
-   * @param mixed $enabled
-   * @return bool|Shutdown
-   */
-  public static function setEnabled($enabled)
-  {
-    self::$enabled = $enabled;
-    return isset(self::$instance) ? static::instance() : self::instance();
-  }
-
-  /**
-   * Summary of setShutdownMessage
-   * @param mixed $message
-   * @return Shutdown
-   */
   public static function setShutdownMessage($message): self
   {
     self::$shutdownMessage = $message;
-    return isset(self::$instance) ? static::instance() : self::instance();
+    return self::instance();
   }
 
-  /**
-   * Summary of shutdown
-   * @param mixed $die
-   * @return void
-   */
-  public function shutdown($die = true)
+  public function shutdown(bool $die = true): void
   {
     if (!self::$enabled) {
-      foreach (self::$functions as $fnc) {
-        $fnc(self::$shutdownMessage);
+      foreach (self::$functions as $function) {
+        $function(self::$shutdownMessage);
       }
     }
-    $message = is_callable(self::$shutdownMessage) ? call_user_func(self::$shutdownMessage) : self::$shutdownMessage;
-    if ($die == true) {
+
+    $message = is_callable(self::$shutdownMessage)
+      ? call_user_func(self::$shutdownMessage)
+      : self::$shutdownMessage;
+
+    if ($die) {
       exit($message);
     }
   }
 
-  /**
-   * Summary of handleError
-   * @param mixed $errno
-   * @param mixed $errstr
-   * @param mixed $errfile
-   * @param mixed $errline
-   * @return bool
-   */
+  public static function setEnabled(bool $enabled): self
+  {
+    self::$enabled = $enabled;
+    return self::instance();
+  }
+
+  public static function loadEnvFiles(string $globalPath, string $clientPath): array
+  {
+    $globalEnv = self::parseIniFileWithSections($globalPath);
+    $clientEnv = self::parseIniFileWithSections($clientPath);
+
+    $globalRoot = array_filter($globalEnv, 'is_scalar');
+    $clientRoot = array_filter($clientEnv, 'is_scalar');
+    $globalSections = array_filter($globalEnv, 'is_array');
+    $clientSections = array_filter($clientEnv, 'is_array');
+
+    $mergedEnv = $globalRoot;
+
+    foreach ($clientSections as $section => $values) {
+      $mergedEnv[$section] = $globalSections[$section] ?? $values;
+    }
+
+    foreach ($globalSections as $section => $values) {
+      if (!isset($clientSections[$section])) {
+        $mergedEnv[$section] = $values;
+      }
+    }
+
+    return $mergedEnv;
+  }
+
+  private function initializeEnv(): void
+  {
+    $globalPath = APP_PATH . '.env';
+    $clientPath = APP_PATH . APP_ROOT . '.env';
+
+    $mergedEnv = self::loadEnvFiles($globalPath, $clientPath);
+    $_ENV = array_merge($_ENV, $mergedEnv);
+
+    if (self::isNonEmptyFile($globalPath)) {
+      self::backupEnvFile($globalPath);
+    }
+  }
+
+  private static function parseIniFileWithSections(string $filePath): array
+  {
+    return file_exists($filePath) ? (parse_ini_file($filePath, true, INI_SCANNER_TYPED) ?: []) : [];
+  }
+
+  private static function isNonEmptyFile(string $filePath): bool
+  {
+    return is_file($filePath) && filesize($filePath) > 0;
+  }
+
+  private static function backupEnvFile(string $filePath): void
+  {
+    $envContent = file_get_contents($filePath);
+    $parsedEnv = self::parseIniFileWithSections($filePath);
+
+    foreach ($parsedEnv as $section => $values) {
+      if (is_array($values) && isset($values['OAUTH_TOKEN'])) {
+        $parsedEnv[$section]['OAUTH_TOKEN'] = null;
+      }
+    }
+
+    $backupContent = self::buildEnvContent($parsedEnv);
+    file_put_contents($filePath . '.bck', $backupContent);
+  }
+
+  private static function buildEnvContent(array $envData): string
+  {
+    $iniString = '';
+    foreach ($envData as $key => $value) {
+      if (is_array($value)) {
+        $iniString .= "[$key]\n";
+        foreach ($value as $nestedKey => $nestedValue) {
+          $nestedValue = self::convertValue($nestedValue);
+          $iniString .= "$nestedKey = $nestedValue\n";
+        }
+      } else {
+        $value = self::convertValue($value);
+        $iniString .= "$key = $value\n";
+      }
+    }
+    return $iniString;
+  }
+
+  private static function convertValue($value): string
+  {
+    if (is_bool($value)) {
+      return $value ? 'true' : 'false';
+    }
+    if (is_null($value)) {
+      return 'null';
+    }
+    return (string) $value;
+  }
+}
+
+
+/**
+ * Summary of handleError
+ * @param mixed $errno
+ * @param mixed $errstr
+ * @param mixed $errfile
+ * @param mixed $errline
+ * @return bool
+ */
+
+/*
   public static function handleError($errno, $errstr, $errfile, $errline)
   {
     //echo 'Does this work? handleError()';
     self::triggerShutdown("Error: [$errno] $errstr - $errfile:$errline");
     return true; // To prevent PHP's internal error handler from running
   }
+*/
+/**
+ * Summary of handleException
+ * @param mixed $exception
+ * @return void
+ */
 
-  /**
-   * Summary of handleException
-   * @param mixed $exception
-   * @return void
-   */
+/*
+
   public static function handleException($exception)
   {
     //echo "Does this work? handleException()";
     $message = "Exception: " . $exception->getMessage() . " in " . $exception->getFile() . " on line " . $exception->getLine();
     self::triggerShutdown($message);
   }
+*/
+/**
+ * Summary of handleParseError
+ * @return void
+ */
 
-  /**
-   * Summary of handleParseError
-   * @return void
-   */
+/*
   public static function handleParseError()
   {
     $error = error_get_last();
@@ -675,14 +389,15 @@ class Shutdown
     }
 
   }
-}
+*/
+
 
 // Register custom error and exception handlers
-set_error_handler([Shutdown::class, 'handleError']);
-set_exception_handler([Shutdown::class, 'handleException']);
-register_shutdown_function(function () {
-  Shutdown::handleParseError();
-});
+//set_error_handler([Shutdown::class, 'handleError']);
+//set_exception_handler([Shutdown::class, 'handleException']);
+//register_shutdown_function(function () {
+//  Shutdown::handleParseError();
+//});
 
 
 /**
