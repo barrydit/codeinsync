@@ -217,7 +217,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
   git commit -am "Default message"
   
   git checkout -b branchName
-  END;
+END;
             $output[] = $command = ((stripos(PHP_OS, 'WIN') === 0) ? '' : APP_SUDO) . (defined('GIT_EXEC') ? GIT_EXEC : 'git') . (is_dir($path = APP_PATH . APP_ROOT . '.git') || APP_PATH . APP_ROOT != APP_PATH ? '' : '') . ' ' . $match[1];
 
 
@@ -644,7 +644,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
       //$output[] = 'post: ' . var_dump($_POST);
       //else var_dump(get_class_methods($repo));
     }
-    echo $buffer;
+    //echo $buffer;
     Shutdown::setEnabled(true)->setShutdownMessage(function () { })->shutdown();
     //exit();
   }
@@ -1186,8 +1186,8 @@ ob_start(); ?>
       });
     });
     <?php if (defined('APP_PROJECT')) { ?>
-                                                    //getDirectory('<?= isset($_GET['project']) && !empty($_GET['project']) ? basename(APP_PATH . APP_ROOT) : '' ?>', '<?= isset($_GET['project'
-                                                              ]) && !empty($_GET['project']) ? '' : APP_PATH ?>');
+                                                      //getDirectory('<?= isset($_GET['project']) && !empty($_GET['project']) ? basename(APP_PATH . APP_ROOT) : '' ?>', '<?= isset($_GET['project'
+                                                                ]) && !empty($_GET['project']) ? '' : APP_PATH ?>');
     console.log('Path: <?= APP_PATH ?>');
   <?php } ?>
 

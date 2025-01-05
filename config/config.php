@@ -316,15 +316,27 @@ if (basename($dir = getcwd()) != 'config') {
   if (in_array(basename($dir), ['public', 'public_html']))
     chdir('../');
 
-  require_once 'constants.php';
+  //require_once 'constants.php';
 
   require_once 'bootstrap.php';
 
   chdir(APP_PATH . APP_ROOT);
   if (is_file($file = APP_PATH . APP_ROOT . '.env')) {
-    $parsedEnv = Shutdown::parse_ini_file_multi($file);
-    $_ENV = array_merge_recursive_distinct($_ENV, $parsedEnv);
 
+    // Usage Example
+    $globalPath = APP_PATH . '.env'; // Global .env
+    $clientPath = APP_PATH . APP_ROOT . '.env'; // Client-specific .env
+    $envData = Shutdown::loadEnvFiles($globalPath, $clientPath);
+
+    //dd($envData);
+
+    // Populate $_ENV with the merged values
+    $_ENV = array_merge($_ENV, $envData);
+
+    /*
+        $parsedEnv = Shutdown::parse_ini_file_multi($file);
+        $_ENV = array_merge_recursive_distinct($_ENV, $parsedEnv);
+    */
     /*
             foreach($env as $key => $value) {
                 if (is_array($value)) {

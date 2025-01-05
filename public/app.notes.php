@@ -2,7 +2,7 @@
 
 if (__FILE__ == get_required_files()[0] && __FILE__ == realpath($_SERVER["SCRIPT_FILENAME"])) {
   if ($path = basename(dirname(get_required_files()[0])) == 'public') { // (basename(getcwd())
-    if (is_file($path = realpath('../config/config.php'))) {
+    if (is_file($path = realpath('../bootstrap.php'))) {
       require_once $path;
     }
   } elseif (is_file($path = realpath('config/config.php')))
@@ -396,8 +396,8 @@ pre {
             onchange="this.form.submit();"></button>
         </div>
         <pre style="margin: 0px;"><code class="language-<?= $sample['language']; ?>"><?= $snippet['code']; ?></code>
-                                    <?= $snippet['description']; ?>
-                                      </pre>
+                                        <?= $snippet['description']; ?>
+                                          </pre>
       </form>
       <div style=" margin-left: 15px;">
 
