@@ -626,182 +626,178 @@ defined('COMPOSER_JSON') or define('COMPOSER_JSON', [
 ]);
 
 ob_start(); ?>
-  <?= $composer_exec; ?> init --quiet --no-interaction --working-dir="<?= APP_PATH . APP_ROOT; ?>"
+  <?= $composer_exec; ?> init --quiet --no-interaction
+  --working-dir="<?= APP_PATH . APP_ROOT; ?>"
   --name="<?= $composerUser . '/' . str_replace('.', '_', basename(APP_ROOT) ?? $componetPkg); ?>"
-  --description="General Description" --author="Barry Dick <barryd.it@gmail.com>" --type="project"
-    --homepage="https://github.com/<?= $composerUser . '/' . str_replace('.', '_', basename(APP_ROOT) ?? $componetPkg); ?>"
-    --require="php:^7.4||^8.0" --require="composer/composer:^1.0" --require-dev="pds/skeleton:^1.0" --stability="dev"
-    --license="WTFPL"
-    <?php
-    defined('COMPOSER_INIT_PARAMS')
-      or define('COMPOSER_INIT_PARAMS', /*<<<TEXT TEXT*/ ob_get_contents());
-    ob_end_clean();
+  --description="General Description"
+  --author="Barry Dick &lt;barryd.it@gmail.com&gt;"
+  --type="project"
+  --homepage="https://github.com/<?= $composerUser . '/' . str_replace('.', '_', basename(APP_ROOT) ?? $componetPkg); ?>"
+  --require="php:^7.4||^8.0"
+  --require="composer/composer:^1.0"
+  --require-dev="pds/skeleton:^1.0"
+  --stability="dev"
+  --license="WTFPL"
+  <?php
+  defined('COMPOSER_INIT_PARAMS')
+    or define('COMPOSER_INIT_PARAMS', /*<<<TEXT TEXT*/ trim(ob_get_contents()));
+  ob_end_clean();
 
-    if (!realpath(APP_PATH . APP_ROOT . APP_BASE['vendor'])) {
-      exec(COMPOSER_INIT_PARAMS);
-    } elseif (!realpath(APP_PATH . APP_ROOT . APP_BASE['vendor'] . 'autoload.php')) {
-      exec((stripos(PHP_OS, 'WIN') === 0 ? '' : APP_SUDO) . COMPOSER_EXEC['bin'] . ' update', $output, $returnCode);
-      if ($returnCode !== 0) {
-        $errors['COMPOSER-INIT-UPDATE'] = $output;
-      }
-      exec((stripos(PHP_OS, 'WIN') === 0 ? '' : APP_SUDO) . COMPOSER_EXEC['bin'] . ' dump-autoload', $output, $returnCode);
-      if ($returnCode !== 0) {
-        $errors['COMPOSER-DUMP-AUTOLOAD'] = $output;
-      }
-    }
-    /* Consider writing a gui that would handle the composer traffic ... */
+  if (!realpath(APP_PATH . APP_ROOT . APP_BASE['vendor'])) {
+    exec(COMPOSER_INIT_PARAMS);
+  } elseif (!realpath(APP_PATH . APP_ROOT . APP_BASE['vendor'] . 'autoload.php')) {
+    exec((stripos(PHP_OS, 'WIN') === 0 ? '' : APP_SUDO) . COMPOSER_EXEC['bin'] . ' update', $output, $returnCode);
+    if ($returnCode !== 0)
+      $errors['COMPOSER-INIT-UPDATE'] = $output;
+
+    exec((stripos(PHP_OS, 'WIN') === 0 ? '' : APP_SUDO) . COMPOSER_EXEC['bin'] . ' dump-autoload', $output, $returnCode);
+    if ($returnCode !== 0)
+      $errors['COMPOSER-DUMP-AUTOLOAD'] = $output;
+  }
+  /* Consider writing a gui that would handle the composer traffic ... */
 
 
-    // moved to config.php load (last)
+  // moved to config.php load (last)
 // is_file(APP_BASE['vendor'] . 'autoload.php') and require_once APP_BASE['vendor'] . 'autoload.php'; // Include Composer's autoloader
-    
-    /*
+  
+  /*
 
-    use Composer\Console\Application;
-    use Symfony\Component\Console\Input\ArrayInput;
-    use Symfony\Component\Console\Output\BufferedOutput;
+  use Composer\Console\Application;
+  use Symfony\Component\Console\Input\ArrayInput;
+  use Symfony\Component\Console\Output\BufferedOutput;
 
-    // Create a new Composer Application
-    $application = new Application();
+  // Create a new Composer Application
+  $application = new Application();
 
-    // Create a BufferedOutput to capture the output
-    $output = new BufferedOutput();
+  // Create a BufferedOutput to capture the output
+  $output = new BufferedOutput();
 
-    // Create an input object with the show command
-    $input = new ArrayInput(['command' => 'show']);
+  // Create an input object with the show command
+  $input = new ArrayInput(['command' => 'show']);
 
-    // Run the show command and capture the output
-    $exitCode = $application->run($input, $output);
+  // Run the show command and capture the output
+  $exitCode = $application->run($input, $output);
 
-    // Check if the command was successful
-    if ($exitCode === 0) {
-        // Get the captured output and print it
-        $outputText = $output->fetch();
-        echo $outputText;
-    } else {
-        // Handle the case where the command failed
-        echo "Composer show command failed with exit code $exitCode";
-    }
-    */
-    /*
-    // Use the Composer\Factory to create a Composer instance
-    $composer = \Composer\Factory::create();
+  // Check if the command was successful
+  if ($exitCode === 0) {
+      // Get the captured output and print it
+      $outputText = $output->fetch();
+      echo $outputText;
+  } else {
+      // Handle the case where the command failed
+      echo "Composer show command failed with exit code $exitCode";
+  }
+  */
+  /*
+  // Use the Composer\Factory to create a Composer instance
+  $composer = \Composer\Factory::create();
 
-    // Get the installed repository, which contains a list of installed packages
-    $repository = $composer->getRepositoryManager()->getLocalRepository();
+  // Get the installed repository, which contains a list of installed packages
+  $repository = $composer->getRepositoryManager()->getLocalRepository();
 
-    // Get all installed packages
-    $packages = $repository->getPackages();
+  // Get all installed packages
+  $packages = $repository->getPackages();
 
-    // Print information about each package
-    foreach ($packages as $package) {
-        echo $package->getName() . ' - ' . $package->getPrettyVersion() . PHP_EOL;
-    }
-    */
-    /*
-    // Use the Composer\Factory to create a Composer instance
-    $composer = new \Composer\Semver\Semver();
+  // Print information about each package
+  foreach ($packages as $package) {
+      echo $package->getName() . ' - ' . $package->getPrettyVersion() . PHP_EOL;
+  }
+  */
+  /*
+  // Use the Composer\Factory to create a Composer instance
+  $composer = new \Composer\Semver\Semver();
 
-    // Get the list of installed packages
-    $installedPackages = $composer::getInstalledPackages();
-    */
-    /*
-    // Use Composer's InstalledVersions class to get a list of installed packages
-    $installedPackages = Composer\InstalledVersions::getAll();
+  // Get the list of installed packages
+  $installedPackages = $composer::getInstalledPackages();
+  */
+  /*
+  // Use Composer's InstalledVersions class to get a list of installed packages
+  $installedPackages = Composer\InstalledVersions::getAll();
 
-    // Print information about each package
-    foreach ($installedPackages as $package) {
-        echo $package['name'] . ' - ' . $package['version'] . PHP_EOL;
-    }
-    */
+  // Print information about each package
+  foreach ($installedPackages as $package) {
+      echo $package['name'] . ' - ' . $package['version'] . PHP_EOL;
+  }
+  */
 
-    /*
-    // Read the installed packages from the installed.json file
-    $installedPackages = json_decode(file_get_contents('vendor/composer/installed.json'), true);
+  /*
+  // Read the installed packages from the installed.json file
+  $installedPackages = json_decode(file_get_contents('vendor/composer/installed.json'), true);
 
-    foreach ($installedPackages['packages']  as $package) { //
-        echo $package['name'] . ' - ' . $package['version'] . ' - ' . $package['description']. '<br />' . PHP_EOL; // 
-    }
-    */
-
-
-    /* This code starts here */
+  foreach ($installedPackages['packages']  as $package) { //
+      echo $package['name'] . ' - ' . $package['version'] . ' - ' . $package['description']. '<br />' . PHP_EOL; // 
+  }
+  */
 
 
+  /* This code starts here */
 
 
-    /* Ends here */
 
 
-    /*
+  /* Ends here */
 
-    use Composer\Composer;
-    use Composer\Factory;
-    use Composer\DependencyResolver\Request;
-    use Composer\Package\Version\VersionSelector;
-    use Composer\Repository\CompositeRepository;
-    use Composer\Repository\PlatformRepository;
 
-    // Initialize Composer
-    $composer = Factory::create();
+  /*
 
-    // Create a repository representing all known packages
-    $repositorySet = $composer->getRepositoryManager()->getLocalRepositorySet();
+  use Composer\Composer;
+  use Composer\Factory;
+  use Composer\DependencyResolver\Request;
+  use Composer\Package\Version\VersionSelector;
+  use Composer\Repository\CompositeRepository;
+  use Composer\Repository\PlatformRepository;
 
-    // Create a PlatformRepository to represent the currently installed packages
-    $platformRepo = new PlatformRepository();
+  // Initialize Composer
+  $composer = Factory::create();
 
-    // Create a CompositeRepository with both the known packages and the installed packages
-    $compositeRepo = new CompositeRepository([$platformRepo, $repositorySet->getCanonicalLocalRepository()]);
+  // Create a repository representing all known packages
+  $repositorySet = $composer->getRepositoryManager()->getLocalRepositorySet();
 
-    // Create a Request for the package you're looking to install
-    $request = new Request();
-    $request->install(['package-name' => '*']);
+  // Create a PlatformRepository to represent the currently installed packages
+  $platformRepo = new PlatformRepository();
 
-    // Get the latest version of the package
-    $versionSelector = new VersionSelector($compositeRepo);
-    $latestPackage = $versionSelector->findBestCandidate('package-name');
+  // Create a CompositeRepository with both the known packages and the installed packages
+  $compositeRepo = new CompositeRepository([$platformRepo, $repositorySet->getCanonicalLocalRepository()]);
 
-    if ($latestPackage !== null) {
-        echo 'Package is installable.';
-    } else {
-        echo 'Package is not installable.';
-    }
-    */
+  // Create a Request for the package you're looking to install
+  $request = new Request();
+  $request->install(['package-name' => '*']);
 
-    // isset($$c_or_p) and dd($$c_or_p);
-    
-    //cd /usr/local/bin
+  // Get the latest version of the package
+  $versionSelector = new VersionSelector($compositeRepo);
+  $latestPackage = $versionSelector->findBestCandidate('package-name');
+
+  if ($latestPackage !== null) {
+      echo 'Package is installable.';
+  } else {
+      echo 'Package is not installable.';
+  }
+  */
+
+  // isset($$c_or_p) and dd($$c_or_p);
+  
+  //cd /usr/local/bin
 //curl -sS https://getcomposer.org/installer | php /* -- --filename=composer */
 //chmod a+x composer.phar
 //sudo mv composer /usr/local/bin/composer
 //Change into a project directory cd /path/to/my/project
-    
+  
 
 
-    //defined('PHP_WINDOWS_VERSION_MAJOR') ? 'APPDATA' : 'HOME';
-    
-    //require __DIR__ . DIRECTORY_SEPARATOR . APP_BASE['vendor'] . 'Git.php/src/Git.php';
+  //defined('PHP_WINDOWS_VERSION_MAJOR') ? 'APPDATA' : 'HOME';
+  
+  //require __DIR__ . DIRECTORY_SEPARATOR . APP_BASE['vendor'] . 'Git.php/src/Git.php';
 //require __DIR__ . DIRECTORY_SEPARATOR . APP_BASE['vendor'] . 'Git.php/src/GitRepo.php';
-    
-    //use Kbjr\Git\Git;
+  
+  //use Kbjr\Git\Git;
 //use Kbjr\Git\GitRepo;
-    
-    // file has to exists first
-    
-    is_dir(APP_PATH . APP_BASE['var']) || mkdir(APP_PATH . APP_BASE['var'], 0755);
+  
+  // file has to exists first
+  
+  is_dir(APP_PATH . APP_BASE['var']) || mkdir(APP_PATH . APP_BASE['var'], 0755);
 
-    if (is_file(APP_PATH . APP_BASE['var'] . 'getcomposer.org.html')) {
-      if (ceil(abs((strtotime(date('Y-m-d')) - strtotime(date('Y-m-d', strtotime('+5 days', filemtime(APP_PATH . APP_BASE['var'] . '/getcomposer.org.html'))))) / 86400)) <= 0) {
-        $url = 'https://getcomposer.org/';
-        $handle = curl_init($url);
-        curl_setopt($handle, CURLOPT_RETURNTRANSFER, true);
-
-        if (!empty($html = curl_exec($handle))) {
-          file_put_contents(APP_PATH . APP_BASE['var'] . 'getcomposer.org.html', $html) or $errors['COMPOSER_LATEST'] = "$url returned empty.";
-        }
-      }
-    } else {
+  if (is_file(APP_PATH . APP_BASE['var'] . 'getcomposer.org.html')) {
+    if (ceil(abs((strtotime(date('Y-m-d')) - strtotime(date('Y-m-d', strtotime('+5 days', filemtime(APP_PATH . APP_BASE['var'] . '/getcomposer.org.html'))))) / 86400)) <= 0) {
       $url = 'https://getcomposer.org/';
       $handle = curl_init($url);
       curl_setopt($handle, CURLOPT_RETURNTRANSFER, true);
@@ -810,99 +806,108 @@ ob_start(); ?>
         file_put_contents(APP_PATH . APP_BASE['var'] . 'getcomposer.org.html', $html) or $errors['COMPOSER_LATEST'] = "$url returned empty.";
       }
     }
+  } else {
+    $url = 'https://getcomposer.org/';
+    $handle = curl_init($url);
+    curl_setopt($handle, CURLOPT_RETURNTRANSFER, true);
 
-    libxml_use_internal_errors(true); // Prevent HTML errors from displaying
-    $doc = new DOMDocument(1.0, 'utf-8');
-    $doc->loadHTML(file_get_contents(APP_PATH . APP_BASE['var'] . 'getcomposer.org.html'));
+    if (!empty($html = curl_exec($handle))) {
+      file_put_contents(APP_PATH . APP_BASE['var'] . 'getcomposer.org.html', $html) or $errors['COMPOSER_LATEST'] = "$url returned empty.";
+    }
+  }
 
-    $content_node = $doc->getElementById("main");
+  libxml_use_internal_errors(true); // Prevent HTML errors from displaying
+  $doc = new DOMDocument(1.0, 'utf-8');
+  $doc->loadHTML(file_get_contents(APP_PATH . APP_BASE['var'] . 'getcomposer.org.html'));
 
-    $node = getElementsByClass($content_node, 'p', 'latest');
+  $content_node = $doc->getElementById("main");
 
-    //$xpath = new DOMXpath ( $doc ); //$xpath->query ( '//p [contains (@class, "latest")]' );
+  $node = getElementsByClass($content_node, 'p', 'latest');
+
+  //$xpath = new DOMXpath ( $doc ); //$xpath->query ( '//p [contains (@class, "latest")]' );
 //dd($xpath);
-    
-    $pattern = '/Latest: (\d+\.\d+\.\d+) \(\w+\)/';
+  
+  $pattern = '/Latest: (\d+\.\d+\.\d+) \(\w+\)/';
 
-    if (preg_match($pattern, $node[0]->nodeValue, $matches)) {
-      $version = $matches[1];
+  if (preg_match($pattern, $node[0]->nodeValue, $matches)) {
+    $version = $matches[1];
 
-      define('COMPOSER_LATEST', $version);
-      //echo "New Version: " . COMPOSER_LATEST . "\n";
-    } else {
-      $errors['COMPOSER_LATEST'] = $node[0]->nodeValue . ' did not match $version';
-    }
+    define('COMPOSER_LATEST', $version);
+    //echo "New Version: " . COMPOSER_LATEST . "\n";
+  } else {
+    $errors['COMPOSER_LATEST'] = $node[0]->nodeValue . ' did not match $version';
+  }
 
-    if (defined('COMPOSER_JSON') && !empty(COMPOSER_JSON['json'])) {
-      $composer_obj = json_decode(COMPOSER_JSON['json']);
-    } else {
-      $composer_obj = json_decode(json_encode(new composerConfig(), true));
-      $composer_obj->{'require'} = new stdClass(); //(array) ['php' => '7.4||8.1'];
-      $composer_obj->{'require'}->{'php'} = '7.4||8.1';
-      $composer_obj->{'require-dev'} = new stdClass();
-      $composer_obj->{'require-dev'}->{'pds/skeleton'} = '^1.0';
-    }
+  if (defined('COMPOSER_JSON') && !empty(COMPOSER_JSON['json'])) {
+    $composer_obj = json_decode(COMPOSER_JSON['json']);
+  } else {
+    $composer_obj = json_decode(json_encode(new composerConfig(), true));
+    $composer_obj->{'require'} = new stdClass(); //(array) ['php' => '7.4||8.1'];
+    $composer_obj->{'require'}->{'php'} = '7.4||8.1';
+    $composer_obj->{'require-dev'} = new stdClass();
+    $composer_obj->{'require-dev'}->{'pds/skeleton'} = '^1.0';
+  }
 
-    if (defined('COMPOSER_VERSION') && defined('COMPOSER_LATEST')) { // defined('APP_DEBUG') && APP_DEBUG !== false
-    
-      //  if (is_file($path = APP_PATH . 'composer.lock') && is_writable($path)) 
+  if (defined('COMPOSER_VERSION') && defined('COMPOSER_LATEST')) { // defined('APP_DEBUG') && APP_DEBUG !== false
+  
+    //  if (is_file($path = APP_PATH . 'composer.lock') && is_writable($path)) 
 //    unlink($path);
-    
-      if (version_compare(COMPOSER_LATEST, COMPOSER_VERSION, '>') != 0) {
-        //dd(basename(COMPOSER_EXEC['bin']) . ' self-update;'); // (stripos(PHP_OS, 'WIN') === 0 ? '' : APP_SUDO) . 
-        //(APP_SELF !== APP_PATH_SERVER) and 
-        require_once 'classes/class.sockets.php';
-        //unset($socketInstance);
-        if (!isset($socketInstance)) {
-          $socketInstance = Sockets::getInstance();
-        }
+  
+    if (version_compare(COMPOSER_LATEST, COMPOSER_VERSION, '>') != 0) {
+      //dd(basename(COMPOSER_EXEC['bin']) . ' self-update;'); // (stripos(PHP_OS, 'WIN') === 0 ? '' : APP_SUDO) . 
+      //(APP_SELF !== APP_PATH_SERVER) and 
+      require_once 'classes/class.sockets.php';
+      //unset($socketInstance);
+      if (!isset($socketInstance)) {
+        $socketInstance = Sockets::getInstance();
+      }
 
-        //$socketInstance->handleClientRequest("composer self-update\n");
-    
-        if (defined('APP_IS_ONLINE'))
-          if (!isset($_SERVER['SOCKET']) || !is_resource($_SERVER['SOCKET']) || empty($_SERVER['SOCKET'])) {
+      //$socketInstance->handleClientRequest("composer self-update\n");
+  
+      if (defined('APP_IS_ONLINE'))
+        if (!isset($_SERVER['SOCKET']) || !is_resource($_SERVER['SOCKET']) || empty($_SERVER['SOCKET'])) {
 
-            $proc = proc_open((stripos(PHP_OS, 'WIN') === 0 ? '' : APP_SUDO . '-u www-data ') . basename(COMPOSER_EXEC['bin']) . ' self-update', [["pipe", "r"], ["pipe", "w"], ["pipe", "w"]], $pipes);
+          $proc = proc_open((stripos(PHP_OS, 'WIN') === 0 ? '' : APP_SUDO . '-u www-data ') . basename(COMPOSER_EXEC['bin']) . ' self-update', [["pipe", "r"], ["pipe", "w"], ["pipe", "w"]], $pipes);
 
-            [$stdout, $stderr, $exitCode] = [stream_get_contents($pipes[1]), stream_get_contents($pipes[2]), proc_close($proc)];
+          [$stdout, $stderr, $exitCode] = [stream_get_contents($pipes[1]), stream_get_contents($pipes[2]), proc_close($proc)];
 
-            if ($exitCode !== 0) {
-              if (empty($stdout)) {
-                if (!empty($stderr)) {
-                  $errors['COMPOSER-SELF-UPDATE'] = $stderr;
-                  error_log($stderr);
-                }
-              } else {
-                $errors['COMPOSER-SELF-UPDATE'] = $stdout;
+          if ($exitCode !== 0) {
+            if (empty($stdout)) {
+              if (!empty($stderr)) {
+                $errors['COMPOSER-SELF-UPDATE'] = $stderr;
+                error_log($stderr);
               }
+            } else {
+              $errors['COMPOSER-SELF-UPDATE'] = $stdout;
             }
-          } else {
+          }
+        } else {
 
-            // Connect to the server
-            $errors['server-1'] = "Connected to Server: " . SERVER_HOST . ':' . SERVER_PORT . "\n";
+          // Connect to the server
+          $errors['server-1'] = "Connected to Server: " . SERVER_HOST . ':' . SERVER_PORT . "\n";
 
-            // Send a message to the server
-            $errors['server-2'] = 'Client request: ' . $message = "cmd: " . basename(COMPOSER_EXEC['bin']) . " self-update\n";
-            /* Known socket  Error / Bug is mis-handled and An established connection was aborted by the software in your host machine */
+          // Send a message to the server
+          $errors['server-2'] = 'Client request: ' . $message = "cmd: " . basename(COMPOSER_EXEC['bin']) . " self-update\n";
+          /* Known socket  Error / Bug is mis-handled and An established connection was aborted by the software in your host machine */
 
-            fwrite($_SERVER['SOCKET'], $message);
+          fwrite($_SERVER['SOCKET'], $message);
 
-            $output[] = trim($message) . ': ';
-            // Read response from the server
-            while (!feof($_SERVER['SOCKET'])) {
-              $response = fgets($_SERVER['SOCKET'], 1024);
-              $errors['server-3'] = "Server responce: $response\n";
-              if (isset($output[end($output)]))
-                $output[end($output)] .= $response = trim($response);
-              //if (!empty($response)) break;
-            }
-
-            // Close and reopen socket
-            fclose($socketInstance->getSocket());
-
+          $output[] = trim($message) . ': ';
+          // Read response from the server
+          while (!feof($_SERVER['SOCKET'])) {
+            $response = fgets($_SERVER['SOCKET'], 1024);
+            $errors['server-3'] = "Server responce: $response\n";
+            if (isset($output[end($output)]))
+              $output[end($output)] .= $response = trim($response);
+            //if (!empty($response)) break;
           }
 
-        //$proc = proc_open(basename(COMPOSER_EXEC['bin']) . ' self-update;', [["pipe", "r"], ["pipe", "w"], ["pipe", "w"]], $pipes);
+          // Close and reopen socket
+          fclose($socketInstance->getSocket());
+
+        }
+
+      //$proc = proc_open(basename(COMPOSER_EXEC['bin']) . ' self-update;', [["pipe", "r"], ["pipe", "w"], ["pipe", "w"]], $pipes);
 /*
 
 if (isset($_POST['composer']['self-update']) || file_exists(APP_PATH . 'composer.phar')) {
@@ -920,331 +925,137 @@ $stderr = stream_get_contents($pipes[2]);
 fclose($pipes[1]);
 fclose($pipes[2]);
 */
-        /*
-          [$stdout, $stderr, $exitCode] = [stream_get_contents($pipes[1]), stream_get_contents($pipes[2]), proc_close($proc)];
-          
-          if (empty($stdout)) {
-            if (!empty($stderr))
-              $errors['COMPOSER_UPDATE'] = $stderr;
-          } else $errors['COMPOSER_UPDATE'] = $stdout;
-        */
-      }
+      /*
+        [$stdout, $stderr, $exitCode] = [stream_get_contents($pipes[1]), stream_get_contents($pipes[2]), proc_close($proc)];
+        
+        if (empty($stdout)) {
+          if (!empty($stderr))
+            $errors['COMPOSER_UPDATE'] = $stderr;
+        } else $errors['COMPOSER_UPDATE'] = $stdout;
+      */
+    }
 
-      //die(var_dump($_SERVER['SOCKET']));
-    
-      if (!is_dir(APP_PATH . APP_ROOT . APP_BASE['vendor']) || !is_file(APP_PATH . APP_ROOT . APP_BASE['vendor'] . 'autoload.php'))
-        exec((stripos(PHP_OS, 'WIN') === 0 ? '' : APP_SUDO) . COMPOSER_EXEC['bin'] . ' dump-autoload', $output, $returnCode) or $errors['COMPOSER-DUMP-AUTOLOAD'] = $output;
-      else
-        if (!empty($composer_obj->{'require'}))
-          foreach ($composer_obj->{'require'} as $package => $version) {
-            // dd($_ENV['COMPOSER']['EXPR_NAME']);
-            if (preg_match($_ENV['COMPOSER']['EXPR_NAME'] . 'i', $package))
-              continue;  // $package == 'php'
-            elseif (in_array($package, ['php',]))
-              continue;
-            else {
-              //echo $package . ' => ' . $version . "\n" ;
-              $errors['COMPOSER-PACKAGE'] = $package . ' does not match the package. reg_expr=' . COMPOSER_EXPR_NAME;
-              $output = [];
-              $returnCode = 0;
-              exec("composer show $package", $output, $returnCode);
+    //die(var_dump($_SERVER['SOCKET']));
+  
+    if (!is_dir(APP_PATH . APP_ROOT . APP_BASE['vendor']) || !is_file(APP_PATH . APP_ROOT . APP_BASE['vendor'] . 'autoload.php'))
+      exec((stripos(PHP_OS, 'WIN') === 0 ? '' : APP_SUDO) . COMPOSER_EXEC['bin'] . ' dump-autoload', $output, $returnCode) or $errors['COMPOSER-DUMP-AUTOLOAD'] = $output;
+    else
+      if (!empty($composer_obj->{'require'}))
+        foreach ($composer_obj->{'require'} as $package => $version) {
+          // $_ENV['COMPOSER']['EXPR_NAME'] is missing because the clients' env file is overriding the global
+          if (preg_match(!isset($_ENV['COMPOSER']['EXPR_NAME']) ? COMPOSER_EXPR_NAME : $_ENV['COMPOSER']['EXPR_NAME'] . 'i', $package))
+            continue;  // $package == 'php'
+          elseif (in_array($package, ['php',]))
+            continue;
+          else {
+            //echo $package . ' => ' . $version . "\n" ;
+            $errors['COMPOSER-PACKAGE'] = $package . ' does not match the package. reg_expr=' . COMPOSER_EXPR_NAME;
+            $output = [];
+            $returnCode = 0;
+            exec("composer show $package", $output, $returnCode);
 
-              if ($returnCode !== 0) {
-                if (isset($composer_obj->{'require'}->{$package}) && is_dir(APP_PATH . APP_ROOT . APP_BASE['vendor'] . $package))
-                  continue;
-                if (!empty($composer_obj->{'repositories'}))
-                  foreach ($composer_obj->{'repositories'} as $key => $repo) { //unset($composer_obj->{'repositories'});
-                    if (!is_dir(APP_PATH . APP_ROOT . APP_BASE['vendor'] . $package))
-                      continue; // future: consider type->path and/or checking locally and unsetting.
-                    //strcmp("git.php", basename($package) !== 0);
-                    if (!in_array(APP_PATH . APP_ROOT . APP_BASE['vendor'] . $package, array_filter(glob(APP_PATH . APP_ROOT . APP_BASE['vendor'] . dirname($package) . '/*'), 'is_dir')))
-                      if ($oldpath = preg_grep('/^vendor\/' . preg_quote($package, '/') . '/i', glob(APP_PATH . APP_ROOT . APP_BASE['vendor'] . dirname($package) . '/*'))[0])
-                        rename($oldpath, APP_PATH . APP_ROOT . APP_BASE['vendor'] . $package) or $errors['COMPOSER-INSTALL'] = "$package has a vendor/package installed, but the letter case spelling did not pass.";
-                    $repository = new stdClass();
-                    $repository->type = 'path';
-                    $repository->url = APP_BASE['vendor'] . $package;
-                    if ($repository == $repo)
-                      continue;
-                    else if (!is_dir($repo->url))
-                      unset($composer_obj->{'repositories'}[$key]);
-                    else
-                      $composer_obj->repositories[] = $repository;
-                  } else {
+            if ($returnCode !== 0) {
+              if (isset($composer_obj->{'require'}->{$package}) && is_dir(APP_PATH . APP_ROOT . APP_BASE['vendor'] . $package))
+                continue;
+              if (!empty($composer_obj->{'repositories'}))
+                foreach ($composer_obj->{'repositories'} as $key => $repo) { //unset($composer_obj->{'repositories'});
+                  if (!is_dir(APP_PATH . APP_ROOT . APP_BASE['vendor'] . $package))
+                    continue; // future: consider type->path and/or checking locally and unsetting.
+                  //strcmp("git.php", basename($package) !== 0);
+                  if (!in_array(APP_PATH . APP_ROOT . APP_BASE['vendor'] . $package, array_filter(glob(APP_PATH . APP_ROOT . APP_BASE['vendor'] . dirname($package) . '/*'), 'is_dir')))
+                    if ($oldpath = preg_grep('/^vendor\/' . preg_quote($package, '/') . '/i', glob(APP_PATH . APP_ROOT . APP_BASE['vendor'] . dirname($package) . '/*'))[0])
+                      rename($oldpath, APP_PATH . APP_ROOT . APP_BASE['vendor'] . $package) or $errors['COMPOSER-INSTALL'] = "$package has a vendor/package installed, but the letter case spelling did not pass.";
                   $repository = new stdClass();
                   $repository->type = 'path';
                   $repository->url = APP_BASE['vendor'] . $package;
-                  if (is_dir($repository->url))
+                  if ($repository == $repo)
+                    continue;
+                  else if (!is_dir($repo->url))
+                    unset($composer_obj->{'repositories'}[$key]);
+                  else
                     $composer_obj->repositories[] = $repository;
-                }
-              } // else { }
-            }
-          }
-
-      //if (!$composer_obj->{'repositories'}) $composer_obj->{'repositories'} = [];  
-      if (isset($composer_obj->{'version'}) && !preg_match(COMPOSER_EXPR_VER, $composer_obj->{'version'}))
-        unset($composer_obj->{'version'});
-
-      //!isset($composer_obj->{'prefer-stable'})
-      //  and $composer_obj->{'prefer-stable'} = true;
-    
-      if (!is_file(COMPOSER_JSON['path']))
-        file_put_contents(COMPOSER_JSON['path'], json_encode($composer_obj, JSON_UNESCAPED_SLASHES | JSON_PRETTY_PRINT));
-
-      /* Previous unlink('composer.lock') location */
-
-      //if (check_http_status()) {
-    
-      $vendors = $dirs_diff = [];
-
-      //$dirs = array_filter( glob( APP_BASE['vendor'] . '*'), 'is_dir');
-      if (defined('COMPOSER_VENDORS'))
-        foreach (COMPOSER_VENDORS as $vendor => $packages) {
-          if ($vendor == basename('bin'))
-            continue;
-          if ($vendor == 'barrydit')
-            continue;
-          if (in_array(APP_ROOT . APP_BASE['vendor'] . $vendor, array_filter(glob(APP_ROOT . APP_BASE['vendor'] . $vendor . ''), 'is_dir')))
-            continue;
-          else
-            $dirs_diff[] = basename($vendor);
-
-          if (!isset($uniqueNames[$vendor])) {
-            $uniqueNames[$vendor] = true;
-            $vendors[] = $vendor;
-          }
-        }
-
-      if (!isset($dirs_diff) || empty($dirs_diff))
-        $dirs_diff = [];
-      //else //dd($dirs_diff);
-    
-      if (!empty(array_diff($vendors, $dirs_diff))) {
-
-        //if (!isset($_SERVER['SOCKET']) || !$_SERVER['SOCKET']) $_SERVER['SOCKET'] = openSocket(APP_HOST, 12345); // 
-    
-        (APP_SELF !== APP_PATH_SERVER) and $socketInstance = Sockets::getInstance();
-        //$socketInstance->handleClientRequest("composer self-update\n");
-        if (!isset($_SERVER['SOCKET']) || !is_resource($_SERVER['SOCKET']) || empty($_SERVER['SOCKET'])) {
-
-          $proc = proc_open((stripos(PHP_OS, 'WIN') === 0 ? '' : APP_SUDO . '-u www-data ') . basename(COMPOSER_EXEC['bin']) . ' update', [["pipe", "r"], ["pipe", "w"], ["pipe", "w"]], $pipes);
-
-          [$stdout, $stderr, $exitCode] = [stream_get_contents($pipes[1]), stream_get_contents($pipes[2]), proc_close($proc)];
-
-          if ($exitCode !== 0) {
-            if (empty($stdout)) {
-              if (!empty($stderr)) {
-                $errors['COMPOSER-UPDATE'] = $stderr;
-                error_log($stderr);
+                } else {
+                $repository = new stdClass();
+                $repository->type = 'path';
+                $repository->url = APP_BASE['vendor'] . $package;
+                if (is_dir($repository->url))
+                  $composer_obj->repositories[] = $repository;
               }
-            } else {
-              $errors['COMPOSER-UPDATE'] = $stdout;
-            }
+            } // else { }
           }
-
-          (preg_match('/Composer is operating significantly slower than normal because you do not have the PHP curl extension enabled./m', $stdout))
-            and $errors['PHP-ext/curl'] = "PHP cURL needs to be installed and enabled.\n";
-
-        } else {
-
-          $errors['server-1'] = "Connected to Server: " . SERVER_HOST . ':' . SERVER_PORT . "\n";
-
-          // Send a message to the server
-          $errors['server-2'] = 'Client request: ' . $message = "cmd: " . basename(COMPOSER_EXEC['bin']) . " update\n";
-
-          fwrite($_SERVER['SOCKET'], $message);
-          $output[] = trim($message) . ': ';
-          // Read response from the server
-          while (!feof($_SERVER['SOCKET'])) {
-            $response = fgets($_SERVER['SOCKET'], 1024);
-            $errors['server-3'] = "Server responce: $response\n";
-            if (isset($output[end($output)]))
-              $output[end($output)] .= $response = trim($response);
-            //if (!empty($response)) break;
-          }
-          // Close and reopen socket
-          fclose($socketInstance->getSocket());
-          /*
-          [$server, $port] = explode(PATH_SEPARATOR, SERVER_HOST . PATH_SEPARATOR . SERVER_PORT); // 127.0.0.1:12345   
-          $errors['server-1'] = "Connected to Server: " . $server . PATH_SEPARATOR . $port . "\n"; // APP_PATH_SERVER || APP_HOST
-
-          // Send a message to the server
-          $errors['server-2'] = 'Client request: ' . $message = "cmd: composer update " . "\n";
-
-          fwrite($_SERVER['SOCKET'], $message);
-
-          // Read response from the server
-          while (!feof($_SERVER['SOCKET'])) {
-              $response = fgets($_SERVER['SOCKET'], 1024);
-              $errors['server-3'] = "Server response [2]: $response\n";
-              if (!empty($response)) break;
-          }
-
-          // Close the connection
-          //fclose($_SERVER['SOCKET']);
-          */
-        }
-        /*
-                //$proc = proc_open((stripos(PHP_OS, 'WIN') === 0 ? '' : APP_SUDO) . COMPOSER_EXEC['bin'] . ' update', [["pipe", "r"], ["pipe", "w"], ["pipe", "w"]], $pipes);
-
-                [$stdout, $stderr, $exitCode] = [stream_get_contents($pipes[1]), stream_get_contents($pipes[2]), proc_close($proc)];
-
-                if ($exitCode !== 0)
-                  if (empty($stdout)) {
-                    if (!empty($stderr))
-                      $errors['COMPOSER-UPDATE'] = $stderr;
-                  } else $errors['COMPOSER-UPDATE'] = $stdout;
-              //else $debug['COMPOSER-UPDATE'] = '$stdout=' $stdout . "\n".  '$stderr = ' . $stderr;
-            
-                (preg_match('/Composer is operating significantly slower than normal because you do not have the PHP curl extension enabled./m', $stdout))
-                  and $errors['ext/curl'] = 'PHP cURL needs to be installed and enabled.';
-        */
-      }
-
-    }
-
-    if (!empty($errors) && isset($errors['COMPOSER-UPDATE'])) {
-
-      $problems = [];
-      if (preg_match_all('/Problem \d+.*?(?=\r?\nProblem \d+|\r?\n$)/s', $errors['COMPOSER-UPDATE'], $matches)) {
-        foreach ($matches[0] as $problem) {
-          // Extract problem ID
-          preg_match('/Problem (\d+)/', $problem, $idMatch);
-          $problemId = $idMatch[1];
-
-          // Extract items under the problem, excluding paths
-          preg_match_all('/- (?!\/etc\/php\/\d+\.\d+\/cli\/.*\.ini)(.*?)(?=\r?\n(?!\s*- )|\r?\n)/s', $problem, $itemMatches); // --$
-          $items = array_map('trim', $itemMatches[1]);
-
-          // Store the problem ID and its items
-          $problems = $items;
         }
 
-        // Count of problems
-        $problemCount = count($problems);
+    //if (!$composer_obj->{'repositories'}) $composer_obj->{'repositories'} = [];  
+    if (isset($composer_obj->{'version'}) && !preg_match(COMPOSER_EXPR_VER, $composer_obj->{'version'}))
+      unset($composer_obj->{'version'});
 
-        // Display the results
-        $errors['COMPOSER-PROBLEMS'] = "Total Problems: $problemCount\n";
-        $errors['COMPOSER-PROBARRAY'] = var_export($problems, true);
-      } else {
-        $errors['COMPOSER-PROBLEMS'] = "No problems found.\n";
-      }
+    //!isset($composer_obj->{'prefer-stable'})
+    //  and $composer_obj->{'prefer-stable'} = true;
+  
+    if (!is_file(COMPOSER_JSON['path']))
+      file_put_contents(COMPOSER_JSON['path'], json_encode($composer_obj, JSON_UNESCAPED_SLASHES | JSON_PRETTY_PRINT));
 
-      if (empty($problems) && preg_match_all('/Problem \d+.*?(?=\r?\n)$/s', $errors['COMPOSER-UPDATE'], $matches)) {
-        $problems = [];
-        foreach ($matches[0] as $problem) {
-          // Extract problem ID
-          preg_match('/Problem (\d+)/', $problem, $idMatch);
-          $problemId = $idMatch[1];
+    /* Previous unlink('composer.lock') location */
 
-          // Extract items under the problem, excluding paths
-          preg_match_all('/- (?!\/etc\/php\/\d+\.\d+\/cli\/.*\.ini)(.*?)(?=\r?\n(?!\s*- )|\r?\n)/s', $problem, $itemMatches); // --$
-          $items = array_map('trim', $itemMatches[1]);
+    //if (check_http_status()) {
+  
+    $vendors = $dirs_diff = [];
 
-          // Store the problem ID and its items
-          $problems = $items;
+    //$dirs = array_filter( glob( APP_BASE['vendor'] . '*'), 'is_dir');
+    if (defined('COMPOSER_VENDORS'))
+      foreach (COMPOSER_VENDORS as $vendor => $packages) {
+        if ($vendor == basename('bin'))
+          continue;
+        if ($vendor == 'barrydit')
+          continue;
+        if (in_array(APP_ROOT . APP_BASE['vendor'] . $vendor, array_filter(glob(APP_ROOT . APP_BASE['vendor'] . $vendor . ''), 'is_dir')))
+          continue;
+        else
+          $dirs_diff[] = basename($vendor);
+
+        if (!isset($uniqueNames[$vendor])) {
+          $uniqueNames[$vendor] = true;
+          $vendors[] = $vendor;
         }
-
-        // Count of problems
-        $problemCount = count($problems);
-
-        // Display the results
-        $errors['COMPOSER-PROBLEMS'] = "Total Problems: $problemCount\n";
-        $errors['COMPOSER-PROBARRAY'] = var_export($problems, true);
-      } else {
-        $errors['COMPOSER-PROBLEMS'] = "No problems found.\n";
       }
 
-      if (preg_match_all('/To enable extensions, verify that they are enabled in your \.ini files:.*?(?=\r?\n$)/s', $errors['COMPOSER-UPDATE'], $matches)) {
-        $ini_files = [];
-        foreach ($matches[0] as $ini_file) {
+    if (!isset($dirs_diff) || empty($dirs_diff))
+      $dirs_diff = [];
+    //else //dd($dirs_diff);
+  
+    if (!empty(array_diff($vendors, $dirs_diff))) {
 
-          // Extract items under the problem, excluding paths
-          preg_match_all('/(?=\/etc\/php\/\d+\.\d+\/cli\/.*\.ini)(.*?)(?=\r?\n(?!\s*- )|\r?\n)/s', $ini_file, $itemMatches); // --$
-          $items = array_map('trim', $itemMatches[0]);
-
-          // Store the problem ID and its items
-          $ini_files = $items;
-        }
-
-        $base_names = array_map(function ($path) {
-          // Extract the filename without the extension
-          $filename = preg_replace('/\.ini$/', '', basename($path));
-          return preg_replace('/^\d+-/', '', $filename);
-        }, $ini_files);
-
-        // Count of problems
-        $ini_files_count = count($base_names);
-
-        // Display the results
-        $errors['COMPOSER-INI-FILES'] = "Total Ini Files: $ini_files_count\n";
-        $errors['COMPOSER-INIARRAY'] = var_export($base_names, true);
-      } else {
-        $errors['COMPOSER-INI-FILES'] = "No Ini Files found.\n";
-      }
-
-
-      if (preg_match('/^.*Problem \d*(\r?\n)*.*- Root composer\.json requires ([a-z0-9](?:[_.-]?[a-z0-9]+)*\/[a-z0-9](?:(?:[_.]|-{1,2})?[a-z0-9]+)) (\^v?\d+(?:\.\d+){0,3}|^dev-.*), it is satisfiable by (?:[a-z0-9](?:[_.-]?[a-z0-9]+)*\/[a-z0-9](?:(?:[_.]|-{1,2})?[a-z0-9]+))\[\d+(?:\.\d+){0,3}\] from composer repo \((?:[a-z]+\:\/\/)?(?:[a-z0-9\-]+\.)+[a-z]{2,6}(?:\/\S*)?\) but (?:[a-z0-9](?:[_.-]?[a-z0-9]+)*\/[a-z0-9](?:(?:[_.]|-{1,2})?[a-z0-9]+))\[(.*)\]/m', $errors['COMPOSER-UPDATE'], $matches)) {
-        if (preg_match('/(v?\d+(?:\.\d+){0,3})/', $matches[4]))
-          $composer_obj->require->{$matches[2]} = '^' . $matches[4];
-        elseif (preg_match('/(dev-.*)/', $matches[4]))
-          $composer_obj->require->{$matches[2]} = $matches[4];
-
-        file_put_contents(COMPOSER_JSON['path'], json_encode($composer_obj, JSON_UNESCAPED_SLASHES | JSON_PRETTY_PRINT));
-        unset($errors['COMPOSER-UPDATE']);
-      }
-
-      if (preg_match('/^.*Problem \d*(?:\r?\n)*.*- Root composer\.json requires ([a-z0-9](?:[_.-]?[a-z0-9]+)*\/[a-z0-9](?:(?:[_.]|-{1,2})?[a-z0-9]+)) (v?\d+(?:\.\d+){0,3}|dev-.*)\, found ([a-z0-9](?:[_.-]?[a-z0-9]+)*\/[a-z0-9](?:(?:[_.]|-{1,2})?[a-z0-9]+))\s*\[(v?\d+(?:\.\d+){0,3}|dev-.*)(?:,|$)/m', $errors['COMPOSER-UPDATE'], $matches)) {
-        // Split the fourth element by commas and extract the first part
-        $constraint_parts = explode(', ', $matches[4]);
-        $first_element = reset($constraint_parts);
-
-        if (preg_match('/(v?\d+(?:\.\d+){0,3})/', $first_element))
-          $composer_obj->require->{$matches[1]} = "^$first_element";
-        elseif (preg_match('/(dev-.*)/', $first_element))
-          $composer_obj->require->{$matches[1]} = $first_element;
-
-        file_put_contents(COMPOSER_JSON['path'], json_encode($composer_obj, JSON_UNESCAPED_SLASHES | JSON_PRETTY_PRINT));
-        unset($errors['COMPOSER-UPDATE']);
-      }
-    }
-    //}
-    
-    //     while() { $errors['COMPOSER-UPDATE'] } // loop for 5 attempts to fix a problem 
-    
-    if (!is_file('composer.lock')) {
-      /**
-        Optimization
-      **/
-
-      // composer clear-cache
-    
-
-      putenv('COMPOSER_HOME='); // TESTING
-    
+      //if (!isset($_SERVER['SOCKET']) || !$_SERVER['SOCKET']) $_SERVER['SOCKET'] = openSocket(APP_HOST, 12345); // 
+  
       (APP_SELF !== APP_PATH_SERVER) and $socketInstance = Sockets::getInstance();
       //$socketInstance->handleClientRequest("composer self-update\n");
       if (!isset($_SERVER['SOCKET']) || !is_resource($_SERVER['SOCKET']) || empty($_SERVER['SOCKET'])) {
-        $proc = proc_open((stripos(PHP_OS, 'WIN') === 0 ? '' : APP_SUDO) . COMPOSER_EXEC['bin'] . ' install -o', [["pipe", "r"], ["pipe", "w"], ["pipe", "w"]], $pipes);
+
+        $proc = proc_open((stripos(PHP_OS, 'WIN') === 0 ? '' : APP_SUDO . '-u www-data ') . basename(COMPOSER_EXEC['bin']) . ' update', [["pipe", "r"], ["pipe", "w"], ["pipe", "w"]], $pipes);
 
         [$stdout, $stderr, $exitCode] = [stream_get_contents($pipes[1]), stream_get_contents($pipes[2]), proc_close($proc)];
 
         if ($exitCode !== 0) {
           if (empty($stdout)) {
             if (!empty($stderr)) {
-              $errors['COMPOSER-INSTALL'] = $stderr;
+              $errors['COMPOSER-UPDATE'] = $stderr;
               error_log($stderr);
             }
           } else {
-            $errors['COMPOSER-INSTALL'] = $stdout;
+            $errors['COMPOSER-UPDATE'] = $stdout;
           }
         }
 
+        (preg_match('/Composer is operating significantly slower than normal because you do not have the PHP curl extension enabled./m', $stdout))
+          and $errors['PHP-ext/curl'] = "PHP cURL needs to be installed and enabled.\n";
+
       } else {
+
         $errors['server-1'] = "Connected to Server: " . SERVER_HOST . ':' . SERVER_PORT . "\n";
 
         // Send a message to the server
-        $errors['server-2'] = 'Client request: ' . $message = 'cmd: ' . COMPOSER_EXEC['bin'] . " install -o\n";
-        /* Known socket  Error / Bug is mis-handled and An established connection was aborted by the software in your host machine */
+        $errors['server-2'] = 'Client request: ' . $message = "cmd: " . basename(COMPOSER_EXEC['bin']) . " update\n";
+
         fwrite($_SERVER['SOCKET'], $message);
         $output[] = trim($message) . ': ';
         // Read response from the server
@@ -1257,34 +1068,228 @@ fclose($pipes[2]);
         }
         // Close and reopen socket
         fclose($socketInstance->getSocket());
+        /*
+        [$server, $port] = explode(PATH_SEPARATOR, SERVER_HOST . PATH_SEPARATOR . SERVER_PORT); // 127.0.0.1:12345   
+        $errors['server-1'] = "Connected to Server: " . $server . PATH_SEPARATOR . $port . "\n"; // APP_PATH_SERVER || APP_HOST
+
+        // Send a message to the server
+        $errors['server-2'] = 'Client request: ' . $message = "cmd: composer update " . "\n";
+
+        fwrite($_SERVER['SOCKET'], $message);
+
+        // Read response from the server
+        while (!feof($_SERVER['SOCKET'])) {
+            $response = fgets($_SERVER['SOCKET'], 1024);
+            $errors['server-3'] = "Server response [2]: $response\n";
+            if (!empty($response)) break;
+        }
+
+        // Close the connection
+        //fclose($_SERVER['SOCKET']);
+        */
       }
-
-
-
       /*
-          //$proc = proc_open((stripos(PHP_OS, 'WIN') === 0 ? '' : APP_SUDO) . COMPOSER_EXEC['bin'] . ' install -o', array( array("pipe","r"), array("pipe","w"), array("pipe","w")), $pipes);
+              //$proc = proc_open((stripos(PHP_OS, 'WIN') === 0 ? '' : APP_SUDO) . COMPOSER_EXEC['bin'] . ' update', [["pipe", "r"], ["pipe", "w"], ["pipe", "w"]], $pipes);
 
-          [$stdout, $stderr, $exitCode] = [stream_get_contents($pipes[1]), stream_get_contents($pipes[2]), proc_close($proc)];
+              [$stdout, $stderr, $exitCode] = [stream_get_contents($pipes[1]), stream_get_contents($pipes[2]), proc_close($proc)];
 
-          if ($exitCode !== 0)
-            if (empty($stdout)) {
-              if (!empty($stderr))
-                $errors['COMPOSER-INSTALL'] = $stderr;
-            } else $errors['COMPOSER-INSTALL'] = $stdout;
+              if ($exitCode !== 0)
+                if (empty($stdout)) {
+                  if (!empty($stderr))
+                    $errors['COMPOSER-UPDATE'] = $stderr;
+                } else $errors['COMPOSER-UPDATE'] = $stdout;
+            //else $debug['COMPOSER-UPDATE'] = '$stdout=' $stdout . "\n".  '$stderr = ' . $stderr;
+          
+              (preg_match('/Composer is operating significantly slower than normal because you do not have the PHP curl extension enabled./m', $stdout))
+                and $errors['ext/curl'] = 'PHP cURL needs to be installed and enabled.';
       */
-      //else $debug['COMPOSER-INSTALL'] = '$stdout=' $stdout . "\n".  '$stderr = ' . $stderr;
-    
-      //exec((stripos(PHP_OS, 'WIN') === 0 ? '' : APP_SUDO) . COMPOSER_EXEC['bin'] . ' install -o', $output, $returnCode) or $errors['COMPOSER-INSTALL'] = $output;
-    
     }
 
-    // https://getcomposer.org/doc/03-cli.md
+  }
+
+  if (!empty($errors) && isset($errors['COMPOSER-UPDATE'])) {
+
+    $problems = [];
+    if (preg_match_all('/Problem \d+.*?(?=\r?\nProblem \d+|\r?\n$)/s', $errors['COMPOSER-UPDATE'], $matches)) {
+      foreach ($matches[0] as $problem) {
+        // Extract problem ID
+        preg_match('/Problem (\d+)/', $problem, $idMatch);
+        $problemId = $idMatch[1];
+
+        // Extract items under the problem, excluding paths
+        preg_match_all('/- (?!\/etc\/php\/\d+\.\d+\/cli\/.*\.ini)(.*?)(?=\r?\n(?!\s*- )|\r?\n)/s', $problem, $itemMatches); // --$
+        $items = array_map('trim', $itemMatches[1]);
+
+        // Store the problem ID and its items
+        $problems = $items;
+      }
+
+      // Count of problems
+      $problemCount = count($problems);
+
+      // Display the results
+      $errors['COMPOSER-PROBLEMS'] = "Total Problems: $problemCount\n";
+      $errors['COMPOSER-PROBARRAY'] = var_export($problems, true);
+    } else {
+      $errors['COMPOSER-PROBLEMS'] = "No problems found.\n";
+    }
+
+    if (empty($problems) && preg_match_all('/Problem \d+.*?(?=\r?\n)$/s', $errors['COMPOSER-UPDATE'], $matches)) {
+      $problems = [];
+      foreach ($matches[0] as $problem) {
+        // Extract problem ID
+        preg_match('/Problem (\d+)/', $problem, $idMatch);
+        $problemId = $idMatch[1];
+
+        // Extract items under the problem, excluding paths
+        preg_match_all('/- (?!\/etc\/php\/\d+\.\d+\/cli\/.*\.ini)(.*?)(?=\r?\n(?!\s*- )|\r?\n)/s', $problem, $itemMatches); // --$
+        $items = array_map('trim', $itemMatches[1]);
+
+        // Store the problem ID and its items
+        $problems = $items;
+      }
+
+      // Count of problems
+      $problemCount = count($problems);
+
+      // Display the results
+      $errors['COMPOSER-PROBLEMS'] = "Total Problems: $problemCount\n";
+      $errors['COMPOSER-PROBARRAY'] = var_export($problems, true);
+    } else {
+      $errors['COMPOSER-PROBLEMS'] = "No problems found.\n";
+    }
+
+    if (preg_match_all('/To enable extensions, verify that they are enabled in your \.ini files:.*?(?=\r?\n$)/s', $errors['COMPOSER-UPDATE'], $matches)) {
+      $ini_files = [];
+      foreach ($matches[0] as $ini_file) {
+
+        // Extract items under the problem, excluding paths
+        preg_match_all('/(?=\/etc\/php\/\d+\.\d+\/cli\/.*\.ini)(.*?)(?=\r?\n(?!\s*- )|\r?\n)/s', $ini_file, $itemMatches); // --$
+        $items = array_map('trim', $itemMatches[0]);
+
+        // Store the problem ID and its items
+        $ini_files = $items;
+      }
+
+      $base_names = array_map(function ($path) {
+        // Extract the filename without the extension
+        $filename = preg_replace('/\.ini$/', '', basename($path));
+        return preg_replace('/^\d+-/', '', $filename);
+      }, $ini_files);
+
+      // Count of problems
+      $ini_files_count = count($base_names);
+
+      // Display the results
+      $errors['COMPOSER-INI-FILES'] = "Total Ini Files: $ini_files_count\n";
+      $errors['COMPOSER-INIARRAY'] = var_export($base_names, true);
+    } else {
+      $errors['COMPOSER-INI-FILES'] = "No Ini Files found.\n";
+    }
+
+
+    if (preg_match('/^.*Problem \d*(\r?\n)*.*- Root composer\.json requires ([a-z0-9](?:[_.-]?[a-z0-9]+)*\/[a-z0-9](?:(?:[_.]|-{1,2})?[a-z0-9]+)) (\^v?\d+(?:\.\d+){0,3}|^dev-.*), it is satisfiable by (?:[a-z0-9](?:[_.-]?[a-z0-9]+)*\/[a-z0-9](?:(?:[_.]|-{1,2})?[a-z0-9]+))\[\d+(?:\.\d+){0,3}\] from composer repo \((?:[a-z]+\:\/\/)?(?:[a-z0-9\-]+\.)+[a-z]{2,6}(?:\/\S*)?\) but (?:[a-z0-9](?:[_.-]?[a-z0-9]+)*\/[a-z0-9](?:(?:[_.]|-{1,2})?[a-z0-9]+))\[(.*)\]/m', $errors['COMPOSER-UPDATE'], $matches)) {
+      if (preg_match('/(v?\d+(?:\.\d+){0,3})/', $matches[4]))
+        $composer_obj->require->{$matches[2]} = '^' . $matches[4];
+      elseif (preg_match('/(dev-.*)/', $matches[4]))
+        $composer_obj->require->{$matches[2]} = $matches[4];
+
+      file_put_contents(COMPOSER_JSON['path'], json_encode($composer_obj, JSON_UNESCAPED_SLASHES | JSON_PRETTY_PRINT));
+      unset($errors['COMPOSER-UPDATE']);
+    }
+
+    if (preg_match('/^.*Problem \d*(?:\r?\n)*.*- Root composer\.json requires ([a-z0-9](?:[_.-]?[a-z0-9]+)*\/[a-z0-9](?:(?:[_.]|-{1,2})?[a-z0-9]+)) (v?\d+(?:\.\d+){0,3}|dev-.*)\, found ([a-z0-9](?:[_.-]?[a-z0-9]+)*\/[a-z0-9](?:(?:[_.]|-{1,2})?[a-z0-9]+))\s*\[(v?\d+(?:\.\d+){0,3}|dev-.*)(?:,|$)/m', $errors['COMPOSER-UPDATE'], $matches)) {
+      // Split the fourth element by commas and extract the first part
+      $constraint_parts = explode(', ', $matches[4]);
+      $first_element = reset($constraint_parts);
+
+      if (preg_match('/(v?\d+(?:\.\d+){0,3})/', $first_element))
+        $composer_obj->require->{$matches[1]} = "^$first_element";
+      elseif (preg_match('/(dev-.*)/', $first_element))
+        $composer_obj->require->{$matches[1]} = $first_element;
+
+      file_put_contents(COMPOSER_JSON['path'], json_encode($composer_obj, JSON_UNESCAPED_SLASHES | JSON_PRETTY_PRINT));
+      unset($errors['COMPOSER-UPDATE']);
+    }
+  }
+  //}
+  
+  //     while() { $errors['COMPOSER-UPDATE'] } // loop for 5 attempts to fix a problem 
+  
+  if (!is_file('composer.lock')) {
+    /**
+      Optimization
+    **/
+
+    // composer clear-cache
+  
+
+    putenv('COMPOSER_HOME='); // TESTING
+  
+    (APP_SELF !== APP_PATH_SERVER) and $socketInstance = Sockets::getInstance();
+    //$socketInstance->handleClientRequest("composer self-update\n");
+    if (!isset($_SERVER['SOCKET']) || !is_resource($_SERVER['SOCKET']) || empty($_SERVER['SOCKET'])) {
+      $proc = proc_open((stripos(PHP_OS, 'WIN') === 0 ? '' : APP_SUDO) . COMPOSER_EXEC['bin'] . ' install -o', [["pipe", "r"], ["pipe", "w"], ["pipe", "w"]], $pipes);
+
+      [$stdout, $stderr, $exitCode] = [stream_get_contents($pipes[1]), stream_get_contents($pipes[2]), proc_close($proc)];
+
+      if ($exitCode !== 0) {
+        if (empty($stdout)) {
+          if (!empty($stderr)) {
+            $errors['COMPOSER-INSTALL'] = $stderr;
+            error_log($stderr);
+          }
+        } else {
+          $errors['COMPOSER-INSTALL'] = $stdout;
+        }
+      }
+
+    } else {
+      $errors['server-1'] = "Connected to Server: " . SERVER_HOST . ':' . SERVER_PORT . "\n";
+
+      // Send a message to the server
+      $errors['server-2'] = 'Client request: ' . $message = 'cmd: ' . COMPOSER_EXEC['bin'] . " install -o\n";
+      /* Known socket  Error / Bug is mis-handled and An established connection was aborted by the software in your host machine */
+      fwrite($_SERVER['SOCKET'], $message);
+      $output[] = trim($message) . ': ';
+      // Read response from the server
+      while (!feof($_SERVER['SOCKET'])) {
+        $response = fgets($_SERVER['SOCKET'], 1024);
+        $errors['server-3'] = "Server responce: $response\n";
+        if (isset($output[end($output)]))
+          $output[end($output)] .= $response = trim($response);
+        //if (!empty($response)) break;
+      }
+      // Close and reopen socket
+      fclose($socketInstance->getSocket());
+    }
+
+
+
+    /*
+        //$proc = proc_open((stripos(PHP_OS, 'WIN') === 0 ? '' : APP_SUDO) . COMPOSER_EXEC['bin'] . ' install -o', array( array("pipe","r"), array("pipe","w"), array("pipe","w")), $pipes);
+
+        [$stdout, $stderr, $exitCode] = [stream_get_contents($pipes[1]), stream_get_contents($pipes[2]), proc_close($proc)];
+
+        if ($exitCode !== 0)
+          if (empty($stdout)) {
+            if (!empty($stderr))
+              $errors['COMPOSER-INSTALL'] = $stderr;
+          } else $errors['COMPOSER-INSTALL'] = $stdout;
+    */
+    //else $debug['COMPOSER-INSTALL'] = '$stdout=' $stdout . "\n".  '$stderr = ' . $stderr;
+  
+    //exec((stripos(PHP_OS, 'WIN') === 0 ? '' : APP_SUDO) . COMPOSER_EXEC['bin'] . ' install -o', $output, $returnCode) or $errors['COMPOSER-INSTALL'] = $output;
+  
+  }
+
+  // https://getcomposer.org/doc/03-cli.md
 //  $proc = proc_open((stripos(PHP_OS, 'WIN') === 0 ? '' : APP_SUDO) . COMPOSER_EXEC['bin'] . ' validate --no-check-all --no-check-publish --no-check-version --strict', array( array("pipe","r"), array("pipe","w"), array("pipe","w")), $pipes); // $output = shell_exec("cd " . escapeshellarg(dirname(COMPOSER_JSON['path'])) . " && " . APP_SUDO . COMPOSER_EXEC . ' validate --no-check-all --no-check-publish --no-check-version');  dd($output);
-    
-    //  "./composer.json" does not match the expected JSON schema:  
-    //  - NULL value found, but an object is required
-    
-    // poss. err './composer.json is valid but your composer.lock has some errors'   checks composer.lock
+  
+  //  "./composer.json" does not match the expected JSON schema:  
+  //  - NULL value found, but an object is required
+  
+  // poss. err './composer.json is valid but your composer.lock has some errors'   checks composer.lock
 /*
   [$stdout, $stderr, $exitCode] = [stream_get_contents($pipes[1]), stream_get_contents($pipes[2]), proc_close($proc)];
 
@@ -1310,55 +1315,55 @@ fclose($pipes[2]);
 */
 
 
-    //if (strpos($output, 'No errors or warnings detected') !== false)
+  //if (strpos($output, 'No errors or warnings detected') !== false)
 //Deprecated:  strpos(): Passing null to parameter #1 ($haystack) of type string is deprecated
-    
-    defined('COMPOSER_JSON')
-      and define('COMPOSER', ['json' => json_decode(file_get_contents($path = COMPOSER_JSON['path'])), 'path' => $path]);
+  
+  defined('COMPOSER_JSON')
+    and define('COMPOSER', ['json' => json_decode(file_get_contents($path = COMPOSER_JSON['path'])), 'path' => $path]);
 
-    if (isset(COMPOSER['json']->{'require'}) && !empty(COMPOSER['json']->{'require'}))
-      foreach (COMPOSER['json']->require as $key => $value) {
-        switch ($key) {
-          case 'php':
-            continue 2;
-          default:
-            if (isset(COMPOSER['json']->require->{'composer/composer'}) && $value === COMPOSER['json']->require->{'composer/composer'}) {
-              //echo "The key is: $key";
+  if (isset(COMPOSER['json']->{'require'}) && !empty(COMPOSER['json']->{'require'}))
+    foreach (COMPOSER['json']->require as $key => $value) {
+      switch ($key) {
+        case 'php':
+          continue 2;
+        default:
+          if (isset(COMPOSER['json']->require->{'composer/composer'}) && $value === COMPOSER['json']->require->{'composer/composer'}) {
+            //echo "The key is: $key";
+            defined('VENDOR_JSON')
+              or define('VENDOR_JSON', ['json' => (is_file(APP_PATH . APP_ROOT . APP_BASE['vendor'] . $key . '/composer.json') ? file_get_contents(APP_PATH . APP_ROOT . APP_BASE['vendor'] . $key . '/composer.json') : '{}'), 'path' => APP_PATH . APP_ROOT . APP_BASE['vendor'] . $key . '/composer.json']);
+
+            if (realpath(VENDOR_JSON['path']))
               defined('VENDOR_JSON')
-                or define('VENDOR_JSON', ['json' => (is_file(APP_PATH . APP_ROOT . APP_BASE['vendor'] . $key . '/composer.json') ? file_get_contents(APP_PATH . APP_ROOT . APP_BASE['vendor'] . $key . '/composer.json') : '{}'), 'path' => APP_PATH . APP_ROOT . APP_BASE['vendor'] . $key . '/composer.json']);
-
-              if (realpath(VENDOR_JSON['path']))
-                defined('VENDOR_JSON')
-                  and define('VENDOR', json_decode(file_get_contents(VENDOR_JSON['path'])));
-              break 2;
-            } else {
-              defined('VENDOR_JSON') or define('VENDOR_JSON', ['json' => '{}', 'path' => '']);
-            }
-            break;
-        }
+                and define('VENDOR', json_decode(file_get_contents(VENDOR_JSON['path'])));
+            break 2;
+          } else {
+            defined('VENDOR_JSON') or define('VENDOR_JSON', ['json' => '{}', 'path' => '']);
+          }
+          break;
       }
-
-    //dd(COMPOSER['json']->{'require'}->{'php'}); 
-    
-    if (!defined('VENDOR_JSON') && isset(COMPOSER['json']->{'require'}->{'composer'})) {
-      define('VENDOR_JSON', [
-        'json' => (is_file(APP_PATH . APP_ROOT . APP_BASE['vendor'] . 'composer/composer.json') ? file_get_contents(APP_PATH . APP_ROOT . APP_BASE['vendor'] . 'composer/composer.json') : '{}'),
-        'path' => APP_PATH . APP_ROOT . APP_BASE['vendor'] . 'composer/composer.json'
-      ]);
     }
 
-    //dd(VENDOR_JSON['path']);
-    
-    //else $errors['COMPOSER-VALIDATE'] = $output;
-    
-    //dd(get_defined_constants(true)['user']);
+  //dd(COMPOSER['json']->{'require'}->{'php'}); 
+  
+  if (!defined('VENDOR_JSON') && isset(COMPOSER['json']->{'require'}->{'composer'}))
+    define('VENDOR_JSON', [
+      'json' => (is_file(APP_PATH . APP_ROOT . APP_BASE['vendor'] . 'composer/composer.json') ? file_get_contents(APP_PATH . APP_ROOT . APP_BASE['vendor'] . 'composer/composer.json') : '{}'),
+      'path' => APP_PATH . APP_ROOT . APP_BASE['vendor'] . 'composer/composer.json'
+    ]);
+
+
+  //dd(VENDOR_JSON['path']);
+  
+  //else $errors['COMPOSER-VALIDATE'] = $output;
+  
+  //dd(get_defined_constants(true)['user']);
 //dd(COMPOSER_EXEC . '  ' . COMPOSER_VERSION);
-    
+  
 
-    if (basename(dirname(APP_SELF)) == __DIR__ . DIRECTORY_SEPARATOR . 'public') {
-      if ($path = realpath((basename(__DIR__) != 'config' ? NULL : __DIR__ . DIRECTORY_SEPARATOR) . 'ui.composer.php')) {
-        $app['html'] = require_once $path;
-      }
+  if (basename(dirname(APP_SELF)) == __DIR__ . DIRECTORY_SEPARATOR . 'public') {
+    if ($path = realpath((basename(__DIR__) != 'config' ? NULL : __DIR__ . DIRECTORY_SEPARATOR) . 'ui.composer.php')) {
+      $app['html'] = require_once $path;
     }
+  }
 
-    unset($output);
+  unset($output);

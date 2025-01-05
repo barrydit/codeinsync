@@ -1,7 +1,11 @@
 <?php
 
 // Define APP_PATH constant
-!defined('APP_PATH') and define('APP_PATH', __DIR__ . DIRECTORY_SEPARATOR) and is_string(APP_PATH) ? '' : $errors['APP_PATH'] = 'APP_PATH is not a valid string value.';
+!defined('APP_PATH')
+  and define('APP_PATH', __DIR__ . DIRECTORY_SEPARATOR)
+    and is_string(APP_PATH) 
+    ? ''
+    : $errors['APP_PATH'] = 'APP_PATH is not a valid string value.' . "\n";
 
 /*
 !defined('DOMAIN_EXPR') and 

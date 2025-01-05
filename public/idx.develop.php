@@ -385,9 +385,9 @@ else
   <style type="text/tailwindcss">
     * {
 <?php if (isset($_GET['debug'])) { ?>
-          border: 1px dashed #FF0000;
+            border: 1px dashed #FF0000;
 <?php } else { ?> 
-          /* border: 1px dashed #FF0000; */
+            /* border: 1px dashed #FF0000; */
 <?php } ?>
       }
       body {
@@ -691,7 +691,8 @@ else
                     <option value="">---</option>
                     <?php foreach ($dirs as $dir) { ?>
                       <option <?= (isset($_GET['domain']) && $_GET['domain'] == basename($dir) ? 'selected' : '') ?>>
-                        <?= basename($dir); ?></option>
+                        <?= basename($dir); ?>
+                      </option>
                     <?php } ?>
                   </select>/
 
@@ -870,16 +871,16 @@ else
 
 
       <?php /*
-   <div id="app_project-container" style="display: none; position: absolute; top: 80px; padding: 20px; margin-left: auto; margin-right: auto; left: 0; right: 0; width: 700px; z-index: 2;">
-     <div style="margin: -25px 0 20px 0;">
-       <div style="display: inline; float: right; text-align: center;">[<a style="cursor: pointer; font-size: 13px;" onclick="document.getElementById('app_project-container').style.display='none';">X</a>]</div>
-     </div>
-     <form style="background-color: #ddd; padding: 20px;">
-       <h3>Psr/Log</h3>
-       <label><input type="checkbox" checked> Add to Project.</label>
-       <button type="submit" style="float: right;">Save</button>
-       <iframe src="<?= APP_URL ?>?project=show" style="height: 300px; width: 600px;"></iframe>
- </form>
+<div id="app_project-container" style="display: none; position: absolute; top: 80px; padding: 20px; margin-left: auto; margin-right: auto; left: 0; right: 0; width: 700px; z-index: 2;">
+<div style="margin: -25px 0 20px 0;">
+  <div style="display: inline; float: right; text-align: center;">[<a style="cursor: pointer; font-size: 13px;" onclick="document.getElementById('app_project-container').style.display='none';">X</a>]</div>
+</div>
+<form style="background-color: #ddd; padding: 20px;">
+  <h3>Psr/Log</h3>
+  <label><input type="checkbox" checked> Add to Project.</label>
+  <button type="submit" style="float: right;">Save</button>
+  <iframe src="<?= APP_URL ?>?project=show" style="height: 300px; width: 600px;"></iframe>
+</form>
 </div>
 */ ?>
       <div style="position: relative;">
@@ -893,8 +894,8 @@ else
             </div>
             <div style="display: inline; float: right; text-align: center; ">
               <code style=" background-color: white; color: #0078D7;">
-            <a style="cursor: pointer; font-size: 13px;" onclick="document.getElementById('app_client-container').style.display='none';">[X]</a>
-            </code>
+              <a style="cursor: pointer; font-size: 13px;" onclick="document.getElementById('app_client-container').style.display='none';">[X]</a>
+              </code>
             </div>
             <div style="margin: 0 10px;">
               <div style="display: inline-block; float: left; width: 49%;">
@@ -1502,7 +1503,7 @@ else
     define('testace', ['ace/ace'], function (ace) {
       //console.log(langtools);
 
-      <?= UI_ACE_EDITOR['script']; ?>
+      <?= defined('UI_ACE_EDITOR') ? UI_ACE_EDITOR['script'] : null; ?>
       //require(["resources/js/requirejs/require-2.3.6!ace/ace"], function(e){
       //editor.setValue(e);
       //})

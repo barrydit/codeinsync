@@ -8,19 +8,16 @@ function downloadFile(string $url, string $path, string $filename, array &$error
   curl_close($handle);
 
   if (!empty($content)) {
-    if (!file_put_contents("{$path}{$filename}", $content)) {
+    if (!file_put_contents("{$path}{$filename}", $content))
       $errors['JS-LIBRARY'] = "$url could not be written to {$path}{$filename}.";
-    }
-  } else {
+  } else
     $errors['JS-LIBRARY'] = "$url returned empty content.";
-  }
 }
 
 function shouldUpdateFile(string $filepath, int $expiryDays = 5): bool
 {
-  if (!is_file($filepath)) {
+  if (!is_file($filepath))
     return true; // File doesn't exist; needs to be downloaded.
-  }
 
   $fileModifiedTime = filemtime($filepath);
   $expiryTime = strtotime("+{$expiryDays} days", $fileModifiedTime);
@@ -174,7 +171,9 @@ function array_merge_recursive_distinct(array &$array1, array &$array2)
   $merged = $array1;
 
   foreach ($array2 as $key => &$value) {
-    $merged[$key] = (is_array($value) && isset($merged[$key]) && is_array($merged[$key])) ? array_merge_recursive_distinct($merged[$key], $value) : $value;
+    $merged[$key] = (is_array($value) && isset($merged[$key]) && is_array($merged[$key]))
+      ? array_merge_recursive_distinct($merged[$key], $value)
+      : $value;
   }
 
   return $merged;
@@ -191,7 +190,9 @@ function array_intersect_key_recursive(array $array1, array $array2)
   $result = [];
   foreach ($array1 as $key => $value) {
     if (array_key_exists($key, $array2)) {
-      $result[$key] = (is_array($value) && is_array($array2[$key])) ? array_intersect_key_recursive($value, $array2[$key]) : $value;
+      $result[$key] = (is_array($value) && is_array($array2[$key]))
+        ? array_intersect_key_recursive($value, $array2[$key])
+        : $value;
     }
   }
   return $result;
@@ -292,14 +293,18 @@ class Shutdown
 
     // Parse the .env file content
     $parsedEnv = parse_ini_string($envContent, true);
+
+    if ($parsedEnv === false) {
+      // Log an error message if the .env file is invalid
+      error_log("Error parsing the .env file at $filePath.");
+      die('Error parsing the .env ' . var_dump($parsedEnv));
+      return;
+    }
+
     $parsedEnv = self::processParsedEnv($parsedEnv);
 
     // Generate and save the backup content
     $backupContent = self::buildEnvContent($parsedEnv);
-
-
-    die(var_dump($backupContent));
-
 
     file_put_contents("$filePath.bck", $backupContent);
   }
@@ -710,7 +715,7 @@ function dd(mixed $param = null, bool $die = true, bool $debug = true): void
     ? '<pre><code>' . htmlspecialchars($dump) . '</code></pre>' . $output
     : $dump . PHP_EOL . $output;
 
-  if ($die) {
+  if ($die)
     // Graceful shutdown with error handling
     try {
       Shutdown::setEnabled(false)
@@ -719,8 +724,7 @@ function dd(mixed $param = null, bool $die = true, bool $debug = true): void
     } catch (Throwable $e) {
       echo "Error handling shutdown: ", $e->getMessage();
       echo $formattedOutput;
-    }
-  } else {
+    } else {
     // Immediate output
     echo $formattedOutput;
     if ($debug) {
@@ -1213,6 +1217,4 @@ function getElementsByClass(&$parentNode, $tagName, $className)
   return $nodes;
 }
 
-require_once __DIR__ . DIRECTORY_SEPARATOR . 'php.php';
-
-//require_once __DIR__ . DIRECTORY_SEPARATOR . 'constants.php';
+require_once __DIR__ . DIRECTORY_SEPARATOR . 'php.php'; // 'constants.php';

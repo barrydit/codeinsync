@@ -82,7 +82,8 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 
 if (preg_match('/^app\.([\w\-.]+)\.php$/', basename(__FILE__), $matches))
   ${$matches[1]} = $matches[1];
-
+if (false) { ?>
+  <style><?php }
 ob_start(); ?>
 /* Styles for the absolute div */
 #app_whiteboard-container {
@@ -102,6 +103,8 @@ z-index : 1;
 }
 <?php $app[$whiteboard]['style'] = ob_get_contents();
 ob_end_clean();
+
+if (false) { ?></style><?php }
 
 ob_start(); ?>
 
@@ -130,8 +133,7 @@ ob_start(); ?>
 ob_end_clean();
 
 if (false) { ?>
-  <script type="text/javascript">
-  <?php }
+  <script type="text/javascript"><?php }
 
 ob_start(); ?>
 
