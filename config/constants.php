@@ -15,8 +15,6 @@ $user = ''; // www-data
 $password = ''; // password
 $use_sudo = $_ENV['SHELL']['SUDO'] ?? true;
 
-//dd('hello world');
-
 // Define APP_SUDO constant based on OS
 if (!defined('APP_SUDO')) {
   if (stripos(PHP_OS, 'WIN') === 0) {
@@ -74,7 +72,6 @@ const APP_NAME = 'Dashboard';
 !is_string(APP_NAME)
   and $errors['APP_NAME'] = 'APP_NAME is not a string => ' . var_export(APP_NAME, true); // print('Name: ' . APP_NAME  . ' v' . APP_VERSION . "\n");
 
-
 define('APP_DASHBOARD', sprintf(<<<EOL
 %s
       ______   _______  _______           ______   _______  _______  _______  ______  
@@ -98,8 +95,6 @@ define('SOCKET_INFO', sprintf(<<<EOD
 %s
 EOD, 'test'));
 */
-
-
 
 // Check if the request is using HTTPS
 if (isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] == 'on') { // $_SERVER['REQUEST_SCHEME']   
@@ -166,7 +161,7 @@ switch (basename(__DIR__)) {
       $errors['WHOIS'] = "WHOIS is disabled on localhost.\n";
 
     // Define base paths
-    $base_paths = [ // https://stackoverflow.com/questions/8037266/get-the-url-of-a-file-included-by-php
+    $_ENV['APP_BASE'] = json_encode($base_paths = [ // https://stackoverflow.com/questions/8037266/get-the-url-of-a-file-included-by-php
       'config',
       'clientele',
       // 'database',
@@ -180,7 +175,7 @@ switch (basename(__DIR__)) {
       // 'tmp' => 'var' . DIRECTORY_SEPARATOR . 'tmp' . DIRECTORY_SEPARATOR,
       // 'export' =>  'var' . DIRECTORY_SEPARATOR . 'export' . DIRECTORY_SEPARATOR,
       // 'session' => 'var' . DIRECTORY_SEPARATOR . 'session' . DIRECTORY_SEPARATOR,
-    ];
+    ]/*+['docs' => 'public' . DIRECTORY_SEPARATOR . 'docs' . DIRECTORY_SEPARATOR, 'policies' => 'public' . DIRECTORY_SEPARATOR . 'policies' . DIRECTORY_SEPARATOR]*/);
 
     // Determine the base path for glob
     $basePath = defined('APP_PATH') ? APP_PATH : __DIR__ . DIRECTORY_SEPARATOR;
@@ -200,7 +195,6 @@ switch (basename(__DIR__)) {
     $missingPaths = array_diff($dirpaths, $common);
     if (!empty($missingPaths))
       $errors['MISSING_PATHS'] = 'Directories not added to the base paths: ' . implode(', ', $missingPaths) . "\n";
-
 
     $errors['BASE_PATHS'] = json_encode($base_paths) . "\n"; // 'Directories were added to the base paths: ' . implode(', ', $base_paths) . "\n";
 
@@ -524,7 +518,7 @@ switch(get_included_files()[0]) {
   break;
 }
 */
-//die('hello world');
+
 //if (basename(get_included_files()[0]) == 'jquery.tinymce-config.js.php') {
 //exit;
 //} else if (basename($_SERVER["SCRIPT_FILENAME"]) !== 'index.php') {

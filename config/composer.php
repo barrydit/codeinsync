@@ -307,7 +307,7 @@ $user = getenv('USERNAME') ?? getenv('APACHE_RUN_USER') ?? getenv('USER') ?? '';
 $composerHome = (stripos(PHP_OS, 'WIN') === 0) ? "C:/Users/$user/AppData/Roaming/Composer/" : ($user === 'root' ? '/root/.composer/' : '/var/www/.composer/');
 
 if (!realpath($composerHome) && @!mkdir($composerHome, 0755, true)) {
-  $errors['COMPOSER_HOME'] = "$composerHome does not exist. Path: $composerHome";
+  $errors['COMPOSER_HOME'] = "$composerHome does not exist. Path: $composerHome\n";
 }
 define('COMPOSER_HOME', $composerHome);
 
@@ -625,19 +625,24 @@ defined('COMPOSER_JSON') or define('COMPOSER_JSON', [
   'path' => APP_PATH . APP_ROOT . 'composer.json'
 ]);
 
-ob_start(); ?>
-  <?= $composer_exec; ?> init --quiet --no-interaction
-  --working-dir="<?= APP_PATH . APP_ROOT; ?>"
-  --name="<?= $composerUser . '/' . str_replace('.', '_', basename(APP_ROOT) ?? $componetPkg); ?>"
-  --description="General Description"
-  --author="Barry Dick &lt;barryd.it@gmail.com&gt;"
-  --type="project"
-  --homepage="https://github.com/<?= $composerUser . '/' . str_replace('.', '_', basename(APP_ROOT) ?? $componetPkg); ?>"
-  --require="php:^7.4||^8.0"
-  --require="composer/composer:^1.0"
-  --require-dev="pds/skeleton:^1.0"
-  --stability="dev"
-  --license="WTFPL"
+ob_start();
+if (false) { ?>
+    <noscript><?php } ?>
+    <?= $composer_exec; ?> init --quiet --no-interaction
+    --working-dir="<?= APP_PATH . APP_ROOT; ?>"
+    --name="<?= $composerUser . '/' . str_replace('.', '_', basename(APP_ROOT) ?? $componetPkg); ?>"
+    --description="General Description"
+    --author="Barry Dick &lt;barryd.it@gmail.com&gt;"
+    --type="project"
+    --homepage="https://github.com/<?= $composerUser . '/' . str_replace('.', '_', basename(APP_ROOT) ?? $componetPkg); ?>"
+    --require="php:^7.4||^8.0"
+    --require="composer/composer:^1.0"
+    --require-dev="pds/skeleton:^1.0"
+    --stability="dev"
+    --license="WTFPL"
+    <?php if (false) { ?>
+    </noscript><?php } ?>
+
   <?php
   defined('COMPOSER_INIT_PARAMS')
     or define('COMPOSER_INIT_PARAMS', /*<<<TEXT TEXT*/ trim(ob_get_contents()));
@@ -1360,6 +1365,30 @@ fclose($pipes[2]);
 //dd(COMPOSER_EXEC . '  ' . COMPOSER_VERSION);
   
 
+  if (isset($_SERVER['REQUEST_METHOD']) && $_SERVER['REQUEST_METHOD'] == 'POST')
+    if (isset($_POST['cmd']) && $_POST['cmd'] != '')
+      if (preg_match('/^composer\s+(:?(.*))/i', $_POST['cmd'], $match)) {
+
+        if (!isset($_SERVER['SOCKET']) || !$_SERVER['SOCKET']) {
+
+          //$output[] = dd(COMPOSER_EXEC);
+          //$output[] = APP_SUDO . COMPOSER_EXEC['bin'] . ' ' . $match[1];
+          $proc = proc_open(
+            (stripos(PHP_OS, 'WIN') === 0 ? '' : APP_SUDO) . COMPOSER_EXEC['bin'] . ' ' . $match[1] . ' --working-dir="' . APP_PATH . APP_ROOT . '"',
+            [
+              ["pipe", "r"],
+              ["pipe", "w"],
+              ["pipe", "w"]
+            ],
+            $pipes
+          );
+          [$stdout, $stderr, $exitCode] = [stream_get_contents($pipes[1]), stream_get_contents($pipes[2]), proc_close($proc)];
+          $output[] = !isset($stdout) ? NULL : $stdout . (isset($stderr) && $stderr === '' ? NULL : " Error: $stderr") . (!isset($exitCode) && $exitCode == 0 ? NULL : " Exit Code: $exitCode");
+          //$output[] = $_POST['cmd'];        
+          //exec($_POST['cmd'], $output);
+          //die(var_dump($output));
+        }
+      }
   if (basename(dirname(APP_SELF)) == __DIR__ . DIRECTORY_SEPARATOR . 'public') {
     if ($path = realpath((basename(__DIR__) != 'config' ? NULL : __DIR__ . DIRECTORY_SEPARATOR) . 'ui.composer.php')) {
       $app['html'] = require_once $path;

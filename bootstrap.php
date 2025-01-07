@@ -336,10 +336,12 @@ function sendAuthPrompt(): void
 {
   header('WWW-Authenticate: Basic realm="Dashboard"');
   header('HTTP/1.0 401 Unauthorized');
-  exit(<<<END
 
+  $auth_require = <<<END
 <div style="position: absolute; left: 50%; right: 50%; width: 200px; border: 1px solid #ffb;">Authentication Required</div>
-END);
+END;
+
+  exit($auth_require);
 }
 
 
