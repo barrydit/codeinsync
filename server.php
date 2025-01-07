@@ -465,11 +465,11 @@ function clientInputHandler($input)
 
     require_once APP_PATH . APP_BASE['config'] . 'git.php';
 
-    $parsedUrl = parse_url($_ENV['GITHUB']['ORIGIN_URL']);
+    $parsedUrl = parse_url($_ENV['GIT']['ORIGIN_URL']);
 
     //$output[] = $command = $_POST['cmd'] . ' --git-dir="' . APP_PATH . APP_ROOT . '.git" --work-tree="' . APP_PATH . APP_ROOT . '" https://' . $_ENV['GITHUB']['OAUTH_TOKEN'] . '@' . $parsedUrl['host'] . $parsedUrl['path'] . '.git';
 
-    $output = 'www-data@localhost:' . getcwd() . '# ' . $command = ((stripos(PHP_OS, 'WIN') === 0) ? '' : APP_SUDO . '-u www-data ') . (defined('GIT_EXEC') ? GIT_EXEC : 'git') . ' ' . trim($gitMatches[1]) . ' https://' . $_ENV['GITHUB']['OAUTH_TOKEN'] . '@' . $parsedUrl['host'] . $parsedUrl['path'] . '123.git';
+    $output = 'www-data@localhost:' . getcwd() . '# ' . $command = ((stripos(PHP_OS, 'WIN') === 0) ? '' : APP_SUDO . '-u www-data ') . (defined('GIT_EXEC') ? GIT_EXEC : 'git') . ' ' . trim($gitMatches[1]) . ' https://' . $_ENV['GITHUB']['OAUTH_TOKEN'] . '@' . $parsedUrl['host'] . $parsedUrl['path'] . '.git';
 
     // (is_dir($path = APP_PATH . APP_ROOT . '.git') || APP_PATH . APP_ROOT != APP_PATH ? ' --git-dir="' . $path . '" --work-tree="' . dirname($path) . '"': '' ) 
 
@@ -501,7 +501,7 @@ function clientInputHandler($input)
       //$output = '';
 
       if (!empty($stdout)) {
-        $output .= $stdout;
+        $output .= "\n$stdout";
       }
 
       if (!empty($stderr)) {
@@ -560,7 +560,7 @@ function clientInputHandler($input)
     global $manager;
 
     // Append notification output to the response
-    $output .= "\n" . $manager->getNotificationsOutput();
+    $output .= "\n{$manager->getNotificationsOutput()}";
   }
   /*
       if ($cmd = $matches[1] ?? NULL) {
@@ -832,7 +832,7 @@ if (PHP_SAPI === 'cli')
         try {
 
           $data = "hello\n"; // Include termination sequence if needed
-          dd($bytesWritten = socket_write($client, $data), false);
+          $bytesWritten = socket_write($client, $data); // dd(, false);
 
           if ($bytesWritten === false) {
             echo "Failed to write to socket: " . socket_strerror(socket_last_error($client));

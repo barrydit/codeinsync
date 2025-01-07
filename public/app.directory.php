@@ -1178,7 +1178,8 @@ $tableGen = function (): string {
 
 if (isset($_SERVER['REQUEST_METHOD']) && $_SERVER['REQUEST_METHOD'] == 'POST') {
 
-  //if (isset($_POST['cmd']) && $_POST['cmd'] != '') require_once 'app.console.php';
+  //if (isset($_POST['cmd']) && $_POST['cmd'] != '')
+  // require_once 'app.console.php';
 
   if (isset($_GET['app']) && $_GET['app'] == 'ace_editor') {
     require_once 'ui.ace_editor.php';
@@ -1316,6 +1317,7 @@ if (isset($_SERVER['REQUEST_METHOD']) && $_SERVER['REQUEST_METHOD'] == 'POST') {
     }
     $output = [];
     //echo $buffer;
+    unset($match);
     require_once 'app.console.php';
   }
   Shutdown::setEnabled(true)->setShutdownMessage(function () { })->shutdown();

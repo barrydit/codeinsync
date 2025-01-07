@@ -186,7 +186,7 @@ class Shutdown
 
   private function __construct()
   {
-    error_log("EnvManager initialized.");
+    error_log("Shutdown constructor called.");
     defined('APP_END') or define('APP_END', microtime(true));
     $this->initializeEnv();
   }
@@ -252,26 +252,65 @@ class Shutdown
     $globalEnv = self::parseIniFileWithSections($globalPath);
     $clientEnv = self::parseIniFileWithSections($clientPath);
 
+    // Separate root (non-section) keys and sections
     $globalRoot = array_filter($globalEnv, 'is_scalar');
     $clientRoot = array_filter($clientEnv, 'is_scalar');
     $globalSections = array_filter($globalEnv, 'is_array');
     $clientSections = array_filter($clientEnv, 'is_array');
 
+    // Start with the global root keys
     $mergedEnv = $globalRoot;
 
+    // Merge sections
     foreach ($clientSections as $section => $values) {
-      $mergedEnv[$section] = $globalSections[$section] ?? $values;
+      if (isset($globalSections[$section])) {
+        // Merge global and client section values
+        $mergedEnv[$section] = array_merge($globalSections[$section], $values);
+      } else {
+        // Add client section if it doesn't exist in global
+        $mergedEnv[$section] = $values;
+      }
     }
 
+    // Add remaining global sections that are not in the client
     foreach ($globalSections as $section => $values) {
       if (!isset($clientSections[$section])) {
         $mergedEnv[$section] = $values;
       }
     }
 
+    // Merge client root keys (client root keys overwrite global)
+    $mergedEnv = array_merge($mergedEnv, $clientRoot);
+
     return $mergedEnv;
   }
 
+  /*
+    public static function loadEnvFiles(string $globalPath, string $clientPath): array
+    {
+      $globalEnv = self::parseIniFileWithSections($globalPath);
+      $clientEnv = self::parseIniFileWithSections($clientPath);
+
+      $globalRoot = array_filter($globalEnv, 'is_scalar');
+      $clientRoot = array_filter($clientEnv, 'is_scalar');
+      $globalSections = array_filter($globalEnv, 'is_array');
+      $clientSections = array_filter($clientEnv, 'is_array');
+
+      $mergedEnv = $globalRoot;
+
+      foreach ($clientSections as $section => $values) {
+        $mergedEnv[$section] = $globalSections[$section] ?? $values;
+      }
+
+      foreach ($globalSections as $section => $values) {
+        if (!isset($clientSections[$section])) {
+          $mergedEnv[$section] = $values;
+        }
+      }
+
+      return $mergedEnv;
+    }
+  */
   private function initializeEnv(): void
   {
     $globalPath = APP_PATH . '.env';
@@ -338,47 +377,39 @@ class Shutdown
     }
     return (string) $value;
   }
-}
 
-
-/**
- * Summary of handleError
- * @param mixed $errno
- * @param mixed $errstr
- * @param mixed $errfile
- * @param mixed $errline
- * @return bool
- */
-
-/*
+  /**
+   * Summary of handleError
+   * @param mixed $errno
+   * @param mixed $errstr
+   * @param mixed $errfile
+   * @param mixed $errline
+   * @return bool
+   */
   public static function handleError($errno, $errstr, $errfile, $errline)
   {
     //echo 'Does this work? handleError()';
     self::triggerShutdown("Error: [$errno] $errstr - $errfile:$errline");
     return true; // To prevent PHP's internal error handler from running
   }
-*/
-/**
- * Summary of handleException
- * @param mixed $exception
- * @return void
- */
 
-/*
-
+  /**
+   * Summary of handleException
+   * @param mixed $exception
+   * @return void
+   */
   public static function handleException($exception)
   {
     //echo "Does this work? handleException()";
     $message = "Exception: " . $exception->getMessage() . " in " . $exception->getFile() . " on line " . $exception->getLine();
     self::triggerShutdown($message);
   }
-*/
-/**
- * Summary of handleParseError
- * @return void
- */
 
-/*
+  /**
+   * Summary of handleParseError
+   * @return void
+   */
+
   public static function handleParseError()
   {
     $error = error_get_last();
@@ -389,15 +420,14 @@ class Shutdown
     }
 
   }
-*/
-
+}
 
 // Register custom error and exception handlers
-//set_error_handler([Shutdown::class, 'handleError']);
-//set_exception_handler([Shutdown::class, 'handleException']);
-//register_shutdown_function(function () {
-//  Shutdown::handleParseError();
-//});
+set_error_handler([Shutdown::class, 'handleError']);
+set_exception_handler([Shutdown::class, 'handleException']);
+register_shutdown_function(function () {
+  Shutdown::handleParseError();
+});
 
 
 /**
