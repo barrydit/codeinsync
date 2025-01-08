@@ -8,6 +8,8 @@ require_once 'config/php.php';
 
 !defined('PID_FILE') and define('PID_FILE', /*getcwd() .*/ APP_PATH . 'server.pid');
 
+file_put_contents(PID_FILE, $pid = getmypid());
+
 ini_set('error_log', APP_PATH . 'server.log');
 ini_set('log_errors', 'true');
 
@@ -34,9 +36,7 @@ if (file_exists(PID_FILE) && $pid = (int) file_get_contents(PID_FILE)) {
 } else if (isset($_SERVER['SUPERVISOR_ENABLED']) && $_SERVER['SUPERVISOR_ENABLED'] == '1') {
   file_put_contents(PID_FILE, $pid = getmypid());
   exit(1);
-}
-file_put_contents(PID_FILE, $pid = getmypid());
-*/
+}*/
 
 //!file_exists($file = posix_getpwuid(posix_getuid())['dir'].'/.aws/credentials')
 //  and die('an aws credentials file is required. exiting file=' . $file);
@@ -205,7 +205,7 @@ set_time_limit(0);
 
 //dd(get_defined_constants()); // get_required_files()
 defined('SERVER_HOST') or define('SERVER_HOST', defined('APP_HOST') ? APP_HOST : '0.0.0.0');
-defined('SERVER_PORT') or define('SERVER_PORT', '8080'); // 9000
+defined('SERVER_PORT') or define('SERVER_PORT', 8080); // 9000
 
 !empty($parsed_args = parseargs())
   and print ("Argv(s): " . var_export($parsed_args, true) . "\n");
@@ -768,6 +768,16 @@ if (PHP_SAPI === 'cli')
         static $previous_count = 0;
         if (time() - $lastExecutionTime >= $interval) {
           touch(__FILE__);
+
+          if (strpos($fileContents = file_get_contents($filePath = __FILE__), "#!/usr/bin/env php\r") === 0) {
+            // Replace Windows-style line ending (\r\n) with Unix-style (\n)
+            $fileContents = preg_replace("/^#!\/usr\/bin\/env php[\r\n]*/", "#!/usr/bin/env php\n", $fileContents);
+
+            // Save the fixed content back to the file
+            file_put_contents($filePath, $fileContents);
+
+            echo "Line ending fixed for $filePath.\n";
+          }
           // Execute the scheduled task
           checkFileModification();
 

@@ -557,9 +557,7 @@ $tableGen = function (): string {
           (($status == 100) ? "Working" :
             (($status == 200) ? "Planning" :
               (($status == 300) ? "Previous" :
-                (($status == 400) ? "Future" : "Unknown"))));
-
-        ?>
+                (($status == 400) ? "Future" : "Unknown")))); ?>
         <h3>&#9660; Stage: <?= $status ?> (<?= $statusCode ?>)</h3>
         <table width="" style="border: none;">
           <tr style=" border: none;">
@@ -610,8 +608,30 @@ $tableGen = function (): string {
 
     // >>>
 
-    $path = defined('APP_ROOT') && APP_ROOT ? APP_PATH . APP_ROOT : (APP_ROOT == '' ? APP_PATH . (isset($_GET['client']) || isset($_GET['domain']) ? 'clientele' . DIRECTORY_SEPARATOR . (isset($_GET['client']) ? $_GET['client'] . DIRECTORY_SEPARATOR : '') . (isset($_GET['domain']) ? $_GET['domain'] . DIRECTORY_SEPARATOR : '') : (isset($_GET['path']) ? '' : 'vendor' . DIRECTORY_SEPARATOR . (isset($_GET['client']) ? $_GET['client'] . DIRECTORY_SEPARATOR : ''))) : APP_PATH . APP_ROOT);
+    //    $path = defined('APP_ROOT') && APP_ROOT ? APP_PATH . APP_ROOT : (APP_ROOT == '' ? APP_PATH . (isset($_GET['client']) ? 'clientele' . DIRECTORY_SEPARATOR . $_GET['client'] . DIRECTORY_SEPARATOR : '') . (isset($_GET['client']) || isset($_GET['domain']) ? (isset($_GET['domain']) ? $_GET['domain'] . DIRECTORY_SEPARATOR : '') : (isset($_GET['path']) ? '' : 'vendor' . DIRECTORY_SEPARATOR . (isset($_GET['client']) ? $_GET['client'] . DIRECTORY_SEPARATOR : ''))) : APP_PATH . APP_ROOT);
+    $path = APP_PATH;
 
+    if (defined('APP_ROOT') && APP_ROOT) {
+      $path .= APP_ROOT;
+    } elseif (APP_ROOT === '') {
+      // Handle client-specific path
+      if (isset($_GET['client'])) {
+        $path .= 'clientele' . DIRECTORY_SEPARATOR . $_GET['client'] . DIRECTORY_SEPARATOR;
+      }
+
+      // Add domain to the path if applicable
+      if (isset($_GET['domain'])) {
+        $path .= $_GET['domain'] . DIRECTORY_SEPARATOR;
+      } elseif (!isset($_GET['client']) && !isset($_GET['path'])) {
+        // Default to vendor path if no domain or client is set
+        $path .= 'vendor' . DIRECTORY_SEPARATOR;
+        if (isset($_GET['client'])) {
+          $path .= $_GET['client'] . DIRECTORY_SEPARATOR;
+        }
+      }
+    } else {
+      $path .= APP_ROOT;
+    }
 
 
 
@@ -782,6 +802,9 @@ $tableGen = function (): string {
     
                     //dd($_GET['domain'], false);
     
+                    // Initialize query parameters
+                    $queryParams = [];
+
                     if (!empty($_GET['domain'])) {
                       // Remove the domain from the relative path if it exists at the start
                       $relativePath = preg_replace(
@@ -789,10 +812,11 @@ $tableGen = function (): string {
                         '',
                         $relativePath
                       );
+                      $queryParams = [
+                        'domain' => $_GET['domain'],
+                        'path' => (defined('APP_ROOT') && APP_ROOT != '' ? ($_GET['path'] ?? basename($path) ?? '') : '') ?? basename(rtrim($relativePath, '/') ?? basename($path)),
+                      ];
                     }
-
-                    // Initialize query parameters
-                    $queryParams = [];
 
                     // Determine the parameters to use based on the conditions
                     if (isset($_GET['client']) && !empty($_GET['domain'])) {
@@ -818,20 +842,6 @@ $tableGen = function (): string {
                       // Case 3: Only path is set
                       $queryParams = [
                         'path' => (isset($_GET['path']) && $_GET['path'] != '' ? $_GET['path'] : basename($path)) /*?? rtrim($relativePath, '/')*/ , // Use the path parameter
-                      ];
-                    }
-
-
-                    if (!empty($_GET['domain'])) {
-                      // Remove the domain from the relative path if it exists at the start
-                      $relativePath = preg_replace(
-                        '#^' . preg_quote($_GET['domain'], '#') . '/?#',
-                        '',
-                        $relativePath
-                      );
-                      $queryParams = [
-                        'domain' => $_GET['domain'],
-                        'path' => (defined('APP_ROOT') && APP_ROOT != '' ? ($_GET['path'] ?? basename($path) ?? '') : '') ?? basename(rtrim($relativePath, '/') ?? basename($path)),
                       ];
                     }
 
@@ -1299,8 +1309,42 @@ if (isset($_SERVER['REQUEST_METHOD']) && $_SERVER['REQUEST_METHOD'] == 'POST') {
 
         //(isset($_GET['path']) ? (empty($_GET['client']) ? '' : 'clientele1' . DIRECTORY_SEPARATOR . (isset($_GET['client']) || isset($_GET['domain']) ? /*'clientele' . DIRECTORY_SEPARATOR . */ (!isset($_GET['client']) ? '' : $_GET['client']) . DIRECTORY_SEPARATOR : '') . (!isset($_GET['domain']) ? '' : $_GET['domain'])) /*APP_BASE[''] . $_GET['client'] . '/'*/ : APP_ROOT  ) . 
 
-        $root_filter = '';
-        $output[] = is_file($file = APP_PATH . (empty($_GET['client']) ? '' : $root_filter = 'clientele' . DIRECTORY_SEPARATOR . (isset($_GET['client']) || isset($_GET['domain']) ? /*'clientele' . DIRECTORY_SEPARATOR . */ (!isset($_GET['client']) ? '' : $_GET['client']) . DIRECTORY_SEPARATOR : '') . (!isset($_GET['domain']) ? '' : $_GET['domain'])) . DIRECTORY_SEPARATOR . (!isset($_GET['path']) ? '' : $_GET['path']) . DIRECTORY_SEPARATOR . trim(preg_replace('#^' . preg_quote($root_filter, '#') . '/?#', '', $match[1]))) ? file_get_contents($file) : "File not found: $file";
+        $rootFilter = '';
+        $filePath = APP_PATH;
+
+        // Determine the root filter based on client and domain
+        if (!empty($_GET['client'])) {
+          $rootFilter = 'clientele' . DIRECTORY_SEPARATOR . $_GET['client'] . DIRECTORY_SEPARATOR;
+          if (isset($_GET['domain'])) {
+            $rootFilter .= $_GET['domain'] . DIRECTORY_SEPARATOR;
+          }
+        } elseif (isset($_GET['domain'])) {
+          $rootFilter = 'clientele' . DIRECTORY_SEPARATOR . $_GET['domain'] . DIRECTORY_SEPARATOR;
+        }
+
+        // Add project-specific root filter if applicable
+        if (isset($_GET['project'])) {
+          $rootFilter = 'projects' . DIRECTORY_SEPARATOR . $_GET['project'] . DIRECTORY_SEPARATOR;
+        }
+
+        // Add path to the file path
+        if (isset($_GET['path'])) {
+          $filePath .= $rootFilter . $_GET['path'] . DIRECTORY_SEPARATOR;
+        } else {
+          $filePath .= $rootFilter;
+        }
+
+        // Trim and clean the match path
+        $matchPath = preg_replace('#^' . preg_quote($rootFilter, '#') . '/?#', '', $match[1] ?? '');
+        $filePath .= trim($matchPath);
+
+        // Check if the file exists and read its content
+        $output[] = (is_file($filePath)) ? file_get_contents($filePath) : "File not found: $filePath";
+
+
+
+        //$root_filter = '';
+        //$output[] = is_file($file = APP_PATH . (empty($_GET['client']) ? '' : $root_filter = 'clientele' . DIRECTORY_SEPARATOR . (isset($_GET['client']) || isset($_GET['domain']) ? /*'clientele' . DIRECTORY_SEPARATOR . */ (!isset($_GET['client']) ? '' : $_GET['client']) . DIRECTORY_SEPARATOR : '') . (!isset($_GET['domain']) ? '' : $_GET['domain'])) . DIRECTORY_SEPARATOR . (!isset($_GET['path']) ? (!isset($_GET['project']) ? '' : $root_filter = 'projects' . DIRECTORY_SEPARATOR . $_GET['project']) : $_GET['path']) . DIRECTORY_SEPARATOR . trim(preg_replace('#^' . preg_quote($root_filter, '#') . '/?#', '', $match[1]))) ? file_get_contents($file) : "File not found: $file";
       }
 
     if (isset($output) && is_array($output)) {
