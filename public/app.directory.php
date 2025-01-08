@@ -1012,6 +1012,14 @@ $tableGen = function (): string {
                     'app' => $_GET['app'],
                     'file' => basename($path),
                   ];
+                } elseif (isset($_GET['domain'])) {
+                  // Case 2: Only client is set
+                  $queryParams = [
+                    'domain' => $_GET['domain'] ?? '' /*rtrim($relativePath, '/')*/ , // Default domain if not explicitly provided
+                    'path' => $_GET['path'] ?? dirname(rtrim($path, '/')) . '/', // Add the path parameter
+                    'app' => $_GET['app'],
+                    'file' => basename($path),
+                  ];
                 } elseif (isset($_GET['project'])) {
                   $queryParams = [
                     //'path' => rtrim($relativePath, '/') . '/', // Use the path parameter
