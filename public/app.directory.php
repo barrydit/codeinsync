@@ -147,203 +147,31 @@ $tableGen = function (): string {
         <?php
         if (defined('COMPOSER_VENDORS')) {
 
-          //error_log(var_export(COMPOSER_VENDORS, true));
-          //$paths = glob($path . '/*');
-          $paths = COMPOSER_VENDORS;
-          //dd(COMPOSER_VENDORS, false);
-          //dd(urldecode($_GET['path']));
-          /*
-          $paths = ['0' => ...];
-          usort($paths, function ($a, $b) {
-              $aIsDir = is_dir(APP_BASE['vendor'].$a);
-              $bIsDir = is_dir(APP_BASE['vendor'].$b);
-              
-              // Directories go first, then files
-              if ($aIsDir && !$bIsDir) {
-                  return -1;
-              } elseif (!$aIsDir && $bIsDir) {
-                  return 1;
-              }
-              
-              // If both are directories or both are files, sort alphabetically
-              return strcasecmp($a, $b);
-          });
-          */
-          if ($projIndex = realpath(APP_PATH . 'projects' . DIRECTORY_SEPARATOR . 'index.php'))
-            $handle = fopen($projIndex, 'r');
-          $pkgs_matched = [];
-
-          if (@$handle) {
-            while (($line = fgets($handle)) !== false) {
-              if (preg_match('/^use\s+(.+?);/', $line, $matches)) {
-                $pkgs_matched[] = addslashes($matches[1]);
-              }
-            }
-            fclose($handle);
-          } else {
-            echo "Error opening the projects/index.php file.";
-          }
-
-          $dirs = [];
-
-          foreach (array_filter(glob(APP_PATH . APP_BASE['var'] . 'packages' . DIRECTORY_SEPARATOR . '*.php'), 'is_file') as $key => $dir) {
-            if (preg_match('/^(.*)-(.*).php$/', basename($dir), $matches)) {
-              $name = $matches[1];
-              if (!isset($uniqueNames[$name])) {
-                $uniqueNames[$name] = true;
-                $dirs[] = $name;
-              }
-            }
-          }
+          $vendors = array_filter(glob(APP_PATH . 'vendor' . DIRECTORY_SEPARATOR . '*'), 'is_dir');
 
           $count = 1;
-          $lastKey = array_key_last($paths);
-          if (!empty($paths))
-            foreach ($paths as $vendor => $packages) {
+          ?>
+          <?php
+          if (empty($vendors)) {
+            echo "<hr />\n"; // label="     "
+          } else  //dd($vendors);
+            $old_vendors = $vendors;
+          while ($vendor = array_shift($vendors)) {
+            $old_vendor = $vendor;
+            $vendor = basename($vendor);
 
-              echo "          <td style=\"text-align: center; border: none;\" class=\"text-xs\">\n            <div class=\"container2\">\n";
+            echo "<td style=\"text-align: center; border: none;\" class=\"text-xs\">\n";
+            echo "<a class=\"pkg_dir\" href=\"?path=vendor\\$vendor\"><img src=\"resources/images/directory.png\" width=\"50\" height=\"32\" style=\"\" /><br />$vendor</a><br /></td>\n";
+            if ($count >= 7)
+              echo '</tr><tr>';
+            elseif ($old_vendor == end($old_vendors))
+              echo '</tr>';
 
-              $show_notice = true;
-
-              //var_dump(preg_grep('/^Psr\\\\Log/', ['Psr\\Log\\LogLevel']));
-    
-              //var_dump($dirs);
-    
-              foreach ($packages as $package) {
-                //var_dump('/^' . ucfirst($vendor) . '\\\\' . ucFirst($package) . '/'); // $pkgs_matched[0]
-                //var_dump(preg_grep($grep = '/^'. ucfirst($vendor) . '\\\\\\\\' . ucFirst($package) . '/', $pkgs_matched));
-                //if (!in_array(APP_PATH.APP_BASE['vendor'].$vendor.'/'.$package.'/Psr/Log/LogLevel.php', get_required_files())) { break; }
-                //if (isset($pkgs_matched) && !empty($pkgs_matched) && class_exists($pkgs_matched[0])) {
-    
-                //$grep = '/^' . ucfirst($vendor) . '\\\\' . ucFirst($package) . '/';
-                //dd(get_declared_classes());
-                //$arr = preg_grep($grep, get_declared_classes());
-                //$show_notice = (!empty($arr) ? true : false);
-                //if (!empty($arr)) {}
-    
-
-                // $arr = ;
-                //$show_notice = (!empty($arr) ? true : false);
-                //if (!empty($arr)) { }
-    
-                if ($show_notice)
-                  $show_notice = isset($pkgs_matched) && !empty($pkgs_matched) && !empty(preg_grep($grep = '/^' . ucfirst($vendor) . '\\\\\\\\' . ucFirst($package) . '/', $pkgs_matched)) ? false : (in_array($vendor, $dirs) ? true : false); // $arr[0] class_exists() $pkgs_matched[0]
-    
-                // (!in_array($vendor, $dirs) ? true : false) 
-    
-
-                //var_dump($show_notice);
-                //var_dump($grep);
-                //var_dump(!empty(preg_grep($grep, $pkgs_matched)));
-                //}
-              }
-              if ($show_notice)
-                echo '<div style="position: absolute; left: -12px; top: -12px; color: red; font-weight: bold;">[1]</div>';
-
-              //if (is_dir(APP_PATH . APP_ROOT . APP_BASE['vendor'] . $vendor) /*|| !is_dir(APP_BASE['vendor'].$vendor)*/)
-              //if ($vendor == 'barrydit') continue;
-              switch ($vendor) {
-                case 'symfony':
-                  echo '<a class="pkg_dir" href="?path=' . APP_BASE['vendor'] . $vendor . '">'
-                    . '<img src="resources/images/directory-symfony.png" width="50" height="32" style="' . (isset(COMPOSER->{'require'}->{"$vendor/$package"}) || isset(COMPOSER->{'require-dev'}->{"$vendor/$package"}) ?: 'opacity:0.4;filter:alpha(opacity=40);') . '" /></a><br />'
-                    . '<div class="overlay">';
-                  foreach ($packages as $package) {
-                    if (in_array(APP_PATH . APP_BASE['vendor'] . $vendor . DIRECTORY_SEPARATOR . $package . DIRECTORY_SEPARATOR . 'bootstrap.php', get_required_files()))
-                      echo '<a href="?app=ace_editor&path=' . APP_BASE['vendor'] . $vendor . '/' . $package . '/&file=bootstrap.php"><code style="background-color: white; color: #0078D7; font-size: 9px;">' . $package . '</code></a><br />';
-                    elseif (in_array(APP_PATH . APP_BASE['vendor'] . $vendor . DIRECTORY_SEPARATOR . $package . DIRECTORY_SEPARATOR . 'function.php', get_required_files()))
-                      echo '<a href="?app=ace_editor&path=' . APP_BASE['vendor'] . $vendor . '/' . $package . '/&file=function.php"><code style="background-color: white; color: #0078D7; font-size: 9px;">' . $package . '</code></a><br />';
-                    else
-                      echo '<p style="background-color: #0078D7;">' . $package . '</p>' . PHP_EOL;
-                    //echo APP_PATH. APP_BASE['vendor'] . $vendor.'/'.$package;
-    
-                    // /mnt/c/www/public/composer/vendor/symfony/deprecation-contracts
-                  }
-                  echo '</div>' . '<a href="?path=' . APP_BASE['vendor'] . $vendor . '">' . ucfirst($vendor) . '</a>';
-                  break;
-                case 'composer':
-                  foreach ($packages as $package) {
-                    if (is_file(APP_BASE['var'] . 'packages' . DIRECTORY_SEPARATOR . $vendor . '-' . $package . '.php'))
-                      $app['composer'][$vendor][$package]['body'] = file_get_contents(APP_BASE['var'] . 'packages' . DIRECTORY_SEPARATOR . $vendor . '-' . $package . '.php');
-                    //if (!in_array(APP_PATH.'vendor/'.$vendor.'/'.$package.'/Psr/Log/LogLevel.php', get_required_files())) {
-                    //echo '<div style="position: absolute; left: -12px; top: -12px; color: red; font-weight: bold;">[1]</div>';
-                    //  break;
-                    //}
-                  }
-                  echo '<a class="pkg_dir" href="#!" onclick="document.getElementById(\'app_composer-container\').style.display=\'block\';">' // ?app=ace_editor&path=vendor/' . $vendor . '
-                    . '<img src="resources/images/directory-composer.png" width="50" height="32" style="' . (isset(COMPOSER->{'require'}->{"$vendor/composer"}) || isset(COMPOSER->{'require-dev'}->{"$vendor/$package"}) ? '' : 'opacity:0.4;filter:alpha(opacity=40);') . '" /></a><br />'
-                    . '<div class="pkg_dir overlay">';
-                  foreach ($packages as $package) {
-                    if (!in_array(APP_PATH . APP_ROOT . APP_BASE['vendor'] . $vendor . DIRECTORY_SEPARATOR . $package . DIRECTORY_SEPARATOR . 'Psr' . DIRECTORY_SEPARATOR . 'Log' . DIRECTORY_SEPARATOR . 'LogLevel.php', get_required_files()) && $package == 'log') {
-                      echo '<a href="?app=ace_editor&path=vendor/' . $vendor . '/' . $package . '/Psr/Log/&file=LogLevel.php"><code style="background-color: white; color: #0078D7; font-size: 10px;">' . $package . '</code></a>';
-                      continue;
-                    }
-                    echo '<p style="background-color: #0078D7;">' . $package . '</p>' . PHP_EOL;
-                  }
-                  echo '</div>' . '<a href="?path=vendor/' . $vendor . '">' . ucfirst($vendor) . '</a>' . "\n";
-                  break;
-                case 'psr':
-                  echo '<a class="pkg_dir" href="#!" onclick="document.getElementById(\'app_project-container\').style.display=\'block\';">' // ?app=ace_editor&path=vendor/' . $vendor . '
-                    . '<img src="resources/images/directory-psr.png" width="50" height="32" style="' . (isset(COMPOSER->{'require'}->{"$vendor/$package"}) || isset(COMPOSER->{'require-dev'}->{"$vendor/$package"}) ? '' : (!$show_notice ? '' : 'opacity:0.4;filter:alpha(opacity=40);')) . '" />' . '</a><br />'
-                    . '<div class="overlay">';
-                  foreach ($packages as $package) {
-                    if (!in_array(APP_PATH . APP_BASE['vendor'] . $vendor . DIRECTORY_SEPARATOR . $package . DIRECTORY_SEPARATOR . 'Psr' . DIRECTORY_SEPARATOR . 'Log' . DIRECTORY_SEPARATOR . 'LogLevel.php', get_required_files()) && $package == 'log') {
-                      echo "<a href=\"?app=ace_editor&path=vendor/$vendor/$package/Psr/Log/&file=LogLevel.php\"><code style=\"background-color: white; color: #0078D7; font-size: 10px;\">$package</code></a>";
-                      continue;
-                    }
-
-                    echo '<p style="background-color: #0078D7;">' . $package . '</p>' . PHP_EOL;
-                  }
-                  echo '</div>' . '<a href="?path=vendor/' . $vendor . '">' . ucfirst($vendor) . '</a>' . "\n";
-                  break;
-                default:
-                  echo '<a class="pkg_dir" href="?' . (APP_ROOT != '' ? array_key_first($_GET) . '=' . $_GET[array_key_first($_GET)] . '&' : '') . 'path=vendor/' . $vendor . '">'
-                    . '<img src="resources/images/directory.png" width="50" height="32" style="' . (isset(COMPOSER->{'require'}->{"$vendor/$package"}) || isset(COMPOSER->{'require-dev'}->{"$vendor/$package"}) ?: 'opacity:0.4;filter:alpha(opacity=40);') . '" />' . '</a><br />'
-                    . '<div class="overlay">';
-                  foreach ($packages as $package) {
-                    echo '<code style="background-color: white; color: #0078D7;">' . $package . '</code><br />' . PHP_EOL;
-                  }
-                  echo '</div>' . '<a href="?' . (APP_ROOT != '' ? array_key_first($_GET) . '=' . $_GET[array_key_first($_GET)] . '&' : '') . 'path=vendor/' . $vendor . '">' . ucfirst($vendor) . '</a>' . "\n";
-                  break;
-              }
-              echo "</div>\n</td>\n";
-
-              if ($count >= 6)
-                echo '</tr><tr>';
-              elseif ($lastKey == $key)
-                echo '</tr>';
-
-              if (isset($count) && $count >= 6)
-                $count = 1;
-              else
-                $count++;
-            }
-
-          foreach (COMPOSER_VENDORS as $vendor => $packages) {
-            $dirs_diff[] = $vendor;
+            if (isset($count) && $count >= 7)
+              $count = 1;
+            else
+              $count++;
           }
-
-          if (is_array($dirs) && is_array($dirs_diff))
-            $result = array_diff($dirs, $dirs_diff);
-
-          //dd($result);
-          if (!empty($result))
-            $lastKey = array_key_last($result);
-          if (!empty($result))
-            foreach ($result as $key => $install) {
-              echo '<td style="border: none; text-align: center;" class="text-xs">' . "\n"
-                . '<a href="#!" onclick="document.getElementById(\'app_git-container\').style.display=\'block\';">' // "?path=' . basename($path) . '" 
-                . '<img src="resources/images/directory-install.png" width="50" height="32" ' . /*style="opacity:0.4;filter:alpha(opacity=40);"*/ ' /><br />' . $install . '/</a>' . "\n";
-              echo "</td>\n";
-
-              if ($count >= 6)
-                echo '</tr><tr>';
-              elseif ($lastKey == $key)
-                echo '</tr>';
-              if (isset($count) && $count >= 6)
-                $count = 1;
-              else
-                $count++;
-            }
         } ?>
         <!-- /tr -->
     </table>

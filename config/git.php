@@ -1,4 +1,5 @@
 <?php
+
 global $errors;
 /**/
 // https://techglimpse.com/git-push-github-token-based-passwordless/
@@ -226,11 +227,11 @@ END;
 
         $proc = proc_open(
           $command,
-          array(
-            array("pipe", "r"),
-            array("pipe", "w"),
-            array("pipe", "w")
-          ),
+          [
+            ["pipe", "r"],
+            ["pipe", "w"],
+            ["pipe", "w"]
+          ],
           $pipes
         );
 
@@ -332,7 +333,34 @@ END;
         // exec((stripos(PHP_OS, 'WIN') === 0 ? '' : APP_SUDO)  . 'git --git-dir="' . APP_PATH . APP_ROOT . '.git" --work-tree="' . APP_PATH . APP_ROOT . '" remote add origin ' . $github_repo[2], $output);
 
       }
+
+      $command = (stripos(PHP_OS, 'WIN') === 0 ? '' : APP_SUDO . '-u www-data ') . 'git ' . ' --git-dir="' . APP_PATH . APP_ROOT . '.git" --work-tree="' . APP_PATH . APP_ROOT . '" ' . $match[1];
+
+      $output[] = 'Path: ' . APP_PATH . APP_ROOT;
+
+      $output[] = shell_exec("$command ; echo $?");
+      
+if (isset($output) && is_array($output)) {
+  switch (count($output)) {
+    case 1:
+      echo /*(isset($match[1]) ? $match[1] : 'PHP') . ' >>> ' . */ join("\n... <<< ", $output);
+      break;
+    default:
+      echo join("\n", $output);
+      break;
+  }
+
+  Shutdown::setEnabled(true)->setShutdownMessage(function () { })->shutdown();
+  //dd('test');
+  // . "\n"
+  //$output[] = 'post: ' . var_dump($_POST);
+  //else var_dump(get_class_methods($repo));
+}
+      
     }
+
+//dd($output);
+
 
 if (APP_SELF == __FILE__ || (defined('APP_DEBUG') && isset($_GET['app']) && $_GET['app'] == 'git')) {
   // die($app['html']);

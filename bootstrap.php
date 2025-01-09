@@ -265,7 +265,7 @@ foreach ($dirs as $includeFile) {
 // Handle logout requests
 if (filter_input(INPUT_GET, 'logout')) {
   logoutUser();
-  
+
 
   $logged_out = <<<END
 <div style="position: absolute; left: 50%; right: 50%; width: 200px; border: 1px solid #ffb;">You have been logged out.</div>

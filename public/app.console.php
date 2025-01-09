@@ -43,8 +43,9 @@ if (preg_match('/^app\.([\w\-.]+)\.php$/', basename(__FILE__), $matches))
 
 
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
-
+  //dd(get_required_files());
   if (isset($_POST['cmd'])) {
+
     chdir(APP_PATH . APP_ROOT);
 
     $output = [];
@@ -774,8 +775,8 @@ ob_start(); ?>
       });
     });
     <?php if (defined('APP_PROJECT')) { ?>
-                                                                                //getDirectory('<?= isset($_GET['project']) && !empty($_GET['project']) ? basename(APP_PATH . APP_ROOT) : '' ?>', '<?= isset($_GET['project'
-                                                                                          ]) && !empty($_GET['project']) ? '' : APP_PATH ?>');
+                                                                                        //getDirectory('<?= isset($_GET['project']) && !empty($_GET['project']) ? basename(APP_PATH . APP_ROOT) : '' ?>', '<?= isset($_GET['project'
+                                                                                                  ]) && !empty($_GET['project']) ? '' : APP_PATH ?>');
     console.log('Path: <?= APP_PATH ?>');
   <?php } ?>
 

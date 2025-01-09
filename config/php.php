@@ -51,7 +51,7 @@ foreach ($paths as $path) {
 
 if (isset($_SERVER['REQUEST_METHOD']) && $_SERVER['REQUEST_METHOD'] == 'POST')
     if (isset($_POST['cmd']) && $_POST['cmd'] != '')
-        if (preg_match('/^php\s+(:?(.*))/i', $_POST['cmd'], $match))
+        if (preg_match('/^php\s+(:?(.*))/i', $_POST['cmd'], $match)) {
             if (preg_match('/^php\s+(?!(-r))/i', $_POST['cmd'])) {
                 $match[1] = trim($match[1], '"');
                 $output[] = eval ($match[1] . (substr($match[1], -1) != ';' ? ';' : ''));
@@ -80,6 +80,24 @@ if (isset($_SERVER['REQUEST_METHOD']) && $_SERVER['REQUEST_METHOD'] == 'POST')
                 }
                 //$output[] = $_POST['cmd'];
             }
+
+            if (isset($output) && is_array($output)) {
+                switch (count($output)) {
+                    case 1:
+                        echo /*(isset($match[1]) ? $match[1] : 'PHP') . ' >>> ' . */ join("\n... <<< ", $output);
+                        break;
+                    default:
+                        echo join("\n", $output);
+                        break;
+                }
+            }
+
+            Shutdown::setEnabled(true)->setShutdownMessage(function () { })->shutdown();
+        } else {
+            require_once 'git.php';
+            $_ENV['COMPOSER']['AUTOLOAD'] = false;
+            require_once 'composer.php';
+        }
 
 require_once 'perl.php';
 
