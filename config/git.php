@@ -164,7 +164,7 @@ if (preg_match($pattern, $node[0]->nodeValue, $matches)) {
 
 if (isset($_SERVER['REQUEST_METHOD']) && $_SERVER['REQUEST_METHOD'] == 'POST')
   if (isset($_POST['cmd']) && $_POST['cmd'] != '')
-    if (preg_match('/^git\s+(:?(.*))/i', $_POST['cmd'], $match)) {
+    if (preg_match('/^git\s*(:?.*)/i', $_POST['cmd'], $match)) {
       //(function() use ($path) {
       //  ob_start();
       //require_once APP_PATH . 'config/git.php';
@@ -222,8 +222,6 @@ if (isset($_SERVER['REQUEST_METHOD']) && $_SERVER['REQUEST_METHOD'] == 'POST')
   git checkout -b branchName
 END;
         $output[] = $command = ((stripos(PHP_OS, 'WIN') === 0) ? '' : APP_SUDO) . (defined('GIT_EXEC') ? GIT_EXEC : 'git') . (is_dir($path = APP_PATH . APP_ROOT . '.git') || APP_PATH . APP_ROOT != APP_PATH ? '' : '') . ' ' . $match[1];
-
-
 
         $proc = proc_open(
           $command,
@@ -336,27 +334,27 @@ END;
 
       $command = (stripos(PHP_OS, 'WIN') === 0 ? '' : APP_SUDO . '-u www-data ') . 'git ' . ' --git-dir="' . APP_PATH . APP_ROOT . '.git" --work-tree="' . APP_PATH . APP_ROOT . '" ' . $match[1];
 
-      $output[] = 'Path: ' . APP_PATH . APP_ROOT;
+      $output[] = "Cmd: $command";
 
       $output[] = shell_exec("$command ; echo $?");
-      
-if (isset($output) && is_array($output)) {
-  switch (count($output)) {
-    case 1:
-      echo /*(isset($match[1]) ? $match[1] : 'PHP') . ' >>> ' . */ join("\n... <<< ", $output);
-      break;
-    default:
-      echo join("\n", $output);
-      break;
-  }
 
-  Shutdown::setEnabled(true)->setShutdownMessage(function () { })->shutdown();
-  //dd('test');
-  // . "\n"
-  //$output[] = 'post: ' . var_dump($_POST);
-  //else var_dump(get_class_methods($repo));
-}
-      
+      if (isset($output) && is_array($output)) {
+        switch (count($output)) {
+          case 1:
+            echo /*(isset($match[1]) ? $match[1] : 'PHP') . ' >>> ' . */ join("\n... <<< ", $output);
+            break;
+          default:
+            echo join("\n", $output);
+            break;
+        }
+
+        Shutdown::setEnabled(true)->setShutdownMessage(function () { })->shutdown();
+        //dd('test');
+        // . "\n"
+        //$output[] = 'post: ' . var_dump($_POST);
+        //else var_dump(get_class_methods($repo));
+      }
+
     }
 
 //dd($output);

