@@ -167,9 +167,6 @@ display : inline;
 display : block;
 }
 
-
-
-
 <?php $app['style'] = ob_get_contents();
 ob_end_clean();
 
@@ -582,8 +579,9 @@ ob_start(); ?>
       }); /* Dispatch the click event on the element */
       requestSubmit.dispatchEvent(clickEvent);
     });
-  } var appGitPullElements = document.getElementsByClassName('app_git-pull'); /* getElementById('app_git-pull') */ for (var
-    i = 0; i < appGitPullElements.length; i++) {
+  }
+  var appGitPullElements = document.getElementsByClassName('app_git-pull'); /* getElementById('app_git-pull') */
+  for (var i = 0; i < appGitPullElements.length; i++) {
     appGitPullElements[i].addEventListener('click', function () {
       // Prevent the default form submission
       event.preventDefault(); /* For example, you can show an alert to indicate that the form

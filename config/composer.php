@@ -496,7 +496,11 @@ define('COMPOSER_AUTH', [
   'token' => json_decode(getenv('COMPOSER_AUTH')/*, true */)->{'github-oauth'}->{'github.com'}
 ]);
 
-putenv('COMPOSER_TOKEN=' . (COMPOSER_AUTH['token'] ?? 'static token')); // <GITHUB_ACCESS_TOKEN>
+if (COMPOSER_AUTH['token'] !== $_ENV['GITHUB']['OAUTH_TOKEN'] ?? 'static token') {
+  $errors['COMPOSER_TOKEN'] = 'COMPOSER_TOKEN does not match the GITHUB/OAUTH_TOKEN';
+} else {
+  putenv('COMPOSER_TOKEN=' . (COMPOSER_AUTH['token'] ?? 'static token')); // <GITHUB_ACCESS_TOKEN>
+}
 
 putenv('PWD=' . APP_PATH . APP_ROOT);
 
@@ -626,23 +630,19 @@ defined('COMPOSER_JSON') or define('COMPOSER_JSON', [
 ]);
 
 ob_start();
-if (false) { ?>
-    <noscript><?php } ?>
-    <?= $composer_exec; ?> init --quiet --no-interaction
-    --working-dir="<?= APP_PATH . APP_ROOT; ?>"
-    --name="<?= $composerUser . '/' . str_replace('.', '_', basename(APP_ROOT) ?? $componetPkg); ?>"
-    --description="General Description"
-    --author="Barry Dick &lt;barryd.it@gmail.com&gt;"
-    --type="project"
-    --homepage="https://github.com/<?= $composerUser . '/' . str_replace('.', '_', basename(APP_ROOT) ?? $componetPkg); ?>"
-    --require="php:^7.4||^8.0"
-    --require="composer/composer:^1.0"
-    --require-dev="pds/skeleton:^1.0"
-    --stability="dev"
-    --license="WTFPL"
-    <?php if (false) { ?>
-    </noscript><?php } ?>
-
+?>
+  <?= $composer_exec; ?> init --quiet --no-interaction
+  --working-dir="<?= APP_PATH . APP_ROOT; ?>"
+  --name="<?= $composerUser . '/' . str_replace('.', '_', basename(APP_ROOT) ?? $componetPkg); ?>"
+  --description="General Description"
+  --author="Barry Dick &lt;barryd.it@gmail.com&gt;"
+  --type="project"
+  --homepage="https://github.com/<?= $composerUser . '/' . str_replace('.', '_', basename(APP_ROOT) ?? $componetPkg); ?>"
+  --require="php:^7.4||^8.0"
+  --require="composer/composer:^1.0"
+  --require-dev="pds/skeleton:^1.0"
+  --stability="dev"
+  --license="WTFPL"
   <?php
   defined('COMPOSER_INIT_PARAMS')
     or define('COMPOSER_INIT_PARAMS', /*<<<TEXT TEXT*/ trim(ob_get_contents()));
@@ -887,7 +887,6 @@ if (false) { ?>
             }
           }
         } else {
-
           // Connect to the server
           $errors['server-1'] = "Connected to Server: " . SERVER_HOST . ':' . SERVER_PORT . "\n";
 
@@ -1367,12 +1366,12 @@ fclose($pipes[2]);
 
   if (isset($_SERVER['REQUEST_METHOD']) && $_SERVER['REQUEST_METHOD'] == 'POST')
     if (isset($_POST['cmd']) && $_POST['cmd'] != '')
-      if (preg_match('/^composer\s+(:?(.*))/i', $_POST['cmd'], $match)) {
+      if (preg_match('/^composer\s*(:?.*)/i', $_POST['cmd'], $match)) {
 
         if (!isset($_SERVER['SOCKET']) || !$_SERVER['SOCKET']) {
 
           //$output[] = dd(COMPOSER_EXEC);
-          //$output[] = APP_SUDO . COMPOSER_EXEC['bin'] . ' ' . $match[1];
+          $output[] = 'Cmd: ' . APP_SUDO . COMPOSER_EXEC['bin'] . ' ' . $match[1];
           $proc = proc_open(
             (stripos(PHP_OS, 'WIN') === 0 ? '' : APP_SUDO) . COMPOSER_EXEC['bin'] . ' ' . $match[1] . ' --working-dir="' . APP_PATH . APP_ROOT . '"',
             [
@@ -1388,7 +1387,21 @@ fclose($pipes[2]);
           //exec($_POST['cmd'], $output);
           //die(var_dump($output));
         }
+
+        if (isset($output) && is_array($output)) {
+          switch (count($output)) {
+            case 1:
+              echo /*(isset($match[1]) ? $match[1] : 'PHP') . ' >>> ' . */ join("\n... <<< ", $output);
+              break;
+            default:
+              echo join("\n", $output);
+              break;
+          }
+
+        }
+        Shutdown::setEnabled(true)->setShutdownMessage(function () { })->shutdown();
       }
+
   if (basename(dirname(APP_SELF)) == __DIR__ . DIRECTORY_SEPARATOR . 'public') {
     if ($path = realpath((basename(__DIR__) != 'config' ? NULL : __DIR__ . DIRECTORY_SEPARATOR) . 'ui.composer.php')) {
       $app['html'] = require_once $path;

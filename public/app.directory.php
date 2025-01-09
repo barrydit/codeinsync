@@ -111,71 +111,7 @@ $tableGen = function (): string {
   dd($_POST, false);*/
   //dd(APP_CLIENT, false);
 
-  if (isset($_GET['path']) && preg_match('/^vendor\/?/', $_GET['path'])) {
-
-    //if ($_ENV['COMPOSER']['AUTOLOAD'] == true)
-    require_once APP_PATH . APP_ROOT . APP_BASE['vendor'] . 'autoload.php';
-    require_once APP_PATH . APP_BASE['config'] . 'composer.php'; ?>
-    <!-- iframe src="composer_pkg.php" style="height: 500px; width: 700px;"></iframe -->
-    <div style="width: 700px; ">
-      <div style="display: inline-block; width: 350px;">Composers Vendor Packages [Installed] List</div>
-      <div style="display: inline-block; text-align: right; width: 300px;">
-        <form
-          action="<?= !defined('APP_URL') ? '//' . APP_DOMAIN . APP_URL_PATH . '?' . http_build_query(APP_QUERY, '', '&amp;') : APP_URL . '?' . http_build_query(APP_QUERY, '', '&amp;') ?>"
-          method="POST">
-          <input id="RequirePkg" type="text" title="Enter Text and onSelect" list="RequirePkgs"
-            placeholder="[vendor]/[package]" name="composer[package]" value onselect="get_package(this);" autocomplete="off"
-            style=" margin-top: 4px;">
-          <button type="submit" style="border: 1px solid #000; margin-top: 4px;"> Add </button>
-          <div style="display: inline-block; float: right; text-align: left; margin-left: 10px;" class="text-xs">
-            <input type="checkbox" name="composer[install]" value="" /> Install<br />
-            <input type="checkbox" name="composer[update]" value="" /> Update
-          </div>
-          <datalist id="RequirePkgs">
-            <option value=""></option>
-          </datalist>
-        </form>
-      </div>
-    </div>
-
-    <?= /*var_dump(COMPOSER_VENDORS);*/ null;
-    dd($_GET, false); ?>
-
-
-    <table style="width: inherit; border: none;">
-      <tr style=" border: none;">
-        <?php
-        if (defined('COMPOSER_VENDORS')) {
-
-          $vendors = array_filter(glob(APP_PATH . 'vendor' . DIRECTORY_SEPARATOR . '*'), 'is_dir');
-
-          $count = 1;
-          ?>
-          <?php
-          if (empty($vendors)) {
-            echo "<hr />\n"; // label="     "
-          } else  //dd($vendors);
-            $old_vendors = $vendors;
-          while ($vendor = array_shift($vendors)) {
-            $old_vendor = $vendor;
-            $vendor = basename($vendor);
-
-            echo "<td style=\"text-align: center; border: none;\" class=\"text-xs\">\n";
-            echo "<a class=\"pkg_dir\" href=\"?path=vendor\\$vendor\"><img src=\"resources/images/directory.png\" width=\"50\" height=\"32\" style=\"\" /><br />$vendor</a><br /></td>\n";
-            if ($count >= 7)
-              echo '</tr><tr>';
-            elseif ($old_vendor == end($old_vendors))
-              echo '</tr>';
-
-            if (isset($count) && $count >= 7)
-              $count = 1;
-            else
-              $count++;
-          }
-        } ?>
-        <!-- /tr -->
-    </table>
-  <?php } elseif (isset($_GET['path']) && preg_match('/^project\/?/', $_GET['path']) || isset($_GET['project']) && empty($_GET['project'])) {
+  if (isset($_GET['path']) && preg_match('/^project\/?/', $_GET['path']) || isset($_GET['project']) && empty($_GET['project'])) {
     if (readlinkToEnd($_SERVER['HOME'] . '/projects') == '/mnt/c/www/projects' || realpath(APP_PATH . 'projects')) { ?>
       <div style="text-align: center; border: none;" class="text-xs">
         <a class="pkg_dir" href="#" onclick="document.getElementById('app_project-container').style.display='block';">
