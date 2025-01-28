@@ -44,7 +44,9 @@ if (preg_match('/^app\.([\w\-.]+)\.php$/', basename(__FILE__), $matches))
 
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
   //dd(get_required_files());
-  if (isset($_POST['cmd'])) {
+  if (isset($_POST['group_type'])) {
+
+  } elseif (isset($_POST['cmd'])) {
 
     chdir(APP_PATH . APP_ROOT);
 
@@ -235,7 +237,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     //else var_dump(get_class_methods($repo));
   }
   //echo $buffer;
-  Shutdown::setEnabled(true)->setShutdownMessage(function () { })->shutdown();
+  //Shutdown::setEnabled(true)->setShutdownMessage(function () { })->shutdown();
   //exit();
 }
 
@@ -775,8 +777,8 @@ ob_start(); ?>
       });
     });
     <?php if (defined('APP_PROJECT')) { ?>
-                                                                                        //getDirectory('<?= isset($_GET['project']) && !empty($_GET['project']) ? basename(APP_PATH . APP_ROOT) : '' ?>', '<?= isset($_GET['project'
-                                                                                                  ]) && !empty($_GET['project']) ? '' : APP_PATH ?>');
+                                                                                              //getDirectory('<?= isset($_GET['project']) && !empty($_GET['project']) ? basename(APP_PATH . APP_ROOT) : '' ?>', '<?= isset($_GET['project'
+                                                                                                        ]) && !empty($_GET['project']) ? '' : APP_PATH ?>');
     console.log('Path: <?= APP_PATH ?>');
   <?php } ?>
 

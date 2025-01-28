@@ -105,9 +105,15 @@ ini_set('output_buffering', 'On');
 
 ini_set("include_path", "src"); // PATH_SEPARATOR ;:
 
-if (count(get_included_files()) == ((version_compare(PHP_VERSION, '5.0.0', '>=')) ? 1 : 0)):
+//dd($userObj->test(), false);
+
+// Prevent direct access to the file
+$isPhpVersion5OrHigher = version_compare(PHP_VERSION, '5.0.0', '>=');
+$includedFilesCount = count(get_included_files());
+
+if ($includedFilesCount === ($isPhpVersion5OrHigher ? 1 : 0)) {
   exit('Direct access is not allowed.');
-endif;
+}
 
 $envPath = APP_PATH . '.env';
 /*
@@ -317,7 +323,7 @@ if (basename($dir = getcwd()) != 'config') {
     chdir('../');
 
   //require_once 'constants.php';
-
+  require_once 'config/login.php';
   require_once 'bootstrap.php';
 
   chdir(APP_PATH . APP_ROOT);

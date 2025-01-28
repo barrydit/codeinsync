@@ -59,9 +59,9 @@ margin : 0;
 padding : 0;
 box-sizing : border-box;
 <?php if (isset($_GET['debug'])) { ?>
-        border: 1px dashed #FF0000;
+            border: 1px dashed #FF0000;
 <?php } else { ?> 
-        /* border: 1px dashed #FF0000; */
+            /* border: 1px dashed #FF0000; */
 <?php } ?>
 }
 *:focus {

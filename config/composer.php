@@ -1,4 +1,6 @@
 <?php
+
+use PHPUnit\Event\Code\Throwable;
 /*
 {
   "autoload": {
@@ -15,6 +17,17 @@
   }
 }
 */
+
+$a = $b = 'string';
+//echo is_bool($b === 0);
+
+//ini_set('assert.exception', 1);
+
+//ini_get('assert.exception') or ini_set('assert.exception', 1);
+
+//dd(ini_get('assert.exception') or die('assert.exception is not set: ' . (bool) ini_get('assert.exception')));
+
+/* PHP Assertion Exception Handling */
 
 global $errors;
 
@@ -497,7 +510,7 @@ define('COMPOSER_AUTH', [
 ]);
 
 if (COMPOSER_AUTH['token'] !== $_ENV['GITHUB']['OAUTH_TOKEN'] ?? 'static token') {
-  $errors['COMPOSER_TOKEN'] = 'COMPOSER_TOKEN does not match the GITHUB/OAUTH_TOKEN';
+  $errors['COMPOSER_TOKEN'] = "COMPOSER_TOKEN does not match the GITHUB/OAUTH_TOKEN\n";
 } else {
   putenv('COMPOSER_TOKEN=' . (COMPOSER_AUTH['token'] ?? 'static token')); // <GITHUB_ACCESS_TOKEN>
 }

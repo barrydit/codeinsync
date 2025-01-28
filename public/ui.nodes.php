@@ -2,6 +2,8 @@
 
 if (isset($_GET['json'])) {
   header('Content-Type: application/json');
+  
+  //$_GET['client'] = '000-Hardy,Darrell';
 
   require_once '../bootstrap.php';
 
@@ -14,9 +16,27 @@ if (isset($_GET['json'])) {
   function getRequiredFilesFromScript(string $script): array
   {
     ob_start(); // /mnt/c/www
-    require_once $script;
+    require_once $script; //eval('require_once \'' . $script . '\';'); 
     ob_end_clean();
+    //return get_required_files();
+    
+    
+    //$execute = function () use ($script, &$requiredFiles) {
+    //    ob_start();
+    //    require $script;
+    //    ob_end_clean();
+    //    $requiredFiles = get_required_files();
+    //};
+    
+    //$output = shell_exec('php -r "require \'' . $script . '\'; return get_required_files();"');
+    
     return get_required_files();
+    //$execute();
+    
+    
+    //$command = escapeshellcmd("php $script");
+    //$output = shell_exec($command); // Capture output if needed
+
   }
 
   /**
@@ -34,7 +54,26 @@ if (isset($_GET['json'])) {
     );
   }
 
-  $baseDir = '/mnt/c/www/';
+
+if (APP_ROOT != '') {
+
+      $baseDir = APP_PATH . APP_ROOT;
+      
+        $requiredFiles = [
+    //'server.php' => 'server.php',
+    'public/index.php' => APP_ROOT . 'public/index.php',
+    //'config/php.php' => 'config/php.php',
+    'config/composer.php' => APP_ROOT . 'config/composer.php',
+    //'config/git.php' => 'config/git.php',
+    //'public/idx.product.php' => 'public/idx.product.php',
+  ];
+      $jsonData = [];
+  foreach ($requiredFiles as $key => $scriptPath) {
+    $jsonData[$key] = normalizeFilePaths(getRequiredFilesFromScript($scriptPath), $baseDir);
+  }
+
+} else {
+  $baseDir = APP_PATH;
   //die(getcwd());
   // Define scripts to process
   $requiredFiles = [
@@ -52,7 +91,9 @@ if (isset($_GET['json'])) {
     $jsonData[$key] = normalizeFilePaths(getRequiredFilesFromScript($scriptPath), $baseDir);
   }
 
-  // Ensure vendor packages are only under composer.php
+} 
+
+// Ensure vendor packages are only under composer.php
   if (isset($jsonData['config/composer.php'], $jsonData['public/index.php'])) {
     $vendorPackages = array_filter(
       $jsonData['public/index.php'],
@@ -84,10 +125,11 @@ if (isset($_GET['json'])) {
       $vendorPackages
     ));
   }
-
   echo json_encode($jsonData);
   exit;
 }
+
+
 
 if (__FILE__ == get_required_files()[0] && __FILE__ == realpath($_SERVER["SCRIPT_FILENAME"]))
   if ($path = basename(dirname(get_required_files()[0])) == 'public') { // (basename(getcwd())
