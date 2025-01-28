@@ -33,14 +33,33 @@ if (preg_match('/^app\.([\w\-.]+)\.php$/', basename(__FILE__), $matches))
  */
 //
 
-$tableGen = function (): string {
+$var1 = $_POST;
+$tableGen = function () use ($var1): string {
   ob_start(); ?>
 
   <div id="info"
-    style="position: absolute; display: none; width: 400px; height: 100px; left: 200px; top: 100px; border: 5px solid #000; background-color: #FFFFFF; z-index:99;">
+    style="position: absolute; display: block; width: 570px; height: 500px; left: 67px; top: 50px; border: 5px solid #000; background-repeat: no-repeat; background-color: #FFFFFF; background-image: url(resources/images/group_type.png); z-index:99;">
     <div
-      style="position: absolute; display: block; background-color: #FFFFFF; z-index: 1; right: 0px; margin-top: -20px;">
-      [<a href="#" onclick="document.getElementById('info').style.display = 'none';">x</a>]</div>Texting inside
+      style="position: absolute; display: block; background-color: #FFFFFF;  z-index: 1; right: 0px; margin-top: -20px;">
+      [<a href="#" onclick="document.getElementById('info').style.display = 'none';">x</a>]</div>
+    <form method="post" action="/?path" enctype="multipart/form-data">
+      <button type="submit" style="position: absolute; top: 20px; left: 20px; border: 1px solid #000;">Add /
+        Download</button>
+      <span style="position: absolute; text-align: right; left: 250px; top: 20px; width: 300px;">
+        <?= var_dump($var1); ?>
+      </span>
+      <fieldset id="group_type">
+        <input style="position:absolute; top: 212px; left: 80px;" type="radio" value="file" name="group_type">
+        <input style="position:absolute; top: 212px; left: 204px;" type="radio" value="ftp" name="group_type">
+        <input style="position:absolute; top: 212px; left: 344px;" type="radio" value="github" name="group_type">
+        <input style="position:absolute; top: 212px; left: 473px;" type="radio" value="www" name="group_type">
+        <input style="position:absolute; top: 421px; left: 70px;" type="radio" value="client" name="group_type">
+        <input style="position:absolute; top: 421px; left: 473px;" type="radio" value="project" name="group_type">
+      </fieldset>
+
+      <div style="position: absolute; top: 300px; left: 190px; text-align: center;">Add A File<br /><input type="text">
+      </div>
+    </form>
   </div>
 
   <?php
@@ -56,7 +75,7 @@ $tableGen = function (): string {
   // Base link
   $navigation = '<div style="position: absolute; top: 2px; left: 2px; width: 100%;">';
   $navigation .= '<a href="' . '?path" ' .
-    (/*!isset($_GET['client']) || !isset($_GET['domain']) || !isset($_GET['project']) && */ isset($_GET['path']) ? 'onclick="handleClick(event, \'/\')"' : '') .
+    (!isset($_GET['client']) || !isset($_GET['domain']) || !isset($_GET['project']) || !isset($_GET['path']) ? '' : 'onclick="handleClick(event, \'/\')"') .
     '>' . '<img src="resources/images/directory-www.fw.png" width="50" height="32">' . (!isset($_GET['client']) && isset($_GET['path']) || !isset($_GET['project']) ? $basePath . DIRECTORY_SEPARATOR : '') . (!isset($_GET['app']) ? '' : '') . '</a>';
 
 
@@ -413,7 +432,39 @@ $tableGen = function (): string {
 
       <?= "<br /><br />Missing directory $path"; ?>
 
-    <?php } else { // ?>
+    <?php } else { // 
+
+      if (isset($_GET['path']) && preg_match('/^vendor\/?/', $_GET['path'])) {
+
+        //if ($_ENV['COMPOSER']['AUTOLOAD'] == true)
+        require_once APP_PATH . APP_ROOT . APP_BASE['vendor'] . 'autoload.php';
+        require_once APP_PATH . APP_BASE['config'] . 'composer.php'; ?>
+        <!-- iframe src="composer_pkg.php" style="height: 500px; width: 700px;"></iframe -->
+        <div style="width: 700px; ">
+          <div style="display: inline-block; width: 350px;">Composers Vendor Packages [Installed] List</div>
+          <div style="display: inline-block; text-align: right; width: 300px;">
+            <form
+              action="<?= !defined('APP_URL') ? '//' . APP_DOMAIN . APP_URL_PATH . '?' . http_build_query(APP_QUERY, '', '&amp;') : APP_URL . '?' . http_build_query(APP_QUERY, '', '&amp;') ?>"
+              method="POST">
+              <input id="RequirePkg" type="text" title="Enter Text and onSelect" list="RequirePkgs"
+                placeholder="[vendor]/[package]" name="composer[package]" value onselect="get_package(this);" autocomplete="off"
+                style=" margin-top: 4px;">
+              <button type="submit" style="border: 1px solid #000; margin-top: 4px;"> Add </button>
+              <div style="display: inline-block; float: right; text-align: left; margin-left: 10px;" class="text-xs">
+                <input type="checkbox" name="composer[install]" value="" /> Install<br />
+                <input type="checkbox" name="composer[update]" value="" /> Update
+              </div>
+              <datalist id="RequirePkgs">
+                <option value=""></option>
+              </datalist>
+            </form>
+          </div>
+        </div>
+      <?php } ?>
+      <?= /*var_dump(COMPOSER_VENDORS);*/ null;
+      //dd($_GET, false); 
+      ?>
+
       <table style="width: inherit; border: 0 solid #000;">
         <tr>
           <?php
@@ -1136,7 +1187,7 @@ if (isset($_SERVER['REQUEST_METHOD']) && $_SERVER['REQUEST_METHOD'] == 'POST') {
     unset($match);
     require_once 'app.console.php';
   }
-  Shutdown::setEnabled(true)->setShutdownMessage(function () { })->shutdown();
+  //Shutdown::setEnabled(true)->setShutdownMessage(function () { })->shutdown();
 }
 
 ob_start(); ?>

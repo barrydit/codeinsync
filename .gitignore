@@ -4,6 +4,7 @@
 /clientele
 !/config
 /dist
+/database
 /node_modules
 !/public
 /public/example.php

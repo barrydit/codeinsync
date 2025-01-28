@@ -125,7 +125,8 @@ if (isset($_ENV['PHP']['LOG_PATH']) && is_readable($path = APP_PATH . APP_ROOT .
 if (isset($_SERVER['REQUEST_METHOD']))
   switch ($_SERVER['REQUEST_METHOD']) {
     case 'POST':
-      //dd($_POST);
+    case 'GET':
+
       //dd('what the heck is going on here?', false);
       if (isset($_POST['environment'])) {
         switch ($_POST['environment']) {
@@ -150,8 +151,7 @@ if (isset($_SERVER['REQUEST_METHOD']))
           return header('Location: ' . APP_URL); // -wow
         })->shutdown();
       }
-      break;
-    case 'GET':
+
       if (isset($_ENV['APP_ENV']) && !empty($_ENV))
         !defined('APP_ENV') and define('APP_ENV', $_ENV['APP_ENV']);
       //if (!empty($_GET['path']) && !isset($_GET['app'])) !!infinite loop
@@ -259,6 +259,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'GET')
 //dd(__DIR__ . DIRECTORY_SEPARATOR);
 
 if (/*APP_SELF === APP_PATH_PUBLIC*/ dirname(APP_SELF) === dirname(APP_PATH_PUBLIC)) {
+
   $appPaths = array_filter(glob(__DIR__ . DIRECTORY_SEPARATOR . 'app.*.php'), 'is_file'); // public/
 
   // $globPaths[] = __DIR__ . DIRECTORY_SEPARATOR . 'app.console.php';
@@ -350,87 +351,66 @@ if (/*APP_SELF === APP_PATH_PUBLIC*/ dirname(APP_SELF) === dirname(APP_PATH_PUBL
   $app = $apps = [];
 
   // Check if $paths is not empty
-  if (!empty($paths))
-    while ($path = array_shift($paths)) {
+  $path = ''; // Initialize to avoid undefined variable error
 
+  if (!empty($paths)) {
+    do {
+      $path = array_shift($paths); // Shift the first element
 
-      //dd($path, false);
-      // Shift the first path from the array
-      //;
+      // Ensure $path exists before using it
 
-      // Check if the path exists
-      if ($realpath = realpath($path)) {
-
-        // Define a function to include the file
-        // $requireFile = function($file) /*use ($apps)*/ { global $apps; }; */
-
-        // Include the file using the function
-        //dd("path is $realpath\n", false);
-        /* $returnedValue = (function() use ($realpath) {
-          ob_start();
-          require_once $realpath;
-          return ob_get_clean(); // redundant ob_end_clean();
-        })(); */
-        //dd($realpath, false);
-
-        //require_once APP_PATH . APP_BASE['config'] . 'git.php';
-
+      if ($realpath = realpath($path ?? '')) {
         $returnedValue = (function () use ($realpath, &$app) {
           //dd($realpath, false);
+          if ($realpath != rtrim(APP_PATH, '/'))
+            require_once $realpath;
           ob_start();
 
-          require_once $realpath;
+          $output = ob_get_clean();
 
-          if (preg_match('/^app\.([\w\-.]+)\.php$/', basename($realpath), $matches) && isset($matches[1]) /*&& !empty($app[$matches[1]])*/) {
+          $filename = basename($realpath);
+          if (preg_match('/^app\.([\w\-.]+)\.php$/', $filename, $matches)) {
             return [$matches[1] => ['style' => $app[$matches[1]]['style'] ?? '', 'body' => $app[$matches[1]]['body'] ?? '', 'script' => $app[$matches[1]]['script'] ?? '']];
-          } else if (preg_match('/^ui\.([\w\-.]+)\.php$/', basename($realpath), $matches)) {
-            !defined($app_name = 'UI_' . strtoupper($matches[1])) and define($app_name, ['style' => $app['style'] ?? '', 'body' => $app['body'] ?? '', 'script' => $app['script'] ?? '']); // $apps[$matches[1]]
-            //dd('UI_' . strtoupper($matches[1]) . ' created?', false);
-            //$app = [];
-            return null;
           }
-          $null = ob_get_contents();
-          ob_end_clean();
 
+          if (preg_match('/^ui\.([\w\-.]+)\.php$/', $filename, $matches)) {
+            $constantName = 'UI_' . strtoupper($matches[1]);
+            if (!defined($constantName)) {
+              define($constantName, ['style' => $app['style'] ?? '', 'body' => $app['body'] ?? '', 'script' => $app['script'] ?? '']);
+            }
+          }
 
-          //dd('UI_' . strtoupper($matches[1]) . ' created?', false);
-
-          //dd($realpath . ' created?', false);
+          return null;
         })();
 
-        //$returnedValue = require_once $realpath;
-
-        //dd($app, false);
-        //ob_start(); $ob_contents = ob_get_contents(); ob_end_clean();
-        //dd($ob_contents, false);
-        //dd($returnedValue, false);
-
-        // Check the type of the returned value
         if (is_array($returnedValue) && !empty($returnedValue)) {
-          // The file returned an array
-
-          //dd($returnedValue);
           $apps = array_merge($apps, $returnedValue);
-        }  //elseif ($returnedValue !== null) {
-        // The file returned a non-null value
-        //echo 'Returned value: ' . $returnedValue . PHP_EOL;
-        //} else {
-        // The file did not return a value
-        //    echo 'File did not return a value.' . PHP_EOL;
-        //}
+        }
       } else {
-        // Output a message if the file was not found
-        echo basename($path) . ' was not found. file=public/' . basename($path) . PHP_EOL;
+        error_log(basename($path) . " was not found. file=public/" . basename($path));
       }
 
-      // Unset $paths if it is empty
-      //if (empty($paths)) unset($paths);
+    } while ($path);
+  } else {
+    error_log("No paths available for processing.");
+  }
 
-    } // isset($paths) && !empty($paths)
+  require_once 'idx.product.php';
+  if (!empty($paths)) {
+    do {
+      $path = array_shift($paths);
+
+      require_once 'idx.product.php'; // Always execute this
+    } while ($path);
+  }
+
+  //require_once 'idx.product.php';
+  // isset($paths) && !empty($paths)
   //dd(array_keys($apps['console']));
 
   //dd($appDirectory['body']); 
-
+  //if ($_SERVER['REQUEST_METHOD'] == 'POST')
+  //  dd($_POST);
   if (defined('APP_ENV'))
     switch (APP_ENV) {
       case 'development':
