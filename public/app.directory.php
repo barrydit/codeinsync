@@ -6,8 +6,8 @@ if (__FILE__ == get_required_files()[0] && __FILE__ == realpath($_SERVER["SCRIPT
   if ($path = basename(dirname(get_required_files()[0])) == 'public') { // (basename(getcwd())
     chdir('../');
     if ($path = realpath('bootstrap.php')) { // is_file()
-      //dd('does this do anything?');
       require_once $path;
+      //die('does this do anything?');
     }
   } else
     die(var_dump("Path was not found. file=$path"));
@@ -33,8 +33,8 @@ if (preg_match('/^app\.([\w\-.]+)\.php$/', basename(__FILE__), $matches))
  */
 //
 
-$var1 = $_POST;
-$tableGen = function () use ($var1): string {
+$group_type = $_POST['group_type'] ?? null;
+$tableGen = function () use ($group_type): string {
   ob_start(); ?>
 
   <div id="info"
@@ -43,10 +43,12 @@ $tableGen = function () use ($var1): string {
       style="position: absolute; display: block; background-color: #FFFFFF;  z-index: 1; right: 0px; margin-top: -20px;">
       [<a href="#" onclick="document.getElementById('info').style.display = 'none';">x</a>]</div>
     <form method="post" action="/?path" enctype="multipart/form-data">
-      <button type="submit" style="position: absolute; top: 20px; left: 20px; border: 1px solid #000;">Add /
+      <button type="submit" style="position: absolute; top: 20px; left: 20px; border: 1px solid #000; padding: 3px;">Add /
         Download</button>
       <span style="position: absolute; text-align: right; left: 250px; top: 20px; width: 300px;">
-        <?= var_dump($var1); ?>
+        <?php if ($group_type !== NULL) {
+          echo $group_type;
+        } ?>
       </span>
       <fieldset id="group_type">
         <input style="position:absolute; top: 212px; left: 80px;" type="radio" value="file" name="group_type">
@@ -57,7 +59,8 @@ $tableGen = function () use ($var1): string {
         <input style="position:absolute; top: 421px; left: 473px;" type="radio" value="project" name="group_type">
       </fieldset>
 
-      <div style="position: absolute; top: 300px; left: 190px; text-align: center;">Add A File<br /><input type="text">
+      <div style="position: absolute; top: 300px; left: 190px; text-align: center;">Add A File<br />
+        <input name="file_name" type="text">
       </div>
     </form>
   </div>
@@ -722,13 +725,13 @@ $tableGen = function () use ($var1): string {
                     // Construct the onclick attribute if needed
                     $onclickAttribute = '';
                     if ($domainCondition && isset($_GET['client']) && !isset($_GET['domain'])) {
-                      $onclickAttribute = (basename($path) == $_ENV['DEFAULT_DOMAIN']) ? " onclick=\"handleClick(event, '$fullPath')\"" : "";
+                      $onclickAttribute = (basename($path) == $_ENV['DEFAULT_DOMAIN']) ? " onclick=\"handleClick(event, '" . /*$fullPath is no longer required. */ "/')\"" : "";
                     } else if ($domainCondition && isset($_GET['domain'])) {
                       $onclickAttribute = " onclick=\"handleClick(event, '$fullPath')\"";
                     } elseif ($projectCondition && isset($_GET['project'])) {
                       $onclickAttribute = " onclick=\"handleClick(event, '$fullPath')\"";
                     } else { //elseif (!$domainCondition) { ... } 
-                      $onclickAttribute = " onclick=\"handleClick(event, '$fullPath')\"";
+                      $onclickAttribute = " onclick=\"handleClick(event, '" . /*$fullPath is no longer required*/ $relativePath . "/')\""; // (is_dir(APP_PATH . $_GET['path']) ? $_GET['path'] . basename($path) : '') : /*$relativePath . */ '') 
                     }
 
                     // Render the link
@@ -1187,7 +1190,11 @@ if (isset($_SERVER['REQUEST_METHOD']) && $_SERVER['REQUEST_METHOD'] == 'POST') {
     unset($match);
     require_once 'app.console.php';
   }
-  //Shutdown::setEnabled(true)->setShutdownMessage(function () { })->shutdown();
+
+  if (!isset($_POST['group_type']))
+    Shutdown::setEnabled(true)->setShutdownMessage(function () {
+      return ''; // 'The application has been terminated.';  
+    })->shutdown();
 }
 
 ob_start(); ?>
@@ -1319,4 +1326,4 @@ ob_end_clean();
 
 //check if file is included or accessed directly
 if (__FILE__ == get_required_files()[0] || in_array(__FILE__, get_required_files()) && isset($_GET['app']) && $_GET['app'] == 'directory' && APP_DEBUG)
-  die($app[$directory]['html']);
+  exit($app[$directory]['html']);

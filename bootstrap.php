@@ -89,7 +89,6 @@ function resolveClient($clientFolder)
   return '';
 }
 
-
 // Retrieve directories that match the client path
 $proj_dirs = array_filter(glob(dirname($projectPath) . DIRECTORY_SEPARATOR . '*'), 'is_dir');
 
@@ -110,7 +109,7 @@ if ($project) {
   $path = rtrim($clientFolder, DIRECTORY_SEPARATOR) . DIRECTORY_SEPARATOR . $domain . DIRECTORY_SEPARATOR;
 } elseif (!empty($_GET['client'])) {
   // Special case: resolve based on client folder
-  $path = ''; // resolveClient($clientFolder);
+  $path = resolveClient($clientFolder); // ;
 } elseif (count($dirs) === 1) {
   // Default to the only directory if one exists
   $path = reset($dirs);
@@ -125,9 +124,9 @@ $path = preg_replace(
   '',
   $path
 );
-
+//define('APP_ROOT', $_GET['client'] . '/' . $_GET['domain']);
 // Define APP_ROOT using the directory of the resolved path
-defined('APP_ROOT') || define('APP_ROOT', is_dir(APP_PATH . $path) ? $path : '');
+defined('APP_ROOT') || define('APP_ROOT', is_dir(APP_PATH . $path) ? $path : '/test');
 
 //die(APP_ROOT);
 // Check if the config file exists in various locations based on the current working directory
@@ -159,110 +158,6 @@ if ($path) {
 } else {
   die(var_dump($path));
 }
-
-$previousFilename = '';
-
-// Handle the 'php' app configuration
-$dirs = [APP_PATH . 'config' . DIRECTORY_SEPARATOR . 'php.php'];
-
-// Handle the 'git' app configuration
-!isset($_GET['app']) || $_GET['app'] != 'git' ?:
-  (APP_SELF != APP_PATH_PUBLIC ?: $dirs[] = APP_PATH . APP_BASE['config'] . 'git.php');
-
-// Handle the 'composer' app configuration
-!isset($_GET['app']) || $_GET['app'] != 'composer' ?:
-  $dirs = (APP_SELF != APP_PATH_PUBLIC)
-  ? array_merge(
-    $dirs,
-    [
-      (file_exists($include = APP_PATH . APP_BASE['config'] . 'composer.php') && !is_file($include) ?: $include)
-    ]
-  )
-  : array_merge(
-    $dirs,
-    [
-      (!file_exists($include = APP_PATH . APP_BASE['config'] . 'composer.php') && !is_file($include) ?: $include),
-      (!file_exists($include = APP_PATH . APP_BASE['vendor'] . 'autoload.php') && !is_file($include) ?: $include),
-    ]
-  );
-
-//if (is_file($path = APP_PATH . APP_BASE['config'] . 'composer.php')) require_once $path; 
-//else die(var_dump("$path path was not found. file=" . basename($path)));
-
-// Handle the 'npm' app configuration
-!isset($_GET['app']) || $_GET['app'] != 'npm' ?:
-  (APP_SELF != APP_PATH_PUBLIC ?:
-    (!is_file($include = APP_PATH . APP_BASE['config'] . 'npm.php') ?: $dirs[] = $include));
-
-unset($include);
-
-if (APP_SELF != APP_PATH_PUBLIC) {
-  $priorityFiles = [
-    APP_PATH . APP_BASE['config'] . 'php.php',
-    APP_PATH . APP_BASE['config'] . 'composer.php',
-    APP_PATH . APP_ROOT . APP_BASE['vendor'] . 'autoload.php',
-    APP_PATH . APP_BASE['config'] . 'git.php',
-    // APP_PATH . APP_BASE['config'] . 'npm.php', // Uncomment if needed
-  ];
-
-  usort($dirs, function ($a, $b) use ($priorityFiles) {
-    $fullPathA = dirname($a) . DIRECTORY_SEPARATOR . basename($a);
-    $fullPathB = dirname($b) . DIRECTORY_SEPARATOR . basename($b);
-
-    $priorityA = array_search($fullPathA, $priorityFiles);
-    $priorityB = array_search($fullPathB, $priorityFiles);
-
-    // Compare based on priority if either $a or $b is in the priority list
-    if ($priorityA !== false || $priorityB !== false) {
-      return ($priorityA !== false ? $priorityA : PHP_INT_MAX)
-        - ($priorityB !== false ? $priorityB : PHP_INT_MAX);
-    }
-
-    // Fallback: Compare alphabetically by basename
-    return strcmp(basename($a), basename($b));
-  });
-}
-
-
-//dd($dirs, false);
-foreach ($dirs as $includeFile) {
-  $path = dirname($includeFile);
-
-  // Skip already included files or specific files like 'composer-setup.php'
-  if (in_array($includeFile, get_required_files()) || basename($includeFile) === 'composer-setup.php') {
-    continue;
-  }
-
-  // Log an error and exit if the file does not exist
-  if (!file_exists($includeFile)) {
-    error_log("Failed to load a necessary file: {$includeFile}" . PHP_EOL);
-    break;
-  }
-
-  $currentFilename = substr(basename($includeFile), 0, -4); // Remove file extension
-
-  // Skip files if they are related to the previously processed filename
-  if (!empty($previousFilename) && strpos($currentFilename, $previousFilename) !== false) {
-    continue;
-  }
-
-  // Include files based on specific conditions
-  if ($includeFile === APP_PATH . APP_ROOT . APP_BASE['vendor'] . 'autoload.php') {
-    if (
-      isset($_ENV['COMPOSER']['AUTOLOAD']) &&
-      (bool) $_ENV['COMPOSER']['AUTOLOAD'] === true &&
-      APP_SELF === APP_PATH_SERVER
-    ) {
-      require_once $includeFile;
-    }
-  } else {
-    require_once $includeFile;
-  }
-
-  // Track the current file for the next iteration
-  $previousFilename = $currentFilename;
-}
-
 
 
 /*

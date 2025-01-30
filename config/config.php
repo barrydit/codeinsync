@@ -323,7 +323,8 @@ if (basename($dir = getcwd()) != 'config') {
     chdir('../');
 
   //require_once 'constants.php';
-  require_once 'config/login.php';
+  //require_once 'config/login.php';
+
   require_once 'bootstrap.php';
 
   chdir(APP_PATH . APP_ROOT);
