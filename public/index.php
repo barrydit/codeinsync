@@ -38,8 +38,7 @@ switch (APP_SELF) {
 
 //dd($_ENV, false);
 
-
-
+require_once 'config/login.php';
 
 //die(var_dump(APP_ROOT));
 

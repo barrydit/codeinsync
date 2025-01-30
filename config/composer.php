@@ -1,4 +1,6 @@
 <?php
+require_once 'bootstrap.php';
+require_once 'config/config.php';
 
 use PHPUnit\Event\Code\Throwable;
 /*
@@ -511,9 +513,13 @@ define('COMPOSER_AUTH', [
 
 if (COMPOSER_AUTH['token'] !== $_ENV['GITHUB']['OAUTH_TOKEN'] ?? 'static token') {
   $errors['COMPOSER_TOKEN'] = "COMPOSER_TOKEN does not match the GITHUB/OAUTH_TOKEN\n";
+  if (isset($errors['COMPOSER_TOKEN']))
+    file_put_contents($authJsonPath, '{"github-oauth": {"github.com": "' . $_ENV['GITHUB']['OAUTH_TOKEN'] . '"}}');
 } else {
   putenv('COMPOSER_TOKEN=' . (COMPOSER_AUTH['token'] ?? 'static token')); // <GITHUB_ACCESS_TOKEN>
 }
+
+// dd(COMPOSER_AUTH['token'] . '   ' . $_ENV['GITHUB']['OAUTH_TOKEN']);
 
 putenv('PWD=' . APP_PATH . APP_ROOT);
 
