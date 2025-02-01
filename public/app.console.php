@@ -45,51 +45,18 @@ if (preg_match('/^app\.([\w\-.]+)\.php$/', basename(__FILE__), $matches))
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
   //dd(get_required_files());
   if (isset($_POST['group_type'])) {
-
-    if (isset($_POST['group_type'])) {
-      if ($_POST['group_type'] == 'file') {
+    switch ($_POST['group_type']) {
+      case 'file':
         touch($_POST['file_name']);
-        /*
-                      if (isset($_POST['file']) && $_POST['file'] != '') {
-                        if (file_exists($file = APP_PATH . APP_ROOT . $_POST['file'])) {
-                          $output = [];
-                          $output[] = 'File: ' . $file;
-                          $output[] = 'Size: ' . filesize($file) . ' bytes';
-                          $output[] = 'Owner: ' . fileowner($file);
-                          $output[] = 'Permissions: ' . substr(sprintf('%o', fileperms($file)), -4);
-                          $output[] = 'Last modified: ' . date('F d Y H:i:s.', filemtime($file));
-                          $output[] = 'Last accessed: ' . date('F d Y H:i:s.', fileatime($file));
-                          $output[] = 'File type: ' . filetype($file);
-                          $output[] = 'File group: ' . filegroup($file);
-                          $output[] = 'File inode: ' . fileinode($file);
-                          $output[] = 'File owner: ' . fileowner($file);
-                          $output[] = 'File group: ' . filegroup($file);
-                          $output[] = 'File permissions: ' . fileperms($file);
-                          $output[] = 'File type: ' . filetype($file);
-                          $output[] = 'File size: ' . filesize($file);
-                          $output[] = 'File last accessed: ' . date('F d Y H:i:s.', fileatime($file));
-                          $output[] = 'File last modified: ' . date('F d Y H:i:s.', filemtime($file));
-                          $output[] = 'File last changed: ' . date('F d Y H:i:s.', filectime($file));
-                          $output[] = 'File MD5 hash: ' . md5_file($file);
-                          $output[] = 'File SHA1 hash: ' . sha1_file($file);
-                          $output[] = 'File contents: ' . file_get_contents($file);
-                        } else {
-                          $output[] = 'File not found: ' . $file;
-                        }
-                      } else {
-                        $output[] = 'No file specified.';
-                      }*/
-
-
-      } elseif ($_POST['group_type'] == 'dir') {
-
+        break;
+      case 'dir':
         if (isset($_POST['dir']) && $_POST['dir'] != '') {
           if (!is_dir($dir = APP_PATH . APP_ROOT . $_GET['path'] . $_POST['name'])) {
             //mkdir($dir, 0777, true);
           } else
-            $output[] = 'Directory already exists: ' . $dir;
+            $output[] = "Directory already exists: $dir";
         }
-      }
+        break;
     }
   } elseif (isset($_POST['cmd'])) {
 
@@ -822,8 +789,8 @@ ob_start(); ?>
       });
     });
     <?php if (defined('APP_PROJECT')) { ?>
-                                                                                                        //getDirectory('<?= isset($_GET['project']) && !empty($_GET['project']) ? basename(APP_PATH . APP_ROOT) : '' ?>', '<?= isset($_GET['project'
-                                                                                                                  ]) && !empty($_GET['project']) ? '' : APP_PATH ?>');
+                                                                                                            //getDirectory('<?= isset($_GET['project']) && !empty($_GET['project']) ? basename(APP_PATH . APP_ROOT) : '' ?>', '<?= isset($_GET['project'
+                                                                                                                      ]) && !empty($_GET['project']) ? '' : APP_PATH ?>');
     console.log('Path: <?= APP_PATH ?>');
   <?php } ?>
 
