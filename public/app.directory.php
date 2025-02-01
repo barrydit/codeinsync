@@ -60,7 +60,8 @@ $tableGen = function () use ($group_type): string {
       </fieldset>
 
       <div style="position: absolute; top: 300px; left: 190px; text-align: center;">Add A File<br />
-        <input name="file_name" type="text">
+        <input name="file_name" type="text" required="required" style="width: 200px;" />
+
       </div>
     </form>
   </div>
@@ -118,8 +119,7 @@ $tableGen = function () use ($group_type): string {
 
   // Path navigation
   if ($relativePath && $relativePath !== '/') {
-    $navigation .= '<a href="' . basename(__FILE__) . '?' . (isset($_GET['client']) ? 'client=' . ($clientPath ?? '') . '&' : '') . (isset($_GET['domain']) ? 'domain=' . ($domainPath ?? '') . '&'/* */ : '') . (isset($_GET['project']) ? 'project=' . ($projectPath ?? '') . '&' : '') . 'path=' . dirname($relativePath) . '" onclick="handleClick(event, \'' . dirname($relativePath) . '/\')">' .
-      $relativePath . DIRECTORY_SEPARATOR . '</a>';
+    $navigation .= '<a href="' . basename(__FILE__) . '?' . (isset($_GET['client']) ? 'client=' . ($clientPath ?? '') . '&' : '') . (isset($_GET['domain']) ? 'domain=' . ($domainPath ?? '') . '&'/* */ : '') . (isset($_GET['project']) ? 'project=' . ($projectPath ?? '') . '&' : '') . 'path=' . dirname($relativePath) . '/" onclick="handleClick(event, \'' . dirname($relativePath) . '/\')">' . $relativePath . DIRECTORY_SEPARATOR . '</a>';
   }
 
   $navigation .= '</div><div style="height: 25px;"><br />' . APP_PATH . APP_ROOT . '</div>';
@@ -134,7 +134,7 @@ $tableGen = function () use ($group_type): string {
   //dd(APP_CLIENT, false);
 
   if (isset($_GET['path']) && preg_match('/^project\/?/', $_GET['path']) || isset($_GET['project']) && empty($_GET['project'])) {
-    if (readlinkToEnd($_SERVER['HOME'] . '/projects') == '/mnt/c/www/projects' || realpath(APP_PATH . 'projects')) { ?>
+    if (readlinkToEnd($_SERVER['HOME'] . DIRECTORY_SEPARATOR . 'projects') == '/mnt/c/www/projects' || realpath(APP_PATH . 'projects')) { ?>
       <div style="text-align: center; border: none;" class="text-xs">
         <a class="pkg_dir" href="#" onclick="document.getElementById('app_project-container').style.display='block';">
           <img src="resources/images/project-icon.png" width="50" height="32" style="" /></a><br /><a
@@ -176,7 +176,7 @@ $tableGen = function () use ($group_type): string {
     </table>
     <!--
       <li>
-      <?php if (readlinkToEnd('/var/www/projects') == '/mnt/c/www/projects' || realpath(APP_PATH . 'projects')) { ?>
+      <?php if (readlinkToEnd($_SERVER['HOME'] . DIRECTORY_SEPARATOR . 'projects') == '/mnt/c/www/projects' || realpath(APP_PATH . 'projects')) { ?>
       <a href="projects/">project/</a>
         <ul style="padding-left: 10px;">
           <form action method="GET">
@@ -195,7 +195,7 @@ $tableGen = function () use ($group_type): string {
       -->
   <?php } elseif (isset($_GET['application'])) { ?>
 
-    <?php if (readlinkToEnd('/var/www/applications') == '/mnt/c/www/applications') {
+    <?php if (readlinkToEnd($_SERVER['HOME'] . DIRECTORY_SEPARATOR . 'applications') == '/mnt/c/www/applications') {
       if ($_GET['application']) {
 
         $links = array_filter(glob(APP_PATH . /*'../../'.*/ 'applications/' . $_GET['application']), 'is_file');
@@ -294,7 +294,7 @@ $tableGen = function () use ($group_type): string {
         ?>
     </table>
   <?php } elseif (isset($_GET['path']) && preg_match('/^client(?:s|ele)?\/?/', $_GET['path']) || isset($_GET['client']) && empty($_GET['client'])) { ?>
-    <?php if (readlinkToEnd('/var/www/clientele') == '/mnt/c/www/clientele' || realpath(APP_PATH . 'clientele')) { ?>
+    <?php if (readlinkToEnd($_SERVER['HOME'] . DIRECTORY_SEPARATOR . 'clientele') == '/mnt/c/www/clientele' || realpath(APP_PATH . 'clientele')) { ?>
       <h3>&#9660; Domains: </h3>
       <table width="" style="border: none;">
         <tr style=" border: none;">
@@ -615,129 +615,116 @@ $tableGen = function () use ($group_type): string {
                     // Ensure the path excludes the domain if present in the folder structure
     
                     $relativePath = rtrim($relativePath, DIRECTORY_SEPARATOR);
-
-                    //dd($relativePath, false);
-    
-                    //dd($_GET['domain'], false);
-    
-                    // Initialize query parameters
                     $queryParams = [];
 
+                    // Remove domain from relative path if present
                     if (!empty($_GET['domain'])) {
-                      // Remove the domain from the relative path if it exists at the start
-                      $relativePath = preg_replace(
-                        '#^' . preg_quote($_GET['domain'], '#') . '/?#',
-                        '',
-                        $relativePath
+                      $relativePath = preg_replace('#^' . preg_quote($_GET['domain'], '#') . '/?#', '', $relativePath);
+                      $queryParams['domain'] = $_GET['domain'];
+                      $queryParams['path'] = defined('APP_ROOT') && APP_ROOT != ''
+                        ? ($_GET['path'] ?? dirname($path) ?? '')
+                        : basename(rtrim($relativePath, '/') ?? basename($path));
+                    }
+
+                    if (!empty($_GET['client'])) {
+                      $queryParams['client'] = $_GET['client'];
+
+                      // Ensure domain is set, but not the same as path
+                      $queryParams['domain'] = $_GET['domain'] ?? basename($path);
+
+                      // Determine path while ensuring it does not duplicate domain
+                      $calculatedPath = $_GET['path'] ?? (
+                        (!empty($_GET['domain']) && strpos($relativePath, $_GET['domain']) === 0)
+                        ? substr($relativePath, strlen($_GET['domain']) + 1)
+                        : basename(rtrim($relativePath, '/'))
                       );
-                      $queryParams = [
-                        'domain' => $_GET['domain'],
-                        'path' => (defined('APP_ROOT') && APP_ROOT != '' ? ($_GET['path'] ?? basename($path) ?? '') : '') ?? basename(rtrim($relativePath, '/') ?? basename($path)),
-                      ];
-                    }
 
-                    // Determine the parameters to use based on the conditions
-                    if (isset($_GET['client']) && !empty($_GET['domain'])) {
-                      // Case 1: Both client and domain are set
-                      $queryParams = [
-                        'client' => $_GET['client'],
-                        'domain' => $_GET['domain'] ?? basename($path),
-                        'path' => $_GET['path'] ?? basename($path) ?? basename(rtrim($relativePath, '/')), // Add the path parameter
-                      ];
-                    } elseif (isset($_GET['client'])) {
-                      // Case 2: Only client is set
-                      $queryParams = [
-                        'client' => $_GET['client'],
-                        'domain' => $_GET['domain'] ?? basename($path), // Default domain if not explicitly provided
-                        'path' => (defined('APP_ROOT') && APP_ROOT != '' ? $_GET['path'] : '') ?? basename(rtrim($relativePath, '/') ?? basename($path)),
-                      ];
-                    } elseif (isset($_GET['path'])) {
-                      // Case 3: Only path is set
-                      $queryParams = [
-                        'path' => (isset($_GET['path']) && $_GET['path'] != '' ? $_GET['path'] : basename($path)) /*?? rtrim($relativePath, '/')*/ , // Use the path parameter
-                      ];
-                    } else {
-                      // Case 3: Only path is set
-                      $queryParams = [
-                        'path' => (isset($_GET['path']) && $_GET['path'] != '' ? $_GET['path'] : basename($path)) /*?? rtrim($relativePath, '/')*/ , // Use the path parameter
-                      ];
-                    }
+                      // Only remove path if it's identical to domain AND not empty
+                      if (!empty($calculatedPath) && $queryParams['domain'] === $calculatedPath) {
+                        $calculatedPath = '';
+                      }
 
+                      $queryParams['path'] = $calculatedPath;
+                    }
+                    /*
+                                        if (!empty($_GET['client'])) {
+                                          $queryParams['client'] = $_GET['client'];
+                                          $queryParams['domain'] = $_GET['domain'] ?? basename($path);
+                                          $queryParams['path'] = $_GET['path'] ?? (
+                                            (!empty($_GET['domain']) && strpos($relativePath, $_GET['domain']) === 0)
+                                            ? substr($relativePath, strlen($_GET['domain']) + 1)
+                                            : basename(rtrim($relativePath, '/'))
+                                          );
+                                        }
+
+                                        if (!empty($_GET['client'])) {
+                                          $queryParams['client'] = $_GET['client'];
+
+                                          // Ensure domain is set, but not the same as path
+                                          $queryParams['domain'] = $_GET['domain'] ?? '';
+
+                                          // Determine path while ensuring it does not duplicate domain
+                                          $calculatedPath = $_GET['path'] ?? (
+                                            (!empty($_GET['domain']) && strpos($relativePath, $_GET['domain']) === 0)
+                                            ? substr($relativePath, strlen($_GET['domain']) + 1)
+                                            : basename(rtrim($relativePath, '/'))
+                                          );
+
+                                          // Prevent domain and path from being the same
+                                          if (!empty($queryParams['domain']) && $queryParams['domain'] === $calculatedPath) {
+                                            $calculatedPath = ''; // Cancel out path if it matches domain
+                                          }
+
+                                          $queryParams['path'] = $calculatedPath;
+                                        }*/
+
+                    // Remove project from relative path if present
                     if (!empty($_GET['project'])) {
-                      // Remove the domain from the relative path if it exists at the start
-                      $relativePath = preg_replace(
-                        '#^' . preg_quote($_GET['project'], '#') . '/?#',
-                        '',
-                        $relativePath
-                      );
-                      $queryParams = [
-                        'project' => $_GET['project'],
-                        'path' => (defined('APP_ROOT') && APP_ROOT != '' ? ($_GET['path'] ?? basename($path) ?? '') : '') ?? basename(rtrim($relativePath, '/') ?? basename($path)),
-                      ];
+                      $relativePath = preg_replace('#^' . preg_quote($_GET['project'], '#') . '/?#', '', $relativePath);
+                      $queryParams['project'] = $_GET['project'];
+                      $queryParams['path'] = defined('APP_ROOT') && APP_ROOT != ''
+                        ? ($_GET['path'] ?? basename($path) ?? '')
+                        : basename(rtrim($relativePath, '/') ?? basename($path));
                     }
 
-                    if (!isset($_GET['path']) || $_GET['path'] == '') {
+                    // Handle base path if 'path' is not set
+                    if (empty($_GET['path'])) {
                       $basePath = rtrim(APP_PATH . APP_ROOT, DIRECTORY_SEPARATOR);
-
                       $path = preg_replace('#^' . preg_quote($basePath, '#') . '/?#', '', $path);
-
-                      $_GET['path'] = (string) $path; // dirname(rtrim($relativePath, '/')) . '/';
-    
+                      $_GET['path'] = (string) $path;
                       unset($_GET['path']);
-
-                      // Filter out empty parameters to avoid unnecessary query string entries
-//$queryParams = array_filter($queryParams);
-    
-                      // Build the query string
-                      $queryString = http_build_query($queryParams);
-
-                      $url = (defined('APP_ROOT') && APP_ROOT != '' && !empty($_GET['client']) ? basename(__FILE__) : '') . "?$queryString"; // 
-                    } else {
-
-                      // Build the query string
-                      $queryString = http_build_query($queryParams);
-
-                      $url = (defined('APP_ROOT') && APP_ROOT != '' ? basename(__FILE__) : '') . "?$queryString" . basename($path); // 
                     }
 
-                    // Determine the base path
+                    $queryString = http_build_query($queryParams);
+                    $url = (defined('APP_ROOT') && APP_ROOT != '' && !empty($_GET['client']))
+                      ? basename(__FILE__) . "?$queryString"
+                      : "?$queryString";
+
                     $basePath = $_GET['path'] ?? '';
+                    $domainCondition = (!defined('APP_ROOT') || APP_ROOT == '') && empty($_GET['domain']);
+                    $clientCondition = !empty($_GET['client']) && empty($_GET['domain']);
+                    $projectCondition = (!defined('APP_ROOT') || APP_ROOT == '') && empty($_GET['project']);
 
-                    // Determine the domain condition
-                    $domainCondition = !defined('APP_ROOT') || APP_ROOT == ''
-                      && (!isset($_GET['domain']) || $_GET['domain'] == '');
-
-                    // Determine the client condition
-                    $clientCondition = isset($_GET['client']) && !isset($_GET['domain']);
-
-                    $projectCondition = !defined('APP_ROOT') || APP_ROOT == ''
-                      && (!isset($_GET['project']) || $_GET['project'] == '');
-
-                    //dd($_ENV, false);
-                    // Determine the path suffix
-                    $pathSuffix = isset($_ENV['DEFAULT_DOMAIN']) && $_ENV['DEFAULT_DOMAIN'] != basename($path)
-                      ? (!$clientCondition ? basename($path) : '')
+                    $pathSuffix = (isset($_ENV['DEFAULT_DOMAIN']) && $_ENV['DEFAULT_DOMAIN'] != basename($path))
+                      ? (!$clientCondition ? ($basePath ? $relativePath : '') : '')
                       : basename(rtrim($relativePath, '/'));
 
-                    // Combine the full path for the onclick attribute
                     $fullPath = "$basePath$pathSuffix/";
-                    //die('test');
-                    // Construct the onclick attribute if needed
-                    $onclickAttribute = '';
-                    if ($domainCondition && isset($_GET['client']) && !isset($_GET['domain'])) {
-                      $onclickAttribute = (basename($path) == $_ENV['DEFAULT_DOMAIN']) ? " onclick=\"handleClick(event, '" . /*$fullPath is no longer required. */ "/')\"" : "";
-                    } else if ($domainCondition && isset($_GET['domain'])) {
+
+                    // Construct onclick attribute
+                    if ($domainCondition && isset($_GET['client']) || empty($_GET['domain'])) {
+                      $onclickAttribute = (basename($path) == $_ENV['DEFAULT_DOMAIN'])
+                        ? " onclick=\"handleClick(event, '/')\""
+                        : " onclick=\"handleClick(event, '" . ($domainCondition && $clientCondition ? (string) dirname($relativePath) : $relativePath) . "/')\"";
+                    } elseif ($domainCondition && !empty($_GET['domain']) || $projectCondition && !empty($_GET['project'])) {
                       $onclickAttribute = " onclick=\"handleClick(event, '$fullPath')\"";
-                    } elseif ($projectCondition && isset($_GET['project'])) {
-                      $onclickAttribute = " onclick=\"handleClick(event, '$fullPath')\"";
-                    } else { //elseif (!$domainCondition) { ... } 
-                      $onclickAttribute = " onclick=\"handleClick(event, '" . /*$fullPath is no longer required*/ $relativePath . "/')\""; // (is_dir(APP_PATH . $_GET['path']) ? $_GET['path'] . basename($path) : '') : /*$relativePath . */ '') 
+                    } else {
+                      $onclickAttribute = " onclick=\"handleClick(event, '" . (!$basePath ? (string) $relativePath : $relativePath) . "/')\"";
                     }
 
                     // Render the link
                     echo '<a href="' . htmlspecialchars($url) . '"' . $onclickAttribute . '>
-        <img src="resources/images/directory.png" width="50" height="32" /><br />'
-                      . basename($path) . '/</a>';
+    <img src="resources/images/directory.png" width="50" height="32" /><br />' . basename($path) . '/</a>';
 
 
                     /*
@@ -974,7 +961,7 @@ $tableGen = function () use ($group_type): string {
                   else
                     echo '<a href="' . basename(__FILE__) . '?' . (!isset($_GET['client']) ? (!isset($_GET['project']) ? '' : 'project=' . $_GET['project'] . '&') : 'client=' . $_GET['client'] . '&' . (isset($_GET['domain']) ? 'domain=' . ($_GET['domain'] != '' ? $_GET['domain'] . '&' : '') : '')) . 'path=' . /*(basename(dirname($path)) == basename(parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH) ? 'failed' : basename(dirname($path))))*/ ($_GET['path'] ?? '') . '&app=ace_editor' . '&file=' . basename($path) . '" onclick="handleClick(event, \'' . basename($relativePath) . '\')"><img src="resources/images/php_file.png" width="40" height="50" /></a><br />' . '<a href="' . htmlspecialchars($url) . '" onclick="handleClick(event, \'' . basename($relativePath) . '\')">' . basename($path) . '</a>';
 
-                } elseif (basename($path) == 'LICENSE' && preg_match('/^\/mnt\/c\/www\/LICENSE$/', $path)) {
+                } elseif (basename($path) == 'LICENSE' && preg_match('/^' . preg_quote(APP_PATH, '/') . 'LICENSE$/', $path)) {
                   /* https://github.com/unlicense */
                   echo '<div style="position: relative;"><a href="' . basename(__FILE__) . '?' . (!isset($_GET['client']) ? (!isset($_GET['project']) ? '' : 'project=' . $_GET['project'] . '&') : 'client=' . $_GET['client'] . '&') . (!isset($_GET['path']) ? '' : 'path=' . $_GET['path']) . '&app=ace_editor' . /*'path=' . (basename(dirname($path)) == basename(parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH) ? 'failed' : basename(dirname($path)))) .*/ '&file=' . basename($path) . '" onclick="handleClick(event, \'' . basename($relativePath) . '\')"><img src="resources/images/license_file.png" width="40" height="50" /></a><br />un' . '<a href="' . htmlspecialchars($url) . '" onclick="handleClick(event, \'' . basename($relativePath) . '\')">' . basename($path)
                     . '.org</a>'
