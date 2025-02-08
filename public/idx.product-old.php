@@ -96,9 +96,6 @@ $obj = new MyAliasClassName();
 
 //use $className; // Use the variable containing the namespace or class name
 
-/** Loading Time: 4.77s **/
-
-
 // dd(null, true);
 
 /*
@@ -111,11 +108,6 @@ $result = $whois->lookup($query,false);
 // composer require ipinfo/ipinfo:^2.2.0 (^3.1+ req. php 8.2.5)
 //use ipinfo\ipinfo\IPinfo; // api / key service
 //--use ipinfo\ipinfo\IPinfoException;
-
-
-/** Loading Time: 4.84s **/
-
-//dd(null, true);
 
 //die(basename(getcwd()) . ' ==' . 'public');
 
@@ -145,12 +137,6 @@ Psr/
 */
 
 //composer[config][require][]
-
-
-/** Loading Time: 3.67s **/
-
-// dd(null, true);
-
 
 //echo getcwd();
 /**/
@@ -311,15 +297,6 @@ do {
   }
  */
 
-
-
-//dd('test');
-
-
-/** Loading Time: 11.27s - 4.77s == 6.51s **/
-
-//dd('start time: ', false);
-
 //require_once(__DIR__ . DIRECTORY_SEPARATOR . 'public/ui_complete.php');
 
 //dd('final time: ', true);
@@ -330,45 +307,26 @@ do {
       : (is_file('../ui.git.php') ? '../ui.git.php' : (is_file('public/ui.git.php') ? 'public/ui.git.php' : (is_file('config/ui.git.php') ? 'config/ui.git.php' : 'ui.git.php'))))
     require_once($path); 
   else die(var_dump($path . ' was not found. file=ui.git.php'));
-*/
-/** Loading Time: 9.0s **/
 
-//dd(null, true);
-/*
   if ($path = (basename(getcwd()) == 'public')
       ? (is_file('ui.npm.php') ? 'ui.npm.php' : (is_file('../ui.npm.php') ? '../ui.npm.php' : (is_file('../config/ui.npm.php') ? '../config/ui.npm.php' : NULL)))
       : (is_file('../ui.npm.php') ? '../ui.npm.php' : (is_file('public/ui.npm.php') ? 'public/ui.npm.php' : (is_file('config/ui.npm.php') ? 'config/ui.npm.php' : 'ui.npm.php'))))
     require_once($path); 
   else die(var_dump($path . ' was not found. file=ui.npm.php'));
-*/
-/** Loading Time: 11.1s **/
 
-//dd(null, true);
-/*
   if ($path = (basename(getcwd()) == 'public')
       ? (is_file('ui.php.php') ? 'ui.php.php' : (is_file('../ui.php.php') ? '../ui.php.php' : (is_file('../config/ui.php.php') ? '../config/ui.php.php' : NULL)))
       : (is_file('../ui.php.php') ? '../ui.php.php' : (is_file('public/ui.php.php') ? 'public/ui.php.php' : (is_file('config/ui.php.php') ? 'config/ui.php.php' : 'ui.php.php'))))
     require_once($path); 
   else die(var_dump($path . ' was not found. file=ui.php.php'));
-*/
-/** Loading Time: 11.3s **/
 
-//dd(null, true);
-
-/*
   if ($path = (basename(getcwd()) == 'public')
       ? (is_file('ui.ace_editor.php') ? 'ui.ace_editor.php' : (is_file('../ui.ace_editor.php') ? '../ui.ace_editor.php' : (is_file('../config/ui.ace_editor.php') ? '../config/ui.ace_editor.php' : NULL)))
       : (is_file('../ui.ace_editor.php') ? '../ui.ace_editor.php' : (is_file('public/ui.ace_editor.php') ? 'public/ui.ace_editor.php' : (is_file('config/ui.ace_editor.php') ? 'config/ui.ace_editor.php' : 'ui.ace_editor.php'))))
     require_once($path); 
   else die(var_dump($path . ' was not found. file=ui.ace_editor.php'));
-*/
-/** Loading Time: 4.95s **/
-//dd(null, true);
-/*  */
 
-
-//dd('you know you\'re going to be mine !');
-/*
+  
   if ($path = (basename(getcwd()) == 'public')
       ? (is_file('app.timesheet.php') ? 'app.timesheet.php' : (is_file('../app.timesheet.php') ? '../app.timesheet.php' : (is_file('../config/app.timesheet.php') ? '../config/app.timesheet.php' : 'public/app.timesheet.php')))
       : (is_file('../app.timesheet.php') ? '../app.timesheet.php' : (is_file('public/app.timesheet.php') ? 'public/app.timesheet.php' : (is_file('config/app.timesheet.php') ? 'config/app.timesheet.php' : 'app.timesheet.php'))))
@@ -436,8 +394,6 @@ if (!empty($_GET['client']) && !empty($_GET['domain']))
 elseif (!empty($_GET['project']))
   chdir(APP_PATH . APP_PROJECT->path);
 */
-//dd(null, true);
-/** Loading Time: 11.27s **/
 
 /* Checkboxes hold their state under cache */
 header("Content-Type: text/html");
@@ -483,9 +439,9 @@ header("Pragma: no-cache"); ?>
         padding: 0;
         box-sizing: border-box;
 <?php if (isset($_GET['debug'])) { ?>
-          border: 1px dashed #FF0000;
+                              border: 1px dashed #FF0000;
 <?php } else { ?> 
-          /* border: 1px dashed #FF0000; */
+                              /* border: 1px dashed #FF0000; */
 <?php } ?>
       }
       *:focus {
@@ -745,7 +701,8 @@ header("Pragma: no-cache"); ?>
               <div
                 style="position: absolute; display: <?= (isset($errors['GIT_UPDATE']) ? 'block' : 'none') ?>; left: 26px; top: 5px; width: 126px; background-color: #0078D7; color: #FFF; z-index: -1; font-variant-caps: all-small-caps;">
                 <span style="background-color: #FFF; color: #0078D7;">&lt;- </span><span
-                  style="background-color: #FFF; color: red; margin-right: 2px;">Click to update&nbsp;</span></div>
+                  style="background-color: #FFF; color: red; margin-right: 2px;">Click to update&nbsp;</span>
+              </div>
               <form class="app_git-pull"
                 action="<?= APP_URL_BASE . '?' . http_build_query(APP_QUERY + ['app' => 'git']) . (defined('APP_ENV') && APP_ENV == 'development' ? '#!' : '') /* $c_or_p . '=' . (empty($_GET[$c_or_p]) ? '' : $$c_or_p->name) . '&amp;app=git' */ ?>"
                 method="POST">
@@ -834,9 +791,11 @@ header("Pragma: no-cache"); ?>
                     <option value="" <?= (isset($_GET['domain']) && $_GET['domain'] == '' ? 'selected' : '') ?>>---</option>
                     <?php foreach ($dirs as $dir) { ?>
                       <option <?= (isset($_GET['domain']) && $_GET['domain'] == basename($dir) ? 'selected' : '') ?>>
-                        <?= basename($dir); ?></option>
+                        <?= basename($dir); ?>
+                      </option>
                     <?php } ?>
-                  </select> /</form>
+                  </select> /
+                </form>
               <?php } ?>
 
             <?php } else {
@@ -1001,16 +960,16 @@ header("Pragma: no-cache"); ?>
 
 
       <?php /*
-   <div id="app_project-container" style="display: none; position: absolute; top: 80px; padding: 20px; margin-left: auto; margin-right: auto; left: 0; right: 0; width: 700px; z-index: 2;">
-     <div style="margin: -25px 0 20px 0;">
-       <div style="display: inline; float: right; text-align: center;">[<a style="cursor: pointer; font-size: 13px;" onclick="document.getElementById('app_project-container').style.display='none';">X</a>]</div>
-     </div>
-     <form style="background-color: #ddd; padding: 20px;">
-       <h3>Psr/Log</h3>
-       <label><input type="checkbox" checked> Add to Project.</label>
-       <button type="submit" style="float: right;">Save</button>
-       <iframe src="<?= APP_URL ?>?project=show" style="height: 300px; width: 600px;"></iframe>
- </form>
+<div id="app_project-container" style="display: none; position: absolute; top: 80px; padding: 20px; margin-left: auto; margin-right: auto; left: 0; right: 0; width: 700px; z-index: 2;">
+<div style="margin: -25px 0 20px 0;">
+<div style="display: inline; float: right; text-align: center;">[<a style="cursor: pointer; font-size: 13px;" onclick="document.getElementById('app_project-container').style.display='none';">X</a>]</div>
+</div>
+<form style="background-color: #ddd; padding: 20px;">
+<h3>Psr/Log</h3>
+<label><input type="checkbox" checked> Add to Project.</label>
+<button type="submit" style="float: right;">Save</button>
+<iframe src="<?= APP_URL ?>?project=show" style="height: 300px; width: 600px;"></iframe>
+</form>
 </div>
 */ ?>
       <div style="position: relative;">
@@ -1024,8 +983,8 @@ header("Pragma: no-cache"); ?>
             </div>
             <div style="display: inline; float: right; text-align: center; ">
               <code style=" background-color: white; color: #0078D7;">
-            <a style="cursor: pointer; font-size: 13px;" onclick="document.getElementById('app_client-container').style.display='none';">[X]</a>
-            </code>
+                                <a style="cursor: pointer; font-size: 13px;" onclick="document.getElementById('app_client-container').style.display='none';">[X]</a>
+                                </code>
             </div>
             <div style="margin: 0 10px;">
               <div style="display: inline-block; float: left; width: 49%;">
@@ -2080,7 +2039,7 @@ header("Pragma: no-cache"); ?>
                     var editor1 = ace.edit("editor1");
                     editor1.setTheme("ace/theme/monokai");
                     editor1.session.setMode("ace/mode/javascript");
-      
+ 
                     var editor2 = ace.edit("editor2");
                     editor2.setTheme("ace/theme/github");
                     editor2.session.setMode("ace/mode/html");
@@ -2365,9 +2324,9 @@ header("Pragma: no-cache"); ?>
             <?php } else { ?>
                     /*
                               document.getElementById('toggle-debug').checked = true;
-        
+ 
                               toggleSwitch(document.getElementById('toggle-debug'));
-        
+ 
                               $( '#app_directory-container' ).slideDown( "slow", function() {
                                // Animation complete.
                               });
@@ -2573,6 +2532,6 @@ header("Pragma: no-cache"); ?>
 </html>
 
 <?=
-  NULL; /** Loading Time: 15.0s **/
+  NULL;
 
 ?>

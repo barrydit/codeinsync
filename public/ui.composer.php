@@ -100,13 +100,6 @@ dd(get_included_files(), false);
   Publish Node.js Package to GitHub Packages
   Publishes a Node.js package to GitHub Packages.
 
-  */
-
-
-
-  /** Loading Time: 5.1s **/
-
-  /*
   if (!in_array(APP_PATH . APP_BASE['config'] . 'composer.php', get_required_files())) {
     require_once APP_PATH . APP_ROOT . APP_BASE['vendor'] . 'autoload.php';
     if ($path = (basename(getcwd()) == 'public')
@@ -377,9 +370,6 @@ END
   }
 
 }
-
-/** Loading Time: 4.99s **/
-
 
 /*
 <?php ob_start(); ?>
@@ -1790,7 +1780,6 @@ ob_start(); ?>
 
   if (false) { ?></script><?php }
 
-  /** Loading Time: 6.73s **/
 
   ob_start(); ?>
 <!DOCTYPE html>
@@ -1858,5 +1847,3 @@ if (__FILE__ == get_required_files()[0] || in_array(__FILE__, get_required_files
 } else {
   return $app;
 }
-
-/** Loading Time: 7.0s **/

@@ -1,7 +1,7 @@
 <?php
 
 //if (!in_array(dirname(__DIR__) . DIRECTORY_SEPARATOR . 'constants.php', get_required_files()))
-//  die($errors['CONSTANTS'] = 'Missing config/constants.php from required files');
+//  die($errors['CONSTANTS'] = 'Missing config' . DIRECTORY_SEPARATOR . 'constants.php from required files');
 //require_once dirname(__DIR__, 1) . DIRECTORY_SEPARATOR . 'config.php';
 
 // Ensure this file is loaded and php.php is not yet loaded

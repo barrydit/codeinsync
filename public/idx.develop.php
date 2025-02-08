@@ -48,12 +48,6 @@ if (!$registered) {
 dd();
 */
 
-
-/** Loading Time: 4.77s **/
-
-// dd(null, true);
-
-
 use phpWhois\Whois;
 /*
 $whois = new Whois(); // Domain lookup / nserver (Domain lookup)
@@ -65,11 +59,6 @@ $result = $whois->lookup($query,false);
 // composer require ipinfo/ipinfo:^2.2.0 (^3.1+ req. php 8.2.5)
 //use ipinfo\ipinfo\IPinfo; // api / key service
 //--use ipinfo\ipinfo\IPinfoException;
-
-
-/** Loading Time: 4.84s **/
-
-//dd(null, true);
 
 //die(basename(getcwd()) . ' ==' . 'public');
 
@@ -99,12 +88,6 @@ Psr/
 */
 
 //composer[config][require][]
-
-
-/** Loading Time: 3.67s **/
-
-// dd(null, true);
-
 
 //echo getcwd();
 /**/
@@ -198,15 +181,6 @@ do {
   }
  */
 
-
-
-//dd('test');
-
-
-/** Loading Time: 11.27s - 4.77s == 6.51s **/
-
-//dd('start time: ', false);
-
 //require_once(__DIR__ . DIRECTORY_SEPARATOR . 'public/ui_complete.php');
 
 //dd('final time: ', true);
@@ -217,41 +191,26 @@ do {
       : (is_file('../ui.git.php') ? '../ui.git.php' : (is_file('public/ui.git.php') ? 'public/ui.git.php' : (is_file('config/ui.git.php') ? 'config/ui.git.php' : 'ui.git.php'))))
     require_once($path); 
   else die(var_dump($path . ' was not found. file=ui.git.php'));
-*/
-/** Loading Time: 9.0s **/
 
-//dd(null, true);
-/*
   if ($path = (basename(getcwd()) == 'public')
       ? (is_file('ui.npm.php') ? 'ui.npm.php' : (is_file('../ui.npm.php') ? '../ui.npm.php' : (is_file('../config/ui.npm.php') ? '../config/ui.npm.php' : NULL)))
       : (is_file('../ui.npm.php') ? '../ui.npm.php' : (is_file('public/ui.npm.php') ? 'public/ui.npm.php' : (is_file('config/ui.npm.php') ? 'config/ui.npm.php' : 'ui.npm.php'))))
     require_once($path); 
   else die(var_dump($path . ' was not found. file=ui.npm.php'));
-*/
-/** Loading Time: 11.1s **/
 
-//dd(null, true);
-/*
   if ($path = (basename(getcwd()) == 'public')
       ? (is_file('ui.php.php') ? 'ui.php.php' : (is_file('../ui.php.php') ? '../ui.php.php' : (is_file('../config/ui.php.php') ? '../config/ui.php.php' : NULL)))
       : (is_file('../ui.php.php') ? '../ui.php.php' : (is_file('public/ui.php.php') ? 'public/ui.php.php' : (is_file('config/ui.php.php') ? 'config/ui.php.php' : 'ui.php.php'))))
     require_once($path); 
   else die(var_dump($path . ' was not found. file=ui.php.php'));
-*/
-/** Loading Time: 11.3s **/
 
-//dd(null, true);
-
-/*
+  
   if ($path = (basename(getcwd()) == 'public')
       ? (is_file('ui.ace_editor.php') ? 'ui.ace_editor.php' : (is_file('../ui.ace_editor.php') ? '../ui.ace_editor.php' : (is_file('../config/ui.ace_editor.php') ? '../config/ui.ace_editor.php' : NULL)))
       : (is_file('../ui.ace_editor.php') ? '../ui.ace_editor.php' : (is_file('public/ui.ace_editor.php') ? 'public/ui.ace_editor.php' : (is_file('config/ui.ace_editor.php') ? 'config/ui.ace_editor.php' : 'ui.ace_editor.php'))))
     require_once($path); 
   else die(var_dump($path . ' was not found. file=ui.ace_editor.php'));
 */
-/** Loading Time: 4.95s **/
-//dd(null, true);
-/*  */
 if (
   $path = (basename(getcwd()) == 'public')
   ? (is_file('app.timesheet.php') ? 'app.timesheet.php' : (is_file('../app.timesheet.php') ? '../app.timesheet.php' : (is_file('../config/app.timesheet.php') ? '../config/app.timesheet.php' : 'public/app.timesheet.php')))
@@ -342,9 +301,6 @@ if (
 else
   die(var_dump($path . ' was not found. file=app.console.php'));
 
-/** Loading Time: 12.2s **/
-
-
 //  header("Content-Type: text/html");
 //  header("Cache-Control: no-store, no-cache, must-revalidate, max-age=0");
 //  header("Pragma: no-cache"); ?>
@@ -385,9 +341,9 @@ else
   <style type="text/tailwindcss">
     * {
 <?php if (isset($_GET['debug'])) { ?>
-            border: 1px dashed #FF0000;
+                        border: 1px dashed #FF0000;
 <?php } else { ?> 
-            /* border: 1px dashed #FF0000; */
+                        /* border: 1px dashed #FF0000; */
 <?php } ?>
       }
       body {
@@ -873,13 +829,13 @@ else
       <?php /*
 <div id="app_project-container" style="display: none; position: absolute; top: 80px; padding: 20px; margin-left: auto; margin-right: auto; left: 0; right: 0; width: 700px; z-index: 2;">
 <div style="margin: -25px 0 20px 0;">
-  <div style="display: inline; float: right; text-align: center;">[<a style="cursor: pointer; font-size: 13px;" onclick="document.getElementById('app_project-container').style.display='none';">X</a>]</div>
+<div style="display: inline; float: right; text-align: center;">[<a style="cursor: pointer; font-size: 13px;" onclick="document.getElementById('app_project-container').style.display='none';">X</a>]</div>
 </div>
 <form style="background-color: #ddd; padding: 20px;">
-  <h3>Psr/Log</h3>
-  <label><input type="checkbox" checked> Add to Project.</label>
-  <button type="submit" style="float: right;">Save</button>
-  <iframe src="<?= APP_URL ?>?project=show" style="height: 300px; width: 600px;"></iframe>
+<h3>Psr/Log</h3>
+<label><input type="checkbox" checked> Add to Project.</label>
+<button type="submit" style="float: right;">Save</button>
+<iframe src="<?= APP_URL ?>?project=show" style="height: 300px; width: 600px;"></iframe>
 </form>
 </div>
 */ ?>
@@ -894,8 +850,8 @@ else
             </div>
             <div style="display: inline; float: right; text-align: center; ">
               <code style=" background-color: white; color: #0078D7;">
-              <a style="cursor: pointer; font-size: 13px;" onclick="document.getElementById('app_client-container').style.display='none';">[X]</a>
-              </code>
+                          <a style="cursor: pointer; font-size: 13px;" onclick="document.getElementById('app_client-container').style.display='none';">[X]</a>
+                          </code>
             </div>
             <div style="margin: 0 10px;">
               <div style="display: inline-block; float: left; width: 49%;">
@@ -1558,6 +1514,6 @@ else
 
 </html>
 
-<?= NULL; /** Loading Time: 15.0s **/
+<?= NULL;
 
 ?>

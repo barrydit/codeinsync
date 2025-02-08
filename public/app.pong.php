@@ -3,7 +3,7 @@
 if (__FILE__ == get_required_files()[0] && __FILE__ == realpath($_SERVER["SCRIPT_FILENAME"])) {
   if ($path = basename(dirname(get_required_files()[0])) == 'public') { // (basename(getcwd())
     require_once '../bootstrap.php';
-  } elseif (is_file($path = realpath('config/config.php'))) {
+  } elseif (is_file($path = realpath('config' . DIRECTORY_SEPARATOR . 'config.php'))) {
     require_once $path;
   } else {
     die(var_dump("Path was not found. file=$path"));
@@ -417,7 +417,6 @@ ob_start(); ?>
   ob_end_clean();
 
   if (false) { ?></script><?php }
-  //dd($_SERVER);
   ob_start(); ?>
 <!DOCTYPE html>
 <html>

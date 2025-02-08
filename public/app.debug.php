@@ -2,17 +2,17 @@
 
 //require_once('session.php');
 
-//dd( dirname(__DIR__) . '/config/config.php');
+//dd( dirname(__DIR__) . DIRECTORY_SEPARATOR . 'config' . DIRECTORY_SEPARATOR . 'config.php');
 
 if (__FILE__ == get_required_files()[0]) { //die(getcwd());
   if (
     $path = (basename(getcwd()) == 'public')
-    ? (is_file('config.php') ? 'config.php' : '../config/config.php') : ''
+    ? (is_file('config.php') ? 'config.php' : '..' . DIRECTORY_SEPARATOR . 'config' . DIRECTORY_SEPARATOR . 'config.php') : ''
   )
     require_once $path;
   else
     die(var_dump("$path path was not found. file=config.php"));
-} elseif (!in_array($path = dirname(__DIR__) . '/config/config.php', get_required_files()))
+} elseif (!in_array($path = dirname(__DIR__) . DIRECTORY_SEPARATOR . 'config' . DIRECTORY_SEPARATOR . 'config.php', get_required_files()))
   require_once $path;
 
 if (!empty($_SERVER['REQUEST_URI']))
@@ -300,7 +300,7 @@ HTML;
   
     /*
     if (basename($_SERVER['PHP_SELF']) == basename(__FILE__)) { // ($_SERVER["SCRIPT_NAME"] != APP_ROOT_URL . 'index.php') 
-      require_once dirname(__DIR__, 1) . '/config/session.php';
+      require_once dirname(__DIR__, 1) . DIRECTORY_SEPARATOR . 'config' . DIRECTORY_SEPARATOR . 'session.php';
       header('Location: ' . APP_URL_BASE . '?' . http_build_query(['file' => 'debug']));
       exit();
     }
@@ -364,9 +364,9 @@ HTML;
                   echo 'Defined Constants [User]: ';
                   print_r(get_defined_constants(true)['user']); // [Core] | [pcre]
                 
-                  echo '$_SERVER["HTTPS"]: ' . (isset($_SERVER['HTTPS']) ? $_SERVER['HTTPS'] : 'off') . "\n";
+                  echo '$_SERVER["HTTPS"]: ' . ($_SERVER['HTTPS'] ?? 'off') . "\n";
                   echo '$_SERVER["REQUEST_URI"]: ' . $_SERVER['REQUEST_URI'] . "\n";
-                  echo '$_SERVER["HTTP_REFERER"]: ' . (isset($_SERVER['HTTP_REFERER']) ? $_SERVER['HTTP_REFERER'] : '&lt;none&gt;') . "\n\n";
+                  echo '$_SERVER["HTTP_REFERER"]: ' . ($_SERVER['HTTP_REFERER'] ?? '&lt;none&gt;') . "\n\n";
 
                   echo 'Included files: ';
                   print_r(get_included_files());

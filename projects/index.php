@@ -36,7 +36,7 @@ $settings->setColorizer(new HTMLColorizer());  // Here you need to set up HTMLCo
 
 $lineA = [];
 for ($i = 0; $i < +120; $i++) {
-    $lineA[] = 5 * sin($i * ((M_PI * 4) / 120));
+  $lineA[] = 5 * sin($i * ((M_PI * 4) / 120));
 }
 
 $linechart->addLine(0, ['color:purple'], Linechart::FULL_LINE);  // Use css styles instead of ascii color codes
@@ -47,17 +47,45 @@ echo $linechart->chart();
 ?>
 
 <div class="table-container">
-<table border="1" style="">
-<tr><td>Created</td><td>a</td><td>table</td><td>columns</td></tr>
-<tr><td>A</td><td>new</td><td>row</td></tr>
-<tr><td>And</td><td>some</td><td>more</td><td>rows</td></tr>
-</table>
+  <table border="1" style="">
+    <tr>
+      <td>Created</td>
+      <td>a</td>
+      <td>table</td>
+      <td>columns</td>
+    </tr>
+    <tr>
+      <td>A</td>
+      <td>new</td>
+      <td>row</td>
+    </tr>
+    <tr>
+      <td>And</td>
+      <td>some</td>
+      <td>more</td>
+      <td>rows</td>
+    </tr>
+  </table>
 
-<table border="1" style="">
-<tr><td>Create New</td><td>a</td><td>table</td><td>columns</td></tr>
-<tr><td>A</td><td>new</td><td>row</td></tr>
-<tr><td>And</td><td>some</td><td>more</td><td>rows</td></tr>
-</table>
+  <table border="1" style="">
+    <tr>
+      <td>Create New</td>
+      <td>a</td>
+      <td>table</td>
+      <td>columns</td>
+    </tr>
+    <tr>
+      <td>A</td>
+      <td>new</td>
+      <td>row</td>
+    </tr>
+    <tr>
+      <td>And</td>
+      <td>some</td>
+      <td>more</td>
+      <td>rows</td>
+    </tr>
+  </table>
 </div>
 <div style="clear: both;"></div>
 

@@ -3,7 +3,7 @@
 if (__FILE__ == get_required_files()[0])
   if (
     $path = (basename(getcwd()) == 'public')
-    ? (is_file('config.php') ? 'config.php' : '../config/config.php') : ''
+    ? (is_file('config.php') ? 'config.php' : '..' . DIRECTORY_SEPARATOR . 'config' . DIRECTORY_SEPARATOR . 'config.php') : ''
   )
     require_once $path;
   else
@@ -225,7 +225,7 @@ if (__FILE__ == get_required_files()[0] || in_array(__FILE__, get_required_files
 
     <style type="text/tailwindcss">
       <?= $app['style']; ?>
-        </style>
+          </style>
   </head>
 
   <body>
@@ -241,7 +241,7 @@ if (__FILE__ == get_required_files()[0] || in_array(__FILE__, get_required_files
     <script src="//code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
     <!-- <script src="../resources/js/jquery/jquery.min.js"></script> -->
     <script>
-        <?= /*$app['script'];*/ NULL; ?>
+          <?= /*$app['script'];*/ NULL; ?>
     </script>
   </body>
 

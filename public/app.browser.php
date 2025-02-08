@@ -141,7 +141,7 @@ ob_start(); ?>
 
 <!-- <div class="container" style="border: 1px solid #000;"> -->
 <div id="app_browser-container"
-  class="<?= (__FILE__ == get_required_files()[0] || (isset($_GET['app']) && $_GET['app'] == 'browser') ? 'selected' : '') ?>"
+  class="<?= __FILE__ == get_required_files()[0] || (isset($_GET['app']) && $_GET['app'] == 'browser') ? 'selected' : '' ?>"
   style="border: 1px solid #000;">
   <div class="header ui-widget-header">
     <div style="display: inline-block;">Browser ()</div>
@@ -150,10 +150,10 @@ ob_start(); ?>
   </div>
 
   <div style="display: inline-block; width: auto; padding-left: 10px;">
-    <div style="position: absolute; background-color: white; left: 0; right: 0; width: auto;">WWW: <input type="text"
-        name="url" onselect="go_to_url();" /></div>
+    <div style="position: absolute; background-color: white; left: 0; right: 0; width: auto;">WWW Test: <input
+        type="text" name="url" onselect="go_to_url();" /></div>
     <iframe
-      src="<?= (is_dir($path = APP_PATH . APP_BASE['public']) && getcwd() == realpath($path) ? APP_BASE['public'] : '') . basename(__FILE__) ?>"
+      src="<?= /* (is_dir($path = APP_PATH . APP_BASE['public']) && getcwd() == realpath($path) ? APP_BASE['public'] : '') . basename(__FILE__) */ NULL; ?>"
       style="height: 550px; width: 775px;"></iframe>
   </div>
 
@@ -238,9 +238,66 @@ $dom->appendChild($elm);
 //$dom->saveHTML($dom->documentElement);
 
 //echo 
+?>
+
+<?php ob_start(); ?>
+<!DOCTYPE html>
+<html>
+
+<head>
+  <meta http-equiv="content-type" content="text/html; charset=UTF-8">
+  <title>Browser</title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <link rel="stylesheet" href="resources/css/app.css" />
+  <link rel="stylesheet" href="//code.jquery.com/ui/1.12.1/themes/smoothness/jquery-ui.css" />
+
+  <?php
+  // (check_http_status('https://cdn.tailwindcss.com') ? 'https://cdn.tailwindcss.com' : APP_URL . 'resources/js/tailwindcss-3.3.5.js')?
+  is_dir($path = APP_PATH . APP_BASE['resources'] . 'js/') or mkdir($path, 0755, true);
+  if (is_file("{$path}tailwindcss-3.3.5.js")) {
+    if (ceil(abs((strtotime(date('Y-m-d')) - strtotime(date('Y-m-d', strtotime('+5 days', filemtime($path . 'tailwindcss-3.3.5.js'))))) / 86400)) <= 0) {
+      $url = 'https://cdn.tailwindcss.com';
+      $handle = curl_init($url);
+      curl_setopt($handle, CURLOPT_RETURNTRANSFER, true);
+
+      if (!empty($js = curl_exec($handle)))
+        file_put_contents("{$path}tailwindcss-3.3.5.js", $js) or $errors['JS-TAILWIND'] = "$url returned empty.";
+    }
+  } else {
+    $url = 'https://cdn.tailwindcss.com';
+    $handle = curl_init($url);
+    curl_setopt($handle, CURLOPT_RETURNTRANSFER, true);
+
+    if (!empty($js = curl_exec($handle)))
+      file_put_contents("{$path}tailwindcss-3.3.5.js", $js) or $errors['JS-TAILWIND'] = "$url returned empty.";
+  }
+  ?>
+
+  <script src="<?= 'resources/js/tailwindcss-3.3.5.js' ?? $url ?>"></script>
+
+  <style type="text/tailwindcss">
+    <?= /*$appWhiteboard['style'];*/ NULL; ?>
+* { margin: 0; padding: 0; } /* to remove the top and left whitespace */
+
+html, body { width: 100%; height: 100%; <?= $_SERVER['SCRIPT_FILENAME'] == __FILE__ ? 'overflow:hidden;' : '' ?> } /* just to be sure these are full screen*/
+</style>
+</head>
+
+<body class="bg-gray-300">
+  <?= $app[$browser]['body']; ?>
+</body>
+
+</html>
+<?php $app[$browser]['html'] = ob_get_contents();
+ob_end_clean();
 
 //check if file is included or accessed directly
 if (__FILE__ == get_required_files()[0] || in_array(__FILE__, get_required_files()) && isset($_GET['app']) && $_GET['app'] == 'browser' && APP_DEBUG)
-  Shutdown::setEnabled(false)->setShutdownMessage(function () { // use($dom)
-    return '<!DOCTYPE html>'; // $dom->saveHTML() ?? file_get_contents("https://github.com/barrydit/codeinsync"); // $dom->saveHTML(); /* eval('? >' . $project_code); // -wow */
-  })->shutdown(); // exit;
+  die($app[$browser]['html']);
+
+/*
+Shutdown::setEnabled(false)->setShutdownMessage(function () { // use($dom)
+  return '<!DOCTYPE html>'; //  $dom->saveHTML() ?? file_get_contents("https://github.com/barrydit/codeinsync"); // $dom->saveHTML(); /* eval('? >' . $project_code); // -wow
+})->shutdown(); // exit; */

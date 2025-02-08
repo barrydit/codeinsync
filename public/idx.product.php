@@ -3,7 +3,7 @@
 //if (__FILE__ == get_required_files()[0] && __FILE__ == realpath($_SERVER["SCRIPT_FILENAME"]))
 if (dirname(get_required_files()[0]) == getcwd()) {
   if ($path = basename(dirname(get_required_files()[0])) == 'public') { // (basename(getcwd())
-    if (is_file($path = realpath('config/php.php')))
+    if (is_file($path = realpath('config' . DIRECTORY_SEPARATOR . 'php.php')))
       require_once $path;
     else
       die(var_dump("Path was not found. file=$path"));
@@ -15,6 +15,7 @@ if (!headers_sent()) {
   header("Expires: Sat, 26 Jul 1997 05:00:00 GMT");
   header("Pragma: no-cache");
 }
+
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -59,9 +60,9 @@ margin : 0;
 padding : 0;
 box-sizing : border-box;
 <?php if (isset($_GET['debug'])) { ?>
-            border: 1px dashed #FF0000;
+                        border: 1px dashed #FF0000;
 <?php } else { ?> 
-            /* border: 1px dashed #FF0000; */
+                        /* border: 1px dashed #FF0000; */
 <?php } ?>
 }
 *:focus {
@@ -292,7 +293,7 @@ cursor : pointer;
       
         //$path = '?path=' . $path;
       } elseif (!empty($_GET['project'])) {
-        $path = '/projects/' . $_GET['project'] . '/' . (!is_dir('projects' . DIRECTORY_SEPARATOR . $_GET['project'] . DIRECTORY_SEPARATOR . 'public') ?: 'public');
+        $path = '/projects/' . $_GET['project'] . '/' . (!is_dir('projects' . DIRECTORY_SEPARATOR . $_GET['project'] . DIRECTORY_SEPARATOR . 'public') ? '' : 'public');
         //$dirs = array_filter(glob(dirname(__DIR__) . '/projects/' . $_GET['project'] . '/*'), 'is_dir');
       
       } else {
@@ -520,8 +521,8 @@ cursor : pointer;
                   style="text-align: center;" src="<?= APP_BASE['resources'] . 'images/user.png' ?>" /><br /><span
                   style="text-align: center;">Profile</span></a></div>
             <div style="position: absolute; margin: 100px 0 0 630px; text-align: center;" class="text-sm"><a href="#!"
-                onclick="document.getElementById('app_browser-container').style.display='block'; return false;"><img
-                  style="text-align: center;" src="<?= APP_BASE['resources'] . 'images/browser.png' ?>" /><br /><span
+                onclick="toggleIframeUrl('app.browser.php'); return false;"><img style="text-align: center;"
+                  src="<?= APP_BASE['resources'] . 'images/browser.png' ?>" /><br /><span
                   style="text-align: center;">Browser</span></a></div>
             <div style="position: absolute; margin: 200px 75px; text-align: center;" class="text-sm"><a href="#!"
                 onclick="document.getElementById('app_tools-container').style.display='block'; return false;"><img
@@ -1702,4 +1703,4 @@ $(document).ready(function() {
 
 </html>
 
-<?= NULL; /** Loading Time: 15.0s **/ ?>
+<?= NULL; ?>

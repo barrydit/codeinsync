@@ -25,10 +25,10 @@ END;
 switch (APP_SELF) {
   case __FILE__:
     require_once dirname(__DIR__, 1) . DIRECTORY_SEPARATOR . 'bootstrap.php';
-    //require_once dirname(__DIR__, 1) . DIRECTORY_SEPARATOR . 'config/constants.php';
+    //require_once dirname(__DIR__, 1) . DIRECTORY_SEPARATOR . 'config' . DIRECTORY_SEPARATOR . 'constants.php';
     break;
   default:
-    if ($php = realpath(dirname(__DIR__, 1) . DIRECTORY_SEPARATOR . 'config/php.php')) {
+    if ($php = realpath(dirname(__DIR__, 1) . DIRECTORY_SEPARATOR . 'config' . DIRECTORY_SEPARATOR . 'php.php')) {
       require_once $php; // APP_PATH . 'index.php'
     } else {
       die(var_dump("$php was not found."));
@@ -38,7 +38,7 @@ switch (APP_SELF) {
 
 //dd($_ENV, false);
 
-require_once 'config/login.php';
+require_once 'config' . DIRECTORY_SEPARATOR . 'login.php';
 
 //die(var_dump(APP_ROOT));
 
@@ -112,10 +112,6 @@ if (isset($_ENV['PHP']['LOG_PATH']) && is_readable($path = APP_PATH . APP_ROOT .
     unlink($path);
 }
 
-
-/** Loading Time: 0.638s **/
-
-// dd(null, true);
 
 //dd($_SERVER); php_self, script_name, request_uri /folder/
 
