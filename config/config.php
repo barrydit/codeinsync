@@ -17,7 +17,7 @@ $isFile = function ($path) /*use (&$paths)*/ {
 };
 
 $isFile(APP_PATH . 'php.php') ?:
-  $isFile('config/php.php') ?:
+  $isFile('config' . DIRECTORY_SEPARATOR . 'php.php') ?:
   $isFile('php.php');
 
 // Check if the dd function exists
@@ -323,9 +323,9 @@ if (basename($dir = getcwd()) != 'config') {
     chdir('../');
 
   //require_once 'constants.php';
-  //require_once 'config/login.php';
-
-  require_once 'bootstrap.php';
+  //require_once 'config' . DIRECTORY_SEPARATOR . 'login.php';
+  //dd(getcwd());
+  require_once APP_PATH . 'bootstrap.php';
 
   chdir(APP_PATH . APP_ROOT);
   if (is_file($file = APP_PATH . APP_ROOT . '.env')) {
@@ -483,11 +483,11 @@ END
       require_once $path;
 
   if (defined('APP_PROJECT'))
-    require_once 'public/install.php';
+    require_once 'public' . DIRECTORY_SEPARATOR . 'install.php';
 }
 
 /*
-if ($path = realpath((basename(__DIR__) != 'config' ? NULL : __DIR__ . DIRECTORY_SEPARATOR ) . 'constants.php')) // is_file('config/constants.php')) 
+if ($path = realpath((basename(__DIR__) != 'config' ? NULL : __DIR__ . DIRECTORY_SEPARATOR ) . 'constants.php')) // is_file('config' . DIRECTORY_SEPARATOR . 'constants.php')) 
   if (!in_array($path, get_required_files()))
     require_once $path;
 */

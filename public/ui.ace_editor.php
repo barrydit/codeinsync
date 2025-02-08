@@ -374,8 +374,7 @@ $app['body'] = ob_get_contents();
 ob_end_clean();
 
 if (false) { ?>
-  <script type="text/javascript">
-  <?php }
+  <script type="text/javascript"><?php }
 
 ob_start();
 //if (isset($_GET['client']) && $_GET['client'] != '') { 
@@ -415,7 +414,7 @@ if (is_dir($path = APP_PATH . APP_BASE['resources'] . 'js/ace')) { ?>
 
 /* This is an example of ACE Editor working */
 
-require(__DIR__ . 'config/config.php');
+require(__DIR__ . 'config' . DIRECTORY_SEPARATOR . 'config.php');
 
 "; /* (isset($_GET['project']) ? htmlsanitize(file_get_contents($path . 'projects/index.php')) : '')*/
         ''; /*   'clientele/' . $_GET['client'] . '/' . $_GET['domain'] . '/' .  */ ?>`;

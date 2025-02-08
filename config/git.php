@@ -167,7 +167,7 @@ if (isset($_SERVER['REQUEST_METHOD']) && $_SERVER['REQUEST_METHOD'] == 'POST')
     if (preg_match('/^git\s*(:?.*)/i', $_POST['cmd'], $match)) {
       //(function() use ($path) {
       //  ob_start();
-      //require_once APP_PATH . 'config/git.php';
+      //require_once APP_PATH . 'config' . DIRECTORY_SEPARATOR . 'git.php';
 
       $command = (stripos(PHP_OS, 'WIN') === 0 ? '' : APP_SUDO . '-u www-data ') . 'git ' . ' --git-dir="' . APP_PATH . APP_ROOT . '.git" --work-tree="' . APP_PATH . APP_ROOT . '" commit --allow-empty --dry-run';
 

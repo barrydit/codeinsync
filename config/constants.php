@@ -1,6 +1,6 @@
 <?php
 // This may not be a good idea...
-//if ($path = realpath((basename(__DIR__) != 'config' ? NULL : __DIR__ . DIRECTORY_SEPARATOR) . 'config.php')) // is_file('config/config.php')) 
+//if ($path = realpath((basename(__DIR__) != 'config' ? NULL : __DIR__ . DIRECTORY_SEPARATOR) . 'config.php')) // is_file('config' . DIRECTORY_SEPARATOR . 'config.php')) 
 //  require_once $path;
 
 // Enable output buffering
@@ -387,10 +387,10 @@ if (defined('APP_ENV') && !is_string(APP_ENV)) {
 }
 
 /* if (APP_ENV == 'development') { 
-  if ($path = realpath((basename(__DIR__) != 'config' ? NULL : __DIR__ . DIRECTORY_SEPARATOR) . 'constants_backup.php')) // is_file('config/constants.php')) 
+  if ($path = realpath((basename(__DIR__) != 'config' ? NULL : __DIR__ . DIRECTORY_SEPARATOR) . 'constants_backup.php')) // is_file('config' . DIRECTORY_SEPARATOR . 'constants.php')) 
     require_once $path;
 
-  if ($path = realpath((basename(__DIR__) != 'config' ? NULL : __DIR__ . DIRECTORY_SEPARATOR) . 'constants_client-project.php')) // is_file('config/constants.php')) 
+  if ($path = realpath((basename(__DIR__) != 'config' ? NULL : __DIR__ . DIRECTORY_SEPARATOR) . 'constants_client-project.php')) // is_file('config' . DIRECTORY_SEPARATOR . 'constants.php')) 
     require_once $path;
 } */
 

@@ -144,7 +144,7 @@ foreach ($dirs as $includeFile) {
 //die(var_dump(get_defined_constants(true)['user']));
 
 // Get all PHP files in the 'classes' directory
-$paths = array_filter(glob(__DIR__ . DIRECTORY_SEPARATOR . 'classes/*.php'), 'is_file');
+$paths = array_filter(glob(__DIR__ . DIRECTORY_SEPARATOR . 'classes' . DIRECTORY_SEPARATOR . '*.php'), 'is_file');
 
 // Define the filenames to be excluded
 $excludedFiles = [

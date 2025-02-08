@@ -1,6 +1,6 @@
 <?php
 require_once 'bootstrap.php';
-require_once 'config/config.php';
+require_once 'config' . DIRECTORY_SEPARATOR . 'config.php';
 
 use PHPUnit\Event\Code\Throwable;
 /*
@@ -563,10 +563,17 @@ if (defined('APP_ENV') and APP_ENV == 'development') {
     //die('test');
 
     ob_start(); ?>
-    <?= $composer_exec; ?> init --quiet --no-interaction --working-dir="<?= APP_PATH . APP_ROOT; ?>"
-    --name="<?= $composerUser . '/' . $$c_or_p->name; ?>" --description="General Description" --author="Barry Dick
-    <barryd.it@gmail.com>" --type="project" --homepage="https://github.com/<?= $composerUser . '/' . $$c_or_p->name; ?>""
-      --require="php:^7.4||^8.0" --require="composer/composer:^1.0" --require-dev="pds/skeleton:^1.0" --stability="dev"
+    <?= $composer_exec; ?> init --quiet --no-interaction
+    --working-dir="<?= APP_PATH . APP_ROOT; ?>"
+    --name="<?= $composerUser . '/' . $$c_or_p->name; ?>"
+    --description="General Description"
+    --author="Barry Dick <barryd.it@gmail.com>"
+      --type="project"
+      --homepage="https://github.com/<?= $composerUser . '/' . $$c_or_p->name; ?>""
+      --require="php:^7.4||^8.0"
+      --require="composer/composer:^1.0"
+      --require-dev="pds/skeleton:^1.0"
+      --stability="dev"
       --license="WTFPL"
       <?php
       defined('COMPOSER_INIT_PARAMS')
@@ -648,8 +655,7 @@ defined('COMPOSER_JSON') or define('COMPOSER_JSON', [
   'path' => APP_PATH . APP_ROOT . 'composer.json'
 ]);
 
-ob_start();
-?>
+ob_start(); ?>
   <?= $composer_exec; ?> init --quiet --no-interaction
   --working-dir="<?= APP_PATH . APP_ROOT; ?>"
   --name="<?= $composerUser . '/' . str_replace('.', '_', basename(APP_ROOT) ?? $componetPkg); ?>"
@@ -878,9 +884,12 @@ ob_start();
 //    unlink($path);
   
     if (version_compare(COMPOSER_LATEST, COMPOSER_VERSION, '>') != 0) {
+
       //dd(basename(COMPOSER_EXEC['bin']) . ' self-update;'); // (stripos(PHP_OS, 'WIN') === 0 ? '' : APP_SUDO) . 
       //(APP_SELF !== APP_PATH_SERVER) and 
-      require_once 'classes/class.sockets.php';
+  
+      require_once 'config' . DIRECTORY_SEPARATOR . 'classes' . DIRECTORY_SEPARATOR . 'class.sockets.php';
+
       //unset($socketInstance);
       if (!isset($socketInstance)) {
         $socketInstance = Sockets::getInstance();

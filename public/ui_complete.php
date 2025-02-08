@@ -5,8 +5,6 @@
 
 //$errors->{'TEXT_MANAGER'} = $path . "\n" . 'File Modified:    Rights:    Date of creation: ';
 
-
-
 if (__FILE__ == get_required_files()[0])
   if (
     $path = (basename(getcwd()) == 'public')
@@ -15,7 +13,7 @@ if (__FILE__ == get_required_files()[0])
   )
     require_once $path;
   else
-    die(var_dump($path . ' path was not found. file=config.php'));
+    die(var_dump("$path path was not found. file=config.php"));
 
 //dd($_GET);
 
@@ -430,9 +428,6 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 
   */
 }
-
-
-/** Loading Time: 5.1s **/
 
 if (!in_array(APP_PATH . APP_BASE['config'] . 'composer.php', get_required_files()))
   if (
@@ -2060,11 +2055,7 @@ for (i = 0; i < dropdowns.length; i++) { var openDropdown=dropdowns[i]; if (open
       optionSelected=$("option:selected", this); var valueSelected=this.value; }); */ }); <?php $appComposer['script'] = ob_get_contents();
       ob_end_clean();
 
-      /** Loading Time: 5.03s **/
-
-
-      ob_start(); ?> <!DOCTYPE
-      html>
+      ob_start(); ?> <!DOCTYPE html>
       <html>
 
       <head>
@@ -2125,8 +2116,6 @@ for (i = 0; i < dropdowns.length; i++) { var openDropdown=dropdowns[i]; if (open
       //check if file is included or accessed directly
       if (__FILE__ == APP_SELF || in_array(__FILE__, get_required_files()) && isset($_GET['app']) && $_GET['app'] == 'composer' && APP_DEBUG)
         die($appComposer['html']);
-
-      /** Loading Time: 7.0s **/
 
       // 5.025 @ 4.992
       dd('composer init time: ', false);

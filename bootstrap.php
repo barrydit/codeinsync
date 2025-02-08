@@ -1,12 +1,14 @@
 <?php
 
 // Define APP_PATH constant
-!defined('APP_PATH')
-  and define('APP_PATH', __DIR__ . DIRECTORY_SEPARATOR)
-  and is_string(APP_PATH)
-  ? ''
-  : $errors['APP_PATH'] = "APP_PATH is not a valid string value.\n";
+define('APP_PATH', realpath(__DIR__ . DIRECTORY_SEPARATOR /*. '..' . DIRECTORY_SEPARATOR*/) . DIRECTORY_SEPARATOR);
+// Define base paths
+!defined('BASE_PATH') and
+  define('BASE_PATH', __DIR__ . DIRECTORY_SEPARATOR) and
+  is_string(BASE_PATH) ?: $errors['BASE_PATH'] = "BASE_PATH is not a valid string value.\n"; // APP_PATH
+define('CONFIG_PATH', BASE_PATH . 'config' . DIRECTORY_SEPARATOR);
 
+// CONFIG_PATH, PUBLIC_PATH, STORAGE_PATH, VENDOR_PATH, VIEW_PATH, CACHE_PATH, LOG_PATH, TEMP_PATH, UPLOAD_PATH, ASSETS_PATH, APP_PATH, BASE_PATH, ROOT_PATH, SRC_PATH, TEST_PATH, WWW_PATH
 /*
 !defined('DOMAIN_EXPR') and 
   // const DOMAIN_EXPR = 'string only/non-block/ternary'; 
@@ -126,7 +128,7 @@ $path = preg_replace(
 );
 //define('APP_ROOT', $_GET['client'] . '/' . $_GET['domain']);
 // Define APP_ROOT using the directory of the resolved path
-defined('APP_ROOT') || define('APP_ROOT', is_dir(APP_PATH . $path) ? $path : '/test');
+defined('APP_ROOT') || define('APP_ROOT', !is_dir(APP_PATH . $path) ?: $path);
 
 //die(APP_ROOT);
 // Check if the config file exists in various locations based on the current working directory
@@ -136,21 +138,14 @@ $path = null;
 switch (basename(__DIR__)) { // getcwd()
   case 'public':
     chdir(dirname(__DIR__));
-
-    require_once 'config/php.php';
-
-    if ($config = realpath(APP_PATH . 'config/config.php')) {
-      $path = $config;
-    }  // elseif (is_file('config.php')) { $path = $config; }
-    break;
-  default:
-    require_once 'config/php.php';
-
-    if ($config = realpath(APP_PATH . 'config/config.php')) {
-      $path = $config;
-    } // elseif (is_file($config = 'config.php')) { $path = $config; }
     break;
 }
+
+require_once 'config' . DIRECTORY_SEPARATOR . 'php.php';
+
+if ($config = realpath(APP_PATH . 'config' . DIRECTORY_SEPARATOR . 'config.php')) {
+  $path = $config;
+}  // elseif (is_file('config.php')) { $path = $config; }
 
 // Load the config file if found
 if ($path) {
@@ -162,7 +157,7 @@ if ($path) {
 
 /*
 if (isset($_GET['debug'])) 
-  require_once 'public/index.php';
+  require_once 'public' . DIRECTORY_SEPARATOR . 'index.php';
 else
-  die(header('Location: public/index.php'));
+  die(header('Location: public' . DIRECTORY_SEPARATOR . 'index.php'));
 */

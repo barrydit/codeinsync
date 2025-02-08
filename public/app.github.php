@@ -87,7 +87,7 @@ if ($endpoint && isset($endpoints[$endpoint])) {
 if (__FILE__ == get_required_files()[0]) //die(getcwd());
   if (
     $path = (basename(getcwd()) == 'public')
-    ? (is_file('config.php') ? 'config.php' : '../config/config.php') : ''
+    ? (is_file('config.php') ? 'config.php' : '..' . DIRECTORY_SEPARATOR . 'config' . DIRECTORY_SEPARATOR . 'config.php') : ''
   )
     require_once $path;
   else

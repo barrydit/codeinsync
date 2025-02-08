@@ -14,14 +14,14 @@ if (__FILE__ == get_required_files()[0] && __FILE__ == realpath($_SERVER["SCRIPT
     chdir('../');
     if (isset($_SERVER['REQUEST_METHOD']) && $_SERVER['REQUEST_METHOD'] == 'POST')
       require_once realpath('bootstrap.php');
-    elseif ($path = realpath('config/config.php')) { // is_file(config/php.php
+    elseif ($path = realpath('config' . DIRECTORY_SEPARATOR . 'config.php')) { // is_file(config/php.php
       //dd('does this do anything?');
       require_once $path;
     }
   } else
     die(var_dump("Path was not found. file=$path"));
 else
-  require_once APP_PATH . 'config/config.php';
+  require_once APP_PATH . 'config' . DIRECTORY_SEPARATOR . 'config.php';
 
 //dd(APP_PATH . APP_ROOT);
 
@@ -789,8 +789,8 @@ ob_start(); ?>
       });
     });
     <?php if (defined('APP_PROJECT')) { ?>
-                                                                                                            //getDirectory('<?= isset($_GET['project']) && !empty($_GET['project']) ? basename(APP_PATH . APP_ROOT) : '' ?>', '<?= isset($_GET['project'
-                                                                                                                      ]) && !empty($_GET['project']) ? '' : APP_PATH ?>');
+                                                                                                                //getDirectory('<?= isset($_GET['project']) && !empty($_GET['project']) ? basename(APP_PATH . APP_ROOT) : '' ?>', '<?= isset($_GET['project'
+                                                                                                                          ]) && !empty($_GET['project']) ? '' : APP_PATH ?>');
     console.log('Path: <?= APP_PATH ?>');
   <?php } ?>
 

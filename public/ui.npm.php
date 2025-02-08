@@ -3,12 +3,11 @@
 if (__FILE__ == get_required_files()[0])
   if (
     $path = (basename(getcwd()) == 'public')
-    ? (is_file('config.php') ? 'config.php' : '../config/config.php') : ''
+    ? (is_file('config.php') ? 'config.php' : '..' . DIRECTORY_SEPARATOR . 'config' . DIRECTORY_SEPARATOR . 'config.php') : ''
   )
     require_once $path;
   else
-    die(var_dump("$path path was not found. file=config.php"));
-
+    die(var_dump("$path path was not found. file=$path"));
 
 if (is_file($path = APP_PATH . APP_BASE['config'] . 'npm.php') ? $path : '')
   require_once $path;
@@ -341,7 +340,7 @@ ob_start(); ?>
 
     <style type="text/tailwindcss">
       <?= $app['style']; ?>
-        </style>
+            </style>
   </head>
 
   <body>

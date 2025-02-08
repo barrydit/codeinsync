@@ -2,10 +2,10 @@
 
 if (__FILE__ != get_required_files()[0]) {
   if ($path = basename(dirname(get_required_files()[0])) == 'public') { // (basename(getcwd())
-    if (is_file($path = realpath('../config/config.php'))) {
+    if (is_file($path = realpath('..' . DIRECTORY_SEPARATOR . 'config' . DIRECTORY_SEPARATOR . 'config.php'))) {
       require_once $path;
     }
-  } elseif (is_file($path = realpath('config/config.php'))) {
+  } elseif (is_file($path = realpath('config' . DIRECTORY_SEPARATOR . 'config.php'))) {
     require_once $path;
   } else {
     die(var_dump("Path was not found. file=$path"));

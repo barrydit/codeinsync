@@ -12,7 +12,7 @@ if (__FILE__ == get_required_files()[0] && __FILE__ == realpath($_SERVER["SCRIPT
   } else
     die(var_dump("Path was not found. file=$path"));
 else
-  require_once APP_PATH . 'config/config.php';
+  require_once APP_PATH . 'config' . DIRECTORY_SEPARATOR . 'config.php';
 
 //require_once APP_PATH . APP_ROOT . APP_BASE['vendor'] . 'autoload.php';
 //require_once APP_PATH . APP_ROOT . APP_BASE['config'] . 'composer.php';
@@ -38,7 +38,7 @@ $tableGen = function () use ($group_type): string {
   ob_start(); ?>
 
   <div id="info"
-    style="position: absolute; display: block; width: 570px; height: 500px; left: 67px; top: 50px; border: 5px solid #000; background-repeat: no-repeat; background-color: #FFFFFF; background-image: url(resources/images/group_type.png); z-index:99;">
+    style="position: absolute; display: none; width: 570px; height: 500px; left: 67px; top: 50px; border: 5px solid #000; background-repeat: no-repeat; background-color: #FFFFFF; background-image: url(resources/images/group_type.png); z-index:99;">
     <div
       style="position: absolute; display: block; background-color: #FFFFFF;  z-index: 1; right: 0px; margin-top: -20px;">
       [<a href="#" onclick="document.getElementById('info').style.display = 'none';">x</a>]</div>
@@ -444,7 +444,9 @@ $tableGen = function () use ($group_type): string {
         require_once APP_PATH . APP_BASE['config'] . 'composer.php'; ?>
         <!-- iframe src="composer_pkg.php" style="height: 500px; width: 700px;"></iframe -->
         <div style="width: 700px; ">
-          <div style="display: inline-block; width: 350px;">Composers Vendor Packages [Installed] List</div>
+          <div style="display: inline-block; width: 350px;"><a href="#!"
+              onclick="handleClick(event, 'vendor/'); document.getElementById('app_composer-container').style.display='block';">Composers</a>
+            Vendor Packages [Installed] List</div>
           <div style="display: inline-block; text-align: right; width: 300px;">
             <form
               action="<?= !defined('APP_URL') ? '//' . APP_DOMAIN . APP_URL_PATH . '?' . http_build_query(APP_QUERY, '', '&amp;') : APP_URL . '?' . http_build_query(APP_QUERY, '', '&amp;') ?>"
@@ -715,7 +717,7 @@ $tableGen = function () use ($group_type): string {
                     if ($domainCondition && isset($_GET['client']) || empty($_GET['domain'])) {
                       $onclickAttribute = (basename($path) == $_ENV['DEFAULT_DOMAIN'])
                         ? " onclick=\"handleClick(event, '/')\""
-                        : " onclick=\"handleClick(event, '" . ($domainCondition && $clientCondition ? (string) dirname($relativePath) : $relativePath) . "/')\"";
+                        : " onclick=\"handleClick(event, '" . ($domainCondition && $clientCondition ? (string) dirname($relativePath) : (!$domainCondition ? '' : $relativePath)) . "/')\"";
                     } elseif ($domainCondition && !empty($_GET['domain']) || $projectCondition && !empty($_GET['project'])) {
                       $onclickAttribute = " onclick=\"handleClick(event, '$fullPath')\"";
                     } else {

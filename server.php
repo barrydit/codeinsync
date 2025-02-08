@@ -2,11 +2,11 @@
 <?php
 declare(/*strict_types=1,*/ ticks=1); // First Line Only!
 
-require_once 'config/php.php';
+require_once 'config' . DIRECTORY_SEPARATOR . 'php.php';
 
 !defined('APP_PATH') and define('APP_PATH', __DIR__ . DIRECTORY_SEPARATOR);
 
-!defined('PID_FILE') and define('PID_FILE', /*getcwd() .*/ APP_PATH . 'server.pid');
+!defined('PID_FILE') and define('PID_FILE', APP_PATH . 'server.pid');
 
 file_put_contents(PID_FILE, $pid = getmypid());
 
@@ -108,7 +108,7 @@ if (PHP_SAPI === 'cli')
         //exit; // Gracefully exit after handling
         case SIGINT:
           echo "Process received SIGINT (Ctrl+C). Terminating...\n";
-          //require_once APP_PATH . 'config/classes/class.sockets.php';
+          //require_once APP_PATH . 'config' . DIRECTORY_SEPARATOR . 'classes' . DIRECTORY_SEPARATOR . 'class.sockets.php';
           echo '   Shutting down server... PID=' . getmypid() . PHP_EOL;
           Logger::error('Shutting down server... PID=' . getmypid());
 
@@ -168,7 +168,7 @@ function restartServer()
   // Restart logic
   echo str_replace('{{STATUS}}', 'Restarting the Server... PID=' . getmypid() . str_pad('', 12, " "), APP_DASHBOARD) . PHP_EOL;
 
-  require_once APP_PATH . 'config/classes/class.sockets.php';
+  require_once APP_PATH . APP_BASE['config'] . 'classes' . DIRECTORY_SEPARATOR . 'class.sockets.php';
 
   unlink(PID_FILE);
 
@@ -278,10 +278,11 @@ function clientInputHandler($input)
         // Replace the escaped APP_PATH and APP_ROOT with the actual directory path
         if (realpath($_GET['path']) == realpath($basePath))
           $_GET['path'] = '';
-
+        $tableValue = '';
+        require_once 'public' . DIRECTORY_SEPARATOR . 'app.directory.php';
         //dd('Path: ' . $_GET['path'] . "\n", false);
+        //dd(getcwd());
         ob_start();
-        require 'public/app.directory.php';
         $tableValue = $tableGen();
         ob_end_clean();
         return $tableValue; // $app['directory']['body'];
@@ -331,7 +332,7 @@ function clientInputHandler($input)
     if ($fileModDate !== $currentDate) {
       // Run your code only if the file was not modified today
       $output = "File was modified on: " . date('F d Y H:i:s', $statMtime) . "\n";
-      require_once 'public/idx.product.php';
+      require_once 'public' . DIRECTORY_SEPARATOR . 'idx.product.php';
 
       $files = get_required_files();
       $baseDir = APP_PATH;
@@ -579,7 +580,7 @@ function clientInputHandler($input)
   */
   //$_POST['cmd'] = $cmd;
 
-  //require_once('public/app.console.php');
+  //require_once('public' . DIRECTORY_SEPARATOR . 'app.console.php');
 
   //ob_start(); // Start output buffering    ob_end_flush();
 
@@ -924,39 +925,47 @@ if (PHP_SAPI === 'cli')
 
       //  if (!is_resource($socket) || get_resource_type($socket) !== ('stream' ?? 'socket'))
 //    echo "Socket is not connected or is invalid." . PHP_EOL;
-
       while ($running) {
         // Perform scheduled tasks
-        $manager->checkNotifications(); // Check notifications at the start of each loop
-        manageScheduledTask($lastExecutionTime, $interval); // Print the time left until the next scheduled execution
+        $manager->checkNotifications();
+        manageScheduledTask($lastExecutionTime, $interval);
 
         //dd(get_resource_type($socket)); // var_export($socket, true) == Socket::__set_state(array( )) != resource
         //PHP7 >= (is_resource($socket) && get_resource_type($socket) === 'Socket')
 
         if ($socket instanceof Socket && $socket) {
-          // Proceed with socket operations
+          $error = socket_last_error($socket);
+
+          // Check if the socket is closed
+          if ($error == 10057) { // WSAENOTCONN: "Socket is not connected"
+            echo "Socket is closed\n";
+            socket_close($socket);
+            break; // Exit loop if socket is closed
+          }
+
+          // Accept new client connection
           $client = @socket_accept($socket);
+
           if ($client === false) {
             $error = socket_last_error($socket);
 
             if ($error && $error != SOCKET_EAGAIN && $error != SOCKET_EWOULDBLOCK) {
-              // Handle unexpected errors
               echo "Socket error during accept: " . socket_strerror($error) . "\n";
               socket_clear_error($socket);
               break;
             }
 
-            // No new connections; continue the loop if non-blocking mode
-            usleep(100000); // Optional delay to reduce CPU usage
+            // No connection available, sleep and continue
+            usleep(100000);
             continue;
-          } elseif ($client instanceof Socket) { // is_resource($client)
-            // Connection established; handle client communication
+          }
+
+          // If a client connected successfully, handle it
+          if ($client instanceof Socket) {
             handleSocketClientConnection($client);
           } else {
             echo "Socket connection closed or invalid.\n";
-            break;
           }
-
         } elseif (get_resource_type($socket) == 'stream') {
           // Accept incoming client connections using streams
           if ($stream = @stream_socket_accept($socket, -1)) {
@@ -964,34 +973,15 @@ if (PHP_SAPI === 'cli')
           }
         } else {
           echo "Socket is not connected or is invalid.\n";
-          // Optionally handle reconnection or exit
         }
 
-        /*
-            if (is_resource($socket) && get_resource_type($socket) === 'socket') {
-        */
-
-
-
-        /*
-                // Accept incoming client connections using sockets
-
-                // resource if (!feof($socket)) { }
-
-            // Non-blocking check for data on the socket
-            if (is_resource($socket) && get_resource_type($socket) === 'socket') {
-            if (extension_loaded('sockets')) {
-
-            } 
-                // elseif ($bytesReceived === false)
-                    //echo "An error occurred: " . socket_strerror(socket_last_error($socket)) . "\n";
-          
-        */
         // Dispatch any pending signals
-        (stripos(PHP_OS, 'LIN') === 0) and pcntl_signal_dispatch();
+        if (stripos(PHP_OS, 'LIN') === 0) {
+          pcntl_signal_dispatch();
+        }
 
         // Sleep for a short time to prevent busy-waiting
-        //usleep(100000); // 100 ms = 0.1 s
+        usleep(100000); // 100 ms = 0.1 s
       }
 
       // Close the server socket
