@@ -63,6 +63,8 @@ else die(var_dump($path . ' path was not found. file=console_app.php'));
 
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 
+  //header('Location: http://' . $_POST['url']);
+
   //dd($_POST);
 
   //  if (isset($_GET['filename'])) {
@@ -124,7 +126,7 @@ top : 5%;
 left : 50%;
 transform : translateX(-50%);
 width : auto;
-height : 600px;
+height : 100vh;
 background-color : rgba(255, 255, 255, 0.9);
 color : black;
 text-align : center;
@@ -144,17 +146,19 @@ ob_start(); ?>
   class="<?= __FILE__ == get_required_files()[0] || (isset($_GET['app']) && $_GET['app'] == 'browser') ? 'selected' : '' ?>"
   style="border: 1px solid #000;">
   <div class="header ui-widget-header">
-    <div style="display: inline-block;">Browser ()</div>
+    <div style="display: inline-block;">Browser (Google.ca)</div>
     <div style="display: inline; float: right; text-align: center;">[<a style="cursor: pointer; font-size: 13px;"
         onclick="document.getElementById('app_browser-container').style.display='none';">X</a>]</div>
   </div>
 
-  <div style="display: inline-block; width: auto; padding-left: 10px;">
-    <div style="position: absolute; background-color: white; left: 0; right: 0; width: auto;">WWW Test: <input
-        type="text" name="url" onselect="go_to_url();" /></div>
+  <div style="display: inline-block; width: auto; height: 100%; padding-left: 10px;">
+    <div style="position: absolute; background-color: white; left: 0; right: 0; width: auto;">WWW Test: <form
+        method="POST" action="<?= 'proxy.php' ?>"><input type="text" name="url" onselect="go_to_url();" /><input
+          type="submit" style="visibility: hidden;" /></form>
+    </div>
     <iframe
       src="<?= /* (is_dir($path = APP_PATH . APP_BASE['public']) && getcwd() == realpath($path) ? APP_BASE['public'] : '') . basename(__FILE__) */ NULL; ?>"
-      style="height: 550px; width: 775px;"></iframe>
+      style="height: 100vh; width: 100%;"></iframe>
   </div>
 
   <!-- <pre id="ace-editor" class="ace_editor"></pre> -->
@@ -238,6 +242,8 @@ $dom->appendChild($elm);
 //$dom->saveHTML($dom->documentElement);
 
 //echo 
+
+
 ?>
 
 <?php ob_start(); ?>
@@ -288,6 +294,13 @@ html, body { width: 100%; height: 100%; <?= $_SERVER['SCRIPT_FILENAME'] == __FIL
 <body class="bg-gray-300">
   <?= $app[$browser]['body']; ?>
 </body>
+<script type="text/javascript" charset="utf-8">
+
+  function go_to_url() {
+    let url = 'http://' + document.getElementsByName('url')[0].value;
+    document.getElementsByTagName('iframe')[0].src = url;
+  };
+</script>
 
 </html>
 <?php $app[$browser]['html'] = ob_get_contents();

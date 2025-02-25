@@ -92,7 +92,7 @@ $tableGen = function () use ($group_type): string {
     //    (isset($_GET['path']) || isset($_GET['client']) ? 'onclick="handleClick(event, \'/\')"' : '') . 
     //    '>' .
     //    '</a>';
-    $navigation .= '<a href="?client&path=clientele/">' . 'clientele</a>' . DIRECTORY_SEPARATOR . '<a href="' . basename(__FILE__) . '?client=' . ($clientPath ?? '') . '" onclick="handleClick(event, \'/\')">' .
+    $navigation .= '<a href="?path=' . (APP_ROOT === '' ? '' : 'clientele/') . '">' . 'clientele</a>' . DIRECTORY_SEPARATOR . '<a href="' . basename(__FILE__) . '?client=' . ($clientPath ?? '') . '" onclick="handleClick(event, \'/\')">' .
       $clientPath .
       '</a><a href="' . basename(__FILE__) . '?client=' . ($clientPath ?? '') . '&domain=' . ($domainPath ?? '') . '" onclick="handleClick(event, \'/\')">' . ((!empty($domainPath) ? DIRECTORY_SEPARATOR . $domainPath : '') ?? '') . DIRECTORY_SEPARATOR .
       '</a>';
@@ -1193,7 +1193,7 @@ ob_end_clean();
 
 ob_start(); ?>
 <div id="app_directory-container"
-  style="position: absolute; display: <?= isset($_GET['debug']) || isset($_GET['project']) || isset($_GET['path']) ? /*'block'*/ 'none' : 'none'; ?>; background-color: rgba(255,255,255,1); height: 70vh; top: 90px; margin-left: auto; margin-right: auto; left: 0; right: 0; width: 700px; overflow-x: hidden; overflow-y: scroll; padding: 10px;">
+  style="position: absolute; display: <?= isset($_GET['debug']) || isset($_GET['project']) || isset($_GET['path']) ? /*'block'*/ 'none' : 'none'; ?>; background-color: rgba(255,255,255,1); height: 70vh; top: 90px; margin-left: auto; margin-right: auto; left: 0; right: 0; width: 700px; overflow-x: hidden; overflow-y: scroll; padding: 10px; z-index: 5;">
 
   <?= $tableGen(); /*'';*/ ?>
 </div>

@@ -58,35 +58,85 @@ function git_origin_sha_update()
   $latest_local_commit_sha = exec(GIT_EXEC . ' --git-dir="' . APP_PATH . APP_ROOT . '.git" --work-tree="' . APP_PATH . APP_ROOT . '" rev-parse main');
   $errors['GIT_UPDATE'] = "Local main branch is not up-to-date with origin/main\n";
 
-  $options = [
-    'http' => [
-      'method' => 'GET',
-      'header' => 'Authorization: token ' . ($_ENV['GITHUB']['OAUTH_TOKEN'] ?? '') . "\r\n" .
-        "User-Agent: My-App\r\n",
-    ],
-  ];
+  //dd('test');
 
-  $context = stream_context_create($options);
+  /*
+    $arr = [
+      'http' => [
+        'method' => 'GET',
+        'header' => 'Authorization: token ' . ($_ENV['GITHUB']['OAUTH_TOKEN'] ?? '') . "\r\n" .
+          "User-Agent: My-App\r\n",
+      ],
+    ];
+
+    $context = stream_context_create($arr);
+    if ($context == null) {
+      error_log("Failed to create stream context.");
+      var_dump(error_get_last());
+    } else {
+      //dd($context);
+    }
+
+   file_get_contents($latest_remote_commit_url, false, $context)
+  */
+
+
 
   if (!empty($_GET['client']) || !empty($_GET['domain'])) {
-    $latest_remote_commit_url = 'https://api.github.com/repos/' . $_ENV['GITHUB']['USERNAME'] . '/' . ($_GET['domain'] ?? $_ENV['DEFAULT_DOMAIN']) . '/git/refs/heads/main';
+    $latest_remote_commit_url = 'https://api.github.com/repos/' . $_ENV['GITHUB']['USERNAME'] . '/' . ($_GET['domain'] ?? $_ENV['DEFAULT_DOMAIN']) . '/git/refs/heads/main'; // commits/main
   } elseif (!empty($_GET['project'])) {
     $path = 'projects' . DIRECTORY_SEPARATOR . $_GET['project'] . DIRECTORY_SEPARATOR;
     if (is_dir(APP_PATH . $path)) {
-      define('APP_PROJECT', new clientOrProj($path));
+      //define('APP_PROJECT', new clientOrProj($path));
       $latest_remote_commit_url = 'https://api.github.com/repos/' . $_ENV['GITHUB']['USERNAME'] . '/' . $_GET['project'] . '/git/refs/heads/main';
     }
   } else if (isset($_ENV['COMPOSER']) && !empty($_ENV['COMPOSER'])) {
     $latest_remote_commit_url = 'https://api.github.com/repos/' . $_ENV['GITHUB']['USERNAME'] . '/' . $_ENV['COMPOSER']['PACKAGE'] . '/git/refs/heads/main';
   }
 
-  $response = defined('APP_IS_ONLINE') && check_http_status($_ENV['GIT']['ORIGIN_URL']) === true && !check_http_status($latest_remote_commit_url, 404) ? file_get_contents($latest_remote_commit_url, false, $context) : '{}';
-  $errorDetails = error_get_last();
+  $context = stream_context_create([
+    'http' => [
+      'method' => 'GET',
+      'header' => 'Authorization: token ' . ($_ENV['GITHUB']['OAUTH_TOKEN'] ?? '') . "\r\n" .
+        "User-Agent: My-App\r\n",
+    ],
+  ]);
+
+
+  //dd($latest_remote_commit_url);
+
+  if (/* defined('APP_IS_ONLINE') &&check_http_status($_ENV['GIT']['ORIGIN_URL']) &&*/ check_http_status($latest_remote_commit_url, 404)) {
+
+    if ($context === false) {
+      error_log("Failed to create stream context.");
+      var_dump(error_get_last());
+    } else {
+      $response = $result = file_get_contents($latest_remote_commit_url, false, $context) ?? '{}';
+      if ($result === false) {
+        error_log("Failed to get contents from url.");
+        var_dump(error_get_last());
+      } else {
+        $decodedResult = json_decode($result, true);
+        if ($decodedResult === null && json_last_error() !== JSON_ERROR_NONE) {
+          error_log("Failed to decode json.");
+          var_dump(json_last_error_msg());
+        } else {
+          // Process the decoded JSON data
+          //print_r($decodedResult);
+        }
+      }
+    }
+  }
+
+  //dd($errorDetails);
+
   if (isset($http_response_header) && strpos($http_response_header[0], '401') !== false) {
     $errors['git-unauthorized'] = "[git] You are not authorized. The token may have expired.\n";
   } elseif (isset($errorDetails['message'])) {
     $errors['other'] = 'An error occurred: ' . $errorDetails['message'];
   }
+
+  //dd($response);
 
   $data = json_decode($response, true);
 
@@ -94,10 +144,12 @@ function git_origin_sha_update()
     $latest_remote_commit_sha = $data['object']['sha'];
 
     if ($latest_local_commit_sha !== $latest_remote_commit_sha) {
-      $errors['GIT_UPDATE'] = $errors['GIT_UPDATE'] . $latest_local_commit_sha . '  ' . $latest_remote_commit_sha . "\n";
-    } else {
       $errors[] = 'Remote SHA ($_ENV[\'GITHUB\'][\'REMOTE_SHA\']) was updated.' . "\n" . $errors['GIT_UPDATE'] . "\n";
       $_ENV['GITHUB']['REMOTE_SHA'] = $latest_remote_commit_sha;
+
+    } else {
+      $_ENV['GITHUB']['REMOTE_SHA'] = $latest_remote_commit_sha;
+      $errors['GIT_UPDATE'] = $errors['GIT_UPDATE'] . $latest_local_commit_sha . '  ' . $latest_remote_commit_sha . "\n";
       $_ENV['HIDE_UPDATE_NOTICE'] = '';
       unset($errors['GIT_UPDATE']);
     }
@@ -105,8 +157,19 @@ function git_origin_sha_update()
     $errors['GIT_UPDATE'] .= "Failed to retrieve commit information.\n";
   }
   $_ENV['HIDE_UPDATE_NOTICE'] = '';
+
+
+  // dd($data);
+
   return $_ENV['GITHUB']['REMOTE_SHA'] = $latest_local_commit_sha;
 }
+
+git_origin_sha_update();
+/*
+
+
+dd($errors['GIT_UPDATE']);
+*/
 
 //dd($latest_remote_commit_url);
 if (is_file($file = APP_PATH . APP_ROOT . '.env') && date('Y-m-d', filemtime($file)) != date('Y-m-d')) {
@@ -338,9 +401,16 @@ END;
 
       $output[] = shell_exec("$command ; echo $?");
 
+      if (preg_match('/Your branch is up to date with \'origin\/main\'.*nothing to commit, working tree clean/s', end($output))) {
+        echo "Repository is up-to-date.";
+      } else {
+        echo "Repository has changes.";
+      }
+
+
       if (isset($output) && is_array($output)) {
-        switch (count($output)) {
-          case 1:
+        switch (count($output) > 0) {
+          case true:
             echo /*(isset($match[1]) ? $match[1] : 'PHP') . ' >>> ' . */ join("\n... <<< ", $output);
             break;
           default:

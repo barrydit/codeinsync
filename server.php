@@ -2,13 +2,17 @@
 <?php
 declare(/*strict_types=1,*/ ticks=1); // First Line Only!
 
-require_once 'config' . DIRECTORY_SEPARATOR . 'php.php';
-
 !defined('APP_PATH') and define('APP_PATH', __DIR__ . DIRECTORY_SEPARATOR);
 
 !defined('PID_FILE') and define('PID_FILE', APP_PATH . 'server.pid');
 
+!defined('DISABLE_SOCKET_INIT') and define('DISABLE_SOCKET_INIT', true);
+
 file_put_contents(PID_FILE, $pid = getmypid());
+
+require_once 'config' . DIRECTORY_SEPARATOR . 'php.php';
+
+
 
 ini_set('error_log', APP_PATH . 'server.log');
 ini_set('log_errors', 'true');
