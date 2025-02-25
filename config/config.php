@@ -340,6 +340,8 @@ if (basename($dir = getcwd()) != 'config') {
     // Populate $_ENV with the merged values
     $_ENV = array_merge($_ENV, $envData);
 
+    define('ENV_CHECKSUM', hash('sha256', json_encode($_ENV, JSON_UNESCAPED_SLASHES)));
+
     /*
         $parsedEnv = Shutdown::parse_ini_file_multi($file);
         $_ENV = array_merge_recursive_distinct($_ENV, $parsedEnv);

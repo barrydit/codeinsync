@@ -78,7 +78,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
       else if (preg_match('/^server\s*start$/i', $_POST['cmd'])) {
         //require_once APP_PATH . 'server.php';
 
-        Sockets::handleSocketConnection(true);
+        $_SERVER['SOCKET']->initializeSocket();
 
         /*
                   if (file_exists($pidFile = APP_PATH . 'server.pid')) {
@@ -744,30 +744,30 @@ ob_start(); ?>
 
 
   <?php if (defined('COMPOSER')) { ?>
-    initSubmit.addEventListener('click', () => {
-      show_console();
-      const requestInput = document.getElementById('requestInput');
-      const requestConsole = document.getElementById('requestConsole');
-      const argv = requestInput.value;
-      $.post("<?= APP_URL . '?' . $_SERVER['QUERY_STRING']; /*$projectRoot*/ ?>",
-        {
-          cmd: argv
-        },
-        function (data, status) {
-          console.log('I can love me better baby!');
-          const requestConsole = document.getElementById('requestConsole');
-          console.log("Data: " + data + "\nStatus1: " + status);
-          if (requestConsole !== null) {
-            requestConsole.value = data + argv;
-            requestConsole.value = '<?= $shell_prompt; ?>' + argv + " \n" + data;
+  initSubmit.addEventListener('click', () => {
+    show_console();
+    const requestInput = document.getElementById('requestInput');
+    const requestConsole = document.getElementById('requestConsole');
+    const argv = requestInput.value;
+    $.post("<?= APP_URL . '?' . $_SERVER['QUERY_STRING']; /*$projectRoot*/ ?>",
+      {
+        cmd: argv
+      },
+      function (data, status) {
+        console.log('I can love me better baby!');
+        const requestConsole = document.getElementById('requestConsole');
+        console.log("Data: " + data + "\nStatus1: " + status);
+        if (requestConsole !== null) {
+          requestConsole.value = data + argv;
+          requestConsole.value = '<?= $shell_prompt; ?>' + argv + " \n" + data;
 
-            requestConsole.scrollTop = requestConsole.scrollHeight;
-            console.log('changed scroll');
-          }
+          requestConsole.scrollTop = requestConsole.scrollHeight;
+          console.log('changed scroll');
         }
+      }
 
-      );
-    });
+    );
+  });
   <?php } ?>
   window.addEventListener('resize', () => {
     // document.getElementById('responseConsole').style.width = window.innerWidth - 15 + 'px';
@@ -791,7 +791,7 @@ ob_start(); ?>
     <?php if (defined('APP_PROJECT')) { ?>
                                                                                                                 //getDirectory('<?= isset($_GET['project']) && !empty($_GET['project']) ? basename(APP_PATH . APP_ROOT) : '' ?>', '<?= isset($_GET['project'
                                                                                                                           ]) && !empty($_GET['project']) ? '' : APP_PATH ?>');
-    console.log('Path: <?= APP_PATH ?>');
+  console.log('Path: <?= APP_PATH ?>');
   <?php } ?>
 
   $("#requestInput").bind("keydown", {}, keypressInBox); //keypress
@@ -900,13 +900,13 @@ ob_start(); ?>
         if (isset($config['remote origin']['url']) && preg_match('/(?:[a-z]+\:\/\/)?([^\s]+@)?((?:[a-z0-9\-]+\.)+[a-z]{2,6}(?:\/\S*))/', $config['remote origin']['url'], $matches))
           if (count($matches) >= 2) { ?>
 
-            $('#requestInput').val('git remote set-url origin https://' + $("#app_git-oauth-input").val() + '@<?= $matches[2] ?>');
+      $('#requestInput').val('git remote set-url origin https://' + $("#app_git-oauth-input").val() + '@<?= $matches[2] ?>');
 
-          <?php } else { ?>
+      <?php } else { ?>
 
-            $('#requestInput').val('git remote set-url origin https://' + $("#app_git-oauth-input").val() + '@<?= $matches[1] ?>');
+      $('#requestInput').val('git remote set-url origin https://' + $("#app_git-oauth-input").val() + '@<?= $matches[1] ?>');
 
-          <?php }
+      <?php }
       } ?>
 
       document.getElementById('app_git-clone-url').style.display = 'none';

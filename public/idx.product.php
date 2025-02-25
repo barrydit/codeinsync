@@ -60,9 +60,9 @@ margin : 0;
 padding : 0;
 box-sizing : border-box;
 <?php if (isset($_GET['debug'])) { ?>
-                        border: 1px dashed #FF0000;
+                                          border: 1px dashed #FF0000;
 <?php } else { ?> 
-                        /* border: 1px dashed #FF0000; */
+                                          /* border: 1px dashed #FF0000; */
 <?php } ?>
 }
 *:focus {
@@ -377,7 +377,7 @@ cursor : pointer;
               //APP_URL_BASE . /*basename(__FILE__) .*/ '?' . http_build_query(APP_QUERY /*+ ['app' => 'ace_editor']*/) . (defined('APP_ENV') && APP_ENV == 'development' ? '#!' : '') 
             
               /* $c_or_p . '=' . (empty($_GET[$c_or_p]) ? '' : $$c_or_p->name) . '&amp;app=composer' */ NULL; ?>
-            <?= "          <button id=\"displayDirectoryBtn\" style=\"margin: 2px 5px 0 0;\" type=\"\">&nbsp;&#9650;</button> \n"; ?>
+            <?= "          <button id=\"displayDirectoryBtn\" style=\"margin: 2px 5px 0 0;\" type=\"\">&nbsp;&#9650;</button> \n <a href=\"http://localhost/?path\"><img src=\"resources/images/directory-www.fw.png\" width=\"18\" height=\"10\"></a>"; ?>
             <?php
             $main_cat = '        <form style="display: inline;" autocomplete="off" spellcheck="false" action="" method="GET">/' . "\n"
               . '            <select name="category" onchange="this.form.submit();">' . "\n"
@@ -481,7 +481,7 @@ cursor : pointer;
             <div id="clockTime"></div>
           </div>
           <div id="app_tools-container"
-            style="position: absolute; display: none; width: 800px; margin: 0 auto; height: 500px; background-color: rgba(255, 255, 255, 0.9); overflow-x: scroll;">
+            style="position: absolute; display: none; width: 800px; margin: 0 auto; height: 500px; background-color: rgba(255, 255, 255, 0.3); overflow-x: scroll; z-index: -5;">
             <div style="position: absolute; margin: 80px 45px; text-align: center;" class="text-sm"><a href="#!"
                 onclick="document.getElementById('app_tools-container').style.display='none'; return false;"><img
                   style="text-align: center;" height="25" width="25"
@@ -532,8 +532,7 @@ cursor : pointer;
                 onclick="document.getElementById('app_calendar-container').style.display='block'; return false;"><img
                   style="text-align: center;" src="<?= APP_BASE['resources'] . 'images/calendar.png' ?>" /><br /><span
                   style="text-align: center;">Calendar</span></a></div>
-            <div
-              style="position: absolute; margin: 190px 240px; padding: 20px 40px; background-color: rgba(255, 255, 255, 0.8);">
+            <div style="position: absolute; margin: 190px 240px; padding: 20px 40px;">
               <form action="#!" method="GET">
                 <?= '            ' . (isset($_GET['project']) && !$_GET['project'] ? '<input type="hidden" name="client" value="" />' : '<input type="hidden" name="project" value="" />') ?>
                 <div style="margin: 0 auto;">
@@ -542,13 +541,15 @@ cursor : pointer;
                 <input class="input" id="toggle-project" type="checkbox"
                   onchange="toggleSwitch(this); this.form.submit();" <?= isset($_GET['project']) ? 'checked' : '' ?> />
                 <label class="label" for="toggle-project" style="margin-left: -6px;">
-                  <div class="left"> Client </div>
+                  <div class="left" style="background-color: rgba(255, 255, 255, 0.8); text-shadow: 2px 2px;"> Client
+                  </div>
                   <div class="switch" style="position: relative;"><span class="slider round"></span></div>
-                  <div class="right"> Project </div>
+                  <div class="right" style="background-color: rgba(255, 255, 255, 0.8); text-shadow: 2px 2px;"> Project
+                  </div>
                 </label>
               </form>
             </div>
-            <div style="position: absolute; margin: 200px 0 0 540px; text-align: center;" class="text-sm"><a href="#!"
+            <div style=" position: absolute; margin: 200px 0 0 540px; text-align: center;" class="text-sm"><a href="#!"
                 onclick="toggleIframeUrl('app.pong.php'); return false;"><img style="text-align: center;"
                   src="<?= APP_BASE['resources'] . 'images/pong.png' ?>" /><br /><span
                   style="text-align: center;">Pong</span></a></div>
@@ -592,7 +593,8 @@ cursor : pointer;
                   style="text-align: center;">MySQL Docs</span></a></div>
             <div
               style="position: absolute; top: 400px; left: 65px; width: 80%; margin: 0 auto; height: 15px; border-bottom: 1px solid black; text-align: center; z-index: 0;">
-              <span style="font-size: 20px; background-color: #F3F5F6; padding: 0 20px; z-index: 1;"> USER APPS. </span>
+              <span style="font-size: 20px; background-color: #F3F5F6; padding: 0 20px; z-index: 1;"> USER APPS.
+              </span>
             </div>
             <div style="position: absolute; margin: 430px 75px; text-align: center;" class="text-sm"><a href="#!"
                 onclick="document.getElementById('app_install-container').style.display='block'; return false;"><span
@@ -1193,6 +1195,7 @@ $(document).ready(function() {
           //} else {
           //  console.log('Cancel (Re)Start.');
           //}
+
         <?php } ?>
         /**/
         editor1 = ace.edit("ui_ace_editor");

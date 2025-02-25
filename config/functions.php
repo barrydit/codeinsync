@@ -231,7 +231,7 @@ class Shutdown
         $function(self::$shutdownMessage);
       }
     }
-
+    //self::saveEnvToFile();
     $message = is_callable(self::$shutdownMessage)
       ? call_user_func(self::$shutdownMessage)
       : self::$shutdownMessage;
@@ -263,13 +263,7 @@ class Shutdown
 
     // Merge sections
     foreach ($clientSections as $section => $values) {
-      if (isset($globalSections[$section])) {
-        // Merge global and client section values
-        $mergedEnv[$section] = array_merge($globalSections[$section], $values);
-      } else {
-        // Add client section if it doesn't exist in global
-        $mergedEnv[$section] = $values;
-      }
+      $mergedEnv[$section] = isset($globalSections[$section]) ? array_merge($globalSections[$section], $values) : $values;
     }
 
     // Add remaining global sections that are not in the client
@@ -346,7 +340,7 @@ class Shutdown
     }
 
     $backupContent = self::buildEnvContent($parsedEnv);
-    file_put_contents($filePath . '.bck', $backupContent);
+    file_put_contents("$filePath.bck", $backupContent);
   }
 
   private static function buildEnvContent(array $envData): string
@@ -420,13 +414,124 @@ class Shutdown
     }
 
   }
-}
+  public static function hasEnvChanged(): bool
+  {
+    return hash('sha256', json_encode($_ENV, JSON_UNESCAPED_SLASHES)) !== ENV_CHECKSUM;
+  }
 
+  /**
+   * Saves the current state of $_ENV to a .env file.
+   *
+   * Note: This is a simple implementation. If your .env file includes comments,
+   * blank lines, or complex variable formats, you may need a more robust solution.
+   */
+  public static function saveEnvToFile()
+  {
+    if (!self::hasEnvChanged()) {
+      return; // No changes, skip saving
+    }
+
+    $envFilePath = __DIR__ . '/.env.mistake';
+    $sections = [];
+    $lines = [];
+
+    foreach ($_ENV as $key => $value) {
+      if (is_array($value)) {
+        $sections[$key] = $value;
+      } else {
+        $lines[] = "$key=" . self::formatValue($value);
+      }
+    }
+
+    foreach ($sections as $section => $values) {
+      $lines[] = "[$section]";
+      foreach ($values as $key => $value) {
+        $lines[] = "$key=" . self::formatValue($value);
+      }
+    }
+
+    $contents = implode(PHP_EOL, $lines) . PHP_EOL;
+
+    if (file_put_contents($envFilePath, $contents) === false) {
+      error_log("Failed to write the current environment to $envFilePath");
+    }
+  }
+
+  /**
+   * Formats values:
+   * - Wraps directory paths in double quotes
+   * - Wraps JSON strings in double quotes
+   * - Leaves numbers untouched
+   *
+   * @param mixed $value
+   * @return string
+   */
+  private static function formatValue($value): string
+  {
+    // Keep numbers unquoted
+    if (is_numeric($value)) {
+      return $value;
+    }
+
+    // Check if the value is an array-like structure (e.g., {['config', 'clientele', ...]})
+    if (preg_match('/^{\[.*\]}$/', $value)) {
+      // Convert single quotes to double quotes and wrap array elements in double quotes
+      $fixedValue = preg_replace("/'([^']+)'/", '"$1"', $value);
+      return "\"$fixedValue\""; // Wrap the entire JSON-like structure in double quotes
+    }
+
+    // Check if the value is valid JSON
+    if (self::isJson($value)) {
+      $fixedJson = preg_replace("/'([^']+)'/", '"$1"', $value); // Convert single quotes to double quotes
+      return "\"$fixedJson\""; // Wrap JSON in double quotes
+    }
+
+    // Quote directory paths
+    if (preg_match('/^(\/|[A-Za-z]:\\\\).*$/', $value)) {
+      return "\"$value\"";
+    }
+
+    return $value; // Return as-is for all other values
+  }
+
+  /**
+   * Determines if a string is valid JSON (excluding numbers)
+   *
+   * @param string $value
+   * @return bool
+   */
+  private static function isJson($value): bool
+  {
+    if (!is_string($value) || is_numeric($value)) {
+      return false; // Ignore numbers
+    }
+
+    $trimmed = trim($value);
+
+    // Ensure it's enclosed in {} or []
+    if (
+      (str_starts_with($trimmed, '{') && str_ends_with($trimmed, '}')) ||
+      (str_starts_with($trimmed, '[') && str_ends_with($trimmed, ']'))
+    ) {
+
+      // Ensure proper double quotes for JSON keys and values
+      $tempValue = preg_replace("/'([^']+)'/", '"$1"', $trimmed);
+
+      json_decode($tempValue);
+      return json_last_error() === JSON_ERROR_NONE;
+    }
+
+    return false;
+  }
+}
 // Register custom error and exception handlers
 set_error_handler([Shutdown::class, 'handleError']);
 set_exception_handler([Shutdown::class, 'handleException']);
 register_shutdown_function(function () {
-  Shutdown::handleParseError();
+  //Shutdown::triggerShutdown('');  // 
+  if (!empty($_ENV))
+    Shutdown::saveEnvToFile();
+  //Shutdown::handleParseError();
 });
 
 
@@ -454,7 +559,7 @@ function dd(mixed $param = null, bool $die = true, bool $debug = true): void
   $isCLI = PHP_SAPI === 'cli';
   $dump = is_array($param) || is_object($param)
     ? json_encode($param, JSON_PRETTY_PRINT)
-    : var_export($param, true);
+    : (is_resource($param) ? 'Resource' : var_export($param, true));
 
   $formattedOutput = $isCLI
     ? '<pre><code>' . htmlspecialchars($dump) . '</code></pre>' . $output
@@ -618,16 +723,21 @@ function check_internet_connection($ip = '8.8.8.8')
  */
 function check_http_status($url = 'http://8.8.8.8', $statusCode = 200)
 {
-  if (defined('APP_IS_ONLINE')) {
-    if ($url !== 'http://8.8.8.8' && !preg_match('/^https?:\/\//', $url))
-      $url = "http://$url";
-    (!defined('APP_NO_INTERNET_CONNECTION'))
-      or $headers = get_headers($url);
-    return !empty($headers) && strpos($headers[0], (string) $statusCode) === false;
-  } else
-    return false;
+  //if (defined('APP_IS_ONLINE')) {
+  if ($url !== 'http://8.8.8.8' && !preg_match('/^https?:\/\//', $url))
+    $url = "http://$url";
+
+
+  //(!defined('APP_NO_INTERNET_CONNECTION')) or
+  $headers = @get_headers($url);
+
+  //var_dump($headers);
+  return !empty($headers) && strpos($headers[0], (string) $statusCode) === false;
+  //} else
+  //  return false;
   //return true; // Special case for the default URL or if not connected
 }
+
 
 /**
  * Retrieves the source URL for a given package from Packagist.

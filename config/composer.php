@@ -328,7 +328,7 @@ define('COMPOSER_HOME', $composerHome);
 
 //dd('Composer Home: ' . $composerHome, 0);
 
-putenv("COMPOSER_HOME=$composerHome" ?? $_SERVER['HOME'] . '/.composer/');
+putenv("COMPOSER_HOME=$composerHome" ?? $_SERVER['HOME'] . '/.composer/'); // /var/www
 
 if (!file_exists(APP_PATH . 'composer.phar')) {
   copy('https://getcomposer.org/installer', 'composer-setup.php');

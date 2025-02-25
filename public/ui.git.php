@@ -594,6 +594,7 @@ ob_start(); ?>
   } /* git_icon_selected app_git-cmd-selected */
   document.getElementById('app_git-cmd-selected').addEventListener('submit',
     function (event) { // /* Prevent the default form submission */ event.preventDefault(); var
+      event.preventDefault();
       cmdSelect = document.getElementById('app_git-frameSelector'); const git_cmd = document.getElementById('requestInput');
       const commit_msg_container = document.getElementById('app_git-commit_msg-container'); const
         commit_msg = document.getElementById('app_git-commit_msg'); git_cmd.value = 'git ' + cmdSelect.value;

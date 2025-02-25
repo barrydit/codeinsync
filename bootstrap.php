@@ -1,7 +1,8 @@
 <?php
 
 // Define APP_PATH constant
-define('APP_PATH', realpath(__DIR__ . DIRECTORY_SEPARATOR /*. '..' . DIRECTORY_SEPARATOR*/) . DIRECTORY_SEPARATOR);
+!defined('APP_PATH') and
+  define('APP_PATH', realpath(__DIR__ . DIRECTORY_SEPARATOR /*. '..' . DIRECTORY_SEPARATOR*/) . DIRECTORY_SEPARATOR);
 // Define base paths
 !defined('BASE_PATH') and
   define('BASE_PATH', __DIR__ . DIRECTORY_SEPARATOR) and

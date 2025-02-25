@@ -293,7 +293,7 @@ END
 
         //(is_resource($process)) and file_put_contents($pidFile, $pid = @proc_get_status($process)['pid']); // Exception
 
-        $process = ($psexec = realpath(dirname(__DIR__) . DIRECTORY_SEPARATOR . 'bin/psexec.exe')) ? popen($psexec . ' -d C:\xampp\php\php.exe -f ' . APP_PATH . 'server.php', "r") : popen('php -f ' . APP_PATH . 'server.php', "r");
+        $process = ($psexec = realpath(dirname(__DIR__) . DIRECTORY_SEPARATOR . 'bin/psexec.exe')) ? pclose(popen($psexec . ' -d C:\xampp\php\php.exe -f ' . APP_PATH . 'server.php', "r")) : pclose(popen('php -f ' . APP_PATH . 'server.php', "r"));
 
         try {
             if (is_resource($process)) {
