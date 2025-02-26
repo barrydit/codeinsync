@@ -335,12 +335,14 @@ if (basename($dir = getcwd()) != 'config') {
     $clientPath = APP_PATH . APP_ROOT . '.env'; // Client-specific .env
     $envData = Shutdown::loadEnvFiles($globalPath, $clientPath);
 
-    //dd($envData);
+
 
     // Populate $_ENV with the merged values
     $_ENV = array_merge($_ENV, $envData);
 
     define('ENV_CHECKSUM', hash('sha256', json_encode($_ENV, JSON_UNESCAPED_SLASHES)));
+
+    dd($_ENV . '   ' . ENV_CHECKSUM);
 
     /*
         $parsedEnv = Shutdown::parse_ini_file_multi($file);
@@ -377,7 +379,7 @@ if (basename($dir = getcwd()) != 'config') {
   // include '/home/user_123/public_html/config.php';
 } elseif (basename(dirname(APP_SELF)) == 'public') {    // strpos(APP_SELF, '/public/') !== false
 
-  dd(APP_BASE);
+  //dd(APP_BASE);
 
   if (!is_file(APP_PATH . APP_BASE['public'] . 'install.php'))
     if (@touch(APP_PATH . APP_BASE['public'] . 'install.php'))

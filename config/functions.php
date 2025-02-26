@@ -427,11 +427,19 @@ class Shutdown
    */
   public static function saveEnvToFile()
   {
-    if (!self::hasEnvChanged()) {
+    //if ($hash = !self::hasEnvChanged()) {
+    //  return; // No changes, skip saving
+    //}
+
+    $hash = hash('sha256', json_encode($_ENV, JSON_UNESCAPED_SLASHES));
+
+    if ($hash === ENV_CHECKSUM) {
       return; // No changes, skip saving
     }
 
-    $envFilePath = __DIR__ . '/.env.mistake';
+    dd(ENV_CHECKSUM . ' (ENV_CHECKSUM) == ' . $hash . ' (hash)', false);
+
+    $envFilePath = APP_PATH . APP_ROOT . '/.env.mistake';
     $sections = [];
     $lines = [];
 
@@ -476,13 +484,13 @@ class Shutdown
     // Check if the value is an array-like structure (e.g., {['config', 'clientele', ...]})
     if (preg_match('/^{\[.*\]}$/', $value)) {
       // Convert single quotes to double quotes and wrap array elements in double quotes
-      $fixedValue = preg_replace("/'([^']+)'/", '"$1"', $value);
+      $fixedValue = preg_replace("/'([^']+)'/", '\'$1\'', $value);
       return "\"$fixedValue\""; // Wrap the entire JSON-like structure in double quotes
     }
 
     // Check if the value is valid JSON
     if (self::isJson($value)) {
-      $fixedJson = preg_replace("/'([^']+)'/", '"$1"', $value); // Convert single quotes to double quotes
+      $fixedJson = preg_replace("/'([^']+)'/", '\'$1\'', $value); // Convert single quotes to double quotes
       return "\"$fixedJson\""; // Wrap JSON in double quotes
     }
 
@@ -515,7 +523,9 @@ class Shutdown
     ) {
 
       // Ensure proper double quotes for JSON keys and values
-      $tempValue = preg_replace("/'([^']+)'/", '"$1"', $trimmed);
+      $tempValue = preg_replace("/'([^']+)'/", '\'$1\'', $trimmed);
+
+      $tempValue = "\"$tempValue\"";
 
       json_decode($tempValue);
       return json_last_error() === JSON_ERROR_NONE;
