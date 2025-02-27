@@ -286,7 +286,7 @@ do {
   if (empty($paths))
     unset($paths);
 } while (isset($paths) && !empty($paths));
-
+dd(get_required_files());
 /* 9.69 secs
   while ($path = array_shift($paths)) {
     if ($path = realpath($path)) {
@@ -439,9 +439,9 @@ header("Pragma: no-cache"); ?>
         padding: 0;
         box-sizing: border-box;
 <?php if (isset($_GET['debug'])) { ?>
-                              border: 1px dashed #FF0000;
+                                border: 1px dashed #FF0000;
 <?php } else { ?> 
-                              /* border: 1px dashed #FF0000; */
+                                /* border: 1px dashed #FF0000; */
 <?php } ?>
       }
       *:focus {
@@ -983,8 +983,8 @@ header("Pragma: no-cache"); ?>
             </div>
             <div style="display: inline; float: right; text-align: center; ">
               <code style=" background-color: white; color: #0078D7;">
-                                <a style="cursor: pointer; font-size: 13px;" onclick="document.getElementById('app_client-container').style.display='none';">[X]</a>
-                                </code>
+                                  <a style="cursor: pointer; font-size: 13px;" onclick="document.getElementById('app_client-container').style.display='none';">[X]</a>
+                                  </code>
             </div>
             <div style="margin: 0 10px;">
               <div style="display: inline-block; float: left; width: 49%;">

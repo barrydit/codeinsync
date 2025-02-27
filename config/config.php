@@ -1,9 +1,16 @@
 <?php
 declare(strict_types=1); // First Line Only!
 
-require_once 'functions.php';
+require_once 'constants.php';
 
 !defined('APP_PATH') and define('APP_PATH', dirname(__DIR__) . DIRECTORY_SEPARATOR);
+
+// dd(get_required_files());
+//include 'dotenv.php';
+
+//die(var_export(get_required_files(), true));
+
+require_once 'functions.php';
 
 date_default_timezone_set('America/Vancouver');
 
@@ -294,30 +301,6 @@ if (!is_file($file = APP_PATH . 'projects/index.php')) {
 // Load the environment variables from the .env file
 // = loadEnvConfig(APP_PATH . '.env');
 
-require_once 'constants.php';
-
-// dd(get_required_files());
-//include 'dotenv.php';
-
-//die(var_export(get_required_files(), true));
-
-// Access the variables from the parsed .env file
-$domain = $_ENV['DOMAIN'] ?? APP_DOMAIN ?? 'localhost';
-$defaultUser = $_ENV['SHELL']['DEFAULT_USER'] ?? 'www-data';
-$documentRoot = $_ENV['SHELL']['DOCUMENT_ROOT'] ?? $_SERVER['DOCUMENT_ROOT'];
-$homePathEnv = $_ENV['SHELL']['HOME_PATH'] ?? $_SERVER['HOME'] ?? $_SERVER['USERPROFILE'] ?? '';
-
-if (stripos(PHP_OS, 'WIN') === 0) {
-  $shell_prompt = 'www-data' . '@' . $domain . PATH_SEPARATOR . (($homePath = realpath($_SERVER['DOCUMENT_ROOT'])) === getcwd() ? '~' : $homePath) . '$ ';
-} else if (isset($_SERVER['HOME']) && ($homePath = realpath($_SERVER['HOME'])) !== false && ($docRootPath = realpath($_SERVER['DOCUMENT_ROOT'])) !== false && strpos($homePath, $docRootPath) === 0) {
-  $shell_prompt = $_SERVER['USER'] . '@' . $domain . PATH_SEPARATOR . ($homePath == getcwd() ? '~' : $homePath) . '$ ';
-} elseif (isset($_SERVER['USER'])) {
-  $shell_prompt = $_SERVER['USER'] . '@' . $domain . PATH_SEPARATOR . ($homePath == getcwd() ? '~' : $homePath) . '$ ';
-} else {
-  $shell_prompt = 'www-data' . '@' . $domain . PATH_SEPARATOR . (getcwd() == '/var/www' ? '~' : getcwd()) . '$this one ';
-}
-
-
 if (basename($dir = getcwd()) != 'config') {
   if (in_array(basename($dir), ['public', 'public_html']))
     chdir('../');
@@ -335,14 +318,17 @@ if (basename($dir = getcwd()) != 'config') {
     $clientPath = APP_PATH . APP_ROOT . '.env'; // Client-specific .env
     $envData = Shutdown::loadEnvFiles($globalPath, $clientPath);
 
-
+    if ($envData === false || empty($envData)) {
+      $errors['ENV'] = 'Failed to load the .env file.';
+    }
 
     // Populate $_ENV with the merged values
-    $_ENV = array_merge($_ENV, $envData);
+    $_ENV = array_replace($envData, $_ENV); // array_merge
 
+    //dd($_ENV);
     define('ENV_CHECKSUM', hash('sha256', json_encode($_ENV, JSON_UNESCAPED_SLASHES)));
-
-    dd($_ENV . '   ' . ENV_CHECKSUM);
+    //dd($_ENV);
+    //dd('   ' . ENV_CHECKSUM);
 
     /*
         $parsedEnv = Shutdown::parse_ini_file_multi($file);
@@ -489,6 +475,24 @@ END
   if (defined('APP_PROJECT'))
     require_once 'public' . DIRECTORY_SEPARATOR . 'install.php';
 }
+
+// Access the variables from the parsed .env file
+$domain = $_ENV['DOMAIN'] ?? APP_DOMAIN ?? 'localhost';
+$defaultUser = $_ENV['SHELL']['DEFAULT_USER'] ?? 'www-data';
+$documentRoot = $_ENV['SHELL']['DOCUMENT_ROOT'] ?? $_SERVER['DOCUMENT_ROOT'];
+$homePathEnv = $_ENV['SHELL']['HOME_PATH'] ?? $_SERVER['HOME'] ?? $_SERVER['USERPROFILE'] ?? '';
+
+if (stripos(PHP_OS, 'WIN') === 0) {
+  $shell_prompt = 'www-data' . '@' . $domain . PATH_SEPARATOR . (($homePath = realpath($_SERVER['DOCUMENT_ROOT'])) === getcwd() ? '~' : $homePath) . '$ ';
+} else if (isset($_SERVER['HOME']) && ($homePath = realpath($_SERVER['HOME'])) !== false && ($docRootPath = realpath($_SERVER['DOCUMENT_ROOT'])) !== false && strpos($homePath, $docRootPath) === 0) {
+  $shell_prompt = $_SERVER['USER'] . '@' . $domain . PATH_SEPARATOR . ($homePath == getcwd() ? '~' : $homePath) . '$ ';
+} elseif (isset($_SERVER['USER'])) {
+  $shell_prompt = $_SERVER['USER'] . '@' . $domain . PATH_SEPARATOR . ($homePath == getcwd() ? '~' : $homePath) . '$ ';
+} else {
+  $shell_prompt = 'www-data' . '@' . $domain . PATH_SEPARATOR . (getcwd() == '/var/www' ? '~' : getcwd()) . '$this one ';
+}
+
+
 
 /*
 if ($path = realpath((basename(__DIR__) != 'config' ? NULL : __DIR__ . DIRECTORY_SEPARATOR ) . 'constants.php')) // is_file('config' . DIRECTORY_SEPARATOR . 'constants.php')) 
