@@ -145,18 +145,18 @@ function git_origin_sha_update()
 
     if ($latest_local_commit_sha !== $latest_remote_commit_sha) {
       $errors[] = 'Remote SHA ($_ENV[\'GITHUB\'][\'REMOTE_SHA\']) was updated.' . "\n" . $errors['GIT_UPDATE'] . "\n";
-      //$_ENV['GITHUB']['REMOTE_SHA'] = $latest_remote_commit_sha;
+      $_ENV['GITHUB']['REMOTE_SHA'] = $latest_remote_commit_sha;
 
     } else {
       $_ENV['GITHUB']['REMOTE_SHA'] = $latest_remote_commit_sha;
       $errors['GIT_UPDATE'] = $errors['GIT_UPDATE'] . $latest_local_commit_sha . '  ' . $latest_remote_commit_sha . "\n";
-      $_ENV['HIDE_UPDATE_NOTICE'] = '';
+      $_ENV['DEFAULT_UPDATE_NOTICE'] = false;
       unset($errors['GIT_UPDATE']);
     }
   } else {
     $errors['GIT_UPDATE'] .= "Failed to retrieve commit information.\n";
   }
-  //$_ENV['HIDE_UPDATE_NOTICE'] = '';
+  $_ENV['DEFAULT_UPDATE_NOTICE'] = false;
 
 
   // dd($data);

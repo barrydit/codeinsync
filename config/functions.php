@@ -231,7 +231,6 @@ class Shutdown
         $function(self::$shutdownMessage);
       }
     }
-    //self::saveEnvToFile();
     $message = is_callable(self::$shutdownMessage)
       ? call_user_func(self::$shutdownMessage)
       : self::$shutdownMessage;
@@ -311,16 +310,20 @@ class Shutdown
     $clientPath = APP_PATH . APP_ROOT . '.env';
 
     $mergedEnv = self::loadEnvFiles($globalPath, $clientPath);
-    $_ENV = array_merge($_ENV, $mergedEnv);
+
+    if ($mergedEnv === false || empty($mergedEnv))
+      dd($mergedEnv); //$errors['malformed'] = 'Malformed .env file.';
+
+    $_ENV = array_replace($mergedEnv, $_ENV); // array_merge
 
     if (self::isNonEmptyFile($globalPath)) {
       self::backupEnvFile($globalPath);
     }
   }
 
-  private static function parseIniFileWithSections(string $filePath): array
+  public static function parseIniFileWithSections(string $filePath): array
   {
-    return file_exists($filePath) ? (parse_ini_file($filePath, true, INI_SCANNER_TYPED) ?: []) : [];
+    return file_exists($filePath) ? (parse_ini_file($filePath, true, INI_SCANNER_TYPED) ?: []) : []; // INI_SCANNER_RAW 
   }
 
   private static function isNonEmptyFile(string $filePath): bool
@@ -437,9 +440,9 @@ class Shutdown
       return; // No changes, skip saving
     }
 
-    dd(ENV_CHECKSUM . ' (ENV_CHECKSUM) == ' . $hash . ' (hash)', false);
+    //dd(ENV_CHECKSUM . ' (ENV_CHECKSUM) == ' . $hash . ' (hash)', false);
 
-    $envFilePath = APP_PATH . APP_ROOT . '/.env.mistake';
+    $envFilePath = APP_PATH . APP_ROOT . '/.env';
     $sections = [];
     $lines = [];
 
@@ -460,6 +463,8 @@ class Shutdown
 
     $contents = implode(PHP_EOL, $lines) . PHP_EOL;
 
+    //dd($_ENV);
+
     if (file_put_contents($envFilePath, $contents) === false) {
       error_log("Failed to write the current environment to $envFilePath");
     }
@@ -474,31 +479,57 @@ class Shutdown
    * @param mixed $value
    * @return string
    */
+
+
   private static function formatValue($value): string
   {
+    // Handle empty values explicitly
+    if ($value === '' || $value === null) {
+      return '';
+    }
+
+    // Handle booleans explicitly (true/false should remain unquoted)
+    if (is_bool($value)) {
+      return $value ? 'true' : 'false';
+    }
+
     // Keep numbers unquoted
     if (is_numeric($value)) {
       return $value;
     }
 
-    // Check if the value is an array-like structure (e.g., {['config', 'clientele', ...]})
-    if (preg_match('/^{\[.*\]}$/', $value)) {
-      // Convert single quotes to double quotes and wrap array elements in double quotes
-      $fixedValue = preg_replace("/'([^']+)'/", '\'$1\'', $value);
-      return "\"$fixedValue\""; // Wrap the entire JSON-like structure in double quotes
+    if (preg_match('/^\/.*\/[a-z]*$/i', $value) && !preg_match('/^(\/|[A-Za-z]:\\\\).*$/', $value)) {
+      return "'$value'"; // Use single quotes for regex
     }
 
-    // Check if the value is valid JSON
-    if (self::isJson($value)) {
-      $fixedJson = preg_replace("/'([^']+)'/", '\'$1\'', $value); // Convert single quotes to double quotes
-      return "\"$fixedJson\""; // Wrap JSON in double quotes
+    // Ensure regex patterns are correctly wrapped in single quotes, but not paths
+    if (preg_match('/^(?!\/[A-Za-z0-9]).*\/[a-z]*$/i', $value)) {
+      return "'$value'"; // Use single quotes for regex
     }
 
-    // Quote directory paths
+    if (preg_match('/^\/.*\/[a-z]*$|^\/.*[^\/]$/i', $value)) {
+      return "'$value'"; // Use single quotes for regex
+    }
+
+    // Keep paths quoted (Linux `/path/to/dir` or Windows `C:\path\to\dir`)
     if (preg_match('/^(\/|[A-Za-z]:\\\\).*$/', $value)) {
-      return "\"$value\"";
+      return "\"$value\""; // Always use double quotes for paths
     }
 
+    // Handle strings with spaces
+    if (preg_match('/ /i', $value)) {
+      return "\"$value\""; // Use double quotes for strings with spaces
+    }
+
+    // Special handling for array-like strings (e.g., APP_BASE)
+    if (preg_match('/^\[.*\]$/', $value)) {
+      $decoded = json_decode($value, true);
+      if (is_array($decoded)) {
+        return "{['" . implode("','", $decoded) . "']}";
+      }
+    }
+
+    // Return unquoted strings as is
     return $value; // Return as-is for all other values
   }
 

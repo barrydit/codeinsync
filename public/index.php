@@ -175,7 +175,7 @@ if (isset($_SERVER['REQUEST_METHOD']))
       }
 
       if (isset($_GET['hide']) && $_GET['hide'] == 'update-notice') {
-        $_ENV['HIDE_UPDATE_NOTICE'] = true; // var_export(true, true); // true
+        $_ENV['DEFAULT_UPDATE_NOTICE'] = true; // var_export(true, true); // true
         Shutdown::setEnabled(true)->setShutdownMessage(function () {
           return header('Location: ' . APP_URL); // -wow
         })->shutdown();
@@ -386,6 +386,7 @@ if (/*APP_SELF === APP_PATH_PUBLIC*/ dirname(APP_SELF) === dirname(APP_PATH_PUBL
       }
 
     } while ($path);
+
   } else {
     error_log("No paths available for processing.");
   }

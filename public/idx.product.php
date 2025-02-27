@@ -60,9 +60,9 @@ margin : 0;
 padding : 0;
 box-sizing : border-box;
 <?php if (isset($_GET['debug'])) { ?>
-                                          border: 1px dashed #FF0000;
+                                                border: 1px dashed #FF0000;
 <?php } else { ?> 
-                                          /* border: 1px dashed #FF0000; */
+                                                /* border: 1px dashed #FF0000; */
 <?php } ?>
 }
 *:focus {
@@ -104,6 +104,7 @@ display : flex;
 flex-direction : column;
 }
 
+<?= defined('UI_ERRORS') ? UI_ERRORS['style'] : null; ?>
 <?= defined('UI_GIT') ? UI_GIT['style'] : null; ?>
 <?= defined('UI_PHP') ? UI_PHP['style'] : null; /* print(...) */ ?>
 <?= defined('UI_COMPOSER') ? UI_COMPOSER['style'] : null; /* (isset($appComposer) ? $appComposer['script'] : null); */ ?>
@@ -931,6 +932,7 @@ cursor : pointer;
   </div>
   <!-- /div -->
 
+  <?= defined('UI_ERRORS') ? UI_ERRORS['body'] : null; ?>
   <?= defined('UI_GIT') ? UI_GIT['body'] : null; ?>
   <?= defined('UI_PHP') ? UI_PHP['body'] : null; /* print(...) */ ?>
   <?= defined('UI_COMPOSER') ? UI_COMPOSER['body'] : null; /* (isset($appComposer) ? $appComposer['script'] : null); */ ?>
@@ -1282,7 +1284,7 @@ $(document).ready(function() {
         }
       });
     }
-
+    makeDraggable('app_errors-container');
     makeDraggable('app_ace_editor-container');
     makeDraggable('app_composer-container');
     makeDraggable('app_project-container');
@@ -1469,7 +1471,7 @@ $(document).ready(function() {
               // Animation complete.
             });
 
-        <?php } else if (defined('APP_ROOT') && APP_ROOT != '' && isset($errors['GIT_UPDATE']) && isset($_ENV['HIDE_UPDATE_NOTICE']) && $_ENV['HIDE_UPDATE_NOTICE'] != true) { //  isset($_GET['client'])  !$_GET['client'] 
+        <?php } else if (defined('APP_ROOT') && APP_ROOT != '' && isset($errors['GIT_UPDATE']) && isset($_ENV['DEFAULT_UPDATE_NOTICE']) && $_ENV['DEFAULT_UPDATE_NOTICE'] != true) { //  isset($_GET['client'])  !$_GET['client'] 
         
 
           if ($_GET['client'] == '') { ?>
@@ -1638,6 +1640,7 @@ $(document).ready(function() {
       }
     });
 
+    <?= defined('UI_ERRORS') ? UI_ERRORS['script'] : null; ?>
     <?= defined('UI_GIT') ? UI_GIT['script'] : null; ?>
     <?= defined('UI_PHP') ? UI_PHP['script'] : null; /* print(...) */ ?>
     <?= defined('UI_COMPOSER') ? UI_COMPOSER['script'] : null; /* (isset($app['composer']) ? $app['composer']['script'] : null); */ ?>
