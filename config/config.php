@@ -489,7 +489,7 @@ if (stripos(PHP_OS, 'WIN') === 0) {
 } elseif (isset($_SERVER['USER'])) {
   $shell_prompt = $_SERVER['USER'] . '@' . $domain . PATH_SEPARATOR . ($homePath == getcwd() ? '~' : $homePath) . '$ ';
 } else {
-  $shell_prompt = 'www-data' . '@' . $domain . PATH_SEPARATOR . (getcwd() == '/var/www' ? '~' : getcwd()) . '$this one ';
+  $shell_prompt = 'www-data' . '@' . $domain . PATH_SEPARATOR . (getcwd() == '/var/www' ? '~' : getcwd()) . '$ ';
 }
 
 

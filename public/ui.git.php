@@ -249,6 +249,8 @@ ob_start();
 
       <div id="app_git-frameMenu" class="app_git-frame-container selected absolute"
         style="background-color: rgb(225,196,151,.75); margin-top: 8px;">
+        Testing
+
         <!--<h3>Main Menu</h3> <h4>Update - Edit Config - Initalize - Install</h4> -->
         <div style="position: absolute; right: 10px; float: right; z-index: 1;">
           <div class="text-sm" style="display: inline-block; margin: 0 auto;">
@@ -286,13 +288,13 @@ ob_start();
             <div style="position: fixed; font-weight: bold; color: #FFF; background-color: #B0B0B0;">Git Commands</div>
             <br />
             <code class="text-xs">
-            <a id="app_git-help-cmd" href="<?= (APP_URL_BASE['query'] != '' ? '?' . APP_URL_BASE['query'] : '') . (defined('APP_ENV') && in_array(APP_ENV, ['development', 'production']) ? '#!' : '') ?>" onclick="">git <span style="color: red;">[Help]</span></a><br />
-            <a id="app_git-add-cmd" href="<?= (APP_URL_BASE['query'] != '' ? '?' . APP_URL_BASE['query'] : '') . (defined('APP_ENV') && in_array(APP_ENV, ['development', 'production']) ? '#!' : '') ?>" onclick="">git add .</a><br />
-            <a id="app_git-remote-cmd" href="<?= (APP_URL_BASE['query'] != '' ? '?' . APP_URL_BASE['query'] : '') . (defined('APP_ENV') && in_array(APP_ENV, ['development', 'production']) ? '#!' : '') ?>" onclick="">git remote -v</a><br />
-            <a id="app_git-commit-cmd" href="<?= (APP_URL_BASE['query'] != '' ? '?' . APP_URL_BASE['query'] : '') . (defined('APP_ENV') && in_array(APP_ENV, ['development', 'production']) ? '#!' : '') ?>">git commit -am "&lt;detail message&gt;"</a><br />
-            <a id="app_git-clone-cmd" href="<?= (APP_URL_BASE['query'] != '' ? '?' . APP_URL_BASE['query'] : '') . (defined('APP_ENV') && in_array(APP_ENV, ['development', 'production']) ? '#!' : '') ?>">git clone &lt;URL&gt;</a><br />
-            <a>Testing Again</a><br />
-            </code>
+                            <a id="app_git-help-cmd" href="<?= (APP_URL_BASE['query'] != '' ? '?' . APP_URL_BASE['query'] : '') . (defined('APP_ENV') && in_array(APP_ENV, ['development', 'production']) ? '#!' : '') ?>" onclick="">git <span style="color: red;">[Help]</span></a><br />
+                            <a id="app_git-add-cmd" href="<?= (APP_URL_BASE['query'] != '' ? '?' . APP_URL_BASE['query'] : '') . (defined('APP_ENV') && in_array(APP_ENV, ['development', 'production']) ? '#!' : '') ?>" onclick="">git add .</a><br />
+                            <a id="app_git-remote-cmd" href="<?= (APP_URL_BASE['query'] != '' ? '?' . APP_URL_BASE['query'] : '') . (defined('APP_ENV') && in_array(APP_ENV, ['development', 'production']) ? '#!' : '') ?>" onclick="">git remote -v</a><br />
+                            <a id="app_git-commit-cmd" href="<?= (APP_URL_BASE['query'] != '' ? '?' . APP_URL_BASE['query'] : '') . (defined('APP_ENV') && in_array(APP_ENV, ['development', 'production']) ? '#!' : '') ?>">git commit -am "&lt;detail message&gt;"</a><br />
+                            <a id="app_git-clone-cmd" href="<?= (APP_URL_BASE['query'] != '' ? '?' . APP_URL_BASE['query'] : '') . (defined('APP_ENV') && in_array(APP_ENV, ['development', 'production']) ? '#!' : '') ?>">git clone &lt;URL&gt;</a><br />
+                            <a>Testing Again</a><br />
+                            </code>
           </div>
 
           <div id="app_git-commit-msg"

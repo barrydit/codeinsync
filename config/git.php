@@ -1,5 +1,4 @@
 <?php
-
 global $errors;
 /**/
 // https://techglimpse.com/git-push-github-token-based-passwordless/

@@ -27,6 +27,7 @@
 /var/weekly-timesheet-????-??.json
 !/var/weekly-timesheet-sample.json
 /tasks.txt
+.composer
 .env*
 .htaccess
 *.old
