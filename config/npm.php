@@ -28,19 +28,20 @@ if (defined('NODE_EXEC')) {
   $stderr = stream_get_contents($pipes[2]);
 
   $exitCode = proc_close($proc);
-}
 
-
-if (preg_match('/v(\d+\.\d+\.\d+)/', $stdout, $matches)) {
-  define('NODE_VERSION', $matches[1]);
-} else {
-  if (empty($stdout)) {
-    if (!empty($stderr)) {
-      $errors['NODE_VERSION'] = "\$stderr = $stderr";
+  if (preg_match('/v(\d+\.\d+\.\d+)/', $stdout, $matches)) {
+    define('NODE_VERSION', $matches[1]);
+  } else {
+    if (empty($stdout)) {
+      if (!empty($stderr)) {
+        $errors['NODE_VERSION'] = "\$stderr = $stderr";
+      }
     }
+    // else $errors['NODE_VERSION'] = $stdout . ' does not match $version';
   }
-  // else $errors['NODE_VERSION'] = $stdout . ' does not match $version';
 }
+
+
 
 define('NODE_MODULES_PATH', APP_PATH . 'node_modules/');
 
@@ -69,7 +70,7 @@ if (stripos(PHP_OS, 'WIN') === 0) {
   }
 }
 
-if (preg_match('/(\d+\.\d+\.\d+)/', $stdout, $matches))
+if (defined('NPM_EXEC') && preg_match('/(\d+\.\d+\.\d+)/', $stdout, $matches))
   define('NPM_VERSION', $matches[1]);
 else
   if (empty($stdout)) {
