@@ -374,7 +374,7 @@ if (/*APP_SELF === APP_PATH_PUBLIC*/ dirname(APP_SELF) === dirname(APP_PATH_PUBL
               define($constantName, ['style' => $app['style'] ?? '', 'body' => $app['body'] ?? '', 'script' => $app['script'] ?? '']);
             }
           }
-
+          //error_log(var_export(get_required_files(), true));
           return null;
         })();
 
@@ -399,6 +399,7 @@ if (/*APP_SELF === APP_PATH_PUBLIC*/ dirname(APP_SELF) === dirname(APP_PATH_PUBL
       require_once 'idx.product.php'; // Always execute this
     } while ($path);
   }
+
 
   //require_once 'idx.product.php';
   // isset($paths) && !empty($paths)

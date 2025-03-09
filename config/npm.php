@@ -6,24 +6,30 @@ npm WARN EBADENGINE   required: { node: '^18.17.0 || >=20.5.0' },
 npm WARN EBADENGINE   current: { node: 'v12.22.12', npm: '7.5.2' }
 npm WARN EBADENGINE }
 */
+
 define('NODE_ENV', !defined('APP_ENV') ? 'production' : APP_ENV);
 putenv('NODE_ENV=' . (string) NODE_ENV);
 
 switch (substr(PHP_OS, 0, 3)) {
   case 'win':
-    define('NODE_EXEC', 'node.exe');
+    is_file('node.exe') and
+      define('NODE_EXEC', 'node.exe');
     break;
   default:
-    define('NODE_EXEC', '/usr/bin/node');
+    is_file('/usr/bin/node') and
+      define('NODE_EXEC', '/usr/bin/node');
     break;
 }
 
-$proc = proc_open((stripos(PHP_OS, 'WIN') === 0 ? '' : APP_SUDO) . NODE_EXEC . ' --version', [["pipe", "r"], ["pipe", "w"], ["pipe", "w"]], $pipes);
+if (defined('NODE_EXEC')) {
+  $proc = proc_open((stripos(PHP_OS, 'WIN') === 0 ? '' : APP_SUDO) . NODE_EXEC . ' --version', [["pipe", "r"], ["pipe", "w"], ["pipe", "w"]], $pipes);
 
-$stdout = stream_get_contents($pipes[1]);
-$stderr = stream_get_contents($pipes[2]);
+  $stdout = stream_get_contents($pipes[1]);
+  $stderr = stream_get_contents($pipes[2]);
 
-$exitCode = proc_close($proc);
+  $exitCode = proc_close($proc);
+}
+
 
 if (preg_match('/v(\d+\.\d+\.\d+)/', $stdout, $matches)) {
   define('NODE_VERSION', $matches[1]);
@@ -38,23 +44,28 @@ if (preg_match('/v(\d+\.\d+\.\d+)/', $stdout, $matches)) {
 
 define('NODE_MODULES_PATH', APP_PATH . 'node_modules/');
 
-if (stripos(PHP_OS, 'WIN') === 0)
-  define('NPM_EXEC', 'npm' /*.'.cmd'*/);
-else {
-  define('NPM_EXEC', '/usr/bin/npm');
+if (stripos(PHP_OS, 'WIN') === 0) {
+  if (is_file('npm')) {
+    define('NPM_EXEC', 'npm' /*.'.cmd'*/);
+  }
+} else {
 
-  $npmExecPath = shell_exec('which ' . NPM_EXEC);
-  if ($npmExecPath !== false) {
-    // npm_exec not found
-    // handle the error here
+  if (is_file('/usr/bin/npm')) {
+    define('NPM_EXEC', '/usr/bin/npm');
 
-    $proc = proc_open((stripos(PHP_OS, 'WIN') === 0 ? '' : APP_SUDO) . NPM_EXEC . ' --version', [["pipe", "r"], ["pipe", "w"], ["pipe", "w"]], $pipes);
+    $npmExecPath = shell_exec('which ' . NPM_EXEC);
+    if ($npmExecPath !== false) {
+      // npm_exec not found
+      // handle the error here
 
-    $stdout = stream_get_contents($pipes[1]);
-    $stderr = stream_get_contents($pipes[2]);
+      $proc = proc_open((stripos(PHP_OS, 'WIN') === 0 ? '' : APP_SUDO) . NPM_EXEC . ' --version', [["pipe", "r"], ["pipe", "w"], ["pipe", "w"]], $pipes);
 
-    $exitCode = proc_close($proc);
+      $stdout = stream_get_contents($pipes[1]);
+      $stderr = stream_get_contents($pipes[2]);
 
+      $exitCode = proc_close($proc);
+
+    }
   }
 }
 
@@ -80,7 +91,7 @@ if (!is_file(APP_PATH . 'package.json'))
 END
     );
 
-if (!is_dir(NODE_MODULES_PATH)) {
+if (!is_dir(NODE_MODULES_PATH) && defined('NPM_EXEC')) {
   $proc = proc_open(
     (stripos(PHP_OS, 'WIN') === 0 ? '' : APP_SUDO) . NPM_EXEC . ' install',
     [
@@ -118,7 +129,7 @@ if (!is_dir(NODE_MODULES_PATH)) {
     
      // Error: npm WARN using --force Recommended protections disabled.
   */
-  if (stripos(PHP_OS, 'WIN') !== 0) {
+  if (stripos(PHP_OS, 'WIN') !== 0 && defined('NPM_EXEC')) {
     $npmExecPath = shell_exec('which ' . NPM_EXEC);
     if ($npmExecPath !== false) {
       $proc = proc_open(

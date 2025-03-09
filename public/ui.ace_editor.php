@@ -364,10 +364,10 @@ if ($path)
 -->
 </div>
 
-<div id="container1" style="position: relative; width: 100%; height: 100%; border: 1px #000 solid;">
+<!-- <div id="container1" style="position: relative; width: 100%; height: 100%; border: 1px #000 solid;">
 
 
-</div>
+</div> -->
 <?php
 
 $app['body'] = ob_get_contents();

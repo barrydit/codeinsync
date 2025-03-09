@@ -44,8 +44,8 @@ use Composer\InstalledVersions;
 
 if (isset($_ENV['COMPOSER']['EXPR_NAME']) && !defined('COMPOSER_EXPR_NAME'))
   define('COMPOSER_EXPR_NAME', $_ENV['COMPOSER']['EXPR_NAME']); // const COMPOSER_EXPR_NAME = 'string only/non-block/ternary';
-elseif (!defined('COMPOSER_EXPR_NAME'))
-  define('COMPOSER_EXPR_NAME', '/([a-z0-9](?:[_.-]?[a-z0-9]+)*)\/([a-z0-9](?:(?:[_.]|-{1,2})?[a-z0-9]+)*)/'); // name
+//elseif (!defined('COMPOSER_EXPR_NAME'))
+//define('COMPOSER_EXPR_NAME', '/([a-z0-9](?:[_.-]?[a-z0-9]+)*)\/([a-z0-9](?:(?:[_.]|-{1,2})?[a-z0-9]+)*)/'); // name
 
 if (isset($_ENV['COMPOSER']['EXPR_VER']) && !defined('COMPOSER_EXPR_VER'))
   define('COMPOSER_EXPR_VER', $_ENV['COMPOSER']['EXPR_VER']); // const COMPOSER_EXPR_VER = 'string only/non-block';
@@ -319,7 +319,7 @@ $componetPkg = $_ENV['COMPOSER']['PACKAGE'] ?? '';
 $user = getenv('USERNAME') ?? getenv('APACHE_RUN_USER') ?? getenv('USER') ?? '';
 
 // Determine the Composer home path based on the OS and user
-$composerHome = (stripos(PHP_OS, 'WIN') === 0) ? "C:/Users/$user/AppData/Roaming/Composer/" : ($user === 'root' ? '/root/.composer/' : '/var/www/.composer/');
+$composerHome = (stripos(PHP_OS, 'WIN') === 0) ? "C:/Users/$user/AppData/Roaming/Composer/" : ($user === 'root' ? '/root/.composer/' : APP_PATH . '.composer/');
 
 if (!realpath($composerHome) && @!mkdir($composerHome, 0755, true)) {
   $errors['COMPOSER_HOME'] = "$composerHome does not exist. Path: $composerHome\n";
@@ -394,7 +394,8 @@ if (!file_exists(APP_PATH . 'composer.phar')) {
     define('COMPOSER_BIN', '/usr/local/bin/composer');
   }
 */
-    realpath($composer_which = trim(shell_exec(APP_SUDO . /*-u www-data */ 'which composer'))) or $errors['COMPOSER-WHICH'] = "which did not find composer. Err=$composer_which";
+    //defined('COMPOSER_EXEC')
+    realpath($composer_which = trim(shell_exec(APP_SUDO . /*-u www-data */ 'which composer') ?? '')) or $errors['COMPOSER-WHICH'] = "which did not find composer. Err=$composer_which";
 
     foreach ([ /*'/usr/local/bin/composer',*/ basename(PHP_EXEC) . ' ' . APP_PATH . 'composer.phar', $composer_which] as $key => $bin) {
       !isset($composer) and $composer = [];
@@ -453,29 +454,31 @@ if (!file_exists(APP_PATH . 'composer.phar')) {
 
 //$output = [];
 $output = [ // Exception: [] operator not supported for strings
-  stripos(PHP_OS, 'WIN') === 0 ? realpath('C:\\composer\\composer.bat' /*shell_exec('where composer')*/) : realpath(shell_exec(APP_SUDO . 'which composer')),
+  stripos(PHP_OS, 'WIN') === 0 ? realpath('C:\\composer\\composer.bat' /*shell_exec('where composer')*/)
+  : realpath(shell_exec(APP_SUDO . 'which composer') ?? ''),
   shell_exec('composer --version') ?: $errors['COMPOSER-VERSION'] = ''
 ];
 
-if (!empty($output[1]))
+if (isset($output[0]))
   if (stripos(PHP_OS, 'WIN') === 0) {
-    if (!preg_match('/Composer(?: version)? (\d+\.\d+\.\d+) (\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2})/', $output[1], $matches)) {
+    !preg_match('/Composer(?: version)? (\d+\.\d+\.\d+) (\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2})/', $output[1], $matches) and
       $errors['COMPOSER-VERSION'] = $output[1];
-    }
   } else {
     preg_match('/Composer(?: version)? (\d+\.\d+\.\d+) (\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2})/', $output[1], $matches) or $errors['COMPOSER-VERSION'] = $output[1];
   }
 
-defined('COMPOSER_EXEC') or define('COMPOSER_EXEC', (isset($_GET['exec']) && $_GET['exec'] == 'phar' ? COMPOSER_PHAR : (defined('COMPOSER_BIN') ? ['bin' => basename(COMPOSER_BIN['bin']), 'version' => ($matches[1] ?? '')] : ['bin' => 'composer', 'version' => $matches[1]])) ?? COMPOSER_PHAR);
 
-if (is_array(COMPOSER_EXEC))
-  define('COMPOSER_VERSION', COMPOSER_EXEC['version']);
-else
-  define('COMPOSER_VERSION', COMPOSER_PHAR['version']);
+if (!empty($matches))
+  defined('COMPOSER_EXEC') or define('COMPOSER_EXEC', (isset($_GET['exec']) && $_GET['exec'] == 'phar' ? COMPOSER_PHAR : (defined('COMPOSER_BIN') ? ['bin' => basename(COMPOSER_BIN['bin']), 'version' => ($matches[1] ?? '')] : ['bin' => 'composer', 'version' => $matches[1]])) ?? COMPOSER_PHAR);
+
+if (defined('COMPOSER_EXEC') && is_array(COMPOSER_EXEC))
+  define('COMPOSER_VERSION', COMPOSER_EXEC['version'] ?? '1.0.0');
+//else
+//define('COMPOSER_VERSION', COMPOSER_PHAR['version']);
 
 $configJsonPath = COMPOSER_HOME . 'config.json';
 
-if (!file_exists($configJsonPath)) {
+if (realpath(COMPOSER_HOME) && !file_exists($configJsonPath)) {
   if (!touch($configJsonPath)) {
     $errors['COMPOSER_CONFIG'] = "$configJsonPath is unable to be created.";
   } else {
@@ -483,7 +486,7 @@ if (!file_exists($configJsonPath)) {
   }
 }
 
-if (realpath($configJsonPath)) {
+if (is_file($configJsonPath)) {
   define('COMPOSER_CONFIG', [
     'json' => '{}',
     'path' => $configJsonPath
@@ -492,7 +495,7 @@ if (realpath($configJsonPath)) {
 
 $authJsonPath = COMPOSER_HOME . 'auth.json';
 
-if (!file_exists($authJsonPath)) {
+if (realpath(COMPOSER_HOME) && !file_exists($authJsonPath)) {
   if (!touch($authJsonPath)) {
     $errors['COMPOSER_AUTH'] = "$authJsonPath is unable to be created.";
   } else {
@@ -500,18 +503,21 @@ if (!file_exists($authJsonPath)) {
   }
 }
 
-
-if (realpath($authJsonPath)) {
+if (is_file($authJsonPath)) {
   putenv('COMPOSER_AUTH=' . (filesize($authJsonPath) == 0 || trim(file_get_contents($authJsonPath)) == false ? '{"github-oauth": {"github.com": ""}}' : trim(str_replace([' ', "\r\n", "\n", "\r"], '', file_get_contents($authJsonPath)))));
-}
 
-define('COMPOSER_AUTH', [
-  'json' => getenv('COMPOSER_AUTH'),
-  'path' => $authJsonPath,
-  'token' => json_decode(getenv('COMPOSER_AUTH')/*, true */)->{'github-oauth'}->{'github.com'}
-]);
+  define('COMPOSER_AUTH', [
+    'json' => getenv('COMPOSER_AUTH'),
+    'path' => $authJsonPath,
+    'token' => json_decode(getenv('COMPOSER_AUTH')/*, true */)->{'github-oauth'}->{'github.com'}
+  ]);
+} else
+  define('COMPOSER_AUTH', [
+    'json' => getenv('COMPOSER_AUTH'),
+    'path' => $authJsonPath
+  ]);
 
-if (COMPOSER_AUTH['token'] !== $_ENV['GITHUB']['OAUTH_TOKEN'] ?? 'static token') {
+if (is_file($authJsonPath) && COMPOSER_AUTH['token'] !== $_ENV['GITHUB']['OAUTH_TOKEN'] ?? 'static token') {
   $errors['COMPOSER_TOKEN'] = "COMPOSER_TOKEN does not match the GITHUB/OAUTH_TOKEN\n";
   if (isset($errors['COMPOSER_TOKEN']))
     file_put_contents($authJsonPath, '{"github-oauth": {"github.com": "' . $_ENV['GITHUB']['OAUTH_TOKEN'] . '"}}');
@@ -536,7 +542,8 @@ putenv('PWD=' . APP_PATH . APP_ROOT);
 */
 
 /* library, project, metapackage, composer-plugin ... Package type */
-$composer_exec = defined('COMPOSER_PHAR') && COMPOSER_EXEC['bin'] == COMPOSER_PHAR['bin'] ? COMPOSER_PHAR['bin'] : COMPOSER_EXEC['bin'];
+if (defined('COMPOSER_EXEC'))
+  $composer_exec = defined('COMPOSER_PHAR') && COMPOSER_EXEC['bin'] == COMPOSER_PHAR['bin'] ? COMPOSER_PHAR['bin'] : COMPOSER_EXEC['bin'];
 
 /*
 APP_WORK[client]
@@ -656,7 +663,7 @@ defined('COMPOSER_JSON') or define('COMPOSER_JSON', [
 ]);
 
 ob_start(); ?>
-  <?= $composer_exec; ?> init --quiet --no-interaction
+  <?= defined('COMPOSER_EXEC') and $composer_exec; ?> init --quiet --no-interaction
   --working-dir="<?= APP_PATH . APP_ROOT; ?>"
   --name="<?= $composerUser . '/' . str_replace('.', '_', basename(APP_ROOT) ?? $componetPkg); ?>"
   --description="General Description"

@@ -496,7 +496,7 @@ ob_end_clean();
 ob_start(); ?>
 
 <div id="app_composer-container"
-  class="absolute <?= __FILE__ == get_required_files()[0] || (isset($_GET['app']) && $_GET['app'] == 'composer') || (defined('COMPOSER') && !is_object(COMPOSER['json']) && count((array) COMPOSER) === 0) || version_compare(COMPOSER_LATEST, COMPOSER_VERSION, '>') != 0 && defined('APP_DEBUG') && APP_DEBUG ? 'selected' : '' ?>"
+  class="absolute <?= defined('COMPOSER_VERSION') and __FILE__ == get_required_files()[0] || (isset($_GET['app']) && $_GET['app'] == 'composer') || (defined('COMPOSER') && !is_object(COMPOSER['json']) && count((array) COMPOSER) === 0) || version_compare(COMPOSER_LATEST, COMPOSER_VERSION, '>') != 0 && defined('APP_DEBUG') && APP_DEBUG ? 'selected' : '' ?>"
   style="z-index: 1; width: 424px; background-color: rgba(255,255,255,0.8); padding: 10px;">
 
   <div
@@ -511,7 +511,7 @@ ob_start(); ?>
       </label>
       <div style="display: inline;">
         <span style="background-color: #B0B0B0; color: white;">Composer
-          <?= (version_compare(COMPOSER_LATEST, COMPOSER_VERSION, '>') != 0 ? 'v' . substr(COMPOSER_LATEST, 0, similar_text(COMPOSER_LATEST, COMPOSER_VERSION)) . '<span class="update" style="color: green; cursor: pointer;">' . substr(COMPOSER_LATEST, similar_text(COMPOSER_LATEST, COMPOSER_VERSION)) . '</span>' : 'v' . COMPOSER_VERSION); ?>
+          <?= defined('COMPOSER_VERSION') and version_compare(COMPOSER_LATEST, COMPOSER_VERSION, '>') != 0 ? 'v' . substr(COMPOSER_LATEST, 0, similar_text(COMPOSER_LATEST, COMPOSER_VERSION)) . '<span class="update" style="color: green; cursor: pointer;">' . substr(COMPOSER_LATEST, similar_text(COMPOSER_LATEST, COMPOSER_VERSION)) . '</span>' : 'v' . COMPOSER_VERSION; ?>
         </span>
 
 
@@ -524,7 +524,7 @@ ob_start(); ?>
         <input type="hidden" name="app" value="composer" />
         <select name="exec" onchange="this.form.submit();">
           <?php if (defined('COMPOSER_BIN')) { ?><option <?= (COMPOSER_EXEC == COMPOSER_BIN ? 'selected' : '') ?> value="bin"><?= COMPOSER_BIN['bin']; ?></option><?php } ?>
-          <option <?= COMPOSER_EXEC == COMPOSER_PHAR ? 'selected' : '' ?> value="phar"><?= 'php composer.phar' /*COMPOSER_PHAR['bin']*/ ; ?></option>
+          <option <?= defined('COMPOSER_EXEC') and COMPOSER_EXEC == COMPOSER_PHAR ? 'selected' : '' ?> value="phar"><?= 'php composer.phar' /*COMPOSER_PHAR['bin']*/ ; ?></option>
         </select>
       </code>
         </form>
@@ -593,13 +593,13 @@ ob_start(); ?>
       </form>
     </div>
     <div class="absolute"
-      style="position: absolute; margin: 0px auto; text-align: center; height: 275px; width: 100%; background-repeat: no-repeat; <?= (version_compare(COMPOSER_LATEST, COMPOSER_VERSION, '>') != 0 ? "background-image: url('https://editablegifs.com/gifs/gifs/fireworks-1/output.gif?egv=3258')" : '') ?> ;">
+      style="position: absolute; margin: 0px auto; text-align: center; height: 275px; width: 100%; background-repeat: no-repeat; <?= defined('COMPOSER_VERSION') and version_compare(COMPOSER_LATEST, COMPOSER_VERSION, '>') != 0 ? "background-image: url('https://editablegifs.com/gifs/gifs/fireworks-1/output.gif?egv=3258')" : '' ?> ;">
     </div>
 
     <div class="absolute"
       style="position: absolute; top: 0; left: 0; right: 0; margin: 10px auto; opacity: 1.0; text-align: center; cursor: pointer; z-index: 1;">
       <img
-        class="<?= (version_compare(COMPOSER_LATEST, COMPOSER_VERSION, '>') != 0 ? 'composer-update' : 'composer-menu') ?>"
+        class="<?= defined('COMPOSER_VERSION') and version_compare(COMPOSER_LATEST, COMPOSER_VERSION, '>') != 0 ? 'composer-update' : 'composer-menu' ?>"
         src="resources/images/composer.fw.png" style="margin-top: 45px;" width="150" height="198" />
     </div>
 
@@ -626,7 +626,7 @@ ob_start(); ?>
     </div>
 
     <div class="absolute text-sm" style="position: absolute; bottom: 0; right: 0; padding: 2px; z-index: 1; ">
-      <?= (version_compare(COMPOSER_LATEST, COMPOSER_VERSION, '>') != 0 ? '<code>Latest: </code><span class="update" style="color: green; cursor: pointer;">' . 'v' . substr(COMPOSER_LATEST, 0, similar_text(COMPOSER_LATEST, COMPOSER_VERSION)) . substr(COMPOSER_LATEST, similar_text(COMPOSER_LATEST, COMPOSER_VERSION)) . '</span>' : 'Installed: v' . COMPOSER_VERSION); ?>
+      <?= defined('COMPOSER_VERSION') and version_compare(COMPOSER_LATEST, COMPOSER_VERSION, '>') != 0 ? '<code>Latest: </code><span class="update" style="color: green; cursor: pointer;">' . 'v' . substr(COMPOSER_LATEST, 0, similar_text(COMPOSER_LATEST, COMPOSER_VERSION)) . substr(COMPOSER_LATEST, similar_text(COMPOSER_LATEST, COMPOSER_VERSION)) . '</span>' : 'Installed: v' . COMPOSER_VERSION; ?>
     </div>
     <div style="position: relative; overflow: hidden; width: 398px; height: 250px;">
       <?php
@@ -641,7 +641,7 @@ ob_start(); ?>
         }
       ?>
       <div id="app_composer-frameMenu"
-        class="app_composer-frame-container <?= ($count >= 1 ? '' : 'selected'); ?> absolute"
+        class="app_composer-frame-container <?= $count >= 1 ? '' : 'selected'; ?> absolute"
         style="background-color: rgb(225,196,151,.75); margin-top: 8px;">
         <!--<h3>Main Menu</h3> <h4>Update - Edit Config - Initalize - Install</h4> -->
 
@@ -697,7 +697,7 @@ ob_start(); ?>
             </div>
             <span style="background-color: white;">
               <span class="text-sm" style="display: inline-block;">was
-                <?= (version_compare(COMPOSER_LATEST, COMPOSER_VERSION, '>') == 0 ? '<span style="font-weight: bold;">not</span>' : '') ?>
+                <?= defined('COMPOSER_VERSION') and version_compare(COMPOSER_LATEST, COMPOSER_VERSION, '>') == 0 ? '<span style="font-weight: bold;">not</span>' : '' ?>
                 found: </span>
             </span>
           </div>
@@ -706,7 +706,7 @@ ob_start(); ?>
             style="display: inline-block; padding: 5px; background-color: rgba(0,0,0,.03); border: 1px dashed #0078D7;">
             <div>
               <span class="text-xs"
-                style="background-color: #0078D7; color: white;"><code>Version: (Installed) <?= COMPOSER_VERSION ?> -> (Latest) <?= COMPOSER_LATEST ?></code></span>
+                style="background-color: #0078D7; color: white;"><code>Version: (Installed) <?= defined('COMPOSER_VERSION') and COMPOSER_VERSION ?> -> (Latest) <?= COMPOSER_LATEST ?></code></span>
             </div>
             <label>Composer Command</label>
             <textarea style="width: 100%" cols="40" rows="5" name="composer[cmd]">php -r "copy('https://getcomposer.org/installer', 'composer-setup.php');"
@@ -720,10 +720,10 @@ php composer.phar -v
       $frameUpdateContents = ob_get_contents();
       ob_end_clean(); ?>
 
-      <?= (version_compare(COMPOSER_LATEST, COMPOSER_VERSION, '>') == 0 ? NULL : $frameUpdateContents); ?>
+      <?= defined('COMPOSER_LATEST') && defined('COMPOSER_VERSION') ? (version_compare(COMPOSER_LATEST, COMPOSER_VERSION, '>') == 0 ? NULL : $frameUpdateContents) : ''; ?>
 
       <div id="app_composer-frameInit"
-        class="app_composer-frame-container absolute <?= (realpath(COMPOSER_JSON['path']) ? '' : (defined('COMPOSER') && is_object(COMPOSER) && count((array) COMPOSER) !== 0 ? '' : 'selected')); ?>"
+        class="app_composer-frame-container absolute <?= is_file(COMPOSER_JSON['path']) ? '' : (defined('COMPOSER') && is_object(COMPOSER) && count((array) COMPOSER) !== 0 ? '' : 'selected'); ?>"
         style="overflow: hidden; height: 270px;">
         <?php if (!defined('CONSOLE') && CONSOLE != true) { ?>
           <form autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"
@@ -752,7 +752,7 @@ php composer.phar -v
       </div>
 
       <div id="app_composer-frameConf"
-        class="app_composer-frame-container absolute <?= (!defined('COMPOSER') && is_file(APP_PATH . 'composer.json') ? 'selected' : ''); ?>"
+        class="app_composer-frame-container absolute <?= !defined('COMPOSER') && is_file(APP_PATH . 'composer.json') ? 'selected' : ''; ?>"
         style="overflow-x: hidden; overflow-y: auto; height: 230px;">
         <form autocomplete="off" spellcheck="false"
           action="<?= (!defined('APP_URL_BASE') ? '//' . APP_DOMAIN . APP_URL_PATH . '?' . http_build_query(APP_QUERY, '', '&amp;') : APP_URL . '?' . http_build_query(APP_QUERY + ['app' => 'composer'], '', '&amp;')) . (defined('APP_ENV') && APP_ENV == 'development' ? '#!' : '') ?>"
@@ -762,15 +762,15 @@ php composer.phar -v
           <div style="position: absolute; right: 0; float: right; text-align: center; z-index: 2;">
             <button class="btn absolute" id="composerJsonSubmit" type="submit"
               style="position: absolute; top: 0; right: 0;"
-              value=""><?= (defined('COMPOSER_AUTH') && realpath(COMPOSER_AUTH['path']) ? 'Modify' : 'Create'); ?></button>
+              value=""><?= defined('COMPOSER_AUTH') && realpath(COMPOSER_AUTH['path']) ? 'Modify' : 'Create'; ?></button>
           </div>
           <div
             style="position: relative; display: inline-block; width: 100%; background-color: rgb(225,196,151,.25); z-index: 1;">
             <div class="text-sm" style="display: inline;">
               <!-- <input id="composerJson" type="checkbox" style="cursor: pointer;" name="composerJson" value="true" checked=""> -->
               <label for="composerJson" id="appComposerAuthLabel"
-                title="<?= (defined('COMPOSER_AUTH') && realpath(COMPOSER_AUTH['path']) ? COMPOSER_AUTH['path'] : COMPOSER_AUTH['path']) /*NULL*/ ; ?>"
-                style="background-color: #6B4329; <?= (defined('COMPOSER_JSON') && realpath(COMPOSER_AUTH['path']) ? 'color: #F0E0C6; text-decoration: underline; ' : 'color: red; text-decoration: underline; text-decoration: line-through;') ?> cursor: pointer; font-weight: bold;">&#9660;
+                title="<?= defined('COMPOSER_AUTH') && realpath(COMPOSER_AUTH['path']) ? COMPOSER_AUTH['path'] : COMPOSER_AUTH['path'] /*NULL*/ ; ?>"
+                style="background-color: #6B4329; <?= defined('COMPOSER_JSON') && realpath(COMPOSER_AUTH['path']) ? 'color: #F0E0C6; text-decoration: underline; ' : 'color: red; text-decoration: underline; text-decoration: line-through;' ?> cursor: pointer; font-weight: bold;">&#9660;
                 <code>COMPOSER_HOME/auth.json</code></label>
             </div>
           </div>
@@ -779,10 +779,10 @@ php composer.phar -v
             <a class="text-sm" style="color: blue; text-decoration: underline;"
               href="https://github.com/settings/tokens?page=1">GitHub OAuth Token</a>:
             <span class="text-sm"
-              style="float: right;"><?= ceil(abs((strtotime(date('Y-m-d')) - strtotime(date('Y-m-d', strtotime('+30 days', filemtime(COMPOSER_AUTH['path']))))) / 86400)) ?>
+              style="float: right;"><?= is_file(COMPOSER_AUTH['path']) ? ceil(abs((strtotime(date('Y-m-d')) - strtotime(date('Y-m-d', strtotime('+30 days', filemtime(COMPOSER_AUTH['path']))))) / 86400)) : '' ?>
               (Days left)</span>
             <div style="float: right;">
-              <input type="text" size="40" name="auth[github_oauth]" value="<?= COMPOSER_AUTH['token'] ?>" />
+              <input type="text" size="40" name="auth[github_oauth]" value="<?= COMPOSER_AUTH['token'] ?? '' ?>" />
             </div>
             <div style="clear: both;"></div>
           </div>
@@ -792,8 +792,8 @@ php composer.phar -v
             <div class="text-sm" style="display: inline;">
               <!-- <input id="composerJson" type="checkbox" style="cursor: pointer;" name="composerJson" value="true" checked=""> -->
               <label for="composerJson" id="appComposerConfigLabel"
-                title="<?= defined('COMPOSER_CONFIG') && realpath(COMPOSER_CONFIG['path']) ? COMPOSER_CONFIG['path'] : COMPOSER_CONFIG['path'] /*NULL*/ ; ?>"
-                style="background-color: #6B4329; <?= defined('COMPOSER_CONFIG') && realpath(COMPOSER_CONFIG['path']) ? 'color: #F0E0C6; text-decoration: underline; ' : 'color: red; text-decoration: underline; text-decoration: line-through;' ?> cursor: pointer; font-weight: bold;">&#9660;
+                title="<?= defined('COMPOSER_CONFIG') ? (is_file(COMPOSER_CONFIG['path']) ? COMPOSER_CONFIG['path'] : COMPOSER_CONFIG['path']) : '' /*NULL*/ ; ?>"
+                style="background-color: #6B4329; <?= defined('COMPOSER_CONFIG') ? (is_file(COMPOSER_CONFIG['path']) ? 'color: #F0E0C6; text-decoration: underline; ' : 'color: red; text-decoration: underline; text-decoration: line-through;') : '' ?> cursor: pointer; font-weight: bold;">&#9660;
                 <code>COMPOSER_HOME/config.json</code></label>
             </div>
           </div>
@@ -803,7 +803,8 @@ php composer.phar -v
               href="https://github.com/settings/tokens?page=1">GitHub OAuth Token</a>:
             <span class="text-sm" style="float: right;"></span>
             <div style="float: right;">
-              <input type="text" size="40" name="config[github_oauth]" value="<?= COMPOSER_AUTH['token'] ?>" disabled />
+              <input type="text" size="40" name="config[github_oauth]" value="<?= COMPOSER_AUTH['token'] ?? "" ?>"
+                disabled />
             </div>
             <div style="clear: both;"></div>
             <a class="text-sm" style="color: blue; text-decoration: underline;" href="">Platform</a>:
@@ -820,8 +821,8 @@ php composer.phar -v
             <div class="text-sm" style="display: inline;">
               <!-- <input id="composerJson" type="checkbox" style="cursor: pointer;" name="composerJson" value="true" checked=""> -->
               <label for="composerJson" id="appComposerJsonLabel" class="text-sm"
-                style="background-color: #6B4329; <?= (defined('COMPOSER_JSON') && realpath(COMPOSER_JSON['path']) ? 'color: #F0E0C6; text-decoration: underline; ' : 'color:red; text-decoration: underline; text-decoration: line-through;') ?> cursor: pointer; font-weight: bold;"
-                title="<?= (defined('COMPOSER_JSON') && realpath(COMPOSER_JSON['path']) ? COMPOSER_JSON['path'] : COMPOSER_JSON['path']) /*NULL*/ ; ?>">&#9650;
+                style="background-color: #6B4329; <?= defined('COMPOSER_JSON') && realpath(COMPOSER_JSON['path']) ? 'color: #F0E0C6; text-decoration: underline; ' : 'color:red; text-decoration: underline; text-decoration: line-through;' ?> cursor: pointer; font-weight: bold;"
+                title="<?= defined('COMPOSER_JSON') && realpath(COMPOSER_JSON['path']) ? COMPOSER_JSON['path'] : COMPOSER_JSON['path'] /*NULL*/ ; ?>">&#9650;
                 <code>COMPOSER_PATH/composer.json</code></label>
               <div class="text-xs"
                 style="display: <?= (!is_file(APP_PATH . 'composer.lock') ? 'none' : 'inline-block') ?>; padding-top: 5px; padding-right: 10px; float: right;">
@@ -835,7 +836,7 @@ php composer.phar -v
             <?php if (defined('COMPOSER_JSON') && realpath(COMPOSER_JSON['path'])) { ?>
               <div style="display: inline-block; width: 100%; margin-bottom: 10px;">
                 <div class="text-xs" style="display: inline-block; float: left; background-color: #0078D7; color: white;">
-                  Last Update: <span <?= (isset(COMPOSER['json']->time) && COMPOSER['json']->time === '' ? 'style="background-color: white; color: red;"' : 'style="background-color: white; color: #0078D7;"') ?>><?= (isset(COMPOSER['json']->time) && COMPOSER['json']->time !== '' ? COMPOSER['json']->{'time'} : date('Y-m-d H:i:s')) ?></span>
+                  Last Update: <span <?= isset(COMPOSER['json']->time) && COMPOSER['json']->time === '' ? 'style="background-color: white; color: red;"' : 'style="background-color: white; color: #0078D7;"' ?>><?= isset(COMPOSER['json']->time) && COMPOSER['json']->time !== '' ? COMPOSER['json']->{'time'} : date('Y-m-d H:i:s') ?></span>
                 </div>
 
 
@@ -852,40 +853,42 @@ php composer.phar -v
                 <div class="absolute font-bold"
                   style="position: absolute; top: -8px; left: 5px; font-size: 10px; z-index: 1;">Vendor</div>
                 <input type="text" id="tst" name="composer[config][name][vendor]" placeholder="vendor"
-                  value="<?= (defined('COMPOSER') && isset(COMPOSER['json']->name) ? explode('/', COMPOSER['json']->name)[0] : ''); ?>"
+                  value="<?= defined('COMPOSER') && isset(COMPOSER['json']->name) ? explode('/', COMPOSER['json']->name)[0] : ''; ?>"
                   size="13"> / <div class="absolute font-bold"
                   style="position: absolute; top: -8px; right: 82px; font-size: 10px; z-index: 1;">Package</div> <input
                   type="text" id="tst" name="composer[config][name][package]" placeholder="package"
-                  value="<?= (defined('COMPOSER') && isset(COMPOSER['json']->name) ? explode('/', COMPOSER['json']->name)[1] : ''); ?>"
+                  value="<?= defined('COMPOSER') && isset(COMPOSER['json']->name) ? explode('/', COMPOSER['json']->name)[1] : ''; ?>"
                   size="13" />
               </div>
             </div>
             <div style="display: inline-block; width: 100%;"><label for="composer-description"
-                <?= (isset(COMPOSER['json']->{'description'}) && COMPOSER['json']->{'description'} !== '' ? '' : 'style="background-color: #fff; color: red; cursor: pointer;" title="Description is missing"') ?>>Description:</label>
+                <?= isset(COMPOSER['json']->{'description'}) && COMPOSER['json']->{'description'} !== '' ? '' : 'style="background-color: #fff; color: red; cursor: pointer;" title="Description is missing"' ?>>Description:</label>
               <div style="float: right;">
                 <input id="composer-description" type="text" name="composer[config][description]" placeholder="Details"
-                  value="<?= (defined('COMPOSER') && isset(COMPOSER['json']->description) ? COMPOSER['json']->description : ''); ?>">
+                  value="<?= defined('COMPOSER') && isset(COMPOSER['json']->description) ? COMPOSER['json']->description : ''; ?>">
               </div>
             </div>
 
             <!-- version -->
             <div style="display: inline-block; width: 100%;"><label for="composer-version"
-                <?= (isset(COMPOSER['json']->{'version'}) && preg_match(COMPOSER_EXPR_VER, COMPOSER['json']->{'version'}) ? '' : 'style="background-color: #fff; color: red; cursor: pointer;" title="Version must follow this format: ' . COMPOSER_EXPR_VER . '"') ?>>Version:</label>
+                <?= isset(COMPOSER['json']->{'version'}) && preg_match(COMPOSER_EXPR_VER, COMPOSER['json']->{'version'}) ? '' : 'style="background-color: #fff; color: red; cursor: pointer;" title="Version must follow this format: ' . COMPOSER_EXPR_VER . '"' ?>>Version:</label>
               <div style="float: right;">
                 <input id="composer-version" type="text" name="composer[config][version]" size="10"
                   placeholder="(Version) 1.2.3" style="text-align: right;" pattern="(\d+\.\d+(?:\.\d+)?)"
-                  value="<?= (defined('COMPOSER') && isset(COMPOSER['json']->version) ? COMPOSER['json']->version : ''); ?>">
+                  value="<?= defined('COMPOSER') && isset(COMPOSER['json']->version) ? COMPOSER['json']->version : ''; ?>">
               </div>
             </div>
             <!-- type -->
             <div style="display: inline-block; width: 100%;">Type:
               <div style="float: right;">
                 <select name="composer[config][type]">
-                  <option label="" <?= (defined('COMPOSER') && isset(COMPOSER['json']->license) ? '' : 'selected=""'); ?>>
+                  <option label="" <?= defined('COMPOSER') && isset(COMPOSER['json']->license) ? '' : 'selected=""'; ?>>
                   </option>
                   <?php foreach (['library', 'project', 'metapackage', 'composer-plugin'] as $type) { ?>
-                    <option<?= (defined('COMPOSER') && isset(COMPOSER['json']->type) && COMPOSER['json']->type == $type ? ' selected=""' : ''); ?>><?= $type; ?></option>
-                    <?php } ?>
+                    <option>
+                      <?= defined('COMPOSER') && isset(COMPOSER['json']->type) && COMPOSER['json']->type == $type ? ' selected=""' : ''; ?>><?= $type; ?>
+                    </option>
+                  <?php } ?>
                 </select>
               </div>
             </div>
@@ -895,7 +898,7 @@ php composer.phar -v
               </div>
               <div class="clearfix"></div>
               <div id="composerAppendKeyword"
-                style="padding: 10px 0 10px 0; display: <?= (defined('COMPOSER') && isset(COMPOSER['json']->keywords) && !empty(COMPOSER['json']->keywords) ? 'block' : 'none') ?>; width: 100%;">
+                style="padding: 10px 0 10px 0; display: <?= defined('COMPOSER') && isset(COMPOSER['json']->keywords) && !empty(COMPOSER['json']->keywords) ? 'block' : 'none' ?>; width: 100%;">
                 <?php if (defined('COMPOSER') && isset(COMPOSER['json']->keywords))
                   foreach (COMPOSER['json']->keywords as $key => $keyword) { ?>
                     <label for="keyword_<?= $key; ?>"><sup
@@ -912,10 +915,11 @@ php composer.phar -v
             <div style="display: inline-block; width: 100%;">License:
               <div style="float: right;">
                 <select name="composer[config][license]">
-                  <option label="" <?= (defined('COMPOSER') && isset(COMPOSER['json']->license) ? '' : ' selected=""'); ?>></option>
+                  <option label="" <?= defined('COMPOSER') && isset(COMPOSER['json']->license) ? '' : ' selected=""'; ?>>
+                  </option>
                   <?php foreach (['WTFPL', 'GPL-3.0', 'MIT'] as $license) { ?>
-                    <option<?= (defined('COMPOSER') && isset(COMPOSER['json']->license) && COMPOSER['json']->license == $license ? ' selected=""' : ''); ?>><?= $license; ?></option>
-                    <?php } ?>
+                    <option <?= defined('COMPOSER') && isset(COMPOSER['json']->license) && COMPOSER['json']->license == $license ? ' selected=""' : ''; ?>><?= $license; ?></option>
+                  <?php } ?>
                 </select>
               </div>
             </div>
@@ -1014,7 +1018,7 @@ php composer.phar -v
                 </datalist>
               </div>
               <div id="composerAppendRequire"
-                style="padding: 10px; display: <?= (defined('COMPOSER') && !isset(COMPOSER['json']->{'require'}) ? 'none' : 'block') ?>;">
+                style="padding: 10px; display: <?= defined('COMPOSER') && !isset(COMPOSER['json']->{'require'}) ? 'none' : 'block' ?>;">
                 <datalist id="composerReqVersResults">
                   <option value=""></option>
                 </datalist>
@@ -1121,14 +1125,14 @@ php composer.phar -v
               <?php if (defined('VENDOR_JSON') && realpath(VENDOR_JSON['path'])) { ?>
                 <div style="display: block; width: 100%; margin-bottom: 10px;">
                   <div class="text-xs" style="display: inline-block; float: left; background-color: #0078D7; color: white;">
-                    Last Update: <span <?= (isset(VENDOR->time) && VENDOR->time === '' ? 'style="background-color: white; color: red;"' : 'style="background-color: white; color: #0078D7;"') ?>><?= (isset(VENDOR->time) && VENDOR->time !== '' ? VENDOR->{'time'} : date('Y-m-d H:i:s')) ?></span>
+                    Last Update: <span <?= isset(VENDOR->time) && VENDOR->time === '' ? 'style="background-color: white; color: red;"' : 'style="background-color: white; color: #0078D7;"' ?>><?= isset(VENDOR->time) && VENDOR->time !== '' ? VENDOR->{'time'} : date('Y-m-d H:i:s') ?></span>
                   </div>
 
                 </div>
               <?php } ?>
 
 
-              <div style="display: inline-block; width: 100%;"><span <?= (isset(VENDOR->{'name'}) && VENDOR->{'name'} !== '' ? '' : 'style="background-color: #fff; color: red;" title="Either Vendor or Package is missing"') ?>>Vendor/Package:</span>
+              <div style="display: inline-block; width: 100%;"><span <?= isset(VENDOR->{'name'}) && VENDOR->{'name'} !== '' ? '' : 'style="background-color: #fff; color: red;" title="Either Vendor or Package is missing"' ?>>Vendor/Package:</span>
                 <div style="position: relative; float: right;">
                   <?php
 
@@ -1153,10 +1157,10 @@ php composer.phar -v
                 </div>
               </div>
 
-              <div style="display: inline-block; width: 100%;"><label for="description" <?= (isset(VENDOR->{'description'}) && VENDOR->{'description'} !== '' ? '' : 'style="background-color: #fff; color: red; cursor: pointer;" title="Description is missing"') ?>>Description:</label>
+              <div style="display: inline-block; width: 100%;"><label for="description" <?= isset(VENDOR->{'description'}) && VENDOR->{'description'} !== '' ? '' : 'style="background-color: #fff; color: red; cursor: pointer;" title="Description is missing"' ?>>Description:</label>
                 <div style="float: right;">
                   <input id="description" type="text" name="" placeholder="Details"
-                    value="<?= (defined('VENDOR') && isset(VENDOR->description) ? VENDOR->description : ''); ?>">
+                    value="<?= defined('VENDOR') && isset(VENDOR->description) ? VENDOR->description : ''; ?>">
                 </div>
               </div>
 
@@ -1165,7 +1169,7 @@ php composer.phar -v
                 <div style="float: right;">
                   <input id="version" type="text" name="" size="10" placeholder="(Version) 1.2.3"
                     style="text-align: right;" pattern="(\d+\.\d+(?:\.\d+)?)"
-                    value="<?= (defined('VENDOR') && isset(VENDOR->version) ? VENDOR->version : ''); ?>">
+                    value="<?= defined('VENDOR') && isset(VENDOR->version) ? VENDOR->version : ''; ?>">
                 </div>
               </div>
               <!-- type -->
@@ -1174,9 +1178,10 @@ php composer.phar -v
                   <select name="">
                     <option label="" <?= defined('VENDOR') && isset(VENDOR->license) ? '' : 'selected=""'; ?>></option>
                     <?php foreach (['library', 'project', 'metapackage', 'composer-plugin'] as $type) { ?>
-                      <option<?= defined('VENDOR') && isset(VENDOR->type) && VENDOR->type == $type ? ' selected=""' : ''; ?>>
-                        <?= $type; ?></option>
-                      <?php } ?>
+                      <option <?= defined('VENDOR') && isset(VENDOR->type) && VENDOR->type == $type ? ' selected=""' : ''; ?>>
+                        <?= $type; ?>
+                      </option>
+                    <?php } ?>
                   </select>
                 </div>
               </div>
@@ -1226,7 +1231,7 @@ php composer.phar -v
                         <?php foreach (['Backend', 'Designer', 'Developer', 'Programmer'] as $key2 => $role) { ?>
                           <a href="#!"><img style="float: left;" width="30" height="33"
                               src="resources/images/role<?= $key2 ?>.fw.png"><?= $role; ?> <input type="radio" id="<?= $key2 ?>"
-                              style="float: right; cursor: pointer;" name="" value="<?= $role; ?>" <?= (isset($author->{'role'}) && $author->{'role'} == $role ? ' checked=""' : '') ?> /></a>
+                              style="float: right; cursor: pointer;" name="" value="<?= $role; ?>" <?= isset($author->{'role'}) && $author->{'role'} == $role ? ' checked=""' : '' ?> /></a>
                         <?php } ?>
                       </div>
                       <button type="button" onclick="myFunction()" class="dropbtn">Role &#9660;</button>
@@ -1257,7 +1262,7 @@ php composer.phar -v
                   <!--
     <select name="">
 <?php foreach (['Backend', 'Designer', 'Developer', 'Programmer'] as $role) { ?>
-      <option<?= (defined('COMPOSER') && isset(COMPOSER->{'authors'}) && COMPOSER->{'authors'}->role ? "value=\"$role\"" : '') && (defined('COMPOSER') && isset(COMPOSER->authors) && COMPOSER->authors->role == $role ? ' selected=""' : ''); ?>><?= $role; ?></option>
+      <option<?= (defined('COMPOSER') && isset(COMPOSER->{'authors'}) && COMPOSER->{'authors'}->role ? "value=\"$role\"" : '') && (defined('COMPOSER') && isset(COMPOSER->authors) /* */ && COMPOSER->authors->role == $role ? ' selected=""' : ''); ?>><?= $role; ?></option>
 <?php } ?>
     </select>
 -->
@@ -1293,7 +1298,7 @@ php composer.phar -v
                   <input type="text" title="Enter Text and onSelect" placeholder="" value="">
                 </div>
                 <div
-                  style="padding: 10px; display: <?= (defined('VENDOR') && !isset(VENDOR->{'require'}) ? 'none' : 'block') ?>;">
+                  style="padding: 10px; display: <?= defined('VENDOR') && !isset(VENDOR->{'require'}) ? 'none' : 'block' ?>;">
                   <?php $i = 0;
                   if (defined('VENDOR') && isset(VENDOR->{'require'})) {
                     if (!isset(VENDOR->{'require'}->{'php'})) { ?>
@@ -1320,7 +1325,7 @@ php composer.phar -v
                   <input type="text" placeholder="" name="" value="" />
                 </div>
                 <div
-                  style="padding: 10px; display: <?= (defined('VENDOR') && !isset(VENDOR->{'require-dev'}) ? 'none' : 'block') ?>;">
+                  style="padding: 10px; display: <?= defined('VENDOR') && !isset(VENDOR->{'require-dev'}) ? 'none' : 'block' ?>;">
                   <?php $i = 0;
                   if (defined('VENDOR') && isset(VENDOR->{'require-dev'}))
                     foreach (VENDOR->{'require-dev'} as $key => $require) { ?>
@@ -1371,7 +1376,7 @@ php composer.phar -v
       $count = 0;
       if (defined('COMPOSER') && isset(COMPOSER['json']->require))
         foreach (COMPOSER['json']->require as $key => $require)
-          if (preg_match('/.*\/.*:.*/', $key . ':' . $require))
+          if (preg_match('/.*\/.*:.*/', "$key:$require"))
             if (preg_match('/(.*\/.*)/', $key, $match))
               if (!empty($match) && !is_dir(APP_BASE['vendor'] . $match[1] . '/'))
                 $count++;
@@ -1388,8 +1393,8 @@ php composer.phar -v
             <div style="position: absolute; right: 0; float: right; text-align: center; z-index: 1;">
 
               <button id="composerInstallSubmit" class="btn" type="submit"
-                style="<?= ($count > 0 ? 'color: red;' : ''); ?>" value>Install
-                (<?= ($count > 0 ? $count : ''); ?>)</button>
+                style="<?= $count > 0 ? 'color: red;' : ''; ?>" value>Install
+                (<?= $count > 0 ? $count : ''; ?>)</button>
             </div>
             <div class="text-sm" style="display: inline;">
               <label id="composerInstallLabel" for="composerInstall"
@@ -1407,7 +1412,7 @@ php composer.phar -v
                 <ul style="padding-left: 10px;">
                   <?php
                   foreach (COMPOSER['json']->require as $key => $require) {
-                    if (preg_match('/.*\/.*:.*/', $key . ':' . $require))
+                    if (preg_match('/.*\/.*:.*/', "$key:$require"))
                       if (preg_match('/(.*\/.*)/', $key, $match))
                         if (!empty($match) && !is_dir(APP_BASE['vendor'] . $match[1] . '/'))
                           echo '<li style="color: red;"><code class="text-sm">' . $match[1] . ':' . '<span style="float: right">' . $require . '</span>' . "</code></li>\n";
@@ -1441,8 +1446,9 @@ php composer.phar -v
         </form>
       </div>
 
-      <?php if (version_compare(COMPOSER_LATEST, COMPOSER_VERSION, '>') == 0)
-        echo $frameUpdateContents; ?>
+      <?php if (defined(COMPOSER_LATEST) && defined(COMPOSER_VERSION))
+        if (version_compare(COMPOSER_LATEST, COMPOSER_VERSION, '>') == 0)
+          echo $frameUpdateContents; ?>
 
     </div>
 
@@ -1794,7 +1800,7 @@ ob_start(); ?>
   <?php
   // (check_http_status('https://cdn.tailwindcss.com') ? 'https://cdn.tailwindcss.com' : APP_URL . 'resources/js/tailwindcss-3.3.5.js')?
   is_dir($path = APP_PATH . APP_BASE['resources'] . 'js/') or mkdir($path, 0755, true);
-  if (is_file($path . 'tailwindcss-3.3.5.js')) {
+  if (is_file("{$path}tailwindcss-3.3.5.js")) {
     if (ceil(abs((strtotime(date('Y-m-d')) - strtotime(date('Y-m-d', strtotime('+5 days', filemtime("{$path}tailwindcss-3.3.5.js"))))) / 86400)) <= 0) {
       $url = 'https://cdn.tailwindcss.com';
       $handle = curl_init($url);
