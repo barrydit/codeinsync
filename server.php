@@ -287,9 +287,10 @@ function clientInputHandler($input)
         //dd('Path: ' . $_GET['path'] . "\n", false);
         //dd(getcwd());
         ob_start();
-        $tableValue = $tableGen();
-        ob_end_clean();
-        return $tableValue; // $app['directory']['body'];
+        if (($tableValue = $tableGen()) != null) {
+          ob_end_clean();
+          return $tableValue; // $app['directory']['body'];
+        }
       })();
       $output = $resultValue;
     }
@@ -312,7 +313,7 @@ function clientInputHandler($input)
     //$input = trim($input);
     $output = '';
 
-    $file = APP_PATH . APP_BASE['var'] . 'source_code.json';
+    $file = APP_PATH . APP_BASE['database'] . 'source_code.json';
 
     // Retrieve file metadata using stat()
     $fileStats = stat($file);
@@ -429,7 +430,7 @@ function clientInputHandler($input)
         $envContents
       );
 
-      file_put_contents(APP_PATH . APP_BASE['var'] . 'source_code.json', $sanitizedContents, LOCK_EX);
+      file_put_contents(APP_PATH . APP_BASE['database'] . 'source_code.json', $sanitizedContents, LOCK_EX);
 
       signalHandler(SIGTERM);
       // Update the file's modification time if necessary (or other actions)
@@ -805,6 +806,54 @@ if (PHP_SAPI === 'cli')
       }
 
       /**
+       * Handles socket connections.
+       *
+       * @param resource|Socket $socket The socket to handle.
+       */
+      function handleSocketConnection($socket)
+      {
+        $error = socket_last_error($socket);
+
+        // Check if the socket is closed
+        if ($error == 10057) { // WSAENOTCONN: "Socket is not connected"
+          echo "Socket is closed\n";
+          socket_close($socket);
+          return; // Exit if socket is closed
+        }
+
+        // Accept new client connection
+        $client = @socket_accept($socket);
+
+        if ($client === false) {
+          handleSocketAcceptError($socket);
+          return;
+        }
+
+        // If a client connected successfully, handle it
+        if ($client instanceof Socket) {
+          handleSocketClientConnection($client);
+        } else {
+          echo "Socket connection closed or invalid.\n";
+        }
+      }
+
+      /**
+       * Handles stream connections.
+       *
+       * @param resource $socket The stream socket to handle.
+       */
+      function handleStreamConnection($socket)
+      {
+        $stream = @stream_socket_accept($socket, -1);
+
+        if ($stream) {
+          handleStreamClientConnection($stream);
+        } else {
+          echo "Failed to accept stream connection.\n";
+        }
+      }
+
+      /**
        * Handles an incoming client connection for streams.
        */
       function handleStreamClientConnection($stream)
@@ -937,8 +986,18 @@ if (PHP_SAPI === 'cli')
         //dd(get_resource_type($socket)); // var_export($socket, true) == Socket::__set_state(array( )) != resource
         //PHP7 >= (is_resource($socket) && get_resource_type($socket) === 'Socket')
 
-        if ($socket instanceof Socket && $socket) {
-          $error = socket_last_error($socket);
+        /*
+        if ($socket instanceof Socket && is_resource($socket)) {
+          handleSocketConnection($socket);
+        } elseif (is_resource($socket) && get_resource_type($socket) === 'stream') {
+          handleStreamConnection($socket);
+        } else {
+          echo "Socket is not connected or is invalid.\n";
+          break;
+        }
+*/
+        if ($socket instanceof Socket /* && is_resource($socket)*/) {
+          //$error = socket_last_error($socket);
 
           // Check if the socket is closed
           if ($error == 10057) { // WSAENOTCONN: "Socket is not connected"

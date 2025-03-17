@@ -249,8 +249,6 @@ ob_start();
 
       <div id="app_git-frameMenu" class="app_git-frame-container selected absolute"
         style="background-color: rgb(225,196,151,.75); margin-top: 8px;">
-        Testing
-
         <!--<h3>Main Menu</h3> <h4>Update - Edit Config - Initalize - Install</h4> -->
         <div style="position: absolute; right: 10px; float: right; z-index: 1;">
           <div class="text-sm" style="display: inline-block; margin: 0 auto;">

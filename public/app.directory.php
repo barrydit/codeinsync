@@ -294,7 +294,7 @@ $tableGen = function () use ($group_type): string {
         ?>
     </table>
   <?php } elseif (isset($_GET['path']) && preg_match('/^client(?:s|ele)?\/?/', $_GET['path']) || isset($_GET['client']) && empty($_GET['client'])) { ?>
-    <?php if (readlinkToEnd($_SERVER['HOME'] . DIRECTORY_SEPARATOR . 'clientele') == '/mnt/c/www/clientele' || realpath(APP_PATH . 'clientele')) { ?>
+    <?php if (isset($_SERVER['HOME']) && readlinkToEnd($_SERVER['HOME'] . DIRECTORY_SEPARATOR . 'clientele') == '/mnt/c/www/clientele' || realpath(APP_PATH . 'clientele')) { ?>
       <h3>&#9660; Domains: </h3>
       <table width="" style="border: none;">
         <tr style=" border: none;">
@@ -1193,7 +1193,7 @@ ob_end_clean();
 
 ob_start(); ?>
 <div id="app_directory-container"
-  style="position: absolute; display: <?= isset($_GET['debug']) || isset($_GET['project']) || isset($_GET['path']) ? /*'block'*/ 'none' : 'none'; ?>; background-color: rgba(255,255,255,1); height: 70vh; top: 90px; margin-left: auto; margin-right: auto; left: 0; right: 0; width: 700px; overflow-x: hidden; overflow-y: scroll; padding: 10px; z-index: 5;">
+  style="position: absolute; display: <?= isset($_GET['debug']) || isset($_GET['project']) || isset($_GET['path']) ? /*'block'*/ 'none' : 'none'; ?>; background-color: rgba(255,255,255,1); height: 70vh; top: 90px; margin-left: auto; margin-right: auto; left: 0; right: 0; width: 700px; overflow-x: hidden; overflow-y: scroll; padding: 10px; z-index: 1;">
 
   <?= $tableGen(); /*'';*/ ?>
 </div>

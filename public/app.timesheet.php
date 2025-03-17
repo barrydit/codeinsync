@@ -5,29 +5,31 @@ include('config.php'); /// BAD ... causes errors due to requireing redunantly.
 https://stackoverflow.com/questions/17694894/different-timezone-types-on-datetime-object
 
 */
-
+//die('$json_decode: ' . json_encode($json_decode));
 
 /**/
 if (__FILE__ == get_required_files()[0] && __FILE__ == realpath($_SERVER["SCRIPT_FILENAME"]))
+
   if ($path = basename(dirname(get_required_files()[0])) == 'public') { // (basename(getcwd())
+
+    require_once '../bootstrap.php';
+
     if (isset($_GET['json'])) {
       header('Content-Type: application/json');
 
-      require_once '../bootstrap.php';
-
-      $jsonData = file_get_contents($file = APP_PATH . APP_BASE['var'] . 'weekly-timesheet-' . date('Y-m') . '.json');
+      $jsonData = file_get_contents($file = APP_PATH . APP_BASE['database'] . 'weekly-timesheet-' . date('Y-m') . '.json');
 
       echo $jsonData; //json_encode()
       //die(var_dump($file));
 
       exit;
     }
-    if (is_file($path = realpath('index.php')))
-      require_once $path;
+
+    //if (is_file($path = realpath('index.php')))
+    //  require_once $path;
 
   } else
     die(var_dump("Path was not found. file=$path"));
-
 
 if (preg_match('/^app\.([\w\-.]+)\.php$/', basename(__FILE__), $matches))
   ${$matches[1]} = $matches[1];
@@ -98,13 +100,15 @@ $json_data = <<<END
 }
 END;
 
-!is_file(APP_PATH . APP_BASE['var'] . 'weekly-timesheet-' . date('Y-m') . '.json')
-  and @touch(APP_PATH . APP_BASE['var'] . 'weekly-timesheet-' . date('Y-m') . '.json');
+//$jsonInput = file_get_contents('php://input');
 
-$json_data = json_decode(file_get_contents(APP_PATH . APP_BASE['var'] . 'weekly-timesheet-' . date('Y-m') . '.json'), true);
+is_file($jsonFile = APP_PATH . APP_BASE['database'] . 'weekly-timesheet-' . date('Y-m') . '.json') ?: @touch($jsonFile);
 
-if (empty($json_data))
-  $json_data = json_decode('{' . '"' . date('Y-m-d') . 'T' . date('H') . ':00:00-24:00' . '": {' . '} }', true);
+$json_data = file_exists($jsonFile) ? file_get_contents(APP_PATH . APP_BASE['database'] . 'weekly-timesheet-' . date('Y-m') . '.json') : '{' . '"' . date('Y-m-d') . 'T' . date('H') . ':00:00-24:00' . '": {' . '} }';
+
+
+if (!empty($json_data))
+  $json_data = json_decode($json_data, true);
 
 $currentTime = new DateTime(); // Get current time
 $currentTime->setTime('12', '00');
@@ -497,6 +501,7 @@ $weeklyHours = [
         }
       }
   }
+
 //dd($totalHours);
 
 /*
@@ -596,16 +601,16 @@ $weeklyHours = [
 */
 //dd();
 
-
 // Create a DateTime object for the current date and hour with a custom time zone offset
 $timezoneOffset = '-' . $timeRanges[4][2] . ':00';
 $now = new DateTime('now', new DateTimeZone($timezoneOffset));
+
 $now->setTime((int) date('H'), 0); // Set minute and second to 0
 
 //dd($now->format('Y-m-d H:i:s'));
 
 // Define the path to the weekly timesheet JSON file
-$filePath = APP_PATH . APP_BASE['var'] . 'weekly-timesheet-' . date('Y-m') . '.json';
+$filePath = realpath(APP_PATH . APP_BASE['database'] . 'weekly-timesheet-' . date('Y-m') . '.json'); // 
 
 // Initialize or load the JSON data
 if (!is_file($filePath)) {
@@ -645,14 +650,14 @@ $json = !is_file($file = APP_PATH . APP_BASE['var'] . 'weekly-timesheet-' . date
     : file_get_contents($file, true));
 */
 
-//file_get_contents('var/weekly-timesheet-' . date('Y-m') . '.json', true) :  : (!@touch('timesheet.json') ? '' . json_encode([$Now->format(DATE_RFC3339) => []]), 'timesheet.json', LOCK_EX) : file_get_contents('timesheet.json', true)));
-
-//die(var_dump($json));
+//file_get_contents(APP_BASE['database'] . 'weekly-timesheet-' . date('Y-m') . '.json', true) :  : (!@touch('timesheet.json') ? '' . json_encode([$Now->format(DATE_RFC3339) => []]), 'timesheet.json', LOCK_EX) : file_get_contents('timesheet.json', true)));
 
 $json_decode = json_decode($jsonData, true);
 
 switch ($_SERVER['REQUEST_METHOD']) {
   case 'POST':
+    !empty($_POST) ?: $_POST = json_decode(file_get_contents('php://input'), true);
+    //dd($_POST);
     if (isset($_POST['idletime'])) {
       $_POST['idletime']['time'] = trim($_POST['idletime']['time']);
       $_POST['idletime']['idle'] = $_POST['idletime']['idle'] === null ? NULL : trim($_POST['idletime']['idle']);
@@ -660,7 +665,7 @@ switch ($_SERVER['REQUEST_METHOD']) {
       if (!empty($json_decode))
         foreach ($json_decode as $weekday_key => $weekday) {
           if (preg_match('/(' . /*\d+\-\d+\-\d+*/ date('Y-m-d') . ')T(\d+:\d+:\d+)-(\d+:\d+)/', $weekday_key, $matches)) {
-            if ($matches[1] == $Now->format('Y-m-d') && !empty($weekday)) {
+            if ($matches[1] == $now->format('Y-m-d') && !empty($weekday)) {
               foreach ($weekday as $idletime_key => $idletime) {
                 if (strtotime($_POST['idletime']['time']) >= strtotime($idletime_key) && strtotime($idletime) == null) { // $Now->format('H:i:s')
                   $json_decode[$weekday_key][$idletime_key] = $_POST['idletime']['idle']; // $Now->format('H:i:s')
@@ -671,18 +676,18 @@ switch ($_SERVER['REQUEST_METHOD']) {
                 if (!isset($json_decode[$weekday_key][$_POST['idletime']['time']])) // $Now->format('H:i:s')
                   $json_decode[$weekday_key][$_POST['idletime']['time']] = $_POST['idletime']['idle'] ?? NULL;  // $Now->format('H:i:s')
             } else {
-              //$json_decode[$Now->format(DATE_RFC3339)] = [$_POST['idletime']['time'] => (isset($_POST['idletime']['idle']) && !is_null($_POST['idletime']['idle']) ? $_POST['idletime']['idle'] : NULL)];
-              $json_decode[$weekday_key][$_POST['idletime']['time']] = isset($_POST['idletime']['idle']) && !$_POST['idletime']['idle'] === null ? $_POST['idletime']['idle'] : NULL; // $Now->format('H:i:s')
+              //$json_decode[$now->format(DATE_RFC3339)] = [$_POST['idletime']['time'] => (isset($_POST['idletime']['idle']) && !is_null($_POST['idletime']['idle']) ? $_POST['idletime']['idle'] : NULL)];
+              $json_decode[$weekday_key][$_POST['idletime']['time']] = isset($_POST['idletime']['idle']) && !$_POST['idletime']['idle'] === null ? $_POST['idletime']['idle'] : NULL; // $now->format('H:i:s')
             }
           } else {
-            $json_decode[$Now->format('Y-m-d\TH:i:sP')] = [date('H:i:s') => '']; // DATE_RFC3339
+            $json_decode[$now->format('Y-m-d\TH:i:sP')] = [date('H:i:s') => '']; // DATE_RFC3339
           }
         } else
-        $json_decode[] = [$Now->format(DATE_RFC3339) => []];
+        $json_decode[] = [$now->format(DATE_RFC3339) => []];
 
       $_POST['idletime'] = json_encode($_POST['idletime']);
 
-      file_put_contents(APP_PATH . APP_BASE['var'] . 'weekly-timesheet-' . date("Y-m") . '.json', json_encode($json_decode), LOCK_EX);
+      file_put_contents(APP_PATH . APP_BASE['database'] . 'weekly-timesheet-' . date("Y-m") . '.json', json_encode($json_decode), LOCK_EX);
 
       //Shutdown::setEnabled(false)->setShutdownMessage()->shutdown(); 
       Shutdown::setEnabled(false)->setShutdownMessage(function () use ($json_decode) {
@@ -695,9 +700,9 @@ switch ($_SERVER['REQUEST_METHOD']) {
     //Shutdown::setEnabled(false)->shutdown(json_encode($json_decode));// $_POST['idletime']
     break;
   case 'GET':
-    if (!is_file(APP_PATH . APP_BASE['var'] . 'weekly-timesheet-' . date("Y-m") . '.json'))
-      file_put_contents(APP_PATH . APP_BASE['var'] . 'weekly-timesheet-' . date("Y-m") . '.json', json_encode([$Now->format('Y-m-d\TH:i:sP') => []]), LOCK_EX);
-    //exit; // $Now->format('H:i:s') => null
+    if (!is_file(APP_PATH . APP_BASE['database'] . 'weekly-timesheet-' . date("Y-m") . '.json'))
+      file_put_contents(APP_PATH . APP_BASE['database'] . 'weekly-timesheet-' . date("Y-m") . '.json', json_encode([$now->format('Y-m-d\TH:i:sP') => []]), LOCK_EX);
+    //exit; // $now->format('H:i:s') => null
     break;
 }
 
@@ -710,7 +715,7 @@ top : 10%;
 left : 50%;
 transform : translateX(-50%);
 width : auto;
-height : 500px;
+height : 555px;
 background-color : rgb(255, 255, 255);
 color : black;
 padding : 10px;
@@ -1117,8 +1122,22 @@ END;
       weekday[6] = "Sat,";
 
 
-      clocktime.innerHTML = '<i style="background-color: white; color: #0078D7;"> ' + weekday[date.getDay()] + ' ' + time +
-        ' ' + month + ' ' + date.getDate() + ' ' + date.getFullYear() + ' </i>';
+      clocktime.innerHTML = '<a href="#" onclick="document.getElementById(\'app_calendar-container\').style.display=\'block\';"><i style="background-color: white; color: #0078D7;"> ' + weekday[date.getDay()] + ' ' + time +
+        ' ' + month + ' ' + date.getDate() + ' ' + date.getFullYear() + ' </i></a>';
+
+      var dateSlot = document.getElementById('date_slot');
+      //var date = new Date();
+
+      dateSlot.value = date.toISOString().split('T')[0];
+
+      var timeSlot = document.getElementById('time_slot');
+
+      timeSlot.value = date.toLocaleTimeString('en-GB', {
+        hour: '2-digit',
+        minute: '2-digit',
+        hour12: false
+      });
+
     }
 
     function startInterval() {
@@ -1229,7 +1248,7 @@ END;
               console.log(item);
             }
           });
-          // fetch("var/weekly-timesheet-<?= date('Y-m'); ?>.json").then(res => res.json()).then(data => jsonFile = JSON.parse(data));
+          // fetch(APP_BASE['database'] . "weekly-timesheet-<?= date('Y-m'); ?>.json").then(res => res.json()).then(data => jsonFile = JSON.parse(data));
         },
         error: function (jqXHR, textStatus) {
           console.log(jqXHR.responseText);

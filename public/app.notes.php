@@ -76,7 +76,7 @@ $output[] = $_POST['cmd'];
 */
 //}
 
-$data = (!file_exists($path = APP_PATH . APP_BASE['var'] . 'notes.json')) ? json_decode(<<<'JSON'
+$data = (!file_exists($path = APP_PATH . APP_BASE['database'] . 'notes.json')) ? json_decode(<<<'JSON'
 [{
   "language":"PHP",
   "category":"String Manipulation",
@@ -396,8 +396,8 @@ pre {
             onchange="this.form.submit();"></button>
         </div>
         <pre style="margin: 0px;"><code class="language-<?= $sample['language']; ?>"><?= $snippet['code']; ?></code>
-                                            <?= $snippet['description']; ?>
-                                              </pre>
+                                                        <?= $snippet['description']; ?>
+                                                          </pre>
       </form>
       <div style=" margin-left: 15px;">
 

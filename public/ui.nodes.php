@@ -2,10 +2,12 @@
 
 if (isset($_GET['json'])) {
   header('Content-Type: application/json');
-  
-  //$_GET['client'] = '000-Hardy,Darrell';
 
-  require_once '../bootstrap.php';
+  //$_GET['client'] = '000-Hardy,Darrell';
+  if (is_file('../bootstrap.php'))
+    require_once '../bootstrap.php';
+  else
+    require_once 'bootstrap.php';
 
   /**
    * Get required files from a script and return their paths
@@ -19,21 +21,21 @@ if (isset($_GET['json'])) {
     require_once $script; //eval('require_once \'' . $script . '\';'); 
     ob_end_clean();
     //return get_required_files();
-    
-    
+
+
     //$execute = function () use ($script, &$requiredFiles) {
     //    ob_start();
     //    require $script;
     //    ob_end_clean();
     //    $requiredFiles = get_required_files();
     //};
-    
+
     //$output = shell_exec('php -r "require \'' . $script . '\'; return get_required_files();"');
-    
+
     return get_required_files();
     //$execute();
-    
-    
+
+
     //$command = escapeshellcmd("php $script");
     //$output = shell_exec($command); // Capture output if needed
 
@@ -55,45 +57,45 @@ if (isset($_GET['json'])) {
   }
 
 
-if (APP_ROOT != '') {
+  if (APP_ROOT != '') {
 
-      $baseDir = APP_PATH . APP_ROOT;
-      
-        $requiredFiles = [
-    //'server.php' => 'server.php',
-    'public/index.php' => APP_ROOT . 'public/index.php',
-    //'config/php.php' => 'config/php.php',
-    'config/composer.php' => APP_ROOT . 'config/composer.php',
-    //'config/git.php' => 'config/git.php',
-    //'public/idx.product.php' => 'public/idx.product.php',
-  ];
-      $jsonData = [];
-  foreach ($requiredFiles as $key => $scriptPath) {
-    $jsonData[$key] = normalizeFilePaths(getRequiredFilesFromScript($scriptPath), $baseDir);
+    $baseDir = APP_PATH . APP_ROOT;
+
+    $requiredFiles = [
+      //'server.php' => 'server.php',
+      'public/index.php' => APP_ROOT . 'public/index.php',
+      //'config/php.php' => 'config/php.php',
+      'config/composer.php' => APP_ROOT . 'config/composer.php',
+      //'config/git.php' => 'config/git.php',
+      //'public/idx.product.php' => 'public/idx.product.php',
+    ];
+    $jsonData = [];
+    foreach ($requiredFiles as $key => $scriptPath) {
+      $jsonData[$key] = normalizeFilePaths(getRequiredFilesFromScript($scriptPath), $baseDir);
+    }
+
+  } else {
+    $baseDir = APP_PATH;
+    //die(getcwd());
+    // Define scripts to process
+    $requiredFiles = [
+      'server.php' => 'server.php',
+      'public/index.php' => 'public/index.php',
+      //'config/php.php' => 'config/php.php',
+      'config/composer.php' => 'config/composer.php',
+      //'config/git.php' => 'config/git.php',
+      'public/idx.product.php' => 'public/idx.product.php',
+    ];
+    //dd($requiredFiles);
+    // Prepare JSON data
+    $jsonData = [];
+    foreach ($requiredFiles as $key => $scriptPath) {
+      $jsonData[$key] = normalizeFilePaths(getRequiredFilesFromScript($scriptPath), $baseDir);
+    }
+
   }
 
-} else {
-  $baseDir = APP_PATH;
-  //die(getcwd());
-  // Define scripts to process
-  $requiredFiles = [
-    'server.php' => 'server.php',
-    'public/index.php' => 'public/index.php',
-    //'config/php.php' => 'config/php.php',
-    'config/composer.php' => 'config/composer.php',
-    //'config/git.php' => 'config/git.php',
-    'public/idx.product.php' => 'public/idx.product.php',
-  ];
-  //dd($requiredFiles);
-  // Prepare JSON data
-  $jsonData = [];
-  foreach ($requiredFiles as $key => $scriptPath) {
-    $jsonData[$key] = normalizeFilePaths(getRequiredFilesFromScript($scriptPath), $baseDir);
-  }
-
-} 
-
-// Ensure vendor packages are only under composer.php
+  // Ensure vendor packages are only under composer.php
   if (isset($jsonData['config/composer.php'], $jsonData['public/index.php'])) {
     $vendorPackages = array_filter(
       $jsonData['public/index.php'],

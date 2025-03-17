@@ -60,9 +60,9 @@ margin : 0;
 padding : 0;
 box-sizing : border-box;
 <?php if (isset($_GET['debug'])) { ?>
-                                                    border: 1px dashed #FF0000;
+                                                                      border: 1px dashed #FF0000;
 <?php } else { ?> 
-                                                    /* border: 1px dashed #FF0000; */
+                                                                      /* border: 1px dashed #FF0000; */
 <?php } ?>
 }
 *:focus {
@@ -104,6 +104,9 @@ display : flex;
 flex-direction : column;
 }
 
+
+<?= defined('UI_MEDICATION_LOG') ? UI_MEDICATION_LOG['style'] : null; ?>
+<?= defined('UI_CALENDAR') ? UI_CALENDAR['style'] : null; ?>
 <?= defined('UI_ERRORS') ? UI_ERRORS['style'] : null; ?>
 <?= defined('UI_GIT') ? UI_GIT['style'] : null; ?>
 <?= defined('UI_PHP') ? UI_PHP['style'] : null; /* print(...) */ ?>
@@ -298,7 +301,7 @@ cursor : pointer;
         //$dirs = array_filter(glob(dirname(__DIR__) . '/projects/' . $_GET['project'] . '/*'), 'is_dir');
       
       } else {
-        $path = '';
+        $path = 'medication_log.php';
       }
       //if (empty(APP_URL['query'])) echo 'developer.php';
       //else
@@ -514,7 +517,7 @@ cursor : pointer;
                 href="?app=ace_editor&path=&file=app.project.php"><span style="text-align: center;">Project</span></a>
             </div>
             <div style="position: absolute; margin: 100px 0 0 450px ; text-align: center;" class="text-sm"><a href="#!"
-                onclick="document.getElementById('app_debug-container').style.display='block'; return false;"><img
+                onclick="document.getElementById('app_errors-container').style.display='block'; return false;"><img
                   style="text-align: center;" src="<?= APP_BASE['resources'] . 'images/debug.png' ?>" /><br /><span
                   style="text-align: center;">Debug</span></a></div>
             <div style="position: absolute; margin: 100px 0 0 540px; text-align: center;" class="text-sm"><a href="#!"
@@ -919,7 +922,6 @@ cursor : pointer;
         </div>
       </div>
 
-      <?= $apps['timesheet']['body'] ?? ''; ?>
       <?= $apps['browser']['body'] ?? ''; ?>
       <?= $apps['github']['body'] ?? ''; ?>
       <?= $apps['packagist']['body'] ?? ''; ?>
@@ -928,10 +930,12 @@ cursor : pointer;
       <!-- https://pong-2.com/ -->
       <?= $apps['pong']['body'] ?? ''; ?>
 
+      <?= $apps['timesheet']['body'] ?? ''; ?>
     </div>
   </div>
   <!-- /div -->
 
+  <?= defined('UI_CALENDAR') ? UI_CALENDAR['body'] : null; ?>
   <?= defined('UI_ERRORS') ? UI_ERRORS['body'] : null; ?>
   <?= defined('UI_GIT') ? UI_GIT['body'] : null; ?>
   <?= defined('UI_PHP') ? UI_PHP['body'] : null; /* print(...) */ ?>
@@ -939,6 +943,7 @@ cursor : pointer;
   <?= defined('UI_NPM') ? UI_NPM['body'] : null; ?>
   <?= defined('UI_ACE_EDITOR') ? UI_ACE_EDITOR['body'] : null; ?>
   <?= defined('UI_NODES') ? UI_NODES['body'] : null; ?>
+  <?= defined('UI_MEDICATION_LOG') ? UI_MEDICATION_LOG['body'] : null; ?>
 
   <?= $apps['project']['body'] ?? ''; ?>
   <?= $apps['console']['body'] ?? ''; ?>
@@ -1284,6 +1289,9 @@ $(document).ready(function() {
         }
       });
     }
+
+    makeDraggable('app_medication_log-container');
+    makeDraggable('app_calendar-container');
     makeDraggable('app_errors-container');
     makeDraggable('app_ace_editor-container');
     makeDraggable('app_composer-container');
@@ -1640,14 +1648,14 @@ $(document).ready(function() {
       }
     });
 
+    <?= defined('UI_MEDICATION_LOG') ? UI_MEDICATION_LOG['script'] : null; ?>
+    <?= defined('UI_CALENDAR') ? UI_CALENDAR['script'] : null; ?>
     <?= defined('UI_ERRORS') ? UI_ERRORS['script'] : null; ?>
     <?= defined('UI_GIT') ? UI_GIT['script'] : null; ?>
     <?= defined('UI_PHP') ? UI_PHP['script'] : null; /* print(...) */ ?>
     <?= defined('UI_COMPOSER') ? UI_COMPOSER['script'] : null; /* (isset($app['composer']) ? $app['composer']['script'] : null); */ ?>
     <?= defined('UI_NPM') ? UI_NPM['script'] : null; ?>
     <?= defined('UI_NODES') ? UI_NODES['script'] : null; ?>
-
-
     <?= defined('UI_ACE_EDITOR') ? UI_ACE_EDITOR['script'] : null; /* NULL; */ ?>
 
     <?= $apps['directory']['script'] ?? ''; ?>
