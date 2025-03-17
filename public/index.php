@@ -142,9 +142,7 @@ if (isset($_SERVER['REQUEST_METHOD']))
 
         $_ENV['APP_ENV'] = APP_ENV;
         //die('testing ' . $_SERVER['REQUEST_METHOD'] );
-        Shutdown::setEnabled(false)->setShutdownMessage(function () {
-          return header('Location: ' . APP_URL); // -wow
-        })->shutdown();
+        Shutdown::setEnabled(false)->setShutdownMessage(fn() => header('Location: ' . APP_URL))->shutdown();
       }
 
       if (isset($_ENV['APP_ENV']) && !empty($_ENV))
@@ -230,7 +228,7 @@ switch ($_SERVER['REQUEST_METHOD']) {
 /**/
 //dd('req method==' . $_SERVER['REQUEST_METHOD'], false);
 
-if ($_SERVER['REQUEST_METHOD'] == 'GET')
+if ($_SERVER['REQUEST_METHOD'] == 'GET' && __FILE__ == APP_PATH_PUBLIC)
   if (defined('APP_QUERY') && empty(APP_QUERY) || isset($_GET['CLIENT']) || isset($_GET['DOMAIN']) && !defined('APP_ROOT')) {
 
     //dd('does this do anything? 1234 ' . $_SERVER['REQUEST_METHOD']);
@@ -297,14 +295,13 @@ if (/*APP_SELF === APP_PATH_PUBLIC*/ dirname(APP_SELF) === dirname(APP_PATH_PUBL
     else
       return strcmp(basename($a), basename($b)); // Compare other filenames alphabetically
   });
-
+  //dd($appPaths);
   if (in_array(APP_PATH . APP_BASE['public'] . 'app.install.php', $appPaths))
     foreach ($appPaths as $key => $file)
       if (basename($file) === 'app.install.php')
         unset($appPaths[$key]);
 
   $uiPaths = array_filter(glob(__DIR__ . DIRECTORY_SEPARATOR . '{ui}.*.php', GLOB_BRACE), 'is_file');
-
 
   /*
   if (in_array(APP_PATH . APP_BASE['public'] . 'ui.composer.php', $uiPaths))
@@ -313,8 +310,35 @@ if (/*APP_SELF === APP_PATH_PUBLIC*/ dirname(APP_SELF) === dirname(APP_PATH_PUBL
         unset($uiPaths[$key]);
   */
 
+  usort($uiPaths, function ($a, $b) {
+    $order = [
+      'ui.medication_log.php' => -100, // Always first
+      'ui.calendar.php' => -10,
+      'ui.nodes.php' => -9,
+      'ui.php.php' => -8,
+      'ui.errors.php' => -7,
+      'ui.composer.php' => 10,
+      'ui.npm.php' => 11,
+      'ui.ace_editor.php' => 12,
+      'ui.git.php' => 13,
+    ];
+
+    $aBase = basename($a);
+    $bBase = basename($b);
+
+    $aRank = $order[$aBase] ?? 0;
+    $bRank = $order[$bBase] ?? 0;
+
+    if ($aRank !== $bRank) {
+      return $aRank - $bRank;
+    }
+
+    return strcmp($aBase, $bBase); // Default alphabetical order
+  });
+
   // If you want to reset the array keys to be numeric (optional)
   $paths = array_values(array_unique(array_merge($uiPaths, $appPaths)));
+
 
   //$paths = array_values(array_unique(array_merge($globPaths, $additionalPaths)));
 
@@ -408,6 +432,7 @@ if (/*APP_SELF === APP_PATH_PUBLIC*/ dirname(APP_SELF) === dirname(APP_PATH_PUBL
   //dd($appDirectory['body']); 
   //if ($_SERVER['REQUEST_METHOD'] == 'POST')
   //  dd($_POST);
+
   if (defined('APP_ENV'))
     switch (APP_ENV) {
       case 'development':

@@ -164,7 +164,7 @@ switch (basename(__DIR__)) {
     $_ENV['APP_BASE'] = json_encode($base_paths = [ // https://stackoverflow.com/questions/8037266/get-the-url-of-a-file-included-by-php
       'config',
       'clientele',
-      // 'database',
+      'database',
       'public',
       'projects',
       'resources',
@@ -220,7 +220,7 @@ switch (basename(__DIR__)) {
     foreach (array_map('basename', array_filter(glob("{$basePath}{.env, .htaccess, .gitignore, LICENSE, *.md}", GLOB_BRACE), 'is_file')) as $filename) {
       if (!is_file($file = APP_PATH . $filename)) {
         if (@touch($file)) {
-          if (is_file($source_file = APP_PATH . 'var/source_code.json'))
+          if (is_file($source_file = APP_PATH . APP_BASE['database'] . 'source_code.json'))
             $source_file = json_decode(file_get_contents($source_file));
           if ($source_file) {
             if (!is_file($file = APP_PATH . 'public/.htaccess')) {

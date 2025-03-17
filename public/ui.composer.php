@@ -1,5 +1,7 @@
 <?php
-
+header("Access-Control-Allow-Origin: *"); // Allow all origins
+header("Access-Control-Allow-Methods: GET, POST, PUT, DELETE, OPTIONS");
+header("Access-Control-Allow-Headers: Content-Type, Authorization");
 if (in_array(__FILE__, get_required_files())) {
   //echo "File $target_file was included.";
 

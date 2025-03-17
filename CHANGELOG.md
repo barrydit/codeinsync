@@ -1,6 +1,16 @@
 CHANGELOG
 
 
+considering
+
+function () use ($json_decode) {
+        return json_encode($json_decode);
+      }
+
+with PHP 7 / 8 appearence/occurance/introduced in 7.4?
+
+Shutdown::setEnabled(false)->setShutdownMessage(fn() => json_encode($json_decode))->shutdown();
+
 sudo /usr/local/bin/git status
 Error: fatal: detected dubious ownership in repository at '/mnt/c/www/clientele/000-Client1/domain.ca'
 To add an exception for this directory, call:

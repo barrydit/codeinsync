@@ -281,7 +281,7 @@ if (!is_dir($path = APP_PATH . 'projects')) {
 
 if (!is_file($file = APP_PATH . 'projects/index.php')) {
   $errors['projects'] = 'projects/index.php does not exist.';
-  if (is_file($source_file = APP_PATH . 'var/source_code.json')) {
+  if (is_file($source_file = APP_PATH . APP_BASE['database'] . 'source_code.json')) {
     $source_file = json_decode(file_get_contents($source_file));
     if ($source_file) {
       file_put_contents($file, $source_file->{'projects/index.php'});
