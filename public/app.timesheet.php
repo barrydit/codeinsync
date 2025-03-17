@@ -1128,7 +1128,10 @@ END;
       var dateSlot = document.getElementById('date_slot');
       //var date = new Date();
 
-      dateSlot.value = date.toISOString().split('T')[0];
+      const monthInt = String(date.getMonth() + 1).padStart(2, '0'); // Months are 0-based
+      const year = date.getFullYear();
+      const day = String(date.getDate()).padStart(2, '0');
+      dateSlot.value = `${year}-${monthInt}-${day}`; // date.toISOString().split('T')[0];
 
       var timeSlot = document.getElementById('time_slot');
 

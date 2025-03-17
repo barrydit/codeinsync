@@ -60,9 +60,9 @@ margin : 0;
 padding : 0;
 box-sizing : border-box;
 <?php if (isset($_GET['debug'])) { ?>
-                                                                      border: 1px dashed #FF0000;
+                                                                            border: 1px dashed #FF0000;
 <?php } else { ?> 
-                                                                      /* border: 1px dashed #FF0000; */
+                                                                            /* border: 1px dashed #FF0000; */
 <?php } ?>
 }
 *:focus {
@@ -315,7 +315,7 @@ cursor : pointer;
       <div style="position: relative; margin: 0px auto; width: 800px;">
         <!-- div style="position: absolute; <?= /* (empty($errors) ? 'display: none;' : '') */ NULL; ?>left: -144px; /*width: 150px;*/ z-index: 3;">TEST</div -->
         <div id="debug-content" class="absolute"
-          style="position: absolute; display: none; right: 0; text-align: right; background-color: rgba(255, 255, 255, 0.8); border: 1px solid #000; width: 800px; z-index: 1; overflow: visible;">
+          style="position: absolute; display: none; right: 0; text-align: right; background-color: rgba(255, 255, 255, 0.8); border: 1px solid #000; width: 800px; z-index: 10; overflow: visible;">
           <div style="float: left; display: inline; margin: 5px;">
             <form style="display: inline;" action="/" method="POST">Stage:
               <select name="environment" onchange="this.form.submit();">
@@ -485,7 +485,7 @@ cursor : pointer;
             <div id="clockTime"></div>
           </div>
           <div id="app_tools-container"
-            style="position: absolute; display: none; width: 800px; margin: 0 auto; height: 500px; background-color: rgba(255, 255, 255, 0.3); overflow-x: scroll; z-index: -5;">
+            style="position: absolute; display: none; width: 800px; margin: 0 auto; height: 500px; background-color: rgba(255, 255, 255, 0.9); overflow-x: scroll; z-index: 5;">
             <div style="position: absolute; margin: 80px 45px; text-align: center;" class="text-sm"><a href="#!"
                 onclick="document.getElementById('app_tools-container').style.display='none'; return false;"><img
                   style="text-align: center;" height="25" width="25"
