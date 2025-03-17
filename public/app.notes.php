@@ -227,18 +227,22 @@ ob_start(); ?>
 <div id="app_notes-container"
   class="<?= (APP_SELF == __FILE__ || (isset($_GET['app']) && $_GET['app'] == 'notes') ? 'selected' : '') ?>"
   style="border: 1px solid #000;">
+
   <div class="header ui-widget-header">
     <div style="display: inline-block;">Notes</div>
-    <div style="display: inline; float: right; text-align: center;">[<a style="cursor: pointer; font-size: 13px;"
-        onclick="document.getElementById('app_notes-container').style.display='none';">X</a>]</div>
+    <div style="display: inline; float: right; text-align: center;">
+      [<a style="cursor: pointer; font-size: 13px;"
+        onclick="document.getElementById('app_notes-container').style.display='none';">X</a>]
+    </div>
   </div>
 
-  <div style="display: inline-block; width: auto;">
+  <!-- Scrollable wrapper -->
+  <div style="width: 100%; overflow-x: auto; white-space: nowrap;">
     <iframe
       src="<?= (is_dir($path = APP_PATH . APP_BASE['public']) && getcwd() == realpath($path) ? APP_BASE['public'] : '') . basename(__FILE__) ?>"
-      style="height: 460px; width: 800px;"></iframe>
+      style="height: 460px; width: 1200px; border: none;"></iframe>
   </div>
-  <!-- <pre id="ace-editor" class="ace_editor"></pre> -->
+
 </div>
 <!-- </div> -->
 
@@ -396,8 +400,8 @@ pre {
             onchange="this.form.submit();"></button>
         </div>
         <pre style="margin: 0px;"><code class="language-<?= $sample['language']; ?>"><?= $snippet['code']; ?></code>
-                                                        <?= $snippet['description']; ?>
-                                                          </pre>
+                                                                    <?= $snippet['description']; ?>
+                                                                      </pre>
       </form>
       <div style=" margin-left: 15px;">
 

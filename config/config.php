@@ -14,6 +14,8 @@ require_once 'functions.php';
 
 date_default_timezone_set('America/Vancouver');
 
+//die(date('Y-m-d H:i:s'));
+
 $errors = []; // (object)
 
 // Directory of this script

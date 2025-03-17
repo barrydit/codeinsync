@@ -74,7 +74,7 @@ ob_start(); ?>
 /* Styles for the absolute div */
 #app_php-container {
 position : absolute;
-display : none;
+display : block;
 top : 60px;
 //bottom: 60px;
 left : 50%;
@@ -225,7 +225,7 @@ if (__FILE__ == get_required_files()[0] || in_array(__FILE__, get_required_files
 
     <style type="text/tailwindcss">
       <?= $app['style']; ?>
-          </style>
+            </style>
   </head>
 
   <body>
@@ -241,7 +241,7 @@ if (__FILE__ == get_required_files()[0] || in_array(__FILE__, get_required_files
     <script src="//code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
     <!-- <script src="../resources/js/jquery/jquery.min.js"></script> -->
     <script>
-          <?= /*$app['script'];*/ NULL; ?>
+            <?= /*$app['script'];*/ NULL; ?>
     </script>
   </body>
 
