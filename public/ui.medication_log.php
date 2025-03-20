@@ -311,8 +311,8 @@ $shouldHide = isset($data[$tmpkey])
     && count($data[$tmpkey]['doses']) > 2;
 ?>
 <div id="app_medication_log-container"
-    class="absolute <?= __FILE__ == get_required_files()[0] || (isset($_GET['app']) && $_GET['app'] == 'medication_log') && !isset($_GET['path']) ? 'selected' : '' ?>"
-    style="display: <?= /* __FILE__ == get_required_files()[0] || (isset($_GET['app']) && $_GET['app'] == 'medication_log') ? 'block' : 'block'*/ $shouldHide ? 'none' : 'block' ?>; resize: both; overflow: hidden; z-index: 1;">
+    class="<?= __FILE__ == get_required_files()[0] || (isset($_GET['app']) && $_GET['app'] == 'medication_log') && !isset($_GET['path']) ? 'selected' : '' ?>"
+    style="position: fixed; display: <?= /* __FILE__ == get_required_files()[0] || (isset($_GET['app']) && $_GET['app'] == 'medication_log') ? 'block' : 'block'*/ $shouldHide ? 'none' : 'block' ?>; resize: both; overflow: hidden; z-index: 1;">
     <div class="ui-widget-header"
         style="position: relative; display: inline-block; width: 100%; cursor: move; border-bottom: 1px solid #000;background-color: #FFF;">
         <label class="medication_log-home" style="cursor: pointer;">

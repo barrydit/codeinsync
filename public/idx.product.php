@@ -1,9 +1,8 @@
-<?php
+<?php //if (__FILE__==get_required_files()[0] && __FILE__==realpath($_SERVER["SCRIPT_FILENAME"]))
 
-//if (__FILE__ == get_required_files()[0] && __FILE__ == realpath($_SERVER["SCRIPT_FILENAME"]))
 if (dirname(get_required_files()[0]) == getcwd()) {
-  if ($path = basename(dirname(get_required_files()[0])) == 'public') { // (basename(getcwd())
-    if (is_file($path = realpath('config' . DIRECTORY_SEPARATOR . 'php.php')))
+  if ($path = basename(dirname(get_required_files()[0])) == 'public') { //
+    if (basename(getcwd())) if (is_file($path = realpath('config' . DIRECTORY_SEPARATOR . 'php.php')))
       require_once $path;
     else
       die(var_dump("Path was not found. file=$path"));
@@ -14,9 +13,7 @@ if (!headers_sent()) {
   header("Cache-Control: no-store, no-cache, must-revalidate, max-age=0");
   header("Expires: Sat, 26 Jul 1997 05:00:00 GMT");
   header("Pragma: no-cache");
-}
-
-?>
+} ?>
 <!DOCTYPE html>
 <html lang="en">
 
@@ -60,9 +57,9 @@ margin : 0;
 padding : 0;
 box-sizing : border-box;
 <?php if (isset($_GET['debug'])) { ?>
-                                                                            border: 1px dashed #FF0000;
+                                                                                                                                                                                    border: 1px dashed #FF0000;
 <?php } else { ?> 
-                                                                            /* border: 1px dashed #FF0000; */
+                                                                                                                                                                                    /* border: 1px dashed #FF0000; */
 <?php } ?>
 }
 *:focus {
@@ -122,7 +119,7 @@ flex-direction : column;
 <?= $apps['notes']['style'] ?? ''; ?> 
 <?= $apps['pong']['style'] ?? ''; ?>
 
-<?= /*$appBackup['style']*/ NULL; ?>
+<?= /*$appBackup['style']*/ ''; ?>
 <?= $apps['console']['style'] ?? ''; ?>
 <?= $apps['timesheet']['style'] ?? ''; ?>
 <?= $apps['project']['style'] ?? ''; ?>
@@ -308,7 +305,7 @@ cursor : pointer;
       // developer.php
       echo $path; ?>" style="height: 100%;"></iframe>
     </div>
-    <?= /* $apps['backup']['body'] */ NULL; ?>
+    <?= /* $apps['backup']['body'] */ ''; ?>
     <div id="app_container"
       style="position: relative; display: none; margin: 0px auto; width: 100%; border: 1px solid #000; background-color: rgba(0, 0, 0, 0.5);">
 
@@ -319,11 +316,13 @@ cursor : pointer;
           <div style="float: left; display: inline; margin: 5px;">
             <form style="display: inline;" action="/" method="POST">Stage:
               <select name="environment" onchange="this.form.submit();">
-                <option value="develop" <?= defined('APP_ENV') && APP_ENV == 'development' ? 'selected' : '' ?>>Development
+                <option value="develop" <?= defined('APP_ENV') && APP_ENV == 'development' ? 'selected' : '' ?>>
+                  Development
                 </option>
                 <option value="product" <?= defined('APP_ENV') && APP_ENV == 'production' ? 'selected' : '' ?>>Production
                 </option>
-                <option value="stage" <?= defined('APP_ENV') && APP_ENV == 'staging' ? 'selected' : '' ?>>Staging</option>
+                <option value="stage" <?= defined('APP_ENV') && APP_ENV == 'staging' ? 'selected' : '' ?>>Staging
+                </option>
                 <option value="math" <?= defined('APP_ENV') && APP_ENV == 'math' ? 'selected' : '' ?>>Math</option>
               </select>
             </form>
@@ -484,139 +483,137 @@ cursor : pointer;
             style="position: absolute; width: auto; top: 40px; right: -10px; border: 1px dashed green; height: 25px;">
             <div id="clockTime"></div>
           </div>
-          <div id="app_tools-container"
-            style="position: absolute; display: none; width: 800px; margin: 0 auto; height: 500px; background-color: rgba(255, 255, 255, 0.9); overflow-x: scroll; z-index: 5;">
-            <div style="position: absolute; margin: 80px 45px; text-align: center;" class="text-sm"><a href="#!"
-                onclick="document.getElementById('app_tools-container').style.display='none'; return false;"><img
-                  style="text-align: center;" height="25" width="25"
-                  src="<?= APP_BASE['resources'] . 'images/close-red.gif' ?>" /></a><br /></div>
-            <div style="position: absolute; margin: 100px 75px; text-align: center;" class="text-sm"><a href="#!"
-                onclick="isFixed = true; show_console(); return false;"><img style="text-align: center;"
-                  src="<?= APP_BASE['resources'] . 'images/cli.png' ?>" /></a><br /><a
-                href="?app=ace_editor&path=&file=app.console.php" style="text-align: center;">(CLI)</a></div>
-            <!-- 
-          <a href="javascript:window.open('print.html', 'newwindow', 'width=300,height=250')">Print</a>
-          onclick="window.open('app.whiteboard.php', 'newwindow', 'width=300,height=250'); return false;"
-          
-          https://stackoverflow.com/questions/12939928/make-a-link-open-a-new-window-not-tab
-           -->
-            <div style="position: absolute; margin: 100px 165px; text-align: center;" class="text-sm"><a href="#"
-                target="_blank" onclick="toggleIframeUrl('app.whiteboard.php'); return false;"><img
-                  style="text-align: center;"
-                  src="<?= APP_BASE['resources'] . 'images/whiteboard.png' ?>" /></a><br /><a
-                href="?app=ace_editor&path=&file=app.whiteboard.php" style="text-align: center;">Whiteboard</a></div>
-            <div style="position: absolute; margin: 100px 260px; text-align: center;" class="text-sm"><a href="#!"
-                onclick="document.getElementById('app_notes-container').style.display='block'; return false;"><img
-                  style="text-align: center;" src="<?= APP_BASE['resources'] . 'images/notes.png' ?>" /></a><br /><a
-                href="?app=ace_editor&path=&file=app.notes.php" style="text-align: center;">Notes</a></div>
-            <div style="position: absolute; margin: 100px 350px; text-align: center;" class="text-sm">
-              <a href="#!"
-                onclick="document.getElementById('app_project-container').style.display='block'; document.getElementById('toggle-debug').checked = false; toggleSwitch(document.getElementById('toggle-debug')); return false;">
-                <img style="text-align: center;"
-                  src="<?= APP_BASE['resources'] . 'images/project.png' ?>" /></a><br /><a
-                href="?app=ace_editor&path=&file=app.project.php"><span style="text-align: center;">Project</span></a>
-            </div>
-            <div style="position: absolute; margin: 100px 0 0 450px ; text-align: center;" class="text-sm"><a href="#!"
-                onclick="document.getElementById('app_errors-container').style.display='block'; return false;"><img
-                  style="text-align: center;" src="<?= APP_BASE['resources'] . 'images/debug.png' ?>" /><br /><span
-                  style="text-align: center;">Debug</span></a></div>
-            <div style="position: absolute; margin: 100px 0 0 540px; text-align: center;" class="text-sm"><a href="#!"
-                onclick="document.getElementById('app_profile-container').style.display='block'; return false;"><img
-                  style="text-align: center;" src="<?= APP_BASE['resources'] . 'images/user.png' ?>" /><br /><span
-                  style="text-align: center;">Profile</span></a></div>
-            <div style="position: absolute; margin: 100px 0 0 630px; text-align: center;" class="text-sm"><a href="#!"
-                onclick="toggleIframeUrl('app.browser.php'); return false;"><img style="text-align: center;"
-                  src="<?= APP_BASE['resources'] . 'images/browser.png' ?>" /><br /><span
-                  style="text-align: center;">Browser</span></a></div>
-            <div style="position: absolute; margin: 200px 75px; text-align: center;" class="text-sm"><a href="#!"
-                onclick="document.getElementById('app_tools-container').style.display='block'; return false;"><img
-                  style="text-align: center;" src="<?= APP_BASE['resources'] . 'images/apps.png' ?>" /><br /><span
-                  style="text-align: center;">Apps.</span></a></div>
-            <div style="position: absolute; margin: 200px 170px; text-align: center;" class="text-sm"><a href="#!"
-                onclick="document.getElementById('app_calendar-container').style.display='block'; return false;"><img
-                  style="text-align: center;" src="<?= APP_BASE['resources'] . 'images/calendar.png' ?>" /><br /><span
-                  style="text-align: center;">Calendar</span></a></div>
-            <div style="position: absolute; margin: 190px 240px; padding: 20px 40px;">
-              <form action="#!" method="GET">
-                <?= '            ' . (isset($_GET['project']) && !$_GET['project'] ? '<input type="hidden" name="client" value="" />' : '<input type="hidden" name="project" value="" />') ?>
-                <div style="margin: 0 auto;">
-                  <div id="clockTime"></div>
-                </div>
-                <input class="input" id="toggle-project" type="checkbox"
-                  onchange="toggleSwitch(this); this.form.submit();" <?= isset($_GET['project']) ? 'checked' : '' ?> />
-                <label class="label" for="toggle-project" style="margin-left: -6px;">
-                  <div class="left" style="background-color: rgba(255, 255, 255, 0.8); text-shadow: 2px 2px;"> Client
-                  </div>
-                  <div class="switch" style="position: relative;"><span class="slider round"></span></div>
-                  <div class="right" style="background-color: rgba(255, 255, 255, 0.8); text-shadow: 2px 2px;"> Project
-                  </div>
-                </label>
-              </form>
-            </div>
-            <div style=" position: absolute; margin: 200px 0 0 540px; text-align: center;" class="text-sm"><a href="#!"
-                onclick="toggleIframeUrl('app.pong.php'); return false;"><img style="text-align: center;"
-                  src="<?= APP_BASE['resources'] . 'images/pong.png' ?>" /><br /><span
-                  style="text-align: center;">Pong</span></a></div>
-            <div style="position: absolute; margin: 200px 0 0 630px; text-align: center;" class="text-sm"><a href="#!"
-                onclick="document.getElementById('app_browser-container').style.display='block'; return false;"><img
-                  style="text-align: center;" src="<?= APP_BASE['resources'] . 'images/regexp.png' ?>" /><br /><span
-                  style="text-align: center;">RegExp</span></a></div>
-            <div style="position: absolute; margin: 300px 75px; text-align: center;" class="text-sm"><a href="#!"
-                onclick="document.getElementById('app_browser-container').style.display='block'; return false;"><img
-                  style="text-align: center;" src="<?= APP_BASE['resources'] . 'images/chatgpt.png' ?>" /><br /><span
-                  style="text-align: center;">ChatGPT</span></a></div>
-            <div style="position: absolute; margin: 300px 160px; text-align: center;" class="text-sm"><a href="#!"
-                onclick="document.getElementById('app_browser-container').style.display='block'; return false;"><img
-                  style="text-align: center;"
-                  src="<?= APP_BASE['resources'] . 'images/stackoverflow.png' ?>" /><br /><span
-                  style="text-align: center;">Stackoverflow</span></a></div>
-            <div style="position: absolute; margin: 300px 260px; text-align: center;" class="text-sm"><a href="#!"
-                onclick="document.getElementById('app_browser-container').style.display='block'; return false;"><img
-                  style="text-align: center;" src="<?= APP_BASE['resources'] . 'images/validatejs.png' ?>" /><br /><span
-                  style="text-align: center;">ValidateJS</span></a></div>
-            <!-- https://validator.w3.org/#validate_by_input // -->
-            <div style="position: absolute; margin: 300px 340px; text-align: center;" class="text-sm"><a href="#!"
-                onclick="document.getElementById('app_browser-container').style.display='block'; return false;"><img
-                  style="text-align: center;" src="<?= APP_BASE['resources'] . 'images/w3c.png' ?>" /><br /><span
-                  style="text-align: center;">W3C Validator</span></a></div>
-            <!-- https://tailwindcss.com/docs/ // -->
-            <div style="position: absolute; margin: 300px 0 0 445px; text-align: center;" class="text-sm"><a href="#!"
-                onclick="document.getElementById('app_browser-container').style.display='block'; return false;"><img
-                  style="text-align: center;"
-                  src="<?= APP_BASE['resources'] . 'images/tailwindcss.png' ?>" /><br /><span
-                  style="text-align: center;">TailwindCSS<br />Docs</span></a></div>
-            <!-- https://www.php.net/docs.php // -->
-            <div style="position: absolute; margin: 300px 0 0 540px; text-align: center;" class="text-sm"><a href="#!"
-                onclick="document.getElementById('app_browser-container').style.display='block'; return false;"><img
-                  style="text-align: center;" src="<?= APP_BASE['resources'] . 'images/php.png' ?>" /><br /><span
-                  style="text-align: center;">PHP Docs</span></a></div>
-            <!-- https://dev.mysql.com/doc/ // -->
-            <div style="position: absolute; margin: 300px 0 0 625px; text-align: center;" class="text-sm"><a href="#!"
-                onclick="document.getElementById('app_browser-container').style.display='block'; return false;"><img
-                  style="text-align: center;" src="<?= APP_BASE['resources'] . 'images/mysql.png' ?>" /><br /><span
-                  style="text-align: center;">MySQL Docs</span></a></div>
-            <div
-              style="position: absolute; top: 400px; left: 65px; width: 80%; margin: 0 auto; height: 15px; border-bottom: 1px solid black; text-align: center; z-index: 0;">
-              <span style="font-size: 20px; background-color: #F3F5F6; padding: 0 20px; z-index: 1;"> USER APPS.
-              </span>
-            </div>
-            <div style="position: absolute; margin: 430px 75px; text-align: center;" class="text-sm"><a href="#!"
-                onclick="document.getElementById('app_install-container').style.display='block'; return false;"><span
-                  style="text-align: center;">New App.</span><br /><img style="text-align: center;"
-                  src="<?= APP_BASE['resources'] . 'images/install.png' ?>" /></a></div>
-            <div style="position: absolute; margin: 430px 170px; text-align: center;" class="text-sm">
-              <a href="?app=ace_editor&path=&file=app.user-app.php"><span style="text-align: center;">App
-                  #1</span></a><br />
-              <a href="#!"
-                onclick="document.getElementById('app_browser-container').style.display='block'; return false;"><img
-                  style="text-align: center;" src="<?= APP_BASE['resources'] . 'images/php-app.png' ?>" /></a>
-              <div style="height: 75px;"></div>
-            </div>
-          </div>
+
         </div>
 
+        <div id="app_tools-container"
+          style="position: absolute; display: none; width: 800px; margin: 0 auto; height: 500px; background-color: rgba(255, 255, 255, 0.9); overflow-x: scroll; z-index: 5;">
+          <div style="position: absolute; margin: 80px 45px; text-align: center;" class="text-sm"><a href="#!"
+              onclick="document.getElementById('app_tools-container').style.display='none'; return false;"><img
+                style="text-align: center;" height="25" width="25"
+                src="<?= APP_BASE['resources'] . 'images/close-red.gif' ?>" /></a><br /></div>
+          <div style="position: absolute; margin: 100px 75px; text-align: center;" class="text-sm"><a href="#!"
+              onclick="isFixed = true; show_console(); return false;"><img style="text-align: center;"
+                src="<?= APP_BASE['resources'] . 'images/cli.png' ?>" /></a><br /><a
+              href="?app=ace_editor&path=&file=app.console.php" style="text-align: center;">(CLI)</a></div>
+          <!-- 
+                    <a href="javascript:window.open('print.html', 'newwindow', 'width=300,height=250')">Print</a>
+                    onclick="window.open('app.whiteboard.php', 'newwindow', 'width=300,height=250'); return false;"
+                    
+                    https://stackoverflow.com/questions/12939928/make-a-link-open-a-new-window-not-tab
+                     -->
+          <div style="position: absolute; margin: 100px 165px; text-align: center;" class="text-sm"><a href="#"
+              target="_blank" onclick="toggleIframeUrl('app.whiteboard.php'); return false;"><img
+                style="text-align: center;" src="<?= APP_BASE['resources'] . 'images/whiteboard.png' ?>" /></a><br /><a
+              href="?app=ace_editor&path=&file=app.whiteboard.php" style="text-align: center;">Whiteboard</a></div>
+          <div style="position: absolute; margin: 100px 260px; text-align: center;" class="text-sm"><a href="#!"
+              onclick="document.getElementById('app_notes-container').style.display='block'; return false;"><img
+                style="text-align: center;" src="<?= APP_BASE['resources'] . 'images/notes.png' ?>" /></a><br /><a
+              href="?app=ace_editor&path=&file=app.notes.php" style="text-align: center;">Notes</a></div>
+          <div style="position: absolute; margin: 100px 350px; text-align: center;" class="text-sm">
+            <a href="#!"
+              onclick="document.getElementById('app_project-container').style.display='block'; document.getElementById('toggle-debug').checked = false; toggleSwitch(document.getElementById('toggle-debug')); return false;">
+              <img style="text-align: center;" src="<?= APP_BASE['resources'] . 'images/project.png' ?>" /></a><br /><a
+              href="?app=ace_editor&path=&file=app.project.php"><span style="text-align: center;">Project</span></a>
+          </div>
+          <div style="position: absolute; margin: 100px 0 0 450px ; text-align: center;" class="text-sm"><a href="#!"
+              onclick="document.getElementById('app_errors-container').style.display='block'; return false;"><img
+                style="text-align: center;" src="<?= APP_BASE['resources'] . 'images/debug.png' ?>" /><br /><span
+                style="text-align: center;">Debug</span></a></div>
+          <div style="position: absolute; margin: 100px 0 0 540px; text-align: center;" class="text-sm"><a href="#!"
+              onclick="document.getElementById('app_profile-container').style.display='block'; return false;"><img
+                style="text-align: center;" src="<?= APP_BASE['resources'] . 'images/user.png' ?>" /><br /><span
+                style="text-align: center;">Profile</span></a></div>
+          <div style="position: absolute; margin: 100px 0 0 630px; text-align: center;" class="text-sm"><a href="#!"
+              onclick="toggleIframeUrl('app.browser.php'); return false;"><img style="text-align: center;"
+                src="<?= APP_BASE['resources'] . 'images/browser.png' ?>" /><br /><span
+                style="text-align: center;">Browser</span></a></div>
+          <div style="position: absolute; margin: 200px 75px; text-align: center;" class="text-sm"><a href="#!"
+              onclick="document.getElementById('app_tools-container').style.display='block'; return false;"><img
+                style="text-align: center;" src="<?= APP_BASE['resources'] . 'images/apps.png' ?>" /><br /><span
+                style="text-align: center;">Apps.</span></a></div>
+          <div style="position: absolute; margin: 200px 170px; text-align: center;" class="text-sm"><a href="#!"
+              onclick="document.getElementById('app_calendar-container').style.display='block'; return false;"><img
+                style="text-align: center;" src="<?= APP_BASE['resources'] . 'images/calendar.png' ?>" /><br /><span
+                style="text-align: center;">Calendar</span></a></div>
+          <div style="position: absolute; margin: 190px 240px; padding: 20px 40px;">
+            <form action="#!" method="GET">
+              <?= '            ' . (isset($_GET['project']) && !$_GET['project'] ? '<input type="hidden" name="client" value="" />' : '<input type="hidden" name="project" value="" />') ?>
+              <div style="margin: 0 auto;">
+                <div id="clockTime"></div>
+              </div>
+              <input class="input" id="toggle-project" type="checkbox"
+                onchange="toggleSwitch(this); this.form.submit();" <?= isset($_GET['project']) ? 'checked' : '' ?> />
+              <label class="label" for="toggle-project" style="margin-left: -6px;">
+                <div class="left" style="background-color: rgba(255, 255, 255, 0.8); text-shadow: 2px 2px;"> Client
+                </div>
+                <div class="switch" style="position: relative;"><span class="slider round"></span></div>
+                <div class="right" style="background-color: rgba(255, 255, 255, 0.8); text-shadow: 2px 2px;"> Project
+                </div>
+              </label>
+            </form>
+          </div>
+          <div style=" position: absolute; margin: 200px 0 0 540px; text-align: center;" class="text-sm"><a href="#!"
+              onclick="toggleIframeUrl('app.pong.php'); return false;"><img style="text-align: center;"
+                src="<?= APP_BASE['resources'] . 'images/pong.png' ?>" /><br /><span
+                style="text-align: center;">Pong</span></a>
+          </div>
+          <div style="position: absolute; margin: 200px 0 0 630px; text-align: center;" class="text-sm"><a href="#!"
+              onclick="document.getElementById('app_browser-container').style.display='block'; return false;"><img
+                style="text-align: center;" src="<?= APP_BASE['resources'] . 'images/regexp.png' ?>" /><br /><span
+                style="text-align: center;">RegExp</span></a></div>
+          <div style="position: absolute; margin: 300px 75px; text-align: center;" class="text-sm"><a href="#!"
+              onclick="document.getElementById('app_browser-container').style.display='block'; return false;"><img
+                style="text-align: center;" src="<?= APP_BASE['resources'] . 'images/chatgpt.png' ?>" /><br /><span
+                style="text-align: center;">ChatGPT</span></a></div>
+          <div style="position: absolute; margin: 300px 160px; text-align: center;" class="text-sm"><a href="#!"
+              onclick="document.getElementById('app_browser-container').style.display='block'; return false;"><img
+                style="text-align: center;"
+                src="<?= APP_BASE['resources'] . 'images/stackoverflow.png' ?>" /><br /><span
+                style="text-align: center;">Stackoverflow</span></a></div>
+          <div style="position: absolute; margin: 300px 260px; text-align: center;" class="text-sm"><a href="#!"
+              onclick="document.getElementById('app_browser-container').style.display='block'; return false;"><img
+                style="text-align: center;" src="<?= APP_BASE['resources'] . 'images/validatejs.png' ?>" /><br /><span
+                style="text-align: center;">ValidateJS</span></a></div>
+          <!-- https://validator.w3.org/#validate_by_input // -->
+          <div style="position: absolute; margin: 300px 340px; text-align: center;" class="text-sm"><a href="#!"
+              onclick="document.getElementById('app_browser-container').style.display='block'; return false;"><img
+                style="text-align: center;" src="<?= APP_BASE['resources'] . 'images/w3c.png' ?>" /><br /><span
+                style="text-align: center;">W3C Validator</span></a></div>
+          <!-- https://tailwindcss.com/docs/ // -->
+          <div style="position: absolute; margin: 300px 0 0 445px; text-align: center;" class="text-sm"><a href="#!"
+              onclick="document.getElementById('app_browser-container').style.display='block'; return false;"><img
+                style="text-align: center;" src="<?= APP_BASE['resources'] . 'images/tailwindcss.png' ?>" /><br /><span
+                style="text-align: center;">TailwindCSS<br />Docs</span></a></div>
+          <!-- https://www.php.net/docs.php // -->
+          <div style="position: absolute; margin: 300px 0 0 540px; text-align: center;" class="text-sm"><a href="#!"
+              onclick="document.getElementById('app_browser-container').style.display='block'; return false;"><img
+                style="text-align: center;" src="<?= APP_BASE['resources'] . 'images/php.png' ?>" /><br /><span
+                style="text-align: center;">PHP Docs</span></a></div>
+          <!-- https://dev.mysql.com/doc/ // -->
+          <div style="position: absolute; margin: 300px 0 0 625px; text-align: center;" class="text-sm"><a href="#!"
+              onclick="document.getElementById('app_browser-container').style.display='block'; return false;"><img
+                style="text-align: center;" src="<?= APP_BASE['resources'] . 'images/mysql.png' ?>" /><br /><span
+                style="text-align: center;">MySQL Docs</span></a></div>
+          <div
+            style="position: absolute; top: 400px; left: 65px; width: 80%; margin: 0 auto; height: 15px; border-bottom: 1px solid black; text-align: center; z-index: 0;">
+            <span style="font-size: 20px; background-color: #F3F5F6; padding: 0 20px; z-index: 1;"> USER APPS.
+            </span>
+          </div>
+          <div style="position: absolute; margin: 430px 75px; text-align: center;" class="text-sm"><a href="#!"
+              onclick="document.getElementById('app_install-container').style.display='block'; return false;"><span
+                style="text-align: center;">New App.</span><br /><img style="text-align: center;"
+                src="<?= APP_BASE['resources'] . 'images/install.png' ?>" /></a></div>
+          <div style="position: absolute; margin: 430px 170px; text-align: center;" class="text-sm">
+            <a href="?app=ace_editor&path=&file=app.user-app.php"><span style="text-align: center;">App
+                #1</span></a><br />
+            <a href="#!"
+              onclick="document.getElementById('app_browser-container').style.display='block'; return false;"><img
+                style="text-align: center;" src="<?= APP_BASE['resources'] . 'images/php-app.png' ?>" /></a>
+            <div style="height: 75px;"></div>
+          </div>
+        </div>
       </div>
-
 
       <?php /*
 <div id="app_project-container" style="display: none; position: absolute; top: 80px; padding: 20px; margin-left: auto; margin-right: auto; left: 0; right: 0; width: 700px; z-index: 2;">
@@ -922,31 +919,38 @@ cursor : pointer;
         </div>
       </div>
 
-      <?= $apps['browser']['body'] ?? ''; ?>
-      <?= $apps['github']['body'] ?? ''; ?>
-      <?= $apps['packagist']['body'] ?? ''; ?>
-      <?= $apps['whiteboard']['body'] ?? ''; ?>
-      <?= $apps['notes']['body'] ?? ''; ?>
-      <!-- https://pong-2.com/ -->
-      <?= $apps['pong']['body'] ?? ''; ?>
 
-      <?= $apps['timesheet']['body'] ?? ''; ?>
     </div>
-  </div>
-  <!-- /div -->
+    <?= $apps['browser']['body'] ?? ''; ?>
+    <?= $apps['github']['body'] ?? ''; ?>
+    <?= $apps['packagist']['body'] ?? ''; ?>
+    <?= $apps['whiteboard']['body'] ?? ''; ?>
+    <?= $apps['notes']['body'] ?? ''; ?>
+    <!-- https://pong-2.com/ -->
+    <?= /*$apps['pong']['body'] ?? '';*/ ''; ?>
+    <?= $apps['timesheet']['body'] ?? ''; ?>
+    <?= defined('UI_ACE_EDITOR') ? UI_ACE_EDITOR['body'] : null; ?>
 
+    <?= defined('UI_GIT') ? UI_GIT['body'] : null; ?>
+
+    <?= defined('UI_PHP') ? UI_PHP['body'] : null; /* print(...) */ ?>
+    <?= defined('UI_COMPOSER') ? UI_COMPOSER['body'] : null; /* (isset($appComposer) ? $appComposer['script'] : null); */ ?>
+    <?= defined('UI_NPM') ? UI_NPM['body'] : null; ?>
+    <?= defined('UI_NODES') ? UI_NODES['body'] : null; ?>
+
+
+    <?= $apps['project']['body'] ?? ''; ?>
+    <?= $apps['console']['body'] ?? ''; ?>
+
+  </div>
   <?= defined('UI_CALENDAR') ? UI_CALENDAR['body'] : null; ?>
   <?= defined('UI_ERRORS') ? UI_ERRORS['body'] : null; ?>
-  <?= defined('UI_GIT') ? UI_GIT['body'] : null; ?>
-  <?= defined('UI_PHP') ? UI_PHP['body'] : null; /* print(...) */ ?>
-  <?= defined('UI_COMPOSER') ? UI_COMPOSER['body'] : null; /* (isset($appComposer) ? $appComposer['script'] : null); */ ?>
-  <?= defined('UI_NPM') ? UI_NPM['body'] : null; ?>
-  <?= defined('UI_ACE_EDITOR') ? UI_ACE_EDITOR['body'] : null; ?>
-  <?= defined('UI_NODES') ? UI_NODES['body'] : null; ?>
+
   <?= defined('UI_MEDICATION_LOG') ? UI_MEDICATION_LOG['body'] : null; ?>
 
-  <?= $apps['project']['body'] ?? ''; ?>
-  <?= $apps['console']['body'] ?? ''; ?>
+
+  <!-- /div -->
+
   <!-- https://cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.min.js -->
   <!-- https://code.jquery.com/jquery-3.7.1.min.js -->
   <!-- script src="https://code.jquery.com/jquery-3.6.0.min.js" integrity="sha256-/xUj+3OJU5yExlq6GSYGSHk7tPXikynS7ogEvDej/m4=" crossorigin="anonymous"></script -->
@@ -1291,6 +1295,7 @@ $(document).ready(function() {
     }
 
     makeDraggable('app_medication_log-container');
+    makeDraggable('app_notes-container');
     makeDraggable('app_calendar-container');
     makeDraggable('app_errors-container');
     makeDraggable('app_ace_editor-container');
@@ -1482,7 +1487,7 @@ $(document).ready(function() {
         <?php } else if (defined('APP_ROOT') && APP_ROOT != '' && isset($errors['GIT_UPDATE']) && isset($_ENV['DEFAULT_UPDATE_NOTICE']) && $_ENV['DEFAULT_UPDATE_NOTICE'] != true) { //  isset($_GET['client'])  !$_GET['client'] 
         
 
-          if ($_GET['client'] == '') { ?>
+          if (isset($_GET['client']) && $_GET['client'] == '') { ?>
                 document.getElementById('toggle-debug').checked = true;
 
                 toggleSwitch(document.getElementById('toggle-debug'));
@@ -1491,7 +1496,7 @@ $(document).ready(function() {
                            // Animation complete.
                           });
                 */
-          <?php } else if (!empty($_GET) && $_GET['client'] == '') { ?>
+          <?php } else if (isset($_GET['client']) && $_GET['client'] == '') { ?>
 
                   document.getElementById('toggle-debug').checked = true;
 
@@ -1716,5 +1721,3 @@ $(document).ready(function() {
 </body>
 
 </html>
-
-<?= NULL; ?>

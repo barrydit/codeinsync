@@ -114,8 +114,8 @@ define('PHP_LATEST', 'PHP_VERSION');
 
 <!-- <div class="container" style="border: 1px solid #000;"> -->
 <div id="app_php-container"
-  class="absolute <?= (__FILE__ == get_required_files()[0] || isset($_GET['app']) && $_GET['app'] == 'php' ? 'selected' : (version_compare(PHP_LATEST, PHP_VERSION, '>') != 0 ? (isset($_GET['app']) && $_GET['app'] != 'php' ? '' : '') : '')) ?>"
-  style="border: 1px solid #000; width: 400px;">
+  class="<?= __FILE__ == get_required_files()[0] || isset($_GET['app']) && $_GET['app'] == 'php' ? 'selected' : (version_compare(PHP_LATEST, PHP_VERSION, '>') != 0 ? (isset($_GET['app']) && $_GET['app'] != 'php' ? '' : '') : '') ?>"
+  style="position: fixed; border: 1px solid #000; width: 400px;">
   <div class="header ui-widget-header">
     <div style="display: inline-block;">PHP <?= 'v' . PHP_VERSION; ?> Configuration/Settings</div>
     <div style="display: inline; float: right; text-align: center;">[<a style="cursor: pointer; font-size: 13px;"
@@ -225,7 +225,7 @@ if (__FILE__ == get_required_files()[0] || in_array(__FILE__, get_required_files
 
     <style type="text/tailwindcss">
       <?= $app['style']; ?>
-            </style>
+                </style>
   </head>
 
   <body>
@@ -241,7 +241,7 @@ if (__FILE__ == get_required_files()[0] || in_array(__FILE__, get_required_files
     <script src="//code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
     <!-- <script src="../resources/js/jquery/jquery.min.js"></script> -->
     <script>
-            <?= /*$app['script'];*/ NULL; ?>
+                <?= /*$app['script'];*/ NULL; ?>
     </script>
   </body>
 

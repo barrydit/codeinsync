@@ -175,8 +175,8 @@ ob_start();
 !defined('GIT_LATEST') and define('GIT_LATEST', GIT_VERSION); ?>
 
 <div id="app_git-container"
-  class="absolute <?= (__FILE__ == get_required_files()[0] || isset($_GET['app']) && $_GET['app'] == 'git' || isset($errors['GIT_UPDATE']) ? 'selected' : (version_compare(GIT_LATEST, GIT_VERSION, '>') != 0 ? (isset($_GET['app']) && $_GET['app'] != 'git' ? '' : '') : '')) ?>"
-  style="z-index: 1; width: 424px; background-color: rgba(255,255,255,0.8); padding: 10px;">
+  class="<?= __FILE__ == get_required_files()[0] || isset($_GET['app']) && $_GET['app'] == 'git' || isset($errors['GIT_UPDATE']) ? 'selected' : (version_compare(GIT_LATEST, GIT_VERSION, '>') != 0 ? (isset($_GET['app']) && $_GET['app'] != 'git' ? '' : '') : '') ?>"
+  style="position: fixed; z-index: 1; width: 424px; background-color: rgba(255,255,255,0.8); padding: 10px;">
   <div
     style="position: relative; margin: 0 auto; width: 404px; height: 306px; border: 3px dashed #F05033; background-color: #FBF7F1;">
 
@@ -277,13 +277,14 @@ ob_start();
           </div>
         </div>
         <div style="display: block; margin: 10px auto; width: 100%; background-color: rgb(255,255,255,.75);">
-          <div style="position: absolute; top: 0; left: 10px;"><img src="resources/images/oauth-token.gif"
-              style="cursor: pointer;" width="20" height="23" alt="Git token" title="OAuth Token"
-              onclick="document.getElementById('app_git-oauth').style.display='block';" /></div>
           <div
-            style="position: absolute; top: 28px; left: 10px; border: 1px dashed #000; height: 84px; overflow-x: auto;"
+            style="position: absolute; top: 5px; left: 10px; border: 1px dashed #000; height: 104px; overflow-x: auto;"
             class="text-xs">
-            <div style="position: fixed; font-weight: bold; color: #FFF; background-color: #B0B0B0;">Git Commands</div>
+            <div style="position: absolute; top: 0; right: 10px;"><img src="resources/images/oauth-token.gif"
+                style="cursor: pointer;" width="20" height="23" alt="Git token" title="OAuth Token"
+                onclick="document.getElementById('app_git-oauth').style.display='block';" /></div>
+            <div style="position: absolute; font-weight: bold; color: #FFF; background-color: #B0B0B0;">Git Commands
+            </div>
             <br />
             <code class="text-xs">
                             <a id="app_git-help-cmd" href="<?= (APP_URL_BASE['query'] != '' ? '?' . APP_URL_BASE['query'] : '') . (defined('APP_ENV') && in_array(APP_ENV, ['development', 'production']) ? '#!' : '') ?>" onclick="">git <span style="color: red;">[Help]</span></a><br />

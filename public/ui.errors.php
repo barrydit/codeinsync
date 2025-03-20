@@ -180,8 +180,8 @@ ob_end_clean();
 ob_start(); ?>
 
 <div id="app_errors-container"
-    class="absolute <?= __FILE__ == get_required_files()[0] || (isset($_GET['app']) && $_GET['app'] == 'errors') && !isset($_GET['path']) ? 'selected' : '' ?>"
-    style="display: <?= __FILE__ == get_required_files()[0] || (isset($_GET['app']) && $_GET['app'] == 'errors') ? 'block' : 'block' ?>; resize: both; overflow: hidden;">
+    class="<?= __FILE__ == get_required_files()[0] || (isset($_GET['app']) && $_GET['app'] == 'errors') && !isset($_GET['path']) ? 'selected' : '' ?>"
+    style="position: fixed; left: 44px; top: 64px; display: <?= __FILE__ == get_required_files()[0] || (isset($_GET['app']) && $_GET['app'] == 'errors') ? 'block' : 'block' ?>; resize: both; overflow: hidden;">
     <div class="ui-widget-header"
         style="position: relative; display: inline-block; width: 100%; cursor: move; border-bottom: 1px solid #000;background-color: #FFF;">
         <label class="errors-home" style="cursor: pointer;">
@@ -209,9 +209,15 @@ ob_start(); ?>
 
         <div class="ui-widget-content"
             style="position: relative; display: block; margin: 0 auto; width: calc(100% - 2px); height: 50px; background-color: rgba(251,247,241);">
-            <div style="display: inline-block; text-align: left; width: 125px;">
+            <div style="display: inline-block; text-align: left; width: 300px;">
                 <div class="npm-menu text-sm"
-                    style="cursor: pointer; font-weight: bold; padding-left: 25px; border: 1px solid #000;">Main Menu
+                    style="display: inline-block; cursor: pointer; font-weight: bold; padding: 5px; border: 1px solid #000;">
+                    PHP $errors
+                </div>
+                <div class="npm-menu text-sm"
+                    style="display: inline-block; cursor: pointer; font-weight: bold; padding: 5px; border: 1px solid #000;">
+                    PHP
+                    config/settings
                 </div>
                 <div class="text-xs" style="display: inline-block; border: 1px solid #000;">
                     <a class="text-sm" id="app_errors-frameMenuPrev"
@@ -222,20 +228,7 @@ ob_start(); ?>
                 </div>
             </div>
             <!-- onclick="document.getElementsByClassName('ace_text-input')[0].value = globalEditor.getSession().getValue(); document.getElementsByClassName('ace_text-input')[0].name = 'editor';"   -->
-            <div
-                style="position:absolute; right: 100px; top: 10px; display: inline-block; width: auto; text-align: right;">
-                <input type="submit" name="ace_save" value="Save" class="btn" style="margin: -5px 5px 5px 0;">
-            </div>
 
-            <div class="absolute"
-                style="position: absolute; display: inline-block; top: 5px; right: 0; text-align: right; float: right;">
-                <div class="text-xs" style="position: relative; display: inline-block;">
-                    + 495 <a href="https://github.com/ajaxorg/ace/graphs/contributors">contributors</a>
-                    <br /><!-- a href="https://github.com/ajaxorg"><img src="resources/images/node.js.png" title="https://github.com/nodejs" width="18" height="18" /></a -->
-                    <a style="color: blue; text-decoration-line: underline; text-decoration-style: solid;"
-                        href="https://ace.c9.io/" title="https://ace.c9.io/">https://ace.c9.io/</a>
-                </div>
-            </div>
             <div style="clear: both;"></div>
 
             <?= /*

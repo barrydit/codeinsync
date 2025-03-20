@@ -1228,6 +1228,8 @@ DirQueryParams = event.currentTarget.href;
 // Update the hidden ace_path input with the file path
 $('input[name="ace_path"]').val(path); // path.substring(0, path.lastIndexOf('/'))
 
+$('input[name="restore_backup"]').val(path); // path.substring(0, path.lastIndexOf('/'))
+
 $('form[name="ace_form"]').attr('action', DirQueryParams);
 
 document.getElementsByClassName('ace_text-input')[0].name = 'ace_contents';

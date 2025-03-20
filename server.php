@@ -1000,10 +1000,23 @@ if (PHP_SAPI === 'cli')
           //$error = socket_last_error($socket);
 
           // Check if the socket is closed
-          if ($error == 10057) { // WSAENOTCONN: "Socket is not connected"
+          if (isset($error) && $error == 10057) { // WSAENOTCONN: "Socket is not connected"
             echo "Socket is closed\n";
             socket_close($socket);
             break; // Exit loop if socket is closed
+          }
+
+          //if (!is_resource($socket)) { // Additional check
+          //  echo "Socket is no longer a valid resource.\n";
+          //break;
+          //}
+
+          if ($socket === null) {
+            echo "DEBUG: Socket is NULL.\n";
+          }
+
+          if ($socket === false) {
+            echo "DEBUG: Socket is FALSE.\n";
           }
 
           // Accept new client connection
