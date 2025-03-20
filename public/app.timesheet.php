@@ -1244,7 +1244,8 @@ END;
             Object.keys(json_decode).forEach(key => { Object.keys(json_decode[key]).forEach(key1 => { count_idle += 1; }); });
 
             console.log(count_idle);
-            snd.stop();
+
+            if (typeof snd !== 'undefined') { snd.stop(); }
             $("#stats").html('Idle: [' + count_idle + '] ' + '&nbsp;&nbsp;' + '' + ' <span style="color: red;">01:00:00');
 
             function myFunction(item, index, arr) {

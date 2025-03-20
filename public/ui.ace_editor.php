@@ -4,19 +4,32 @@
 
 //$errors->{'TEXT_MANAGER'} = $path . "\n" . 'File Modified:    Rights:    Date of creation: ';
 
-
 if (__FILE__ == get_required_files()[0] && __FILE__ == realpath($_SERVER["SCRIPT_FILENAME"]))
   if ($path = basename(dirname(get_required_files()[0])) == 'public') { // (basename(getcwd())
     if (is_file($path = realpath('../bootstrap.php'))) {
       require_once $path;
     }
-  } else {
+  } else
     die(var_dump("Path was not found. file=$path"));
-  }
+
 
 //dd(get_required_files(), false);
 
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
+
+  if (isset($_POST["restore_backup"])) {
+
+    $file = APP_PATH . APP_BASE['database'] . 'source_code.json';
+
+    if (is_file($file)) {
+      $source_code = json_decode(file_get_contents($file), true);
+
+      if (isset($source_code[$_POST["restore_backup"]])) {
+        file_put_contents(APP_PATH . APP_ROOT . $_POST["restore_backup"], $source_code[$_POST["restore_backup"]]);
+      }
+    }
+    die(header('Location: ' . APP_URL_BASE['scheme'] . '://' . APP_URL_BASE['host'] . '/?' . http_build_query(APP_QUERY + ['path' => $_GET['path'] ?? '', 'app' => $_GET['app'] ?? 'ace_editor', 'file' => basename($_POST['restore_backup'])])));
+  }
 
   //dd($_POST, false);
 
@@ -180,8 +193,8 @@ ob_end_clean();
 ob_start(); ?>
 
 <div id="app_ace_editor-container"
-  class="absolute <?= __FILE__ == get_required_files()[0] || (isset($_GET['app']) && $_GET['app'] == 'ace_editor') && !isset($_GET['path']) ? 'selected' : '' ?>"
-  style="display: <?= __FILE__ == get_required_files()[0] || (isset($_GET['app']) && $_GET['app'] == 'ace_editor') ? 'block' : 'none' ?>; resize: both; overflow: hidden;">
+  class="<?= __FILE__ == get_required_files()[0] || (isset($_GET['app']) && $_GET['app'] == 'ace_editor') && !isset($_GET['path']) ? 'selected' : '' ?>"
+  style="position: fixed; display: <?= __FILE__ == get_required_files()[0] || (isset($_GET['app']) && $_GET['app'] == 'ace_editor') ? 'block' : 'none' ?>; resize: both; overflow: hidden;">
   <div class="ui-widget-header"
     style="position: relative; display: inline-block; width: 100%; cursor: move; border-bottom: 1px solid #000;background-color: #FFF;">
     <label class="ace_editor-home" style="cursor: pointer;">
@@ -201,9 +214,31 @@ ob_start(); ?>
     </div>
   </div>
 
+  <div id="backupForm-container"
+    style="position: absolute; top: 80px; right: 0px; color: red; z-index: 10; background-color: rgba(255,255,255, 0.7); padding: 5px 15px;">
+    Restore (Backup)<br />
+
+    <?php
+    $file = APP_PATH . APP_BASE['database'] . 'source_code.json';
+    if (is_file($file)) {
+      $source_code = json_decode(file_get_contents($file), true);
+      if (!empty($source_code)) {
+
+      }
+    }
+    //dd($_POST, false);
+    //if (isset($_GET['file']) && isset($source_code[$_GET['file']])) {
+    //  $source_code_file = $_GET['file']; ?>
+    <form id="backupForm" method="POST" action="<?= basename(__FILE__); ?>">
+      <input type="checkbox" id="restoreCheckbox" name="restore_backup" value="<?= $_GET['file'] ?? '' ?>" />
+      Restore from Backup
+    </form>
+    <?php //} ?>
+  </div>
+
   <form id="" name="ace_form"
     style="position: relative; width: 100%; height: 100%; border: 3px dashed #38B1FF; background-color: rgba(56,177,255,0.6);"
-    action="app.directory.php<?= /*basename(__FILE__) . */ '?' . http_build_query(APP_QUERY + ['app' => 'ace_editor']) . (defined('APP_ENV') && APP_ENV == 'development' ? '#!' : '') /* $c_or_p . '=' . (empty($_GET[$c_or_p]) ? '' : $$c_or_p->name) . '&amp;app=composer' */ ?>"
+    action="<?= basename(__FILE__) . /**/ '?' . http_build_query(APP_QUERY + ['path' => $_GET['path'] ?? '', 'app' => 'ace_editor']) . (defined('APP_ENV') && APP_ENV == 'development' ? '#!' : '') /* $c_or_p . '=' . (empty($_GET[$c_or_p]) ? '' : $$c_or_p->name) . '&amp;app=composer' */ ?>"
     method="POST" onsubmit="syncAceContent()">
     <input type="hidden" name="ace_path" value="<?= /* APP_PATH . APP_BASE['public']; */ NULL; ?>" />
 
@@ -291,10 +326,13 @@ else $count++;
       <!--   A (<?= /* $path */ ''; ?>) future note: keep ace-editor nice and tight ... no spaces, as it interferes with the content window.
  https://scribbled.space/ace-editor-setup-usage/ -->
 
+
       <div id="ui_ace_editor" class="ace_editor"
         style="display: <?= isset($_GET['file']) && isset($_GET['path']) && is_file($_GET['path'] . $_GET['file']) ? 'block' : 'block' ?>; z-index: 1;">
-      </div><textarea id="ace_contents" name="ace_contents" class="ace_text-input" autocorrect="off"
-        autocapitalize="none" spellcheck="false"
+      </div>
+
+      <textarea id="ace_contents" name="ace_contents" class="ace_text-input" autocorrect="off" autocapitalize="none"
+        spellcheck="false"
         style="display: none; opacity: 0; font-size: 1px; height: 1px; width: 1px; top: 28px; left: 86px;" wrap="on"
         placeholder="hello you&#10;Second line&#10;Third line"></textarea>
     </div>
@@ -379,7 +417,23 @@ if (false) { ?>
 ob_start();
 //if (isset($_GET['client']) && $_GET['client'] != '') { 
 //if (isset($_GET['domain']) && $_GET['domain'] != '') {
-if (is_dir($path = APP_PATH . APP_BASE['resources'] . 'js/ace')) { ?>
+//if (isset($source_code_file)) { ?>
+
+  //if (document.getElementById("restoreCheckbox")?.id) {
+  document.getElementById("restoreCheckbox").addEventListener("change", function () {
+    if (this.checked) {
+      if (confirm("Are you sure you want to restore from backup?")) {
+        document.getElementById("backupForm").submit();
+      } else {
+        this.checked = false; // Reset checkbox if user cancels
+      }
+    }
+  });
+  //}
+
+  <?php
+  //}
+  if (is_dir($path = APP_PATH . APP_BASE['resources'] . 'js/ace')) { ?>
     $(function () {
       //$("#resizable").resizable();
 
@@ -409,16 +463,43 @@ if (is_dir($path = APP_PATH . APP_BASE['resources'] . 'js/ace')) { ?>
       });
 
       // Set initial content to the editor on load
-      var initialContent =
-        `<?= isset($_GET['file']) && is_file($filename = APP_PATH . (APP_ROOT != '' ? APP_ROOT : APP_BASE['clientele'] . (!isset($_GET['client']) ? (!isset($_GET['domain']) ? '' : $_GET['domain'] . ($_GET['domain'] == '' ? '' : '/')) : $_GET['client'] . ($_GET['client'] == '' ? '' : '/')) . (!isset($_GET['domain']) ? '' : $_GET['domain'] . ($_GET['domain'] == '' ? '' : '/'))) . (!isset($_GET['path']) ? '' : $_GET['path'] . ($_GET['path'] == '' ? '' : '/')) . $_GET['file']) ? str_replace(['`', '\\'], ['\\`', '\\\\'], file_get_contents($filename)) : "<?php
+      var initialContent = `<?php
 
-/* This is an example of ACE Editor working */
+      // Construct the base file path
+      $basePath = APP_PATH;
 
-require(__DIR__ . 'config' . DIRECTORY_SEPARATOR . 'config.php');
+      if (APP_ROOT !== '')
+        $basePath .= APP_ROOT;
+      else {
+        //$basePath .=;
+    
+        if (isset($_GET['client']) && $_GET['client'] !== '')
+          $basePath .= $_GET['client'] . '/';
+        elseif (isset($_GET['domain']) && $_GET['domain'] !== '')
+          $basePath .= $_GET['domain'] . '/';
 
-"; /* (isset($_GET['project']) ? htmlsanitize(file_get_contents($path . 'projects/index.php')) : '')*/
-        ''; /*   'clientele/' . $_GET['client'] . '/' . $_GET['domain'] . '/' .  */ ?>`;
-      appEditor.setValue(initialContent, 1); // The second parameter is cursor position, 1 moves it to the end
+        if (isset($_GET['domain']) && $_GET['domain'] !== '')
+          $basePath .= $_GET['domain'] . '/';
+      }
+
+      if (isset($_POST['restore_backup']) && $_POST['restore_backup'] !== '') {
+        $basePath .= $_GET['path'] . '/';
+        $filename = $basePath . $_POST['restore_backup'];
+        $initialContent = (is_file($filename)) ? file_get_contents($filename) : "<?php\n\n/* This is an example of ACE Editor working */\n\nrequire(__DIR__ . 'config' . DIRECTORY_SEPARATOR . 'config.php');\n";
+      } elseif (isset($_GET['path'])) {
+        $basePath .= $_GET['path'] . '/';
+        $filename = $basePath . ($_GET['file'] ?? '');
+        $initialContent = (is_file($filename)) ? file_get_contents($filename) : "<?php\n\n/* This is an example of ACE Editor working */\n\nrequire(__DIR__ . 'config' . DIRECTORY_SEPARATOR . 'config.php');\n";
+      } else {
+        $initialContent = var_export($_GET, true); //"<?php\n\n/* No file specified */\n";
+      }
+
+      // Escape backticks and backslashes for JavaScript safety
+      echo $initialContent = str_replace(['`', '\\'], ['\\`', '\\\\'], $initialContent);
+      /* (isset($_GET['project']) ? htmlsanitize(file_get_contents($path . 'projects/index.php')) : '')*/
+      //''; /*   'clientele/' . $_GET['client'] . '/' . $_GET['domain'] . '/' .  */
+      ?>`;
+      appEditor.setValue(initialContent, 0); // The second parameter is cursor position, 1 moves it to the end
 
     });
 
@@ -569,8 +650,8 @@ require(__DIR__ . 'config' . DIRECTORY_SEPARATOR . 'config.php');
           const maxX = window.innerWidth - windowElement.clientWidth - 100;
           const maxY = window.innerHeight - windowElement.clientHeight;
 
-          windowElement.style.left = `${Math.max(-200, Math.min(left, maxX))}px`;
-          windowElement.style.top = `${Math.max(0, Math.min(top, maxY))}px`;
+          windowElement.style.left = `${Math.max(-200, Math.min(left, maxX))} px`;
+          windowElement.style.top = `${Math.max(0, Math.min(top, maxY))} px`;
         }
       });
 

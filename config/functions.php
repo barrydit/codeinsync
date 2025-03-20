@@ -822,7 +822,7 @@ function check_http_status($url = 'http://8.8.8.8', $statusCode = 200)
 
 
   //(!defined('APP_NO_INTERNET_CONNECTION')) or
-  $headers = @get_headers($url);
+  $headers = @get_headers($url); // Error here to do with network_getaddresses ... jquery
 
   //var_dump($headers);
   return !empty($headers) && strpos($headers[0], (string) $statusCode) === false;

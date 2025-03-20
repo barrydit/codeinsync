@@ -5,12 +5,6 @@
 !/config
 /dist
 /database
-/database/*.json
-!/database/notes-sample.json
-!/database/notes.json
-!/database/source_code.json
-/database/weekly-timesheet-????-??.json
-!/database/weekly-timesheet-sample.json
 /node_modules
 !/public
 /public/example.php
@@ -24,8 +18,14 @@
 /vendor
 /var/*.html
 /var/*.php
+/var/*.json
+!/var/notes-sample.json
+!/var/notes.json
+!/var/source_code.json
 /var/packages/*
 !/var/packages/psr-log.php
+/var/weekly-timesheet-????-??.json
+!/var/weekly-timesheet-sample.json
 /tasks.txt
 .composer
 .env*

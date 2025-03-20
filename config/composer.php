@@ -570,7 +570,7 @@ if (defined('APP_ENV') and APP_ENV == 'development') {
     //die('test');
 
     ob_start(); ?>
-    <?= $composer_exec; ?> init --quiet --no-interaction
+    <?= $composer_exec; ?> test init --quiet --no-interaction
     --working-dir="<?= APP_PATH . APP_ROOT; ?>"
     --name="<?= $composerUser . '/' . $$c_or_p->name; ?>"
     --description="General Description"
@@ -663,7 +663,7 @@ defined('COMPOSER_JSON') or define('COMPOSER_JSON', [
 ]);
 
 ob_start(); ?>
-  <?= defined('COMPOSER_EXEC') and $composer_exec; ?> init --quiet --no-interaction
+  <?= $composer_exec; ?> init --quiet --no-interaction
   --working-dir="<?= APP_PATH . APP_ROOT; ?>"
   --name="<?= $composerUser . '/' . str_replace('.', '_', basename(APP_ROOT) ?? $componetPkg); ?>"
   --description="General Description"

@@ -341,9 +341,9 @@ else
   <style type="text/tailwindcss">
     * {
 <?php if (isset($_GET['debug'])) { ?>
-                        border: 1px dashed #FF0000;
+                          border: 1px dashed #FF0000;
 <?php } else { ?> 
-                        /* border: 1px dashed #FF0000; */
+                          /* border: 1px dashed #FF0000; */
 <?php } ?>
       }
       body {
@@ -850,8 +850,8 @@ else
             </div>
             <div style="display: inline; float: right; text-align: center; ">
               <code style=" background-color: white; color: #0078D7;">
-                          <a style="cursor: pointer; font-size: 13px;" onclick="document.getElementById('app_client-container').style.display='none';">[X]</a>
-                          </code>
+                            <a style="cursor: pointer; font-size: 13px;" onclick="document.getElementById('app_client-container').style.display='none';">[X]</a>
+                            </code>
             </div>
             <div style="margin: 0 10px;">
               <div style="display: inline-block; float: left; width: 49%;">
@@ -1513,7 +1513,3 @@ else
 </body>
 
 </html>
-
-<?= NULL;
-
-?>

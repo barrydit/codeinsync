@@ -295,7 +295,7 @@ if (/*APP_SELF === APP_PATH_PUBLIC*/ dirname(APP_SELF) === dirname(APP_PATH_PUBL
     else
       return strcmp(basename($a), basename($b)); // Compare other filenames alphabetically
   });
-  //dd($appPaths);
+
   if (in_array(APP_PATH . APP_BASE['public'] . 'app.install.php', $appPaths))
     foreach ($appPaths as $key => $file)
       if (basename($file) === 'app.install.php')
@@ -366,7 +366,6 @@ if (/*APP_SELF === APP_PATH_PUBLIC*/ dirname(APP_SELF) === dirname(APP_PATH_PUBL
   */
 
   //$path = '';
-
   $app = $apps = [];
 
   // Check if $paths is not empty
@@ -377,8 +376,9 @@ if (/*APP_SELF === APP_PATH_PUBLIC*/ dirname(APP_SELF) === dirname(APP_PATH_PUBL
       $path = array_shift($paths); // Shift the first element
 
       // Ensure $path exists before using it
-
+      //dd($path, false);
       if ($realpath = realpath($path ?? '')) {
+
         $returnedValue = (function () use ($realpath, &$app) {
           //dd($realpath, false);
           if ($realpath != rtrim(APP_PATH, '/'))
