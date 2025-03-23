@@ -28,12 +28,13 @@ class Sockets
     {
         try {
             self::$socket = $this->openSocket(SERVER_HOST, SERVER_PORT);
-
+            //dd([APP_SELF, APP_PATH_SERVER], false);
             // Attempt to open a socket if it's not already set in $_SERVER
             if (!$this->isSocketAvailable()) {
                 // Handle socket connection if unavailable
                 $this->handleSocketConnection();
             } elseif (APP_SELF !== APP_PATH_SERVER) {
+
                 // If the app is not running on the server path, handle client requests
                 $this->handleClientRequest($_POST['cmd'] ?? null);
 
@@ -131,7 +132,7 @@ class Sockets
         }
 
         // Use provided command or default to the current script's filename
-        $message = "cmd: " . ($command ?? $_SERVER["SCRIPT_FILENAME"]) . "\n";
+        $message = "cmd: testing123 " . ($command ?? $_SERVER["SCRIPT_FILENAME"]) . "\n";
 
         // Log the server connection and client request
         $errors['server-1'] = "Connected to Server: " . SERVER_HOST . ':' . SERVER_PORT . "\n";
@@ -346,12 +347,13 @@ END
     }
 }
 
-$socketInstance = Sockets::getInstance(); // new Sockets();
 
-// Check if the socket was initialized properly
-if (isset($socketInstance) && is_a($socketInstance, Sockets::class) && is_resource($_SERVER['SOCKET'] = $socketInstance->getSocket())) {
+if (!isset($_SERVER['SOCKET']) || empty($_SERVER['SOCKET'])) {
+    //$socketInstance = Sockets::getInstance(); // new Sockets();
 
-    if (!isset($_SERVER['SOCKET']) || empty($_SERVER['SOCKET'])) {
+    // Check if the socket was initialized properly
+    if (isset($socketInstance) && is_a($socketInstance, Sockets::class) && is_resource($_SERVER['SOCKET'] = $socketInstance->getSocket())) {
+
         !defined('PID_FILE') and define('PID_FILE', /*getcwd() .*/ (!defined('APP_PATH') ? __DIR__ . DIRECTORY_SEPARATOR : APP_PATH) . 'server.pid');
 
         if (file_exists(PID_FILE)) {
@@ -374,20 +376,18 @@ if (isset($socketInstance) && is_a($socketInstance, Sockets::class) && is_resour
                 }
             }
         }
+        $errors['APP_SOCKET'] = 'Have you checked your server.php file lately?';
 
+    } else {
+        //die('Socket connection failed.');
 
-        die($errors['APP_SOCKET'] = 'Have you checked your server.php file lately?');
+        $errors['APP_SOCKET'] = "Socket is not being created: Define \$_SERVER['SOCKET']\n";
+
+        //if (APP_DEBUG) { 
+        //var_dump(trim($errors['APP_SOCKET']));
+        //}
     }
-} else {
-    //die('Socket connection failed.');
-
-    $errors['APP_SOCKET'] = "Socket is not being created: Define \$_SERVER['SOCKET']\n";
-
-    //if (APP_DEBUG) { 
-    //var_dump(trim($errors['APP_SOCKET']));
-    //}
 }
-
 
 //if (isset($socket) && is_a($socket, Sockets::class) && is_resource($_SERVER['SOCKET'] = $socket->getSocket())) // realpath(dirname(__DIR__) . DIRECTORY_SEPARATOR . 'server.php')
 

@@ -1,5 +1,7 @@
 <?php
 
+//dd($_POST);
+
 global $shell_prompt, $auto_clear, $errors;
 
 /*
@@ -43,6 +45,7 @@ if (preg_match('/^app\.([\w\-.]+)\.php$/', basename(__FILE__), $matches))
 
 
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
+
   //dd(get_required_files());
   if (isset($_POST['group_type'])) {
     switch ($_POST['group_type']) {
@@ -119,11 +122,11 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
           $output[] = APP_SUDO . "$match[1] $match[2]";
           $proc = proc_open(
             (stripos(PHP_OS, 'WIN') === 0 ? '' : APP_SUDO) . "$match[1] $match[2]",
-            array(
-              array("pipe", "r"),
-              array("pipe", "w"),
-              array("pipe", "w")
-            ),
+            [
+              ["pipe", "r"],
+              ["pipe", "w"],
+              ["pipe", "w"]
+            ],
             $pipes
           );
           [$stdout, $stderr, $exitCode] = [stream_get_contents($pipes[1]), stream_get_contents($pipes[2]), proc_close($proc)];
@@ -178,20 +181,17 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 
       $response = trim($response); // Remove any extra whitespace
 
-      if ($response === '') {
-        // Handle empty response
-        echo 'Empty response 123';
-      } else {
-        // Handle response
-        $decodedResponse = json_decode($response, true); // Decode JSON response
-      }
+      if ($response === '') // Handle empty response
 
-      if ($decodedResponse === null && json_last_error() !== JSON_ERROR_NONE) {
-        // Handle JSON decoding error
+        echo 'Empty response 123';
+      else // Handle response
+        $decodedResponse = json_decode($response, true); // Decode JSON response
+
+      if ($decodedResponse === null && json_last_error() !== JSON_ERROR_NONE) // Handle JSON decoding error
         echo $errors['server-3'] = "Error decoding JSON: " . json_last_error_msg();
-      } else {
+      else
         $errors['server-3'] = "Server response: $decodedResponse\n";
-      }
+
 
       // Append response to the output array
       if (isset($output[count($output) - 1])) { // end()
@@ -486,24 +486,25 @@ ob_start(); ?>
 
     </div>
     <div style="display: inline-block;">
-
       <div style="position: relative; display: inline-block; margin: 5px 15px 0px 15px; float: right;">
         <div style="float: left;">
           <button id="consoleCls" class="text-xs" type="submit"
             style="border: 1px dashed #FFF; padding: 2px 2px; color: black; background-color: yellow;">Clear
             (auto)</button>
-          <input id="app_console-auto_clear" type="checkbox" name="auto_clear" <?= ($auto_clear ? 'checked="" ' : '') ?> />&nbsp;
+          <input id="app_console-auto_clear" type="checkbox" name="auto_clear" <?= $auto_clear ? 'checked="" ' : '' ?> />&nbsp;
         </div>
-        <div style="float: left;">
-          <button id="consoleSudo" class="text-xs" type="submit"
-            style="border: 1px dashed #FFF; padding: 2px 2px; background-color: red;">sudo</button>
-          <input id="app_console-sudo" type="checkbox" name="auto_sudo" <?= defined('APP_SUDO') ? 'checked="" ' : '' ?> />&nbsp;
-        </div>
-        <div style="float: right;">
-          &nbsp;<button id="consoleAnykeyBind" class="text-xs" type="submit"
-            style="border: 1px dashed #FFF; padding: 2px 2px; background-color: green;">Bind Any[key]</button>
-          <input id="app_ace_editor-auto_bind_anykey" type="checkbox" name="auto_bind_anykey" checked="">
-        </div>
+        <form action="http://localhost/?path" method="post" style="float: right;">
+          <div style="float: left; display: inline;">
+            <button id="consoleSudo" class="text-xs" type="submit"
+              style="border: 1px dashed #FFF; padding: 2px 2px; background-color: red;">sudo</button>
+            <input id="app_console-sudo" type="checkbox" name="auto_sudo" <?= defined('APP_SUDO') ? 'checked="" ' : '' ?> />&nbsp;
+          </div>
+          <div style="float: right; display: inline;">
+            &nbsp;<button id="consoleAnykeyBind" class="text-xs" type="submit"
+              style="border: 1px dashed #FFF; padding: 2px 2px; background-color: green;">Bind Any[key]</button>
+            <input id="app_ace_editor-auto_bind_anykey" type="checkbox" name="auto_bind_anykey" checked="">
+          </div>
+        </form>
       </div>
 
     </div>
@@ -789,359 +790,430 @@ ob_start(); ?>
       });
     });
     <?php if (defined('APP_PROJECT')) { ?>
-                                                                                                                //getDirectory('<?= isset($_GET['project']) && !empty($_GET['project']) ? basename(APP_PATH . APP_ROOT) : '' ?>', '<?= isset($_GET['project'
-                                                                                                                          ]) && !empty($_GET['project']) ? '' : APP_PATH ?>');
-  console.log('Path: <?= APP_PATH ?>');
-  <?php } ?>
+    //getDirectory('<?= isset($_GET['project']) && !empty($_GET['project']) ? basename(APP_PATH . APP_ROOT) : '' ?>', '<?= isset($_GET['project']) && !empty($_GET['project']) ? '' : APP_PATH ?>');
+    console.log('Path: <?= APP_PATH ?>');
+    <?php } ?>
 
-  $("#requestInput").bind("keydown", {}, keypressInBox); //keypress
+    $("#requestInput").bind("keydown", {}, keypressInBox); //keypress
 
-  function keypressInBox(e) {
-    var code = (e.keyCode ? e.keyCode : e.which);
-    switch (code) {
+    function keypressInBox(e) {
+      var code = (e.keyCode ? e.keyCode : e.which);
+      switch (code) {
 
-      case 13: //Enter keycode
-        e.preventDefault();
-        if ($('#requestInput').val() == 'clear') {
-          $('#responseConsole').val('>_');
+        case 13: //Enter keycode
+          e.preventDefault();
+          if ($('#requestInput').val() == 'clear') {
+            $('#responseConsole').val('>_');
+            $('#requestInput').val('');
+          } else
+            if ($('#requestInput').val() != '')
+              $("#requestSubmit").click();
           $('#requestInput').val('');
-        } else
-          if ($('#requestInput').val() != '')
-            $("#requestSubmit").click();
-        $('#requestInput').val('');
-        break;
-      //case 37:
-      // str = 'Left Key pressed!';
-      // break;
-      case 38:
-        $('#requestInput').val('test up');
-        break;
-      //case 39:
-      // str = 'Right Key pressed!';
-      // break;
-      case 40:
-        $('#requestInput').val('test down');
+          break;
+        //case 37:
+        // str = 'Left Key pressed!';
+        // break;
+        case 38:
+          $('#requestInput').val('test up');
+          break;
+        //case 39:
+        // str = 'Right Key pressed!';
+        // break;
+        case 40:
+          $('#requestInput').val('test down');
 
-        break;
-      default:
-        console.log('Key Code: ' + code);
-        //show_console();
-        break;
-    }
-  };
-
-
-  $('#consoleCls').on('click', function () {
-    console.log('Button Clicked!');
-    $('#responseConsole').val('<?= $shell_prompt; ?>');
-    if ($('#app_console-container').css('position') == 'absolute')
-      show_console();
-  });
-
-
-  $('#changePositionBtn').on('click', function () {
-    console.log('Drop Button Clicked!');
-    show_console();
-  });
-
-  $("#app_git-help-cmd").click(function () {
-    $('#requestInput').val('git help');
-    $('#requestSubmit').click();
-    console.log('wow');
-
-    if (!isFixed) isFixed = true;
-    show_console();
-  });
-
-  $("#app_git-add-cmd").click(function () {
-    $('#requestInput').val('git add .');
-    $('#requestSubmit').click();
-    console.log('wow');
-  });
-
-  $("#app_git-remote-cmd").click(function () {
-    $('#requestInput').val('git remote -v');
-    $('#requestSubmit').click();
-    console.log('wow');
-  });
-
-  $("#app_git-commit-cmd").click(function () {
-    $('#requestInput').val('git commit -am "default message"');
-    document.getElementById('app_git-commit-msg').style.display = 'block';
-
-    if (!isFixed) isFixed = true;
-    show_console();
-    //$('#requestSubmit').click();
-  });
-
-  $("#app_git-clone-cmd").click(function () {
-    $('#requestInput').val('git clone '); <!--  I need to get the URL -->
-
-    document.getElementById('app_git-clone-url').style.display = 'block';
-
-    if (!isFixed) isFixed = true;
-    show_console();
-    //$('#requestSubmit').click();
-  });
-
-  document.getElementById('app_git-oauth-input').addEventListener("keydown", function (event) {
-    if (event.keyCode === 13) {
-      // Enter key was pressed
-      console.log("Enter key pressed");
-
-      <?php
-      //dd(APP_PATH . APP_ROOT . '.git/config');
-      
-      if (is_file($file = APP_PATH . APP_ROOT . '.git/config')) {
-
-        $config = parse_ini_file($file, true);
-
-
-        if (isset($config['remote origin']['url']) && preg_match('/(?:[a-z]+\:\/\/)?([^\s]+@)?((?:[a-z0-9\-]+\.)+[a-z]{2,6}(?:\/\S*))/', $config['remote origin']['url'], $matches))
-          if (count($matches) >= 2) { ?>
-
-      $('#requestInput').val('git remote set-url origin https://' + $("#app_git-oauth-input").val() + '@<?= $matches[2] ?>');
-
-      <?php } else { ?>
-
-      $('#requestInput').val('git remote set-url origin https://' + $("#app_git-oauth-input").val() + '@<?= $matches[1] ?>');
-
-      <?php }
-      } ?>
-
-      document.getElementById('app_git-clone-url').style.display = 'none';
-
-      $('#requestSubmit').click();
-    }
-
-  });
-
-  document.getElementById('app_git-commit-input').addEventListener("keydown", function (event) {
-    if (event.keyCode === 13) {
-      // Enter key was pressed
-      console.log("Enter key pressed");
-
-      $('#requestInput').val('git commit -am "' + $("#app_git-commit-input").val() + '"');
-
-      document.getElementById('app_git-commit-msg').style.display = 'none';
-
-      $('#requestSubmit').click();
-    }
-
-  });
-
-
-
-  document.getElementById('app_git-clone-url').addEventListener("keydown", function (event) {
-    if (event.keyCode === 13) {
-      // Enter key was pressed
-      console.log("Enter key pressed");
-
-      $('#requestInput').val('git clone ' + $("#app_git-clone-url-input").val() + ' .');
-
-      document.getElementById('app_git-clone-url').style.display = 'none';
-
-      $('#requestSubmit').click();
-    }
-  });
-
-
-  $("#app_php-error-log").click(function () {
-    $('#requestInput').val('wget <?= APP_URL ?>?error_log=unlink'); // unlink
-    //show_console();
-    $('#requestSubmit').click();
-  });
-
-  $("#app_composer-init-submit").click(function () {
-    const requestValue = $('#app_composer-init-input').val().replace(/\n/g, ' ');
-
-    $('#requestInput').val(requestValue);
-    $('#requestSubmit').click(); //show_console();
-    if ($('#app_console-container').css('position') == 'absolute')
-      $('#changePositionBtn').click();
-    $('#requestInput').val('');
-  });
-
-  $('#requestSubmit').href = 'javascript:void(0);';
-
-  $('#requestSubmit').click(function () {
-    let matches = null;
-    const autoClear = document.getElementById('app_console-auto_clear').checked;
-    console.log('autoClear is ' + autoClear);
-
-
-    if (!isFixed) isFixed = true;
-    show_console();
-
-
-    if ($('#app_console-container').css('position') != 'absolute') {
-      //window.isFixed = true;
-      //if (!window.isFixed) window.isFixed = !window.isFixed;
-
-      //if (!isFixed) isFixed = true;
-      //show_console();
-      //$('#changePositionBtn').click();
-    }
-    const argv = $('#requestInput').val().trim();
-
-    if (argv === '') return;
-
-    const processList = document.getElementById('process-list');
-    const newProcess = document.createElement('div');
-    newProcess.classList.add('process');
-    newProcess.innerHTML = `<a href="#" onclick="deleteProcess(this)">[X]</a> ${argv}`;
-
-    // Add mouseover event
-    newProcess.onmouseover = function () {
-      setTimeout(() => { startScroll(newProcess); }, 3000);
+          break;
+        default:
+          console.log('Key Code: ' + code);
+          //show_console();
+          break;
+      }
     };
 
-    setTimeout(() => {
-      if (newProcess.parentNode) { // Check if process still exists
-        newProcess.textContent = argv;
-        newProcess.onmouseover = function () {
-          startScroll(newProcess);
-        };
-        // Send post request
-        // $.post('<?= basename(__FILE__) . '?' . $_SERVER['QUERY_STRING']; /*$projectRoot*/ ?>', { cmd: argv });
-      }
-    }, 3000);
 
-    processList.prepend(newProcess);
+    $('#consoleCls').on('click', function () {
+      console.log('Button Clicked!');
+      $('#responseConsole').val('<?= $shell_prompt; ?>');
+      if ($('#app_console-container').css('position') == 'absolute')
+        show_console();
+    });
 
 
-    console.log('Argv: ' + argv);
+    $('#changePositionBtn').on('click', function () {
+      console.log('Drop Button Clicked!');
+      show_console();
+    });
 
+    $("#app_git-help-cmd").click(function () {
+      $('#requestInput').val('git help');
+      $('#requestSubmit').click();
+      console.log('wow');
 
-    if (autoClear) $('#responseConsole').val('<?= $shell_prompt; ?>' + argv);
+      if (!isFixed) isFixed = true;
+      show_console();
+    });
 
-    if (argv == '') $('#responseConsole').val('<?= $shell_prompt; ?>' + "\n" + $('#responseConsole').val()); // +
-    else if (matches = argv.match(/^(?:echo\s+)?(hello)\s+world/i)) { // argv == 'edit'
-      if (matches) {
-        $('#responseConsole').val(matches[1].charAt(0).toUpperCase() + matches[1].slice(1) + ' ' + 'Barry' + "\n" +
-          '<?= $shell_prompt; ?>' + argv + "\n" + $('#responseConsole').val());
-        return false;
-      } else {
-        console.log("Invalid input format.");
-      }
-    }
-    else if (matches = argv.match(/^project/i)) { // argv == 'edit'
-      if (matches) {
-        document.getElementById('app_project-container').style.display = 'block';
-        $('#responseConsole').val('Barry, here you can begin editing your project.' + "\n" + '<?= $shell_prompt; ?>' + argv +
-          "\n" + $('#responseConsole').val());
-        changePositionBtn.click();
-        return false;
-      } else {
-        console.log("Invalid input format.");
-      }
-    } else if (matches = argv.match(/^h(?:elp)?\s+?(\S+)$/)) {
-      //$('#requestInput').val('help');
+    $("#app_git-add-cmd").click(function () {
+      $('#requestInput').val('git add .');
+      $('#requestSubmit').click();
+      console.log('wow');
+    });
+
+    $("#app_git-remote-cmd").click(function () {
+      $('#requestInput').val('git remote -v');
+      $('#requestSubmit').click();
+      console.log('wow');
+    });
+
+    $("#app_git-commit-cmd").click(function () {
+      $('#requestInput').val('git commit -am "default message"');
+      document.getElementById('app_git-commit-msg').style.display = 'block';
+
+      if (!isFixed) isFixed = true;
+      show_console();
       //$('#requestSubmit').click();
-    } else if (matches = argv.match(/^j(?:ava)?s(?:cript)?\s+?(\S+)$/)) {
-      // Save the original console.log function
-      var originalLog = console.log;
+    });
 
-      // Create an array to store log messages
-      var logMessages = [];
+    $("#app_git-clone-cmd").click(function () {
+      $('#requestInput').val('git clone '); <!--  I need to get the URL -->
 
-      var js_prompt = 'javascript: ';
-      var codeString = matches[1]; // "console.log('Hello, world!');";
-      var myFunction = new Function(codeString);
+      document.getElementById('app_git-clone-url').style.display = 'block';
 
-      myFunction();
-      // Override console.log to capture messages
-      console.log = function () {
-        // Save the log message to the array
-        logMessages.push(Array.from(codeString).join(' '));
+      if (!isFixed) isFixed = true;
+      show_console();
+      //$('#requestSubmit').click();
+    });
 
-        $('#responseConsole').val(logMessages[1] + "\n" + js_prompt + codeString + "\n" + $('#responseConsole').val());
+    document.getElementById('app_git-oauth-input').addEventListener("keydown", function (event) {
+      if (event.keyCode === 13) {
+        // Enter key was pressed
+        console.log("Enter key pressed");
 
-        // Call the original console.log function
-        originalLog.apply(console, logMessages);
-        return false;
+        <?php
+        //dd(APP_PATH . APP_ROOT . '.git/config');
+        
+        if (is_file($file = APP_PATH . APP_ROOT . '.git/config')) {
+
+          $config = parse_ini_file($file, true);
+
+
+          if (isset($config['remote origin']['url']) && preg_match('/(?:[a-z]+\:\/\/)?([^\s]+@)?((?:[a-z0-9\-]+\.)+[a-z]{2,6}(?:\/\S*))/', $config['remote origin']['url'], $matches))
+            if (count($matches) >= 2) { ?>
+
+        $('#requestInput').val('git remote set-url origin https://' + $("#app_git-oauth-input").val() + '@<?= $matches[2] ?>');
+
+        <?php } else { ?>
+
+        $('#requestInput').val('git remote set-url origin https://' + $("#app_git-oauth-input").val() + '@<?= $matches[1] ?>');
+
+        <?php }
+        } ?>
+
+        document.getElementById('app_git-clone-url').style.display = 'none';
+
+        $('#requestSubmit').click();
+      }
+
+    });
+
+    document.getElementById('app_git-commit-input').addEventListener("keydown", function (event) {
+      if (event.keyCode === 13) {
+        // Enter key was pressed
+        console.log("Enter key pressed");
+
+        $('#requestInput').val('git commit -am "' + $("#app_git-commit-input").val() + '"');
+
+        document.getElementById('app_git-commit-msg').style.display = 'none';
+
+        $('#requestSubmit').click();
+      }
+
+    });
+
+
+
+    document.getElementById('app_git-clone-url').addEventListener("keydown", function (event) {
+      if (event.keyCode === 13) {
+        // Enter key was pressed
+        console.log("Enter key pressed");
+
+        $('#requestInput').val('git clone ' + $("#app_git-clone-url-input").val() + ' .');
+
+        document.getElementById('app_git-clone-url').style.display = 'none';
+
+        $('#requestSubmit').click();
+      }
+    });
+
+
+    $("#app_php-error-log").click(function () {
+      $('#requestInput').val('wget <?= APP_URL ?>?error_log=unlink'); // unlink
+      //show_console();
+      $('#requestSubmit').click();
+    });
+
+    $("#app_composer-init-submit").click(function () {
+      const requestValue = $('#app_composer-init-input').val().replace(/\n/g, ' ');
+
+      $('#requestInput').val(requestValue);
+      $('#requestSubmit').click(); //show_console();
+      if ($('#app_console-container').css('position') == 'absolute')
+        $('#changePositionBtn').click();
+      $('#requestInput').val('');
+    });
+
+    $('#requestSubmit').href = 'javascript:void(0);';
+
+    $('#requestSubmit').click(function () {
+      let matches = null;
+      const autoClear = document.getElementById('app_console-auto_clear').checked;
+      console.log('autoClear is ' + autoClear);
+
+
+      if (!isFixed) isFixed = true;
+      show_console();
+
+
+      if ($('#app_console-container').css('position') != 'absolute') {
+        //window.isFixed = true;
+        //if (!window.isFixed) window.isFixed = !window.isFixed;
+
+        //if (!isFixed) isFixed = true;
+        //show_console();
+        //$('#changePositionBtn').click();
+      }
+      const argv = $('#requestInput').val().trim();
+
+      if (argv === '') return;
+
+      const processList = document.getElementById('process-list');
+      const newProcess = document.createElement('div');
+      newProcess.classList.add('process');
+      newProcess.innerHTML = `<a href="#" onclick="deleteProcess(this)">[X]</a> ${argv}`;
+
+      // Add mouseover event
+      newProcess.onmouseover = function () {
+        setTimeout(() => { startScroll(newProcess); }, 3000);
       };
-      console.log();
-      console.log = originalLog;
-      return false;
-    } else if (matches = argv.match(/^edit\s+(\S+)$/)) { // argv == 'edit'
-      if (matches) {
-        const pathname = matches[1]; // "/path/to/file.txt"
-        console.log("Editing: ", pathname);
 
-        const filePath = pathname;
+      setTimeout(() => {
+        if (newProcess.parentNode) { // Check if process still exists
+          newProcess.textContent = argv;
+          newProcess.onmouseover = function () {
+            startScroll(newProcess);
+          };
+          // Send post request
+          // $.post('<?= basename(__FILE__) . '?' . $_SERVER['QUERY_STRING']; /*$projectRoot*/ ?>', { cmd: argv });
+        }
+      }, 3000);
 
-        const lastSlashIndex = filePath.lastIndexOf('/');
-        const dirname = filePath.substring(0, lastSlashIndex);
-        const filename = filePath.substring(lastSlashIndex + 1);
+      processList.prepend(newProcess);
 
 
-        $.post(<?= 'DirQueryParams'; /*'"app.directory.php' . '?' . $_SERVER['QUERY_STRING'] . '' ;"*/ ?>,
-{
-            cmd: argv
-          },
-          function (data, status) {
-            console.log("Data: " + data + "Status: " + status);
-            console.log("Web Query: " + DirQueryParams);
-            //data = data.trim(); // replace(/(\r\n|\n|\r)/gm, "")
+      console.log('Argv: ' + argv);
 
-            if (matches = argv.match(/edit(\s+(:?.*)?|)/gm)) {
-              editor1.setValue(data);
 
-              document.getElementById('app_ace_editor-container').style.display = 'block';
-              //console.log(data);
-            }
-          });
+      if (autoClear) $('#responseConsole').val('<?= $shell_prompt; ?>' + argv);
 
-        // window.location.href = '<?= APP_URL ?>?app=ace_editor&path=' + dirname + '&file=' + filename; // filename= + pathname
+      if (argv == '') $('#responseConsole').val('<?= $shell_prompt; ?>' + "\n" + $('#responseConsole').val()); // +
+      else if (matches = argv.match(/^(?:echo\s+)?(hello)\s+world/i)) { // argv == 'edit'
+        if (matches) {
+          $('#responseConsole').val(matches[1].charAt(0).toUpperCase() + matches[1].slice(1) + ' ' + 'Barry' + "\n" +
+            '<?= $shell_prompt; ?>' + argv + "\n" + $('#responseConsole').val());
+          return false;
+        } else {
+          console.log("Invalid input format.");
+        }
+      }
+      else if (matches = argv.match(/^project/i)) { // argv == 'edit'
+        if (matches) {
+          document.getElementById('app_project-container').style.display = 'block';
+          $('#responseConsole').val('Barry, here you can begin editing your project.' + "\n" + '<?= $shell_prompt; ?>' + argv +
+            "\n" + $('#responseConsole').val());
+          changePositionBtn.click();
+          return false;
+        } else {
+          console.log("Invalid input format.");
+        }
+      } else if (matches = argv.match(/^h(?:elp)?\s+?(\S+)$/)) {
+        //$('#requestInput').val('help');
+        //$('#requestSubmit').click();
+      } else if (matches = argv.match(/^j(?:ava)?s(?:cript)?\s+?(\S+)$/)) {
+        // Save the original console.log function
+        var originalLog = console.log;
+
+        // Create an array to store log messages
+        var logMessages = [];
+
+        var js_prompt = 'javascript: ';
+        var codeString = matches[1]; // "console.log('Hello, world!');";
+        var myFunction = new Function(codeString);
+
+        myFunction();
+        // Override console.log to capture messages
+        console.log = function () {
+          // Save the log message to the array
+          logMessages.push(Array.from(codeString).join(' '));
+
+          $('#responseConsole').val(logMessages[1] + "\n" + js_prompt + codeString + "\n" + $('#responseConsole').val());
+
+          // Call the original console.log function
+          originalLog.apply(console, logMessages);
+          return false;
+        };
+        console.log();
+        console.log = originalLog;
         return false;
-      } else {
-        console.log("Invalid input format.");
-      }
-      return false;
-    } else if (argv == 'clear') $('#responseConsole').val('clear');
-    else if (argv == 'cls') $('#responseConsole').val('<?= $shell_prompt; ?>');
-    else if (argv == 'reset') $('#responseConsole').val('>_');
-    else {
+      } else if (matches = argv.match(/^edit\s+(\S+)$/)) { // argv == 'edit'
+        if (matches) {
+          const pathname = matches[1]; // "/path/to/file.txt"
+          console.log("Editing: ", pathname);
 
-      if (autoClear) {
-        $('#responseConsole').val(data + argv);
-        $('#responseConsole').val('<?= $shell_prompt; ?>' + argv + "\n");
-      } else {
-        $('#responseConsole').val('<?= $shell_prompt; ?>' + argv + "\n" + $('#responseConsole').val());
-      }
+          const filePath = pathname;
 
-      // $('#requestSubmit').href = 'javascript:void(0);';
+          const lastSlashIndex = filePath.lastIndexOf('/');
+          const dirname = filePath.substring(0, lastSlashIndex);
+          const filename = filePath.substring(lastSlashIndex + 1);
 
-      $.post(<?= 'DirQueryParams' /*'"' . basename(__FILE__). '?' . $_SERVER['QUERY_STRING']. '"' : '' */ ; ?>,
-      {
-        cmd: argv
-      },
-      function(data, status) {
-        console.log("Web Query: " + DirQueryParams);
-        console.log("Data: " + data + "Status: " + status);
 
-        //data = data.trim(); // replace(/(\r\n|\n|\r)/gm, "")
+          $.post(<?= 'DirQueryParams'; /*'"app.directory.php' . '?' . $_SERVER['QUERY_STRING'] . '' ;"*/ ?>,
+{
+              cmd: argv
+            },
+            function (data, status) {
+              console.log("Data: " + data + "Status: " + status);
+              console.log("Web Query: " + DirQueryParams);
+              //data = data.trim(); // replace(/(\r\n|\n|\r)/gm, "")
 
-        const gitPath = `<?= str_replace('/', '\/', defined('GIT_EXEC') ? dirname(GIT_EXEC) : ''); ?>`;
-        const gitExec = `<?= defined('GIT_EXEC') ? basename(GIT_EXEC) : ''; ?>`;
+              if (matches = argv.match(/edit(\s+(:?.*)?|)/gm)) {
+                editor1.setValue(data);
 
-        if (matches = argv.match(/chdir(\s+(:?.*)?|)/gm)) {
-          document.getElementById('app_directory-container').innerHTML = data;
-          //console.log(data);
-        } else if (matches = data.match(new RegExp(`((:?sudo\\s+)?(:?${gitPath}) ? ${gitExec}.*)`, 'gm'))) {
-          if (matches = data.match(/.*status.*\n+/gm)) {
-            if (matches = data.match(/.*On branch main\nYour branch is (ahead of|up to date with).*(:?by\s[0-9]+commits)?/gm)) {
-              if (matches = data.match(/.*On branch main\nYour branch is up to date with.*\n+/gm)) {
+                document.getElementById('app_ace_editor-container').style.display = 'block';
+                //console.log(data);
+              }
+            });
+
+          // window.location.href = '<?= APP_URL ?>?app=ace_editor&path=' + dirname + '&file=' + filename; // filename= + pathname
+          return false;
+        } else {
+          console.log("Invalid input format.");
+        }
+        return false;
+      } else if (argv == 'clear') $('#responseConsole').val('clear');
+      else if (argv == 'cls') $('#responseConsole').val('<?= $shell_prompt; ?>');
+      else if (argv == 'reset') $('#responseConsole').val('>_');
+      else {
+
+        if (autoClear) {
+          $('#responseConsole').val(data + argv);
+          $('#responseConsole').val('<?= $shell_prompt; ?>' + argv + "\n");
+        } else {
+          $('#responseConsole').val('<?= $shell_prompt; ?>' + argv + "\n" + $('#responseConsole').val());
+        }
+
+        // $('#requestSubmit').href = 'javascript:void(0);';
+
+        $.post(<?= 'DirQueryParams' /*'"' . basename(__FILE__). '?' . $_SERVER['QUERY_STRING']. '"' : '' */ ; ?>,
+        {
+          cmd: argv
+        },
+        function(data, status) {
+          console.log("Web Query: " + DirQueryParams);
+          console.log("Data: " + data + "Status: " + status);
+
+          //data = data.trim(); // replace(/(\r\n|\n|\r)/gm, "")
+
+          const gitPath = `<?= str_replace('/', '\/', defined('GIT_EXEC') ? dirname(GIT_EXEC) : ''); ?>`;
+          const gitExec = `<?= defined('GIT_EXEC') ? basename(GIT_EXEC) : ''; ?>`;
+
+          if (matches = argv.match(/chdir(\s+(:?.*)?|)/gm)) {
+            document.getElementById('app_directory-container').innerHTML = data;
+            //console.log(data);
+          } else if (matches = data.match(new RegExp(`((:?sudo\\s+)?(:?${gitPath}) ? ${gitExec}.*)`, 'gm'))) {
+            if (matches = data.match(/.*status.*\n+/gm)) {
+              if (matches = data.match(/.*On branch main\nYour branch is (ahead of|up to date with).*(:?by\s[0-9]+commits)?/gm)) {
+                if (matches = data.match(/.*On branch main\nYour branch is up to date with.*\n+/gm)) {
+                  if (matches = data.match(/.*nothing to commit, working tree clean/gm)) {
+                    //
+                  }
+                }
                 if (matches = data.match(/.*nothing to commit, working tree clean/gm)) {
+                  $('#requestInput').val('git push');
+                  $('#requestSubmit').click();
+                } else if (matches = data.match(/.*Changes not staged for commit:/gm)) {
+                  $('#requestInput').val('git add .');
+                  $('#requestSubmit').click();
+                  if (confirm('(Re)Check Git Status?')) {
+                    // User clicked OK
+                    $('#requestInput').val('git status');
+                    $('#requestSubmit').click();
+                  } else {
+                    // User clicked Cancel
+                    console.log('User clicked Cancel');
+                  }
                   //
+                } else if (matches = data.match(/.*Changes to be committed:/gm)) {
+                  $('#requestInput').val('git commit -am "automatic <?= date('Y-m-d h:i:s'); ?> commit"');
+                  //$('#requestSubmit').click();
                 }
               }
-              if (matches = data.match(/.*nothing to commit, working tree clean/gm)) {
-                $('#requestInput').val('git push');
-                $('#requestSubmit').click();
-              } else if (matches = data.match(/.*Changes not staged for commit:/gm)) {
-                $('#requestInput').val('git add .');
+              $('#responseConsole').val(data + "\n" + $('#responseConsole').val());
+            } else if (matches = data.match(/.*remote\s-v.*\n+/gm)) {
+              if (matches = data.match(/.*origin\s+(?:[a-z]+\:\/\/)?([^\s]+@)?((?:[a-z0-9\-]+\.)+[a-z]{2,6}(?:\/\S*))\s+\((fetch|push)\)/gm)) {
+                // if (matches === undefined || array.matches == 0) {
+                // array empty or does not exist
+                // }
+                $('#responseConsole').val(data + "\n" + $('#responseConsole').val());
+              } else {
+                $('#responseConsole').val(data + "\nNo URL were found." + $('#responseConsole').val());
+              }
+            } else if (matches = data.match(/.*push.*\n+/gm)) {
+              if (matches = data.match(/.*Error:.+(fatal: could not read Password for.+)\n+Exit Code:.([0-9]+)/gm)) {
+                $('#responseConsole').val('<?= $shell_prompt; ?>Wrong Password!' + "\n" + data + "\n" + $('#responseConsole').val());
+                document.getElementById('app_git-container').style.display = 'block';
+                document.getElementById('app_git-oauth').style.display = 'block';
+                document.getElementById('app_git-clone-url').style.display = 'none';
+                document.getElementById('app_git-commit-msg').style.display = 'none';
+              } else if (matches = data.match(/.*push.*\n+To.*/gm)) {
+                if (matches = data.match(/.*push.*\n+To.*\n.*!.*\[rejected\].+(\w+).+[->].+(\w+).\(fetch first\)/gm)) {
+                  $('#responseConsole').val('<?= $shell_prompt; ?>Push unsuccessful. Fetch first ' + "\n" + data + "\n" +
+                    $('#responseConsole').val());
+                  $('#requestInput').val('git fetch origin main');
+                  $('#requestSubmit').click();
+                  $('#requestInput').val('git merge origin/main');
+                  $('#requestSubmit').click();
+                  $('#requestInput').val('git commit');
+                  $('#requestSubmit').click();
+                  $('#requestInput').val('git push origin main');
+                  if (confirm('git push origin main?')) {
+                    $('#requestSubmit').click();
+                  }
+                } else if (matches = data.match(/.*push.*\n+To.*\n.*!.*\[rejected\].+(\w+).+[->].+(\w+).\(non-fast-forward\)/gm)) {
+                  $('#responseConsole').val('<?= $shell_prompt; ?>Push unsuccessful. "non-fast-forward" error ' + "\n" + data + "\n" +
+                    $('#responseConsole').val());
+                  $('#requestInput').val('git push --force origin main');
+                  if (confirm('(Force) git push origin main?')) {
+                    $('#requestSubmit').click();
+                  }
+                } else {
+                  $('#responseConsole').val('<?= $shell_prompt; ?>Push successful' + "\n" + data + "\n" + $('#responseConsole').val());
+                }
+              } else if (matches = data.match(/.*push.*\n+Error: Everything up-to-date/gm)) {
+                $('#responseConsole').val('<?= $shell_prompt; ?>Everything up-to-date' + "\n" + data + "\n" +
+                  $('#responseConsole').val());
+              } else {
+                $('#responseConsole').val('<?= $shell_prompt; ?>' + data + "\n" + $('#responseConsole').val());
+
+                if (matches = data.match(/.*push.*\n+To.*\n.*!.*\[.*rejected\].+/gm)) {
+                  $('#responseConsole').val('<?= $shell_prompt; ?> Error: ... secret password may have been found.' + "\n" +
+                    $('#responseConsole').val());
+                }
+              }
+            } else if (matches = data.match(/.*fetch.*\n+/gm)) {
+              if (matches = data.match(/.*Error:.+From.+\n.+\* branch.+(\w+).+[->].+(\w+)/gm)) {
+                $('#responseConsole').val('<?= $shell_prompt; ?>"non-fast-forward" error' + "\n" + data + "\n" +
+                  $('#responseConsole').val());
+                $('#requestInput').val('git fetch origin main');
                 $('#requestSubmit').click();
                 if (confirm('(Re)Check Git Status?')) {
                   // User clicked OK
@@ -1151,131 +1223,59 @@ ob_start(); ?>
                   // User clicked Cancel
                   console.log('User clicked Cancel');
                 }
-                //
-              } else if (matches = data.match(/.*Changes to be committed:/gm)) {
-                $('#requestInput').val('git commit -am "automatic <?= date('Y-m-d h:i:s'); ?> commit"');
-                //$('#requestSubmit').click();
-              }
-            }
-            $('#responseConsole').val(data + "\n" + $('#responseConsole').val());
-          } else if (matches = data.match(/.*remote\s-v.*\n+/gm)) {
-            if (matches = data.match(/.*origin\s+(?:[a-z]+\:\/\/)?([^\s]+@)?((?:[a-z0-9\-]+\.)+[a-z]{2,6}(?:\/\S*))\s+\((fetch|push)\)/gm)) {
-              // if (matches === undefined || array.matches == 0) {
-              // array empty or does not exist
-              // }
-              $('#responseConsole').val(data + "\n" + $('#responseConsole').val());
-            } else {
-              $('#responseConsole').val(data + "\nNo URL were found." + $('#responseConsole').val());
-            }
-          } else if (matches = data.match(/.*push.*\n+/gm)) {
-            if (matches = data.match(/.*Error:.+(fatal: could not read Password for.+)\n+Exit Code:.([0-9]+)/gm)) {
-              $('#responseConsole').val('<?= $shell_prompt; ?>Wrong Password!' + "\n" + data + "\n" + $('#responseConsole').val());
-              document.getElementById('app_git-container').style.display = 'block';
-              document.getElementById('app_git-oauth').style.display = 'block';
-              document.getElementById('app_git-clone-url').style.display = 'none';
-              document.getElementById('app_git-commit-msg').style.display = 'none';
-            } else if (matches = data.match(/.*push.*\n+To.*/gm)) {
-              if (matches = data.match(/.*push.*\n+To.*\n.*!.*\[rejected\].+(\w+).+[->].+(\w+).\(fetch first\)/gm)) {
-                $('#responseConsole').val('<?= $shell_prompt; ?>Push unsuccessful. Fetch first ' + "\n" + data + "\n" +
-                  $('#responseConsole').val());
-                $('#requestInput').val('git fetch origin main');
+                $('#requestInput').val('git rebase origin/main');
                 $('#requestSubmit').click();
-                $('#requestInput').val('git merge origin/main');
-                $('#requestSubmit').click();
-                $('#requestInput').val('git commit');
+                $('#requestInput').val('git rebase --continue');
                 $('#requestSubmit').click();
                 $('#requestInput').val('git push origin main');
-                if (confirm('git push origin main?')) {
-                  $('#requestSubmit').click();
-                }
-              } else if (matches = data.match(/.*push.*\n+To.*\n.*!.*\[rejected\].+(\w+).+[->].+(\w+).\(non-fast-forward\)/gm)) {
-                $('#responseConsole').val('<?= $shell_prompt; ?>Push unsuccessful. "non-fast-forward" error ' + "\n" + data + "\n" +
-                  $('#responseConsole').val());
-                $('#requestInput').val('git push --force origin main');
-                if (confirm('(Force) git push origin main?')) {
-                  $('#requestSubmit').click();
-                }
-              } else {
-                $('#responseConsole').val('<?= $shell_prompt; ?>Push successful' + "\n" + data + "\n" + $('#responseConsole').val());
-              }
-            } else if (matches = data.match(/.*push.*\n+Error: Everything up-to-date/gm)) {
-              $('#responseConsole').val('<?= $shell_prompt; ?>Everything up-to-date' + "\n" + data + "\n" +
-                $('#responseConsole').val());
-            } else {
-              $('#responseConsole').val('<?= $shell_prompt; ?>' + data + "\n" + $('#responseConsole').val());
-
-              if (matches = data.match(/.*push.*\n+To.*\n.*!.*\[.*rejected\].+/gm)) {
-                $('#responseConsole').val('<?= $shell_prompt; ?> Error: ... secret password may have been found.' + "\n" +
-                  $('#responseConsole').val());
-              }
-            }
-          } else if (matches = data.match(/.*fetch.*\n+/gm)) {
-            if (matches = data.match(/.*Error:.+From.+\n.+\* branch.+(\w+).+[->].+(\w+)/gm)) {
-              $('#responseConsole').val('<?= $shell_prompt; ?>"non-fast-forward" error' + "\n" + data + "\n" +
-                $('#responseConsole').val());
-              $('#requestInput').val('git fetch origin main');
-              $('#requestSubmit').click();
-              if (confirm('(Re)Check Git Status?')) {
-                // User clicked OK
-                $('#requestInput').val('git status');
                 $('#requestSubmit').click();
+              }
+            } else if (matches = data.match(/.*pull.*\n/gm)) {
+              $('#responseConsole').val(data + "\n" + $('#responseConsole').val());
+              if (matches = data.match(/.*Already up to date\./gm))
+                $('#responseConsole').val('<?= $shell_prompt; ?>Already up to date.' + "\n" + $('#responseConsole').val());
+              else if (confirm('(Re)load Window?')) {
+                // User clicked OK
+                $('#responseConsole').val('<?= $shell_prompt; ?>Reloading page (User Prompt).' + "\n" + $('#responseConsole').val());
+                window.location.reload(); // window.location.href = window.location.href;
               } else {
                 // User clicked Cancel
                 console.log('User clicked Cancel');
               }
-              $('#requestInput').val('git rebase origin/main');
-              $('#requestSubmit').click();
-              $('#requestInput').val('git rebase --continue');
-              $('#requestSubmit').click();
-              $('#requestInput').val('git push origin main');
-              $('#requestSubmit').click();
-            }
-          } else if (matches = data.match(/.*pull.*\n/gm)) {
-            $('#responseConsole').val(data + "\n" + $('#responseConsole').val());
-            if (matches = data.match(/.*Already up to date\./gm))
-              $('#responseConsole').val('<?= $shell_prompt; ?>Already up to date.' + "\n" + $('#responseConsole').val());
-            else if (confirm('(Re)load Window?')) {
-              // User clicked OK
-              $('#responseConsole').val('<?= $shell_prompt; ?>Reloading page (User Prompt).' + "\n" + $('#responseConsole').val());
-              window.location.reload(); // window.location.href = window.location.href;
-            } else {
-              // User clicked Cancel
-              console.log('User clicked Cancel');
-            }
-          } else if (matches = data.match(new RegExp(`.*(:?${gitPath}) ? ${gitExec}.* commit.*\\n`, 'gm'))) {
-            if (matches = data.match(/.*Error: Author identity unknown\./gm)) {
-              $('#responseConsole').val('<?= $shell_prompt; ?>Author identity unknown' + "\n" + data + "\n" +
-                $('#responseConsole').val());
-              $('#requestInput').val('git config --global user.email "barryd.it@gmail.com"');
-              $('#requestSubmit').click();
-              $('#requestInput').val('git config --global user.name "Barry Dick"');
-              $('#requestSubmit').click();
-            } else {
-              if (confirm('Git Push?')) {
-                // User clicked OK
-                $('#requestInput').val('git push');
+            } else if (matches = data.match(new RegExp(`.*(:?${gitPath}) ? ${gitExec}.* commit.*\\n`, 'gm'))) {
+              if (matches = data.match(/.*Error: Author identity unknown\./gm)) {
+                $('#responseConsole').val('<?= $shell_prompt; ?>Author identity unknown' + "\n" + data + "\n" +
+                  $('#responseConsole').val());
+                $('#requestInput').val('git config --global user.email "barryd.it@gmail.com"');
+                $('#requestSubmit').click();
+                $('#requestInput').val('git config --global user.name "Barry Dick"');
                 $('#requestSubmit').click();
               } else {
-                // User clicked Cancel
-                console.log('User clicked Cancel');
+                if (confirm('Git Push?')) {
+                  // User clicked OK
+                  $('#requestInput').val('git push');
+                  $('#requestSubmit').click();
+                } else {
+                  // User clicked Cancel
+                  console.log('User clicked Cancel');
+                }
               }
+              $('#responseConsole').val(data + "\n" + $('#responseConsole').val());
+            } else {
+              $('#responseConsole').val(data + "\n" + $('#responseConsole').val());
             }
-            $('#responseConsole').val(data + "\n" + $('#responseConsole').val());
           } else {
+            //$('#requestInput').val(argv);
+            //$('#requestSubmit').click();
             $('#responseConsole').val(data + "\n" + $('#responseConsole').val());
           }
-        } else {
-          //$('#requestInput').val(argv);
-          //$('#requestSubmit').click();
-          $('#responseConsole').val(data + "\n" + $('#responseConsole').val());
-        }
-        //if (!autoClear) { $('#responseConsole').val("\n" + $('#responseConsole').val()); }
+          //if (!autoClear) { $('#responseConsole').val("\n" + $('#responseConsole').val()); }
 
-        //$('#requestInput').val('');
+          //$('#requestInput').val('');
 
-        $('#responseConsole').scrollTop = $('#responseConsole').scrollHeight;
-      });
-}
+          $('#responseConsole').scrollTop = $('#responseConsole').scrollHeight;
+        });
+  }
 
 });
 });

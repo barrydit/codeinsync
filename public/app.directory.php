@@ -85,16 +85,15 @@ $tableGen = function () use ($group_type): string {
 
   // dd(get_required_files());
 
-
   // Client navigation
-  if ($clientPath) {
+  if (isset($_GET['client']) || $clientPath) {
     //$navigation .= '<a href="' . basename(__FILE__) . '?client=' . ($clientPath ?? '') . '"' .
     //    (isset($_GET['path']) || isset($_GET['client']) ? 'onclick="handleClick(event, \'/\')"' : '') . 
     //    '>' .
     //    '</a>';
-    $navigation .= '<a href="?path=' . (APP_ROOT === '' ? '' : 'clientele/') . '">' . 'clientele</a>' . DIRECTORY_SEPARATOR . '<a href="' . basename(__FILE__) . '?client=' . ($clientPath ?? '') . '" onclick="handleClick(event, \'/\')">' .
+    $navigation .= '<a href="?path=' . (APP_ROOT === '' ? '' : 'clientele') . '">' . 'clientele</a>' . DIRECTORY_SEPARATOR . '<a href="' . basename(__FILE__) . '?client=' . ($clientPath ?? '') . '" onclick="handleClick(event, \'/\')">' .
       $clientPath .
-      '</a><a href="' . basename(__FILE__) . '?client=' . ($clientPath ?? '') . '&domain=' . ($domainPath ?? '') . '" onclick="handleClick(event, \'/\')">' . ((!empty($domainPath) ? DIRECTORY_SEPARATOR . $domainPath : '') ?? '') . DIRECTORY_SEPARATOR .
+      '</a><a href="' . basename(__FILE__) . '?client=' . ($clientPath ?? '') . '&domain=' . ($domainPath ?? '') . '" onclick="handleClick(event, \'/\')">' . ((!empty($domainPath) ? $domainPath : '') ?? '') . DIRECTORY_SEPARATOR .
       '</a>';
 
   } else
@@ -119,10 +118,10 @@ $tableGen = function () use ($group_type): string {
 
   // Path navigation
   if ($relativePath && $relativePath !== '/') {
-    $navigation .= '<a href="' . basename(__FILE__) . '?' . (isset($_GET['client']) ? 'client=' . ($clientPath ?? '') . '&' : '') . (isset($_GET['domain']) ? 'domain=' . ($domainPath ?? '') . '&'/* */ : '') . (isset($_GET['project']) ? 'project=' . ($projectPath ?? '') . '&' : '') . 'path=' . dirname($relativePath) . '/" onclick="handleClick(event, \'' . dirname($relativePath) . '/\')">' . $relativePath . DIRECTORY_SEPARATOR . '</a>';
+    $navigation .= '<a href="' . basename(__FILE__) . '?' . (isset($_GET['client']) ? 'client=' . ($clientPath ?? '') . '&' : '') . (isset($_GET['domain']) ? 'domain=' . ($domainPath ?? '') . '&'/* */ : '') . (isset($_GET['project']) ? 'project=' . ($projectPath ?? '') . '&' : '') . 'path=' . dirname($relativePath) . '/" onclick="handleClick(event, \'' . dirname($relativePath) . '/\')">' . $relativePath . (isset($_GET['domain']) ? DIRECTORY_SEPARATOR : '') . '</a>';
   }
 
-  $navigation .= '</div><div style="height: 25px;"><br />' . APP_PATH . APP_ROOT . '</div>';
+  $navigation .= '</div><div style="height: 25px;"><br />' . APP_PATH . APP_ROOT . '</div><br />';
   echo $navigation;
 
   /*
@@ -297,7 +296,7 @@ $tableGen = function () use ($group_type): string {
     <?php if (isset($_SERVER['HOME']) && readlinkToEnd($_SERVER['HOME'] . DIRECTORY_SEPARATOR . 'clientele') == '/mnt/c/www/clientele' || realpath(APP_PATH . 'clientele')) { ?>
       <h3>&#9660; Domains: </h3>
       <table width="" style="border: none;">
-        <tr style=" border: none;">
+        <tr style="border: none;">
           <?php
           $count = 1;
 

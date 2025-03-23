@@ -226,7 +226,9 @@ if (isset($_SERVER['REQUEST_METHOD']) && $_SERVER['REQUEST_METHOD'] == 'POST')
                 }
             }
 
-            Shutdown::setEnabled(true)->setShutdownMessage(function () { })->shutdown();
+            Shutdown::setEnabled(true)->setShutdownMessage(function () {
+                getcwd();
+            })->shutdown();
         } else {
             require_once 'git.php';
             $_ENV['COMPOSER']['AUTOLOAD'] = false;

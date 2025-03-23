@@ -549,6 +549,7 @@ ob_start(); ?>
 
           // Log the selected value to the console
           console.log('Selected value:', selectedValue);
+
           if (confirm('Run Git ' + selectedValue.charAt(0).toUpperCase() + selectedValue.slice(1) + '?')) {
             // User clicked OK
             $('#requestInput').val('git ' + selectedValue);

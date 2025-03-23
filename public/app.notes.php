@@ -400,8 +400,8 @@ pre {
             onchange="this.form.submit();"></button>
         </div>
         <pre style="margin: 0px;"><code class="language-<?= $sample['language']; ?>"><?= $snippet['code']; ?></code>
-                                                                    <?= $snippet['description']; ?>
-                                                                      </pre>
+                                                                                    <?= $snippet['description']; ?>
+                                                                                      </pre>
       </form>
       <div style=" margin-left: 15px;">
 
