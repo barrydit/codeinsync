@@ -165,18 +165,14 @@ if (isset($_SERVER['REQUEST_METHOD']))
         if (array_key_exists('debug', $queryRefererArray)) {
           parse_str(parse_url($_SERVER['REQUEST_URI'])['query'] ?? '', $queryArray);
           if (!array_key_exists('debug', $queryArray)) {
-            Shutdown::setEnabled(true)->setShutdownMessage(function () use ($queryArray) {
-              return header('Location: ' . APP_URL . '?debug&' . http_build_query($queryArray, '', '&')); //$_SERVER['HTTP_REFERER'] -wow
-            })->shutdown();
+            Shutdown::setEnabled(true)->setShutdownMessage(fn() => header('Location: ' . APP_URL . '?debug&' . http_build_query($queryArray, '', '&')))->shutdown();
           } //else << NO ELSE!!
         }
       }
 
       if (isset($_GET['hide']) && $_GET['hide'] == 'update-notice') {
         $_ENV['DEFAULT_UPDATE_NOTICE'] = true; // var_export(true, true); // true
-        Shutdown::setEnabled(true)->setShutdownMessage(function () {
-          return header('Location: ' . APP_URL); // -wow
-        })->shutdown();
+        Shutdown::setEnabled(true)->setShutdownMessage(fn() => header('Location: ' . APP_URL))->shutdown();
       }
 
       if (isset($_GET['category']) && !empty($_GET['category'])) {
@@ -239,12 +235,10 @@ if ($_SERVER['REQUEST_METHOD'] == 'GET' && __FILE__ == APP_PATH_PUBLIC)
       $_ENV['DEFAULT_DOMAIN'] = $_GET['DOMAIN'];
 
     if (defined('APP_QUERY') && empty(APP_QUERY))
-      Shutdown::setEnabled(false)->setShutdownMessage(function () {
-        return header('Location: ' . APP_URL . '?' . http_build_query([
-          'client' => $_ENV['DEFAULT_CLIENT'],
-          'domain' => $_ENV['DEFAULT_DOMAIN']
-        ]) . '#'); // -wow
-      })->shutdown();
+      Shutdown::setEnabled(false)->setShutdownMessage(fn() => header('Location: ' . APP_URL . '?' . http_build_query([
+        'client' => $_ENV['DEFAULT_CLIENT'],
+        'domain' => $_ENV['DEFAULT_DOMAIN']
+      ]) . '#'))->shutdown();
     else
       $_GET = array_merge($_GET, APP_QUERY);
   }
@@ -453,6 +447,5 @@ if (/*APP_SELF === APP_PATH_PUBLIC*/ dirname(APP_SELF) === dirname(APP_PATH_PUBL
     define('APP_ENV', 'production');
     require_once 'idx.product.php';
   }
-
 
 }

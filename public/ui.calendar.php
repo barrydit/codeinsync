@@ -321,7 +321,7 @@ else $count++;
 
                         // Print days of the month
                         for ($day = 1; $day <= $totalDays; $day++) {
-                            $calendar .= "<td style=\"" . ($day == date('d') ? 'background-color: lightblue;' : '') . "\">$day</td>";
+                            $calendar .= "<td style=\"" . ($day == date('d') ? 'background-color: lightblue;' : '') . "\"><a href=\"?app=calendar&day=$day\">$day</a></td>";
 
                             if (($startingDay + $day) % 7 == 0) {
                                 $calendar .= "</tr><tr>";

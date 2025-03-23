@@ -287,13 +287,20 @@ else $count++;
  https://scribbled.space/ace-editor-setup-usage/ -->
 
             <div id="ui_errors" class="errors"
-                style="display: <?= isset($_GET['file']) && isset($_GET['path']) && is_file($_GET['path'] . $_GET['file']) ? 'block' : 'block' ?>; z-index: 1;">
+                style="position: absolute; display: <?= isset($_GET['file']) && isset($_GET['path']) && is_file($_GET['path'] . $_GET['file']) ? 'block' : 'block' ?>; z-index: 1;">
                 <div style="background-color: white; height: 100%; width: 100%; overflow: hidden;">
-                    <textarea cols="75" rows="25"><?php foreach ($errors as $key => $value) { ?>$errors['<?= $key; ?>']; <?= (preg_match('/^ERROR_(LOG|PATH)$/', $key) || $key === 'COMPOSER-AutoloaderInit' ? (preg_match('/^(ERROR_LOG|COMPOSER).*$/', $key) ? "\n" : '') : 'Msg: ') . $value; ?><?php } ?>
+                    <textarea cols="75" rows="25"><?php if (!empty($errors))
+                        foreach ($errors as $key => $value) { ?>$errors['<?= $key; ?>']; <?= (preg_match('/^ERROR_(LOG|PATH)$/', $key) || $key === 'COMPOSER-AutoloaderInit' ? (preg_match('/^(ERROR_LOG|COMPOSER).*$/', $key) ? "\n" : '') : 'Msg: ') . $value; ?><?php } ?>
                 </textarea>
                 </div>
             </div>
-
+            <div id="ui_config" class="config"
+                style="position: absolute; display: <?= isset($_GET['file']) && isset($_GET['path']) && is_file($_GET['path'] . $_GET['file']) ? 'none' : 'block' ?>; z-index: 1;">
+                <div style="background-color: white; height: 100%; width: 100%; overflow: hidden;">
+                    <textarea cols="75" rows="25"><?php /* foreach (get_defined_constants(true)['user'] as $key => $user_const) { ?><?= $key; ?> = <?= var_export($user_const, true); ?><?php }*/ ?>
+                </textarea>
+                </div>
+            </div>
         </div>
     </form>
     <!-- div style="position: relative; display: inline-block; width: 100%; height: 100%; padding-left: 10px;">

@@ -513,7 +513,7 @@ ob_start(); ?>
       </label>
       <div style="display: inline;">
         <span style="background-color: #B0B0B0; color: white;">Composer
-          <?= defined('COMPOSER_VERSION') and version_compare(COMPOSER_LATEST, COMPOSER_VERSION, '>') != 0 ? 'v' . substr(COMPOSER_LATEST, 0, similar_text(COMPOSER_LATEST, COMPOSER_VERSION)) . '<span class="update" style="color: green; cursor: pointer;">' . substr(COMPOSER_LATEST, similar_text(COMPOSER_LATEST, COMPOSER_VERSION)) . '</span>' : 'v' . COMPOSER_VERSION; ?>
+          <?= 'v' . (defined('COMPOSER_VERSION') and version_compare(COMPOSER_LATEST, COMPOSER_VERSION, '>') != 0 ? substr(COMPOSER_LATEST, 0, similar_text(COMPOSER_LATEST, COMPOSER_VERSION)) . '<span class="update" style="color: green; cursor: pointer;">' . substr(COMPOSER_LATEST, similar_text(COMPOSER_LATEST, COMPOSER_VERSION)) . '</span>' : COMPOSER_VERSION); ?>
         </span>
 
 

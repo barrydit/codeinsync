@@ -12,8 +12,6 @@ file_put_contents(PID_FILE, $pid = getmypid());
 
 require_once 'config' . DIRECTORY_SEPARATOR . 'php.php';
 
-
-
 ini_set('error_log', APP_PATH . 'server.log');
 ini_set('log_errors', 'true');
 
@@ -830,11 +828,10 @@ if (PHP_SAPI === 'cli')
         }
 
         // If a client connected successfully, handle it
-        if ($client instanceof Socket) {
+        if ($client instanceof Socket)
           handleSocketClientConnection($client);
-        } else {
+        else
           echo "Socket connection closed or invalid.\n";
-        }
       }
 
       /**
@@ -898,9 +895,9 @@ if (PHP_SAPI === 'cli')
           $data = "hello\n"; // Include termination sequence if needed
           $bytesWritten = socket_write($client, $data); // dd(, false);
 
-          if ($bytesWritten === false) {
+          if ($bytesWritten === false)
             echo "Failed to write to socket: " . socket_strerror(socket_last_error($client));
-          }
+
 
           //usleep(100000); // Delay in microseconds (100ms)
           // Send the length first so the client knows how much data to expect
@@ -915,7 +912,7 @@ if (PHP_SAPI === 'cli')
             foreach ($data as $chunk) {
               if ($client instanceof Socket && $client && is_resource($client)) {
                 if (socket_write($client, $chunk) === false) {
-                  dd('Socket write failed', false);
+                  echo 'Socket write failed';
                   throw new Exception('Socket write failed');
                 } else
                   socket_write($client, "\r\n"); // Send end-of-transmission signal

@@ -57,9 +57,9 @@ margin : 0;
 padding : 0;
 box-sizing : border-box;
 <?php if (isset($_GET['debug'])) { ?>
-                                                                                                                                                                                    border: 1px dashed #FF0000;
+                                                                                                                                                                                            border: 1px dashed #FF0000;
 <?php } else { ?> 
-                                                                                                                                                                                    /* border: 1px dashed #FF0000; */
+                                                                                                                                                                                            /* border: 1px dashed #FF0000; */
 <?php } ?>
 }
 *:focus {
@@ -334,6 +334,8 @@ cursor : pointer;
               src="resources/images/apps_icon.gif" width="20" height="20"> Tools</a> |
           <a href="#" onclick="document.getElementById('app_timesheet-container').style.display='block';"><img
               src="resources/images/clock.gif" width="30" height="30"> Clock-In</a> |
+          <a href="#" onclick="document.getElementById('app_php-container').style.display='block';"><img
+              src="resources/images/php_icon.png" width="30" height="30"> PHP</a> |
           <a href="#" onclick="document.getElementById('app_git-container').style.display='block';"><img
               src="resources/images/git_icon.fw.png" width="18" height="18">Git/ <img
               src="resources/images/github.fw.png" width="18" height="18">Hub</a>
@@ -933,7 +935,7 @@ cursor : pointer;
 
     <?= defined('UI_GIT') ? UI_GIT['body'] : null; ?>
 
-    <?= defined('UI_PHP') ? UI_PHP['body'] : null; /* print(...) */ ?>
+    <?= /* defined('UI_PHP') ? UI_PHP['body'] : null;*/ /* print(...) */ ''; ?>
     <?= defined('UI_COMPOSER') ? UI_COMPOSER['body'] : null; /* (isset($appComposer) ? $appComposer['script'] : null); */ ?>
     <?= defined('UI_NPM') ? UI_NPM['body'] : null; ?>
     <?= defined('UI_NODES') ? UI_NODES['body'] : null; ?>
@@ -1303,7 +1305,7 @@ $(document).ready(function() {
     makeDraggable('app_project-container');
     makeDraggable('app_git-container');
     makeDraggable('app_npm-container');
-    makeDraggable('app_php-container');
+    //makeDraggable('app_php-container');
     makeDraggable('app_nodes-container');
     makeDraggable('app_timesheet-container');
     //makeDraggable('console-settings');

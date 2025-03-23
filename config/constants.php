@@ -135,7 +135,19 @@ const SERVER_HOST = APP_HOST ?? '0.0.0.0';
 const SERVER_PORT = '8080'; // 9000
 !is_int((int) SERVER_PORT) and $errors['SERVER_PORT'] = 'SERVER_PORT is not valid. (' . SERVER_PORT . ')' . "\n";
 
-!defined('APP_PATH_SERVER') and define('APP_PATH_SERVER', (defined('APP_PATH') ? APP_PATH : __DIR__ . DIRECTORY_SEPARATOR) . str_replace(defined('APP_PATH') ? APP_PATH : __DIR__ . DIRECTORY_SEPARATOR, '', basename(dirname(APP_SELF)) == 'public' ? basename(APP_SELF) : 'server.php'));
+/*
+!defined('APP_PATH_SERVER') and define('APP_PATH_SERVER', (defined('APP_PATH') ? APP_PATH
+  : __DIR__ . DIRECTORY_SEPARATOR) . str_replace(defined('APP_PATH') ? APP_PATH
+  : __DIR__ . DIRECTORY_SEPARATOR, '', basename(dirname(APP_SELF)) == 'public' ? basename(APP_SELF)
+  : 'server.php'));
+*/
+
+if (!defined('APP_PATH_SERVER')) {
+  $basePath = defined('APP_PATH') ? APP_PATH : __DIR__ . DIRECTORY_SEPARATOR;
+  $fileName = (basename(dirname(APP_SELF)) === 'public') ? basename(APP_SELF) : 'server.php';
+
+  define('APP_PATH_SERVER', "$basePath$fileName");
+}
 
 // Define APP_TIMEOUT constant
 define('APP_TIMEOUT', strtotime("1970-01-01 08:00:00GMT"));
@@ -209,7 +221,6 @@ switch (basename(__DIR__)) {
           continue;
 
         if (!is_dir((defined('APP_PATH') ? APP_PATH : __DIR__ . DIRECTORY_SEPARATOR) . $dirname) && APP_DEBUG) {
-
           (@!mkdir((defined('APP_PATH') ? APP_PATH : __DIR__ . DIRECTORY_SEPARATOR) . $dirname, 0755, true)
             ? '' : $errors['APP_BASE'][$key] = "$dirname could not be created.");
         }

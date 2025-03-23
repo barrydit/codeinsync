@@ -291,9 +291,7 @@ if (!is_file($file = APP_PATH . 'projects/index.php')) {
   }
   unset($source_file);
 } elseif (is_file(APP_PATH . 'projects' . DIRECTORY_SEPARATOR . 'index.php') && isset($_GET['project']) && $_GET['project'] == 'show') {
-  Shutdown::setEnabled(false)->setShutdownMessage(function () {
-    return eval ('?>' . file_get_contents(APP_PATH . 'projects/index.php'));
-  })->shutdown();
+  Shutdown::setEnabled(false)->setShutdownMessage(fn() => eval ('?>' . file_get_contents(APP_PATH . 'projects/index.php')))->shutdown();
 }
 
 // function loadEnvConfig($file) {

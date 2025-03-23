@@ -1,14 +1,16 @@
 <?php
 
 if (isset($_GET['json'])) {
+  defined('APP_PATH') or define('APP_PATH', realpath(__DIR__ . '/../') . '/');
+  defined('APP_ROOT') or define('APP_ROOT', '');
   header('Content-Type: application/json');
-
-  //$_GET['client'] = '000-Hardy,Darrell';
-  if (is_file('../bootstrap.php'))
-    require_once '../bootstrap.php';
-  else
-    require_once 'bootstrap.php';
-
+  /*
+    //$_GET['client'] = '000-Hardy,Darrell';
+    if (is_file('../bootstrap.php'))
+      require_once '../bootstrap.php';
+    else
+      require_once 'bootstrap.php';
+  */
   /**
    * Get required files from a script and return their paths
    *
@@ -18,6 +20,7 @@ if (isset($_GET['json'])) {
   function getRequiredFilesFromScript(string $script): array
   {
     ob_start(); // /mnt/c/www
+    chdir(APP_PATH);
     require_once $script; //eval('require_once \'' . $script . '\';'); 
     ob_end_clean();
     //return get_required_files();
@@ -56,11 +59,8 @@ if (isset($_GET['json'])) {
     );
   }
 
-
-  if (APP_ROOT != '') {
-
+  if (defined('APP_ROOT') && APP_ROOT != '') {
     $baseDir = APP_PATH . APP_ROOT;
-
     $requiredFiles = [
       //'server.php' => 'server.php',
       'public/index.php' => APP_ROOT . 'public/index.php',
@@ -494,7 +494,7 @@ ob_start(); ?>
   if (!is_file($path = APP_PATH . APP_BASE['resources'] . 'js/jquery-ui/' . 'jquery-ui-1.12.1.js') || ceil(abs((strtotime(date('Y-m-d')) - strtotime(date('Y-m-d', strtotime('+5 days', filemtime($path))))) / 86400)) <= 0) {
     if (!realpath($pathdir = dirname($path)))
       if (!mkdir($pathdir, 0755, true))
-        $errors['DOCS'] = $pathdir . ' does not exist';
+        $errors['DOCS'] = "$pathdir does not exist";
 
     $url = 'https://code.jquery.com/ui/1.12.1/jquery-ui.min.js';
     $handle = curl_init($url);

@@ -1,11 +1,11 @@
 <?php
-global $errors;
+global $shell_prompt, $errors;
 /**/
 // https://techglimpse.com/git-push-github-token-based-passwordless/
 // git push https://<GITHUB_ACCESS_TOKEN>@github.com/<GITHUB_USERNAME>/<REPOSITORY_NAME>.git
-if ($path = realpath((basename(__DIR__) != 'config' ? NULL : __DIR__ . DIRECTORY_SEPARATOR) . 'constants.php')) {
+if ($path = realpath((basename(__DIR__) != 'config' ? NULL : __DIR__ . DIRECTORY_SEPARATOR) . 'constants.php'))
   require_once $path;
-}
+
 
 $gitconfig = <<<END
 [safe]
@@ -32,15 +32,14 @@ END;
 if (!is_dir($dirname = (defined('APP_PATH') ? APP_PATH : dirname(__DIR__) . DIRECTORY_SEPARATOR) . '.ssh'))
   (@!mkdir($dirname, 0755, true) ?: $errors['APP_BASE'][basename($dirname)] = "$dirname could not be created.");
 
-define('GIT_EXEC', stripos(PHP_OS, 'WIN') === 0 ? 'git.exe' : '/usr/local/bin/git');
+define('GIT_EXEC', stripos(PHP_OS, 'WIN') === 0 ? 'git.exe' : $_ENV['GIT']['EXEC'] ?? '/usr/local/bin/git');
 
 if (isset($_ENV['GITHUB']['EXPR_VERSION'])) {
   (function () {
     $gitVersion = exec(GIT_EXEC . ' --version');
     // match will interferer with any included files
-    if (preg_match($_ENV['GITHUB']['EXPR_VERSION'], $gitVersion, $match)) {
+    if (preg_match($_ENV['GITHUB']['EXPR_VERSION'], $gitVersion, $match))
       define('GIT_VERSION', rtrim($match[1], '.'));
-    }
   })();
 }
 /* $latest_remote_commit_response = file_get_contents($latest_remote_commit_url);
@@ -231,7 +230,7 @@ if (isset($_SERVER['REQUEST_METHOD']) && $_SERVER['REQUEST_METHOD'] == 'POST')
       //  ob_start();
       //require_once APP_PATH . 'config' . DIRECTORY_SEPARATOR . 'git.php';
 
-      $command = (stripos(PHP_OS, 'WIN') === 0 ? '' : APP_SUDO . '-u www-data ') . 'git ' . ' --git-dir="' . APP_PATH . APP_ROOT . '.git" --work-tree="' . APP_PATH . APP_ROOT . '" commit --allow-empty --dry-run';
+      $command = (defined(APP_SUDO) ? APP_SUDO . '-u www-data ' : '') . 'git' . ' --git-dir="' . APP_PATH . APP_ROOT . '.git" --work-tree="' . APP_PATH . APP_ROOT . '" commit --allow-empty --dry-run';
 
       // Append `; echo $?` to capture the exit code in the output
       $shellOutput = shell_exec("$command ; echo $?");
@@ -283,7 +282,7 @@ if (isset($_SERVER['REQUEST_METHOD']) && $_SERVER['REQUEST_METHOD'] == 'POST')
   
   git checkout -b branchName
 END;
-        $output[] = $command = ((stripos(PHP_OS, 'WIN') === 0) ? '' : APP_SUDO) . (defined('GIT_EXEC') ? GIT_EXEC : 'git') . (is_dir($path = APP_PATH . APP_ROOT . '.git') || APP_PATH . APP_ROOT != APP_PATH ? '' : '') . ' ' . $match[1];
+        $output[] = $command = (defined(APP_SUDO) ? APP_SUDO . '-u www-data ' : '') . (defined('GIT_EXEC') ? GIT_EXEC : 'git') . (is_dir($path = APP_PATH . APP_ROOT . '.git') || APP_PATH . APP_ROOT != APP_PATH ? '' : '') . ' ' . $match[1];
 
         $proc = proc_open(
           $command,
@@ -345,8 +344,8 @@ END;
         if (isset($github_repo) && !empty($github_repo)) {
 
           if (!isset($_SERVER['SOCKET']) || !is_resource($_SERVER['SOCKET']) || empty($_SERVER['SOCKET'])) {
-
-            $proc = proc_open((stripos(PHP_OS, 'WIN') === 0 ? '' : APP_SUDO . '-u www-data ') . $command, [["pipe", "r"], ["pipe", "w"], ["pipe", "w"]], $pipes);
+            $errors['server-1'] = 'no socket was detected.';
+            $proc = proc_open((defined(APP_SUDO) ? APP_SUDO . '-u www-data ' : '') . $command, [["pipe", "r"], ["pipe", "w"], ["pipe", "w"]], $pipes);
 
             [$stdout, $stderr, $exitCode] = [stream_get_contents($pipes[1]), stream_get_contents($pipes[2]), proc_close($proc)];
 
@@ -379,7 +378,7 @@ END;
               $response = fgets($_SERVER['SOCKET'], 1024);
               $errors['server-3'] = "Server responce: $response\n";
               if (isset($output[end($output)]))
-                $output[end($output)] .= $response = trim("$response");
+                $output[end($output)] .= $response = trim((string) $response);
               //if (!empty($response)) break;
             }
 
@@ -394,23 +393,22 @@ END;
 
       }
 
-      $command = (stripos(PHP_OS, 'WIN') === 0 ? '' : APP_SUDO . '-u www-data ') . 'git ' . ' --git-dir="' . APP_PATH . APP_ROOT . '.git" --work-tree="' . APP_PATH . APP_ROOT . '" ' . $match[1];
+      $command = (defined(APP_SUDO) ? APP_SUDO . '-u www-data ' : '') . 'git' . ' --git-dir="' . APP_PATH . APP_ROOT . '.git" --work-tree="' . APP_PATH . APP_ROOT . '" ' . $match[1];
 
-      $output[] = "Cmd: $command";
+      $output[] = "$shell_prompt$command";
 
       $output[] = shell_exec("$command ; echo $?");
 
-      if (preg_match('/Your branch is up to date with \'origin\/main\'.*nothing to commit, working tree clean/s', end($output))) {
-        echo "Repository is up-to-date.";
+      if (preg_match('/Your branch is up to date with \'origin\/main\'\./' /**nothing to commit, working tree clean/s'*/ , end($output))) {
+        //echo "Repository is up-to-date.";
       } else {
         echo "Repository has changes.";
       }
 
-
       if (isset($output) && is_array($output)) {
         switch (count($output) > 0) {
           case true:
-            echo /*(isset($match[1]) ? $match[1] : 'PHP') . ' >>> ' . */ join("\n... <<< ", $output);
+            echo /*(isset($match[1]) ? $match[1] : 'PHP') . ' >>> ' . */ join("\n" /*. ... <<<*/ , $output);
             break;
           default:
             echo join("\n", $output);
@@ -423,7 +421,6 @@ END;
         //$output[] = 'post: ' . var_dump($_POST);
         //else var_dump(get_class_methods($repo));
       }
-
     }
 
 //dd($output);
