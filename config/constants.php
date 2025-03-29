@@ -16,7 +16,7 @@ $password = ''; // password
 $use_sudo = $_ENV['SHELL']['SUDO'] ?? true;
 
 // Define APP_SUDO constant based on OS
-if (!defined('APP_SUDO')) {
+if (!$use_sudo && !defined('APP_SUDO')) {
   if (stripos(PHP_OS, 'WIN') === 0) {
     // Windows command (insert specific command if needed)
     define('APP_SUDO', null /*'runas /user:Administrator "cmd /c" '*/);
@@ -383,7 +383,7 @@ switch (basename(__DIR__)) {
     break;
 }
 
-//define('APP_ENV', 'production');
+const APP_ENV = 'development'; // define('APP_ENV', 'production') ? 'production' : 'development'; // APP_DEV |  APP_PROD
 
 if (defined('APP_DOMAIN') && !in_array(APP_DOMAIN, [/*'localhost',*/ '127.0.0.1', '::1'])) {
   /* if (!is_file($file = APP_PATH . '.env') && @touch($file)) file_put_contents($file, "DB_UNAME=\nDB_PWORD="); */

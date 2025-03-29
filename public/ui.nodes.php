@@ -334,7 +334,7 @@ else $count++;
 -->
     </div>
 
-    <div id="container1" style="position: relative; width: 100%; height: 100%; border: 1px #000 solid;">
+    <div id="app_nodes-frameExtra" style="position: relative; width: 100%; height: 100%; border: 1px #000 solid;">
 
     </div>
   </div>

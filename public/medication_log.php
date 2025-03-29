@@ -35,7 +35,13 @@ $data = file_exists($jsonFile) ? json_decode(file_get_contents($jsonFile), true)
     }'
 ];
 
-$logs = array_reverse($data);
+$logs = array_reverse($data); ?>
+<!DOCTYPE html>
+<html>
+<head>
+</head>
+<body>
+<?php
 echo '<div style="text-align: center; width: 50%; margin: 0 auto;">
         <div style="width: 400px; text-align: left; margin-left: auto; margin-right: auto; margin-bottom: 20px;">';
 echo "<h2>Medication History</h2>";
@@ -55,4 +61,8 @@ foreach ($logs as $key => $entry) {
 }
 
 echo "</ul>";
-echo '</div></div>';
+echo '</div></div>'; ?>
+
+</body>
+</html>
+

@@ -395,7 +395,8 @@ if (!file_exists(APP_PATH . 'composer.phar')) {
   }
 */
     //defined('COMPOSER_EXEC')
-    realpath($composer_which = trim(shell_exec(APP_SUDO . /*-u www-data */ 'which composer') ?? '')) or $errors['COMPOSER-WHICH'] = "which did not find composer. Err=$composer_which";
+    if (defined('APP_SUDO'))
+      realpath($composer_which = trim(shell_exec(APP_SUDO . /*-u www-data */ 'which composer') ?? '')) or $errors['COMPOSER-WHICH'] = "which did not find composer. Err=$composer_which";
 
     foreach ([ /*'/usr/local/bin/composer',*/ basename(PHP_EXEC) . ' ' . APP_PATH . 'composer.phar', $composer_which] as $key => $bin) {
       !isset($composer) and $composer = [];
@@ -404,7 +405,7 @@ if (!file_exists(APP_PATH . 'composer.phar')) {
         !defined('COMPOSER_PHAR') and define('COMPOSER_PHAR', ['bin' => PHP_EXEC . " $bin"]);
       else {
 
-        $proc = proc_open('env COMPOSER_ALLOW_SUPERUSER=' . COMPOSER_ALLOW_SUPERUSER . '; ' . (stripos(PHP_OS, 'WIN') === 0 ? '' : APP_SUDO) . basename($bin) . ' --version;', [["pipe", "r"], ["pipe", "w"], ["pipe", "w"]], $pipes);
+        $proc = proc_open('env COMPOSER_ALLOW_SUPERUSER=' . COMPOSER_ALLOW_SUPERUSER . '; ' . (stripos(PHP_OS, 'WIN') !== 0 && defined('APP_SUDO') ? APP_SUDO : '') . basename($bin) . ' --version;', [["pipe", "r"], ["pipe", "w"], ["pipe", "w"]], $pipes);
 
         $stdout = stream_get_contents($pipes[1]);
         $stderr = stream_get_contents($pipes[2]);
@@ -455,7 +456,7 @@ if (!file_exists(APP_PATH . 'composer.phar')) {
 //$output = [];
 $output = [ // Exception: [] operator not supported for strings
   stripos(PHP_OS, 'WIN') === 0 ? realpath('C:\\composer\\composer.bat' /*shell_exec('where composer')*/)
-  : realpath(shell_exec(APP_SUDO . 'which composer') ?? ''),
+  : realpath(shell_exec((defined('APP_SUDO') ? APP_SUDO : '') . 'which composer') ?? ''),
   shell_exec('composer --version') ?: $errors['COMPOSER-VERSION'] = ''
 ];
 

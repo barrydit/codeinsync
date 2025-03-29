@@ -93,32 +93,26 @@ $tableGen = function () use ($group_type): string {
     //    '</a>';
     $navigation .= '<a href="?path=' . (APP_ROOT === '' ? '' : 'clientele') . '">' . 'clientele</a>' . DIRECTORY_SEPARATOR . '<a href="' . basename(__FILE__) . '?client=' . ($clientPath ?? '') . '" onclick="handleClick(event, \'/\')">' .
       $clientPath .
-      '</a><a href="' . basename(__FILE__) . '?client=' . ($clientPath ?? '') . '&domain=' . ($domainPath ?? '') . '" onclick="handleClick(event, \'/\')">' . ((!empty($domainPath) ? $domainPath : '') ?? '') . DIRECTORY_SEPARATOR .
+      '</a><a href="' . basename(__FILE__) . '?client=' . ($clientPath ?? '') . '&domain=' . ($domainPath ?? '') . '" onclick="handleClick(event, \'/\')">' . '/' . ((!empty($domainPath) ? $domainPath : '') ?? '') . DIRECTORY_SEPARATOR .
       '</a>';
 
-  } else
-    // Domain navigation
-    if ($domainPath) {
-      $navigation .= '<a href="' . basename(__FILE__) . '?client=' . '&path=clientele/' . '" onclick="handleClick(event, \'/\')">' .
-        'clientele/' . '</a>';
-      $navigation .= '<a href="' . basename(__FILE__) . '?' .
-        (isset($clientPath) ? "client=$clientPath&" : '') .
-        'domain=' . $domainPath . '" onclick="handleClick(event, \'/\')">' .
-        (basename(APP_ROOT) !== $domainPath ? '' : $domainPath . DIRECTORY_SEPARATOR) .
-        '</a>';
-    } elseif ($clientPath) {
-      $navigation .= DIRECTORY_SEPARATOR . $domainPath . DIRECTORY_SEPARATOR ?? null;
-    }
-
-  // Project navigation
-  if ($projectPath) {
-    $navigation .= '<a href="' . basename(__FILE__) . '?project" onclick="handleClick(event, \'/\')">' .
+  } else if ($domainPath) {    // Domain navigation
+    $navigation .= '<a href="' . basename(__FILE__) . '?client=' . '&path=clientele/' . '" onclick="handleClick(event, \'/\')">' .
+      'clientele/' . '</a>';
+    $navigation .= '<a href="' . basename(__FILE__) . '?' .
+      (isset($clientPath) ? "client=$clientPath&" : '') .
+      'domain=' . $domainPath . '" onclick="handleClick(event, \'/\')">' .
+      (basename(APP_ROOT) !== $domainPath ? '' : $domainPath . DIRECTORY_SEPARATOR) .
+      '</a>';
+  } else if ($projectPath) { // Project navigation
+    $navigation .= '<a href="?path=projects&project=">' .
       'projects' . DIRECTORY_SEPARATOR . ($projectPath ?? '') . DIRECTORY_SEPARATOR . '</a>';
+    //(isset($_GET['project']) ? 'projects' . DIRECTORY_SEPARATOR : '')
   }
 
   // Path navigation
   if ($relativePath && $relativePath !== '/') {
-    $navigation .= '<a href="' . basename(__FILE__) . '?' . (isset($_GET['client']) ? 'client=' . ($clientPath ?? '') . '&' : '') . (isset($_GET['domain']) ? 'domain=' . ($domainPath ?? '') . '&'/* */ : '') . (isset($_GET['project']) ? 'project=' . ($projectPath ?? '') . '&' : '') . 'path=' . dirname($relativePath) . '/" onclick="handleClick(event, \'' . dirname($relativePath) . '/\')">' . $relativePath . (isset($_GET['domain']) ? DIRECTORY_SEPARATOR : '') . '</a>';
+    $navigation .= '<a href="' . basename(__FILE__) . '?' . (isset($_GET['client']) ? 'client=' . ($clientPath ?? '') . '&' : '') . (isset($_GET['domain']) ? 'domain=' . ($domainPath ?? '') . '&'/* */ : '') . (isset($_GET['project']) ? ($relativePath != 'projects' ? 'project=' . ($projectPath ?? '') . '&' : '') . 'path=' : 'path=' . dirname($relativePath)) . '/" onclick="handleClick(event, \'' . dirname($relativePath) . '/\')">' . $relativePath . (isset($_GET['domain']) ? DIRECTORY_SEPARATOR : '') . '</a>';
   }
 
   $navigation .= '</div><div style="height: 25px;"><br />' . APP_PATH . APP_ROOT . '</div><br />';
@@ -133,7 +127,7 @@ $tableGen = function () use ($group_type): string {
   //dd(APP_CLIENT, false);
 
   if (isset($_GET['path']) && preg_match('/^project\/?/', $_GET['path']) || isset($_GET['project']) && empty($_GET['project'])) {
-    if (readlinkToEnd($_SERVER['HOME'] . DIRECTORY_SEPARATOR . 'projects') == '/mnt/c/www/projects' || realpath(APP_PATH . 'projects')) { ?>
+    if (isset($_SERVER['HOME']) && readlinkToEnd($_SERVER['HOME'] . DIRECTORY_SEPARATOR . 'projects') == '/mnt/c/www/projects' || realpath(APP_PATH . 'projects')) { ?>
       <div style="text-align: center; border: none;" class="text-xs">
         <a class="pkg_dir" href="#" onclick="document.getElementById('app_project-container').style.display='block';">
           <img src="resources/images/project-icon.png" width="50" height="32" style="" /></a><br /><a
@@ -175,7 +169,7 @@ $tableGen = function () use ($group_type): string {
     </table>
     <!--
       <li>
-      <?php if (readlinkToEnd($_SERVER['HOME'] . DIRECTORY_SEPARATOR . 'projects') == '/mnt/c/www/projects' || realpath(APP_PATH . 'projects')) { ?>
+      <?php if (isset($_SERVER['HOME']) && readlinkToEnd($_SERVER['HOME'] . DIRECTORY_SEPARATOR . 'projects') == '/mnt/c/www/projects' || realpath(APP_PATH . 'projects')) { ?>
       <a href="projects/">project/</a>
         <ul style="padding-left: 10px;">
           <form action method="GET">
@@ -469,7 +463,7 @@ $tableGen = function () use ($group_type): string {
       //dd($_GET, false); 
       ?>
 
-      <table style="width: inherit; border: 0 solid #000;">
+      <table style="width: 100%; border: 0 solid #000;">
         <tr>
           <?php
 
@@ -701,32 +695,49 @@ $tableGen = function () use ($group_type): string {
                       ? basename(__FILE__) . "?$queryString"
                       : "?$queryString";
 
-                    $basePath = $_GET['path'] ?? '';
-                    $domainCondition = (!defined('APP_ROOT') || APP_ROOT == '') && empty($_GET['domain']);
-                    $clientCondition = !empty($_GET['client']) && empty($_GET['domain']);
-                    $projectCondition = (!defined('APP_ROOT') || APP_ROOT == '') && empty($_GET['project']);
+                    $basePath = $_GET['path'] ?? ''; // Get the current path
+                    $project = $_GET['project'] ?? ''; // Get the project parameter
+                    $domain = $_GET['domain'] ?? ''; // Get the domain parameter
+                    $client = $_GET['client'] ?? ''; // Get the client parameter
+    
+                    // Define conditions
+                    $domainCondition = (!defined('APP_ROOT') || APP_ROOT == '') && empty($domain);
+                    $clientCondition = !empty($client) && empty($domain);
 
-                    $pathSuffix = (isset($_ENV['DEFAULT_DOMAIN']) && $_ENV['DEFAULT_DOMAIN'] != basename($path))
-                      ? (!$clientCondition ? ($basePath ? $relativePath : '') : '')
-                      : basename(rtrim($relativePath, '/'));
+                    // Initialize query parameters
+                    $queryParams = [];
 
-                    $fullPath = "$basePath$pathSuffix/";
-
-                    // Construct onclick attribute
-                    if ($domainCondition && isset($_GET['client']) || empty($_GET['domain'])) {
-                      $onclickAttribute = (basename($path) == $_ENV['DEFAULT_DOMAIN'])
-                        ? " onclick=\"handleClick(event, '/')\""
-                        : " onclick=\"handleClick(event, '" . ($domainCondition && $clientCondition ? (string) dirname($relativePath) : (!$domainCondition ? '' : $relativePath)) . "/')\"";
-                    } elseif ($domainCondition && !empty($_GET['domain']) || $projectCondition && !empty($_GET['project'])) {
-                      $onclickAttribute = " onclick=\"handleClick(event, '$fullPath')\"";
-                    } else {
-                      $onclickAttribute = " onclick=\"handleClick(event, '" . (!$basePath ? (string) $relativePath : $relativePath) . "/')\"";
+                    // Only include one of the parameters in the query string based on which is set
+                    if (!empty($project)) {
+                      $queryParams['project'] = $project; // Only include project
+                    } elseif (!empty($client)) {
+                      $queryParams['client'] = $client; // Only include client
+                    } elseif (!empty($domain)) {
+                      $queryParams['domain'] = $domain; // Only include domain
                     }
 
-                    // Render the link
-                    echo '<a href="' . htmlspecialchars($url) . '"' . $onclickAttribute . '>
-    <img src="resources/images/directory.png" width="50" height="32" /><br />' . basename($path) . '/</a>';
+                    // Construct the current directory path
+                    $currentPath = $basePath /*rtrim(, '/')*/ . basename($path) . '/'; // Maintain the structure
+    
+                    // Ensure `path` stays in the query parameters
+                    $queryParams['path'] = $currentPath;
 
+                    // Generate the correct `href`
+                    $href = '?' . http_build_query($queryParams);
+
+                    // Determine the correct `onclick` path
+                    $onclickPath = $basePath /*rtrim(, '/')*/ . basename($path) . '/'; // Correctly format for child directory
+    
+                    // Construct `onclick` attribute
+                    $onclickAttribute = " onclick=\"handleClick(event, '" . htmlspecialchars($onclickPath, ENT_QUOTES) . "')\"";
+
+                    // Render the folder link
+                    echo '<a href="' . htmlspecialchars($href, ENT_QUOTES) . '"' . $onclickAttribute . '>
+    <img src="resources/images/directory.png" width="50" height="32"><br>' . htmlspecialchars(basename($path), ENT_QUOTES) . '/ 
+</a><br>';
+                    // Render the link
+                    //echo '<a href="' . htmlspecialchars($url) . '"' . $onclickAttribute . '><br />' . basename($path) . '/</a>';
+    
 
                     /*
                                       $appRoot = 'clientele/' . ($_GET['client'] ?? '') . '/' . ($_GET['domain'] ?? '') . '/';

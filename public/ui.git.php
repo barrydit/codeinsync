@@ -280,8 +280,8 @@ ob_start();
           <div
             style="position: absolute; top: 5px; left: 10px; border: 1px dashed #000; height: 104px; overflow-x: auto;"
             class="text-xs">
-            <div style="position: absolute; top: 0; right: 10px;"><img src="resources/images/oauth-token.gif"
-                style="cursor: pointer;" width="20" height="23" alt="Git token" title="OAuth Token"
+            <div style="position: absolute; top: 0; right: 25px;"><img src="resources/images/oauth-token.gif"
+                style="position: fixed; cursor: pointer;" width="20" height="23" alt="Git token" title="OAuth Token"
                 onclick="document.getElementById('app_git-oauth').style.display='block';" /></div>
             <div style="position: absolute; font-weight: bold; color: #FFF; background-color: #B0B0B0;">Git Commands
             </div>
