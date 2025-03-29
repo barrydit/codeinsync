@@ -30,8 +30,9 @@ require_once realpath('index.php');
 if (defined('APP_ENV'))
   if (APP_ENV == 'development' && defined('APP_ERRORS') && APP_ERRORS && defined('APP_DEBUG') && APP_DEBUG == $report_errors = true)
     NULL;
-  elseif (APP_ENV == 'development' && APP_DEBUG == false)
-    die(header('Location: ' . (!defined('APP_URL_BASE') and 'http://' . APP_DOMAIN . APP_URL_PATH) . '?debug'));
+//elseif (APP_ENV == 'development' && APP_DEBUG == false)
+//require_once APP_PATH . 'public' . DIRECTORY_SEPARATOR . 'idx.develop.php';
+//  die(header('Location: ' . (!defined('APP_URL_BASE') and 'http://' . APP_DOMAIN . APP_URL_PATH) . '?debug'));
 // is_array($ob_content)
 //$report_errors = true; 
 
@@ -242,11 +243,7 @@ SCRIPT;
     ob_end_clean();
 
 
-    if ($total_lines != 0) {
-      $percentage = abs(round((1 - $lines / $total_lines) * 100 - 100, 2)); // round((1 - $loaded_lines + $sql_lines / $total_lines) * 100, 2);
-    } else {
-      $percentage = 0; // or any default value you want to use when $total_lines is 0
-    }
+    $percentage = ($total_lines != 0) ? abs(round((1 - $lines / $total_lines) * 100 - 100, 2)) : 0;
 
     echo '			{y: ' . $percentage . ', label: "[source]"},' . "\n";
 

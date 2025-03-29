@@ -131,9 +131,7 @@ dd(get_included_files(), false);
     if (isset($_POST['composer']['autoload'])) {
       $_ENV['COMPOSER']['AUTOLOAD'] = $_POST['composer']['autoload'] === 'on' ? true : false;
 
-      Shutdown::setEnabled(false)->setShutdownMessage(function () {
-        return header('Location: http://' . APP_DOMAIN); // ['scheme'] . '://' . APP_URL['host'] -wow
-      })->shutdown();
+      Shutdown::setEnabled(false)->setShutdownMessage(fn() => header('Location: http://' . APP_DOMAIN))->shutdown();
     }
 
 
@@ -714,7 +712,7 @@ ob_start(); ?>
             <textarea style="width: 100%" cols="40" rows="5" name="composer[cmd]">php -r "copy('https://getcomposer.org/installer', 'composer-setup.php');"
 php composer-setup.php
 php composer.phar -v
-<?= stripos(PHP_OS, 'WIN') === 0 ? '' : APP_SUDO ?>composer self-update</textarea>
+<?= stripos(PHP_OS, 'WIN') !== 0 && defined('APP_SUDO') ? APP_SUDO : '' ?>composer self-update</textarea>
           </div>
         </form>
       </div>
@@ -1550,6 +1548,8 @@ ob_start(); ?>
 
     url = 'https://repo.packagist.org/p2/' + val + '.json';
     document.getElementById('composerReqVersResults').innerHTML = '';
+
+    url = 'http://localhost/proxy.php?url=' + url;
     $.getJSON(url, function (data) {
       //populate the packages datalist
       packagesOption = '<option value = "' + val + ':dev-master" /> ';

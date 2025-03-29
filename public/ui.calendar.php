@@ -112,14 +112,15 @@ if (defined('GIT_EXEC'))
 
 ob_start(); ?>
 #app_calendar-container {
-width : 400px;
-height : 500px;
+width : 415px;
+height : 515px;
 /* border: 1px solid black; */
 position : absolute;
 top : 60px;
 left : 70%;
 right : 0;
 z-index : 1;
+margin-bottom: -25px;
 /* resize: both; Make the div resizable */
 /* overflow: hidden; Hide overflow to ensure proper resizing */
 }
@@ -155,6 +156,52 @@ white-space : pre-wrap;
 /*width: 100%;
 height: 100%;*/
 }
+
+
+#app_medication_log-container {
+width : 320px;
+height : 220px;
+/* border: 1px solid black; */
+position : absolute;
+z-index : 1;
+/* resize: both; Make the div resizable */
+/* overflow: hidden; Hide overflow to ensure proper resizing */
+
+border: 1px solid #000;
+}
+
+#app_medication_log-container.selected {
+display : block;
+z-index : 1;
+resize : both; /* Make the div resizable */
+overflow : hidden; /* Hide overflow to ensure proper resizing */
+/* Add your desired styling for the selected container */
+/*
+// background-color: rgb(240, 224, 198); // 240, 224, 198, .75 #FBF7F1; // rgba(240, 224, 198, .25);
+
+bg-[#FBF7F1];
+bg-opacity-75;
+
+font-weight: bold;
+#top { background-color: rgba(240, 224, 198, .75); }
+*/
+}
+
+#ui_medication_log {
+width : 100%;
+height : calc(100% - 80px);
+position : absolute;
+}
+#medication_log {
+margin : 0;
+position : relative;
+/*resize: both;*/
+overflow : auto;
+white-space : pre-wrap;
+/*width: 100%;
+height: 100%;*/
+}
+
 input {
 color : black;
 }
@@ -299,51 +346,183 @@ else $count++;
  https://scribbled.space/ace-editor-setup-usage/ -->
 
             <div id="ui_calendar" class="errors"
-                style="display: <?= isset($_GET['file']) && isset($_GET['path']) && is_file($_GET['path'] . $_GET['file']) ? 'block' : 'block' ?>; z-index: 1;">
-                <div style="background-color: white; height: 100%; width: 100%; overflow: hidden;">
-                    <?php function generateCalendar($month, $year)
-                    {
-                        $firstDayOfMonth = strtotime("$year-$month-01");
-                        $totalDays = date('t', $firstDayOfMonth);
-                        $startingDay = date('w', $firstDayOfMonth);
+                style="position: relative; display: <?= isset($_GET['file']) && isset($_GET['path']) && is_file($_GET['path'] . $_GET['file']) ? 'block' : 'block' ?>; z-index: 1;">
+                <div id="app_calendar-frameInit" class="app_calendar-frame-container absolute"
+                    style="overflow: hidden; height: 100%; position: relative; margin: 0 auto;">
+                    <div id="app_medication_log-container"
+                        class="<?= __FILE__ == get_required_files()[0] || (isset($_GET['app']) && $_GET['app'] == 'medication_log') && !isset($_GET['path']) ? 'selected' : '' ?>"
+                        style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); display: block; resize: both; overflow: hidden; z-index: 2;">
+                        <div class="ui-widget-header"
+                            style="position: relative; display: inline-block; width: 100%; cursor: move; border-bottom: 1px solid #000;background-color: #FFF;">
+                            <label class="medication_log-home" style="cursor: pointer;">
+                                <div class="" style="position: relative; display: inline-block; top: 0; left: 0;">
+                                    <img src="resources/images/medication_log_icon.png" width="53" height="32" />
+                                </div>
+                            </label>
+                            <div style="display: inline;">
+                                <span style="background-color: #38B1FF; color: #FFF; margin-top: 10px;">Medication log
+                                    <?= /* (version_compare(NPM_LATEST, NPM_VERSION, '>') != 0 ? 'v'.substr(NPM_LATEST, 0, similar_text(NPM_LATEST, NPM_VERSION)) . '<span class="update" style="color: green; cursor: pointer;">' . substr(NPM_LATEST, similar_text(NPM_LATEST, NPM_VERSION)) . '</span>' : 'v'.NPM_VERSION ); */ NULL; ?></span>
+                                <span style="background-color: #0078D7; color: white;"><code id="AceEditorVersionBox"
+                                        class="text-sm" style="background-color: white; color: #0078D7;"></code></span>
+                            </div>
 
-                        $calendar = "<table border='1' cellpadding='5' cellspacing='0'>";
-                        $calendar .= "<tr><th colspan='7'>" . date('F Y', $firstDayOfMonth) . "</th></tr>";
-                        $calendar .= "<tr>
+                            <div style="display: inline; float: right; text-align: center; color: blue;"><code
+                                    style="background-color: white; color: #0078D7;"><a style="cursor: pointer; font-size: 13px;" onclick="document.getElementById('app_medication_log-container').style.display='none';">[X]</a></code>
+                            </div>
+                        </div>
+
+                        <div class="ui-widget-content"
+                            style="position: relative; display: block; margin: 0 auto; width: calc(100% - 2px); height: 45px; background-color: rgba(251,247,241); text-align: center; font-weight: bold; padding-top: 0px;">
+                            Did you remember to <br />take your medication?
+                            <div style="clear: both;"></div>
+                        </div>
+
+
+
+                        <div style="position: relative; margin: 0 auto; width: calc(100% - 2px); height: 100%;">
+                            <!--
+      <div id="app_medication_log-frameMenu" class="app_medication_log-frame-container absolute selected" style="background-color: rgb(225,196,151,.75); margin-top: 8px; height: 100%;">
+-->
+
+                            <!--   A (<?= /* $path */ ''; ?>) future note: keep ace-editor nice and tight ... no spaces, as it interferes with the content window.
+ https://scribbled.space/ace-editor-setup-usage/ -->
+
+                            <div id="ui_medication_log" class="medication_log"
+                                style="display: <?= isset($_GET['file']) && isset($_GET['path']) && is_file($_GET['path'] . $_GET['file']) ? 'block' : 'block' ?>; z-index: 1;">
+                                <div style="background-color: white; height: 100%; width: 100%; overflow: hidden;">
+                                    <div
+                                        style="text-align: center; width: 92%; margin-left:auto; margin-right:auto; margin-top: 20px;">
+                                        <form autocomplete="off" spellcheck="false" method="POST"
+                                            action="<?= APP_URL . basename(__FILE__) . /**/ '?' . http_build_query(['app' => 'medication_log']/**/) . (defined('APP_ENV') && APP_ENV == 'development' ? '#!' : '') /* $c_or_p . '=' . (empty($_GET[$c_or_p]) ? '' : $$c_or_p->name) . '&amp;app=composer' */ ?>">
+                                            <input type="hidden" name="app" value="medication_log" />
+                                            <input id="date_slot" type="date" name="date"
+                                                value="<?= date('Y-m-d') ?>" />
+                                            <input id="time_slot" type="time" name="time_slot"
+                                                value="<?= date('H:i') ?>" /><br />&nbsp;&nbsp;
+                                            <input type="radio" name="status"
+                                                value="taken" />Taken&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                                            <input type="radio" name="status" value="missed" />Missed<br />
+                                            <input type="text" name="note" value="" />
+                                            <input type="submit" value="Save" />
+                                        </form>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- div style="position: relative; display: inline-block; width: 100%; height: 100%; padding-left: 10px;">
+
+      <form style="display: inline;" autocomplete="off" spellcheck="false" action="<?= APP_URL . /*basename(__FILE__) .*/ '?' . http_build_query(APP_QUERY /*+ ['app' => 'medication_log']*/) . (defined('APP_ENV') && APP_ENV == 'development' ? '#!' : '') /* $c_or_p . '=' . (empty($_GET[$c_or_p]) ? '' : $$c_or_p->name) . '&amp;app=composer' */ ?>" method="GET">
+        <input type="hidden" name="app" value="medication_log" />
+      <?php $path = realpath(getcwd() . (isset($_GET['path']) ? DIRECTORY_SEPARATOR . $_GET['path'] : '')) . DIRECTORY_SEPARATOR;
+      if (isset($_GET['path'])) { ?>
+       <input type="hidden" name="path" value="<?= $_GET['path']; ?>" /> 
+      <?php }
+      echo '<span title="' . $path . '">' . parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH) . '</span>'; /* $path; */ ?>
+        <select name="path" onchange="this.form.submit();">
+          <option value>.</option>
+          <option value>..</option>
+<?php
+if ($path)
+    foreach (array_filter(glob($path . DIRECTORY_SEPARATOR . '*'), 'is_dir') as $dir) {
+        echo '<option value="' . (isset($_GET['path']) ? $_GET['path'] . DIRECTORY_SEPARATOR : '') . basename($dir) . '"' . (isset($_GET['path']) && $_GET['path'] == basename($dir) ? ' selected' : '') . '>' . basename($dir) . '</option>' . "\n";
+    }
+?>
+        </select>
+      </form>
+ / <input type="text" name="file" value="index.php" /> 
+
+      <form style="display: inline;" autocomplete="off" spellcheck="false" action="<?= APP_URL . /*basename(__FILE__) .*/ '?' . http_build_query(APP_QUERY /*+ ['app' => 'medication_log']*/) . (defined('APP_ENV') && APP_ENV == 'development' ? '#!' : '') /* $c_or_p . '=' . (empty($_GET[$c_or_p]) ? '' : $$c_or_p->name) . '&amp;app=composer' */ ?>" method="GET">
+      <input type="hidden" name="app" value="medication_log" />
+
+      <input type="hidden" name="path" value="<?= $_GET['path'] ?? '' ?>" />
+
+        <select name="file" onchange="this.form.submit();">
+          <option value="">---</option>
+<?php
+if ($path)
+    foreach (array_filter(glob($path . DIRECTORY_SEPARATOR . '*.php'), 'is_file') as $file) {
+        echo '<option value="' . basename($file) . '"' . (isset($_GET['file']) && $_GET['file'] == basename($file) ? ' selected' : '') . '>' . basename($file) . '</option>' . "\n";
+    }
+?>
+        </select>
+      </form>
+      </div> -->
+
+
+
+                        <!-- <pre id="ace-editor" class="medication_log"></pre> -->
+
+                    </div>
+
+                    <div style="background-color: white; height: 100%; width: 100%; overflow: hidden;">
+                        <?php function generateCalendar($month, $year)
+                        {
+                            $firstDayOfMonth = strtotime("$year-$month-01");
+                            $totalDays = date('t', $firstDayOfMonth);
+                            $startingDay = date('w', $firstDayOfMonth);
+
+                            $calendar = "<table border='1' cellpadding='5' cellspacing='0'>";
+                            $calendar .= "<tr><th colspan='7'>" . date('F Y', $firstDayOfMonth) . "</th></tr>";
+                            $calendar .= "<tr>
                     <th>Sun</th><th>Mon</th><th>Tue</th><th>Wed</th>
                     <th>Thu</th><th>Fri</th><th>Sat</th>
                  </tr><tr>";
 
-                        // Print empty cells before the first day
-                        for ($i = 0; $i < $startingDay; $i++) {
-                            $calendar .= "<td></td>";
-                        }
-
-                        // Print days of the month
-                        for ($day = 1; $day <= $totalDays; $day++) {
-                            $calendar .= "<td style=\"" . ($day == date('d') ? 'background-color: lightblue;' : '') . "\"><a href=\"?app=calendar&day=$day\">$day</a></td>";
-
-                            if (($startingDay + $day) % 7 == 0) {
-                                $calendar .= "</tr><tr>";
+                            // Print empty cells before the first day
+                            for ($i = 0; $i < $startingDay; $i++) {
+                                $calendar .= "<td></td>";
                             }
+
+                            // Print days of the month
+                            for ($day = 1; $day <= $totalDays; $day++) {
+                                $calendar .= "<td style=\"" . ($day == date('d') ? 'background-color: lightblue;' : '') . "\"><a href=\"?app=calendar&day=$day\">$day</a></td>";
+
+                                if (($startingDay + $day) % 7 == 0) {
+                                    $calendar .= "</tr><tr>";
+                                }
+                            }
+
+                            // Complete the last row with empty cells
+                            while (($startingDay + $day) % 7 != 1) {
+                                $calendar .= "<td></td>";
+                                $day++;
+                            }
+
+                            $calendar .= "</tr></table>";
+                            return $calendar;
                         }
 
-                        // Complete the last row with empty cells
-                        while (($startingDay + $day) % 7 != 1) {
-                            $calendar .= "<td></td>";
-                            $day++;
-                        }
+                        // Get current month and year
+                        $month = date('m');
+                        $year = date('Y');
 
-                        $calendar .= "</tr></table>";
-                        return $calendar;
-                    }
-
-                    // Get current month and year
-                    $month = date('m');
-                    $year = date('Y');
-
-                    echo generateCalendar($month, $year); ?>
+                        echo generateCalendar($month, $year); ?>
+                    </div>
+                    <!--
+    <form autocomplete="off" spellcheck="false" action="?app=git#!" method="POST">
+      <div style="position: absolute; right: 0; float: right; text-align: center;">
+        <input id="gitInitSubmit" class="btn" type="submit" value="Init/Run">
+      </div> 
+      <div style="display: inline-block; width: 100%; background-color: rgb(225,196,151,.75);">
+        <div class="text-sm" style="display: inline;">
+          <label id="gitInitLabel" for="gitInit" style="background-color: #6781B2; color: white;">? <code>Init</code></label>
+        </div>
+      </div>
+      <div id="gitInitForm" style="display: inline-block; padding: 10px; background-color: rgb(225,196,151,.75);7 border: 1px dashed #0078D7;">
+        <label>Git Command</label>
+        <textarea cols="40" rows="2" name="git[init]">git init</textarea>
+      </div>
+    </form>
+-->
                 </div>
+
+                <div id="app_calendar-frameExtra"
+                    style="position: relative; width: 100%; height: 100%; border: 1px #000 solid;">
+
+
+                </div>
+
             </div>
 
         </div>
@@ -393,29 +572,7 @@ if ($path)
 
 </div>
 
-<div id="app_calendar-frameInit" class="app_calendar-frame-container absolute" style="overflow: hidden; height: 270px;">
-    <!--
-    <form autocomplete="off" spellcheck="false" action="?app=git#!" method="POST">
-      <div style="position: absolute; right: 0; float: right; text-align: center;">
-        <input id="gitInitSubmit" class="btn" type="submit" value="Init/Run">
-      </div> 
-      <div style="display: inline-block; width: 100%; background-color: rgb(225,196,151,.75);">
-        <div class="text-sm" style="display: inline;">
-          <label id="gitInitLabel" for="gitInit" style="background-color: #6781B2; color: white;">? <code>Init</code></label>
-        </div>
-      </div>
-      <div id="gitInitForm" style="display: inline-block; padding: 10px; background-color: rgb(225,196,151,.75);7 border: 1px dashed #0078D7;">
-        <label>Git Command</label>
-        <textarea cols="40" rows="2" name="git[init]">git init</textarea>
-      </div>
-    </form>
--->
-</div>
 
-<div id="container1" style="position: relative; width: 100%; height: 100%; border: 1px #000 solid;">
-
-
-</div>
 <?php
 
 $app['body'] = ob_get_contents();
@@ -565,7 +722,7 @@ ob_start();
         makeDraggable('app_calendar-container');
 
         $(function () {
-            $("#container1").resizable({
+            $("#app_calendar-frameExtra").resizable({
                 alsoResize: "#app_calendar" // Resize textarea along with the dialog
             });
 

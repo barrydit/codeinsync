@@ -367,7 +367,7 @@ if ($path)
 -->
 </div>
 
-<div id="container1" style="position: relative; width: 100%; height: 100%; border: 1px #000 solid;">
+<div id="app_errors-frameExtra" style="position: relative; width: 100%; height: 100%; border: 1px #000 solid;">
 
 
 </div>
@@ -520,7 +520,7 @@ ob_start();
         makeDraggable('app_errors-container');
 
         $(function () {
-            $("#container1").resizable({
+            $("#app_errors-frameExtra").resizable({
                 alsoResize: "#app_errors" // Resize textarea along with the dialog
             });
 

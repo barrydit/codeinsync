@@ -2,6 +2,10 @@
 (!defined('APP_PATH_SERVER') && APP_PATH_SERVER !== get_required_files()[0])
   and exit(1);
 
+
+use Ratchet\Server\IoServer;
+use Ratchet\Http\HttpServer;
+use Ratchet\WebSocket\WsServer;
 use Ratchet\MessageComponentInterface;
 use Ratchet\ConnectionInterface;
 
@@ -43,9 +47,6 @@ class WebSocketServer implements MessageComponentInterface
   }
 }
 
-use Ratchet\Server\IoServer;
-use Ratchet\Http\HttpServer;
-use Ratchet\WebSocket\WsServer;
 
 if (
   $server = IoServer::factory(

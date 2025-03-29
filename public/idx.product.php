@@ -57,9 +57,9 @@ margin : 0;
 padding : 0;
 box-sizing : border-box;
 <?php if (isset($_GET['debug'])) { ?>
-                                                                                                                                                                                            border: 1px dashed #FF0000;
+                                                                                          border: 1px dashed #FF0000;
 <?php } else { ?> 
-                                                                                                                                                                                            /* border: 1px dashed #FF0000; */
+                                                                                          /* border: 1px dashed #FF0000; */
 <?php } ?>
 }
 *:focus {
@@ -334,7 +334,7 @@ cursor : pointer;
               src="resources/images/apps_icon.gif" width="20" height="20"> Tools</a> |
           <a href="#" onclick="document.getElementById('app_timesheet-container').style.display='block';"><img
               src="resources/images/clock.gif" width="30" height="30"> Clock-In</a> |
-          <a href="#" onclick="document.getElementById('app_php-container').style.display='block';"><img
+          <a href="#" onclick="document.getElementById('app_errors-container').style.display='block';"><img
               src="resources/images/php_icon.png" width="30" height="30"> PHP</a> |
           <a href="#" onclick="document.getElementById('app_git-container').style.display='block';"><img
               src="resources/images/git_icon.fw.png" width="18" height="18">Git/ <img
@@ -981,51 +981,58 @@ cursor : pointer;
   ?>
 
   <?php (APP_SELF !== APP_PATH_SERVER) and $socketInstance = Sockets::getInstance(); ?>
-  <div id="details-container"
-    style="position: fixed; display: <?= isset($_SERVER['SOCKET']) && is_resource($_SERVER['SOCKET']) && isset($_GET['client']) ? 'none' : 'block' ?>; top: 0; left: 0; padding: 4px; z-index: 1; text-align: right; border: 1px solid #000; height: auto; background-color: #FFF; width: 245px;">
-    <div style="float: left;">
-      <h3 style="font-weight: bolder;">
-        <?= !is_file($pid_file = APP_PATH . 'server.pid') ? '' : '(PID=' . (int) file_get_contents(APP_PATH . 'server.pid') . ')' ?>
-        Server
-      </h3>
-    </div>
-    <div style="float: right;">On / Off <input id="check_server_start" type="checkbox" <?= isset($_SERVER['SOCKET']) && is_resource($_SERVER['SOCKET']) ? 'checked="checked"' : '' ?> onclick="validate()" /></div>
-    <div style="clear: both;"></div>
-    <div style="display: inline-block;">$_ENV<br /><a href="">Status</a><br /><a href="">Help</a><br />Error Log</div>
-    <img id="serverStatus"
-      src="/resources/images/server<?= isset($_SERVER['SOCKET']) && is_resource($_SERVER['SOCKET']) ? '-green' : '' ?>.gif"
-      style="float: right;" width="100" height="103">
-    <!--form action="#!" method="GET">
+  <div id="toggle-container" style="position: fixed; top: 0; left: 0; z-index: 10; display: flex;">
+    <div id="details-container"
+      style="display: none; width: 245px; background-color: white; border: 1px solid black; padding: 4px;">
+      <div style="float: left;">
+        <h3 style="font-weight: bolder;">
+          <?= !is_file($pid_file = APP_PATH . 'server.pid') ? '' : '(PID=' . (int) file_get_contents(APP_PATH . 'server.pid') . ')' ?>
+          Server
+        </h3>
+      </div>
+      <div style="float: right;">On / Off <input id="check_server_start" type="checkbox" <?= isset($_SERVER['SOCKET']) && is_resource($_SERVER['SOCKET']) ? 'checked="checked"' : '' ?> onclick="validate()" /></div>
+      <div style="clear: both;"></div>
+      <div style="display: inline-block;">$_ENV<br /><a href="">Status</a><br /><a href="">Help</a><br />Error Log</div>
+      <img id="serverStatus"
+        src="/resources/images/server<?= isset($_SERVER['SOCKET']) && is_resource($_SERVER['SOCKET']) ? '-green' : '' ?>.gif"
+        style="float: right;" width="100" height="103">
+      <!--form action="#!" method="GET">
       <?= isset($_GET['debug']) && !$_GET['debug'] ? '' : '<input type="hidden" name="debug" value / >' ?> 
 
               <input class="input" id="toggle-debug" type="checkbox" onchange="this.form.submit();" <?= isset($_GET['debug']) || defined('APP_ENV') && APP_ENV == 'development' ? 'checked' : '' ?> / -->
-    <div style="position: relative;">
-      <div style="">&nbsp;&nbsp;&nbsp;&nbsp;<?= APP_NAME ?></div>
-      <!-- /form -->
-    </div>
-    <hr />
-    <a href="?logout=true">Logout</a><br />
+      <div style="position: relative;">
+        <div style="">&nbsp;&nbsp;&nbsp;&nbsp;<?= APP_NAME ?></div>
+        <!-- /form -->
+      </div>
+      <hr />
+      <a href="?logout=true">Logout</a><br />
 
-    <div id="" style="">
-      <span>Loading Time: <?= round(microtime(true) - APP_START, 3); ?>s</span><br />
-      <span>Environment: <?= PHP_OS; ?></span><br />
-      <span>Domain: <?= APP_DOMAIN; ?></span><br />
-      <span>IP Address: <?= APP_HOST; ?></span><br />
-      <span><?= isset($_GET['client']) ? 'Client: ' . '<a href="?client=' . $_GET['client'] . '">' . $_GET['client'] . '</a>' : (isset($_GET['project']) ? 'Project: ' . '<a href="?project=' . $_GET['project'] . '">' . $_GET['project'] . '</a>' : 'Document Root: ' . $_SERVER['DOCUMENT_ROOT']); ?></span><br />
-      <span>App Path: <?= APP_PATH; ?></span><br />
-      <span>Memory: <em><b
-            style="color: green;"><?= formatSizeUnits(memory_get_usage()) . '</b> @ <b>' . formatSizeUnits(convertToBytes(ini_get('memory_limit'))); ?></b></em></span><br />
-      <span>Source (code): <em
-          style="font-size: 13px;"><?= '[<b>' . formatSizeUnits($total_filesize) . '</b>] <b style="color: red;">' . $total_filesize - 1000000 . '</b>' ?></em></span>
-      <div style="position: relative; display: block;">
-        <div style="position: absolute; display: block; float: right; right: 10px; width: 165px; text-align: right;">
-          <?= ' [(<a style="font-weight: bolder; color: green;" href="#" onclick="document.getElementById(\'app_nodes-container\').style.display = \'block\';">' . $total_include_files . ' loaded</a>) <b>' . $total_files . '</b> files] <br /> [<b style="color: green;">' . $total_include_lines . '</b> @ <b>' . $total_lines . '</b> lines]'; ?>
-        </div>
-      </div><br /><br />
+      <div id="" style="">
+        <span>Loading Time: <?= round(microtime(true) - APP_START, 3); ?>s</span><br />
+        <span>Environment: <?= PHP_OS; ?></span><br />
+        <span>Domain: <?= APP_DOMAIN; ?></span><br />
+        <span>IP Address: <?= APP_HOST; ?></span><br />
+        <span><?= isset($_GET['client']) ? 'Client: ' . '<a href="?client=' . $_GET['client'] . '">' . $_GET['client'] . '</a>' : (isset($_GET['project']) ? 'Project: ' . '<a href="?project=' . $_GET['project'] . '">' . $_GET['project'] . '</a>' : 'Document Root: ' . $_SERVER['DOCUMENT_ROOT']); ?></span><br />
+        <span>App Path: <?= APP_PATH; ?></span><br />
+        <span>Memory: <em><b
+              style="color: green;"><?= formatSizeUnits(memory_get_usage()) . '</b> @ <b>' . formatSizeUnits(convertToBytes(ini_get('memory_limit'))); ?></b></em></span><br />
+        <span>Source (code): <em
+            style="font-size: 13px;"><?= '[<b>' . formatSizeUnits($total_filesize) . '</b>] <b style="color: red;">' . $total_filesize - 1000000 . '</b>' ?></em></span>
+        <div style="position: relative; display: block;">
+          <div style="position: absolute; display: block; float: right; right: 10px; width: 165px; text-align: right;">
+            <?= ' [(<a style="font-weight: bolder; color: green;" href="#" onclick="document.getElementById(\'app_nodes-container\').style.display = \'block\';">' . $total_include_files . ' loaded</a>) <b>' . $total_files . '</b> files] <br /> [<b style="color: green;">' . $total_include_lines . '</b> @ <b>' . $total_lines . '</b> lines]'; ?>
+          </div>
+        </div><br /><br />
+      </div>
     </div>
+
+    <div id="toggle-button"
+      style="width: 40px; height: 64px; background-color: white; display: flex; align-items: center; justify-content: center; border: 1px solid black;">
+      <img src="resources/images/pc.png" width="32" data-checked="false"
+        onclick="toggleContainer(this, 'details-container', 'left');" style="cursor: pointer;" />
+    </div>
+
   </div>
-
-
   <div id="toggle-container"
     style="position: fixed; display: block; bottom: 0; right: 0; padding: 4px; z-index: 1; text-align: right; border: 1px solid #000; height: auto;">
 
@@ -1116,6 +1123,12 @@ $(document).ready(function() {
     <script src="<?= APP_BASE['resources']; ?>js/requirejs/require.js" type="text/javascript" charset="utf-8"></script>
 
     <script>
+
+
+
+
+
+
       var globalEditor;
       require.config({
         baseUrl: window.location.protocol + "//" + window.location.host + window.location.pathname.split("/").slice(0, -1).join("/"),
@@ -1359,9 +1372,97 @@ $(document).ready(function() {
 
     });
 
+    function toggleContainer(element /*, targetId, direction = "left", action = "toggle"*/) {
+      /*
+      let isImage = element.tagName === "IMG";
+      let isChecked = isImage ? element.getAttribute("data-checked") === "true" : element.checked;
+ 
+      let $target = $("#" + targetId);
+ 
+      if (action === "toggle") {
+        if ($target.is(":visible")) {
+          action = "hide";
+        } else {
+          action = "show";
+        }
+      }
+ 
+      if (action === "show") {
+        $target.show("slide", { direction: direction }, 1000);
+      } else {
+        $target.hide("slide", { direction: direction }, 1000);
+      }
+ 
+      // Toggle checked state if it's an image
+      if (isImage) {
+        element.setAttribute("data-checked", action === "show");
+      }
+      */
 
+      let isChecked = element.getAttribute("data-checked") === "true";
 
+      if (isChecked) {
+        // Slide out (hide)
+        $("#details-container").animate({ width: "0px" }, 1000, function () {
+          $(this).hide();
+        });
+        $("#toggle-button").animate({ left: "0px" }, 1000);
+      } else {
+        // Slide in (show)
+        $("#details-container").show().animate({ width: "245px" }, 1000);
+        $("#toggle-button").animate({ left: "245px" }, 1000);
+      }
 
+      // Toggle the checked state
+      element.setAttribute("data-checked", !isChecked);
+    }
+
+    /*
+    function toggleSwitch(element, targetId, direction = "left", action = "toggle") {
+      let isImage = element.tagName === "IMG";
+      let isChecked = isImage ? element.getAttribute("data-checked") === "true" : element.checked;
+ 
+      let $target = $("#" + targetId);
+ 
+      if (action === "toggle") {
+        if ($target.is(":visible")) {
+          action = "hide";
+        } else {
+          action = "show";
+        }
+      }
+ 
+      if (action === "show") {
+        $target.show("slide", { direction: direction }, 1000);
+      } else {
+        $target.hide("slide", { direction: direction }, 1000);
+      }
+ 
+      // Toggle checked state if it's an image
+      if (isImage) {
+        element.setAttribute("data-checked", action === "show");
+      }
+    }
+ 
+    function toggleSwitch(imgElement) {
+      let isChecked = imgElement.getAttribute("data-checked") === "true";
+ 
+      if (isChecked) {
+        // Slide out (hide)
+        $("#details-container").animate({ width: "0px" }, 1000, function () {
+          $(this).hide();
+        });
+        $("#toggle-button").animate({ left: "0px" }, 1000);
+      } else {
+        // Slide in (show)
+        $("#details-container").show().animate({ width: "245px" }, 1000);
+        $("#toggle-button").animate({ left: "245px" }, 1000);
+      }
+ 
+      // Toggle the checked state
+      imgElement.setAttribute("data-checked", !isChecked);
+    }*/
+    /**/
     function toggleSwitch(element) {
 
       if (element.checked) {
@@ -1371,11 +1472,9 @@ $(document).ready(function() {
 
         //getElementById('hide_notice-container');
 
-        $('#app_container').slideDown("slow", function () {
-          // Animation complete.
-        });
+        $('#details-container').hide("slide", { direction: "right" }, 1000);
 
-        $('#details-container').slideDown("slow", function () {
+        $('#app_container').slideDown("slow", function () {
           // Animation complete.
         });
 
@@ -1409,9 +1508,7 @@ $(document).ready(function() {
           // Animation complete.
         });
 
-        $('#details-container').slideUp("slow", function () {
-          // Animation complete.
-        });
+        $('#details-container').hide("slide", { direction: "left" }, 1000);
 
         $('#hide_notice-container').slideUp("slow", function () {
           // Animation complete.

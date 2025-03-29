@@ -504,8 +504,6 @@ ob_start();
     });
 
 
-
-
   <?php } ?>
 
   // Function to sync Ace Editor content to hidden textarea before form submission

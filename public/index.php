@@ -78,40 +78,56 @@ if (__FILE__ == get_required_files()[0] && __FILE__ == realpath($_SERVER["SCRIPT
 if (isset($_ENV['PHP']['LOG_PATH']) && is_readable($path = APP_PATH . APP_ROOT . $_ENV['PHP']['LOG_PATH']) && filesize($path) >= 0) {
   $errors['ERROR_PATH'] = "\nwww-data@localhost:" . getcwd() . '# ' . basename($path) . "\n";
 
-  //if (stripos(PHP_OS, 'WIN') === 0) {
-  //  $errors['ERROR_LOG'] = shell_exec("powershell Get-Content -Tail 10 $path") . "\n";
-  //} else {
-  //  $errors['ERROR_LOG'] = shell_exec(APP_SUDO . " tail $path") . "\n";
-  //}
-
   $shellOutput = shell_exec(stripos(PHP_OS, 'LIN') === 0 ? "tail $path" : "powershell Get-Content -Tail 10 $path");
 
-  $pattern = '/^\[\d+-\w*-\d*\s+\d+:\d+:\d+\s+\w*\/\w+\]\s+Shutdown\s+constructor\s+called.$/';
+  $patterns = [
+    '/^\[\d+-\w*-\d*\s+\d+:\d+:\d+\s+\w*\/\w+\]\s+Connection\s+refused\s+-\s+Could\s+not\s+connect\s+to\s+' . SERVER_HOST . ':' . SERVER_PORT . '$/',
+    '/^\[\d+-\w*-\d*\s+\d+:\d+:\d+\s+\w*\/\w+\]\s+Shutdown\s+constructor\s+called\.$/'
+  ];
+
   $matches = [];
+  $log_matches = [];
 
   // Parse the shell output line by line
   foreach (explode("\n", (string) $shellOutput) as $line) {
-    if ($line == '')
+    if ($line == '') {
       continue;
-    elseif (preg_match($pattern, $line)) {
-      $matches[] = $line;
-    } else {
-      // If the line doesn't match the pattern, reset the matches array
+    }
+
+    $matched = false;
+    foreach ($patterns as $pattern) {
+      if (preg_match($pattern, $line)) {
+        $matches[] = $line;
+        $matched = true;
+        break; // Exit loop early on first match
+      }
+    }
+
+    if (!$matched) {
       $log_matches[] = $line;
     }
   }
 
-  $log_matches[] = end($matches) . ' [x' . count($matches) . ']';
+  // Append the last match count
+  if (!empty($matches)) {
+    $log_matches[] = end($matches) . ' [x' . count($matches) . ']';
+  }
 
-  if (count($matches) >= 10 && count($log_matches) <= 2)
-    unlink($path) and $errors['ERROR_PATH'] = (!is_file($path) ? trim($errors['ERROR_PATH']) . ' was completely removed.' : 'Error_log failed to be removed completely.') . "\n"; // header('Location: ' . APP_URL);
+  // Remove the log file if it exceeds conditions
+  if (count($matches) >= 10 && count($log_matches) <= 2) {
+    unlink($path);
+    $errors['ERROR_PATH'] = !is_file($path)
+      ? trim($errors['ERROR_PATH']) . ' was completely removed.'
+      : 'Error_log failed to be removed completely.';
+  }
 
   $errors['ERROR_LOG'] = implode("\n", $log_matches) . "\n\n";
 
-  if (isset($_GET[$error_log = basename($path)]) && $_GET[$error_log] == 'unlink')
+  // Allow manual log file deletion via GET request
+  if (isset($_GET[$error_log = basename($path)]) && $_GET[$error_log] == 'unlink') {
     unlink($path);
+  }
 }
-
 
 //dd($_SERVER); php_self, script_name, request_uri /folder/
 
@@ -306,7 +322,7 @@ if (/*APP_SELF === APP_PATH_PUBLIC*/ dirname(APP_SELF) === dirname(APP_PATH_PUBL
 
   usort($uiPaths, function ($a, $b) {
     $order = [
-      'ui.medication_log.php' => -100, // Always first
+      //'ui.medication_log.php' => -100, // Always first
       'ui.calendar.php' => -10,
       'ui.nodes.php' => -9,
       'ui.php.php' => -8,
@@ -429,7 +445,7 @@ if (/*APP_SELF === APP_PATH_PUBLIC*/ dirname(APP_SELF) === dirname(APP_PATH_PUBL
 
   if (defined('APP_ENV'))
     switch (APP_ENV) {
-      case 'development':
+      case 'develop':
         require_once 'idx.develop.php';
         break;
       case 'math':
@@ -438,7 +454,7 @@ if (/*APP_SELF === APP_PATH_PUBLIC*/ dirname(APP_SELF) === dirname(APP_PATH_PUBL
       case 'staging':
         require_once 'idx.stage.php';
         break;
-      case 'production':
+      case 'product':
       default:
         require_once 'idx.product.php';
         break;

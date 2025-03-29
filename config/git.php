@@ -136,7 +136,11 @@ function git_origin_sha_update()
 
   //dd($response);
 
-  $data = json_decode($response, true);
+  if (isset($response) && $response !== null) {
+    $errors['GIT_UPDATE'] .= "Failed to retrieve commit information.\n";
+
+    $data = json_decode($response, true);
+  }
 
   if ($data && isset($data['object']['sha'])) {
     $latest_remote_commit_sha = $data['object']['sha'];
@@ -230,7 +234,7 @@ if (isset($_SERVER['REQUEST_METHOD']) && $_SERVER['REQUEST_METHOD'] == 'POST')
       //  ob_start();
       //require_once APP_PATH . 'config' . DIRECTORY_SEPARATOR . 'git.php';
 
-      $command = (defined(APP_SUDO) ? APP_SUDO . '-u www-data ' : '') . 'git' . ' --git-dir="' . APP_PATH . APP_ROOT . '.git" --work-tree="' . APP_PATH . APP_ROOT . '" commit --allow-empty --dry-run';
+      $command = (defined('APP_SUDO') ? APP_SUDO . '-u www-data ' : '') . 'git' . ' --git-dir="' . APP_PATH . APP_ROOT . '.git" --work-tree="' . APP_PATH . APP_ROOT . '" commit --allow-empty --dry-run';
 
       // Append `; echo $?` to capture the exit code in the output
       $shellOutput = shell_exec("$command ; echo $?");
@@ -393,7 +397,7 @@ END;
 
       }
 
-      $command = (defined(APP_SUDO) ? APP_SUDO . '-u www-data ' : '') . 'git' . ' --git-dir="' . APP_PATH . APP_ROOT . '.git" --work-tree="' . APP_PATH . APP_ROOT . '" ' . $match[1];
+      $command = (defined('APP_SUDO') ? APP_SUDO . '-u www-data ' : '') . 'git' . ' --git-dir="' . APP_PATH . APP_ROOT . '.git" --work-tree="' . APP_PATH . APP_ROOT . '" ' . $match[1];
 
       $output[] = "$shell_prompt$command";
 

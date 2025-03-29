@@ -5,6 +5,47 @@
 //echo file_get_contents($url);
 
 //$url = 'https://' . ($_GET['url'] ?? $_POST['url'] ?? "php.net/manual/en/function.file-get-contents.php");
+
+
+$url = $_GET['url'];
+$ch = curl_init();
+curl_setopt($ch, CURLOPT_URL, $url);
+curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
+curl_setopt($ch, CURLOPT_FOLLOWLOCATION, 1);
+curl_setopt($ch, CURLOPT_HEADER, 0);
+curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, 0);
+curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, 0);
+curl_setopt($ch, CURLOPT_USERAGENT, $_SERVER['HTTP_USER_AGENT']);
+$data = curl_exec($ch);
+curl_close($ch);
+
+// Validate URL
+if (!filter_var($url, FILTER_VALIDATE_URL)) {
+    http_response_code(400);
+    die("Invalid URL");
+}
+
+// Fetch headers
+$headers = @get_headers($url, 1);
+if ($headers === false) {
+    http_response_code(500);
+    die("Failed to retrieve headers");
+}
+
+// Handle redirects
+if (isset($headers["Location"])) {
+    $url = is_array($headers["Location"]) ? end($headers["Location"]) : $headers["Location"];
+}
+
+$contentType = $headers["Content-Type"] ?? "text/html";
+$contentType = is_array($contentType) ? end($contentType) : $contentType;
+$contentType = explode(";", $contentType)[0];
+
+header("Content-Type: $contentType");
+
+echo $data;
+
+/*
 $query = $_SERVER['QUERY_STRING']; // Get everything after "?"
 $url = "https://www.php.net/cached.php?$query"; // Forward request to php.net
 
@@ -60,5 +101,6 @@ if ($contentType === "text/css") {
 }
 
 // Output content with correct MIME type
-header("Content-Type: " . $contentType);
+header("Content-Type: $contentType");
 echo $content;
+*/
