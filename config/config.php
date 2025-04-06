@@ -472,7 +472,7 @@ END
     } else if (!in_array($path = realpath('config.php'), get_required_files()))
       require_once $path;
 
-  if (defined('APP_PROJECT'))
+  if (isset($_GET['install']))
     require_once 'public' . DIRECTORY_SEPARATOR . 'install.php';
 }
 

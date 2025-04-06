@@ -1,5 +1,5 @@
 <?php
-global $errors;
+//global $errors;
 //if (isset($_GET['path']) && isset($_GET['file']) && $path = realpath($_GET['path'] . $_GET['file']))
 
 //$errors->{'TEXT_MANAGER'} = $path . "\n" . 'File Modified:    Rights:    Date of creation: ';
@@ -228,7 +228,7 @@ ob_start(); ?>
 
 <div id="app_calendar-container"
     class="<?= __FILE__ == get_required_files()[0] || (isset($_GET['app']) && $_GET['app'] == 'errors') && !isset($_GET['path']) ? 'selected' : '' ?>"
-    style="position: fixed; display: <?= __FILE__ == get_required_files()[0] || (isset($_GET['app']) && $_GET['app'] == 'errors') ? 'block' : 'block' ?>; resize: both; overflow: hidden;">
+    style="position: fixed; display: <?= __FILE__ == get_required_files()[0] || (isset($_GET['app']) && $_GET['app'] == 'errors') ? 'block' : 'block' ?>; overflow: hidden;">
     <div class="ui-widget-header"
         style="position: relative; display: inline-block; width: 100%; cursor: move; border-bottom: 1px solid #000;background-color: #FFF;">
         <label class="calendar-home" style="cursor: pointer;">
@@ -253,41 +253,40 @@ ob_start(); ?>
         </div>
     </div>
 
-    <form id="" name="ace_form"
+    <!-- form id="" name="ace_form"
         style="position: relative; width: 100%; height: 100%; border: 3px dashed #38B1FF; background-color: rgba(56,177,255,0.6);"
         action="app.directory.php<?= /*basename(__FILE__) . */ '?' . http_build_query(APP_QUERY + ['app' => 'errors']) . (defined('APP_ENV') && APP_ENV == 'development' ? '#!' : '') /* $c_or_p . '=' . (empty($_GET[$c_or_p]) ? '' : $$c_or_p->name) . '&amp;app=composer' */ ?>"
         method="POST" onsubmit="syncAceContent()">
-        <input type="hidden" name="ace_path" value="<?= /* APP_PATH . APP_BASE['public']; */ NULL; ?>" />
+        <input type="hidden" name="ace_path" value="<?= /* APP_PATH . APP_BASE['public']; */ NULL; ?>" / -->
 
-        <div class="ui-widget-content"
-            style="position: relative; display: block; margin: 0 auto; width: calc(100% - 2px); height: 50px; background-color: rgba(251,247,241);">
-            <div style="display: inline-block; text-align: left; width: 125px;">
-                <div class="npm-menu text-sm"
-                    style="cursor: pointer; font-weight: bold; padding-left: 25px; border: 1px solid #000;">Main Menu
-                </div>
-                <div class="text-xs" style="display: inline-block; border: 1px solid #000;">
-                    <a class="text-sm" id="app_calendar-frameMenuPrev"
-                        href="<?= (!empty(APP_QUERY) ? '?' . http_build_query(APP_QUERY) : '') . (defined('APP_ENV') && APP_ENV == 'development' ? '#!' : '#') ?>">
-                        &lt; Menu</a> | <a class="text-sm" id="app_calendar-frameMenuNext"
-                        href="<?= (!empty(APP_QUERY) ? '?' . http_build_query(APP_QUERY) : '') . (defined('APP_ENV') && APP_ENV == 'development' ? '#!' : '#') ?>">Init
-                        &gt;</a>
-                </div>
+    <div class="ui-widget-content"
+        style="position: relative; display: block; margin: 0 auto; width: calc(100% - 2px); height: 50px; background-color: rgba(251,247,241);">
+        <div style="display: inline-block; text-align: left; width: 125px;">
+            <div class="npm-menu text-sm"
+                style="cursor: pointer; font-weight: bold; padding-left: 25px; border: 1px solid #000;">Main Menu
             </div>
-            <!-- onclick="document.getElementsByClassName('ace_text-input')[0].value = globalEditor.getSession().getValue(); document.getElementsByClassName('ace_text-input')[0].name = 'editor';"   -->
-            <div
-                style="position:absolute; right: 100px; top: 10px; display: inline-block; width: auto; text-align: right;">
-                <input type="submit" name="ace_save" value="Save" class="btn" style="margin: -5px 5px 5px 0;">
+            <div class="text-xs" style="display: inline-block; border: 1px solid #000;">
+                <a class="text-sm" id="app_calendar-frameMenuPrev"
+                    href="<?= (!empty(APP_QUERY) ? '?' . http_build_query(APP_QUERY) : '') . (defined('APP_ENV') && APP_ENV == 'development' ? '#!' : '#') ?>">
+                    &lt; Menu</a> | <a class="text-sm" id="app_calendar-frameMenuNext"
+                    href="<?= (!empty(APP_QUERY) ? '?' . http_build_query(APP_QUERY) : '') . (defined('APP_ENV') && APP_ENV == 'development' ? '#!' : '#') ?>">Init
+                    &gt;</a>
             </div>
+        </div>
+        <!-- onclick="document.getElementsByClassName('ace_text-input')[0].value = globalEditor.getSession().getValue(); document.getElementsByClassName('ace_text-input')[0].name = 'editor';"   -->
+        <div style="position:absolute; right: 100px; top: 10px; display: inline-block; width: auto; text-align: right;">
+            <!-- input type="submit" name="ace_save" value="Save" class="btn" style="margin: -5px 5px 5px 0;">
+            </div -->
 
-            <div class="absolute"
+            <!-- div class="absolute"
                 style="position: absolute; display: inline-block; top: 5px; right: 0; text-align: right; float: right;">
                 <div class="text-xs" style="position: relative; display: inline-block;">
                     + 495 <a href="https://github.com/ajaxorg/ace/graphs/contributors">contributors</a>
-                    <br /><!-- a href="https://github.com/ajaxorg"><img src="resources/images/node.js.png" title="https://github.com/nodejs" width="18" height="18" /></a -->
+                    <br />< a href="https://github.com/ajaxorg"><img src="resources/images/node.js.png" title="https://github.com/nodejs" width="18" height="18" /></a>
                     <a style="color: blue; text-decoration-line: underline; text-decoration-style: solid;"
                         href="https://ace.c9.io/" title="https://ace.c9.io/">https://ace.c9.io/</a>
                 </div>
-            </div>
+            </div -->
             <div style="clear: both;"></div>
 
             <?= /*
@@ -360,7 +359,8 @@ else $count++;
                                 </div>
                             </label>
                             <div style="display: inline;">
-                                <span style="background-color: #38B1FF; color: #FFF; margin-top: 10px;">Medication log
+                                <span style="background-color: #38B1FF; color: #FFF; margin-top: 10px;">Medication
+                                    log
                                     <?= /* (version_compare(NPM_LATEST, NPM_VERSION, '>') != 0 ? 'v'.substr(NPM_LATEST, 0, similar_text(NPM_LATEST, NPM_VERSION)) . '<span class="update" style="color: green; cursor: pointer;">' . substr(NPM_LATEST, similar_text(NPM_LATEST, NPM_VERSION)) . '</span>' : 'v'.NPM_VERSION ); */ NULL; ?></span>
                                 <span style="background-color: #0078D7; color: white;"><code id="AceEditorVersionBox"
                                         class="text-sm" style="background-color: white; color: #0078D7;"></code></span>
@@ -526,8 +526,8 @@ if ($path)
             </div>
 
         </div>
-    </form>
-    <!-- div style="position: relative; display: inline-block; width: 100%; height: 100%; padding-left: 10px;">
+        <!-- /form -->
+        <!-- div style="position: relative; display: inline-block; width: 100%; height: 100%; padding-left: 10px;">
 
       <form style="display: inline;" autocomplete="off" spellcheck="false" action="<?= APP_URL . /*basename(__FILE__) .*/ '?' . http_build_query(APP_QUERY /*+ ['app' => 'errors']*/) . (defined('APP_ENV') && APP_ENV == 'development' ? '#!' : '') /* $c_or_p . '=' . (empty($_GET[$c_or_p]) ? '' : $$c_or_p->name) . '&amp;app=composer' */ ?>" method="GET">
         <input type="hidden" name="app" value="errors" />
@@ -568,10 +568,10 @@ if ($path)
 
 
 
-    <!-- <pre id="ace-editor" class="errors"></pre> -->
+        <!-- <pre id="ace-editor" class="errors"></pre> -->
 
+    </div>
 </div>
-
 
 <?php
 
