@@ -740,8 +740,8 @@ ob_end_clean();
 ob_start(); ?>
 
 <div id="app_timesheet-container"
-  class="<?= (APP_SELF == __FILE__ || isset($_GET['app']) && $_GET['app'] == 'timesheet' ? 'selected' : '') ?>"
-  style="display: none; <?= /* */ null; ?>border: 1px solid #000; width: 800px;">
+  class="<?= APP_SELF == __FILE__ || isset($_GET['app']) && $_GET['app'] == 'timesheet' ? 'selected' : '' ?>"
+  style="display: <?= isset($_GET['app']) && $_GET['app'] == 'timesheet' ? 'none' : 'none'; ?>; border: 1px solid #000; width: 800px;">
   <div class="header ui-widget-header" style=" text-align: center;">
     <div style="display: inline-block;">Weekly Time Sheet</div>
     <div style="display: inline; float: right; text-align: center;">[<a style="cursor: pointer; font-size: 13px;"
@@ -784,101 +784,111 @@ ob_start(); ?>
       $today->setTime(...explode(':', $current_time));
 
       $currentDate = new DateTime();
+      // $currentDate->setTime('06', '30'); 
+      ?>
 
-      // $currentDate->setTime('06', '30');
-      
-      echo $today->format('Y-m-d H:i:s');
+      <div style="">
+        <div style="float: left;"><a
+            href="?app=timesheet&date=<?= $date = date('Y-m-d', strtotime($today->format('Y-m-d') . ' -1 day')); ?>">|&Lang;|</a>
+        </div>
+      </div>
+      <div style="float: right;"><a
+          href="?app=timesheet&date=<?= $date = date('Y-m-d', strtotime($today->format('Y-m-d') . ' +2 day')); ?>">|&Rang;|</a>
+      </div>
+  </div>
 
-      while (true) { // $weekday <= 6
-      
-        //echo $today->format('Y-m-d'); // Output will be the date of the last Monday
-        $dayOfWeek = strtoupper($today->format('l'));
+  <?php echo $today->format('Y-m-d H:i:s');
 
-        // Get the current hour
-        $currentHour = $currentDate->format('G');
+  while (true) { // $weekday <= 6
+  
+    //echo $today->format('Y-m-d'); // Output will be the date of the last Monday
+    $dayOfWeek = strtoupper($today->format('l'));
 
-        // Determine the rotation based on the current hour
-        $rotationIndex = null;
+    // Get the current hour
+    $currentHour = $currentDate->format('G');
 
-        // If $rotationIndex is still null, use the last rotation (Night - Morning)
-        if ($rotationIndex === null) {
-          $rotationIndex = count($timeRanges) - 1;
-        } else {
-          $rotationIndex = ($rotationIndex < 0 ? 0 : ($rotationIndex >= 4 ? 0 : $rotationIndex)); //  || 
-          //dd($rotationIndex); // $rotationIndex -= 1;
-        }
+    // Determine the rotation based on the current hour
+    $rotationIndex = null;
+
+    // If $rotationIndex is still null, use the last rotation (Night - Morning)
+    if ($rotationIndex === null) {
+      $rotationIndex = count($timeRanges) - 1;
+    } else {
+      $rotationIndex = ($rotationIndex < 0 ? 0 : ($rotationIndex >= 4 ? 0 : $rotationIndex)); //  || 
+      //dd($rotationIndex); // $rotationIndex -= 1;
+    }
 
 
-        //dd($rotationIndex);
-      
-        foreach ($timeRanges as $index => $range) {
-          if ($currentHour >= $range[1] && $currentHour < $range[2]) {
-            $rotationIndex = ($index < 0 ? 0 : ($index >= 4 ? 0 : $index));
-            break;
-          }
-        }
+    //dd($rotationIndex);
+  
+    foreach ($timeRanges as $index => $range) {
+      if ($currentHour >= $range[1] && $currentHour < $range[2]) {
+        $rotationIndex = ($index < 0 ? 0 : ($index >= 4 ? 0 : $index));
+        break;
+      }
+    }
 
-        // Define the time periods for each rotation
-        $timePeriods = [
-          ['NIGHT', 'MORNING'],
-          ['MORNING', 'AFTERNOON'],
-          ['AFTERNOON', 'EVENING'],
-          ['EVENING', 'NIGHT'],
-        ];
+    // Define the time periods for each rotation
+    $timePeriods = [
+      ['NIGHT', 'MORNING'],
+      ['MORNING', 'AFTERNOON'],
+      ['AFTERNOON', 'EVENING'],
+      ['EVENING', 'NIGHT'],
+    ];
 
-        // Use the selected rotation index to determine the time periods
-        [$firstPeriod, $secondPeriod] = $timePeriods[$rotationIndex];
+    // Use the selected rotation index to determine the time periods
+    [$firstPeriod, $secondPeriod] = $timePeriods[$rotationIndex];
 
-        $currentTime = $currentDate;
+    $currentTime = $currentDate;
 
-        $periodTimes = [
-          'MORNING' => ['start' => '06:00:00', 'end' => '12:00:00'],
-          'AFTERNOON' => ['start' => '12:00:00', 'end' => '18:00:00'],
-          'EVENING' => ['start' => '18:00:00', 'end' => '22:00:00'],
-          'NIGHT' => ['start' => '22:00:00', 'end' => '23:59:59'],
-        ];
+    $periodTimes = [
+      'MORNING' => ['start' => '06:00:00', 'end' => '12:00:00'],
+      'AFTERNOON' => ['start' => '12:00:00', 'end' => '18:00:00'],
+      'EVENING' => ['start' => '18:00:00', 'end' => '22:00:00'],
+      'NIGHT' => ['start' => '22:00:00', 'end' => '23:59:59'],
+    ];
 
-        $firstPeriodStart = new DateTime($periodTimes[$firstPeriod]['start']);
-        $firstPeriodEnd = new DateTime($periodTimes[$firstPeriod]['end']);
-        $secondPeriodStart = new DateTime($periodTimes[$secondPeriod]['start']);
-        $secondPeriodEnd = new DateTime($periodTimes[$secondPeriod]['end']);
+    $firstPeriodStart = new DateTime($periodTimes[$firstPeriod]['start']);
+    $firstPeriodEnd = new DateTime($periodTimes[$firstPeriod]['end']);
+    $secondPeriodStart = new DateTime($periodTimes[$secondPeriod]['start']);
+    $secondPeriodEnd = new DateTime($periodTimes[$secondPeriod]['end']);
 
-        // Determine the background color for the current time period
-        $backgroundColorFirst = ($firstPeriod === $timePeriods[$rotationIndex][0]) ? '#00FF00' : 'white';
-        $backgroundColorSecond = ($secondPeriod === $timePeriods[$rotationIndex][1]) ? '#FF0000' : 'white';
+    // Determine the background color for the current time period
+    $backgroundColorFirst = ($firstPeriod === $timePeriods[$rotationIndex][0]) ? '#00FF00' : 'white';
+    $backgroundColorSecond = ($secondPeriod === $timePeriods[$rotationIndex][1]) ? '#FF0000' : 'white';
 
-        // Determine if "OUT" should be highlighted in red
-        $highlightOut = false;
-        if ($firstPeriodStart <= $currentTime && $currentTime <= $firstPeriodEnd) {
-          // $highlightOut = ($currentTime->format('i') >= 1 && $currentTime->format('i') <= 59);
-          $remainingTime = $firstPeriodEnd->getTimestamp() - $currentTime->getTimestamp();
-          $highlightOut = ($remainingTime <= 3599); // 3599 seconds = 59 minutes and 59 seconds
-        }
+    // Determine if "OUT" should be highlighted in red
+    $highlightOut = false;
+    if ($firstPeriodStart <= $currentTime && $currentTime <= $firstPeriodEnd) {
+      // $highlightOut = ($currentTime->format('i') >= 1 && $currentTime->format('i') <= 59);
+      $remainingTime = $firstPeriodEnd->getTimestamp() - $currentTime->getTimestamp();
+      $highlightOut = ($remainingTime <= 3599); // 3599 seconds = 59 minutes and 59 seconds
+    }
 
-        /* Debug statements
-        echo "First Period Start: " . $firstPeriodStart->format('Y-m-d H:i:s') . "<br />\n";
-        echo "First Period End: " . $firstPeriodEnd->format('Y-m-d H:i:s') . "<br />\n";
-        echo "Second Period Start: " . $secondPeriodStart->format('Y-m-d H:i:s') . "<br />\n";
-        echo "Second Period End: " . $secondPeriodEnd->format('Y-m-d H:i:s') . "<br />\n";
-        echo "Current Time: " . $currentTime->format('Y-m-d H:i:s') . "<br />\n";
-        echo "Highlight Out: " . ($highlightOut ? 'true' : 'false') . "<br />\n";
-        */
-        //dd();
+    /* Debug statements
+    echo "First Period Start: " . $firstPeriodStart->format('Y-m-d H:i:s') . "<br />\n";
+    echo "First Period End: " . $firstPeriodEnd->format('Y-m-d H:i:s') . "<br />\n";
+    echo "Second Period Start: " . $secondPeriodStart->format('Y-m-d H:i:s') . "<br />\n";
+    echo "Second Period End: " . $secondPeriodEnd->format('Y-m-d H:i:s') . "<br />\n";
+    echo "Current Time: " . $currentTime->format('Y-m-d H:i:s') . "<br />\n";
+    echo "Highlight Out: " . ($highlightOut ? 'true' : 'false') . "<br />\n";
+    */
+    //dd();
 //if (($firstPeriodStart <= $currentTime && $currentTime <= $firstPeriodEnd) || ($secondPeriodStart <= $currentTime && $currentTime <= $secondPeriodEnd)) {
 //    $highlightOut = true;
 //}
-      
-        // Set background color for the highlighted column
-        if (!$highlightOut) {
-          $backgroundColorFirst = '#00FF00'; // Green
-          $backgroundColorSecond = 'white';
-        } else {
-          $backgroundColorFirst = 'white';
-          $backgroundColorSecond = '#FF0000'; // Red
-        }
-        /**/
-        if ($today->format('N') == 1)
-          echo <<<END
+  
+    // Set background color for the highlighted column
+    if (!$highlightOut) {
+      $backgroundColorFirst = '#00FF00'; // Green
+      $backgroundColorSecond = 'white';
+    } else {
+      $backgroundColorFirst = 'white';
+      $backgroundColorSecond = '#FF0000'; // Red
+    }
+    /**/
+    if ($today->format('N') == 1)
+      echo <<<END
       <div style="display: flex; align-items: center; justify-content: center; font-size: 14px; width: 775px; border: 1px solid #000;">
         <div style="display: inline-block; text-align: left; width: 145px; padding: 10px;">DAYS OF WEEK</div>
 
@@ -910,22 +920,22 @@ ob_start(); ?>
 
 END;
 
-        $defaultBackgroundColor = ($today->format('Y-m-d') === $currentDate->format('Y-m-d') ? '#FFFF00' : '#FFFFFF');
+    $defaultBackgroundColor = ($today->format('Y-m-d') === $currentDate->format('Y-m-d') ? '#FFFF00' : '#FFFFFF');
 
-        //dd($highlightOut);
-      
-        if (!$highlightOut) {
-          $backgroundColorThird = '#BFFF3F'; // green
-          $backgroundColorFourth = $defaultBackgroundColor;
-        } else {
-          $backgroundColorThird = $defaultBackgroundColor; // orange;
-          $backgroundColorFourth = '#FFBF3F';
-        }
+    //dd($highlightOut);
+  
+    if (!$highlightOut) {
+      $backgroundColorThird = '#BFFF3F'; // green
+      $backgroundColorFourth = $defaultBackgroundColor;
+    } else {
+      $backgroundColorThird = $defaultBackgroundColor; // orange;
+      $backgroundColorFourth = '#FFBF3F';
+    }
 
-        //$rotationIndex -= 1;
-      
-        if (!isset($weeklyHours[$today->format('Y-m-d')])) {
-          echo <<<END
+    //$rotationIndex -= 1;
+  
+    if (!isset($weeklyHours[$today->format('Y-m-d')])) {
+      echo <<<END
       <div style="font-size: 14px; width: 775px; border: 1px solid #000; background-color: $defaultBackgroundColor;">
         <div style="display: inline-block; text-align: left; width: 120px;">
           <div style="border: 1px solid #000; padding: 10px;" title="{$today->format('Y-m-d')}">{$dayOfWeek}</div>
@@ -948,9 +958,9 @@ END;
         </div>
       </div>
 END;
-        } else {
-          $date = $today->format('Y-m-d');
-          echo <<<END
+    } else {
+      $date = $today->format('Y-m-d');
+      echo <<<END
       <div style="font-size: 14px; width: 775px; border: 1px solid #000; background-color: $defaultBackgroundColor;">
         <div style="display: inline-block; text-align: left; width: 120px;">
           <div style="border: 1px solid #000; padding: 10px;" title="{$today->format('Y-m-d')}">{$dayOfWeek}</div>
@@ -958,28 +968,28 @@ END;
         <div style="display: inline-block; text-align: center; width: 130px;">
           <div style="display: inline-block; background-color: $backgroundColorThird; border-right: 1px solid #000; text-align: center; padding: 10px; margin: 0 -2px; height: 100%; width: 50%; box-sizing: border-box;">
 END;
-          echo $weeklyHours[$date][$rotationIndex][1]->h . '.' . $weeklyHours[$date][$rotationIndex][1]->i;
-          echo <<<END
+      echo $weeklyHours[$date][$rotationIndex][1]->h . '.' . $weeklyHours[$date][$rotationIndex][1]->i;
+      echo <<<END
 </div>
           <div style="display: inline-block; background-color: $backgroundColorFourth; border-left: 1px solid #000; text-align: center; padding: 10px; margin: 0 -2px; height: 100%; width: 50%; box-sizing: border-box;">
 END;
-          echo $weeklyHours[$date][$rotationIndex][2]->h . ':' . $weeklyHours[$date][$rotationIndex][2]->i . ':' . $weeklyHours[$date][$rotationIndex][2]->s;
-          echo <<<END
+      echo $weeklyHours[$date][$rotationIndex][2]->h . ':' . $weeklyHours[$date][$rotationIndex][2]->i . ':' . $weeklyHours[$date][$rotationIndex][2]->s;
+      echo <<<END
 </div>
         </div>
         <div style="display: inline-block; text-align: center; width: 140px;">
           <div style="display: inline-block; border-left: 1px solid #000; border-right: 1px solid #000; text-align: center; padding: 10px; margin: 0 -2px; height: 100%; width: 50%; box-sizing: border-box;">
 END;
 
-          $rotationNextIdx = ($rotationIndex + 1 < 0 ? 0 : ($rotationIndex + 1 > 3 ? 0 : $rotationIndex)) + 1;
+      $rotationNextIdx = ($rotationIndex + 1 < 0 ? 0 : ($rotationIndex + 1 > 3 ? 0 : $rotationIndex)) + 1;
 
-          echo $weeklyHours[$date][$rotationNextIdx][1]->h . '.' . $weeklyHours[$date][$rotationNextIdx][1]->i;
-          echo <<<END
+      echo $weeklyHours[$date][$rotationNextIdx][1]->h . '.' . $weeklyHours[$date][$rotationNextIdx][1]->i;
+      echo <<<END
 </div>
           <div style="display: inline-block; border-left: 1px solid #000; border-right: 1px solid #000; text-align: center; padding: 10px; margin: 0 -2px; height: 100%; width: 50%; box-sizing: border-box;">
 END;
-          echo $weeklyHours[$date][$rotationNextIdx][2]->h . ':' . $weeklyHours[$date][$rotationNextIdx][2]->i . ':' . $weeklyHours[$date][$rotationNextIdx][2]->s;
-          echo <<<END
+      echo $weeklyHours[$date][$rotationNextIdx][2]->h . ':' . $weeklyHours[$date][$rotationNextIdx][2]->i . ':' . $weeklyHours[$date][$rotationNextIdx][2]->s;
+      echo <<<END
 </div>
         </div>
         <div style="display: inline-block; text-align: center; width: 130px;">
@@ -989,21 +999,21 @@ END;
         <div style="display: inline-block; text-align: center; width: 238px;">
           <div style="display: inline-block; border-left: 1px solid #000; border-right: 1px solid #000; text-align: center; padding: 10px; margin: 0 -2px; height: 100%; width: 50%; box-sizing: border-box;">
 END;
-          echo $weeklyHours[$date][0][1]->h + $weeklyHours[$date][1][1]->h + $weeklyHours[$date][2][1]->h + $weeklyHours[$date][3][1]->h;
-          echo <<<END
+      echo $weeklyHours[$date][0][1]->h + $weeklyHours[$date][1][1]->h + $weeklyHours[$date][2][1]->h + $weeklyHours[$date][3][1]->h;
+      echo <<<END
 </div>
           <div style="display: inline-block; border-left: 1px solid #000; border-right: 1px solid #000; text-align: center; padding: 10px; margin: 0 -2px; height: 100%; width: 50%; box-sizing: border-box;">0</div>
         </div>
       </div>
 
 END;
-        }
+    }
 
-        //dd($totalHours[$rotationIndex][2]);
-      
+    //dd($totalHours[$rotationIndex][2]);
+  
 
-        if ($today->format('N') == 7) {//   $totalHours
-          echo <<<END
+    if ($today->format('N') == 7) {//   $totalHours
+      echo <<<END
       </div>
       <div style="font-size: 14px; width: 775px; border: 1px solid #000; background-color: #E6EAF6; font-weight: bold;">
         <div style="display: inline-block; text-align: left; width: 120px;">
@@ -1012,27 +1022,27 @@ END;
         <div style="display: inline-block; text-align: center; width: 130px;">
           <div style="display: inline-block; border-right: 1px solid #000; text-align: center; padding: 10px; margin: 0 -2px; height: 100%; width: 50%; box-sizing: border-box;">
 END;
-          echo $totalHours[$rotationIndex][1]->h;
-          echo <<<END
+      echo $totalHours[$rotationIndex][1]->h;
+      echo <<<END
 </div>
           <div style="display: inline-block; border-left: 1px solid #000; text-align: center; padding: 10px; margin: 0 -2px;  height: 100%; width: 50%; box-sizing: border-box;">
 END;
-          echo $totalHours[$rotationIndex][2]->h . ':' . $totalHours[$rotationIndex][2]->i . ':' . $totalHours[$rotationIndex][2]->s;
-          echo <<<END
+      echo $totalHours[$rotationIndex][2]->h . ':' . $totalHours[$rotationIndex][2]->i . ':' . $totalHours[$rotationIndex][2]->s;
+      echo <<<END
 </div>
         </div>
         <div style="display: inline-block; text-align: center; width: 140px;">
           <div style="display: inline-block; border-left: 1px solid #000; border-right: 1px solid #000; text-align: center; padding: 10px; margin: 0 -2px; height: 100%; width: 50%; box-sizing: border-box;">
 
 END;
-          $rotationNextIdx = ($rotationIndex + 1 < 0 ? 0 : ($rotationIndex + 1 > 3 ? 0 : $rotationIndex)) + 1;
-          echo $totalHours[$rotationNextIdx][1]->h;
-          echo <<<END
+      $rotationNextIdx = ($rotationIndex + 1 < 0 ? 0 : ($rotationIndex + 1 > 3 ? 0 : $rotationIndex)) + 1;
+      echo $totalHours[$rotationNextIdx][1]->h;
+      echo <<<END
 </div>
           <div style="display: inline-block; border-left: 1px solid #000; border-right: 1px solid #000; text-align: center; padding: 10px; margin: 0 -2px; height: 100%; width: 50%; box-sizing: border-box;">
 END;
-          echo $totalHours[$rotationNextIdx][2]->h . ':' . $totalHours[$rotationNextIdx][2]->i . ':' . $totalHours[$rotationNextIdx][2]->s;
-          echo <<<END
+      echo $totalHours[$rotationNextIdx][2]->h . ':' . $totalHours[$rotationNextIdx][2]->i . ':' . $totalHours[$rotationNextIdx][2]->s;
+      echo <<<END
 </div>
         </div>
         <div style="display: inline-block; text-align: center; width: 130px;">
@@ -1042,8 +1052,8 @@ END;
         <div style="display: inline-block; text-align: center; width: 238px;">
           <div style="display: inline-block; border-left: 1px solid #000; border-right: 1px solid #000; text-align: center; padding: 10px; margin: 0 -2px; height: 100%; width: 50%; box-sizing: border-box;">
 END;
-          echo $totalHours[0][1]->h + $totalHours[1][1]->h + $totalHours[2][1]->h + $totalHours[3][1]->h;
-          echo <<<END
+      echo $totalHours[0][1]->h + $totalHours[1][1]->h + $totalHours[2][1]->h + $totalHours[3][1]->h;
+      echo <<<END
 </div>
           <div style="display: inline-block; border-left: 1px solid #000; border-right: 1px solid #000; text-align: center; padding: 10px; margin: 0 -2px; height: 100%; width: 50%; box-sizing: border-box;">0</div>
         </div>
@@ -1053,317 +1063,309 @@ END;
     </form>
   </div>
 END;
-        }
-        $today->modify('+1 day');
+    }
+    $today->modify('+1 day');
 
-        if ($today->format('l') === 'Monday') {
-          break; // Exit the loop when it's Monday again
-        }
-      }
+    if ($today->format('l') === 'Monday') {
+      break; // Exit the loop when it's Monday again
+    }
+  }
 
 
-      ?>
+  ?>
 
-      <!-- <pre id="ace-editor" class="ace_editor"></pre> -->
+  <!-- <pre id="ace-editor" class="ace_editor"></pre> -->
 
-  </div>
+</div>
 
-  <?php $app[$timesheet]['body'] = ob_get_contents();
-  ob_end_clean();
+<?php $app[$timesheet]['body'] = ob_get_contents();
+ob_end_clean();
 
-  if (false) { ?>
-    <script type="text/javascript">
-    <?php }
-  ob_start(); ?>
-    var idleTime = -1;
-    var intervalID = [0, 1];
-    var isIntervalActive = false;
-    var occupiedTime = 0;
-    var date = new Date();
-    var clock = new Date().toLocaleTimeString('en-US', {
-      hour: '2-digit', hour12: true, minute: '2-digit', second:
-        '2-digit'
-    });
+if (false) { ?>
+  <script type="text/javascript">
+  <?php }
+ob_start(); ?>
+  var idleTime = -1;
+  var intervalID = [0, 1];
+  var isIntervalActive = false;
+  var occupiedTime = 0;
+  var date = new Date();
+  var clock = new Date().toLocaleTimeString('en-US', {
+    hour: '2-digit', hour12: true, minute: '2-digit', second:
+      '2-digit'
+  });
+  var time = new Date().toLocaleTimeString('en-US', {
+    hour: '2-digit', hour12: true, minute: '2-digit', second:
+      '2-digit'
+  });
+  var months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sept", "Oct", "Nov", "Dec"];
+  var month = months[date.getMonth()];
+
+  if (typeof snd !== 'undefined') {
+    snd.loop = true;
+  } else {
+    // Variable snd is not defined
+    console.log('Variable snd is not defined');
+  }
+
+  function play_beep() {
+    snd.play();
+  }
+
+  function stop_beep() {
+    snd.pause();
+  }
+
+  function clockIncrement() {
     var time = new Date().toLocaleTimeString('en-US', {
       hour: '2-digit', hour12: true, minute: '2-digit', second:
         '2-digit'
     });
-    var months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sept", "Oct", "Nov", "Dec"];
-    var month = months[date.getMonth()];
-
-    if (typeof snd !== 'undefined') {
-      snd.loop = true;
-    } else {
-      // Variable snd is not defined
-      console.log('Variable snd is not defined');
-    }
-
-    function play_beep() {
-      snd.play();
-    }
-
-    function stop_beep() {
-      snd.pause();
-    }
-
-    function clockIncrement() {
-      var time = new Date().toLocaleTimeString('en-US', {
-        hour: '2-digit', hour12: true, minute: '2-digit', second:
-          '2-digit'
-      });
-      var clocktime = document.getElementById('clockTime');
-      var weekday = new Array(7);
-      weekday[0] = "Sun,";
-      weekday[1] = "Mon,";
-      weekday[2] = "Tues,";
-      weekday[3] = "Wed,";
-      weekday[4] = "Thurs,";
-      weekday[5] = "Fri,";
-      weekday[6] = "Sat,";
+    var clocktime = document.getElementById('clockTime');
+    var weekday = new Array(7);
+    weekday[0] = "Sun,";
+    weekday[1] = "Mon,";
+    weekday[2] = "Tues,";
+    weekday[3] = "Wed,";
+    weekday[4] = "Thurs,";
+    weekday[5] = "Fri,";
+    weekday[6] = "Sat,";
 
 
-      clocktime.innerHTML = '<a href="#" onclick="document.getElementById(\'app_calendar-container\').style.display=\'block\';"><i style="background-color: white; color: #0078D7;"> ' + weekday[date.getDay()] + ' ' + time +
-        ' ' + month + ' ' + date.getDate() + ' ' + date.getFullYear() + ' </i></a>';
+    clocktime.innerHTML = '<a href="#" onclick="document.getElementById(\'app_calendar-container\').style.display=\'block\';"><i style="background-color: white; color: #0078D7;"> ' + weekday[date.getDay()] + ' ' + time +
+      ' ' + month + ' ' + date.getDate() + ' ' + date.getFullYear() + ' </i></a>';
 
-      var dateSlot = document.getElementById('date_slot');
-      //var date = new Date();
+    var dateSlot = document.getElementById('date_slot');
+    //var date = new Date();
 
-      const monthInt = String(date.getMonth() + 1).padStart(2, '0'); // Months are 0-based
-      const year = date.getFullYear();
-      const day = String(date.getDate()).padStart(2, '0');
-      dateSlot.value = `${year}-${monthInt}-${day}`; // date.toISOString().split('T')[0];
+    const monthInt = String(date.getMonth() + 1).padStart(2, '0'); // Months are 0-based
+    const year = date.getFullYear();
+    const day = String(date.getDate()).padStart(2, '0');
+    dateSlot.value = `${year}-${monthInt}-${day}`; // date.toISOString().split('T')[0];
 
-      var timeSlot = document.getElementById('time_slot');
+    var timeSlot = document.getElementById('time_slot');
 
-      timeSlot.value = date.toLocaleTimeString('en-GB', {
-        hour: '2-digit',
-        minute: '2-digit',
-        hour12: false
-      });
-
-    }
-
-    function startInterval() {
-      if (!isIntervalActive) {
-        intervalID[1] = setInterval(timerIncrement, 1000);
-        isIntervalActive = true;
-        console.log('Interval started.');
-      } else {
-        console.log('Interval is already active.');
-      }
-    }
-
-    function stopInterval() {
-      if (isIntervalActive) {
-        clearInterval(intervalID[1]);
-        isIntervalActive = false;
-        console.log('Interval stopped.');
-      } else {
-        console.log('Interval is not active.');
-      }
-    }
-
-
-    var typedInstances = [];
-
-    $(document).ready(function () {
-
-      intervalID[0] = setInterval(clockIncrement, 1000); // 1 second
-
-      $('#ts-status-light').click(function () {
-        // Pause the interval when the button is clicked
-
-        if (isIntervalActive) {
-          stopInterval();
-          $("#ts-status-light").attr('src', 'resources/images/timesheet-light-R.gif');
-          $("#idleTime").html('<i style="color: red;">[Stopped] at: ' + toTime(occupiedTime)['time'] + '</i>');
-        } else {
-          startInterval();
-          $("#ts-status-light").attr('src', 'resources/images/timesheet-light-GG.gif');
-        }
-        //console.log('Interval paused.');
-      });
-
-      // Increment the idle time counter every minute.
-      startInterval(); // intervalID = setInterval(timerIncrement, 1000); // 1 second
-      time = date.toLocaleTimeString('en-US', { hour: '2-digit', hour12: false, minute: '2-digit', second: '2-digit' });
-
-      // Zero the idle timer on mouse movement.
-      $(this).mousemove(function (e) {
-        if (idleTime >= 11)
-          idlePenalty({ idletime: { time: time, idle: toTime(idleTime)['time'] } });
-        idleTime = -1;
-      });
-      $(this).keypress(function (e) {
-        if (idleTime >= 11)
-          idlePenalty({ idletime: { time: time, idle: toTime(idleTime)['time'] } });
-        idleTime = -1;
-      });
-      //$("#idleTime").text(month + ' ' + date.getDate() + ' ' + date.getFullYear() + ' ' + time);
-
-
+    timeSlot.value = date.toLocaleTimeString('en-GB', {
+      hour: '2-digit',
+      minute: '2-digit',
+      hour12: false
     });
 
-    /* https://stackoverflow.com/questions/69264746/how-to-convert-seconds-to-time-in-javascript */
-    function toTime(duration) {
-      // if (duration < 0) return "-" + toTime(-duration);
-      // return new Date(duration * 1000).toISOString().substr(11, 8);
-      // Hours, minutes and seconds
-      var time = new Array();
-      var hrs = ~~(duration / 3600);
-      var mins = ~~((duration % 3600) / 60);
-      var secs = ~~duration % 60;
-      let ret = String(hrs).padStart(2, '0') + ":" + String(mins).padStart(2, '0') + ":" + String(secs).padStart(2, '0');
-      time['hrs'] = hrs;
-      time['mins'] = mins;
-      time['secs'] = secs;
-      time['time'] = ret;
-      return time;
+  }
+
+  function startInterval() {
+    if (!isIntervalActive) {
+      intervalID[1] = setInterval(timerIncrement, 1000);
+      isIntervalActive = true;
+      console.log('Interval started.');
+    } else {
+      console.log('Interval is already active.');
     }
+  }
 
-    function idlePenalty(idletimeobj) {
-      console.log(snd);
-      if (typeof snd !== 'undefined') { snd.play(); }
-      /* var lyricIds=['#lyric-1', '#lyric-2' , '#lyric-3' , '#lyric-4' , '#lyric-5' , '#lyric-6' , '#lyric-7' , '#lyric-8', '#lyric-9' , '#lyric-10' , '#lyric-11' ]; function startTyped(index) { if (index < lyricIds.length) { var currentId=lyricIds[index]; var nextId=lyricIds[index + 1]; new Typed(currentId, { strings: [document.querySelector(currentId).textContent], typeSpeed: 10, backSpeed: 0, loop: false, onComplete: function (self) { startTyped(index + 1); } }); } } startTyped(0); */
-      console.log('Current snd current time: ' + snd.currentTime);
-      document.getElementById('adhd_song-container').style.display = 'block';
-      var jsonFile;
-      date = new Date();
-      time = date.toLocaleTimeString('en-US', { hour: '2-digit', hour12: false, minute: '2-digit', second: '2-digit' });
-      // .replace(/AM|PM/,'') console.log("File Recorded - Time: " + idleTime);
-      $.ajax({
-        url: '<?= (is_dir($path = APP_PATH . APP_BASE['public']) && getcwd() == realpath($path) ? '1.' . APP_BASE['public'] : '') . basename(__FILE__) . '' ?>',
-        type: 'POST',
-        data: idletimeobj, // { idletime: { time: time, idle: toTime(idleTime)['time'], note: "" } }
-        dataType: 'json',
-        success: function (msg) {
-          console.log(msg);
-          $.getJSON("app.timesheet.php?json", function (json_decode) {
-            var count_idle = 0;
-            console.log(json_decode); // this will show the info it in console //json_decode=//JSON.parse(JSON.stringify(json));
-            Object.keys(json_decode).forEach(key => { Object.keys(json_decode[key]).forEach(key1 => { count_idle += 1; }); });
-
-            console.log(count_idle);
-
-            if (typeof snd !== 'undefined') { snd.stop(); }
-            $("#stats").html('Idle: [' + count_idle + '] ' + '&nbsp;&nbsp;' + '' + ' <span style="color: red;">01:00:00');
-
-            function myFunction(item, index, arr) {
-              console.log(item);
-            }
-          });
-          // fetch(APP_BASE['database'] . "weekly-timesheet-<?= date('Y-m'); ?>.json").then(res => res.json()).then(data => jsonFile = JSON.parse(data));
-        },
-        error: function (jqXHR, textStatus) {
-          console.log(jqXHR.responseText);
-          let responseText = jQuery.parseJSON(jqXHR.responseText);
-          console.log(responseText);
-        }
-      });
-
+  function stopInterval() {
+    if (isIntervalActive) {
+      clearInterval(intervalID[1]);
+      isIntervalActive = false;
+      console.log('Interval stopped.');
+    } else {
+      console.log('Interval is not active.');
     }
+  }
 
-    function timerIncrement() {
-      //snd.play();
 
-      // for now
-      date = new Date();
-      time = date.toLocaleTimeString('en-US', { hour: '2-digit', hour12: true, minute: '2-digit', second: '2-digit' });
-      idleTime = idleTime + 1;
-      idleDateTime = new Date(idleTime * 1000).toISOString().substr(11, 8);
+  var typedInstances = [];
 
-      console.log(((idleTime >= 1) ? 'Idle: ' + idleTime + ' ' : '') + 'Work: ' + occupiedTime);
+  $(document).ready(function () {
 
-      if (idleTime <= 0) { $("#ts-status-light").attr('src', 'resources/images/timesheet-light-R.gif'); } if (idleTime >
-        1) { // 1 second
-        //window.location.reload();
-        $("#idleTime").html('<i style="color: blue;">[Idling] for: ' + toTime(occupiedTime)['time'] + '</i>');
+    intervalID[0] = setInterval(clockIncrement, 1000); // 1 second
 
-        if (idleTime >= 10) { // 60 second
+    $('#ts-status-light').click(function () {
+      // Pause the interval when the button is clicked
 
-          $("#ts-status-light").attr('src', 'resources/images/timesheet-light-G.gif');
+      if (isIntervalActive) {
+        stopInterval();
+        $("#ts-status-light").attr('src', 'resources/images/timesheet-light-R.gif');
+        $("#idleTime").html('<i style="color: red;">[Stopped] at: ' + toTime(occupiedTime)['time'] + '</i>');
+      } else {
+        startInterval();
+        $("#ts-status-light").attr('src', 'resources/images/timesheet-light-GG.gif');
+      }
+      //console.log('Interval paused.');
+    });
 
-          try {
-            // Attempt to play the media element
-            if (typeof snd !== 'undefined') {
-              snd.play();
-            }
+    // Increment the idle time counter every minute.
+    startInterval(); // intervalID = setInterval(timerIncrement, 1000); // 1 second
+    time = date.toLocaleTimeString('en-US', { hour: '2-digit', hour12: false, minute: '2-digit', second: '2-digit' });
 
-          } catch (error) {
-            // Check if the error is a DOMException
-            if (error instanceof DOMException && error.name === 'NotAllowedError') {
-              // Handle the error (e.g., show a message to the user)
-              console.error('The play method is not allowed by the user agent or the platform.');
-            } else {
-              // If it's a different type of error, rethrow it
-              throw error;
-            }
+    // Zero the idle timer on mouse movement.
+    $(this).mousemove(function (e) {
+      if (idleTime >= 11)
+        idlePenalty({ idletime: { time: time, idle: toTime(idleTime)['time'] } });
+      idleTime = -1;
+    });
+    $(this).keypress(function (e) {
+      if (idleTime >= 11)
+        idlePenalty({ idletime: { time: time, idle: toTime(idleTime)['time'] } });
+      idleTime = -1;
+    });
+    //$("#idleTime").text(month + ' ' + date.getDate() + ' ' + date.getFullYear() + ' ' + time);
+
+
+  });
+
+  /* https://stackoverflow.com/questions/69264746/how-to-convert-seconds-to-time-in-javascript */
+  function toTime(duration) {
+    // if (duration < 0) return "-" + toTime(-duration);
+    // return new Date(duration * 1000).toISOString().substr(11, 8);
+    // Hours, minutes and seconds
+    var time = new Array();
+    var hrs = ~~(duration / 3600);
+    var mins = ~~((duration % 3600) / 60);
+    var secs = ~~duration % 60;
+    let ret = String(hrs).padStart(2, '0') + ":" + String(mins).padStart(2, '0') + ":" + String(secs).padStart(2, '0');
+    time['hrs'] = hrs;
+    time['mins'] = mins;
+    time['secs'] = secs;
+    time['time'] = ret;
+    return time;
+  }
+
+  function idlePenalty(idletimeobj) {
+    console.log(snd);
+    if (typeof snd !== 'undefined') { snd.play(); }
+    /* var lyricIds=['#lyric-1', '#lyric-2' , '#lyric-3' , '#lyric-4' , '#lyric-5' , '#lyric-6' , '#lyric-7' , '#lyric-8', '#lyric-9' , '#lyric-10' , '#lyric-11' ]; function startTyped(index) { if (index < lyricIds.length) { var currentId=lyricIds[index]; var nextId=lyricIds[index + 1]; new Typed(currentId, { strings: [document.querySelector(currentId).textContent], typeSpeed: 10, backSpeed: 0, loop: false, onComplete: function (self) { startTyped(index + 1); } }); } } startTyped(0); */
+    console.log('Current snd current time: ' + snd.currentTime);
+    document.getElementById('adhd_song-container').style.display = 'block';
+    var jsonFile;
+    date = new Date();
+    time = date.toLocaleTimeString('en-US', { hour: '2-digit', hour12: false, minute: '2-digit', second: '2-digit' });
+    // .replace(/AM|PM/,'') console.log("File Recorded - Time: " + idleTime);
+    $.ajax({
+      url: '<?= (is_dir($path = APP_PATH . APP_BASE['public']) && getcwd() == realpath($path) ? '1.' . APP_BASE['public'] : '') . basename(__FILE__) . '' ?>',
+      type: 'POST',
+      data: idletimeobj, // { idletime: { time: time, idle: toTime(idleTime)['time'], note: "" } }
+      dataType: 'json',
+      success: function (msg) {
+        console.log(msg);
+        $.getJSON("app.timesheet.php?json", function (json_decode) {
+          var count_idle = 0;
+          console.log(json_decode); // this will show the info it in console //json_decode=//JSON.parse(JSON.stringify(json));
+          Object.keys(json_decode).forEach(key => { Object.keys(json_decode[key]).forEach(key1 => { count_idle += 1; }); });
+
+          console.log(count_idle);
+
+          if (typeof snd !== 'undefined') { snd.stop(); }
+          $("#stats").html('Idle: [' + count_idle + '] ' + '&nbsp;&nbsp;' + '' + ' <span style="color: red;">01:00:00');
+
+          function myFunction(item, index, arr) {
+            console.log(item);
           }
+        });
+        // fetch(APP_BASE['database'] . "weekly-timesheet-<?= date('Y-m'); ?>.json").then(res => res.json()).then(data => jsonFile = JSON.parse(data));
+      },
+      error: function (jqXHR, textStatus) {
+        console.log(jqXHR.responseText);
+        let responseText = jQuery.parseJSON(jqXHR.responseText);
+        console.log(responseText);
+      }
+    });
 
+  }
 
+  function timerIncrement() {
+    //snd.play();
 
-          //snd.pause();
+    // for now
+    date = new Date();
+    time = date.toLocaleTimeString('en-US', { hour: '2-digit', hour12: true, minute: '2-digit', second: '2-digit' });
+    idleTime = idleTime + 1;
+    idleDateTime = new Date(idleTime * 1000).toISOString().substr(11, 8);
 
-          $("#ts-status-light").attr('src', 'resources/images/timesheet-light-Y.gif');
-          $("#idleTime").html('<i style="color: blue;">[Idled] for: ' + toTime(idleTime)['hrs'] + 'h ' +
-            toTime(idleTime)['mins'] + 'm ' + toTime(idleTime)['secs'] + 's ' + '</i>');
+    console.log(((idleTime >= 1) ? 'Idle: ' + idleTime + ' ' : '') + 'Work: ' + occupiedTime);
 
+    if (idleTime <= 0) { $("#ts-status-light").attr('src', 'resources/images/timesheet-light-R.gif'); } if (idleTime >
+      1) { // 1 second
+      //window.location.reload();
+      $("#idleTime").html('<i style="color: blue;">[Idling] for: ' + toTime(occupiedTime)['time'] + '</i>');
 
-          time = date.toLocaleTimeString('en-US', {
-            hour: '2-digit', hour12: false, minute: '2-digit', second:
-              '2-digit'
-          });
-          if (idleTime == 10)
-            idlePenalty({ idletime: { time: time, idle: null } }); // toTime(idleTime)['time']
+      if (idleTime >= 10) { // 60 second
 
-        } else {
+        $("#ts-status-light").attr('src', 'resources/images/timesheet-light-G.gif');
+
+        try {
+          // Attempt to play the media element
           if (typeof snd !== 'undefined') {
-            snd.pause();
+            snd.play();
           }
 
-          $("#idleTime").html('<i style="color: blue;">[Idleing] for: ' + toTime(occupiedTime)['time'] + '</i>');
-          $("#ts-status-light").attr('src', 'resources/images/timesheet-light-G.gif');
-          occupiedTime = occupiedTime + 1;
+        } catch (error) {
+          // Check if the error is a DOMException
+          if (error instanceof DOMException && error.name === 'NotAllowedError') {
+            // Handle the error (e.g., show a message to the user)
+            console.error('The play method is not allowed by the user agent or the platform.');
+          } else {
+            // If it's a different type of error, rethrow it
+            throw error;
+          }
         }
+
+
+
+        //snd.pause();
+
+        $("#ts-status-light").attr('src', 'resources/images/timesheet-light-Y.gif');
+        $("#idleTime").html('<i style="color: blue;">[Idled] for: ' + toTime(idleTime)['hrs'] + 'h ' +
+          toTime(idleTime)['mins'] + 'm ' + toTime(idleTime)['secs'] + 's ' + '</i>');
+
+
+        time = date.toLocaleTimeString('en-US', {
+          hour: '2-digit', hour12: false, minute: '2-digit', second:
+            '2-digit'
+        });
+        if (idleTime == 10)
+          idlePenalty({ idletime: { time: time, idle: null } }); // toTime(idleTime)['time']
+
       } else {
         if (typeof snd !== 'undefined') {
           snd.pause();
         }
-        document.getElementById('adhd_song-container').style.display = 'none';
-        $("#idleTime").html('<i style="color: green;">Working: ' + toTime(occupiedTime)['time'] + '</i>');
-        $("#ts-status-light").attr('src', 'resources/images/timesheet-light-GG.gif');
+
+        $("#idleTime").html('<i style="color: blue;">[Idleing] for: ' + toTime(occupiedTime)['time'] + '</i>');
+        $("#ts-status-light").attr('src', 'resources/images/timesheet-light-G.gif');
         occupiedTime = occupiedTime + 1;
       }
-    }
-
-    <?php $app[$timesheet]['script'] = ob_get_contents();
-    ob_end_clean();
-
-    if (false) { ?></script><?php }
-
-    ob_start(); ?>
-  <!DOCTYPE html>
-  <html>
-
-  <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
-    <link rel="stylesheet" href="//code.jquery.com/ui/1.12.1/themes/smoothness/jquery-ui.css" />
-
-    <?php
-    // (check_http_status'https://cdn.tailwindcss.com') ? 'https://cdn.tailwindcss.com' : APP_URL . 'resources/js/tailwindcss-3.3.5.js')?
-    is_dir($path = APP_PATH . APP_BASE['resources'] . 'js/') or mkdir($path, 0755, true);
-    if (is_file($path . 'tailwindcss-3.3.5.js')) {
-      if (ceil(abs((strtotime(date('Y-m-d')) - strtotime(date('Y-m-d', strtotime('+5 days', filemtime($path . 'tailwindcss-3.3.5.js'))))) / 86400)) <= 0) {
-        $url = 'https://cdn.tailwindcss.com';
-        $handle = curl_init($url);
-        curl_setopt($handle, CURLOPT_RETURNTRANSFER, true);
-
-        if (!empty($js = curl_exec($handle)))
-          file_put_contents($path . 'tailwindcss-3.3.5.js', $js) or $errors['JS-TAILWIND'] = $url . ' returned empty.';
-      }
     } else {
+      if (typeof snd !== 'undefined') {
+        snd.pause();
+      }
+      document.getElementById('adhd_song-container').style.display = 'none';
+      $("#idleTime").html('<i style="color: green;">Working: ' + toTime(occupiedTime)['time'] + '</i>');
+      $("#ts-status-light").attr('src', 'resources/images/timesheet-light-GG.gif');
+      occupiedTime = occupiedTime + 1;
+    }
+  }
+
+  <?php $app[$timesheet]['script'] = ob_get_contents();
+  ob_end_clean();
+
+  if (false) { ?></script><?php }
+
+  ob_start(); ?>
+<!DOCTYPE html>
+<html>
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <link rel="stylesheet" href="//code.jquery.com/ui/1.12.1/themes/smoothness/jquery-ui.css" />
+
+  <?php
+  // (check_http_status'https://cdn.tailwindcss.com') ? 'https://cdn.tailwindcss.com' : APP_URL . 'resources/js/tailwindcss-3.3.5.js')?
+  is_dir($path = APP_PATH . APP_BASE['resources'] . 'js/') or mkdir($path, 0755, true);
+  if (is_file($path . 'tailwindcss-3.3.5.js')) {
+    if (ceil(abs((strtotime(date('Y-m-d')) - strtotime(date('Y-m-d', strtotime('+5 days', filemtime($path . 'tailwindcss-3.3.5.js'))))) / 86400)) <= 0) {
       $url = 'https://cdn.tailwindcss.com';
       $handle = curl_init($url);
       curl_setopt($handle, CURLOPT_RETURNTRANSFER, true);
@@ -1371,33 +1373,41 @@ END;
       if (!empty($js = curl_exec($handle)))
         file_put_contents($path . 'tailwindcss-3.3.5.js', $js) or $errors['JS-TAILWIND'] = $url . ' returned empty.';
     }
-    ?>
+  } else {
+    $url = 'https://cdn.tailwindcss.com';
+    $handle = curl_init($url);
+    curl_setopt($handle, CURLOPT_RETURNTRANSFER, true);
 
-    <script src="<?= 'resources/js/tailwindcss-3.3.5.js' ?? $url ?>"></script>
+    if (!empty($js = curl_exec($handle)))
+      file_put_contents($path . 'tailwindcss-3.3.5.js', $js) or $errors['JS-TAILWIND'] = $url . ' returned empty.';
+  }
+  ?>
 
-    <style type="text/tailwindcss">
-      <?= $app[$timesheet]['style']; ?>
+  <script src="<?= 'resources/js/tailwindcss-3.3.5.js' ?? $url ?>"></script>
+
+  <style type="text/tailwindcss">
+    <?= $app[$timesheet]['style']; ?>
 </style>
-  </head>
+</head>
 
-  <body>
-    <?= $app[$timesheet]['body']; ?>
+<body>
+  <?= $app[$timesheet]['body']; ?>
 
-    <!-- https://cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.min.js -->
-    <script src="//code.jquery.com/jquery-1.12.4.js"></script>
-    <script src="//code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
-    <!-- <script src="resources/js/jquery/jquery.min.js"></script> -->
+  <!-- https://cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.min.js -->
+  <script src="//code.jquery.com/jquery-1.12.4.js"></script>
+  <script src="//code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
+  <!-- <script src="resources/js/jquery/jquery.min.js"></script> -->
 
-    <script src="resources/js/play_sound.js"></script>
-    <script>
-      <?= $app[$timesheet]['script']; ?>
-    </script>
-  </body>
+  <script src="resources/js/play_sound.js"></script>
+  <script>
+    <?= $app[$timesheet]['script']; ?>
+  </script>
+</body>
 
-  </html>
-  <?php $app[$timesheet]['html'] = ob_get_contents();
-  ob_end_clean();
+</html>
+<?php $app[$timesheet]['html'] = ob_get_contents();
+ob_end_clean();
 
-  //check if file is included or accessed directly
-  if (__FILE__ == get_required_files()[0] || in_array(__FILE__, get_required_files()) && isset($_GET['app']) && $_GET['app'] == 'git' && APP_DEBUG)
-    die($app[$timesheet]['html']);
+//check if file is included or accessed directly
+if (__FILE__ == get_required_files()[0] || in_array(__FILE__, get_required_files()) && isset($_GET['app']) && $_GET['app'] == 'git' && APP_DEBUG)
+  die($app[$timesheet]['html']);

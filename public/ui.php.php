@@ -122,7 +122,7 @@ define('PHP_LATEST', 'PHP_VERSION');
         onclick="document.getElementById('app_php-container').style.display='none';">X</a>]</div>
   </div>
 
-  <div class=" ui-widget-content" style="display: inline-block; width: auto; padding-left: 10px;">
+  <div class="ui-widget-content" style="display: inline-block; width: auto; padding-left: 10px;">
 
     <form style="display: inline;"
       action="<?= APP_URL . /*basename(APP_SELF) .*/ '?' . http_build_query(APP_QUERY + ['app' => 'php']) . (defined('APP_ENV') && APP_ENV == 'development' ? '#!' : '') /*  $c_or_p . '=' . (empty($_GET[$c_or_p]) ? '' : $$c_or_p->name) . '&amp;app=composer' */ ?>"
@@ -225,7 +225,7 @@ if (__FILE__ == get_required_files()[0] || in_array(__FILE__, get_required_files
 
     <style type="text/tailwindcss">
       <?= $app['style']; ?>
-                  </style>
+                    </style>
   </head>
 
   <body>
@@ -241,7 +241,7 @@ if (__FILE__ == get_required_files()[0] || in_array(__FILE__, get_required_files
     <script src="//code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
     <!-- <script src="../resources/js/jquery/jquery.min.js"></script> -->
     <script>
-                  <?= /*$app['script'];*/ NULL; ?>
+                    <?= /*$app['script'];*/ NULL; ?>
     </script>
   </body>
 

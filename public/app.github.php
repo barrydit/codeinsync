@@ -3,7 +3,7 @@
 /*
 
 $accessToken = 'YOUR_ACCESS_TOKEN'; // Replace with your actual access token
-$apiUrl = 'https://api.github.com/brrydit';
+$apiUrl = 'https://api.github.com/barrydit';
 
 $options = [
     'http' => [

@@ -326,7 +326,7 @@ if (/*APP_SELF === APP_PATH_PUBLIC*/ dirname(APP_SELF) === dirname(APP_PATH_PUBL
       'ui.calendar.php' => -10,
       'ui.nodes.php' => -9,
       'ui.php.php' => -8,
-      'ui.errors.php' => -7,
+      //'ui.errors.php' => -7,
       'ui.composer.php' => 10,
       'ui.npm.php' => 11,
       'ui.ace_editor.php' => 12,

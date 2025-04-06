@@ -395,17 +395,16 @@ if (!file_exists(APP_PATH . 'composer.phar')) {
   }
 */
     //defined('COMPOSER_EXEC')
-    if (defined('APP_SUDO'))
-      realpath($composer_which = trim(shell_exec(APP_SUDO . /*-u www-data */ 'which composer') ?? '')) or $errors['COMPOSER-WHICH'] = "which did not find composer. Err=$composer_which";
+    realpath($composer_which = trim(shell_exec((defined('APP_SUDO') ? APP_SUDO . '-u www-data ' : '') . 'which composer') ?? '')) or $errors['COMPOSER-WHICH'] = "which did not find composer. Err={}" . $composer_which = '/usr/local/bin/composer';
 
-    foreach ([ /*'/usr/local/bin/composer',*/ basename(PHP_EXEC) . ' ' . APP_PATH . 'composer.phar', $composer_which] as $key => $bin) {
+    foreach ([basename(PHP_EXEC) . ' ' . APP_PATH . 'composer.phar', $composer_which] as $key => $bin) {
       !isset($composer) and $composer = [];
       /*//*/
-      if (preg_match('/^php.*composer\.phar$/', $bin))
+      if (isset($bin) && preg_match('/^php.*composer\.phar$/', $bin))
         !defined('COMPOSER_PHAR') and define('COMPOSER_PHAR', ['bin' => PHP_EXEC . " $bin"]);
       else {
 
-        $proc = proc_open('env COMPOSER_ALLOW_SUPERUSER=' . COMPOSER_ALLOW_SUPERUSER . '; ' . (stripos(PHP_OS, 'WIN') !== 0 && defined('APP_SUDO') ? APP_SUDO : '') . basename($bin) . ' --version;', [["pipe", "r"], ["pipe", "w"], ["pipe", "w"]], $pipes);
+        $proc = proc_open('env COMPOSER_ALLOW_SUPERUSER=' . COMPOSER_ALLOW_SUPERUSER . '; ' . (stripos(PHP_OS, 'WIN') !== 0 && defined('APP_SUDO') ? APP_SUDO : '') . defined('COMPOSER_BIN') ? 'composer' : COMPOSER_BIN . ' --version;', [["pipe", "r"], ["pipe", "w"], ["pipe", "w"]], $pipes);
 
         $stdout = stream_get_contents($pipes[1]);
         $stderr = stream_get_contents($pipes[2]);
@@ -470,7 +469,7 @@ if (isset($output[0]))
 
 
 if (!empty($matches))
-  defined('COMPOSER_EXEC') or define('COMPOSER_EXEC', (isset($_GET['exec']) && $_GET['exec'] == 'phar' ? COMPOSER_PHAR : (defined('COMPOSER_BIN') ? ['bin' => basename(COMPOSER_BIN['bin']), 'version' => ($matches[1] ?? '')] : ['bin' => 'composer', 'version' => $matches[1]])) ?? COMPOSER_PHAR);
+  defined('COMPOSER_EXEC') or define('COMPOSER_EXEC', (isset($_GET['exec']) && $_GET['exec'] == 'phar' ? COMPOSER_PHAR : (defined('COMPOSER_BIN') ? ['bin' => defined('COMPOSER_BIN') ? 'composer' : COMPOSER_BIN, 'version' => ($matches[1] ?? '')] : ['bin' => 'composer', 'version' => $matches[1]])) ?? COMPOSER_PHAR);
 
 if (defined('COMPOSER_EXEC') && is_array(COMPOSER_EXEC))
   define('COMPOSER_VERSION', COMPOSER_EXEC['version'] ?? '1.0.0');
@@ -555,8 +554,8 @@ APP_CLIENT / APP_PROJECT APP_ {key(APP_WORK)}
 */
 
 if (defined('APP_ENV') and APP_ENV == 'development') {
-  if (defined('APP_CLIENT') || defined('APP_PROJECT'))
-    $$c_or_p = APP_CLIENT ?? APP_PROJECT;
+  if (defined('APP_CLIENT') && is_object(APP_CLIENT))
+    $$c_or_p = APP_CLIENT;
   else {
     $c_or_p = 'client';
     $$c_or_p = new stdClass();

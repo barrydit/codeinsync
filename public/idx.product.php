@@ -57,9 +57,9 @@ margin : 0;
 padding : 0;
 box-sizing : border-box;
 <?php if (isset($_GET['debug'])) { ?>
-                                                                                          border: 1px dashed #FF0000;
+                                                                                            border: 1px dashed #FF0000;
 <?php } else { ?> 
-                                                                                          /* border: 1px dashed #FF0000; */
+                                                                                            /* border: 1px dashed #FF0000; */
 <?php } ?>
 }
 *:focus {
@@ -1312,7 +1312,7 @@ $(document).ready(function() {
     makeDraggable('app_medication_log-container');
     makeDraggable('app_notes-container');
     makeDraggable('app_calendar-container');
-    makeDraggable('app_errors-container');
+    //makeDraggable('app_errors-container');
     makeDraggable('app_ace_editor-container');
     makeDraggable('app_composer-container');
     makeDraggable('app_project-container');

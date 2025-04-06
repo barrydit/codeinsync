@@ -401,7 +401,7 @@ $tableGen = function () use ($group_type): string {
       // Add domain to the path if applicable
       if (isset($_GET['domain'])) {
         $path .= $_GET['domain'] . DIRECTORY_SEPARATOR;
-      } elseif (!isset($_GET['client']) && !isset($_GET['path'])) {
+      } elseif (!isset($_GET['client']) && isset($_GET['path']) && $_GET['path'] == 'vendor') {
         // Default to vendor path if no domain or client is set
         $path .= 'vendor' . DIRECTORY_SEPARATOR;
         if (isset($_GET['client'])) {
@@ -462,7 +462,6 @@ $tableGen = function () use ($group_type): string {
       <?= /*var_dump(COMPOSER_VENDORS);*/ null;
       //dd($_GET, false); 
       ?>
-
       <table style="width: 100%; border: 0 solid #000;">
         <tr>
           <?php
