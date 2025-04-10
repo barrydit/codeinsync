@@ -1,5 +1,6 @@
 <?php
 
+
 //require_once dirname(__DIR__, 1) . DIRECTORY_SEPARATOR . 'bootstrap.php';
 
 $htaccess = <<<END
@@ -35,6 +36,7 @@ switch (APP_SELF) {
     }
     break;
 }
+
 
 //dd($_ENV, false);
 
@@ -331,6 +333,7 @@ if (/*APP_SELF === APP_PATH_PUBLIC*/ dirname(APP_SELF) === dirname(APP_PATH_PUBL
       'ui.npm.php' => 11,
       'ui.ace_editor.php' => 12,
       'ui.git.php' => 13,
+      'ui.notes.php' => 14,
     ];
 
     $aBase = basename($a);

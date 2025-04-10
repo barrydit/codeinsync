@@ -715,7 +715,7 @@ top : 10%;
 left : 50%;
 transform : translateX(-50%);
 width : auto;
-height : 555px;
+height : 575px;
 background-color : rgb(255, 255, 255);
 color : black;
 padding : 10px;
@@ -795,6 +795,7 @@ ob_start(); ?>
       <div style="float: right;"><a
           href="?app=timesheet&date=<?= $date = date('Y-m-d', strtotime($today->format('Y-m-d') . ' +2 day')); ?>">|&Rang;|</a>
       </div>
+    </form>
   </div>
 
   <?php echo $today->format('Y-m-d H:i:s');
@@ -1059,8 +1060,6 @@ END;
         </div>
       </div>
       <div style="clear: both;"></div>
-
-    </form>
   </div>
 END;
     }

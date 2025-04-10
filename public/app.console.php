@@ -277,6 +277,9 @@ margin : 0;
 padding : 0;
 }
 
+
+
+
 /* Styles for the container div */
 .container {
 position : relative;
@@ -388,7 +391,7 @@ border : #4CAF50 solid 2px;
 border-radius : 50%; /* Rounded thumb */
 cursor : pointer;
 }
-
+/*
 @keyframes scroll {
 0% {
 transform : translateX(100%);
@@ -396,7 +399,7 @@ transform : translateX(100%);
 100% {
 transform : translateX(-100%);
 }
-}
+}*/
 <?php $app[$console]['style'] = ob_get_contents();
 ob_end_clean();
 

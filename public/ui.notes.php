@@ -110,20 +110,20 @@ if (defined('GIT_EXEC'))
     }
 
 ob_start(); ?>
-#app_php-container {
-width : 550px;
-height : 450px;
-/* border: 1px solid black; */
-position : absolute;
-top : 60px;
-left : 30%;
-right : 0;
-z-index : 1;
-/* resize: both; Make the div resizable */
-/* overflow: hidden; Hide overflow to ensure proper resizing */
+#app_notes-container {
+width: 1207px;
+height: 500px;
+position: fixed;
+top: calc(50% - 250px); /* 500 / 2 */
+left: calc(50% - 603.5px); /* 1207 / 2 */
+/*transform: translate(-50%, -50%);*/
+z-index: 1;
 }
 
-#app_php-container.selected {
+/* resize: both; Make the div resizable */
+/* overflow: hidden; Hide overflow to ensure proper resizing */
+
+#app_notes-container.selected {
 display : block;
 z-index : 1;
 resize : both; /* Make the div resizable */
@@ -178,9 +178,9 @@ ob_end_clean();
 
 ob_start(); ?>
 
-<div id="app_php-container"
+<div id="app_notes-container"
     class="<?= __FILE__ == get_required_files()[0] || (isset($_GET['app']) && $_GET['app'] == 'errors') && !isset($_GET['path']) ? 'selected' : '' ?>"
-    style="position: fixed; left: 44px; top: 64px; display: <?= __FILE__ == get_required_files()[0] || (isset($_GET['app']) && $_GET['app'] == 'errors') ? 'block' : 'block' ?>; resize: both; overflow: hidden;">
+    style="display: <?= __FILE__ == get_required_files()[0] || (isset($_GET['app']) && $_GET['app'] == 'errors') ? 'block' : 'block' ?>; resize: both; overflow: hidden;">
     <div class="ui-widget-header"
         style="position: relative; display: inline-block; width: 100%; cursor: move; border-bottom: 1px solid #000;background-color: #FFF;">
         <label class="errors-home" style="cursor: pointer;">
@@ -189,14 +189,12 @@ ob_start(); ?>
             </div>
         </label>
         <div style="display: inline;">
-            <span style="background-color: #38B1FF; color: #FFF; margin-top: 10px;">PHP $errors
+            <span style="background-color: #38B1FF; color: #FFF; margin-top: 10px;">Notes
                 <?= /* (version_compare(NPM_LATEST, NPM_VERSION, '>') != 0 ? 'v'.substr(NPM_LATEST, 0, similar_text(NPM_LATEST, NPM_VERSION)) . '<span class="update" style="color: green; cursor: pointer;">' . substr(NPM_LATEST, similar_text(NPM_LATEST, NPM_VERSION)) . '</span>' : 'v'.NPM_VERSION ); */ NULL; ?></span>
-            <span style="background-color: #0078D7; color: white;"><code id="AceEditorVersionBox" class="text-sm"
-                    style="background-color: white; color: #0078D7;"></code></span>
         </div>
 
         <div style="display: inline; float: right; text-align: center; color: blue;"><code
-                style="background-color: white; color: #0078D7;"><a style="cursor: pointer; font-size: 13px;" onclick="document.getElementById('app_php-container').style.display='none';">[X]</a></code>
+                style="background-color: white; color: #0078D7;"><a style="cursor: pointer; font-size: 13px;" onclick="document.getElementById('app_notes-container').style.display='none';">[X]</a></code>
         </div>
     </div>
 
@@ -207,7 +205,7 @@ ob_start(); ?>
         <input type="hidden" name="ace_path" value="<?= /* APP_PATH . APP_BASE['public']; */ NULL; ?>" />
 
         <div class="ui-widget-content"
-            style="position: relative; display: block; margin: 0 auto; width: calc(100% - 2px); height: 50px; background-color: rgba(251,247,241);">
+            style="position: relative; display: none; margin: 0 auto; width: calc(100% - 2px); height: 50px; background-color: rgba(251,247,241);">
             <div style="display: inline-block; text-align: left; width: 300px;">
                 <div class="npm-menu text-sm"
                     style="display: inline-block; cursor: pointer; font-weight: bold; padding: 5px; border: 1px solid #000;">
@@ -219,9 +217,9 @@ ob_start(); ?>
                     config/settings
                 </div>
                 <div class="text-xs" style="display: inline-block; border: 1px solid #000;">
-                    <a class="text-sm" id="app_php-frameMenuPrev"
+                    <a class="text-sm" id="app_notes-frameMenuPrev"
                         href="<?= (!empty(APP_QUERY) ? '?' . http_build_query(APP_QUERY) : '') . (defined('APP_ENV') && APP_ENV == 'development' ? '#!' : '#') ?>">
-                        &lt; Menu</a> | <a class="text-sm" id="app_php-frameMenuNext"
+                        &lt; Menu</a> | <a class="text-sm" id="app_notes-frameMenuNext"
                         href="<?= (!empty(APP_QUERY) ? '?' . http_build_query(APP_QUERY) : '') . (defined('APP_ENV') && APP_ENV == 'development' ? '#!' : '#') ?>">Init
                         &gt;</a>
                 </div>
@@ -279,24 +277,24 @@ else $count++;
 
         <div style="position: relative; margin: 0 auto; width: calc(100% - 2px); height: 100%;">
             <!--
-      <div id="app_php-frameMenu" class="app_php-frame-container absolute selected" style="background-color: rgb(225,196,151,.75); margin-top: 8px; height: 100%;">
+      <div id="app_notes-frameMenu" class="app_notes-frame-container absolute selected" style="background-color: rgb(225,196,151,.75); margin-top: 8px; height: 100%;">
 -->
 
             <!--   A (<?= /* $path */ ''; ?>) future note: keep ace-editor nice and tight ... no spaces, as it interferes with the content window.
  https://scribbled.space/ace-editor-setup-usage/ -->
             <div id="ui_config" class="config"
                 style="position: absolute; display: <?= isset($_GET['file']) && isset($_GET['path']) && is_file($_GET['path'] . $_GET['file']) ? 'none' : 'block' ?>; z-index: 1;">
-                <div style="background-color: white; height: 100%; width: 100%; overflow: hidden;">
-                    <textarea cols="75" rows="25"><?php /* foreach (get_defined_constants(true)['user'] as $key => $user_const) { ?><?= $key; ?> = <?= var_export($user_const, true); ?><?php }*/ ?>
+                <div style="background-color: white; height: 97%; width: 100%; overflow: hidden;">
+                    <textarea cols="75" rows="15"><?php /* foreach (get_defined_constants(true)['user'] as $key => $user_const) { ?><?= $key; ?> = <?= var_export($user_const, true); ?><?php }*/ ?>
                 </textarea>
                 </div>
             </div>
-            <div id="ui_errors" class="errors"
+            <div id="ui_notes" class="errors"
                 style="position: absolute; display: <?= isset($_GET['file']) && isset($_GET['path']) && is_file($_GET['path'] . $_GET['file']) ? 'block' : 'block' ?>; z-index: 1;">
                 <div style="background-color: white; height: 100%; width: 100%; overflow: hidden;">
-                    <textarea cols="75" rows="25"><?php if (!empty($errors))
-                        foreach ($errors as $key => $value) { ?>$errors['<?= $key; ?>']; <?= (preg_match('/^ERROR_(LOG|PATH)$/', $key) || $key === 'COMPOSER-AutoloaderInit' ? (preg_match('/^(ERROR_LOG|COMPOSER).*$/', $key) ? "\n" : '') : 'Msg: ') . $value; ?><?php } ?>
-                </textarea>
+                    <iframe
+                        src="<?= (is_dir($path = APP_PATH . APP_BASE['public']) && getcwd() == realpath($path) ? APP_BASE['public'] : '') . basename('app.notes.php') ?>"
+                        style="overflow: scroll; height: 460px; width: 1200px; border: none;" scrolling="yes"></iframe>
                 </div>
             </div>
         </div>
@@ -346,7 +344,7 @@ if ($path)
 
 </div>
 
-<div id="app_php-frameInit" class="app_php-frame-container absolute" style="overflow: hidden; height: 270px;">
+<div id="app_notes-frameInit" class="app_notes-frame-container absolute" style="overflow: hidden; height: 270px;">
     <!--
     <form autocomplete="off" spellcheck="false" action="?app=git#!" method="POST">
       <div style="position: absolute; right: 0; float: right; text-align: center;">
@@ -365,7 +363,7 @@ if ($path)
 -->
 </div>
 
-<div id="app_php-frameExtra" style="position: relative; width: 100%; height: 100%; border: 1px #000 solid;">
+<div id="app_notes-frameExtra" style="position: relative; width: 100%; height: 100%; border: 1px #000 solid;">
 
 
 </div>
@@ -515,11 +513,11 @@ ob_start();
             });
         }
 
-        makeDraggable('app_php-container');
+        makeDraggable('app_notes-container');
 
         $(function () {
-            $("#app_php-frameExtra").resizable({
-                alsoResize: "#app_php" // Resize textarea along with the dialog
+            $("#app_notes-frameExtra").resizable({
+                alsoResize: "#app_notes" // Resize textarea along with the dialog
             });
 
         });

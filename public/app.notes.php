@@ -225,8 +225,8 @@ ob_start(); ?>
 
 <!-- <div class="container" style="border: 1px solid #000;"> -->
 <div id="app_notes-container"
-  class="<?= (APP_SELF == __FILE__ || (isset($_GET['app']) && $_GET['app'] == 'notes') ? 'selected' : '') ?>"
-  style="border: 1px solid #000;">
+  class="<?= APP_SELF == __FILE__ || (isset($_GET['app']) && $_GET['app'] == 'notes') ? 'selected' : '' ?>"
+  style="border: 1px solid #000; overflow: scroll;">
 
   <div class="header ui-widget-header">
     <div style="display: inline-block;">Notes</div>
@@ -237,10 +237,10 @@ ob_start(); ?>
   </div>
 
   <!-- Scrollable wrapper -->
-  <div style="width: 100%; overflow-x: auto; white-space: nowrap;">
+  <div style="width: 100%; overflow: scroll; white-space: nowrap;">
     <iframe
       src="<?= (is_dir($path = APP_PATH . APP_BASE['public']) && getcwd() == realpath($path) ? APP_BASE['public'] : '') . basename(__FILE__) ?>"
-      style="height: 460px; width: 1200px; border: none;"></iframe>
+      style="overflow: scroll; height: 460px; width: 1200px; border: none;" scrolling="yes"></iframe>
   </div>
 
 </div>
@@ -300,7 +300,7 @@ ob_start(); ?>
   <style type="text/tailwindcss">
     * { margin: 0; padding: 0; } /* to remove the top and left whitespace */
 
-html, body { width: 100%; height: 100%; <?= ($_SERVER['SCRIPT_FILENAME'] == __FILE__ ? 'overflow:hidden;' : '') ?> } /* just to be sure these are full screen*/
+html, body { width: 100%; height: 100%; <?= $_SERVER['SCRIPT_FILENAME'] == __FILE__ ? 'overflow:scroll;' : 'overflow: scroll;' ?> } /* just to be sure these are full screen*/
 
 pre {
   background: #eee;
@@ -399,9 +399,10 @@ pre {
             style="<?= ($counter == count($sample['snippets']) - 1 ? 'visibility: hidden;' : '') /* NULL; */ ?>"
             onchange="this.form.submit();"></button>
         </div>
-        <pre style="margin: 0px;"><code class="language-<?= $sample['language']; ?>"><?= $snippet['code']; ?></code>
-                                                                                    <?= $snippet['description']; ?>
-                                                                                      </pre>
+        <pre
+          style="margin: 0px;"><code class="language-<?= $sample['language']; ?>"><?= $snippet['code']; ?></code>
+                                                                                                                                <?= $snippet['description']; ?>
+                                                                                                                                  </pre>
       </form>
       <div style=" margin-left: 15px;">
 
