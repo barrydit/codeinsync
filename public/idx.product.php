@@ -2,10 +2,11 @@
 
 if (dirname(get_required_files()[0]) == getcwd()) {
   if ($path = basename(dirname(get_required_files()[0])) == 'public') { //
-    if (basename(getcwd())) if (is_file($path = realpath('config' . DIRECTORY_SEPARATOR . 'php.php')))
-      require_once $path;
-    else
-      die(var_dump("Path was not found. file=$path"));
+    if (basename(getcwd()))
+      if (is_file($path = realpath('config' . DIRECTORY_SEPARATOR . 'php.php')))
+        require_once $path;
+      else
+        die(var_dump("Path was not found. file=$path"));
   }
 }
 if (!headers_sent()) {
@@ -57,9 +58,9 @@ margin : 0;
 padding : 0;
 box-sizing : border-box;
 <?php if (isset($_GET['debug'])) { ?>
-                                                                                            border: 1px dashed #FF0000;
+                                                                    border: 1px dashed #FF0000;
 <?php } else { ?> 
-                                                                                            /* border: 1px dashed #FF0000; */
+                                                                    /* border: 1px dashed #FF0000; */
 <?php } ?>
 }
 *:focus {
@@ -103,6 +104,7 @@ flex-direction : column;
 
 
 <?= defined('UI_MEDICATION_LOG') ? UI_MEDICATION_LOG['style'] : null; ?>
+<?= defined('UI_NOTES') ? UI_NOTES['style'] : null; ?>
 <?= defined('UI_CALENDAR') ? UI_CALENDAR['style'] : null; ?>
 <?= defined('UI_ERRORS') ? UI_ERRORS['style'] : null; ?>
 <?= defined('UI_GIT') ? UI_GIT['style'] : null; ?>
@@ -116,7 +118,7 @@ flex-direction : column;
 <?= $apps['github']['style'] ?? ''; ?>
 <?= $apps['packagist']['style'] ?? ''; ?>
 <?= $apps['whiteboard']['style'] ?? ''; ?>
-<?= $apps['notes']['style'] ?? ''; ?> 
+
 <?= $apps['pong']['style'] ?? ''; ?>
 
 <?= /*$appBackup['style']*/ ''; ?>
@@ -334,7 +336,7 @@ cursor : pointer;
               src="resources/images/apps_icon.gif" width="20" height="20"> Tools</a> |
           <a href="#" onclick="document.getElementById('app_timesheet-container').style.display='block';"><img
               src="resources/images/clock.gif" width="30" height="30"> Clock-In</a> |
-          <a href="#" onclick="document.getElementById('app_errors-container').style.display='block';"><img
+          <a href="#" onclick="document.getElementById('app_php-container').style.display='block';"><img
               src="resources/images/php_icon.png" width="30" height="30"> PHP</a> |
           <a href="#" onclick="document.getElementById('app_git-container').style.display='block';"><img
               src="resources/images/git_icon.fw.png" width="18" height="18">Git/ <img
@@ -489,8 +491,8 @@ cursor : pointer;
         </div>
 
         <div id="app_tools-container"
-          style="position: absolute; display: none; width: 800px; margin: 0 auto; height: 500px; background-color: rgba(255, 255, 255, 0.9); overflow-x: scroll; z-index: 5;">
-          <div style="position: absolute; margin: 80px 45px; text-align: center;" class="text-sm"><a href="#!"
+          style="position: absolute; top: -50%; left: 50%; transform: translate(-50%, -50%); width: 800px; height: 500px; background-color: rgba(255, 255, 255, 0.9); overflow-x: scroll; margin-top: 350px; z-index: 5; display: none;">
+          <div style="position: absolute; margin: 40px 45px; text-align: center;" class="text-sm"><a href="#!"
               onclick="document.getElementById('app_tools-container').style.display='none'; return false;"><img
                 style="text-align: center;" height="25" width="25"
                 src="<?= APP_BASE['resources'] . 'images/close-red.gif' ?>" /></a><br /></div>
@@ -923,19 +925,21 @@ cursor : pointer;
 
 
     </div>
+
     <?= $apps['browser']['body'] ?? ''; ?>
     <?= $apps['github']['body'] ?? ''; ?>
     <?= $apps['packagist']['body'] ?? ''; ?>
     <?= $apps['whiteboard']['body'] ?? ''; ?>
-    <?= $apps['notes']['body'] ?? ''; ?>
+
     <!-- https://pong-2.com/ -->
     <?= /*$apps['pong']['body'] ?? '';*/ ''; ?>
     <?= $apps['timesheet']['body'] ?? ''; ?>
+    <?= defined('UI_NOTES') ? UI_NOTES['body'] : null; ?>
     <?= defined('UI_ACE_EDITOR') ? UI_ACE_EDITOR['body'] : null; ?>
 
     <?= defined('UI_GIT') ? UI_GIT['body'] : null; ?>
 
-    <?= /* defined('UI_PHP') ? UI_PHP['body'] : null;*/ /* print(...) */ ''; ?>
+    <?= defined('UI_PHP') ? UI_PHP['body'] : null; /* print(...) */ ?>
     <?= defined('UI_COMPOSER') ? UI_COMPOSER['body'] : null; /* (isset($appComposer) ? $appComposer['script'] : null); */ ?>
     <?= defined('UI_NPM') ? UI_NPM['body'] : null; ?>
     <?= defined('UI_NODES') ? UI_NODES['body'] : null; ?>
@@ -944,23 +948,30 @@ cursor : pointer;
     <?= $apps['project']['body'] ?? ''; ?>
     <?= $apps['console']['body'] ?? ''; ?>
 
-  </div>
-  <?= defined('UI_CALENDAR') ? UI_CALENDAR['body'] : null; ?>
-  <?= defined('UI_ERRORS') ? UI_ERRORS['body'] : null; ?>
+    <?= defined('UI_CALENDAR') ? UI_CALENDAR['body'] : null; ?>
+    <?= defined('UI_ERRORS') ? UI_ERRORS['body'] : null; ?>
 
-  <?= defined('UI_MEDICATION_LOG') ? UI_MEDICATION_LOG['body'] : null; ?>
+    <?= defined('UI_MEDICATION_LOG') ? UI_MEDICATION_LOG['body'] : null; ?>
 
 
-  <!-- /div -->
+    <!-- /div -->
 
-  <!-- https://cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.min.js -->
-  <!-- https://code.jquery.com/jquery-3.7.1.min.js -->
-  <!-- script src="https://code.jquery.com/jquery-3.6.0.min.js" integrity="sha256-/xUj+3OJU5yExlq6GSYGSHk7tPXikynS7ogEvDej/m4=" crossorigin="anonymous"></script -->
+    <!-- https://cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.min.js -->
+    <!-- https://code.jquery.com/jquery-3.7.1.min.js -->
+    <!-- script src="https://code.jquery.com/jquery-3.6.0.min.js" integrity="sha256-/xUj+3OJU5yExlq6GSYGSHk7tPXikynS7ogEvDej/m4=" crossorigin="anonymous"></script -->
 
-  <?php
-  is_dir($path = APP_PATH . APP_BASE['resources'] . 'js/jquery/') or mkdir($path, 0755, true);
-  if (is_file($path . 'jquery-3.7.1.min.js')) {
-    if (ceil(abs((strtotime(date('Y-m-d')) - strtotime(date('Y-m-d', strtotime('+5 days', filemtime($path . 'jquery-3.7.1.min.js'))))) / 86400)) <= 0) {
+    <?php
+    is_dir($path = APP_PATH . APP_BASE['resources'] . 'js/jquery/') or mkdir($path, 0755, true);
+    if (is_file($path . 'jquery-3.7.1.min.js')) {
+      if (ceil(abs((strtotime(date('Y-m-d')) - strtotime(date('Y-m-d', strtotime('+5 days', filemtime($path . 'jquery-3.7.1.min.js'))))) / 86400)) <= 0) {
+        $url = 'https://code.jquery.com/jquery-3.7.1.min.js';
+        $handle = curl_init($url);
+        curl_setopt($handle, CURLOPT_RETURNTRANSFER, true);
+
+        if (!empty($js = curl_exec($handle)))
+          file_put_contents("{$path}jquery-3.7.1.min.js", $js) or $errors['JS-JQUERY'] = "$url returned empty.";
+      }
+    } else {
       $url = 'https://code.jquery.com/jquery-3.7.1.min.js';
       $handle = curl_init($url);
       curl_setopt($handle, CURLOPT_RETURNTRANSFER, true);
@@ -968,131 +979,125 @@ cursor : pointer;
       if (!empty($js = curl_exec($handle)))
         file_put_contents("{$path}jquery-3.7.1.min.js", $js) or $errors['JS-JQUERY'] = "$url returned empty.";
     }
-  } else {
-    $url = 'https://code.jquery.com/jquery-3.7.1.min.js';
-    $handle = curl_init($url);
-    curl_setopt($handle, CURLOPT_RETURNTRANSFER, true);
+    unset($path);
+    include 'app.debug.php';
+    ?>
 
-    if (!empty($js = curl_exec($handle)))
-      file_put_contents("{$path}jquery-3.7.1.min.js", $js) or $errors['JS-JQUERY'] = "$url returned empty.";
-  }
-  unset($path);
-  include 'app.debug.php';
-  ?>
-
-  <?php (APP_SELF !== APP_PATH_SERVER) and $socketInstance = Sockets::getInstance(); ?>
-  <div id="toggle-container" style="position: fixed; top: 0; left: 0; z-index: 10; display: flex;">
-    <div id="details-container"
-      style="display: none; width: 245px; background-color: white; border: 1px solid black; padding: 4px;">
-      <div style="float: left;">
-        <h3 style="font-weight: bolder;">
-          <?= !is_file($pid_file = APP_PATH . 'server.pid') ? '' : '(PID=' . (int) file_get_contents(APP_PATH . 'server.pid') . ')' ?>
-          Server
-        </h3>
-      </div>
-      <div style="float: right;">On / Off <input id="check_server_start" type="checkbox" <?= isset($_SERVER['SOCKET']) && is_resource($_SERVER['SOCKET']) ? 'checked="checked"' : '' ?> onclick="validate()" /></div>
-      <div style="clear: both;"></div>
-      <div style="display: inline-block;">$_ENV<br /><a href="">Status</a><br /><a href="">Help</a><br />Error Log</div>
-      <img id="serverStatus"
-        src="/resources/images/server<?= isset($_SERVER['SOCKET']) && is_resource($_SERVER['SOCKET']) ? '-green' : '' ?>.gif"
-        style="float: right;" width="100" height="103">
-      <!--form action="#!" method="GET">
+    <?php (APP_SELF !== APP_PATH_SERVER) and $socketInstance = Sockets::getInstance(); ?>
+    <div id="toggle-container" style="position: fixed; top: 0; left: 0; z-index: 10; display: flex;">
+      <div id="details-container"
+        style="display: none; width: 245px; background-color: white; border: 1px solid black; padding: 4px;">
+        <div style="float: left;">
+          <h3 style="font-weight: bolder;">
+            <?= !is_file($pid_file = APP_PATH . 'server.pid') ? '' : '(PID=' . (int) file_get_contents(APP_PATH . 'server.pid') . ')' ?>
+            Server
+          </h3>
+        </div>
+        <div style="float: right;">On / Off <input id="check_server_start" type="checkbox" <?= isset($_SERVER['SOCKET']) && is_resource($_SERVER['SOCKET']) ? 'checked="checked"' : '' ?> onclick="validate()" /></div>
+        <div style="clear: both;"></div>
+        <div style="display: inline-block;">$_ENV<br /><a href="">Status</a><br /><a href="">Help</a><br />Error Log
+        </div>
+        <img id="serverStatus"
+          src="/resources/images/server<?= isset($_SERVER['SOCKET']) && is_resource($_SERVER['SOCKET']) ? '-green' : '' ?>.gif"
+          style="float: right;" width="100" height="103">
+        <!--form action="#!" method="GET">
       <?= isset($_GET['debug']) && !$_GET['debug'] ? '' : '<input type="hidden" name="debug" value / >' ?> 
 
               <input class="input" id="toggle-debug" type="checkbox" onchange="this.form.submit();" <?= isset($_GET['debug']) || defined('APP_ENV') && APP_ENV == 'development' ? 'checked' : '' ?> / -->
-      <div style="position: relative;">
-        <div style="">&nbsp;&nbsp;&nbsp;&nbsp;<?= APP_NAME ?></div>
-        <!-- /form -->
-      </div>
-      <hr />
-      <a href="?logout=true">Logout</a><br />
-
-      <div id="" style="">
-        <span>Loading Time: <?= round(microtime(true) - APP_START, 3); ?>s</span><br />
-        <span>Environment: <?= PHP_OS; ?></span><br />
-        <span>Domain: <?= APP_DOMAIN; ?></span><br />
-        <span>IP Address: <?= APP_HOST; ?></span><br />
-        <span><?= isset($_GET['client']) ? 'Client: ' . '<a href="?client=' . $_GET['client'] . '">' . $_GET['client'] . '</a>' : (isset($_GET['project']) ? 'Project: ' . '<a href="?project=' . $_GET['project'] . '">' . $_GET['project'] . '</a>' : 'Document Root: ' . $_SERVER['DOCUMENT_ROOT']); ?></span><br />
-        <span>App Path: <?= APP_PATH; ?></span><br />
-        <span>Memory: <em><b
-              style="color: green;"><?= formatSizeUnits(memory_get_usage()) . '</b> @ <b>' . formatSizeUnits(convertToBytes(ini_get('memory_limit'))); ?></b></em></span><br />
-        <span>Source (code): <em
-            style="font-size: 13px;"><?= '[<b>' . formatSizeUnits($total_filesize) . '</b>] <b style="color: red;">' . $total_filesize - 1000000 . '</b>' ?></em></span>
-        <div style="position: relative; display: block;">
-          <div style="position: absolute; display: block; float: right; right: 10px; width: 165px; text-align: right;">
-            <?= ' [(<a style="font-weight: bolder; color: green;" href="#" onclick="document.getElementById(\'app_nodes-container\').style.display = \'block\';">' . $total_include_files . ' loaded</a>) <b>' . $total_files . '</b> files] <br /> [<b style="color: green;">' . $total_include_lines . '</b> @ <b>' . $total_lines . '</b> lines]'; ?>
-          </div>
-        </div><br /><br />
-      </div>
-    </div>
-
-    <div id="toggle-button"
-      style="width: 40px; height: 64px; background-color: white; display: flex; align-items: center; justify-content: center; border: 1px solid black;">
-      <img src="resources/images/pc.png" width="32" data-checked="false"
-        onclick="toggleContainer(this, 'details-container', 'left');" style="cursor: pointer;" />
-    </div>
-
-  </div>
-  <div id="toggle-container"
-    style="position: fixed; display: block; bottom: 0; right: 0; padding: 4px; z-index: 1; text-align: right; border: 1px solid #000; height: auto;">
-
-    <div style="display: inline-block;">
-      <input class="input" id="toggle-debug" type="checkbox" onchange="toggleSwitch(this); return null;"
-        <?= isset($_GET['debug']) || defined('APP_ENV') && APP_ENV == 'development' ? 'checked' : '' ?> />
-      <label class="label" for="toggle-debug" style="margin: 0 auto; padding-top: 10px;">
-        <div class="switch" style="display: inline; z-index: 1;">
-          <span class="slider round"></span>
+        <div style="position: relative;">
+          <div style="">&nbsp;&nbsp;&nbsp;&nbsp;<?= APP_NAME ?></div>
+          <!-- /form -->
         </div>
-      </label>
+        <hr />
+        <a href="?logout=true">Logout</a><br />
+
+        <div id="" style="">
+          <span>Loading Time: <?= round(microtime(true) - APP_START, 3); ?>s</span><br />
+          <span>Environment: <?= PHP_OS; ?></span><br />
+          <span>Domain: <?= APP_DOMAIN; ?></span><br />
+          <span>IP Address: <?= APP_HOST; ?></span><br />
+          <span><?= isset($_GET['client']) ? 'Client: ' . '<a href="?client=' . $_GET['client'] . '">' . $_GET['client'] . '</a>' : (isset($_GET['project']) ? 'Project: ' . '<a href="?project=' . $_GET['project'] . '">' . $_GET['project'] . '</a>' : 'Document Root: ' . $_SERVER['DOCUMENT_ROOT']); ?></span><br />
+          <span>App Path: <?= APP_PATH; ?></span><br />
+          <span>Memory: <em><b
+                style="color: green;"><?= formatSizeUnits(memory_get_usage()) . '</b> @ <b>' . formatSizeUnits(convertToBytes(ini_get('memory_limit'))); ?></b></em></span><br />
+          <span>Source (code): <em
+              style="font-size: 13px;"><?= '[<b>' . formatSizeUnits($total_filesize) . '</b>] <b style="color: red;">' . $total_filesize - 1000000 . '</b>' ?></em></span>
+          <div style="position: relative; display: block;">
+            <div
+              style="position: absolute; display: block; float: right; right: 10px; width: 165px; text-align: right;">
+              <?= ' [(<a style="font-weight: bolder; color: green;" href="#" onclick="document.getElementById(\'app_nodes-container\').style.display = \'block\';">' . $total_include_files . ' loaded</a>) <b>' . $total_files . '</b> files] <br /> [<b style="color: green;">' . $total_include_lines . '</b> @ <b>' . $total_lines . '</b> lines]'; ?>
+            </div>
+          </div><br /><br />
+        </div>
+      </div>
+
+      <div id="toggle-button"
+        style="width: 40px; height: 64px; background-color: white; display: flex; align-items: center; justify-content: center; border: 1px solid black;">
+        <img src="resources/images/pc.png" width="32" data-checked="false"
+          onclick="toggleContainer(this, 'details-container', 'left');" style="cursor: pointer;" />
+      </div>
+
+    </div>
+    <div id="toggle-container"
+      style="position: fixed; display: block; bottom: 0; right: 0; padding: 4px; z-index: 1; text-align: right; border: 1px solid #000; height: auto;">
+
+      <div style="display: inline-block;">
+        <input class="input" id="toggle-debug" type="checkbox" onchange="toggleSwitch(this); return null;"
+          <?= isset($_GET['debug']) || defined('APP_ENV') && APP_ENV == 'development' ? 'checked' : '' ?> />
+        <label class="label" for="toggle-debug" style="margin: 0 auto; padding-top: 10px;">
+          <div class="switch" style="display: inline; z-index: 1;">
+            <span class="slider round"></span>
+          </div>
+        </label>
+      </div>
+
+      <div style="display: inline-block;">
+        <p style="color: #fff; background-color: #0078D7;">Developed by <a href="mailto:barryd.it@gmail.com"
+            style="color: #eee">Barry R. Dick</a><br />
+          <?= APP_NAME ?> (<a href="release-notes-<?= APP_VERSION ?>.html" style="color: #eee;">v<?= APP_VERSION ?></a>)
+        </p>
+      </div>
+
     </div>
 
-    <div style="display: inline-block;">
-      <p style="color: #fff; background-color: #0078D7;">Developed by <a href="mailto:barryd.it@gmail.com"
-          style="color: #eee">Barry R. Dick</a><br />
-        <?= APP_NAME ?> (<a href="release-notes-<?= APP_VERSION ?>.html" style="color: #eee;">v<?= APP_VERSION ?></a>)
-      </p>
+    <div id="adhd_song-container" style="position: fixed; display: none; bottom: 0; right: 0; z-index: 2;">
+      <img src="/resources/reels/adhd_song.gif" />
     </div>
-
-  </div>
-
-  <div id="adhd_song-container" style="position: fixed; display: none; bottom: 0; right: 0; z-index: 2;">
-    <img src="/resources/reels/adhd_song.gif" />
-  </div>
-  <!--
+    <!--
     <div id="ui_ace_editor" class="editor">This is the first editor.</div>
     <div id="app_project_editor" class="editor">This is the second editor.</div>
 -->
 
-  <script
-    src="<?= check_http_status('https://code.jquery.com/jquery-3.7.1.min.js') ? 'https://code.jquery.com/jquery-3.7.1.min.js' : APP_BASE['resources'] . 'js/jquery/' . 'jquery-3.7.1.min.js' ?>"></script>
+    <script
+      src="<?= check_http_status('https://code.jquery.com/jquery-3.7.1.min.js') ? 'https://code.jquery.com/jquery-3.7.1.min.js' : APP_BASE['resources'] . 'js/jquery/' . 'jquery-3.7.1.min.js' ?>"></script>
 
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-easing/1.4.1/jquery.easing.min.js"></script>
-  <!-- You need to include jQueryUI for the extended easing options. -->
-  <!-- script src="//code.jquery.com/jquery-1.12.4.js"></script -->
-  <?php
-  if (!is_file($path = APP_PATH . APP_BASE['resources'] . 'js/jquery-ui/' . 'jquery-ui-1.12.1.js') || ceil(abs((strtotime(date('Y-m-d')) - strtotime(date('Y-m-d', strtotime('+5 days', filemtime($path))))) / 86400)) <= 0) {
-    if (!realpath($pathdir = dirname($path)))
-      if (!mkdir($pathdir, 0755, true))
-        $errors['DOCS'] = $pathdir . ' does not exist';
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-easing/1.4.1/jquery.easing.min.js"></script>
+    <!-- You need to include jQueryUI for the extended easing options. -->
+    <!-- script src="//code.jquery.com/jquery-1.12.4.js"></script -->
+    <?php
+    if (!is_file($path = APP_PATH . APP_BASE['resources'] . 'js/jquery-ui/' . 'jquery-ui-1.12.1.js') || ceil(abs((strtotime(date('Y-m-d')) - strtotime(date('Y-m-d', strtotime('+5 days', filemtime($path))))) / 86400)) <= 0) {
+      if (!realpath($pathdir = dirname($path)))
+        if (!mkdir($pathdir, 0755, true))
+          $errors['DOCS'] = $pathdir . ' does not exist';
 
-    $url = 'https://code.jquery.com/ui/1.12.1/jquery-ui.min.js';
-    $handle = curl_init($url);
-    curl_setopt($handle, CURLOPT_RETURNTRANSFER, true);
+      $url = 'https://code.jquery.com/ui/1.12.1/jquery-ui.min.js';
+      $handle = curl_init($url);
+      curl_setopt($handle, CURLOPT_RETURNTRANSFER, true);
 
-    if (!empty($js = curl_exec($handle)))
-      file_put_contents($path, $js) or $errors['JS-JQUERY-UI'] = "$url returned empty.";
-  } ?>
+      if (!empty($js = curl_exec($handle)))
+        file_put_contents($path, $js) or $errors['JS-JQUERY-UI'] = "$url returned empty.";
+    } ?>
 
-  <script
-    src="<?= check_http_status('https://code.jquery.com/ui/1.12.1/jquery-ui.min.js') ? 'https://code.jquery.com/ui/1.12.1/jquery-ui.min.js' : APP_BASE['resources'] . 'js/jquery-ui/' . 'jquery-ui-1.12.1.js' ?>"></script>
-  <!-- Uncaught ReferenceError: jQuery is not defined -->
+    <script
+      src="<?= check_http_status('https://code.jquery.com/ui/1.12.1/jquery-ui.min.js') ? 'https://code.jquery.com/ui/1.12.1/jquery-ui.min.js' : APP_BASE['resources'] . 'js/jquery-ui/' . 'jquery-ui-1.12.1.js' ?>"></script>
+    <!-- Uncaught ReferenceError: jQuery is not defined -->
 
-  <!-- <script src="resources/js/ace/src/ace.js" type="text/javascript" charset="utf-8"></script> 
+    <!-- <script src="resources/js/ace/src/ace.js" type="text/javascript" charset="utf-8"></script> 
     <script src="resources/js/ace/src/ext-language_tools.js" type="text/javascript" charset="utf-8"></script> -->
-  <!-- For Text / Ace Editor -->
-  <!-- <script src="https://unpkg.com/@popperjs/core@2" type="text/javascript" charset="utf-8"></script> -->
+    <!-- For Text / Ace Editor -->
+    <!-- <script src="https://unpkg.com/@popperjs/core@2" type="text/javascript" charset="utf-8"></script> -->
 
-  <!--
+    <!--
     <script>
 $(document).ready(function() {
     var editor = ace.edit("ui_ace_editor");
@@ -1102,470 +1107,457 @@ $(document).ready(function() {
 </body>
 </html>
 -->
-  <?php
+    <?php
 
-  // (check_http_status('https://cdn.tailwindcss.com') ? 'https://cdn.tailwindcss.com' : APP_URL . 'resources/js/tailwindcss-3.3.5.js')?
+    // (check_http_status('https://cdn.tailwindcss.com') ? 'https://cdn.tailwindcss.com' : APP_URL . 'resources/js/tailwindcss-3.3.5.js')?
 //!is_dir($path = APP_PATH . APP_BASE['resources'] . 'js/') or mkdir($path, 0755, true);
-  
-  if (!is_file($path = APP_PATH . APP_BASE['resources'] . 'js/requirejs/require.js') || ceil(abs((strtotime(date('Y-m-d')) - strtotime(date('Y-m-d', strtotime('+5 days', filemtime($path))))) / 86400)) <= 0) {
-    !is_dir($path = APP_PATH . APP_BASE['resources'] . 'js/requirejs') or @mkdir($path, 0755, true);
-    !is_dir($path) and $errors['JS-REQUIREJS'] = "JS-REQUIREJS - Failed to create directory: $path";
-    $url = 'https://requirejs.org/docs/release/2.3.6/minified/require.js';
-    $handle = curl_init($url);
-    curl_setopt($handle, CURLOPT_RETURNTRANSFER, true);
+    
+    if (!is_file($path = APP_PATH . APP_BASE['resources'] . 'js/requirejs/require.js') || ceil(abs((strtotime(date('Y-m-d')) - strtotime(date('Y-m-d', strtotime('+5 days', filemtime($path))))) / 86400)) <= 0) {
+      !is_dir($path = APP_PATH . APP_BASE['resources'] . 'js/requirejs') or @mkdir($path, 0755, true);
+      !is_dir($path) and $errors['JS-REQUIREJS'] = "JS-REQUIREJS - Failed to create directory: $path";
+      $url = 'https://requirejs.org/docs/release/2.3.6/minified/require.js';
+      $handle = curl_init($url);
+      curl_setopt($handle, CURLOPT_RETURNTRANSFER, true);
 
-    if (!empty($js = curl_exec($handle)))
-      file_put_contents($path, $js) or $errors['JS-REQUIREJS'] = "$url returned empty.";
-  }
-
-  if (!is_file($path)) { ?>
-
-    <script src="<?= APP_BASE['resources']; ?>js/requirejs/require.js" type="text/javascript" charset="utf-8"></script>
-
-    <script>
-
-
-
-
-
-
-      var globalEditor;
-      require.config({
-        baseUrl: window.location.protocol + "//" + window.location.host + window.location.pathname.split("/").slice(0, -1).join("/"),
-        paths: {
-          jquery: 'resources/js/jquery/jquery-3.7.1.min',
-          'jquery-ui': 'resources/js/jquery-ui/jquery-ui-1.12.1',
-          //domReady: 'resources/js/domReady',
-          //bootstrap: 'resources/js/bootstrap/dist/js/bootstrap',
-          ace: 'resources/js/ace/src/ace',
-          'ace/ext-language_tools': 'resources/js/ace/src/ext-language_tools',
-          'ace/mode/javascript': 'resources/js/ace/src/mode-javascript',
-          'ace/mode/html': 'resources/js/ace/src/mode-html',
-          'ace/mode/php': 'resources/js/ace/src/mode-php',
-          'ace/theme/monokai': 'resources/js/ace/src/theme-monokai',
-          'ace/theme/github': 'resources/js/ace/src/theme-github'
-        },
-        shim: {
-          'ace': {
-            deps: ['ace/ext-language_tools'],
-            exports: 'ace'
-          },
-          //'ace/ext-language_tools': ['ace'],
-          'ace/mode/javascript': ['ace'],
-          'ace/mode/html': ['ace'],
-          'ace/mode/php': ['ace'],
-          'ace/theme/monokai': ['ace'],
-          'ace/theme/github': ['ace']
-        }
-      });
-
-      //require(['jquery', 'domReady', 'ace', 'ace/ext-language_tools', 'ace/mode/javascript', 'ace/mode/html', 'ace/theme/monokai', 'ace/theme/github'], function($, domReady, ace) {
-      //    domReady(function() {}
-      //});
-
-      require(['ace', 'ace/ext-language_tools', 'ace/mode/php', 'ace/mode/javascript', 'ace/mode/html', 'ace/theme/monokai', 'ace/theme/github'], function () {
-        if (!ace) {
-          console.error("Ace editor not loaded");
-          return;
-        }
-
-        var editor1 = ace.edit("ui_ace_editor");
-        //var JavaScriptMode = ace.require("ace/mode/javascript").Mode;
-        editor1.setTheme("ace/theme/monokai");
-        editor1.session.setMode("ace/mode/php");
-        editor1.setAutoScrollEditorIntoView(true);
-        editor1.setShowPrintMargin(false);
-        editor1.setOptions({
-          //  resize: "both"
-          enableBasicAutocompletion: true,
-          enableLiveAutocompletion: true,
-          enableSnippets: true
-        });
-
-        var editor2 = ace.edit("app_project_editor");
-        editor2.setTheme("ace/theme/dracula");
-        // (file_ext .js = javascript, .php = php)
-        editor2.session.setMode("ace/mode/php");
-        editor2.setAutoScrollEditorIntoView(true);
-        editor2.setShowPrintMargin(false);
-        editor2.setOptions({
-          //  resize: "both"
-          enableBasicAutocompletion: true,
-          enableLiveAutocompletion: true,
-          enableSnippets: true
-        });
-
-        globalEditor = editor2;
-      }, function (err) {
-        console.error("Error loading Ace modules: ", err.requireModules);
-        console.error(err);
-      });
-    </script>
-    <?php
-  } elseif (is_dir($path = APP_PATH . APP_BASE['resources'] . 'js/ace')) { ?>
-
-    <script src="resources/js/ace/src/ace.js" type="text/javascript" charset="utf-8"></script>
-    <script src="resources/js/ace/src/ext-language_tools.js" type="text/javascript" charset="utf-8"></script>
-
-    <script>
-      var globalEditor;
-      var editor1, editor2;
-
-      document.addEventListener("DOMContentLoaded", function () {
-
-        <?php if (!isset($_SERVER['SOCKET']) || !$_SERVER['SOCKET']) { ?>
-
-          //if (confirm('(Re)Start Server?')) {
-          //  $('#requestInput').val('server start');
-          //  $('#requestSubmit').click();
-          //} else {
-          //  console.log('Cancel (Re)Start.');
-          //}
-
-        <?php } ?>
-        /**/
-        editor1 = ace.edit("ui_ace_editor");
-        //var JavaScriptMode = ace.require("ace/mode/javascript").Mode;
-        editor1.setTheme("ace/theme/monokai"); // github
-        editor1.session.setMode("ace/mode/php");
-        editor1.setAutoScrollEditorIntoView(true);
-        editor1.setShowPrintMargin(false);
-        editor1.setOptions({
-          //  resize: "both"
-          enableBasicAutocompletion: true,
-          enableLiveAutocompletion: true,
-          enableSnippets: true
-        });
-
-        var editor2 = ace.edit("app_project_editor");
-        editor2.setTheme("ace/theme/dracula");
-        // (file_ext .js = javascript, .php = php)
-        editor2.session.setMode("ace/mode/php");
-        editor2.setAutoScrollEditorIntoView(true);
-        editor2.setShowPrintMargin(false);
-        editor2.setOptions({
-          //  resize: "both"
-          enableBasicAutocompletion: true,
-          enableLiveAutocompletion: true,
-          enableSnippets: true
-        });
-        globalEditor = editor2;
-      });
-    </script>
-
-    <?php
-  }
-  unset($path);
-
-  if (date(/*Y-*/ 'm-d') == /*1928-*/ '08-07' ?? /*2023-*/ '03-30') { ?>
-    <script src="resources/reels/leave-a-light-on.js" type="text/javascript" charset="utf-8"></script>
-  <?php } elseif (date(/*Y-*/ 'm-d') == /*1976-*/ '03-20' ?? /*2017-*/ '07-20') { ?>
-    <script src="resources/reels/leave-a-light-on.js" type="text/javascript" charset="utf-8"></script>
-  <?php } else {  // array_rand() can't be empty ?>
-    <script
-      src="<?= APP_BASE['resources'] . 'reels/disturbed_-_it_wasnt_me.js'; /*kassy frequency something_happened disturbed_-_it_wasnt_me.js adhd_song.js !empty($reels = glob(APP_PATH . 'resources/reels/*.js')) ? APP_BASE['resources'] . 'reels/' . basename(array_rand(array_flip(array_filter($reels, 'is_file')), 1)) : ''; APP_BASE['resources'] */ ?>"
-      type="text/javascript" charset="utf-8"></script>
-  <?php } ?>
-  <script type="text/javascript" charset="utf-8">
-
-    let isDragging = false;
-    let activeWindow = null;
-
-    function makeDraggable(windowId) {
-      const windowElement = document.getElementById(windowId);
-      const headerElement = windowElement.querySelector('.ui-widget-header');
-      let offsetX, offsetY;
-
-      headerElement.addEventListener('mousedown', function (event) {
-        if (!isDragging) {
-          // Bring the clicked window to the front
-          document.body.appendChild(windowElement);
-          offsetX = event.clientX - windowElement.getBoundingClientRect().left;
-          offsetY = event.clientY - windowElement.getBoundingClientRect().top;
-          isDragging = true;
-          activeWindow = windowElement;
-        }
-      });
-
-      document.addEventListener('mousemove', function (event) {
-        if (isDragging && activeWindow === windowElement) {
-          const left = event.clientX - offsetX;
-          const top = event.clientY - offsetY;
-
-          // Boundary restrictions
-          const maxX = window.innerWidth - windowElement.clientWidth; //  - 100
-          const maxY = window.innerHeight - windowElement.clientHeight;
-
-          windowElement.style.left = `${Math.max(0, Math.min(left, maxX))}px`;
-          windowElement.style.top = `${Math.max(0, Math.min(top, maxY))}px`;
-        }
-      });
-
-      document.addEventListener('mouseup', function () {
-        if (activeWindow === windowElement) {
-          isDragging = false;
-          activeWindow = null;
-        }
-      });
+      if (!empty($js = curl_exec($handle)))
+        file_put_contents($path, $js) or $errors['JS-REQUIREJS'] = "$url returned empty.";
     }
 
-    makeDraggable('app_medication_log-container');
-    makeDraggable('app_notes-container');
-    makeDraggable('app_calendar-container');
-    //makeDraggable('app_errors-container');
-    makeDraggable('app_ace_editor-container');
-    makeDraggable('app_composer-container');
-    makeDraggable('app_project-container');
-    makeDraggable('app_git-container');
-    makeDraggable('app_npm-container');
-    //makeDraggable('app_php-container');
-    makeDraggable('app_nodes-container');
-    makeDraggable('app_timesheet-container');
-    //makeDraggable('console-settings');
+    if (!is_file($path)) { ?>
 
-    displayDirectoryBtn.addEventListener('click', () => {
+      <script src="<?= APP_BASE['resources']; ?>js/requirejs/require.js" type="text/javascript" charset="utf-8"></script>
 
-      event.preventDefault();
-      const appDirectoryContainer = document.getElementById('app_directory-container');
+      <script>
 
-      //const styles = window.getComputedStyle(appDirectoryContainer);
-      const displayDirectoryBtn = document.getElementById('displayDirectoryBtn');
 
-      console.log('state : ' + appDirectoryContainer.style.display);
 
-      /**/
-      if (appDirectoryContainer.style.display == 'none') {
 
-        <?php if (isset($_GET['client']) && !$_GET['client']) { ?>
-          if (confirm('Do you wish to display clients?')) {
-            // User clicked OK
-            console.log('User clicked OK');
+
+
+        var globalEditor;
+        require.config({
+          baseUrl: window.location.protocol + "//" + window.location.host + window.location.pathname.split("/").slice(0, -1).join("/"),
+          paths: {
+            jquery: 'resources/js/jquery/jquery-3.7.1.min',
+            'jquery-ui': 'resources/js/jquery-ui/jquery-ui-1.12.1',
+            //domReady: 'resources/js/domReady',
+            //bootstrap: 'resources/js/bootstrap/dist/js/bootstrap',
+            ace: 'resources/js/ace/src/ace',
+            'ace/ext-language_tools': 'resources/js/ace/src/ext-language_tools',
+            'ace/mode/javascript': 'resources/js/ace/src/mode-javascript',
+            'ace/mode/html': 'resources/js/ace/src/mode-html',
+            'ace/mode/php': 'resources/js/ace/src/mode-php',
+            'ace/theme/monokai': 'resources/js/ace/src/theme-monokai',
+            'ace/theme/github': 'resources/js/ace/src/theme-github'
+          },
+          shim: {
+            'ace': {
+              deps: ['ace/ext-language_tools'],
+              exports: 'ace'
+            },
+            //'ace/ext-language_tools': ['ace'],
+            'ace/mode/javascript': ['ace'],
+            'ace/mode/html': ['ace'],
+            'ace/mode/php': ['ace'],
+            'ace/theme/monokai': ['ace'],
+            'ace/theme/github': ['ace']
+          }
+        });
+
+        //require(['jquery', 'domReady', 'ace', 'ace/ext-language_tools', 'ace/mode/javascript', 'ace/mode/html', 'ace/theme/monokai', 'ace/theme/github'], function($, domReady, ace) {
+        //    domReady(function() {}
+        //});
+
+        require(['ace', 'ace/ext-language_tools', 'ace/mode/php', 'ace/mode/javascript', 'ace/mode/html', 'ace/theme/monokai', 'ace/theme/github'], function () {
+          if (!ace) {
+            console.error("Ace editor not loaded");
+            return;
+          }
+
+          var editor1 = ace.edit("ui_ace_editor");
+          //var JavaScriptMode = ace.require("ace/mode/javascript").Mode;
+          editor1.setTheme("ace/theme/monokai");
+          editor1.session.setMode("ace/mode/php");
+          editor1.setAutoScrollEditorIntoView(true);
+          editor1.setShowPrintMargin(false);
+          editor1.setOptions({
+            //  resize: "both"
+            enableBasicAutocompletion: true,
+            enableLiveAutocompletion: true,
+            enableSnippets: true
+          });
+
+          var editor2 = ace.edit("app_project_editor");
+          editor2.setTheme("ace/theme/dracula");
+          // (file_ext .js = javascript, .php = php)
+          editor2.session.setMode("ace/mode/php");
+          editor2.setAutoScrollEditorIntoView(true);
+          editor2.setShowPrintMargin(false);
+          editor2.setOptions({
+            //  resize: "both"
+            enableBasicAutocompletion: true,
+            enableLiveAutocompletion: true,
+            enableSnippets: true
+          });
+
+          globalEditor = editor2;
+        }, function (err) {
+          console.error("Error loading Ace modules: ", err.requireModules);
+          console.error(err);
+        });
+      </script>
+      <?php
+    } elseif (is_dir($path = APP_PATH . APP_BASE['resources'] . 'js/ace')) { ?>
+
+      <script src="resources/js/ace/src/ace.js" type="text/javascript" charset="utf-8"></script>
+      <script src="resources/js/ace/src/ext-language_tools.js" type="text/javascript" charset="utf-8"></script>
+
+      <script>
+        var globalEditor;
+        var editor1, editor2;
+
+        document.addEventListener("DOMContentLoaded", function () {
+
+          <?php if (!isset($_SERVER['SOCKET']) || !$_SERVER['SOCKET']) { ?>
+
+            //if (confirm('(Re)Start Server?')) {
+            //  $('#requestInput').val('server start');
+            //  $('#requestSubmit').click();
+            //} else {
+            //  console.log('Cancel (Re)Start.');
+            //}
+
+          <?php } ?>
+          /**/
+          editor1 = ace.edit("ui_ace_editor");
+          //var JavaScriptMode = ace.require("ace/mode/javascript").Mode;
+          editor1.setTheme("ace/theme/monokai"); // github
+          editor1.session.setMode("ace/mode/php");
+          editor1.setAutoScrollEditorIntoView(true);
+          editor1.setShowPrintMargin(false);
+          editor1.setOptions({
+            //  resize: "both"
+            enableBasicAutocompletion: true,
+            enableLiveAutocompletion: true,
+            enableSnippets: true
+          });
+
+          var editor2 = ace.edit("app_project_editor");
+          editor2.setTheme("ace/theme/dracula");
+          // (file_ext .js = javascript, .php = php)
+          editor2.session.setMode("ace/mode/php");
+          editor2.setAutoScrollEditorIntoView(true);
+          editor2.setShowPrintMargin(false);
+          editor2.setOptions({
+            //  resize: "both"
+            enableBasicAutocompletion: true,
+            enableLiveAutocompletion: true,
+            enableSnippets: true
+          });
+          globalEditor = editor2;
+        });
+      </script>
+
+      <?php
+    }
+    unset($path);
+
+    if (date(/*Y-*/ 'm-d') == /*1928-*/ '08-07' ?? /*2023-*/ '03-30') { ?>
+      <script src="resources/reels/leave-a-light-on.js" type="text/javascript" charset="utf-8"></script>
+    <?php } elseif (date(/*Y-*/ 'm-d') == /*1976-*/ '03-20' ?? /*2017-*/ '07-20') { ?>
+      <script src="resources/reels/leave-a-light-on.js" type="text/javascript" charset="utf-8"></script>
+    <?php } else {  // array_rand() can't be empty ?>
+      <script
+        src="<?= APP_BASE['resources'] . 'reels/leave-a-light-on.js'; /*kassy frequency something_happened disturbed_-_it_wasnt_me.js adhd_song.js !empty($reels = glob(APP_PATH . 'resources/reels/*.js')) ? APP_BASE['resources'] . 'reels/' . basename(array_rand(array_flip(array_filter($reels, 'is_file')), 1)) : ''; APP_BASE['resources'] */ ?>"
+        type="text/javascript" charset="utf-8"></script>
+    <?php } ?>
+    <script type="text/javascript" charset="utf-8">
+
+      let isDragging = false;
+      let activeWindow = null;
+
+      function makeDraggable(windowId) {
+        const windowElement = document.getElementById(windowId);
+        const headerElement = windowElement.querySelector('.ui-widget-header');
+        let offsetX, offsetY;
+
+        headerElement.addEventListener('mousedown', function (event) {
+          if (!isDragging) {
+            // Bring the clicked window to the front
+            document.body.appendChild(windowElement);
+            offsetX = event.clientX - windowElement.getBoundingClientRect().left;
+            offsetY = event.clientY - windowElement.getBoundingClientRect().top;
+            isDragging = true;
+            activeWindow = windowElement;
+          }
+        });
+
+        document.addEventListener('mousemove', function (event) {
+          if (isDragging && activeWindow === windowElement) {
+            const left = event.clientX - offsetX;
+            const top = event.clientY - offsetY;
+
+            // Boundary restrictions
+            const maxX = window.innerWidth - windowElement.clientWidth; //  - 100
+            const maxY = window.innerHeight - windowElement.clientHeight;
+
+            windowElement.style.left = `${Math.max(0, Math.min(left, maxX))}px`;
+            windowElement.style.top = `${Math.max(0, Math.min(top, maxY))}px`;
+          }
+        });
+
+        document.addEventListener('mouseup', function () {
+          if (activeWindow === windowElement) {
+            isDragging = false;
+            activeWindow = null;
+          }
+        });
+      }
+
+      //makeDraggable('app_medication_log-container');
+      makeDraggable('app_notes-container');
+      makeDraggable('app_calendar-container');
+      //makeDraggable('app_errors-container');
+      makeDraggable('app_ace_editor-container');
+      makeDraggable('app_composer-container');
+      makeDraggable('app_project-container');
+      makeDraggable('app_git-container');
+      makeDraggable('app_npm-container');
+      makeDraggable('app_php-container');
+      makeDraggable('app_nodes-container');
+      makeDraggable('app_timesheet-container');
+      //makeDraggable('console-settings');
+
+      displayDirectoryBtn.addEventListener('click', () => {
+
+        event.preventDefault();
+        const appDirectoryContainer = document.getElementById('app_directory-container');
+
+        //const styles = window.getComputedStyle(appDirectoryContainer);
+        const displayDirectoryBtn = document.getElementById('displayDirectoryBtn');
+
+        console.log('state : ' + appDirectoryContainer.style.display);
+
+        /**/
+        if (appDirectoryContainer.style.display == 'none') {
+
+          <?php if (isset($_GET['client']) && !$_GET['client'] || isset($_GET['client']) && !$_GET['client'] && isset($_GET['path']) && !$_GET['path']) { ?>
+            if (confirm('Do you wish to display clients?')) {
+              // User clicked OK
+              console.log('User clicked OK');
+              $('#app_directory-container').slideDown("slow", function () {
+                // Animation complete.
+              });
+            } else {
+              // User clicked Cancel
+              console.log('User clicked Cancel');
+
+              $('#app_directory-container').slideUp("slow", function () {
+                // Animation complete.
+              });
+            } <?php } else { ?>
             $('#app_directory-container').slideDown("slow", function () {
               // Animation complete.
             });
-          } else {
-            // User clicked Cancel
-            console.log('User clicked Cancel');
+          <?php } ?>
+          console.log('hide');
+          displayDirectoryBtn.innerHTML = '&nbsp;&#9650;';
+        } else {
 
-            $('#app_directory-container').slideUp("slow", function () {
+
+          $('#app_directory-container').slideUp("slow", function () {
+            // Animation complete.
+          });
+
+          displayDirectoryBtn.innerHTML = '&nbsp;&#9660;';
+          console.log('show');
+        }
+
+        //show_console();
+
+      });
+
+      function toggleContainer(element /*, targetId, direction = "left", action = "toggle"*/) {
+        /*
+        let isImage = element.tagName === "IMG";
+        let isChecked = isImage ? element.getAttribute("data-checked") === "true" : element.checked;
+   
+        let $target = $("#" + targetId);
+   
+        if (action === "toggle") {
+          if ($target.is(":visible")) {
+            action = "hide";
+          } else {
+            action = "show";
+          }
+        }
+   
+        if (action === "show") {
+          $target.show("slide", { direction: direction }, 1000);
+        } else {
+          $target.hide("slide", { direction: direction }, 1000);
+        }
+   
+        // Toggle checked state if it's an image
+        if (isImage) {
+          element.setAttribute("data-checked", action === "show");
+        }
+        */
+
+        let isChecked = element.getAttribute("data-checked") === "true";
+
+        if (isChecked) {
+          // Slide out (hide)
+          $("#details-container").animate({ width: "0px" }, 1000, function () {
+            $(this).hide();
+          });
+          $("#toggle-button").animate({ left: "0px" }, 1000);
+        } else {
+          // Slide in (show)
+          $("#details-container").show().animate({ width: "245px" }, 1000);
+          $("#toggle-button").animate({ left: "245px" }, 1000);
+        }
+
+        // Toggle the checked state
+        element.setAttribute("data-checked", !isChecked);
+      }
+
+      /*
+      function toggleSwitch(element, targetId, direction = "left", action = "toggle") {
+        let isImage = element.tagName === "IMG";
+        let isChecked = isImage ? element.getAttribute("data-checked") === "true" : element.checked;
+   
+        let $target = $("#" + targetId);
+   
+        if (action === "toggle") {
+          if ($target.is(":visible")) {
+            action = "hide";
+          } else {
+            action = "show";
+          }
+        }
+   
+        if (action === "show") {
+          $target.show("slide", { direction: direction }, 1000);
+        } else {
+          $target.hide("slide", { direction: direction }, 1000);
+        }
+   
+        // Toggle checked state if it's an image
+        if (isImage) {
+          element.setAttribute("data-checked", action === "show");
+        }
+      }
+   
+      function toggleSwitch(imgElement) {
+        let isChecked = imgElement.getAttribute("data-checked") === "true";
+   
+        if (isChecked) {
+          // Slide out (hide)
+          $("#details-container").animate({ width: "0px" }, 1000, function () {
+            $(this).hide();
+          });
+          $("#toggle-button").animate({ left: "0px" }, 1000);
+        } else {
+          // Slide in (show)
+          $("#details-container").show().animate({ width: "245px" }, 1000);
+          $("#toggle-button").animate({ left: "245px" }, 1000);
+        }
+   
+        // Toggle the checked state
+        imgElement.setAttribute("data-checked", !isChecked);
+      }*/
+      /**/
+      function toggleSwitch(element) {
+
+        if (element.checked) {
+          // Third option is selected
+          // Add your logic here
+          console.log('checked');
+
+          //getElementById('hide_notice-container');
+
+          $('#details-container').hide("slide", { direction: "right" }, 1000);
+
+          $('#app_container').slideDown("slow", function () {
+            // Animation complete.
+          });
+
+          <?php if (isset($errors['GIT_UPDATE'])) { ?>
+            $('#hide_notice-container').slideDown("slow", function () {
               // Animation complete.
             });
-          } <?php } else { ?>
+          <?php } ?>
+
+          $('#app_console-container').slideDown("slow", function () {
+            // Animation complete.
+          });
+
+          <?php if (isset($_GET['client']) && $_GET['client']) {
+          } ?>
           $('#app_directory-container').slideDown("slow", function () {
             // Animation complete.
           });
-        <?php } ?>
-        console.log('hide');
-        displayDirectoryBtn.innerHTML = '&nbsp;&#9650;';
-      } else {
 
 
-        $('#app_directory-container').slideUp("slow", function () {
-          // Animation complete.
-        });
 
-        displayDirectoryBtn.innerHTML = '&nbsp;&#9660;';
-        console.log('show');
-      }
+          $("#debug-content").css('overflow', 'visible');
 
-      //show_console();
+          $("#debug-content").show("slide", { direction: "up" }, 1000);
 
-    });
+          //$("#app_backup-container").show("slide", { direction: "right" }, 1000);
 
-    function toggleContainer(element /*, targetId, direction = "left", action = "toggle"*/) {
-      /*
-      let isImage = element.tagName === "IMG";
-      let isChecked = isImage ? element.getAttribute("data-checked") === "true" : element.checked;
- 
-      let $target = $("#" + targetId);
- 
-      if (action === "toggle") {
-        if ($target.is(":visible")) {
-          action = "hide";
         } else {
-          action = "show";
-        }
-      }
- 
-      if (action === "show") {
-        $target.show("slide", { direction: direction }, 1000);
-      } else {
-        $target.hide("slide", { direction: direction }, 1000);
-      }
- 
-      // Toggle checked state if it's an image
-      if (isImage) {
-        element.setAttribute("data-checked", action === "show");
-      }
-      */
 
-      let isChecked = element.getAttribute("data-checked") === "true";
-
-      if (isChecked) {
-        // Slide out (hide)
-        $("#details-container").animate({ width: "0px" }, 1000, function () {
-          $(this).hide();
-        });
-        $("#toggle-button").animate({ left: "0px" }, 1000);
-      } else {
-        // Slide in (show)
-        $("#details-container").show().animate({ width: "245px" }, 1000);
-        $("#toggle-button").animate({ left: "245px" }, 1000);
-      }
-
-      // Toggle the checked state
-      element.setAttribute("data-checked", !isChecked);
-    }
-
-    /*
-    function toggleSwitch(element, targetId, direction = "left", action = "toggle") {
-      let isImage = element.tagName === "IMG";
-      let isChecked = isImage ? element.getAttribute("data-checked") === "true" : element.checked;
- 
-      let $target = $("#" + targetId);
- 
-      if (action === "toggle") {
-        if ($target.is(":visible")) {
-          action = "hide";
-        } else {
-          action = "show";
-        }
-      }
- 
-      if (action === "show") {
-        $target.show("slide", { direction: direction }, 1000);
-      } else {
-        $target.hide("slide", { direction: direction }, 1000);
-      }
- 
-      // Toggle checked state if it's an image
-      if (isImage) {
-        element.setAttribute("data-checked", action === "show");
-      }
-    }
- 
-    function toggleSwitch(imgElement) {
-      let isChecked = imgElement.getAttribute("data-checked") === "true";
- 
-      if (isChecked) {
-        // Slide out (hide)
-        $("#details-container").animate({ width: "0px" }, 1000, function () {
-          $(this).hide();
-        });
-        $("#toggle-button").animate({ left: "0px" }, 1000);
-      } else {
-        // Slide in (show)
-        $("#details-container").show().animate({ width: "245px" }, 1000);
-        $("#toggle-button").animate({ left: "245px" }, 1000);
-      }
- 
-      // Toggle the checked state
-      imgElement.setAttribute("data-checked", !isChecked);
-    }*/
-    /**/
-    function toggleSwitch(element) {
-
-      if (element.checked) {
-        // Third option is selected
-        // Add your logic here
-        console.log('checked');
-
-        //getElementById('hide_notice-container');
-
-        $('#details-container').hide("slide", { direction: "right" }, 1000);
-
-        $('#app_container').slideDown("slow", function () {
-          // Animation complete.
-        });
-
-        <?php if (isset($errors['GIT_UPDATE'])) { ?>
-          $('#hide_notice-container').slideDown("slow", function () {
+          $('#app_container').slideUp("slow", function () {
             // Animation complete.
           });
-        <?php } ?>
 
-        $('#app_console-container').slideDown("slow", function () {
-          // Animation complete.
-        });
+          $('#details-container').hide("slide", { direction: "left" }, 1000);
 
-        <?php if (isset($_GET['client']) && $_GET['client']) {
-        } ?>
-        $('#app_directory-container').slideDown("slow", function () {
-          // Animation complete.
-        });
+          $('#hide_notice-container').slideUp("slow", function () {
+            // Animation complete.
+          });
 
+          $('#app_directory-container').slideUp("slow", function () {
+            // Animation complete.
+          });
 
+          // Third option is not selected
+          // Add your logic here
+          console.log('(not) checked');
 
-        $("#debug-content").css('overflow', 'visible');
+          $('#app_console-container').slideUp("slow", function () {
+            // Animation complete.
+          });
 
-        $("#debug-content").show("slide", { direction: "up" }, 1000);
+          <?= !empty($errors) ? ' show_console();' : 'show_console();' ?>
 
-        //$("#app_backup-container").show("slide", { direction: "right" }, 1000);
+          $('#requestInput').attr('autofocus', true);
 
-      } else {
+          $("#debug-content").hide("slide", { direction: "up" }, 1000);
 
-        $('#app_container').slideUp("slow", function () {
-          // Animation complete.
-        });
-
-        $('#details-container').hide("slide", { direction: "left" }, 1000);
-
-        $('#hide_notice-container').slideUp("slow", function () {
-          // Animation complete.
-        });
-
-        $('#app_directory-container').slideUp("slow", function () {
-          // Animation complete.
-        });
-
-        // Third option is not selected
-        // Add your logic here
-        console.log('(not) checked');
-
-        $('#app_console-container').slideUp("slow", function () {
-          // Animation complete.
-        });
-
-        <?= !empty($errors) ? ' show_console();' : 'show_console();' ?>
-
-        $('#requestInput').attr('autofocus', true);
-
-        $("#debug-content").hide("slide", { direction: "up" }, 1000);
-
-        //$("#app_backup-container").hide("slide", { direction: "right" }, 1000);
+          //$("#app_backup-container").hide("slide", { direction: "right" }, 1000);
+        }
       }
-    }
 
-    function toggleIframeUrl(uri_location) {
-      // Uncheck the checkbox
-      document.getElementById('toggle-debug').checked = false;
-
-      toggleSwitch(document.getElementById('toggle-debug'));
-
-      // Set the src attribute of the iframe
-      document.getElementById('iWindow').src = uri_location;
-    }
-
-    $(document).ready(function () {
-
-      <?= (!defined('APP_NO_INTERNET_CONNECTION')) ? '' : 'alert(\'The internet is not connected.\');' ?>
-
-      $("#app_console-container").css('display', 'none');
-
-      <?php if (isset($_GET['path'])) { ?>
-
-        document.getElementById('toggle-debug').checked = true;
+      function toggleIframeUrl(uri_location) {
+        // Uncheck the checkbox
+        document.getElementById('toggle-debug').checked = false;
 
         toggleSwitch(document.getElementById('toggle-debug'));
-        /**/
-        $('#app_directory-container').slideDown("slow", function () {
-          // Animation complete.
-        });
 
-      <?php } ?>
-      if ($("#app_directory-container").css('display') == 'none') {
-        <?php
-        if (!empty(APP_URL['query']) || isset($_GET['debug']) || (defined(APP_DEBUG) && APP_DEBUG)) { ?>
+        // Set the src attribute of the iframe
+        document.getElementById('iWindow').src = uri_location;
+      }
+
+      $(document).ready(function () {
+
+        <?= (!defined('APP_NO_INTERNET_CONNECTION')) ? '' : 'alert(\'The internet is not connected.\');' ?>
+
+        $("#app_console-container").css('display', 'none');
+
+        <?php if (isset($_GET['path'])) { ?>
 
           document.getElementById('toggle-debug').checked = true;
 
@@ -1574,7 +1566,12 @@ $(document).ready(function() {
           $('#app_directory-container').slideDown("slow", function () {
             // Animation complete.
           });
-        <?php } else if (isset($_GET['project'])) { ?>
+
+        <?php } ?>
+        if ($("#app_directory-container").css('display') == 'none') {
+          <?php
+          if (!empty(APP_URL['query']) || isset($_GET['debug']) || (defined(APP_DEBUG) && APP_DEBUG)) { ?>
+
             document.getElementById('toggle-debug').checked = true;
 
             toggleSwitch(document.getElementById('toggle-debug'));
@@ -1582,193 +1579,198 @@ $(document).ready(function() {
             $('#app_directory-container').slideDown("slow", function () {
               // Animation complete.
             });
+          <?php } else if (isset($_GET['project'])) { ?>
+              document.getElementById('toggle-debug').checked = true;
 
-        <?php } else if (defined('APP_ROOT') && APP_ROOT != '' && isset($errors['GIT_UPDATE']) && isset($_ENV['DEFAULT_UPDATE_NOTICE']) && $_ENV['DEFAULT_UPDATE_NOTICE'] != true) { //  isset($_GET['client'])  !$_GET['client'] 
-        
+              toggleSwitch(document.getElementById('toggle-debug'));
+              /**/
+              $('#app_directory-container').slideDown("slow", function () {
+                // Animation complete.
+              });
 
-          if (isset($_GET['client']) && $_GET['client'] == '') { ?>
-                document.getElementById('toggle-debug').checked = true;
+          <?php } else if (defined('APP_ROOT') && APP_ROOT != '' && isset($errors['GIT_UPDATE']) && isset($_ENV['DEFAULT_UPDATE_NOTICE']) && $_ENV['DEFAULT_UPDATE_NOTICE'] != true) { //  isset($_GET['client'])  !$_GET['client'] 
+          
 
-                toggleSwitch(document.getElementById('toggle-debug'));
-                /*
-                          $( '#app_directory-container' ).slideDown( "slow", function() {
-                           // Animation complete.
-                          });
-                */
-          <?php } else if (isset($_GET['client']) && $_GET['client'] == '') { ?>
-
+            if (isset($_GET['client']) && $_GET['client'] == '') { ?>
                   document.getElementById('toggle-debug').checked = true;
 
                   toggleSwitch(document.getElementById('toggle-debug'));
-
-          <?php } else { ?>
-
-            <?php if (!isset($_GET['domain'])) { // !$_GET['client'] ?>
+                  /*
+                            $( '#app_directory-container' ).slideDown( "slow", function() {
+                             // Animation complete.
+                            });
+                  */
+            <?php } else if (isset($_GET['client']) && $_GET['client'] == '') { ?>
 
                     document.getElementById('toggle-debug').checked = true;
 
                     toggleSwitch(document.getElementById('toggle-debug'));
 
+            <?php } else { ?>
+
+              <?php if (!isset($_GET['domain'])) { // !$_GET['client'] ?>
+
+                      document.getElementById('toggle-debug').checked = true;
+
+                      toggleSwitch(document.getElementById('toggle-debug'));
+
+              <?php }
+            }
+          } else {
+            if (isset($_GET['client']) && !$_GET['client'] && isset($_GET['path']) || isset($_GET['client']) && !$_GET['client']) { ?>
+                  if (confirm('Do you wish to display clients 200?')) {
+                    // User clicked OK
+                    console.log('User clicked OK');
+                    $('#app_directory-container').slideDown("slow", function () {
+                      // Animation complete.
+                    });
+                  } else {
+                    // User clicked Cancel
+                    console.log('User clicked Cancel');
+                    $('#app_directory-container').slideUp("slow", function () {
+                      // Animation complete.
+                    });
+                  }
+
+              <?php if (!isset($_GET['domain'])) { // !$_GET['client'] ?>
+
+                    document.getElementById('toggle-debug').checked = true;
+
+                    toggleSwitch(document.getElementById('toggle-debug'));
+
+              <?php } else { ?>
+                    /*
+                              document.getElementById('toggle-debug').checked = true;
+ 
+                              toggleSwitch(document.getElementById('toggle-debug'));
+ 
+                              $( '#app_directory-container' ).slideDown( "slow", function() {
+                               // Animation complete.
+                              });
+                    */
+              <?php }
+            } else if (isset($_GET['client']) && $_GET['client'] != '') { ?>
+                    document.getElementById('toggle-debug').checked = false;
+
+
+                    //toggleSwitch(document.getElementById('toggle-debug'));
+
+                    //$( '#app_directory-container' ).slideDown( "slow", function() {
+                    // Animation complete.
+                    //});
+
             <?php }
+          } ?>
+        }
+      });
+
+      <?= $apps['console']['script'] ?? ''; ?>
+
+      // Define the function to be executed when "c" key is pressed
+
+
+      function validate() {
+        var serverStatus = document.getElementById('serverStatus');
+        serverStatus.src = '/resources/images/server-green.gif';
+
+        var remember = document.getElementById('check_server_start');
+        if (remember.checked) {
+          //alert("checked") ;
+          $('#requestInput').val('server start');
+          $('#requestSubmit').click();
+        } else {
+          //alert("You didn't check it! Let me check it for you.");
+          $('#requestInput').val('server shutdown -f');
+          $('#requestSubmit').click();
+
+        }
+      }
+      document.addEventListener('keydown', function () {
+        // Check if the pressed key is "c" (you can use event.key or event.keyCode)
+        if (event.key === '`' || event.keyCode === 192) // c||67
+          if (document.activeElement !== requestInput) {
+            // Replace the following line with your desired function
+            // If it's currently absolute, change to fixed
+            if (!isFixed)
+              requestInput.focus();
+            event.preventDefault();
+            show_console();
+          } else {
+            document.activeElement = null;
+            return false;
+          }
+        else if (event.key === 'c' || event.keyCode === 67) {
+          // Execute your desired function or code here
+          console.log('The "c" key was pressed!');
+          // Replace the above line with the actual code you want to execute
+        }
+        console.log('keyboard shortcut');
+      });
+
+      // Attach the event listener to the window object
+      window.addEventListener('keydown', function () {
+        // Check the condition before calling the show_console function
+        //if (myDiv.style.position !== 'fixed')
+
+        if (event.key === '`' || event.keyCode === 192) // c||67
+          if (document.activeElement !== requestInput) {
+            // Replace the following line with your desired function
+            // If it's currently absolute, change to fixed
+            if (!isFixed)
+              requestInput.focus();
+            event.preventDefault();
+            if (isFixed) isFixed = !isFixed;
+            isFixed = false;
+            show_console();
+            return false;
+          } else {
+            document.activeElement = null;
+            return false;
+          }
+
+
+        console.log('windowEvent');
+
+        var textField = document.getElementById('requestInput');
+
+        // Check if the text field is focused
+        var isFocused = textField === document.activeElement;
+
+        if (document.getElementById('app_console-container').style.position != 'absolute') {
+
+          if (!isFixed) {
+            //requestInput.focus();
+          } else {
+            //show_console();
           }
         } else {
-          if (isset($_GET['client']) && !$_GET['client']) { ?>
 
 
-                if (confirm('Do you wish to display clients?')) {
-                  // User clicked OK
-                  console.log('User clicked OK');
-                  $('#app_directory-container').slideDown("slow", function () {
-                    // Animation complete.
-                  });
-                } else {
-                  // User clicked Cancel
-                  console.log('User clicked Cancel');
-                  $('#app_directory-container').slideUp("slow", function () {
-                    // Animation complete.
-                  });
-                }
-
-
-
-            <?php if (!isset($_GET['domain'])) { // !$_GET['client'] ?>
-
-                  document.getElementById('toggle-debug').checked = true;
-
-                  toggleSwitch(document.getElementById('toggle-debug'));
-
-            <?php } else { ?>
-                  /*
-                            document.getElementById('toggle-debug').checked = true;
- 
-                            toggleSwitch(document.getElementById('toggle-debug'));
- 
-                            $( '#app_directory-container' ).slideDown( "slow", function() {
-                             // Animation complete.
-                            });
-                  */
-            <?php }
-          } else if (isset($_GET['client']) && $_GET['client'] != '') { ?>
-                  document.getElementById('toggle-debug').checked = false;
-
-
-                  //toggleSwitch(document.getElementById('toggle-debug'));
-
-                  //$( '#app_directory-container' ).slideDown( "slow", function() {
-                  // Animation complete.
-                  //});
-
-          <?php }
-        } ?>
-      }
-    });
-
-    <?= $apps['console']['script'] ?? ''; ?>
-
-    // Define the function to be executed when "c" key is pressed
-
-
-    function validate() {
-      var serverStatus = document.getElementById('serverStatus');
-      serverStatus.src = '/resources/images/server-green.gif';
-
-      var remember = document.getElementById('check_server_start');
-      if (remember.checked) {
-        //alert("checked") ;
-        $('#requestInput').val('server start');
-        $('#requestSubmit').click();
-      } else {
-        //alert("You didn't check it! Let me check it for you.");
-        $('#requestInput').val('server shutdown -f');
-        $('#requestSubmit').click();
-
-      }
-    }
-    document.addEventListener('keydown', function () {
-      // Check if the pressed key is "c" (you can use event.key or event.keyCode)
-      if (event.key === '`' || event.keyCode === 192) // c||67
-        if (document.activeElement !== requestInput) {
-          // Replace the following line with your desired function
-          // If it's currently absolute, change to fixed
-          if (!isFixed)
-            requestInput.focus();
-          event.preventDefault();
-          show_console();
-        } else {
-          document.activeElement = null;
-          return false;
-        }
-      else if (event.key === 'c' || event.keyCode === 67) {
-        // Execute your desired function or code here
-        console.log('The "c" key was pressed!');
-        // Replace the above line with the actual code you want to execute
-      }
-      console.log('keyboard shortcut');
-    });
-
-    // Attach the event listener to the window object
-    window.addEventListener('keydown', function () {
-      // Check the condition before calling the show_console function
-      //if (myDiv.style.position !== 'fixed')
-
-      if (event.key === '`' || event.keyCode === 192) // c||67
-        if (document.activeElement !== requestInput) {
-          // Replace the following line with your desired function
-          // If it's currently absolute, change to fixed
-          if (!isFixed)
-            requestInput.focus();
-          event.preventDefault();
           if (isFixed) isFixed = !isFixed;
-          isFixed = false;
-          show_console();
-          return false;
-        } else {
-          document.activeElement = null;
-          return false;
+          isFixed = true;
+
+          if (isFocused) show_console();
         }
+      });
 
+      <?= defined('UI_NOTES') ? UI_NOTES['script'] : null; ?>
+      <?= defined('UI_MEDICATION_LOG') ? UI_MEDICATION_LOG['script'] : null; ?>
+      <?= defined('UI_CALENDAR') ? UI_CALENDAR['script'] : null; ?>
+      <?= defined('UI_ERRORS') ? UI_ERRORS['script'] : null; ?>
+      <?= defined('UI_GIT') ? UI_GIT['script'] : null; ?>
+      <?= defined('UI_PHP') ? UI_PHP['script'] : null; /* print(...) */ ?>
+      <?= defined('UI_COMPOSER') ? UI_COMPOSER['script'] : null; /* (isset($app['composer']) ? $app['composer']['script'] : null); */ ?>
+      <?= defined('UI_NPM') ? UI_NPM['script'] : null; ?>
+      <?= defined('UI_NODES') ? UI_NODES['script'] : null; ?>
+      <?= defined('UI_ACE_EDITOR') ? UI_ACE_EDITOR['script'] : null; /* NULL; */ ?>
 
-      console.log('windowEvent');
+      <?= $apps['directory']['script'] ?? ''; ?>
 
-      var textField = document.getElementById('requestInput');
+      <?= $apps['browser']['script'] ?? ''; ?>
 
-      // Check if the text field is focused
-      var isFocused = textField === document.activeElement;
+      <?= $apps['github']['script'] ?? ''; ?>
 
-      if (document.getElementById('app_console-container').style.position != 'absolute') {
-
-        if (!isFixed) {
-          //requestInput.focus();
-        } else {
-          //show_console();
-        }
-      } else {
-
-
-        if (isFixed) isFixed = !isFixed;
-        isFixed = true;
-
-        if (isFocused) show_console();
-      }
-    });
-
-    <?= defined('UI_MEDICATION_LOG') ? UI_MEDICATION_LOG['script'] : null; ?>
-    <?= defined('UI_CALENDAR') ? UI_CALENDAR['script'] : null; ?>
-    <?= defined('UI_ERRORS') ? UI_ERRORS['script'] : null; ?>
-    <?= defined('UI_GIT') ? UI_GIT['script'] : null; ?>
-    <?= defined('UI_PHP') ? UI_PHP['script'] : null; /* print(...) */ ?>
-    <?= defined('UI_COMPOSER') ? UI_COMPOSER['script'] : null; /* (isset($app['composer']) ? $app['composer']['script'] : null); */ ?>
-    <?= defined('UI_NPM') ? UI_NPM['script'] : null; ?>
-    <?= defined('UI_NODES') ? UI_NODES['script'] : null; ?>
-    <?= defined('UI_ACE_EDITOR') ? UI_ACE_EDITOR['script'] : null; /* NULL; */ ?>
-
-    <?= $apps['directory']['script'] ?? ''; ?>
-
-    <?= $apps['browser']['script'] ?? ''; ?>
-
-    <?= $apps['github']['script'] ?? ''; ?>
-
-    <?= $apps['packagist']['script'] ?? ''; ?>
+      <?= $apps['packagist']['script'] ?? ''; ?>
       
       <?= /*$app['whiteboard']['script'];*/ NULL; ?>
       
@@ -1778,45 +1780,45 @@ $(document).ready(function() {
       <?= /*$app['backup']['script']*/ NULL; ?>
 
 
-    <?= $apps['pong']['script'] ?? ''; ?>
+      <?= $apps['pong']['script'] ?? ''; ?>
 
-    /*
-    require.config({
-    baseUrl: window.location.protocol + "//" + window.location.host
-    + window.location.pathname.split("/").slice(0, -1).join("/"),
-    
-    paths: {
-      jquery: 'resources/js/jquery/jquery.min',
-      domReady: 'resources/js/domReady',
-      bootstrap: 'resources/js/bootstrap/dist/js/bootstrap',
-      ace: 'resources/js/ace/src/ace',
-      'lib/dom': 'resources/js/ace/src/lib/dom',
-      useragent: 'resources/js/ace/src/lib/useragent',
-      exports: 'resources/js/ace/src/lib/',
+      /*
+      require.config({
+      baseUrl: window.location.protocol + "//" + window.location.host
+      + window.location.pathname.split("/").slice(0, -1).join("/"),
       
-      //'../snippets': 'resources/js/ace/lib/ace/snippets',
-      //'./lib/oop': 'resources/js/ace/src/lib'
-    }
-    });
-    */
-
-    <?= $apps['timesheet']['script'] ?? ''; ?>
-    <?= $apps['project']['script'] ?? ''; ?>
-
-    function showConfirm(message) {
-      document.getElementById('confirmMessage').textContent = message;
-      document.getElementById('overlay2').style.display = 'flex';
-    }
-
-    function confirmAction(isConfirmed) {
-      document.getElementById('overlay2').style.display = 'none';
-      if (isConfirmed) {
-        alert('Confirmed!');
-      } else {
-        alert('Cancelled!');
+      paths: {
+        jquery: 'resources/js/jquery/jquery.min',
+        domReady: 'resources/js/domReady',
+        bootstrap: 'resources/js/bootstrap/dist/js/bootstrap',
+        ace: 'resources/js/ace/src/ace',
+        'lib/dom': 'resources/js/ace/src/lib/dom',
+        useragent: 'resources/js/ace/src/lib/useragent',
+        exports: 'resources/js/ace/src/lib/',
+        
+        //'../snippets': 'resources/js/ace/lib/ace/snippets',
+        //'./lib/oop': 'resources/js/ace/src/lib'
       }
-    }
-  </script>
+      });
+      */
+
+      <?= $apps['timesheet']['script'] ?? ''; ?>
+      <?= $apps['project']['script'] ?? ''; ?>
+
+      function showConfirm(message) {
+        document.getElementById('confirmMessage').textContent = message;
+        document.getElementById('overlay2').style.display = 'flex';
+      }
+
+      function confirmAction(isConfirmed) {
+        document.getElementById('overlay2').style.display = 'none';
+        if (isConfirmed) {
+          alert('Confirmed!');
+        } else {
+          alert('Cancelled!');
+        }
+      }
+    </script>
 </body>
 
 </html>

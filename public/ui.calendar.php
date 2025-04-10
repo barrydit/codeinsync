@@ -113,7 +113,7 @@ if (defined('GIT_EXEC'))
 ob_start(); ?>
 #app_calendar-container {
 width : 415px;
-height : 515px;
+height : 440px;
 /* border: 1px solid black; */
 position : absolute;
 top : 60px;

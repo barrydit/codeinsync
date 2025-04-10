@@ -215,9 +215,7 @@ ob_start(); ?>
   </div>
 
   <div id="backupForm-container"
-    style="position: absolute; top: 80px; right: 0px; color: red; z-index: 10; background-color: rgba(255,255,255, 0.7); padding: 5px 15px;">
-    Restore (Backup)<br />
-
+    style="position: absolute; bottom: 0; right: 0px; color: red; z-index: 10; background-color: rgba(255,255,255, 0.7); padding: 5px 15px;">
     <?php
     $file = APP_PATH . APP_BASE['database'] . 'source_code.json';
     if (is_file($file)) {
@@ -231,7 +229,7 @@ ob_start(); ?>
     //  $source_code_file = $_GET['file']; ?>
     <form id="backupForm" method="POST" action="<?= basename(__FILE__); ?>">
       <input type="checkbox" id="restoreCheckbox" name="restore_backup" value="<?= $_GET['file'] ?? '' ?>" />
-      Restore from Backup
+      Restore (Backup)
     </form>
     <?php //} ?>
   </div>
