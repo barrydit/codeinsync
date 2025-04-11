@@ -4,7 +4,6 @@
 
 //$errors->{'TEXT_MANAGER'} = $path . "\n" . 'File Modified:    Rights:    Date of creation: ';
 
-
 if (__FILE__ == get_required_files()[0] && __FILE__ == realpath($_SERVER["SCRIPT_FILENAME"]))
     if ($path = basename(dirname(get_required_files()[0])) == 'public') { // (basename(getcwd())
         if (is_file($path = realpath('../bootstrap.php'))) {
@@ -113,7 +112,7 @@ if (defined('GIT_EXEC'))
 ob_start(); ?>
 #app_calendar-container {
 width : 415px;
-height : 440px;
+height : 450px;
 /* border: 1px solid black; */
 position : absolute;
 top : 60px;
@@ -265,12 +264,8 @@ ob_start(); ?>
             <div class="npm-menu text-sm"
                 style="cursor: pointer; font-weight: bold; padding-left: 25px; border: 1px solid #000;">Main Menu
             </div>
-            <div class="text-xs" style="display: inline-block; border: 1px solid #000;">
-                <a class="text-sm" id="app_calendar-frameMenuPrev"
-                    href="<?= (!empty(APP_QUERY) ? '?' . http_build_query(APP_QUERY) : '') . (defined('APP_ENV') && APP_ENV == 'development' ? '#!' : '#') ?>">
-                    &lt; Menu</a> | <a class="text-sm" id="app_calendar-frameMenuNext"
-                    href="<?= (!empty(APP_QUERY) ? '?' . http_build_query(APP_QUERY) : '') . (defined('APP_ENV') && APP_ENV == 'development' ? '#!' : '#') ?>">Init
-                    &gt;</a>
+            <div class="text-xs inline-block border border-black w-[400px]" style="text-align: center;">
+
             </div>
         </div>
         <!-- onclick="document.getElementsByClassName('ace_text-input')[0].value = globalEditor.getSession().getValue(); document.getElementsByClassName('ace_text-input')[0].name = 'editor';"   -->
@@ -378,7 +373,6 @@ else $count++;
                         </div>
 
 
-
                         <div style="position: relative; margin: 0 auto; width: calc(100% - 2px); height: 100%;">
                             <!--
       <div id="app_medication_log-frameMenu" class="app_medication_log-frame-container absolute selected" style="background-color: rgb(225,196,151,.75); margin-top: 8px; height: 100%;">
@@ -462,8 +456,17 @@ if ($path)
                             $totalDays = date('t', $firstDayOfMonth);
                             $startingDay = date('w', $firstDayOfMonth);
 
+                            $currentDate = new DateTime();
+                            $nextMonth = (clone $currentDate)->modify('+1 month')->format('F');
+                            $prevMonth = (clone $currentDate)->modify('-1 month')->format('F');
+
                             $calendar = "<table border='1' cellpadding='5' cellspacing='0'>";
-                            $calendar .= "<tr><th colspan='7'>" . date('F Y', $firstDayOfMonth) . "</th></tr>";
+                            $calendar .= '<tr><th colspan="7"><div class="float-left w-auto">
+                    <a class="text-sm" id="app_calendar-frameMenuPrev"
+                        href="' . (!empty(APP_QUERY) ? '?' . http_build_query(APP_QUERY) : '') . (defined('APP_ENV') && APP_ENV === 'development' ? '#!' : '#') . '">&lt; ' . $prevMonth . '</a></div>' . date('F Y', $firstDayOfMonth) .
+                                '<div class="float-right w-auto">
+                    <a class="text-sm" id="app_calendar-frameMenuNext"
+                        href="' . (!empty(APP_QUERY) ? '?' . http_build_query(APP_QUERY) : '') . (defined('APP_ENV') && APP_ENV === 'development' ? '#!' : '#') . '">' . $nextMonth . ' &gt;</a></div></th></tr>';
                             $calendar .= "<tr>
                     <th>Sun</th><th>Mon</th><th>Tue</th><th>Wed</th>
                     <th>Thu</th><th>Fri</th><th>Sat</th>
@@ -474,15 +477,59 @@ if ($path)
                                 $calendar .= "<td></td>";
                             }
 
+                            // Load medication log
+                            $logFile = APP_BASE['database'] . 'medication_log.json';
+                            $logData = json_decode(file_get_contents($logFile), true);
+
+                            // Convert log to date-indexed array
+                            $medLogByDate = [];
+                            foreach ($logData as $entry) {
+                                $date = $entry['date'];
+                                $statuses = array_column($entry['doses'], 'status');
+                                $medLogByDate[$date] = $statuses;
+                            }
+
+                            $today = date('Y-m-d');
+
                             // Print days of the month
                             for ($day = 1; $day <= $totalDays; $day++) {
-                                $calendar .= "<td style=\"" . ($day == date('d') ? 'background-color: lightblue;' : '') . "\"><a href=\"?app=calendar&day=$day\">$day</a></td>";
+                                $dayStr = str_pad($day, 2, '0', STR_PAD_LEFT);
+                                $currentDate = "$year-$month-$dayStr";
+
+                                // Determine background color
+                                $isToday = $currentDate == $today;
+                                $bgColor = $isToday ? 'background-color: lightblue;' : '';
+
+                                // Determine dose indicators
+                                $indicators = '';
+                                if (isset($medLogByDate[$currentDate])) {
+                                    $statuses = $medLogByDate[$currentDate];
+                                    foreach ($statuses as $status) {
+                                        $color = $status == 'taken' ? 'limegreen' : 'red';
+                                        $indicators .= "<div style='width:10px;height:10px;background:$color;margin:1px;border-radius:50%;'></div>";
+                                    }
+                                }
+
+                                // Build cell
+                                $calendar .= "<td style=\"$bgColor; vertical-align: top; text-align: center; min-width: 40px;\">";
+                                $calendar .= "<a href=\"?app=calendar&day=$day\">$day</a>";
+                                $calendar .= "<div style='display:flex;justify-content:center;gap:2px;'>$indicators</div>";
+                                $calendar .= "</td>";
 
                                 if (($startingDay + $day) % 7 == 0) {
                                     $calendar .= "</tr><tr>";
                                 }
                             }
+                            /*
+                                                        // Print days of the month
+                                                        for ($day = 1; $day <= $totalDays; $day++) {
+                                                            $calendar .= "<td style=\"" . ($day == date('d') ? 'background-color: lightblue;' : '') . "\"><a href=\"?app=calendar&day=$day\">$day</a></td>";
 
+                                                            if (($startingDay + $day) % 7 == 0) {
+                                                                $calendar .= "</tr><tr>";
+                                                            }
+                                                        }
+                            */
                             // Complete the last row with empty cells
                             while (($startingDay + $day) % 7 != 1) {
                                 $calendar .= "<td></td>";
