@@ -38,7 +38,8 @@ $tableGen = function () use ($group_type): string {
   ob_start(); ?>
 
   <div id="info"
-    style="position: absolute; display: none; width: 570px; height: 500px; left: 67px; top: 250px; border: 5px solid #000; background-repeat: no-repeat; background-color: #FFFFFF; background-image: url(resources/images/group_type.png); z-index:99;">
+    style="position: fixed; display: none; width: 570px; height: 500px; top: calc(50% - 300px); /* 500 / 2 */
+left: calc(50% - 265px); /* 1207 / 2 */ /*transform: translate(-50%, -50%);*/ border: 5px solid #000; background-repeat: no-repeat; background-color: #FFFFFF; background-image: url(resources/images/group_type.png); z-index:99;">
     <div
       style="position: absolute; display: block; background-color: #FFFFFF;  z-index: 1; right: 0px; margin-top: -20px;">
       [<a href="#" onclick="document.getElementById('info').style.display = 'none';">x</a>]</div>

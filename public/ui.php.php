@@ -111,8 +111,8 @@ if (defined('GIT_EXEC'))
 
 ob_start(); ?>
 #app_php-container {
-width : 550px;
-height : 450px;
+width : 669px;
+height : 567px;
 /* border: 1px solid black; */
 position : absolute;
 top : 60px;
@@ -346,29 +346,6 @@ if ($path)
 
 </div>
 
-<div id="app_php-frameInit" class="app_php-frame-container absolute" style="overflow: hidden; height: 270px;">
-    <!--
-    <form autocomplete="off" spellcheck="false" action="?app=git#!" method="POST">
-      <div style="position: absolute; right: 0; float: right; text-align: center;">
-        <input id="gitInitSubmit" class="btn" type="submit" value="Init/Run">
-      </div> 
-      <div style="display: inline-block; width: 100%; background-color: rgb(225,196,151,.75);">
-        <div class="text-sm" style="display: inline;">
-          <label id="gitInitLabel" for="gitInit" style="background-color: #6781B2; color: white;">? <code>Init</code></label>
-        </div>
-      </div>
-      <div id="gitInitForm" style="display: inline-block; padding: 10px; background-color: rgb(225,196,151,.75);7 border: 1px dashed #0078D7;">
-        <label>Git Command</label>
-        <textarea cols="40" rows="2" name="git[init]">git init</textarea>
-      </div>
-    </form>
--->
-</div>
-
-<div id="app_php-frameExtra" style="position: relative; width: 100%; height: 100%; border: 1px #000 solid;">
-
-
-</div>
 <?php
 
 $app['body'] = ob_get_contents();

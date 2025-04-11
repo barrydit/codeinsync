@@ -710,16 +710,16 @@ ob_start(); ?>
 
 /* Styles for the absolute div */
 #app_timesheet-container {
-position : absolute;
-top : 10%;
-left : 50%;
-transform : translateX(-50%);
-width : auto;
-height : 575px;
 background-color : rgb(255, 255, 255);
 color : black;
 padding : 10px;
-z-index : 1;
+width: auto;
+height: 575px;
+position: fixed;
+top: calc(50% - 350px); /* 500 / 2 */
+left: calc(50% - 400px); /* 1207 / 2 */
+/*transform: translate(-50%, -50%);*/
+z-index: 1;
 }
 
 input {

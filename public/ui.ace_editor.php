@@ -360,7 +360,7 @@ if ($path)
       <form style="display: inline;" autocomplete="off" spellcheck="false" action="<?= APP_URL . /*basename(__FILE__) .*/ '?' . http_build_query(APP_QUERY /*+ ['app' => 'ace_editor']*/) . (defined('APP_ENV') && APP_ENV == 'development' ? '#!' : '') /* $c_or_p . '=' . (empty($_GET[$c_or_p]) ? '' : $$c_or_p->name) . '&amp;app=composer' */ ?>" method="GET">
       <input type="hidden" name="app" value="ace_editor" />
 
-      <input type="hidden" name="path" value="<?= (isset($_GET['path']) ? $_GET['path'] : '') ?>" />
+      <input type="hidden" name="path" value="<?= $_GET['path'] ?? '' ?>" />
 
         <select name="file" onchange="this.form.submit();">
           <option value="">---</option>
@@ -406,6 +406,56 @@ if ($path)
 </div> -->
 <?php
 
+// Construct the base file path
+$basePath = APP_PATH;
+
+if (APP_ROOT !== '')
+  $basePath .= APP_ROOT;
+else {
+  //$basePath .=;
+
+  if (isset($_GET['client']) && $_GET['client'] !== '')
+    $basePath .= $_GET['client'] . '/';
+  elseif (isset($_GET['domain']) && $_GET['domain'] !== '')
+    $basePath .= $_GET['domain'] . '/';
+
+  if (isset($_GET['domain']) && $_GET['domain'] !== '')
+    $basePath .= $_GET['domain'] . '/';
+}
+
+if (isset($_POST['restore_backup']) && $_POST['restore_backup'] !== '') {
+  $basePath .= $_GET['path'] . '/';
+  $filename = $basePath . $_POST['restore_backup'];
+  $initialContent = (is_file($filename)) ? file_get_contents($filename) : "<?php\n\n/* This is an example of ACE Editor working */\n\nrequire(__DIR__ . 'config' . DIRECTORY_SEPARATOR . 'config.php');\n";
+} elseif (isset($_GET['path'])) {
+  $basePath .= $_GET['path'] . '/';
+  $filename = $basePath . ($_GET['file'] ?? '');
+  $initialContent = (is_file($filename)) ? file_get_contents($filename) : "<?php\n\n/* This is an example of ACE Editor working */\n\nrequire(__DIR__ . 'config' . DIRECTORY_SEPARATOR . 'config.php');\n";
+} else {
+  $initialContent = var_export($_GET, true); //"<?php\n\n/* No file specified */\n";
+}
+
+// Escape backticks and backslashes for JavaScript safety
+
+//$initialContent = str_replace(
+//  ['\\', '`', '${'],
+//  ['\\\\', '\\`', '\\${'],
+//  $initialContent
+//);
+
+//$initialContent = str_replace(
+//  ['`', '${'],
+//  ['\\`', '\\${'],
+//  $initialContent
+//);
+
+//$escapedContent = str_replace(
+//  ['`', '${'],
+//  ['\\`', '\\${'],
+//  $initialContent
+//);
+
+echo '<script type="text/plain" id="initialContent">' . htmlspecialchars($initialContent) . "</script>\n"; // "var initialContent = `{$escapedContent}`;"; // "var initialContent = json_encoded($initialContent)`;"; // var initialContent = `<?php
 $app['body'] = ob_get_contents();
 ob_end_clean();
 
@@ -460,44 +510,17 @@ ob_start();
         appEditor.resize();
       });
 
-      // Set initial content to the editor on load
-      var initialContent = `<?php
-
-      // Construct the base file path
-      $basePath = APP_PATH;
-
-      if (APP_ROOT !== '')
-        $basePath .= APP_ROOT;
-      else {
-        //$basePath .=;
-    
-        if (isset($_GET['client']) && $_GET['client'] !== '')
-          $basePath .= $_GET['client'] . '/';
-        elseif (isset($_GET['domain']) && $_GET['domain'] !== '')
-          $basePath .= $_GET['domain'] . '/';
-
-        if (isset($_GET['domain']) && $_GET['domain'] !== '')
-          $basePath .= $_GET['domain'] . '/';
+      function decodeHtmlEntities(str) {
+        const txt = document.createElement('textarea');
+        txt.innerHTML = str;
+        return txt.value;
       }
 
-      if (isset($_POST['restore_backup']) && $_POST['restore_backup'] !== '') {
-        $basePath .= $_GET['path'] . '/';
-        $filename = $basePath . $_POST['restore_backup'];
-        $initialContent = (is_file($filename)) ? file_get_contents($filename) : "<?php\n\n/* This is an example of ACE Editor working */\n\nrequire(__DIR__ . 'config' . DIRECTORY_SEPARATOR . 'config.php');\n";
-      } elseif (isset($_GET['path'])) {
-        $basePath .= $_GET['path'] . '/';
-        $filename = $basePath . ($_GET['file'] ?? '');
-        $initialContent = (is_file($filename)) ? file_get_contents($filename) : "<?php\n\n/* This is an example of ACE Editor working */\n\nrequire(__DIR__ . 'config' . DIRECTORY_SEPARATOR . 'config.php');\n";
-      } else {
-        $initialContent = var_export($_GET, true); //"<?php\n\n/* No file specified */\n";
-      }
+      var initialContent = document.getElementById('initialContent').textContent;
 
-      // Escape backticks and backslashes for JavaScript safety
-      echo $initialContent = str_replace(['`', '\\'], ['\\`', '\\\\'], $initialContent);
       /* (isset($_GET['project']) ? htmlsanitize(file_get_contents($path . 'projects/index.php')) : '')*/
       //''; /*   'clientele/' . $_GET['client'] . '/' . $_GET['domain'] . '/' .  */
-      ?>`;
-      appEditor.setValue(initialContent, 0); // The second parameter is cursor position, 1 moves it to the end
+      appEditor.setValue(decodeHtmlEntities(initialContent), 0); // The second parameter is cursor position, 1 moves it to the end
 
     });
 
