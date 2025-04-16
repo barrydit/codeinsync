@@ -5,7 +5,22 @@
   Demo Loading...
 </p>
 
-Front-end interface for php composer and git (push/pull). I intend to make it a lot simplier to install php libraries from it with composer (packagist) and github, and that I want to be able to just plug the code right into it, and make it work. I also wanted to show my skills off. I realize there are many other peoples content/images that are copyrighted, but if you ask nicely, they will be removed.
+<h2>💻 CodeInSync — A Modular, PHP-Based Dev Environment</h2>
+
+CodeInSync is a lightweight, vanilla PHP application that functions as a dynamic, windowed workspace for managing code, clients, projects, and development tasks — without the overhead of a traditional framework.
+<h3>⚙️ Features</h3>
+<p><ul><li>Project-Aware Context Switching: Intelligent directory detection via APP_PATH and APP_ROOT lets Git and Composer commands execute in project-specific contexts — useful for managing multiple client setups.</li>
+    <li>Modular App Architecture: Self-contained app.*.php and ui.*.php files are loaded dynamically using output buffering and sorted into draggable windows via JavaScript.</li>
+    <li>Project-Aware Context Switching: Intelligent directory detection via APP_PATH and APP_ROOT lets Git and Composer commands execute in project-specific contexts — useful for managing multiple client setups.</li>
+    <li>Built-in Terminal: Run inline PHP commands or php -r scripts directly from the browser. eval() is sandboxed for testing and debugging, with support for WebSocket socket server communication for longer processes.</li>
+    <li>Time & Activity Tracking: Background JavaScript monitors idle times and logs activity to JSON-based timesheets, providing historical views of work habits per project.</li>
+    <li>Graph View (d3.js): Visualize project architecture with dynamic JSON-based node maps showing file relationships, includes, and app dependencies.</li>
+    <li>Socket-Ready Execution: Offload heavy or interactive tasks to a separate PHP socket server (WSL-ready) with real-time status feedback via WebSockets.</li>
+    <li>Zero Refresh UI: All internal navigation is handled via JavaScript and AJAX — iframe-free and fast.</li>
+</ul></p>
+<h3>🧠 Why No Framework (Yet)?</h3>
+
+This app was intentionally built with vanilla PHP for speed, transparency, and full control. It's a dev tool, not a product — by developers, for developers. Frameworks like Laravel can be bolted on later if business logic or API complexity demands it.
  
 ![app_ace_editor](https://github.com/user-attachments/assets/ff747b1a-3bc5-4a07-8aaf-c92eaf287249)
 
