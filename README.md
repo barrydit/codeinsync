@@ -7,8 +7,7 @@
 
 CodeInSync is a lightweight, vanilla PHP application that functions as a dynamic, windowed workspace for managing code, clients, projects, and development tasks — without the overhead of a traditional framework.
 <h3>⚙️ Features</h3>
-<p><ul><li>Project-Aware Context Switching: Intelligent directory detection via APP_PATH and APP_ROOT lets Git and Composer commands execute in project-specific contexts — useful for managing multiple client setups.</li>
-    <li>Modular App Architecture: Self-contained app.*.php and ui.*.php files are loaded dynamically using output buffering and sorted into draggable windows via JavaScript.</li>
+<p><ul><li>Modular App Architecture: Self-contained app.*.php and ui.*.php files are loaded dynamically using output buffering and sorted into draggable windows via JavaScript.</li>
     <li>Project-Aware Context Switching: Intelligent directory detection via APP_PATH and APP_ROOT lets Git and Composer commands execute in project-specific contexts — useful for managing multiple client setups.</li>
     <li>Built-in Terminal: Run inline PHP commands or php -r scripts directly from the browser. eval() is sandboxed for testing and debugging, with support for WebSocket socket server communication for longer processes.</li>
     <li>Time & Activity Tracking: Background JavaScript monitors idle times and logs activity to JSON-based timesheets, providing historical views of work habits per project.</li>
