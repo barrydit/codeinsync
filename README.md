@@ -1,11 +1,9 @@
-# codeinsync
-
+<h2>💻 CodeInSync — A Modular, PHP-Based Dev Environment</h2>
+#codeinsync
 <p align="center">
   <img style="text-align: center;" alt="demo loading" src="https://github.com/barrydit/codeinsync/assets/6217010/73ead4bf-8e20-47e4-a909-e259353a5275" width="60%" height="60%" /><br />
   Demo Loading...
 </p>
-
-<h2>💻 CodeInSync — A Modular, PHP-Based Dev Environment</h2>
 
 CodeInSync is a lightweight, vanilla PHP application that functions as a dynamic, windowed workspace for managing code, clients, projects, and development tasks — without the overhead of a traditional framework.
 <h3>⚙️ Features</h3>
