@@ -1,3 +1,8 @@
+![Made with PHP](https://img.shields.io/badge/Made_with-PHP(Vanilla)-blue)
+![Supports GIT(hub)](https://img.shields.io/badge/Supports-GIT(hub)-red)
+![Supports Composer](https://img.shields.io/badge/Supports-Composer-brown)
+![Dynamic JSON Badge](https://img.shields.io/badge/dynamic-json-green)
+
 <h2>💻 CodeInSync — A Modular, PHP-Based Dev Environment</h2>
 #codeinsync
 <p align="center">
@@ -18,7 +23,7 @@ CodeInSync is a lightweight, vanilla PHP application that functions as a dynamic
 <h3>🧠 Why No Framework (Yet)?</h3>
 
 This app was intentionally built with vanilla PHP for speed, transparency, and full control. It's a dev tool, not a product — by developers, for developers. Frameworks like Laravel can be bolted on later if business logic or API complexity demands it.
- 
+
 ![app_ace_editor](https://github.com/user-attachments/assets/ff747b1a-3bc5-4a07-8aaf-c92eaf287249)
 
 ![image](https://github.com/barrydit/codeinsync/assets/6217010/763efd9c-71f2-4e66-8ced-0e2b17c82da2)
