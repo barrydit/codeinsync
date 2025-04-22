@@ -17,7 +17,7 @@ if (__FILE__ == get_required_files()[0] && __FILE__ == realpath($_SERVER["SCRIPT
     if (isset($_GET['json'])) {
       header('Content-Type: application/json');
 
-      $jsonData = file_get_contents($file = APP_PATH . APP_BASE['database'] . 'weekly-timesheet-' . date('Y-m') . '.json');
+      $jsonData = file_get_contents($file = APP_PATH . APP_BASE['data'] . 'weekly-timesheet-' . date('Y-m') . '.json');
 
       echo $jsonData; //json_encode()
       //die(var_dump($file));
@@ -102,9 +102,9 @@ END;
 
 //$jsonInput = file_get_contents('php://input');
 
-is_file($jsonFile = APP_PATH . APP_BASE['database'] . 'weekly-timesheet-' . date('Y-m') . '.json') ?: @touch($jsonFile);
+is_file($jsonFile = APP_PATH . APP_BASE['data'] . 'weekly-timesheet-' . date('Y-m') . '.json') ?: @touch($jsonFile);
 
-$json_data = file_exists($jsonFile) ? file_get_contents(APP_PATH . APP_BASE['database'] . 'weekly-timesheet-' . date('Y-m') . '.json') : '{' . '"' . date('Y-m-d') . 'T' . date('H') . ':00:00-24:00' . '": {' . '} }';
+$json_data = file_exists($jsonFile) ? file_get_contents(APP_PATH . APP_BASE['data'] . 'weekly-timesheet-' . date('Y-m') . '.json') : '{' . '"' . date('Y-m-d') . 'T' . date('H') . ':00:00-24:00' . '": {' . '} }';
 
 
 if (!empty($json_data))
@@ -610,7 +610,7 @@ $now->setTime((int) date('H'), 0); // Set minute and second to 0
 //dd($now->format('Y-m-d H:i:s'));
 
 // Define the path to the weekly timesheet JSON file
-$filePath = realpath(APP_PATH . APP_BASE['database'] . 'weekly-timesheet-' . date('Y-m') . '.json'); // 
+$filePath = realpath(APP_PATH . APP_BASE['data'] . 'weekly-timesheet-' . date('Y-m') . '.json'); // 
 
 // Initialize or load the JSON data
 if (!is_file($filePath)) {
@@ -650,7 +650,7 @@ $json = !is_file($file = APP_PATH . APP_BASE['var'] . 'weekly-timesheet-' . date
     : file_get_contents($file, true));
 */
 
-//file_get_contents(APP_BASE['database'] . 'weekly-timesheet-' . date('Y-m') . '.json', true) :  : (!@touch('timesheet.json') ? '' . json_encode([$Now->format(DATE_RFC3339) => []]), 'timesheet.json', LOCK_EX) : file_get_contents('timesheet.json', true)));
+//file_get_contents(APP_BASE['data'] . 'weekly-timesheet-' . date('Y-m') . '.json', true) :  : (!@touch('timesheet.json') ? '' . json_encode([$Now->format(DATE_RFC3339) => []]), 'timesheet.json', LOCK_EX) : file_get_contents('timesheet.json', true)));
 
 $json_decode = json_decode($jsonData, true);
 
@@ -687,7 +687,7 @@ switch ($_SERVER['REQUEST_METHOD']) {
 
       $_POST['idletime'] = json_encode($_POST['idletime']);
 
-      file_put_contents(APP_PATH . APP_BASE['database'] . 'weekly-timesheet-' . date("Y-m") . '.json', json_encode($json_decode), LOCK_EX);
+      file_put_contents(APP_PATH . APP_BASE['data'] . 'weekly-timesheet-' . date("Y-m") . '.json', json_encode($json_decode), LOCK_EX);
 
       //Shutdown::setEnabled(false)->setShutdownMessage()->shutdown(); 
       Shutdown::setEnabled(false)->setShutdownMessage(function () use ($json_decode) {
@@ -700,8 +700,8 @@ switch ($_SERVER['REQUEST_METHOD']) {
     //Shutdown::setEnabled(false)->shutdown(json_encode($json_decode));// $_POST['idletime']
     break;
   case 'GET':
-    if (!is_file(APP_PATH . APP_BASE['database'] . 'weekly-timesheet-' . date("Y-m") . '.json'))
-      file_put_contents(APP_PATH . APP_BASE['database'] . 'weekly-timesheet-' . date("Y-m") . '.json', json_encode([$now->format('Y-m-d\TH:i:sP') => []]), LOCK_EX);
+    if (!is_file(APP_PATH . APP_BASE['data'] . 'weekly-timesheet-' . date("Y-m") . '.json'))
+      file_put_contents(APP_PATH . APP_BASE['data'] . 'weekly-timesheet-' . date("Y-m") . '.json', json_encode([$now->format('Y-m-d\TH:i:sP') => []]), LOCK_EX);
     //exit; // $now->format('H:i:s') => null
     break;
 }
@@ -787,19 +787,25 @@ ob_start(); ?>
       // $currentDate->setTime('06', '30'); 
       ?>
 
-      <div style="">
-        <div style="float: left;"><a
-            href="?app=timesheet&date=<?= $date = date('Y-m-d', strtotime($today->format('Y-m-d') . ' -1 day')); ?>">|&Lang;|</a>
+      <div style="display: flex; ">
+        <div style="">|<a
+            href="?app=timesheet&date=<?= $date = date('Y-m-d', strtotime($today->format('Y-m-d') . ' -1 day')); ?>">&Lang;</a>&nbsp;..<a
+            href="?app=timesheet&time=<?= $date = date('h:i:s', strtotime($today->format('h:i:s') . ' -8 hour')); ?>">&nbsp;&lt;</a>|
+        </div>
+        <div style="display: flex; margin: 0 auto; text-align: center;">
+          <?= $today->format('Y-m-d H:i:s'); ?>
+        </div>
+        <div style="display: flex; text-align: right;">|<a
+            href="?app=timesheet&date=<?= $date = date('h:i:s', strtotime($today->format('h:i:s') . ' +8 hour')); ?>">&gt;</a>&nbsp;..<a
+            href="?app=timesheet&date=<?= $date = date('Y-m-d', strtotime($today->format('Y-m-d') . ' +2 day')); ?>">&nbsp;&Rang;</a>|
         </div>
       </div>
-      <div style="float: right;"><a
-          href="?app=timesheet&date=<?= $date = date('Y-m-d', strtotime($today->format('Y-m-d') . ' +2 day')); ?>">|&Rang;|</a>
-      </div>
+
     </form>
   </div>
 
-  <?php echo $today->format('Y-m-d H:i:s');
-
+  <?php //echo $today->format('Y-m-d H:i:s');
+  
   while (true) { // $weekday <= 6
   
     //echo $today->format('Y-m-d'); // Output will be the date of the last Monday
@@ -815,7 +821,7 @@ ob_start(); ?>
     if ($rotationIndex === null) {
       $rotationIndex = count($timeRanges) - 1;
     } else {
-      $rotationIndex = ($rotationIndex < 0 ? 0 : ($rotationIndex >= 4 ? 0 : $rotationIndex)); //  || 
+      $rotationIndex = $rotationIndex < 0 ? 0 : ($rotationIndex >= 4 ? 0 : $rotationIndex); //  || 
       //dd($rotationIndex); // $rotationIndex -= 1;
     }
 
@@ -1261,7 +1267,7 @@ ob_start(); ?>
             console.log(item);
           }
         });
-        // fetch(APP_BASE['database'] . "weekly-timesheet-<?= date('Y-m'); ?>.json").then(res => res.json()).then(data => jsonFile = JSON.parse(data));
+        // fetch(APP_BASE['data'] . "weekly-timesheet-<?= date('Y-m'); ?>.json").then(res => res.json()).then(data => jsonFile = JSON.parse(data));
       },
       error: function (jqXHR, textStatus) {
         console.log(jqXHR.responseText);

@@ -21,7 +21,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 
     if (isset($_GET['app']) && $_GET['app'] == 'errors' && isset($_POST['ace_save']))
 
-        if (isset($_POST['ace_path']) && realpath($path = APP_PATH . (APP_ROOT ?? ('clientele/' . ($_GET['client'] . '/' . ($_GET['domain'] ?? '') ?? $_GET['domain'] ?? ''))) . ($_GET['path'] . '/' . $_GET['file'] ?? $_POST['ace_path']))) {
+        if (isset($_POST['ace_path']) && realpath($path = APP_PATH . (APP_ROOT ?? (APP_BASE['clients'] . ($_GET['client'] . '/' . ($_GET['domain'] ?? '') ?? $_GET['domain'] ?? ''))) . ($_GET['path'] . '/' . $_GET['file'] ?? $_POST['ace_path']))) {
             //dd($path, false);   
             if (isset($_POST['ace_contents']))
                 //dd($_POST['ace_contents']);
@@ -180,12 +180,13 @@ ob_start(); ?>
 
 <div id="app_notes-container"
     class="<?= __FILE__ == get_required_files()[0] || (isset($_GET['app']) && $_GET['app'] == 'errors') && !isset($_GET['path']) ? 'selected' : '' ?>"
-    style="display: <?= __FILE__ == get_required_files()[0] || (isset($_GET['app']) && $_GET['app'] == 'errors') ? 'block' : 'block' ?>; resize: both; overflow: hidden;">
+    style="display: <?= __FILE__ == get_required_files()[0] || (isset($_GET['app']) && $_GET['app'] == 'notes') ? 'block' : 'none' ?>; resize: both; overflow: hidden;">
     <div class="ui-widget-header"
         style="position: relative; display: inline-block; width: 100%; cursor: move; border-bottom: 1px solid #000;background-color: #FFF;">
         <label class="errors-home" style="cursor: pointer;">
-            <div class="" style="position: relative; display: inline-block; top: 0; left: 0;">
-                <img src="resources/images/errors_icon.png" width="53" height="32" />
+            <div id="open_add_new" class="" style="position: relative; display: inline-block; top: 0; left: 0;">
+                <img src="resources/images/notes-edit.png" style=" margin-left: 4px; padding-top: 5px; cursor: pointer;"
+                    height="50" width="42" />
             </div>
         </label>
         <div style="display: inline;">

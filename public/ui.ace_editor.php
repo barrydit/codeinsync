@@ -19,7 +19,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 
   if (isset($_POST["restore_backup"])) {
 
-    $file = APP_PATH . APP_BASE['database'] . 'source_code.json';
+    $file = APP_PATH . APP_BASE['data'] . 'source_code.json';
 
     if (is_file($file)) {
       $source_code = json_decode(file_get_contents($file), true);
@@ -35,7 +35,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 
   if (isset($_GET['app']) && $_GET['app'] == 'ace_editor' && isset($_POST['ace_save']))
 
-    if (isset($_POST['ace_path']) && realpath($path = APP_PATH . (APP_ROOT ?? ('clientele/' . ($_GET['client'] . '/' . ($_GET['domain'] ?? '') ?? $_GET['domain'] ?? ''))) . ($_GET['path'] . '/' . $_GET['file'] ?? $_POST['ace_path']))) {
+    if (isset($_POST['ace_path']) && realpath($path = APP_PATH . (APP_ROOT ?? (APP_BASE['clients'] . ($_GET['client'] . '/' . ($_GET['domain'] ?? '') ?? $_GET['domain'] ?? ''))) . ($_GET['path'] . '/' . $_GET['file'] ?? $_POST['ace_path']))) {
       //dd($path, false);   
       if (isset($_POST['ace_contents']))
         //dd($_POST['ace_contents']);
@@ -217,7 +217,7 @@ ob_start(); ?>
   <div id="backupForm-container"
     style="position: absolute; bottom: 0; right: 0px; color: red; z-index: 10; background-color: rgba(255,255,255, 0.7); padding: 5px 15px;">
     <?php
-    $file = APP_PATH . APP_BASE['database'] . 'source_code.json';
+    $file = APP_PATH . APP_BASE['data'] . 'source_code.json';
     if (is_file($file)) {
       $source_code = json_decode(file_get_contents($file), true);
       if (!empty($source_code)) {
@@ -518,8 +518,8 @@ ob_start();
 
       var initialContent = document.getElementById('initialContent').textContent;
 
-      /* (isset($_GET['project']) ? htmlsanitize(file_get_contents($path . 'projects/index.php')) : '')*/
-      //''; /*   'clientele/' . $_GET['client'] . '/' . $_GET['domain'] . '/' .  */
+      /* (isset($_GET['project']) ? htmlsanitize(file_get_contents($path . APP_BASE['projects'] . index.php')) : '')*/
+      //''; /*   APP_BASE['clients'] . $_GET['client'] . '/' . $_GET['domain'] . '/' .  */
       appEditor.setValue(decodeHtmlEntities(initialContent), 0); // The second parameter is cursor position, 1 moves it to the end
 
     });

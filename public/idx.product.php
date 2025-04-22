@@ -58,9 +58,9 @@ margin : 0;
 padding : 0;
 box-sizing : border-box;
 <?php if (isset($_GET['debug'])) { ?>
-                                                                    border: 1px dashed #FF0000;
+                  border: 1px dashed #FF0000;
 <?php } else { ?> 
-                                                                    /* border: 1px dashed #FF0000; */
+                  /* border: 1px dashed #FF0000; */
 <?php } ?>
 }
 *:focus {
@@ -240,7 +240,7 @@ cursor : pointer;
     <div class="row-container" style="position: absolute; left: 0; top: 0;">
       <?php // https://stackoverflow.com/questions/86428/what-s-the-best-way-to-reload-refresh-an-iframe ?>
       <iframe id="iWindow" src="<?php if (!empty($_GET['client'])) {
-        $path = /*'../../'.*/ DIRECTORY_SEPARATOR . 'clientele' . DIRECTORY_SEPARATOR . $_GET['client'] . DIRECTORY_SEPARATOR;
+        $path = /*'../../'.*/ DIRECTORY_SEPARATOR . APP_BASE['clients'] . $_GET['client'] . DIRECTORY_SEPARATOR;
         $dirs = array_filter(glob(dirname(__DIR__) . $path . '*'), 'is_dir');
 
         if (count($dirs) == 1)
@@ -292,12 +292,12 @@ cursor : pointer;
             $path .= 'public/';
           }
         }
-        //exit(header('Location: http://localhost/clientele/' . $_GET['client']));    
+        //exit(header('Location: http://localhost/clients/' . $_GET['client']));    
       
         //$path = '?path=' . $path;
       } elseif (!empty($_GET['project'])) {
-        $path = '/projects/' . $_GET['project'] . '/' . (!is_dir('projects' . DIRECTORY_SEPARATOR . $_GET['project'] . DIRECTORY_SEPARATOR . 'public') ? '' : 'public');
-        //$dirs = array_filter(glob(dirname(__DIR__) . '/projects/' . $_GET['project'] . '/*'), 'is_dir');
+        $path = '/' . APP_BASE['projects'] . $_GET['project'] . DIRECTORY_SEPARATOR . (!is_dir(APP_BASE['projects'] . $_GET['project'] . DIRECTORY_SEPARATOR . 'public') ? '' : 'public');
+        //$dirs = array_filter(glob(dirname(__DIR__) . '/' . APP_BASE['projects'] . $_GET['project'] . '/*'), 'is_dir');
       
       } else {
         $path = 'medication_log.php';
@@ -309,7 +309,13 @@ cursor : pointer;
     </div>
     <?= /* $apps['backup']['body'] */ ''; ?>
     <div id="app_container"
-      style="position: relative; display: none; margin: 0px auto; width: 100%; border: 1px solid #000; background-color: rgba(0, 0, 0, 0.5);">
+      style="position: relative; display: none; margin: 0px auto; width: 100%; border: 1px solid #000; background-image: url('resources/images/wood-top-background.jpg'); background-color: rgba(0, 0, 0, 0.5);">
+
+      <div style="position: absolute; bottom: 55px; text-align: center;" class="text-sm"><a href="#!"
+          onclick="document.getElementById('app_notes-container').style.display='block'; return false;"><img
+            style="text-align: center;" src="resources/images/notes.png"></a><br><a
+          href="?app=ace_editor&amp;path=&amp;file=app.notes.php"
+          style="text-align: center; background-color: rgb(255, 255, 255);">Notes</a></div>
 
       <div style="position: relative; margin: 0px auto; width: 800px;">
         <!-- div style="position: absolute; <?= /* (empty($errors) ? 'display: none;' : '') */ NULL; ?>left: -144px; /*width: 150px;*/ z-index: 3;">TEST</div -->
@@ -391,7 +397,7 @@ cursor : pointer;
 
               . '              <option value="" ' . (empty(APP_QUERY) ? 'selected' : '') . '>' . basename(parse_url($_SERVER['REQUEST_URI'] ?? '', PHP_URL_PATH)) . '</option>' . "\n"
               . '              <option value="application" ' . (isset($_GET['application']) ? 'selected' : '') . ' ' . (realpath(APP_PATH . /*'../../'.*/ 'applications/') ? '' : 'disabled') . '>applications</option>' . "\n"
-              . '              <option value="client" ' . (isset($_GET['client']) ? 'selected' : '') . '>clientele</option>' . "\n"
+              . '              <option value="client" ' . (isset($_GET['client']) ? 'selected' : '') . '>clients</option>' . "\n"
               . '              <option value="projects" ' . (isset($_GET['project']) && $_GET['project'] || preg_match('/(?:^|&)project(?:[^&]*=)/', $_SERVER['QUERY_STRING'] ?? '') ? 'selected' : '') . '>projects</option>' . "\n"
               . '              <option value="node_module" ' . (isset($_GET['node_module']) && !$_GET['node_module'] && preg_match('/(?:^|&)node_module(?![^&]*=)/', $_SERVER['QUERY_STRING']) ? 'selected' : '') . '>./node_modules</option>' . "\n"
               . '              <option value="resources" ' . (isset($_GET['path']) && $_GET['path'] == 'resources' ? 'selected' : '') . '>./resources</option>' . "\n"
@@ -404,7 +410,7 @@ cursor : pointer;
               if ($_GET['project'] == '' || !empty($_GET['project']))
                 echo $main_cat;
 
-              $links = array_filter(glob(APP_PATH . /*'../../'.*/ 'projects/*'), 'is_dir');
+              $links = array_filter(glob(APP_PATH . /*'../../'.*/ APP_BASE['projects'] . '*'), 'is_dir');
               ?>
 
               <form style="display: inline;" autocomplete="off" spellcheck="false" action="" method="GET">
@@ -414,7 +420,7 @@ cursor : pointer;
                     <?php
                     while ($link = array_shift($links)) {
                       $link = basename($link); // Get the directory name from the full path
-                      if (is_dir(APP_PATH . /*'../../'.*/ 'projects/' . $link))
+                      if (is_dir(APP_PATH . /*'../../'.*/ APP_BASE['projects'] . $link))
                         echo '              <option value="' . $link . '" ' . (current($_GET) == $link ? 'selected' : '') . '>' . $link . '</option>' . "\n";
                     } ?>
                   </select> /</span> <a href="#" onclick="document.getElementById('info').style.display = 'block';">+</a>
@@ -425,24 +431,24 @@ cursor : pointer;
               if ($_GET['client'] == '')
                 echo $main_cat;
 
-              $links = array_filter(glob(APP_PATH . /*'../../'.*/ 'clientele/*'), 'is_dir');
+              $links = array_filter(glob(APP_PATH . /*'../../'.*/ APP_BASE['clients'] . '*'), 'is_dir');
               /* */
               ?>
               <form style="display: inline;" autocomplete="off" spellcheck="false" action="" method="GET">
                 <span title="" style="cursor: pointer; margin: 2px 5px 0 0; " onclick="">/
                   <select name="client" style="" onchange="this.form.submit(); return false;">
-                    <option value="" style="text-align: center;">--clientele--</option>
+                    <option value="" style="text-align: center;">--clients--</option>
                     <?php
                     while ($link = array_shift($links)) {
                       $link = basename($link); // Get the directory name from the full path
-                      if (is_dir(APP_PATH . /*'../../'.*/ 'clientele/' . $link))
+                      if (is_dir(APP_PATH . /*'../../'.*/ APP_BASE['clients'] . $link))
                         echo '              <option value="' . $link . '" ' . (current($_GET) == $link || $_GET['client'] == $link ? 'selected' : '') . '>' . $link . '</option>' . "\n";
                     }
                     ?>
                   </select> /</span>
               </form>
               <?php if (!empty($_GET['client'])) {
-                $dirs = array_filter(glob(dirname(__DIR__) . /*'../../'.*/ '/clientele/' . $_GET['client'] . '/*'), 'is_dir'); ?>
+                $dirs = array_filter(glob(dirname(__DIR__) . /*'../../'.*/ DIRECTORY_SEPARATOR . APP_BASE['clients'] . $_GET['client'] . '/*'), 'is_dir'); ?>
                 <form style="display: inline;" autocomplete="off" spellcheck="false" action="" method="GET">
                   <?= isset($_GET['client']) && !$_GET['client'] ? '' : '<input type="hidden" name="client" value="' . $_GET['client'] . '" / >' ?><select
                     id="domain" name="domain" onchange="this.form.submit();">
@@ -484,137 +490,154 @@ cursor : pointer;
             <?php } ?>
           </div>
           <div
-            style="position: absolute; width: auto; top: 40px; right: -10px; border: 1px dashed green; height: 25px;">
-            <div id="clockTime"></div>
+            style="position: absolute; width: auto; top: 40px; right: -10px; border: 1px dashed green; height: 20px;">
+            <div id="clockTime" style="margin-right: 65px; background-color: rgba(255, 255, 255, 0.5);"></div>
+            <div style="display: inline-block; width: auto; background-color: #FFF;">
+              <div id="idleTime" style="display: inline; margin: 10px 5px;"></div>
+              <div>
+                <div id="stats"><!-- Idle: [0]&nbsp;&nbsp;<span style="color: black;">00:00:00</span --></div>
+              </div>
+            </div>
+            <div style="display: inline-block; width: auto; ">
+              <img id="ts-status-light" style="padding-bottom: 10px; cursor: pointer;"
+                src="resources/images/timesheet-light-Clear-2.gif" width="80" height="30" />
+            </div>
+
           </div>
 
         </div>
 
         <div id="app_tools-container"
-          style="position: absolute; top: -50%; left: 50%; transform: translate(-50%, -50%); width: 800px; height: 500px; background-color: rgba(255, 255, 255, 0.9); overflow-x: scroll; margin-top: 350px; z-index: 5; display: none;">
-          <div style="position: absolute; margin: 40px 45px; text-align: center;" class="text-sm"><a href="#!"
+          style="position: absolute; top: -50%; left: 50%; transform: translate(-50%, -50%); width: 800px; height: 500px; background-color: rgba(255, 255, 255, 0.9); margin-top: 350px; z-index: 5; display: none;">
+          <div style="position: fixed; margin: -5px 45px; text-align: center; z-index: 5;" class="text-sm"><a href="#!"
               onclick="document.getElementById('app_tools-container').style.display='none'; return false;"><img
-                style="text-align: center;" height="25" width="25"
-                src="<?= APP_BASE['resources'] . 'images/close-red.gif' ?>" /></a><br /></div>
-          <div style="position: absolute; margin: 100px 75px; text-align: center;" class="text-sm"><a href="#!"
-              onclick="isFixed = true; show_console(); return false;"><img style="text-align: center;"
-                src="<?= APP_BASE['resources'] . 'images/cli.png' ?>" /></a><br /><a
-              href="?app=ace_editor&path=&file=app.console.php" style="text-align: center;">(CLI)</a></div>
-          <!-- 
+                style="text-align: center; position: fixed;" height="25" width="25"
+                src="<?= APP_BASE['resources'] . 'images/close-red.png' ?>" /></a><br /></div>
+          <div
+            style="position: absolute; overflow-x: scroll; overflow-y: hidden; height: 100%; width: 100%; padding-top: 25px; border: 1px solid #000; ">
+            <div style="position: absolute; margin: 10px 75px; text-align: center;" class="text-sm"><a href="#!"
+                onclick="isFixed = true; show_console(); return false;"><img style="text-align: center;"
+                  src="<?= APP_BASE['resources'] . 'images/cli.png' ?>" /></a><br /><a
+                href="?app=ace_editor&path=&file=app.console.php" style="text-align: center;">(CLI)</a></div>
+            <!-- 
                     <a href="javascript:window.open('print.html', 'newwindow', 'width=300,height=250')">Print</a>
                     onclick="window.open('app.whiteboard.php', 'newwindow', 'width=300,height=250'); return false;"
                     
                     https://stackoverflow.com/questions/12939928/make-a-link-open-a-new-window-not-tab
                      -->
-          <div style="position: absolute; margin: 100px 165px; text-align: center;" class="text-sm"><a href="#"
-              target="_blank" onclick="toggleIframeUrl('app.whiteboard.php'); return false;"><img
-                style="text-align: center;" src="<?= APP_BASE['resources'] . 'images/whiteboard.png' ?>" /></a><br /><a
-              href="?app=ace_editor&path=&file=app.whiteboard.php" style="text-align: center;">Whiteboard</a></div>
-          <div style="position: absolute; margin: 100px 260px; text-align: center;" class="text-sm"><a href="#!"
-              onclick="document.getElementById('app_notes-container').style.display='block'; return false;"><img
-                style="text-align: center;" src="<?= APP_BASE['resources'] . 'images/notes.png' ?>" /></a><br /><a
-              href="?app=ace_editor&path=&file=app.notes.php" style="text-align: center;">Notes</a></div>
-          <div style="position: absolute; margin: 100px 350px; text-align: center;" class="text-sm">
-            <a href="#!"
-              onclick="document.getElementById('app_project-container').style.display='block'; document.getElementById('toggle-debug').checked = false; toggleSwitch(document.getElementById('toggle-debug')); return false;">
-              <img style="text-align: center;" src="<?= APP_BASE['resources'] . 'images/project.png' ?>" /></a><br /><a
-              href="?app=ace_editor&path=&file=app.project.php"><span style="text-align: center;">Project</span></a>
-          </div>
-          <div style="position: absolute; margin: 100px 0 0 450px ; text-align: center;" class="text-sm"><a href="#!"
-              onclick="document.getElementById('app_errors-container').style.display='block'; return false;"><img
-                style="text-align: center;" src="<?= APP_BASE['resources'] . 'images/debug.png' ?>" /><br /><span
-                style="text-align: center;">Debug</span></a></div>
-          <div style="position: absolute; margin: 100px 0 0 540px; text-align: center;" class="text-sm"><a href="#!"
-              onclick="document.getElementById('app_profile-container').style.display='block'; return false;"><img
-                style="text-align: center;" src="<?= APP_BASE['resources'] . 'images/user.png' ?>" /><br /><span
-                style="text-align: center;">Profile</span></a></div>
-          <div style="position: absolute; margin: 100px 0 0 630px; text-align: center;" class="text-sm"><a href="#!"
-              onclick="toggleIframeUrl('app.browser.php'); return false;"><img style="text-align: center;"
-                src="<?= APP_BASE['resources'] . 'images/browser.png' ?>" /><br /><span
-                style="text-align: center;">Browser</span></a></div>
-          <div style="position: absolute; margin: 200px 75px; text-align: center;" class="text-sm"><a href="#!"
-              onclick="document.getElementById('app_tools-container').style.display='block'; return false;"><img
-                style="text-align: center;" src="<?= APP_BASE['resources'] . 'images/apps.png' ?>" /><br /><span
-                style="text-align: center;">Apps.</span></a></div>
-          <div style="position: absolute; margin: 200px 170px; text-align: center;" class="text-sm"><a href="#!"
-              onclick="document.getElementById('app_calendar-container').style.display='block'; return false;"><img
-                style="text-align: center;" src="<?= APP_BASE['resources'] . 'images/calendar.png' ?>" /><br /><span
-                style="text-align: center;">Calendar</span></a></div>
-          <div style="position: absolute; margin: 190px 240px; padding: 20px 40px;">
-            <form action="#!" method="GET">
-              <?= '            ' . (isset($_GET['project']) && !$_GET['project'] ? '<input type="hidden" name="client" value="" />' : '<input type="hidden" name="project" value="" />') ?>
-              <div style="margin: 0 auto;">
-                <div id="clockTime"></div>
-              </div>
-              <input class="input" id="toggle-project" type="checkbox"
-                onchange="toggleSwitch(this); this.form.submit();" <?= isset($_GET['project']) ? 'checked' : '' ?> />
-              <label class="label" for="toggle-project" style="margin-left: -6px;">
-                <div class="left" style="background-color: rgba(255, 255, 255, 0.8); text-shadow: 2px 2px;"> Client
+            <div style="position: absolute; margin: 10px 165px; text-align: center;" class="text-sm"><a href="#"
+                target="_blank" onclick="toggleIframeUrl('app.whiteboard.php'); return false;"><img
+                  style="text-align: center;"
+                  src="<?= APP_BASE['resources'] . 'images/whiteboard.png' ?>" /></a><br /><a
+                href="?app=ace_editor&path=&file=app.whiteboard.php" style="text-align: center;">Whiteboard</a></div>
+            <div style="position: absolute; margin: 10px 260px; text-align: center;" class="text-sm"><a href="#!"
+                onclick="document.getElementById('app_notes-container').style.display='block'; return false;"><img
+                  style="text-align: center;" src="<?= APP_BASE['resources'] . 'images/notes.png' ?>" /></a><br /><a
+                href="?app=ace_editor&path=&file=app.notes.php" style="text-align: center;">Notes</a></div>
+            <div style="position: absolute; margin: 10px 350px; text-align: center;" class="text-sm">
+              <a href="#!"
+                onclick="document.getElementById('app_project-container').style.display='block'; document.getElementById('toggle-debug').checked = false; toggleSwitch(document.getElementById('toggle-debug')); return false;">
+                <img style="text-align: center;"
+                  src="<?= APP_BASE['resources'] . 'images/project.png' ?>" /></a><br /><a
+                href="?app=ace_editor&path=&file=app.project.php"><span style="text-align: center;">Project</span></a>
+            </div>
+            <div style="position: absolute; margin: 10px 0 0 450px ; text-align: center;" class="text-sm"><a href="#!"
+                onclick="document.getElementById('app_errors-container').style.display='block'; return false;"><img
+                  style="text-align: center;" src="<?= APP_BASE['resources'] . 'images/debug.png' ?>" /><br /><span
+                  style="text-align: center;">Debug</span></a></div>
+            <div style="position: absolute; margin: 10px 0 0 540px; text-align: center;" class="text-sm"><a href="#!"
+                onclick="document.getElementById('app_profile-container').style.display='block'; return false;"><img
+                  style="text-align: center;" src="<?= APP_BASE['resources'] . 'images/user.png' ?>" /><br /><span
+                  style="text-align: center;">Profile</span></a></div>
+            <div style="position: absolute; margin: 10px 0 0 630px; text-align: center;" class="text-sm"><a href="#!"
+                onclick="toggleIframeUrl('app.browser.php'); return false;"><img style="text-align: center;"
+                  src="<?= APP_BASE['resources'] . 'images/browser.png' ?>" /><br /><span
+                  style="text-align: center;">Browser</span></a></div>
+            <div style="position: absolute; margin: 110px 75px; text-align: center;" class="text-sm"><a href="#!"
+                onclick="document.getElementById('app_tools-container').style.display='block'; return false;"><img
+                  style="text-align: center;" src="<?= APP_BASE['resources'] . 'images/apps.png' ?>" /><br /><span
+                  style="text-align: center;">Apps.</span></a></div>
+            <div style="position: absolute; margin: 110px 170px; text-align: center;" class="text-sm"><a href="#!"
+                onclick="document.getElementById('app_calendar-container').style.display='block'; return false;"><img
+                  style="text-align: center;" src="<?= APP_BASE['resources'] . 'images/calendar.png' ?>" /><br /><span
+                  style="text-align: center;">Calendar</span></a></div>
+            <div style="position: absolute; margin: 118px 240px; padding: 20px 40px;">
+              <form action="#!" method="GET">
+                <?= '            ' . (isset($_GET['project']) && !$_GET['project'] ? '<input type="hidden" name="client" value="" />' : '<input type="hidden" name="project" value="" />') ?>
+                <div style="margin: 0 auto;">
+                  <div id="clockTime"></div>
                 </div>
-                <div class="switch" style="position: relative;"><span class="slider round"></span></div>
-                <div class="right" style="background-color: rgba(255, 255, 255, 0.8); text-shadow: 2px 2px;"> Project
-                </div>
-              </label>
-            </form>
-          </div>
-          <div style=" position: absolute; margin: 200px 0 0 540px; text-align: center;" class="text-sm"><a href="#!"
-              onclick="toggleIframeUrl('app.pong.php'); return false;"><img style="text-align: center;"
-                src="<?= APP_BASE['resources'] . 'images/pong.png' ?>" /><br /><span
-                style="text-align: center;">Pong</span></a>
-          </div>
-          <div style="position: absolute; margin: 200px 0 0 630px; text-align: center;" class="text-sm"><a href="#!"
-              onclick="document.getElementById('app_browser-container').style.display='block'; return false;"><img
-                style="text-align: center;" src="<?= APP_BASE['resources'] . 'images/regexp.png' ?>" /><br /><span
-                style="text-align: center;">RegExp</span></a></div>
-          <div style="position: absolute; margin: 300px 75px; text-align: center;" class="text-sm"><a href="#!"
-              onclick="document.getElementById('app_browser-container').style.display='block'; return false;"><img
-                style="text-align: center;" src="<?= APP_BASE['resources'] . 'images/chatgpt.png' ?>" /><br /><span
-                style="text-align: center;">ChatGPT</span></a></div>
-          <div style="position: absolute; margin: 300px 160px; text-align: center;" class="text-sm"><a href="#!"
-              onclick="document.getElementById('app_browser-container').style.display='block'; return false;"><img
-                style="text-align: center;"
-                src="<?= APP_BASE['resources'] . 'images/stackoverflow.png' ?>" /><br /><span
-                style="text-align: center;">Stackoverflow</span></a></div>
-          <div style="position: absolute; margin: 300px 260px; text-align: center;" class="text-sm"><a href="#!"
-              onclick="document.getElementById('app_browser-container').style.display='block'; return false;"><img
-                style="text-align: center;" src="<?= APP_BASE['resources'] . 'images/validatejs.png' ?>" /><br /><span
-                style="text-align: center;">ValidateJS</span></a></div>
-          <!-- https://validator.w3.org/#validate_by_input // -->
-          <div style="position: absolute; margin: 300px 340px; text-align: center;" class="text-sm"><a href="#!"
-              onclick="document.getElementById('app_browser-container').style.display='block'; return false;"><img
-                style="text-align: center;" src="<?= APP_BASE['resources'] . 'images/w3c.png' ?>" /><br /><span
-                style="text-align: center;">W3C Validator</span></a></div>
-          <!-- https://tailwindcss.com/docs/ // -->
-          <div style="position: absolute; margin: 300px 0 0 445px; text-align: center;" class="text-sm"><a href="#!"
-              onclick="document.getElementById('app_browser-container').style.display='block'; return false;"><img
-                style="text-align: center;" src="<?= APP_BASE['resources'] . 'images/tailwindcss.png' ?>" /><br /><span
-                style="text-align: center;">TailwindCSS<br />Docs</span></a></div>
-          <!-- https://www.php.net/docs.php // -->
-          <div style="position: absolute; margin: 300px 0 0 540px; text-align: center;" class="text-sm"><a href="#!"
-              onclick="document.getElementById('app_browser-container').style.display='block'; return false;"><img
-                style="text-align: center;" src="<?= APP_BASE['resources'] . 'images/php.png' ?>" /><br /><span
-                style="text-align: center;">PHP Docs</span></a></div>
-          <!-- https://dev.mysql.com/doc/ // -->
-          <div style="position: absolute; margin: 300px 0 0 625px; text-align: center;" class="text-sm"><a href="#!"
-              onclick="document.getElementById('app_browser-container').style.display='block'; return false;"><img
-                style="text-align: center;" src="<?= APP_BASE['resources'] . 'images/mysql.png' ?>" /><br /><span
-                style="text-align: center;">MySQL Docs</span></a></div>
-          <div
-            style="position: absolute; top: 400px; left: 65px; width: 80%; margin: 0 auto; height: 15px; border-bottom: 1px solid black; text-align: center; z-index: 0;">
-            <span style="font-size: 20px; background-color: #F3F5F6; padding: 0 20px; z-index: 1;"> USER APPS.
-            </span>
-          </div>
-          <div style="position: absolute; margin: 430px 75px; text-align: center;" class="text-sm"><a href="#!"
-              onclick="document.getElementById('app_install-container').style.display='block'; return false;"><span
-                style="text-align: center;">New App.</span><br /><img style="text-align: center;"
-                src="<?= APP_BASE['resources'] . 'images/install.png' ?>" /></a></div>
-          <div style="position: absolute; margin: 430px 170px; text-align: center;" class="text-sm">
-            <a href="?app=ace_editor&path=&file=app.user-app.php"><span style="text-align: center;">App
-                #1</span></a><br />
-            <a href="#!"
-              onclick="document.getElementById('app_browser-container').style.display='block'; return false;"><img
-                style="text-align: center;" src="<?= APP_BASE['resources'] . 'images/php-app.png' ?>" /></a>
-            <div style="height: 75px;"></div>
+                <input class="input" id="toggle-project" type="checkbox"
+                  onchange="toggleSwitch(this); this.form.submit();" <?= isset($_GET['project']) ? 'checked' : '' ?> />
+                <label class="label" for="toggle-project" style="margin-left: -6px;">
+                  <div class="left" style="background-color: rgba(255, 255, 255, 0.8); text-shadow: 2px 2px;"> Client
+                  </div>
+                  <div class="switch" style="position: relative;"><span class="slider round"></span></div>
+                  <div class="right" style="background-color: rgba(255, 255, 255, 0.8); text-shadow: 2px 2px;"> Project
+                  </div>
+                </label>
+              </form>
+            </div>
+            <div style=" position: absolute; margin: 110px 0 0 540px; text-align: center;" class="text-sm"><a href="#!"
+                onclick="toggleIframeUrl('app.pong.php'); return false;"><img style="text-align: center;"
+                  src="<?= APP_BASE['resources'] . 'images/pong.png' ?>" /><br /><span
+                  style="text-align: center;">Pong</span></a>
+            </div>
+            <div style="position: absolute; margin: 110px 0 0 630px; text-align: center;" class="text-sm"><a href="#!"
+                onclick="document.getElementById('app_browser-container').style.display='block'; return false;"><img
+                  style="text-align: center;" src="<?= APP_BASE['resources'] . 'images/regexp.png' ?>" /><br /><span
+                  style="text-align: center;">RegExp</span></a></div>
+            <div style="position: absolute; margin: 210px 75px; text-align: center;" class="text-sm"><a href="#!"
+                onclick="document.getElementById('app_browser-container').style.display='block'; return false;"><img
+                  style="text-align: center;" src="<?= APP_BASE['resources'] . 'images/chatgpt.png' ?>" /><br /><span
+                  style="text-align: center;">ChatGPT</span></a></div>
+            <div style="position: absolute; margin: 210px 160px; text-align: center;" class="text-sm"><a href="#!"
+                onclick="document.getElementById('app_browser-container').style.display='block'; return false;"><img
+                  style="text-align: center;"
+                  src="<?= APP_BASE['resources'] . 'images/stackoverflow.png' ?>" /><br /><span
+                  style="text-align: center;">Stackoverflow</span></a></div>
+            <div style="position: absolute; margin: 210px 260px; text-align: center;" class="text-sm"><a href="#!"
+                onclick="document.getElementById('app_browser-container').style.display='block'; return false;"><img
+                  style="text-align: center;" src="<?= APP_BASE['resources'] . 'images/validatejs.png' ?>" /><br /><span
+                  style="text-align: center;">ValidateJS</span></a></div>
+            <!-- https://validator.w3.org/#validate_by_input // -->
+            <div style="position: absolute; margin: 210px 340px; text-align: center;" class="text-sm"><a href="#!"
+                onclick="document.getElementById('app_browser-container').style.display='block'; return false;"><img
+                  style="text-align: center;" src="<?= APP_BASE['resources'] . 'images/w3c.png' ?>" /><br /><span
+                  style="text-align: center;">W3C Validator</span></a></div>
+            <!-- https://tailwindcss.com/docs/ // -->
+            <div style="position: absolute; margin: 210px 0 0 445px; text-align: center;" class="text-sm"><a href="#!"
+                onclick="document.getElementById('app_browser-container').style.display='block'; return false;"><img
+                  style="text-align: center;"
+                  src="<?= APP_BASE['resources'] . 'images/tailwindcss.png' ?>" /><br /><span
+                  style="text-align: center;">TailwindCSS<br />Docs</span></a></div>
+            <!-- https://www.php.net/docs.php // -->
+            <div style="position: absolute; margin: 210px 0 0 540px; text-align: center;" class="text-sm"><a href="#!"
+                onclick="document.getElementById('app_browser-container').style.display='block'; return false;"><img
+                  style="text-align: center;" src="<?= APP_BASE['resources'] . 'images/php.png' ?>" /><br /><span
+                  style="text-align: center;">PHP Docs</span></a></div>
+            <!-- https://dev.mysql.com/doc/ // -->
+            <div style="position: absolute; margin: 210px 0 0 625px; text-align: center;" class="text-sm"><a href="#!"
+                onclick="document.getElementById('app_browser-container').style.display='block'; return false;"><img
+                  style="text-align: center;" src="<?= APP_BASE['resources'] . 'images/mysql.png' ?>" /><br /><span
+                  style="text-align: center;">MySQL Docs</span></a></div>
+            <div
+              style="position: absolute; top: 340px; left: 65px; width: 80%; margin: 0 auto; height: 15px; border-bottom: 1px solid black; text-align: center; z-index: 0;">
+              <span style="font-size: 20px; background-color: #F3F5F6; padding: 0 20px; z-index: 1;"> USER APPS.
+              </span>
+            </div>
+            <div style="position: absolute; margin: 360px 75px; text-align: center;" class="text-sm"><a href="#!"
+                onclick="document.getElementById('app_install-container').style.display='block'; return false;"><span
+                  style="text-align: center;">New App.</span><br /><img style="text-align: center;"
+                  src="<?= APP_BASE['resources'] . 'images/install.png' ?>" /></a></div>
+            <div style="position: absolute; margin: 360px 170px; text-align: center;" class="text-sm">
+              <a href="?app=ace_editor&path=&file=app.user-app.php"><span style="text-align: center;">App
+                  #1</span></a><br />
+              <a href="#!"
+                onclick="document.getElementById('app_browser-container').style.display='block'; return false;"><img
+                  style="text-align: center;" src="<?= APP_BASE['resources'] . 'images/php-app.png' ?>" /></a>
+              <div style="height: 75px;"></div>
+            </div>
           </div>
         </div>
       </div>
@@ -670,7 +693,7 @@ cursor : pointer;
                   <?php
                   foreach (['000', '100', '200', '300', '400'] as $key => $status) {
 
-                    $links = array_filter(glob(APP_PATH . /*'../../'.*/ 'clientele/' . $status . '*'), 'is_dir');
+                    $links = array_filter(glob(APP_PATH . /*'../../'.*/ APP_BASE['clients'] . $status . '*'), 'is_dir');
                     $statusCode = $status;
                     $status = ($status == 000) ? "On-call" :
                       (($status == 100) ? "Working" :
@@ -1268,7 +1291,7 @@ $(document).ready(function() {
       <script src="resources/reels/leave-a-light-on.js" type="text/javascript" charset="utf-8"></script>
     <?php } else {  // array_rand() can't be empty ?>
       <script
-        src="<?= APP_BASE['resources'] . 'reels/leave-a-light-on.js'; /*kassy frequency something_happened disturbed_-_it_wasnt_me.js adhd_song.js !empty($reels = glob(APP_PATH . 'resources/reels/*.js')) ? APP_BASE['resources'] . 'reels/' . basename(array_rand(array_flip(array_filter($reels, 'is_file')), 1)) : ''; APP_BASE['resources'] */ ?>"
+        src="<?= APP_BASE['resources'] . 'reels/disturbed_-_it_wasnt_me.js'; /*kassy frequency something_happened disturbed_-_it_wasnt_me.js adhd_song.js !empty($reels = glob(APP_PATH . 'resources/reels/*.js')) ? APP_BASE['resources'] . 'reels/' . basename(array_rand(array_flip(array_filter($reels, 'is_file')), 1)) : ''; APP_BASE['resources'] */ ?>"
         type="text/javascript" charset="utf-8"></script>
     <?php } ?>
     <script type="text/javascript" charset="utf-8">

@@ -311,7 +311,7 @@ function clientInputHandler($input)
     //$input = trim($input);
     $output = '';
 
-    $file = APP_PATH . APP_BASE['database'] . 'source_code.json';
+    $file = APP_PATH . APP_BASE['data'] . 'source_code.json';
 
     // Retrieve file metadata using stat()
     $fileStats = stat($file);
@@ -428,7 +428,7 @@ function clientInputHandler($input)
         $envContents
       );
 
-      file_put_contents(APP_PATH . APP_BASE['database'] . 'source_code.json', $sanitizedContents, LOCK_EX);
+      file_put_contents(APP_PATH . APP_BASE['data'] . 'source_code.json', $sanitizedContents, LOCK_EX);
 
       signalHandler(SIGTERM);
       // Update the file's modification time if necessary (or other actions)

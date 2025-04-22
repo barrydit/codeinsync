@@ -422,6 +422,11 @@ class Shutdown
     return hash('sha256', json_encode($_ENV, JSON_UNESCAPED_SLASHES)) !== ENV_CHECKSUM;
   }
 
+  public static function env_checksum(): ?string
+  {
+    return defined('ENV_CHECKSUM') ? ENV_CHECKSUM : null;
+  }
+
   /**
    * Saves the current state of $_ENV to a .env file.
    *
@@ -433,10 +438,14 @@ class Shutdown
     //if ($hash = !self::hasEnvChanged()) {
     //  return; // No changes, skip saving
     //}
+    if (!defined('ENV_CHECKSUM')) {
+      // Optionally log, ignore, or set a fallback
+      return;
+    }
 
     $hash = hash('sha256', json_encode($_ENV, JSON_UNESCAPED_SLASHES));
 
-    if ($hash === ENV_CHECKSUM) {
+    if ($hash === self::env_checksum()) {
       return; // No changes, skip saving
     }
 
@@ -570,8 +579,7 @@ set_error_handler([Shutdown::class, 'handleError']);
 set_exception_handler([Shutdown::class, 'handleException']);
 register_shutdown_function(function () {
   //Shutdown::triggerShutdown('');  // 
-  if (!empty($_ENV))
-    Shutdown::saveEnvToFile();
+  if (!empty($_ENV)) Shutdown::saveEnvToFile();
   //Shutdown::handleParseError();
 });
 
@@ -984,8 +992,8 @@ function scanDirectories($directories, $baseDir, &$organizedFiles)
         $relativePath = str_replace($baseDir, '', $file);
         // Add the relative path to the array if it is a .php file and not already present
         if (pathinfo($relativePath, PATHINFO_EXTENSION) == 'php' && !in_array($relativePath, $organizedFiles)) {
-          if ($relativePath == 'public/project.php' && !in_array('projects/index.php', $organizedFiles))
-            $organizedFiles[] = 'projects/index.php';
+          if ($relativePath == 'public/project.php' && !in_array(APP_BASE['projects'] . 'index.php', $organizedFiles))
+            $organizedFiles[] = APP_BASE['projects'] . 'index.php';
           $organizedFiles[] = $relativePath;
         } else if (pathinfo($relativePath, PATHINFO_EXTENSION) == 'htaccess' && !in_array($relativePath, $organizedFiles)) {
           $organizedFiles[] = $relativePath;

@@ -134,7 +134,7 @@ if (isset($_ENV['PHP']['LOG_PATH']) && is_readable($path = APP_PATH . APP_ROOT .
 //dd($_SERVER); php_self, script_name, request_uri /folder/
 
 // dd(getenv('PATH'));
-
+//die(phpinfo()); // get_defined_constants(true)['user']
 if (isset($_SERVER['REQUEST_METHOD']))
   switch ($_SERVER['REQUEST_METHOD']) {
     case 'POST':

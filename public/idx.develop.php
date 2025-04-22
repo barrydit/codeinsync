@@ -341,9 +341,9 @@ else
   <style type="text/tailwindcss">
     * {
 <?php if (isset($_GET['debug'])) { ?>
-                              border: 1px dashed #FF0000;
+                                  border: 1px dashed #FF0000;
 <?php } else { ?> 
-                              /* border: 1px dashed #FF0000; */
+                                  /* border: 1px dashed #FF0000; */
 <?php } ?>
       }
       body {
@@ -515,8 +515,8 @@ else
       
         //$path = '?path=' . $path;
       } elseif (!empty($_GET['project'])) {
-        $path = '/projects/' . $_GET['project'] . '/';
-        //$dirs = array_filter(glob(dirname(__DIR__) . '/projects/' . $_GET['project'] . '/*'), 'is_dir');
+        $path = APP_BASE['projects'] . $_GET['project'] . DIRECTORY_SEPARATOR;
+        //$dirs = array_filter(glob(dirname(__DIR__) . DIRECTORY_SEPARATOR . APP_BASE['projects'] . $_GET['project'] . '/*'), 'is_dir');
       
       } else {
         $path = '';
@@ -598,9 +598,7 @@ else
               if ($_GET['project'] == '' || !empty($_GET['project']))
                 echo $main_cat;
 
-              $links = array_filter(glob(APP_PATH . /*'../../'.*/ 'projects/*'), 'is_dir');
-              ?>
-
+              $links = array_filter(glob(APP_PATH . /*'../../'.*/ 'projects/internal/*'), 'is_dir'); ?>
               <form style="display: inline;" autocomplete="off" spellcheck="false" action="" method="GET">
                 <span title="" style="cursor: pointer; margin: 2px 5px 0 0; " onclick="">/
                   <select name="project" style="" onchange="this.form.submit(); return false;">
@@ -608,15 +606,13 @@ else
                     <?php
                     while ($link = array_shift($links)) {
                       $link = basename($link); // Get the directory name from the full path
-                      if (is_dir(APP_PATH . /*'../../'.*/ 'projects/' . $link))
+                      if (is_dir(APP_PATH . /*'../../'.*/ 'projects/internal/' . $link))
                         echo '              <option value="' . $link . '" ' . (current($_GET) == $link ? 'selected' : '') . '>' . $link . '</option>' . "\n";
                     } ?>
                   </select> /
                 </span>
               </form>
-
-              <?php
-            } elseif (isset($_GET['client']) /*&& $_GET['client'] != ''*/) {
+            <?php } elseif (isset($_GET['client']) /*&& $_GET['client'] != ''*/) {
               if ($_GET['client'] == '')
                 echo $main_cat;
 
@@ -850,8 +846,8 @@ else
             </div>
             <div style="display: inline; float: right; text-align: center; ">
               <code style=" background-color: white; color: #0078D7;">
-                                <a style="cursor: pointer; font-size: 13px;" onclick="document.getElementById('app_client-container').style.display='none';">[X]</a>
-                                </code>
+                                    <a style="cursor: pointer; font-size: 13px;" onclick="document.getElementById('app_client-container').style.display='none';">[X]</a>
+                                    </code>
             </div>
             <div style="margin: 0 10px;">
               <div style="display: inline-block; float: left; width: 49%;">

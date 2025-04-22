@@ -76,7 +76,7 @@ $output[] = $_POST['cmd'];
 */
 //}
 
-$data = (!file_exists($path = APP_PATH . APP_BASE['database'] . 'notes.json')) ? json_decode(<<<'JSON'
+$data = (!file_exists($path = APP_PATH . APP_BASE['data'] . 'notes.json')) ? json_decode(<<<'JSON'
 [{
   "language":"PHP",
   "category":"String Manipulation",
@@ -377,8 +377,7 @@ pre {
 
     </div>
   </div>
-  <p id="open_add_new"><img src="resources/images/notes-edit.png"
-      style="margin-left: 4px; padding-top: 5px; cursor: pointer; " height="50" width="42" />Add New Snippet</p>
+  <p id="open_add_new">Add New Snippet</p>
   <?php
   foreach ($data as $key1 => $sample) {
     $counter = 0;
@@ -401,8 +400,8 @@ pre {
         </div>
         <pre
           style="margin: 0px;"><code class="language-<?= $sample['language']; ?>"><?= $snippet['code']; ?></code>
-                                                                                                                                <?= $snippet['description']; ?>
-                                                                                                                                  </pre>
+                                                                                                                                    <?= $snippet['description']; ?>
+                                                                                                                                      </pre>
       </form>
       <div style=" margin-left: 15px;">
 
