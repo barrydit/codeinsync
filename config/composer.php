@@ -569,8 +569,7 @@ if (defined('APP_ENV') and APP_ENV == 'development') {
   else {
     //die('test');
 
-    ob_start(); ?>
-    <?= $composer_exec; ?> test init --quiet --no-interaction
+    ob_start(); echo $composer_exec; ?> init --quiet --no-interaction
     --working-dir="<?= APP_PATH . APP_ROOT; ?>"
     --name="<?= $composerUser . '/' . $$c_or_p->name; ?>"
     --description="General Description"
@@ -662,8 +661,7 @@ defined('COMPOSER_JSON') or define('COMPOSER_JSON', [
   'path' => APP_PATH . APP_ROOT . 'composer.json'
 ]);
 
-ob_start(); ?>
-  <?= $composer_exec; ?> init --quiet --no-interaction
+ob_start(); echo $composer_exec; ?> init --quiet --no-interaction
   --working-dir="<?= APP_PATH . APP_ROOT; ?>"
   --name="<?= $composerUser . '/' . str_replace('.', '_', basename(APP_ROOT) ?? $componetPkg); ?>"
   --description="General Description"
@@ -977,7 +975,7 @@ fclose($pipes[2]);
     //die(var_dump($_SERVER['SOCKET']));
   
     if (!is_dir(APP_PATH . APP_ROOT . APP_BASE['vendor']) || !is_file(APP_PATH . APP_ROOT . APP_BASE['vendor'] . 'autoload.php'))
-      exec((stripos(PHP_OS, 'WIN') === 0 ? '' : APP_SUDO) . COMPOSER_EXEC['bin'] . ' dump-autoload', $output, $returnCode) or $errors['COMPOSER-DUMP-AUTOLOAD'] = $output;
+      exec((!defined('APP_SUDO') ?: APP_SUDO) . COMPOSER_EXEC['bin'] . ' dump-autoload', $output, $returnCode) or $errors['COMPOSER-DUMP-AUTOLOAD'] = $output;
     else
       if (!empty($composer_obj->{'require'}))
         foreach ($composer_obj->{'require'} as $package => $version) {
@@ -1406,9 +1404,9 @@ fclose($pipes[2]);
         if (!isset($_SERVER['SOCKET']) || !$_SERVER['SOCKET']) {
 
           //$output[] = dd(COMPOSER_EXEC);
-          $output[] = 'Cmd: ' . APP_SUDO . COMPOSER_EXEC['bin'] . ' ' . $match[1];
+          $output[] = 'Cmd: ' . (defined('APP_SUDO') ? APP_SUDO . '-u www-data ' : '') . COMPOSER_EXEC['bin'] . ' ' . $match[1];
           $proc = proc_open(
-            (stripos(PHP_OS, 'WIN') === 0 ? '' : APP_SUDO) . COMPOSER_EXEC['bin'] . ' ' . $match[1] . ' --working-dir="' . APP_PATH . APP_ROOT . '"',
+            (defined('APP_SUDO') ? APP_SUDO . '-u www-data ' : '') . COMPOSER_EXEC['bin'] . ' ' . $match[1] . ' --working-dir="' . APP_PATH . APP_ROOT . '"',
             [
               ["pipe", "r"],
               ["pipe", "w"],

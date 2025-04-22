@@ -21,7 +21,7 @@ if (realpath($_SERVER["SCRIPT_FILENAME"]) == get_required_files()[0] && in_array
 if (is_file($bootstrap = dirname(__DIR__, 1) . DIRECTORY_SEPARATOR . 'bootstrap.php')) {
   require_once $bootstrap;
 }
-
+!defined('APP_PATH') and define('APP_PATH', __DIR__ . DIRECTORY_SEPARATOR);
 //if (isset($_ENV['COMPOSER']['AUTOLOAD']) && (bool) $_ENV['COMPOSER']['AUTOLOAD'] === true)
 require_once APP_PATH . APP_BASE['vendor'] . 'autoload.php';
 

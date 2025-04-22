@@ -233,8 +233,8 @@ END
         // Function to check if the server is already running
         $isServerRunning = function ($pidFile) {
             if (file_exists($pidFile)) {
-                $pid = file_get_contents($pidFile);
-                if (posix_kill($pid, 0)) {
+                $pid = (int) file_get_contents($pidFile);
+                if (is_int($pid) && posix_kill($pid, 0)) {
                     return true; // Process is running
                 } else {
                     unlink($pidFile); // Process not running, remove stale PID file

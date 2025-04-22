@@ -493,6 +493,40 @@ ob_end_clean();
 // dd(glob('*')); dd(getcwd());
 
 //(APP_SELF == __FILE__ || isset($_GET['app']) && $_GET['app'] == 'composer' ? 'selected' : (version_compare(COMPOSER_LATEST, COMPOSER_VERSION, '>') != 0 ? (isset($_GET['app']) && $_GET['app'] != 'composer' ? '' : 'selected') :  '')) 
+
+function highlightVersionDiff($installed, $latest) {
+    $installedParts = explode('.', $installed);
+    $latestParts = explode('.', $latest);
+    $result = '';
+
+    $diffFound = false;
+    for ($i = 0; $i < max(count($installedParts), count($latestParts)); $i++) {
+        $installedPart = $installedParts[$i] ?? '';
+        $latestPart = $latestParts[$i] ?? '';
+
+        if (!$diffFound && $installedPart === $latestPart) {
+            $result .= $latestPart;
+        } else {
+            if (!$diffFound) {
+                $diffFound = true;
+                $result .= '<span class="update" style="color: green; cursor: pointer;">';
+            }
+            $result .= $latestPart;
+        }
+
+        if ($i < max(count($installedParts), count($latestParts)) - 1) {
+            $result .= '.';
+        }
+    }
+
+    if ($diffFound) {
+        $result .= '</span>';
+    }
+
+    return $result;
+}
+
+
 ob_start(); ?>
 
 <div id="app_composer-container"
@@ -511,7 +545,9 @@ ob_start(); ?>
       </label>
       <div style="display: inline;">
         <span style="background-color: #B0B0B0; color: white;">Composer
-          <?= 'v' . (defined('COMPOSER_VERSION') and version_compare(COMPOSER_LATEST, COMPOSER_VERSION, '>') != 0 ? substr(COMPOSER_LATEST, 0, similar_text(COMPOSER_LATEST, COMPOSER_VERSION)) . '<span class="update" style="color: green; cursor: pointer;">' . substr(COMPOSER_LATEST, similar_text(COMPOSER_LATEST, COMPOSER_VERSION)) . '</span>' : COMPOSER_VERSION); ?>
+          <a href="#" alt="Installed: <?= COMPOSER_VERSION; ?>"><?= (defined('COMPOSER_VERSION') && version_compare(COMPOSER_LATEST, COMPOSER_VERSION, '>') !== 0)
+    ? highlightVersionDiff(COMPOSER_VERSION, COMPOSER_LATEST)
+    : COMPOSER_VERSION; ?></a>
         </span>
 
 
@@ -626,7 +662,9 @@ ob_start(); ?>
     </div>
 
     <div class="absolute text-sm" style="position: absolute; bottom: 0; right: 0; padding: 2px; z-index: 1; ">
-      <?= defined('COMPOSER_VERSION') and version_compare(COMPOSER_LATEST, COMPOSER_VERSION, '>') != 0 ? '<code>Latest: </code><span class="update" style="color: green; cursor: pointer;">' . 'v' . substr(COMPOSER_LATEST, 0, similar_text(COMPOSER_LATEST, COMPOSER_VERSION)) . substr(COMPOSER_LATEST, similar_text(COMPOSER_LATEST, COMPOSER_VERSION)) . '</span>' : 'Installed: v' . COMPOSER_VERSION; ?>
+      <?= (defined('COMPOSER_VERSION') && version_compare(COMPOSER_LATEST, COMPOSER_VERSION, '>') !== 0)
+    ? 'Latest: ' . highlightVersionDiff(COMPOSER_VERSION, COMPOSER_LATEST)
+    : 'Installed: ' . COMPOSER_VERSION; ?>
     </div>
     <div style="position: relative; overflow: hidden; width: 398px; height: 250px;">
       <?php

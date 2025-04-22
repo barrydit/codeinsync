@@ -21,7 +21,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 
     if (isset($_GET['app']) && $_GET['app'] == 'errors' && isset($_POST['ace_save']))
 
-        if (isset($_POST['ace_path']) && realpath($path = APP_PATH . (APP_ROOT ?? ('clientele/' . ($_GET['client'] . '/' . ($_GET['domain'] ?? '') ?? $_GET['domain'] ?? ''))) . ($_GET['path'] . '/' . $_GET['file'] ?? $_POST['ace_path']))) {
+        if (isset($_POST['ace_path']) && realpath($path = APP_PATH . (APP_ROOT ?? (APP_BASE['clients'] . ($_GET['client'] . '/' . ($_GET['domain'] ?? '') ?? $_GET['domain'] ?? ''))) . ($_GET['path'] . '/' . $_GET['file'] ?? $_POST['ace_path']))) {
             //dd($path, false);   
             if (isset($_POST['ace_contents']))
                 //dd($_POST['ace_contents']);
@@ -259,8 +259,8 @@ ob_start(); ?>
         <input type="hidden" name="ace_path" value="<?= /* APP_PATH . APP_BASE['public']; */ NULL; ?>" / -->
 
     <div class="ui-widget-content"
-        style="position: relative; display: block; margin: 0 auto; width: calc(100% - 2px); height: 50px; background-color: rgba(251,247,241);">
-        <div style="display: inline-block; text-align: left; width: 125px;">
+        style="position: relative; display: block; margin: 0 auto; width: calc(100% - 2px); height: auto; background-color: rgba(251,247,241);">
+        <div style="display: none; text-align: left; width: 125px;">
             <div class="npm-menu text-sm"
                 style="cursor: pointer; font-weight: bold; padding-left: 25px; border: 1px solid #000;">Main Menu
             </div>
@@ -387,7 +387,7 @@ else $count++;
                                     <div
                                         style="text-align: center; width: 92%; margin-left:auto; margin-right:auto; margin-top: 20px;">
                                         <form autocomplete="off" spellcheck="false" method="POST"
-                                            action="<?= APP_URL . basename(__FILE__) . /**/ '?' . http_build_query(['app' => 'medication_log']/**/) . (defined('APP_ENV') && APP_ENV == 'development' ? '#!' : '') /* $c_or_p . '=' . (empty($_GET[$c_or_p]) ? '' : $$c_or_p->name) . '&amp;app=composer' */ ?>">
+                                            action="<?= APP_URL . 'medication_log.php' . /**/ '?' . http_build_query(['app' => 'medication_log']/**/) . (defined('APP_ENV') && APP_ENV == 'development' ? '#!' : '') /* $c_or_p . '=' . (empty($_GET[$c_or_p]) ? '' : $$c_or_p->name) . '&amp;app=composer' */ ?>">
                                             <input type="hidden" name="app" value="medication_log" />
                                             <input id="date_slot" type="date" name="date"
                                                 value="<?= date('Y-m-d') ?>" />
@@ -467,10 +467,17 @@ if ($path)
                                 '<div class="float-right w-auto">
                     <a class="text-sm" id="app_calendar-frameMenuNext"
                         href="' . (!empty(APP_QUERY) ? '?' . http_build_query(APP_QUERY) : '') . (defined('APP_ENV') && APP_ENV === 'development' ? '#!' : '#') . '">' . $nextMonth . ' &gt;</a></div></th></tr>';
-                            $calendar .= "<tr>
-                    <th>Sun</th><th>Mon</th><th>Tue</th><th>Wed</th>
+
+                            $today = date('Y-m-d');
+
+                            // Determine background color
+                            $isToday = $currentDate == $today;
+                            $bgColor = $isToday ? 'background-color: lightblue;' : '';
+
+                            $calendar .= '<tr>' .
+                                '<th style="' . $bgColor . '">Sun</th><th>Mon</th><th>Tue</th><th>Wed</th>
                     <th>Thu</th><th>Fri</th><th>Sat</th>
-                 </tr><tr>";
+                 </tr><tr>';
 
                             // Print empty cells before the first day
                             for ($i = 0; $i < $startingDay; $i++) {
@@ -478,7 +485,7 @@ if ($path)
                             }
 
                             // Load medication log
-                            $logFile = APP_BASE['database'] . 'medication_log.json';
+                            $logFile = APP_BASE['data'] . 'medication_log.json';
                             $logData = json_decode(file_get_contents($logFile), true);
 
                             // Convert log to date-indexed array
@@ -489,16 +496,10 @@ if ($path)
                                 $medLogByDate[$date] = $statuses;
                             }
 
-                            $today = date('Y-m-d');
-
                             // Print days of the month
                             for ($day = 1; $day <= $totalDays; $day++) {
                                 $dayStr = str_pad($day, 2, '0', STR_PAD_LEFT);
                                 $currentDate = "$year-$month-$dayStr";
-
-                                // Determine background color
-                                $isToday = $currentDate == $today;
-                                $bgColor = $isToday ? 'background-color: lightblue;' : '';
 
                                 // Determine dose indicators
                                 $indicators = '';

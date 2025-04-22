@@ -42,7 +42,7 @@ if (defined('APP_ENV'))
 // Initialize an associative array with the desired keys
 //$files = array( /* 0 => array('path', 'filesize') */
 //    'config' => glob(APP_PATH . 'config' . DIRECTORY_SEPARATOR . '*.php'),
-//    'database' => glob(APP_PATH . 'database' . DIRECTORY_SEPARATOR . '*.sql'),
+//    'data' => glob(APP_PATH . 'data' . DIRECTORY_SEPARATOR . '*.sql'),
 //    'public' => glob(APP_PATH . 'public' . DIRECTORY_SEPARATOR . '*.php'),
 //    'src' => glob(APP_PATH . 'src' . DIRECTORY_SEPARATOR . '*.php')
 //);

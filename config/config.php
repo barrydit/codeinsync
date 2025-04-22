@@ -176,17 +176,17 @@ if (!defined('APP_ROOT')) {
 
     // Determine base paths for client, domain, or project
     $clientPath = isset($_GET['client'])
-      ? 'clientele' . DIRECTORY_SEPARATOR . $_GET['client'] . DIRECTORY_SEPARATOR
-      : (!empty($_ENV['DEFAULT_CLIENT']) && isset($_GET['client']) ? 'clientele' . DIRECTORY_SEPARATOR . $_ENV['DEFAULT_CLIENT'] . DIRECTORY_SEPARATOR : '');
+      ? APP_BASE['clients'] . $_GET['client'] . DIRECTORY_SEPARATOR
+      : (!empty($_ENV['DEFAULT_CLIENT']) && isset($_GET['client']) ? APP_BASE['clients'] . $_ENV['DEFAULT_CLIENT'] . DIRECTORY_SEPARATOR : '');
 
     $domainPath = isset($_GET['domain']) && $_GET['domain'] !== ''
       ? (isset($_GET['client'])
         ? $clientPath . $_GET['domain'] . DIRECTORY_SEPARATOR
-        : 'clientele' . DIRECTORY_SEPARATOR . $_GET['domain'] . DIRECTORY_SEPARATOR)
-      : (!empty($_ENV['DEFAULT_DOMAIN']) ? 'clientele' . DIRECTORY_SEPARATOR . $_ENV['DEFAULT_CLIENT'] . DIRECTORY_SEPARATOR . (array_key_first($_GET) == 'path' ? '' : (isset($_SERVER['REQUEST_METHOD']) && $_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['cmd']) && in_array($_POST['cmd'], ['cd ../', 'chdir ../']) ? '' : $_ENV['DEFAULT_DOMAIN']) . DIRECTORY_SEPARATOR) : '')/*''*/ ;
+        : APP_BASE['clients'] . $_GET['domain'] . DIRECTORY_SEPARATOR)
+      : (!empty($_ENV['DEFAULT_DOMAIN']) ? APP_BASE['clients'] . $_ENV['DEFAULT_CLIENT'] . DIRECTORY_SEPARATOR . (array_key_first($_GET) == 'path' ? '' : (isset($_SERVER['REQUEST_METHOD']) && $_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['cmd']) && in_array($_POST['cmd'], ['cd ../', 'chdir ../']) ? '' : $_ENV['DEFAULT_DOMAIN']) . DIRECTORY_SEPARATOR) : '')/*''*/ ;
 
     $projectPath = isset($_GET['project'])
-      ? 'projects' . DIRECTORY_SEPARATOR . $_GET['project'] . DIRECTORY_SEPARATOR
+      ? APP_BASE['projects'] . $_GET['project'] . DIRECTORY_SEPARATOR
       : '';
 
     // Final path prioritizing client/domain and falling back to project if present
@@ -218,17 +218,17 @@ if (!defined('APP_ROOT')) {
   $errors['APP_ROOT'] = 'APP_ROOT was NOT defined.';
   // Determine base paths for client, domain, or project
   $clientPath = isset($_GET['client'])
-      ? 'clientele' . DIRECTORY_SEPARATOR . $_GET['client'] . DIRECTORY_SEPARATOR
-      : (!empty($_ENV['DEFAULT_CLIENT']) ? 'clientele' . DIRECTORY_SEPARATOR . $_ENV['DEFAULT_CLIENT'] . DIRECTORY_SEPARATOR : '');
+      ? APP_BASE['clients'] . $_GET['client'] . DIRECTORY_SEPARATOR
+      : (!empty($_ENV['DEFAULT_CLIENT']) ? APP_BASE['clients'] . $_ENV['DEFAULT_CLIENT'] . DIRECTORY_SEPARATOR : '');
 
   $domainPath = isset($_GET['domain']) && $_GET['domain'] !== ''
       ? (isset($_GET['client']) 
           ? $clientPath . $_GET['domain'] . DIRECTORY_SEPARATOR
-          : 'clientele' . DIRECTORY_SEPARATOR . $_GET['domain'] . DIRECTORY_SEPARATOR)
-      : (!empty($_ENV['DEFAULT_DOMAIN']) ? 'clientele' . DIRECTORY_SEPARATOR . $_ENV['DEFAULT_DOMAIN'] . DIRECTORY_SEPARATOR : '');
+          : APP_BASE['clients'] . $_GET['domain'] . DIRECTORY_SEPARATOR)
+      : (!empty($_ENV['DEFAULT_DOMAIN']) ? APP_BASE['clients'] . $_ENV['DEFAULT_DOMAIN'] . DIRECTORY_SEPARATOR : '');
 
   $projectPath = isset($_GET['project'])
-      ? 'projects' . DIRECTORY_SEPARATOR . $_GET['project'] . DIRECTORY_SEPARATOR
+      ? APP_BASE['projects'] . $_GET['project'] . DIRECTORY_SEPARATOR
       : '';
 
   // Final path prioritizing client/domain and falling back to project if present
@@ -276,22 +276,21 @@ if (isset($_GET['project'])) {
 
 header("Cache-Control: no-store, no-cache, must-revalidate, max-age=0");
 
-if (!is_dir($path = APP_PATH . 'projects')) {
-  $errors['projects'] = "projects/ directory does not exist.\n";
+if (!is_dir($path = APP_PATH . APP_BASE['projects'])) {
+  $errors['projects'] = "projects/internal directory does not exist.\n";
   mkdir($path, 0777, true);
 }
 
-if (!is_file($file = APP_PATH . 'projects/index.php')) {
-  $errors['projects'] = 'projects/index.php does not exist.';
-  if (is_file($source_file = APP_PATH . APP_BASE['database'] . 'source_code.json')) {
+if (!is_file($file = APP_PATH . APP_BASE['projects'] . 'index.php')) {
+  $errors['projects'] = APP_BASE['projects'] . 'index.php does not exist.';
+  if (is_file($source_file = APP_PATH . APP_BASE['data'] . 'source_code.json')) {
     $source_file = json_decode(file_get_contents($source_file));
-    if ($source_file) {
-      file_put_contents($file, $source_file->{'projects/index.php'});
-    }
+    if ($source_file)
+      file_put_contents($file, $source_file->{'projects/internal/index.php'});
   }
   unset($source_file);
-} elseif (is_file(APP_PATH . 'projects' . DIRECTORY_SEPARATOR . 'index.php') && isset($_GET['project']) && $_GET['project'] == 'show') {
-  Shutdown::setEnabled(false)->setShutdownMessage(fn() => eval ('?>' . file_get_contents(APP_PATH . 'projects/index.php')))->shutdown();
+} elseif (is_file(APP_PATH . APP_BASE['projects'] . 'index.php') && isset($_GET['project']) && $_GET['project'] == 'show') {
+  /* Shutdown::setEnabled(false)->setShutdownMessage(fn() => eval ('?>' . file_get_contents(APP_PATH . APP_BASE['projects'] . 'index.php')))->shutdown(); */
 }
 
 // function loadEnvConfig($file) {
@@ -302,6 +301,7 @@ if (!is_file($file = APP_PATH . 'projects/index.php')) {
 // = loadEnvConfig(APP_PATH . '.env');
 
 if (basename($dir = getcwd()) != 'config') {
+
   if (in_array(basename($dir), ['public', 'public_html']))
     chdir('../');
 
@@ -433,7 +433,7 @@ html, body {
 </html>
 END
       );
-
+  dd('testing...');
   if (basename(get_required_files()[0]) !== 'release-notes.php')
     if (is_dir('config')) {
       $previousFilename = ''; // Initialize the previous filename variable

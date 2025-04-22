@@ -9,6 +9,7 @@
   is_string(BASE_PATH) ?: $errors['BASE_PATH'] = "BASE_PATH is not a valid string value.\n"; // APP_PATH
 define('CONFIG_PATH', BASE_PATH . 'config' . DIRECTORY_SEPARATOR);
 
+
 // CONFIG_PATH, PUBLIC_PATH, STORAGE_PATH, VENDOR_PATH, VIEW_PATH, CACHE_PATH, LOG_PATH, TEMP_PATH, UPLOAD_PATH, ASSETS_PATH, APP_PATH, BASE_PATH, ROOT_PATH, SRC_PATH, TEST_PATH, WWW_PATH
 /*
 !defined('DOMAIN_EXPR') and 
@@ -18,17 +19,17 @@ define('CONFIG_PATH', BASE_PATH . 'config' . DIRECTORY_SEPARATOR);
 
 /*
 if (!defined('APP_ROOT')) {
-  $path = !isset($_GET['client']) ? (!isset($_GET['project']) ? '' : 'projects' . DIRECTORY_SEPARATOR . $_GET['project']) : 'clientele' . DIRECTORY_SEPARATOR . $_GET['client'] . DIRECTORY_SEPARATOR . (isset($_GET['domain']) && $_GET['domain'] != '' ? $_GET['domain'] : '') . DIRECTORY_SEPARATOR; /* ($_GET['path'] . '/' ?? '')*/
+  $path = !isset($_GET['client']) ? (!isset($_GET['project']) ? '' : APP_BASE['projects'] . $_GET['project']) : APP_BASE['clients'] . $_GET['client'] . DIRECTORY_SEPARATOR . (isset($_GET['domain']) && $_GET['domain'] != '' ? $_GET['domain'] : '') . DIRECTORY_SEPARATOR; /* ($_GET['path'] . '/' ?? '')*/
 //die($path);
 //is_dir(APP_PATH . $_GET['path'])
 /*  !$path || !is_dir(APP_PATH . $path) ?:  
     define('APP_ROOT', !empty(realpath(APP_PATH . ($path = rtrim($path, DIRECTORY_SEPARATOR)) ) && $path != '') ? (string) $path . DIRECTORY_SEPARATOR : '');  // basename() does not like null
 }*/
 
-$projectFolder = 'projects' . DIRECTORY_SEPARATOR . ($_GET['project'] ?? '');
+$projectFolder = 'projects' . DIRECTORY_SEPARATOR . 'internal' . DIRECTORY_SEPARATOR . ($_GET['project'] ?? '');
 $projectPath = __DIR__ . DIRECTORY_SEPARATOR . $projectFolder;
 
-$clientFolder = 'clientele' . DIRECTORY_SEPARATOR . ($_GET['client'] ?? '');
+$clientFolder = 'projects' . DIRECTORY_SEPARATOR . 'clients' . DIRECTORY_SEPARATOR . ($_GET['client'] ?? '');
 $clientPath = __DIR__ . DIRECTORY_SEPARATOR . $clientFolder;
 
 /**

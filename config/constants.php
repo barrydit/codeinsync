@@ -168,17 +168,16 @@ if (defined('APP_LOGIN') && is_array(APP_LOGIN)) {
 switch (basename(__DIR__)) {
   case 'config':
   default:
-
     if (empty(APP_HOST) || APP_HOST == '127.0.0.1' || APP_DOMAIN == 'localhost')
       $errors['WHOIS'] = "WHOIS is disabled on localhost.\n";
 
-    // Define base paths
-    $_ENV['APP_BASE'] = json_encode($base_paths = [ // https://stackoverflow.com/questions/8037266/get-the-url-of-a-file-included-by-php
+    // Define your paths as pure array (no associative keys unless you plan to use them)
+    $base_paths = [ // https://stackoverflow.com/questions/8037266/get-the-url-of-a-file-included-by-php
       'config',
-      'clientele',
-      'database',
+      'clients' => 'projects' . DIRECTORY_SEPARATOR . 'clients',
+      'data',
       'public',
-      'projects',
+      'projects' => 'projects' . DIRECTORY_SEPARATOR . 'internal',
       'resources',
       'node_modules',
       'src',
@@ -187,51 +186,77 @@ switch (basename(__DIR__)) {
       // 'tmp' => 'var' . DIRECTORY_SEPARATOR . 'tmp' . DIRECTORY_SEPARATOR,
       // 'export' =>  'var' . DIRECTORY_SEPARATOR . 'export' . DIRECTORY_SEPARATOR,
       // 'session' => 'var' . DIRECTORY_SEPARATOR . 'session' . DIRECTORY_SEPARATOR,
-    ]/*+['docs' => 'public' . DIRECTORY_SEPARATOR . 'docs' . DIRECTORY_SEPARATOR, 'policies' => 'public' . DIRECTORY_SEPARATOR . 'policies' . DIRECTORY_SEPARATOR]*/);
+    ]/*+['docs' => 'public' . DIRECTORY_SEPARATOR . 'docs' . DIRECTORY_SEPARATOR, 'policies' => 'public' . DIRECTORY_SEPARATOR . 'policies' . DIRECTORY_SEPARATOR]*/ ;
 
-    // Determine the base path for glob
-    $basePath = defined('APP_PATH') ? APP_PATH : __DIR__ . DIRECTORY_SEPARATOR;
-
-    // Get directories in the base path and filter them
-    $dirpaths = array_map('basename', array_filter(glob("$basePath*", GLOB_ONLYDIR), 'is_dir'));
-
-    // Find common directories between base paths and directory paths
-    $common = array_intersect($base_paths, $dirpaths);
-
-    // Identify missing base paths
-    $missingBasePaths = array_diff($base_paths, $common);
-    if (!empty($missingBasePaths))
-      $errors['MISSING_BASE_PATHS'] = 'Directories missing base path: ' . implode(', ', $missingBasePaths) . "\n";
-
-    // Identify missing base paths
-    $missingPaths = array_diff($dirpaths, $common);
-    if (!empty($missingPaths))
-      $errors['MISSING_PATHS'] = 'Directories not added to the base paths: ' . implode(', ', $missingPaths) . "\n";
-
-    $errors['BASE_PATHS'] = json_encode($base_paths) . "\n"; // 'Directories were added to the base paths: ' . implode(', ', $base_paths) . "\n";
-
-    // Process common directories and prepare APP_BASE definition
+    $baseDir = defined('APP_PATH') ? APP_PATH : __DIR__ . DIRECTORY_SEPARATOR;
+    $validated_paths = [];
+    $errors = [];
     $processedCommon = [];
 
-    if (empty($common))
-      $errors['APP_BASE'] = json_encode(array_keys($common), JSON_PRETTY_PRINT) . "";
-    else
-      foreach ($common as $key => $dirname) {
-        if (basename(__DIR__) == 'public' && $dirname == 'public')
-          continue;
+    // Step 1: Validate base paths
+    foreach ($base_paths as $key => $subpath) {
+      $alias = is_string($key) ? $key : $subpath;
+      $full_path = realpath($baseDir . $subpath);
 
-        if (!is_dir((defined('APP_PATH') ? APP_PATH : __DIR__ . DIRECTORY_SEPARATOR) . $dirname) && APP_DEBUG) {
-          (@!mkdir((defined('APP_PATH') ? APP_PATH : __DIR__ . DIRECTORY_SEPARATOR) . $dirname, 0755, true)
-            ? '' : $errors['APP_BASE'][$key] = "$dirname could not be created.");
-        }
-        $processedCommon[$dirname] = $dirname . DIRECTORY_SEPARATOR;
+      if ($full_path && is_dir($full_path)) {
+        $validated_paths[$alias] = $full_path;
+      } else {
+        $errors['INVALID_PATHS'][] = "Missing or invalid: [$alias] => '$subpath'";
       }
+    }
+
+    // Save valid resolved paths to ENV
+    $_ENV['APP_BASE'] = json_encode(array_values($validated_paths), JSON_UNESCAPED_SLASHES);
+
+    // Step 2: Build $common from validated aliases and original subpaths
+    $common = [];
+    foreach ($validated_paths as $alias => $full_path) {
+      if (is_dir($full_path)) {
+        // Use the original subpath (e.g., "projects/clients") if available
+        $common[$alias] = rtrim($base_paths[$alias] ?? $alias, '/') . DIRECTORY_SEPARATOR;
+      }
+    }
+
+    // Step 3: Unmapped or extra directories
+    $dirnames = array_map('basename', array_filter(glob($baseDir . '*'), 'is_dir'));
+    $mapped_names = array_keys($validated_paths);
+    $unmapped_dirs = array_diff($dirnames, $mapped_names);
+
+    if (!empty($unmapped_dirs)) {
+      $errors['UNMAPPED_DIRS'] = 'Directories not in $base_paths: ' . implode(', ', $unmapped_dirs);
+    }
+
+    // Step 4: Final check + auto-create if missing (debug only)
+    if (empty($common)) {
+      $errors['APP_BASE'] = json_encode([], JSON_PRETTY_PRINT);
+    } else {
+      foreach ($common as $key => $subpath) {
+        if (basename(__DIR__) === 'public' && $subpath === 'public' . DIRECTORY_SEPARATOR) {
+          continue;
+        }
+
+        $fullPath = $baseDir . $subpath;
+
+        if (!is_dir($fullPath) && defined('APP_DEBUG') && APP_DEBUG) {
+          if (!@mkdir($fullPath, 0755, true)) {
+            $errors['APP_BASE'][$key] = "$subpath could not be created.";
+          }
+        }
+
+        $processedCommon[$key] = $subpath;
+      }
+    }
+
+    // Optional: dump errors
+    if (!empty($errors)) {
+      // dd($errors); // Or your own error handler
+    }
 
     // Get directories in the base path and filter them
     foreach (array_map('basename', array_filter(glob("{$basePath}{.env, .htaccess, .gitignore, LICENSE, *.md}", GLOB_BRACE), 'is_file')) as $filename) {
       if (!is_file($file = APP_PATH . $filename)) {
         if (@touch($file)) {
-          if (is_file($source_file = APP_PATH . APP_BASE['database'] . 'source_code.json'))
+          if (is_file($source_file = APP_PATH . APP_BASE['data'] . 'source_code.json'))
             $source_file = json_decode(file_get_contents($source_file));
           if ($source_file) {
             if (!is_file($file = APP_PATH . 'public/.htaccess')) {
@@ -300,6 +325,7 @@ switch (basename(__DIR__)) {
     // Define APP_BASE
     define('APP_BASE', $processedCommon);
 
+    //dd(APP_BASE);
     //(defined('APP_PATH') && truepath(APP_PATH)) and $errors['APP_PATH'] = truepath(APP_PATH); // print('App Path: ' . APP_PATH . "\n" . "\t" . '$_SERVER[\'DOCUMENT_ROOT\'] => ' . $_SERVER['DOCUMENT_ROOT'] . "\n");
 
     define(

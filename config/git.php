@@ -32,8 +32,8 @@ END;
 if (!is_dir($dirname = (defined('APP_PATH') ? APP_PATH : dirname(__DIR__) . DIRECTORY_SEPARATOR) . '.ssh'))
   (@!mkdir($dirname, 0755, true) ?: $errors['APP_BASE'][basename($dirname)] = "$dirname could not be created.");
 
-define('GIT_EXEC', stripos(PHP_OS, 'WIN') === 0 ? 'git.exe' : $_ENV['GIT']['EXEC'] ?? '/usr/local/bin/git');
-
+define('GIT_EXEC', stripos(PHP_OS, 'WIN') === 0 ? 'git.exe' : $_ENV['GIT']['EXEC'] ?? '/usr/local1/bin/git');
+//dd(GIT_EXEC);
 if (isset($_ENV['GITHUB']['EXPR_VERSION'])) {
   (function () {
     $gitVersion = exec(GIT_EXEC . ' --version');
@@ -83,7 +83,7 @@ function git_origin_sha_update()
   if (!empty($_GET['client']) || !empty($_GET['domain'])) {
     $latest_remote_commit_url = 'https://api.github.com/repos/' . $_ENV['GITHUB']['USERNAME'] . '/' . ($_GET['domain'] ?? $_ENV['DEFAULT_DOMAIN']) . '/git/refs/heads/main'; // commits/main
   } elseif (!empty($_GET['project'])) {
-    $path = 'projects' . DIRECTORY_SEPARATOR . $_GET['project'] . DIRECTORY_SEPARATOR;
+    $path = APP_BASE['projects'] . $_GET['project'] . DIRECTORY_SEPARATOR;
     if (is_dir(APP_PATH . $path)) {
       //define('APP_PROJECT', new clientOrProj($path));
       $latest_remote_commit_url = 'https://api.github.com/repos/' . $_ENV['GITHUB']['USERNAME'] . '/' . $_GET['project'] . '/git/refs/heads/main';
@@ -103,7 +103,7 @@ function git_origin_sha_update()
 
   //dd($latest_remote_commit_url);
 
-  if (/* defined('APP_IS_ONLINE') &&check_http_status($_ENV['GIT']['ORIGIN_URL']) &&*/ check_http_status($latest_remote_commit_url, 404)) {
+  if (/* defined('APP_IS_ONLINE') &&check_http_status($_ENV['GIT']['ORIGIN_URL']) &&*/ !check_http_status($latest_remote_commit_url, 404)) {
 
     if ($context === false) {
       error_log("Failed to create stream context.");
@@ -140,7 +140,8 @@ function git_origin_sha_update()
     $errors['GIT_UPDATE'] .= "Failed to retrieve commit information.\n";
 
     $data = json_decode($response, true);
-  }
+  } else
+    $data = null;
 
   if ($data && isset($data['object']['sha'])) {
     $latest_remote_commit_sha = $data['object']['sha'];

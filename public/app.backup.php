@@ -112,7 +112,7 @@ ob_start(); ?>
 
     $_GET['client'] = urldecode($_GET['client']);
 
-    $dirs = array_filter(glob(dirname(__DIR__) . '/../../clientele/' . $_GET['client'] . '/*'), 'is_dir');
+    $dirs = array_filter(glob(dirname(__DIR__) . '/../../' . APP_BASE['clients'] . $_GET['client'] . '/*'), 'is_dir');
 
     //if (count($dirs) >= 1) $_GET['domain'] = basename($dirs[array_key_first($dirs)]);
   
@@ -125,7 +125,7 @@ ob_start(); ?>
         <select id="client" name="client" onchange="this.form.submit();">
           <option value="">---</option>
           <?php
-          $dirs = array_filter(glob(dirname(__DIR__) . '/../../clientele/*'), 'is_dir');
+          $dirs = array_filter(glob(dirname(__DIR__) . '/../../' . APP_BASE['clients'] . '*'), 'is_dir');
 
           foreach ($dirs as $dir) { ?>
             <option <?= isset($_GET['client']) && $_GET['client'] == basename($dir) ? 'selected' : '' ?>><?= basename($dir); ?>
@@ -135,7 +135,7 @@ ob_start(); ?>
       </div>
 
       <?php if (!empty($_GET['client'])) {
-        $dirs = array_filter(glob(dirname(__DIR__) . '/../../clientele/' . $_GET['client'] . '/*'), 'is_dir'); ?>
+        $dirs = array_filter(glob(dirname(__DIR__) . '/../../' . APP_BASE['clients'] . $_GET['client'] . '/*'), 'is_dir'); ?>
         <div style="display: inline-block;">
           <label for="domain">Domain:</label>
           <select id="domain" name="domain" onchange="this.form.submit();">
@@ -153,7 +153,7 @@ ob_start(); ?>
 
         /*
         die(var_dump($dirs));
-        (!str_ends_with(APP_PATH, '/clientele/' . $_GET['client'] . '/' . $_GET['domain'] . '/') ?: APP_PATH)
+        (!str_ends_with(APP_PATH, '/' . APP_BASE['clients'] . $_GET['client'] . '/' . $_GET['domain'] . '/') ?: APP_PATH)
         */
 
         ?>
@@ -162,7 +162,7 @@ ob_start(); ?>
           <?= !isset($_GET['domain']) ?: '<input type="hidden" name="domain" value="' . $_GET['domain'] . '" />' ?>
           <div style="padding-left: 50px; text-align: right;">
             <?php
-            $dirs = array_filter(glob(dirname(__DIR__) . '/../../clientele/' . $_GET['client'] . '/' . $_GET['domain'] . '/*'), 'is_dir');
+            $dirs = array_filter(glob(dirname(__DIR__) . '/../../' . APP_BASE['clients'] . $_GET['client'] . '/' . $_GET['domain'] . '/*'), 'is_dir');
             foreach ($dirs as $key => $dir) {
               $dir_key = $key;
               ?>
@@ -171,16 +171,16 @@ ob_start(); ?>
                 style="width: 75%; font-family: 'Avenir', Verdana, sans-serif; font-size: 10px; color: #000; text-align: left; margin-left: 10px;">
                 <tr>
                   <td><input id="folder-<?= $key; ?>" type="checkbox" name="folder[<?= basename($dir) ?>]"
-                      value="<?= basename($dir); ?>" checked="" <?= in_array(basename($dir), ['database', 'vendor', 'var']) ? 'disabled' : '' ?> />&nbsp;<label for="folder-<?= $key; ?>"
+                      value="<?= basename($dir); ?>" checked="" <?= in_array(basename($dir), ['data', 'vendor', 'var']) ? 'disabled' : '' ?> />&nbsp;<label for="folder-<?= $key; ?>"
                       style="color: blue; text-transform: uppercase;" title="<?= $dir; ?>"><?= basename($dir); ?>/</label></td>
                 </tr>
 
                 <?php
                 $dir = basename($dir);
                 //dd($dir);
-                $files = glob(dirname(__DIR__) . '/../../clientele/' . $_GET['client'] . '/' . $_GET['domain'] . '/' . $dir . '/*.php');
+                $files = glob(dirname(__DIR__) . '/../../' . APP_BASE['clients'] . $_GET['client'] . '/' . $_GET['domain'] . '/' . $dir . '/*.php');
                 foreach ($files as $key => $file) {
-                  $b_file = APP_BACKUP_PATH . 'clientele/' . $_GET['client'] . '/' . $_GET['domain'] . '/' . $dir . '/' . basename($file);
+                  $b_file = APP_BACKUP_PATH . APP_BASE['clients'] . $_GET['client'] . '/' . $_GET['domain'] . '/' . $dir . '/' . basename($file);
                   $hash = md5_file($file);
                   ?>
                   <tr>

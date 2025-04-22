@@ -9,8 +9,8 @@ if (__FILE__ == get_required_files()[0] && __FILE__ == realpath($_SERVER["SCRIPT
     die(var_dump("Path was not found. file=$path"));
 
 
-if (!$path = realpath(APP_PATH . 'projects/index.php')) // file_put_contents($path, $_POST['contents']);
-  $errors['project.php'] = "projects/index.php was missing. Using template.\n";
+if (!$path = realpath(APP_PATH . APP_BASE['projects'] . 'index.php')) // file_put_contents($path, $_POST['contents']);
+  $errors['project.php'] = APP_BASE['projects'] . "index.php was missing. Using template.\n";
 
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
   if (isset($_GET['app']) && $_GET['app'] == 'project')
@@ -24,8 +24,7 @@ if (preg_match('/^app\.([\w\-.]+)\.php$/', basename(__FILE__), $matches))
   ${$matches[1]} = $matches[1];
 
 if (false) { ?>
-  <style><?php }
-ob_start(); ?>
+<style><?php } ob_start(); ?>
 #app_project-container {
 position : absolute;
 height : auto;
@@ -119,7 +118,7 @@ ob_start(); ?>
         <span style="background-color: white; color: #DD0000;">Project
           <?= /* (version_compare(NPM_LATEST, NPM_VERSION, '>') != 0 ? 'v'.substr(NPM_LATEST, 0, similar_text(NPM_LATEST, NPM_VERSION)) . '<span class="update" style="color: green; cursor: pointer;">' . substr(NPM_LATEST, similar_text(NPM_LATEST, NPM_VERSION)) . '</span>' : 'v'.NPM_VERSION ); */ NULL; ?></span>
         <span style="background-color: #0078D7; color: white;"><code class="text-sm"
-            style="background-color: white; color: #0078D7;">$ <?= defined('PHP_EXEC') ? 'projects/index.php' : null; ?></code></span>
+            style="background-color: white; color: #0078D7;">$ <?= defined('PHP_EXEC') ? APP_BASE['projects'] . 'index.php' : null; ?></code></span>
       </div>
 
       <div style="display: inline; float: right; text-align: center; color: blue;"><code
@@ -156,7 +155,7 @@ ob_start(); ?>
             <div id="app_project_editor" class="editor"
               style="display: <?= isset($_GET['file']) && isset($_GET['path']) && is_file($_GET['path'] . $_GET['file']) ? 'block' : 'block'; ?>; width: 778px; height: 287px; z-index: 2;"><textarea name="contents" class="ace_text-input" autocomplete="off" autocorrect="off" autocapitalize="off"
                 spellcheck="false" style="opacity: 0; font-size: 1px; height: 1px; width: 1px; top: 28px; left: 86px;"
-                wrap="off" placeholder="hello you&#10;Second line&#10;Third line"><?= htmlsanitize(is_file('projects/index.php') ? file_get_contents('projects/index.php') : '') /*   'clientele/' . $_GET['client'] . '/' . $_GET['domain'] . '/' .  */ ?></textarea>
+                wrap="off" placeholder="hello you&#10;Second line&#10;Third line"><?= htmlsanitize(is_file(APP_BASE['projects'] . 'index.php') ? file_get_contents(APP_BASE['projects'] . 'index.php') : '') /*   APP_BASE['clients'] . $_GET['client'] . '/' . $_GET['domain'] . '/' .  */ ?></textarea>
             </div>
           </div>
         </form>
@@ -234,7 +233,7 @@ ob_start(); ?>
     console.log(globalEditor.getSession().getValue());
 
     $.ajax({
-      url: '<?= basename(__FILE__); ?>?app=project&file=projects/index.php',
+      url: '<?= basename(__FILE__); ?>?path=<?= APP_BASE['projects'] ?>&app=project&file=index.php',
       type: 'POST',
       data: { path: '', contents: globalEditor.getSession().getValue() },
       //dataType: 'json',
@@ -256,7 +255,7 @@ ob_start(); ?>
   <?php $app[$project]['script'] = ob_get_contents();
   ob_end_clean();
 
-  if (false) { ?></s><?php }
+  if (false) { ?></script><?php }
   //header("Cache-Control: no-store, no-cache, must-revalidate, max-age=0");
 //header("Pragma: no-cache");
   ob_start(); ?>
@@ -341,5 +340,5 @@ ob_end_clean();
 //check if file is included or accessed directly
 if (__FILE__ == get_required_files()[0] || in_array(__FILE__, get_required_files()) && isset($_GET['app']) && $_GET['app'] == 'project' && APP_DEBUG)
   Shutdown::setEnabled(false)->setShutdownMessage(function () {
-    return eval ('?>' . file_get_contents('projects/index.php') ?? 'Template Replace'); // -wow */
+    return eval ('?>' . file_get_contents(APP_BASE['projects'] . 'index.php') ?? 'Template Replace'); // -wow */
   })->shutdown(); // exit; ob_start();
