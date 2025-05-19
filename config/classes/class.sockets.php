@@ -1,9 +1,5 @@
 <?php
 
-//if (!in_array(dirname(__DIR__) . DIRECTORY_SEPARATOR . 'constants.php', get_required_files()))
-//  die($errors['CONSTANTS'] = 'Missing config' . DIRECTORY_SEPARATOR . 'constants.php from required files');
-//require_once dirname(__DIR__, 1) . DIRECTORY_SEPARATOR . 'config.php';
-
 // Ensure this file is loaded and php.php is not yet loaded
 require_once dirname(__DIR__, 1) . DIRECTORY_SEPARATOR . 'php.php';
 class SocketException extends Exception
@@ -295,7 +291,7 @@ END
         //(is_resource($process)) and file_put_contents($pidFile, $pid = @proc_get_status($process)['pid']); // Exception
 
         $process = ($psexec = realpath(dirname(__DIR__) . DIRECTORY_SEPARATOR . 'bin/psexec.exe')) ? pclose(popen($psexec . ' -d C:\xampp\php\php.exe -f ' . APP_PATH . 'server.php', "r")) : pclose(popen('php -f ' . APP_PATH . 'server.php', "r"));
-
+        dd('Sockets is trying to start a server process, tell it no!');
         try {
             if (is_resource($process)) {
                 $status = (stripos(PHP_OS, 'WIN') === 0) ?: @proc_get_status($process); // The '@' suppresses any warnings/errors
@@ -365,23 +361,23 @@ if (!isset($_SERVER['SOCKET']) || empty($_SERVER['SOCKET'])) {
                     Sockets::handleWindowsSocketConnection();
                     //error_log("Server is already running with PID $pid\n");
                     //echo "Server is already running with PID $pid\n";
+                    $errors['APP_SOCKET'] = "Server is already running with PID $pid (classes/" . basename(__FILE__) . ")\n";
                     //exit(1);
                 }
             } else {
                 if (!posix_kill($pid, 0)) {
                     Sockets::handleLinuxSocketConnection();
                     //error_log("Server is already running with PID $pid\n");
-                    echo "Server is already running with PID $pid\n";
+                    $errors['APP_SOCKET'] = "Server is already running with PID $pid (classes/" . basename(__FILE__) . ")\n";
+                    //echo "";
                     //exit(1);
                 }
             }
         }
 
-
     } else {
         //die('Socket connection failed.');
-        $errors['APP_SOCKET'] = 'Have you checked your server.php file lately?';
-
+        $errors['APP_SOCKET'] = "Have you checked your server.php file lately?\n";
 
         //if (APP_DEBUG) { 
         //var_dump(trim($errors['APP_SOCKET']));

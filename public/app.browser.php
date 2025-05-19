@@ -136,7 +136,7 @@ z-index : 1;
 input {
 color : black;
 }
-<?php $app[$browser]['style'] = ob_get_contents();
+<?php $app['style'] = ob_get_contents();
 ob_end_clean();
 
 ob_start(); ?>
@@ -166,20 +166,20 @@ ob_start(); ?>
 </div>
 <!-- </div> -->
 
-<?php $app[$browser]['body'] = ob_get_contents();
+<?php $app['body'] = ob_get_contents();
 ob_end_clean();
 
 if (false) { ?>
   <script type="text/javascript"><?php }
 ob_start(); ?>
   // Javascript comment
-  <?php $app[$browser]['script'] = ob_get_contents();
+  <?php $app['script'] = ob_get_contents();
   ob_end_clean();
 
   if (false) { ?></script><?php }
   ob_start(); ?>
 
-<?php $app[$browser]['html'] = ob_get_contents();
+<?php $app['html'] = ob_get_contents();
 ob_end_clean();
 
 is_dir(APP_PATH . APP_BASE['var']) or mkdir(APP_PATH . APP_BASE['var'], 0755);
@@ -292,7 +292,7 @@ html, body { width: 100%; height: 100%; <?= $_SERVER['SCRIPT_FILENAME'] == __FIL
 </head>
 
 <body class="bg-gray-300">
-  <?= $app[$browser]['body']; ?>
+  <?= $app['body']; ?>
 </body>
 <script type="text/javascript" charset="utf-8">
 
@@ -303,12 +303,12 @@ html, body { width: 100%; height: 100%; <?= $_SERVER['SCRIPT_FILENAME'] == __FIL
 </script>
 
 </html>
-<?php $app[$browser]['html'] = ob_get_contents();
+<?php $app['html'] = ob_get_contents();
 ob_end_clean();
 
 //check if file is included or accessed directly
 if (__FILE__ == get_required_files()[0] || in_array(__FILE__, get_required_files()) && isset($_GET['app']) && $_GET['app'] == 'browser' && APP_DEBUG)
-  die($app[$browser]['html']);
+  die($app['html']);
 
 /*
 Shutdown::setEnabled(false)->setShutdownMessage(function () { // use($dom)

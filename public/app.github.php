@@ -209,7 +209,7 @@ z-index : 1;
 input {
 color : black;
 }
-<?php $app[$github]['style'] = ob_get_contents();
+<?php $app['style'] = ob_get_contents();
 ob_end_clean();
 
 ob_start(); ?>
@@ -233,7 +233,7 @@ ob_start(); ?>
 </div>
 <!-- </div> -->
 
-<?php $app[$github]['body'] = ob_get_contents();
+<?php $app['body'] = ob_get_contents();
 ob_end_clean();
 
 if (false) { ?>
@@ -241,14 +241,14 @@ if (false) { ?>
   <?php }
 ob_start(); ?>
   // Javascript comment
-  <?php $app[$github]['script'] = ob_get_contents();
+  <?php $app['script'] = ob_get_contents();
   ob_end_clean();
 
   if (false) { ?></script><?php }
 
   ob_start(); ?>
 
-<?php $app[$github]['html'] = ob_get_contents();
+<?php $app['html'] = ob_get_contents();
 ob_end_clean();
 
 is_dir(APP_PATH . APP_BASE['var']) or mkdir(APP_PATH . APP_BASE['var'], 0755);

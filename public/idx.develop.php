@@ -1,494 +1,254 @@
-<?php
+<?php //if (__FILE__==get_required_files()[0] && __FILE__==realpath($_SERVER["SCRIPT_FILENAME"]))
 
-/**This Program Should be Disabled by default ... for debugging purposes only!**/
-if (isset($_GET['src']) && is_readable($path = $_GET['src']) && filesize($path) > 0) {
+if (dirname(get_required_files()[0]) == getcwd()) {
+  if ($path = basename(dirname(get_required_files()[0])) == 'public') { //
+    if (basename(getcwd())) {
+      // if (is_file($path = realpath('index.php'))) require_once $path;
+      if (is_file($path = realpath('..' . DIRECTORY_SEPARATOR . 'config' . DIRECTORY_SEPARATOR . 'php.php')))
+        require_once $path;
+      else
+        die(var_dump("Path was not found. file=$path"));
 
-  Shutdown::setEnabled(false)->setShutdownMessage(function () use ($path) {
-    highlight_file($path); /* return ''; eval('?>' . $project_code); // -wow */
-  })->shutdown();
-
-}
-/*
-$_SERVER['REQUEST_SCHEME']
-
-DOMAIN
-
-dd(parse_url($_SERVER['REQUEST_URI'], PHP_URL_HOST));
-*/
-
-
-/*
-//use mso\idna_convert;
-
-use phpWhois\Whois;
-
-$whois = new Whois();
-$whois->deepWhois = true;
-
-$query = isset($argv[1]) ? $argv[1] : 'google.com';
-$result = $whois->lookup($query);
-
-$registered = isset($result['regrinfo']['registered']) && $result['regrinfo']['registered'] == 'yes';
-if (!$registered) {
-    echo 'Domain: '.$query.' not registered.'.PHP_EOL;
-} else {
-    if (isset($result['regrinfo']['domain']['expires'])) {
-        echo 'Domain: '.$query.PHP_EOL;
-        echo 'Expired: '.$result['regrinfo']['domain']['expires'].PHP_EOL;
-    } else {
-        echo 'Domain: '.$query.PHP_EOL;
-        echo 'Trying to find expires date...'.PHP_EOL;
-        foreach ($result['rawdata'] as $raw) {
-            if (strpos($raw, 'Expiry Date:') !== false) {
-                echo 'Expired: '.trim(explode(':', $raw)[1]).PHP_EOL;
-            }
-        }
-    }
-}
-dd();
-*/
-
-use phpWhois\Whois;
-/*
-$whois = new Whois(); // Domain lookup / nserver (Domain lookup)
-$query = 'example.com';
-$result = $whois->lookup($query,false);
-*/
-//dd($result);
-
-// composer require ipinfo/ipinfo:^2.2.0 (^3.1+ req. php 8.2.5)
-//use ipinfo\ipinfo\IPinfo; // api / key service
-//--use ipinfo\ipinfo\IPinfoException;
-
-//die(basename(getcwd()) . ' ==' . 'public');
-
-// use Psr\Log\LogLevel;
-
-/* */
-/*
-symfony/
-  console
-  filesystem
-  finder
-  process
-  service-contracts
-  string
-
---deprecation-contracts    vendor/symfony/deprecation-contracts/function.php
---polyfill-ctype           vendor/symfony/polyfill-ctype/bootstrap[?:80].php
---polyfill-intl-grapheme   vendor/symfony/polyfill-intl-grapheme/bootstrap[?:80].php
---polyfill-intl-normalizer vendor/symfony/polyfill-intl-normalizer/bootstrap[?:80].php
---polyfill-mbstring        vendor/symfony/polyfill-mbstring/bootstrap[?:80].php
---polyfill-php73           vendor/symfony/polyfill-php73/bootstrap.php
---polyfill-php80           vendor/symfony/polyfill-php80/bootstrap.php
-
-
-Psr/
---Log/LogLevel   vendor/psr/log/Psr/Log/LogLevel.php
-*/
-
-//composer[config][require][]
-
-//echo getcwd();
-/**/
-if (in_array(APP_PATH . APP_BASE['config'] . 'composer.php', get_required_files())) {
-  if (class_exists('LogLevel'))
-    if (null !== LogLevel::DEBUG) // isset() || 
-      if (defined('LogLevel'))
-        $errors['LogLevel'] = 'Now let\'s use LogLevel... ' . LogLevel::DEBUG . "\n";
-
-  //if ($path = (basename(getcwd()) == 'public'))
-  //? (is_file('public/ui.composer.php') ? 'public/ui.composer.php' : 'ui.composer.php') : (is_file('ui.composer.php') ? 'ui.composer.php' : 'public/ui.composer.php'))
-  //require_once($path); 
-  $additionalPaths = [__DIR__ . DIRECTORY_SEPARATOR . 'ui.php.php', __DIR__ . DIRECTORY_SEPARATOR . 'ui.composer.php']; //require_once('public/ui.composer.php'); 
-  //else die(var_dump($path . ' was not found. file=ui.composer.php'));
-  //dd('wtf');
-}
-
-//dd(__DIR__ . DIRECTORY_SEPARATOR); 
-
-$globPaths = array_filter(glob(__DIR__ . DIRECTORY_SEPARATOR . 'ui.*.php'), 'is_file'); // public/
-
-$paths = array_values(array_unique(array_merge($additionalPaths, $globPaths)));
-
-/*9.4
-do {
-    // Check if $paths is not empty
-    if (!empty($paths)) {
-        // Shift the first path from the array
-        $path = array_shift($paths);
-
-        // Check if the path exists
-        if ($realpath = realpath($path)) {
-            // Require the file
-            require_once($realpath);
-        } else {
-            // Output a message if the file was not found
-            echo basename($path) . ' was not found. file=public/' . basename($path) . PHP_EOL;
-        }
-        
-        dd('finish time: ' . $path, false);
-    }
-    // Unset $paths if it is empty
-    if (empty($paths)) unset($paths);
-} while (isset($paths) && !empty($paths));
-*/
-
-do {
-  // Check if $paths is not empty
-  if (!empty($paths)) {
-    // Shift the first path from the array
-    $path = array_shift($paths);
-
-    // Check if the path exists
-    if ($realpath = realpath($path)) {
-
-      // Define a function to include the file
-//            $requireFile = function($file) /*use ($apps)*/ { global $apps; }; */
-
-      // Include the file using the function
-      $returnedValue = require_once $realpath;
-
-      // Check the type of the returned value
-      if (is_array($returnedValue)) {
-        // The file returned an array
-        if (preg_match('/^.*?\.(\w+)\.php$/', $realpath, $matches))
-          !defined($app_name = 'UI_' . strtoupper($matches[1])) and define($app_name, $returnedValue); // $apps[$matches[1]]
-      } //elseif ($returnedValue !== null) {
-      // The file returned a non-null value
-      //echo 'Returned value: ' . $returnedValue . PHP_EOL;
-      //} else {
-      // The file did not return a value
-      //    echo 'File did not return a value.' . PHP_EOL;
-      //}
-    } else {
-      // Output a message if the file was not found
-      echo basename($path) . ' was not found. file=public/' . basename($path) . PHP_EOL;
+      if ($config = realpath(dirname(__DIR__, 1) . DIRECTORY_SEPARATOR . 'index.php'))
+        require_once $config; // APP_PATH . 'index.php'
     }
   }
-  // Unset $paths if it is empty
-  if (empty($paths))
-    unset($paths);
-} while (isset($paths) && !empty($paths));
+}
 
-/* 9.69 secs
-  while ($path = array_shift($paths)) {
-    if ($path = realpath($path)) {
-      // dd('file:'.basename($path),false);
-      require_once($path);
-    }
-    else dd(basename($path) . ' was not found. file=public/' . basename($path));
-  }
- */
-
-//require_once(__DIR__ . DIRECTORY_SEPARATOR . 'public/ui_complete.php');
-
-//dd('final time: ', true);
-/*
-  // >> This guy makes the visual screwed up!
-  if ($path = (basename(getcwd()) == 'public')
-      ? (is_file('ui.git.php') ? 'ui.git.php' : (is_file('../ui.git.php') ? '../ui.git.php' : (is_file('../config/ui.git.php') ? '../config/ui.git.php' : NULL)))
-      : (is_file('../ui.git.php') ? '../ui.git.php' : (is_file('public/ui.git.php') ? 'public/ui.git.php' : (is_file('config/ui.git.php') ? 'config/ui.git.php' : 'ui.git.php'))))
-    require_once($path); 
-  else die(var_dump($path . ' was not found. file=ui.git.php'));
-
-  if ($path = (basename(getcwd()) == 'public')
-      ? (is_file('ui.npm.php') ? 'ui.npm.php' : (is_file('../ui.npm.php') ? '../ui.npm.php' : (is_file('../config/ui.npm.php') ? '../config/ui.npm.php' : NULL)))
-      : (is_file('../ui.npm.php') ? '../ui.npm.php' : (is_file('public/ui.npm.php') ? 'public/ui.npm.php' : (is_file('config/ui.npm.php') ? 'config/ui.npm.php' : 'ui.npm.php'))))
-    require_once($path); 
-  else die(var_dump($path . ' was not found. file=ui.npm.php'));
-
-  if ($path = (basename(getcwd()) == 'public')
-      ? (is_file('ui.php.php') ? 'ui.php.php' : (is_file('../ui.php.php') ? '../ui.php.php' : (is_file('../config/ui.php.php') ? '../config/ui.php.php' : NULL)))
-      : (is_file('../ui.php.php') ? '../ui.php.php' : (is_file('public/ui.php.php') ? 'public/ui.php.php' : (is_file('config/ui.php.php') ? 'config/ui.php.php' : 'ui.php.php'))))
-    require_once($path); 
-  else die(var_dump($path . ' was not found. file=ui.php.php'));
-
-  
-  if ($path = (basename(getcwd()) == 'public')
-      ? (is_file('ui.ace_editor.php') ? 'ui.ace_editor.php' : (is_file('../ui.ace_editor.php') ? '../ui.ace_editor.php' : (is_file('../config/ui.ace_editor.php') ? '../config/ui.ace_editor.php' : NULL)))
-      : (is_file('../ui.ace_editor.php') ? '../ui.ace_editor.php' : (is_file('public/ui.ace_editor.php') ? 'public/ui.ace_editor.php' : (is_file('config/ui.ace_editor.php') ? 'config/ui.ace_editor.php' : 'ui.ace_editor.php'))))
-    require_once($path); 
-  else die(var_dump($path . ' was not found. file=ui.ace_editor.php'));
-*/
-if (
-  $path = (basename(getcwd()) == 'public')
-  ? (is_file('app.timesheet.php') ? 'app.timesheet.php' : (is_file('../app.timesheet.php') ? '../app.timesheet.php' : (is_file('../config/app.timesheet.php') ? '../config/app.timesheet.php' : 'public/app.timesheet.php')))
-  : (is_file('../app.timesheet.php') ? '../app.timesheet.php' : (is_file('public/app.timesheet.php') ? 'public/app.timesheet.php' : (is_file('config/app.timesheet.php') ? 'config/app.timesheet.php' : 'app.timesheet.php')))
-)
-  require_once($path);
-else
-  die(var_dump($path . ' was not found. file=app.timesheet.php'));
-
-if (
-  $path = (basename(getcwd()) == 'public')
-  ? (is_file('app.browser.php') ? 'app.browser.php' : (is_file('../app.browser.php') ? '../app.browser.php' : (is_file('../config/app.browser.php') ? '../config/app.browser.php' : NULL)))
-  : (is_file('../app.browser.php') ? '../app.browser.php' : (is_file('public/app.browser.php') ? 'public/app.browser.php' : (is_file('config/app.browser.php') ? 'config/app.browser.php' : 'app.browser.php')))
-)
-  require_once($path);
-else
-  die(var_dump($path . ' was not found. file=app.browser.php'));
-
-if (
-  $path = (basename(getcwd()) == 'public')
-  ? (is_file('app.github.php') ? 'app.github.php' : (is_file('../app.github.php') ? '../app.github.php' : (is_file('../config/app.github.php') ? '../config/app.github.php' : NULL)))
-  : (is_file('../app.github.php') ? '../app.github.php' : (is_file('public/app.github.php') ? 'public/app.github.php' : (is_file('config/app.github.php') ? 'config/app.github.php' : 'app.github.php')))
-)
-  require_once($path);
-else
-  die(var_dump($path . ' was not found. file=app.github.php'));
-
-if (
-  $path = (basename(getcwd()) == 'public')
-  ? (is_file('app.packagist.php') ? 'app.packagist.php' : (is_file('../app.packagist.php') ? '../app.packagist.php' : (is_file('../config/app.packagist.php') ? '../config/app.packagist.php' : NULL)))
-  : (is_file('../app.packagist.php') ? '../app.packagist.php' : (is_file('public/app.packagist.php') ? 'public/app.packagist.php' : (is_file('config/app.packagist.php') ? 'config/app.packagist.php' : 'app.packagist.php')))
-)
-  require_once($path);
-else
-  die(var_dump($path . ' was not found. file=app.packagist.php'));
-
-if (
-  $path = (basename(getcwd()) == 'public')
-  ? (is_file('app.whiteboard.php') ? 'app.whiteboard.php' : (is_file('../app.whiteboard.php') ? '../app.whiteboard.php' : (is_file('../config/app.whiteboard.php') ? '../config/app.whiteboard.php' : NULL)))
-  : (is_file('../app.whiteboard.php') ? '../app.whiteboard.php' : (is_file('public/app.whiteboard.php') ? 'public/app.whiteboard.php' : (is_file('config/app.whiteboard.php') ? 'config/app.whiteboard.php' : 'app.whiteboard.php')))
-)
-  require_once($path);
-else
-  die(var_dump($path . ' was not found. file=app.whiteboard.php'));
-
-if (
-  $path = (basename(getcwd()) == 'public')
-  ? (is_file('app.notes.php') ? 'app.notes.php' : (is_file('../app.notes.php') ? '../app.notes.php' : (is_file('../config/app.notes.php') ? '../config/app.notes.php' : NULL)))
-  : (is_file('../app.notes.php') ? '../app.notes.php' : (is_file('public/app.notes.php') ? 'public/app.notes.php' : (is_file('config/app.notes.php') ? 'config/app.notes.php' : 'app.notes.php')))
-)
-  require_once($path);
-else
-  die(var_dump($path . ' was not found. file=app.notes.php'));
-
-if (
-  $path = (basename(getcwd()) == 'public')
-  ? (is_file('app.pong.php') ? 'app.pong.php' : (is_file('../app.pong.php') ? '../app.pong.php' : (is_file('../config/app.pong.php') ? '../config/app.pong.php' : NULL)))
-  : (is_file('../app.pong.php') ? '../app.pong.php' : (is_file('public/app.pong.php') ? 'public/app.pong.php' : (is_file('config/app.pong.php') ? 'config/app.pong.php' : 'app.pong.php')))
-)
-  require_once($path);
-else
-  die(var_dump($path . ' was not found. file=app.pong.php'));
-
-if (
-  $path = (basename(getcwd()) == 'public') // composer_app.php (depend.)
-  ? (is_file('app.backup.php') ? 'app.backup.php' : (is_file('../app.backup.php') ? '../app.backup.php' : (is_file('../config/app.backup.php') ? '../config/app.backup.php' : 'public/app.backup.php')))
-  : (is_file('../app.backup.php') ? '../app.backup.php' : (is_file('public/app.backup.php') ? 'public/app.backup.php' : (is_file('config/app.backup.php') ? 'config/app.backup.php' : 'app.backup.php')))
-)
-  require_once($path);
-else
-  die(var_dump($path . ' was not found. file=app.backup.php'));
-
-if (
-  $path = (basename(getcwd()) == 'public') // composer_app.php (depend.)
-  ? (is_file('app.project.php') ? 'app.project.php' : (is_file('../app.project.php') ? '../app.project.php' : (is_file('../config/app.project.php') ? '../config/app.project.php' : 'public/app.project.php')))
-  : (is_file('../app.project.php') ? '../app.project.php' : (is_file('public/app.project.php') ? 'public/app.project.php' : (is_file('config/app.project.php') ? 'config/app.project.php' : 'app.project.php')))
-)
-  require_once($path);
-else
-  die(var_dump($path . ' was not found. file=app.project.php'));
-
-if (
-  $path = (basename(getcwd()) == 'public') // composer_app.php (depend.)
-  ? (is_file('app.console.php') ? 'app.console.php' : (is_file('../app.console.php') ? '../app.console.php' : (is_file('../config/app.console.php') ? '../config/app.console.php' : 'public/app.console.php')))
-  : (is_file('../app.console.php') ? '../app.console.php' : (is_file('public/app.console.php') ? 'public/app.console.php' : (is_file('config/app.console.php') ? 'config/app.console.php' : 'app.console.php')))
-)
-  require_once($path);
-else
-  die(var_dump($path . ' was not found. file=app.console.php'));
-
-//  header("Content-Type: text/html");
-//  header("Cache-Control: no-store, no-cache, must-revalidate, max-age=0");
-//  header("Pragma: no-cache"); ?>
+if (!headers_sent()) {
+  header("Content-Type: text/html");
+  header("Cache-Control: no-store, no-cache, must-revalidate, max-age=0");
+  header("Expires: Sat, 26 Jul 1997 05:00:00 GMT");
+  header("Pragma: no-cache");
+} ?>
 <!DOCTYPE html>
-<html>
+<html lang="en">
 
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <base
-    href="<?= (!is_array(APP_URL) ? APP_URL : APP_URL_BASE) . (APP_URL_BASE['query'] != '' ? '?' . APP_URL_BASE['query'] : '') . (defined('APP_ENV') && APP_ENV == 'development' ? '#!' : ''); ?>">
-  <!-- link rel="stylesheet" href="//code.jquery.com/ui/1.12.1/themes/smoothness/jquery-ui.css" / -->
 
-  <title>WebPortal</title>
+  <script src="https://d3js.org/d3.v7.min.js"></script>
+
+  <base
+    href="<?= (!is_array(APP_URL) ? APP_URL : APP_URL_BASE) . (preg_match('/^\/(?!\?)$/', $_SERVER['REQUEST_URI'] ?? '') ? '?' : '') . (!defined('APP_DEBUG') ? '#' : '?' . (APP_URL_BASE['query'] != '' ? APP_URL_BASE['query'] : '')) . (defined('APP_ENV') && APP_ENV == 'development' ? '#!' : ''); ?>">
+
+  <title>DASHBOARD</title>
+
   <?php
   // (check_http_status('https://cdn.tailwindcss.com') ? 'https://cdn.tailwindcss.com' : APP_URL . 'resources/js/tailwindcss-3.3.5.js')?
-  is_dir($path = APP_PATH . APP_BASE['resources'] . 'js/') or mkdir($path, 0755, true);
-  if (is_file($path . 'tailwindcss-3.3.5.js')) {
-    if (ceil(abs((strtotime(date('Y-m-d')) - strtotime(date('Y-m-d', strtotime('+5 days', filemtime("{$path}tailwindcss-3.3.5.js"))))) / 86400)) <= 0) {
-      $url = 'https://cdn.tailwindcss.com';
-      $handle = curl_init($url);
-      curl_setopt($handle, CURLOPT_RETURNTRANSFER, true);
-
-      if (!empty($js = curl_exec($handle)))
-        file_put_contents("{$path}tailwindcss-3.3.5.js", $js) or $errors['JS-TAILWIND'] = "$url returned empty.";
-    }
-  } else {
+// <link rel="stylesheet" href="https://code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css">
+// <link rel="stylesheet" href="resources/css/output.css">
+  
+  if (!is_file($path = APP_PATH . APP_BASE['resources'] . 'js' . DIRECTORY_SEPARATOR . 'tailwindcss-3.3.5.js') || ceil(abs((strtotime(date('Y-m-d')) - strtotime(date('Y-m-d', strtotime('+5 days', filemtime($path))))) / 86400)) <= 0) {
     $url = 'https://cdn.tailwindcss.com';
     $handle = curl_init($url);
     curl_setopt($handle, CURLOPT_RETURNTRANSFER, true);
 
     if (!empty($js = curl_exec($handle)))
-      file_put_contents("{$path}tailwindcss-3.3.5.js", $js) or $errors['JS-TAILWIND'] = "$url returned empty.";
+      file_put_contents($path, $js) or $errors['JS-TAILWIND'] = "$url returned empty.";
   }
-  unset($path);
-  ?>
-  <script src="<?= APP_BASE['resources'] . 'js/tailwindcss-3.3.5.js' ?? $url ?>"></script>
+
+  if (is_file($path)) { ?>
+    <script src="<?= 'resources/js/tailwindcss-3.3.5.js' ?? $url ?>"></script><?php }
+  unset($path); ?>
+
   <style type="text/tailwindcss">
-    * {
+    .editor {
+width : 500px;
+height : 200px;
+margin-bottom : 20px;
+}
+* {
+margin : 0;
+padding : 0;
+box-sizing : border-box;
 <?php if (isset($_GET['debug'])) { ?>
-                                  border: 1px dashed #FF0000;
+                border: 1px dashed #FF0000;
 <?php } else { ?> 
-                                  /* border: 1px dashed #FF0000; */
+                /* border: 1px dashed #FF0000; */
 <?php } ?>
-      }
-      body {
-        background-color: #FFF;
-        overflow: hidden;
-      }
-      .row-container { display: flex; width: 100%; height: 100%; flex-direction: column; overflow: hidden; }
-      <?= (defined('UI_GIT') ? UI_GIT['style'] : null); ?>
-      <?= (defined('UI_PHP') ? UI_PHP['style'] : null); /* print(...) */ ?>
-      <?= (defined('UI_COMPOSER') ? UI_COMPOSER['style'] : null); /* (isset($appComposer) ? $appComposer['script'] : null); */ ?>
-      <?= (defined('UI_NPM') ? UI_NPM['style'] : null); ?>
-      <?= (defined('UI_ACE_EDITOR') ? UI_ACE_EDITOR['style'] : null); ?>
+}
+*:focus {
+outline : none;
+}
+body {
+background-color : #FFF;
+overflow-x : hidden;
+font-family : Arial, sans-serif;
+}
+.row-container {
+display : flex;
+width : 100%;
+height : 100%;
+flex-direction : column;
+overflow : hidden;
+}
+.overlay2 {
+position : fixed;
+top : 0;
+left : 0;
+width : 100%;
+height : 100%;
+background-color : rgb(0, 0, 0, 0.5);
+display : flex;
+justify-content : center;
+align-items : center;
+z-index : 10;
+}
+.dialog2 {
+background-color : white;
+padding : 20px;
+border-radius : 5px;
+box-shadow : 0 0 10px rgb(0, 0, 0, 0.1);
+text-align : center;
+resize : both;
+overflow : hidden;
+display : flex;
+flex-direction : column;
+}
 
-      <?= $app['browser']['style']; ?>
-      <?= $app['github']['style']; ?>
-      <?= $app['packagist']['style']; ?>
-      <?= $app['whiteboard']['style']; ?>
-      <?= $app['notes']['style']; ?> 
-      <?= $app['pong']['style']; ?>
+<?= defined('UI_MEDICATION_LOG') ? UI_MEDICATION_LOG['style'] : null; ?>
+<?php
+$ui_styles = '';
+$app_styles = '';
 
-      <?= $app['backup']['style']; ?>
-      <?= $app['console']['style']; ?>
-      <?= $app['timesheet']['style']; ?>
-      <?= $app['project']['style']; ?>
-      .container2 {
-      position: relative;
-      display: inline-block;
-      text-align: center;
-      z-index: 1;
-      }
-      .overlay {
-      position: absolute;
-      top: 25px;
-      left: 10px;
-      width: 150px;
-      height: 225px;
-      background-color: rgba(0, 120, 215, 0.7);
-      color: white;
-      /*font-size: 24px;*/
-      text-align: left;
-      opacity: 0;
-      transition: opacity 0.8s;
-      }
-      .pkg_dir:hover .overlay {
-      opacity: 1;
-      }
-      table {
-      border-collapse: separate;
-      border-spacing: 10px;
-      border-color: #fff;
-      }
-      td, th {
-      padding: 8px;
-      /* text-align: center; */
-      }
-      /* the interesting bit */
-      .label {
-      pointer-events: none;
-      display: flex;
-      align-items: center;
-      }
-      .switch,
-      .input:checked + .label .left,
-      .input:not(:checked) + .label .right {
-      pointer-events: all;
-      cursor: pointer;
-      }
-      /* most of the stuff below is the same as the W3Schools stuff,
-      but modified a bit to reflect changed HTML structure */
-      .input {
-      display: none;
-      }
-      .switch {
-      position: relative;
-      display: inline-block;
-      width: 60px;
-      height: 34px;
-      }
-      .slider {
-      position: absolute;
-      cursor: pointer;
-      top: 0;
-      left: 0;
-      right: 0;
-      bottom: 0;
-      background-color: #ccc;
-      -webkit-transition: 0.4s;
-      transition: 0.4s;
-      }
-      .slider:before {
-      position: absolute;
-      content: "";
-      height: 26px;
-      width: 26px;
-      left: 4px;
-      bottom: 4px;
-      background-color: white;
-      -webkit-transition: 0.4s;
-      transition: 0.4s;
-      }
-      
-      input:checked + .label .slider {
-      background-color: #2196f3;
-      }
-      input:focus + .label .slider {
-      box-shadow: 0 0 1px #2196f3;
-      }
-      input:checked + .label .slider:before {
-      -webkit-transform: translateX(26px);
-      -ms-transform: translateX(26px);
-      transform: translateX(26px);
-      }
-      .slider.round {
-      border-radius: 34px;
-      }
-      .slider.round:before {
-      border-radius: 50%;
-      }
-      /* styling to make it look like your screenshot */
-      .left, .right {
-      margin: 0 .5em;
-      font-weight: bold;
-      text-transform: uppercase;
-      font-family: sans-serif;
-      }
-      .ui-widget-header {
-      cursor: pointer;
-      }
+foreach (UI_APPS as $key => $app) {
+  //dd($key, false);
+  if ($app['type'] === 'ui') {
+    $ui_styles .= $app['style'];
+  } elseif ($app['type'] === 'app') {
+    $app_styles .= $app['style'];
+  }
+}
+
+// Print UI scripts first
+echo $ui_styles;
+
+// Then app scripts
+echo $app_styles; ?>
+
+.container2 {
+position : relative;
+display : inline-block;
+text-align : center;
+z-index : 1;
+}
+.overlay {
+position : absolute;
+top : 25px;
+left : 10px;
+width : 150px;
+height : 225px;
+background-color : rgb(0, 120, 215, 0.7);
+color : white;
+text-align : left;
+opacity : 0;
+transition : opacity 0.8s;
+}
+.pkg_dir:hover .overlay {
+opacity : 1;
+}
+table {
+border-collapse : separate;
+border-spacing : 10px;
+border-color : #fff;
+}
+td, th {
+padding : 8px;
+max-width : 100px;
+}
+.label {
+pointer-events : none;
+display : flex;
+align-items : center;
+}
+.switch, .input:checked + .label .left, .input:not(:checked) + .label .right {
+pointer-events : all;
+cursor : pointer;
+}
+.input {
+display : none;
+}
+.switch {
+position : relative;
+display : inline-block;
+width : 60px;
+height : 34px;
+}
+.slider {
+position : absolute;
+cursor : pointer;
+top : 0;
+left : 0;
+right : 0;
+bottom : 0;
+background-color : #ccc;
+transition : 0.4s;
+}
+.slider:before {
+position : absolute;
+content : "";
+height : 26px;
+width : 26px;
+left : 4px;
+bottom : 4px;
+background-color : white;
+transition : 0.4s;
+}
+input:checked + .label .slider {
+background-color : #2196f3;
+}
+input:focus + .label .slider {
+box-shadow : 0 0 1px #2196f3;
+}
+input:checked + .label .slider:before {
+transform : translateX(26px);
+}
+.slider.round {
+border-radius : 34px;
+}
+.slider.round:before {
+border-radius : 50%;
+}
+.left, .right {
+margin : 0 0.5em;
+font-weight : bold;
+text-transform : uppercase;
+font-family : sans-serif;
+}
+.ui-widget-header {
+cursor : pointer;
+}
     </style>
 </head>
 
 <body>
 
-  <div style="position: relative; width: 100%; height: 100%; z-index: 1; border: 1px solid green;">
+  <div
+    style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; border: 1px solid green;  display: flex; z-index: 1;">
+    <!-- position: relative; width: 100%; height: 100%; z-index: 1; -->
 
+
+
+    <!--
+    <div id="overlay2" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; display: flex; justify-content: center; align-items: center; z-index: 10;">
+      <div id="confirmDialog" class="dialog2" style="position: relative; height: 175px; width: 350px; text-align: center;">
+        <div style="position: absolute; display: block; background-color: #FFFFFF; z-index: 1; right: 0px; float: right; margin-top: -20px;">[<a href="#" onclick="document.getElementById('overlay2').style.display = 'none';">x</a>]</div>
+
+      </div>
+    </div>
+    -->
     <div class="row-container" style="position: absolute; left: 0; top: 0;">
       <?php // https://stackoverflow.com/questions/86428/what-s-the-best-way-to-reload-refresh-an-iframe ?>
       <iframe id="iWindow" src="<?php if (!empty($_GET['client'])) {
-        $path = /*'../../'.*/ 'clientele/' . $_GET['client'] . '/';
-        $dirs = array_filter(glob(dirname(__DIR__) . '/' . $path . '*'), 'is_dir');
+        $path = /*'../../'.*/ DIRECTORY_SEPARATOR . APP_BASE['clients'] . $_GET['client'] . DIRECTORY_SEPARATOR;
+        $dirs = array_filter(glob(dirname(__DIR__) . $path . '*'), 'is_dir');
 
         if (count($dirs) == 1)
           foreach ($dirs as $dir) {
             $dirs[0] = $dirs[array_key_first($dirs)];
-            if (preg_match(DOMAIN_EXP, strtolower(basename($dirs[0])))) {
+            if (preg_match(DOMAIN_EXPR, strtolower(basename($dirs[0])))) {
               $_GET['domain'] = basename($dirs[0]);
               break;
             } else
@@ -496,80 +256,141 @@ else
             continue;
           }
 
-        $dirs = array_filter(glob(dirname(__DIR__) . '/' . $path . '*'), 'is_dir');
+        $dirs = array_filter(glob(dirname(__DIR__) . $path . '*'), 'is_dir');
 
         if (!empty($_GET['domain']))
           foreach ($dirs as $key => $dir) {
             if (basename($dir) == $_GET['domain']) {
-
-
               if (is_dir($dirs[$key] . '/public/'))
                 $path .= basename($dirs[$key]) . '/public/';
               else
                 $path .= basename($dirs[$key]);
               break;
             }
+          } else if (!isset($_GET['domain']) && count($dirs) >= 1) {
+          $path .= basename($_GET['domain'] = array_values($dirs)[0]) . DIRECTORY_SEPARATOR;
+
+          if (is_dir(dirname(__DIR__) . $path . 'public/')) {
+            $path .= 'public/';
           }
-        //else 
-        //exit(header('Location: http://localhost/clientele/' . $_GET['client']));    
+          //die(var_dump($path));
+        } else {
+
+          foreach ($dirs as $dir) {
+            $dirs[0] = $dirs[array_key_first($dirs)];
+            if (preg_match(DOMAIN_EXPR, strtolower(basename($dirs[0])))) {
+              $_GET['domain'] = basename($dirs[0]);
+              break;
+            } else
+              unset($dirs[array_key_first($dirs)]);
+            continue;
+          }
+
+
+          $_GET['domain'] = $_GET['domain'] ?? $_ENV['DEFAULT_DOMAIN'];
+          $path .= basename($_GET['domain'] = array_values($dirs)[0]) . DIRECTORY_SEPARATOR;
+
+          if (is_dir(dirname(__DIR__) . $path . 'public/')) {
+            $path .= 'public/';
+          }
+        }
+        //exit(header('Location: http://localhost/clients/' . $_GET['client']));    
       
         //$path = '?path=' . $path;
       } elseif (!empty($_GET['project'])) {
-        $path = APP_BASE['projects'] . $_GET['project'] . DIRECTORY_SEPARATOR;
-        //$dirs = array_filter(glob(dirname(__DIR__) . DIRECTORY_SEPARATOR . APP_BASE['projects'] . $_GET['project'] . '/*'), 'is_dir');
+        $path = '/' . APP_BASE['projects'] . $_GET['project'] . DIRECTORY_SEPARATOR . (!is_dir(APP_BASE['projects'] . $_GET['project'] . DIRECTORY_SEPARATOR . 'public') ? '' : 'public');
+        //$dirs = array_filter(glob(dirname(__DIR__) . '/' . APP_BASE['projects'] . $_GET['project'] . '/*'), 'is_dir');
       
       } else {
-        $path = '';
+        $path = 'medication_log.php';
       }
-
-      if (empty(APP_URL['query']))
-        echo 'developer.php';
-      else
-        echo $path; // developer.php
-      ?>" style="height: 100%;"></iframe>
+      //if (empty(APP_URL['query'])) echo 'developer.php';
+      //else
+      // developer.php
+      echo $path; ?>" style="height: 100%;"></iframe>
     </div>
-    <?= $app['backup']['body']; ?>
-    <div style="position: relative; margin: 0px auto; width: 100%; border: 1px solid #000;">
+    <?= /* $apps['backup']['body'] */ ''; ?>
+    <div id="app_container"
+      style="position: relative; display: none; margin: 0px auto; width: 100%; border: 1px solid #000; background-image: url('resources/images/wood-top-background.jpg'); background-color: rgba(0, 0, 0, 0.5);">
+
+      <div style="position: absolute; bottom: 55px; text-align: center;" class="text-sm"><a href="#!"
+          onclick="document.getElementById('app_notes-container').style.display='block'; return false;"><img
+            style="text-align: center;" src="resources/images/notes.png"></a><br><a
+          href="?app=ace_editor&amp;path=&amp;file=app.notes.php"
+          style="text-align: center; background-color: rgb(255, 255, 255);">Notes</a></div>
+
+      <div style="position: absolute; bottom: 145px; text-align: center;" class="text-sm"><a href="#!"
+          onclick="document.getElementById('app_ace_editor-container').style.display='block'; return false;"><img
+            style="text-align: center;" src="resources/images/ace_editor.png"></a><br>
+        <a href="?app=ace_editor&amp;path=&amp;file=app.notes.php"
+          style="text-align: center; background-color: rgb(255, 255, 255);">Ace<br />Editor</a>
+      </div>
+
       <div style="position: relative; margin: 0px auto; width: 800px;">
-        <div style="position: absolute; left: -130px; width: 150px; z-index: 3;">
-          <!--form action="#!" method="GET">
-            <?= (isset($_GET['debug']) && !$_GET['debug'] ? '' : '<input type="hidden" name="debug" value / >') ?> 
-                  <input class="input" id="toggle-debug" type="checkbox" onchange="this.form.submit();" <?= (isset($_GET['debug']) || defined('APP_ENV') && APP_ENV == 'development' ? 'checked' : '') ?> / -->
-          <input class="input" id="toggle-debug" type="checkbox" onchange="toggleSwitch(this); return null;"
-            <?= (isset($_GET['debug']) || defined('APP_ENV') && APP_ENV == 'development' ? 'checked' : '') ?> />
-          <label class="label" for="toggle-debug" style="margin-left: -6px;">
-            <div class="switch">
-              <span class="slider round"></span>
-            </div>
-            <div class="right"> <a href="?debug">Debug</a> </div>
-          </label>
-          <!-- /form -->
-        </div>
+        <!-- div style="position: absolute; <?= /* (empty($errors) ? 'display: none;' : '') */ NULL; ?>left: -144px; /*width: 150px;*/ z-index: 3;">TEST</div -->
         <div id="debug-content" class="absolute"
-          style="position: absolute; margin-left: auto; margin-right: auto; left: 0; right: 0; text-align: center; background-color: rgba(255, 255, 255, 0.8); border: 1px solid #000; width: 800px; z-index: 1;">
-          <div style="position: absolute; top: 35px; left: 403px; z-index: 2;">
-            <a href="#" onclick="document.getElementById('app_packagist-container').style.display='block';"><img
-                src="resources/images/packagist_icon.png" width="30" height="34"> Packagist</a>
+          style="position: absolute; display: none; right: 0; text-align: right; background-color: rgba(255, 255, 255, 0.8); border: 1px solid #000; width: 800px; z-index: 10; overflow: visible;">
+          <div style="float: left; display: inline; margin: 5px;">
+            <form style="display: inline;" action="/" method="POST">Stage:
+              <select name="environment" onchange="this.form.submit();">
+                <option value="develop" <?= defined('APP_ENV') && APP_ENV == 'development' ? 'selected' : '' ?>>
+                  Development
+                </option>
+                <option value="product" <?= defined('APP_ENV') && APP_ENV == 'production' ? 'selected' : '' ?>>Production
+                </option>
+                <option value="stage" <?= defined('APP_ENV') && APP_ENV == 'staging' ? 'selected' : '' ?>>Staging
+                </option>
+                <option value="math" <?= defined('APP_ENV') && APP_ENV == 'math' ? 'selected' : '' ?>>Math</option>
+              </select>
+            </form>
           </div>
-          <a href="#" onclick="document.getElementById('app_github-container').style.display='block';"><img
-              src="resources/images/github_icon.png" width="72" height="23"></a> |
-          <a href="#" onclick="document.getElementById('app_git-container').style.display='block';"><img
-              src="resources/images/git_icon.png" width="58" height="24"></a> | <a href="#"
-            onclick="document.getElementById('app_npm-container').style.display='block';"><img
-              src="resources/images/npm_icon.png" width="32" height="32"> Node.js</a>
-          |
-          <a href="#" onclick="document.getElementById('app_php-container').style.display='block';"><img
-              src="resources/images/php_icon.png" width="40" height="27"> PHP
-            <?= (preg_match("#^(\d+\.\d+)#", PHP_VERSION, $match) ? $match[1] : '8.0') ?></a> | <a href="#"
-            onclick="document.getElementById('app_composer-container').style.display='block';"><img
-              src="resources/images/composer_icon.png" width="31" height="40"> Composer</a> |
+
           <a href="#" onclick="document.getElementById('app_ace_editor-container').style.display='block';"><img
-              src="resources/images/ace_editor_icon.png" width="32" height="32"> Editor</a> |
+              src="resources/images/ace_editor_icon.png" width="32" height="32">ACE Editor</a> |
           <a href="#" onclick="document.getElementById('app_tools-container').style.display='block';"><img
               src="resources/images/apps_icon.gif" width="20" height="20"> Tools</a> |
           <a href="#" onclick="document.getElementById('app_timesheet-container').style.display='block';"><img
-              src="resources/images/clock.gif" width="30" height="30"> Clock-In</a>
-          <div style="position: absolute; top: 40px; left: 0; z-index: 1;">
+              src="resources/images/clock.gif" width="30" height="30"> Clock-In</a> |
+          <a href="#" onclick="document.getElementById('app_php-container').style.display='block';"><img
+              src="resources/images/php_icon.png" width="30" height="30"> PHP</a> |
+          <a href="#" onclick="document.getElementById('app_git-container').style.display='block';"><img
+              src="resources/images/git_icon.fw.png" width="18" height="18">Git/ <img
+              src="resources/images/github.fw.png" width="18" height="18">Hub</a>
+
+          <div style="position: relative; margin-left: 10px; right: 6px; float: right; z-index: 1;">
+            <div class="text-sm" style="display: inline-block; margin: 0 auto;">
+              <form class="app_git-push"
+                action="<?= APP_URL . '?' . http_build_query(APP_QUERY + ['app' => 'git']) . (defined('APP_ENV') && APP_ENV == 'development' ? '#!' : '') /* $c_or_p . '=' . (empty($_GET[$c_or_p]) ? '' : $$c_or_p->name) . '&amp;app=git' */ ?>"
+                method="POST">
+                <!-- <input type="hidden"  /> -->
+                <button type="submit" name="cmd" value="push" disabled><img src="resources/images/green_arrow.fw.png"
+                    width="20" height="25" style="cursor: pointer; margin-left: 6px;"
+                    title="This feature is disabled." /><br />Push</button>
+              </form>
+            </div>
+            <div class="text-sm"
+              style="position: relative; display: inline-block; margin: 0 auto; border: 2px dashed #F00;">
+              <div
+                style="position: absolute; display: <?= isset($errors['GIT_UPDATE']) ? 'block' : 'none' ?>; left: 26px; top: 5px; width: 86px; background-color: #0078D7; color: #FFF; z-index: -1; font-variant-caps: all-small-caps;">
+                <span style="background-color: #FFF; color: #0078D7;">&lt;- </span><span
+                  style="background-color: #FFF; color: red; margin-right: 2px;">Click to update&nbsp;</span>
+              </div>
+              <form class="app_git-pull"
+                action="<?= APP_URL . '?' . http_build_query(APP_QUERY + ['app' => 'git']) . (defined('APP_ENV') && APP_ENV == 'development' ? '#!' : '') /* $c_or_p . '=' . (empty($_GET[$c_or_p]) ? '' : $$c_or_p->name) . '&amp;app=git' */ ?>"
+                method="POST">
+                <!-- <input type="hidden"  /> -->
+                <button type="submit" name="cmd" value="pull"><img src="resources/images/red_arrow.fw.png" width="20"
+                    height="25" style="cursor: pointer; margin-left: 4px;" /><br />Pull</button>
+              </form>
+            </div>
+          </div>
+
+
+          <div
+            style="position: absolute; top: 40px; left: -15px; z-index: 1; background-color: white; border: <?= defined('APP_ROOT') && APP_ROOT != '' || isset($_GET['path']) ? '2px dashed red' : '1px solid #000'; ?>;">
+            <div style="display: inline; margin-top: -7px; float: left; "><a
+                style="font-size: 18pt; font-weight: bold; padding: 0 3px;"
+                href="<?= isset($_GET['path']) ? '/' : '/?path' ?>">&#8962; </a></div>
             <?php $path = realpath(APP_ROOT . (isset($_GET['path']) ? DIRECTORY_SEPARATOR . $_GET['path'] : '')) . DIRECTORY_SEPARATOR; // getcwd()
             if (isset($_GET['path'])) { ?>
               <!-- <input type="hidden" name="path" value="<?= $_GET['path']; ?>" /> -->
@@ -578,15 +399,15 @@ else
               //APP_URL_BASE . /*basename(__FILE__) .*/ '?' . http_build_query(APP_QUERY /*+ ['app' => 'ace_editor']*/) . (defined('APP_ENV') && APP_ENV == 'development' ? '#!' : '') 
             
               /* $c_or_p . '=' . (empty($_GET[$c_or_p]) ? '' : $$c_or_p->name) . '&amp;app=composer' */ NULL; ?>
-            <?= '          <button id="displayDirectoryBtn" style="float: left; margin: 2px 5px 0 0;" type="">&#9660;</button> ' . "\n"; ?>
+            <?= "          <button id=\"displayDirectoryBtn\" style=\"margin: 2px 5px 0 0;\" type=\"\">&nbsp;&#9650;</button> \n <a href=\"http://localhost/?path\"><img src=\"resources/images/directory-www.fw.png\" width=\"18\" height=\"10\"></a>"; ?>
             <?php
             $main_cat = '        <form style="display: inline;" autocomplete="off" spellcheck="false" action="" method="GET">/' . "\n"
               . '            <select name="category" onchange="this.form.submit();">' . "\n"
 
-              . '              <option value="" ' . (empty(APP_QUERY) ? 'selected' : '') . '>' . basename(parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH)) . '</option>' . "\n"
-              . '              <option value="application" ' . (isset($_GET['application']) ? 'selected' : '') . ' ' . (realpath(APP_PATH . /*'../../'.*/ 'applications/') ? '' : 'disabled') . '>../applications</option>' . "\n"
-              . '              <option value="client" ' . (isset($_GET['client']) ? 'selected' : '') . '>../clientele</option>' . "\n"
-              . '              <option value="projects" ' . (isset($_GET['project']) && $_GET['project'] || preg_match('/(?:^|&)project(?:[^&]*=)/', $_SERVER['QUERY_STRING']) ? 'selected' : '') . '>../projects</option>' . "\n"
+              . '              <option value="" ' . (empty(APP_QUERY) ? 'selected' : '') . '>' . basename(parse_url($_SERVER['REQUEST_URI'] ?? '', PHP_URL_PATH)) . '</option>' . "\n"
+              . '              <option value="application" ' . (isset($_GET['application']) ? 'selected' : '') . ' ' . (realpath(APP_PATH . /*'../../'.*/ 'applications/') ? '' : 'disabled') . '>applications</option>' . "\n"
+              . '              <option value="client" ' . (isset($_GET['client']) ? 'selected' : '') . '>clients</option>' . "\n"
+              . '              <option value="projects" ' . (isset($_GET['project']) && $_GET['project'] || preg_match('/(?:^|&)project(?:[^&]*=)/', $_SERVER['QUERY_STRING'] ?? '') ? 'selected' : '') . '>projects</option>' . "\n"
               . '              <option value="node_module" ' . (isset($_GET['node_module']) && !$_GET['node_module'] && preg_match('/(?:^|&)node_module(?![^&]*=)/', $_SERVER['QUERY_STRING']) ? 'selected' : '') . '>./node_modules</option>' . "\n"
               . '              <option value="resources" ' . (isset($_GET['path']) && $_GET['path'] == 'resources' ? 'selected' : '') . '>./resources</option>' . "\n"
               . '              <option value="project" ' . (isset($_GET['project']) && !$_GET['project'] && preg_match('/(?:^|&)project(?![^&]*=)/', $_SERVER['QUERY_STRING']) ? 'selected' : '') . '>./project</option>' . "\n"
@@ -598,7 +419,9 @@ else
               if ($_GET['project'] == '' || !empty($_GET['project']))
                 echo $main_cat;
 
-              $links = array_filter(glob(APP_PATH . /*'../../'.*/ 'projects/internal/*'), 'is_dir'); ?>
+              $links = array_filter(glob(APP_PATH . /*'../../'.*/ APP_BASE['projects'] . '*'), 'is_dir');
+              ?>
+
               <form style="display: inline;" autocomplete="off" spellcheck="false" action="" method="GET">
                 <span title="" style="cursor: pointer; margin: 2px 5px 0 0; " onclick="">/
                   <select name="project" style="" onchange="this.form.submit(); return false;">
@@ -606,49 +429,45 @@ else
                     <?php
                     while ($link = array_shift($links)) {
                       $link = basename($link); // Get the directory name from the full path
-                      if (is_dir(APP_PATH . /*'../../'.*/ 'projects/internal/' . $link))
+                      if (is_dir(APP_PATH . /*'../../'.*/ APP_BASE['projects'] . $link))
                         echo '              <option value="' . $link . '" ' . (current($_GET) == $link ? 'selected' : '') . '>' . $link . '</option>' . "\n";
                     } ?>
-                  </select> /
-                </span>
+                  </select> /</span> <a href="#" onclick="document.getElementById('info').style.display = 'block';">+</a>
               </form>
-            <?php } elseif (isset($_GET['client']) /*&& $_GET['client'] != ''*/) {
+
+              <?php
+            } elseif (isset($_GET['client']) /*&& $_GET['client'] != ''*/) {
               if ($_GET['client'] == '')
                 echo $main_cat;
 
-              $links = array_filter(glob(APP_PATH . /*'../../'.*/ 'clientele/*'), 'is_dir');
+              $links = array_filter(glob(APP_PATH . /*'../../'.*/ APP_BASE['clients'] . '*'), 'is_dir');
               /* */
               ?>
               <form style="display: inline;" autocomplete="off" spellcheck="false" action="" method="GET">
                 <span title="" style="cursor: pointer; margin: 2px 5px 0 0; " onclick="">/
                   <select name="client" style="" onchange="this.form.submit(); return false;">
-                    <option value="" style="text-align: center;">--clientele--</option>
+                    <option value="" style="text-align: center;">--clients--</option>
                     <?php
                     while ($link = array_shift($links)) {
                       $link = basename($link); // Get the directory name from the full path
-                      if (is_dir(APP_PATH . /*'../../'.*/ 'clientele/' . $link))
-                        echo '              <option value="' . $link . '" ' . (current($_GET) == $link ? 'selected' : '') . '>' . $link . '</option>' . "\n";
+                      if (is_dir(APP_PATH . /*'../../'.*/ APP_BASE['clients'] . $link))
+                        echo '              <option value="' . $link . '" ' . (current($_GET) == $link || $_GET['client'] == $link ? 'selected' : '') . '>' . $link . '</option>' . "\n";
                     }
                     ?>
-                  </select>/
-                </span>
+                  </select> /</span>
               </form>
-
-
               <?php if (!empty($_GET['client'])) {
-                $dirs = array_filter(glob(dirname(__DIR__) . /*'../../'.*/ '/clientele/' . $_GET['client'] . '/*'), 'is_dir'); ?>
+                $dirs = array_filter(glob(dirname(__DIR__) . /*'../../'.*/ DIRECTORY_SEPARATOR . APP_BASE['clients'] . $_GET['client'] . '/*'), 'is_dir'); ?>
                 <form style="display: inline;" autocomplete="off" spellcheck="false" action="" method="GET">
-                  <?= (isset($_GET['client']) && !$_GET['client'] ? '' : '<input type="hidden" name="client" value="' . $_GET['client'] . '" / >') ?>
-                  <select id="domain" name="domain" onchange="this.form.submit();">
-                    <option value="">---</option>
+                  <?= isset($_GET['client']) && !$_GET['client'] ? '' : '<input type="hidden" name="client" value="' . $_GET['client'] . '" / >' ?><select
+                    id="domain" name="domain" onchange="this.form.submit();">
+                    <option value="" <?= (isset($_GET['domain']) && $_GET['domain'] == '' ? 'selected' : '') ?>>---</option>
                     <?php foreach ($dirs as $dir) { ?>
-                      <option <?= (isset($_GET['domain']) && $_GET['domain'] == basename($dir) ? 'selected' : '') ?>>
+                      <option <?= isset($_GET['domain']) && $_GET['domain'] == basename($dir) ? 'selected' : '' ?>>
                         <?= basename($dir); ?>
                       </option>
                     <?php } ?>
-                  </select>/
-
-
+                  </select> / <a href="#" onclick="document.getElementById('info').style.display = 'block';">+</a>
                 </form>
               <?php } ?>
 
@@ -673,142 +492,154 @@ else
                     echo '              <option value="' . (isset($_GET['path']) ? $_GET['path'] . DIRECTORY_SEPARATOR : '') . basename($dir) . '"' . (isset($_GET['path']) && $_GET['path'] == basename($dir) ? ' selected' : '') . '>' . basename($dir) . '/</option>' . "\n";
                   }
                 ?>
-              </select>/
+              </select> / <a href="#" onclick="document.getElementById('info').style.display = 'block';">+</a>
               </span>
               </form>
 
             <?php } ?>
           </div>
-          <div style="position: absolute; width: 285px; top: 40px; right: -10px; border: 1px solid #000; height: 25px;">
-            <div style="display: inline-block; width: 175px; ">
-              <div id="idleTime" style="display: inline; margin: 7px 5px;"></div>
+          <div
+            style="position: absolute; width: auto; top: 40px; right: -10px; border: 1px dashed green; height: 20px;">
+            <div id="clockTime" style="margin-right: 65px; background-color: rgba(255, 255, 255, 0.5);"></div>
+            <div style="display: inline-block; width: auto; background-color: #FFF;">
+              <div id="idleTime" style="display: inline; margin: 10px 5px;"></div>
               <div>
-                <div id="stats">Idle: [0]&nbsp;&nbsp;<span style="color: black;">00:00:00</span></div>
+                <div id="stats"><!-- Idle: [0]&nbsp;&nbsp;<span style="color: black;">00:00:00</span --></div>
               </div>
             </div>
-            <div style="display: inline-block; width: 100px;">
-              <img id="ts-status-light" style="padding-bottom: 25px; cursor: pointer;"
+            <div style="display: inline-block; width: auto; ">
+              <img id="ts-status-light" style="padding-bottom: 10px; cursor: pointer;"
                 src="resources/images/timesheet-light-Clear-2.gif" width="80" height="30" />
             </div>
+
           </div>
-          <div id="app_tools-container"
-            style="position: absolute; display: none; width: 800px; margin: 0 auto; height: 500px; background-color: rgba(255, 255, 255, 0.9); overflow-x: scroll;">
-            <div style="position: absolute; margin: 80px 45px; text-align: center;" class="text-sm"><a href="#!"
-                onclick="document.getElementById('app_tools-container').style.display='none'; return false;"><img
-                  style="text-align: center;" height="25" width="25"
-                  src="<?= APP_BASE['resources'] . 'images/close-red.gif' ?>" /></a><br /></div>
-            <div style="position: absolute; margin: 100px 75px; text-align: center;" class="text-sm"><a href="#!"
+
+        </div>
+
+        <div id="app_tools-container"
+          style="position: absolute; top: -50%; left: 50%; transform: translate(-50%, -50%); width: 800px; height: 500px; background-color: rgba(255, 255, 255, 0.9); margin-top: 350px; z-index: 5; display: none;">
+          <div style="position: fixed; margin: -5px 45px; text-align: center; z-index: 5;" class="text-sm"><a href="#!"
+              onclick="document.getElementById('app_tools-container').style.display='none'; return false;"><img
+                style="text-align: center; position: fixed;" height="25" width="25"
+                src="<?= APP_BASE['resources'] . 'images/close-red.png' ?>" /></a><br /></div>
+          <div
+            style="position: absolute; overflow-x: scroll; overflow-y: hidden; height: 100%; width: 100%; padding-top: 25px; border: 1px solid #000; ">
+            <div style="position: absolute; margin: 10px 75px; text-align: center;" class="text-sm"><a href="#!"
                 onclick="isFixed = true; show_console(); return false;"><img style="text-align: center;"
                   src="<?= APP_BASE['resources'] . 'images/cli.png' ?>" /></a><br /><a
                 href="?app=ace_editor&path=&file=app.console.php" style="text-align: center;">(CLI)</a></div>
             <!-- 
-              <a href="javascript:window.open('print.html', 'newwindow', 'width=300,height=250')">Print</a>
-              onclick="window.open('app.whiteboard.php', 'newwindow', 'width=300,height=250'); return false;"
-              
-              https://stackoverflow.com/questions/12939928/make-a-link-open-a-new-window-not-tab
-               -->
-            <div style="position: absolute; margin: 100px 165px; text-align: center;" class="text-sm"><a
-                href="app.whiteboard.php" target="_blank"
-                onclick="document.getElementById('app_whiteboard-container').style.display='block'; return false;"><img
+                    <a href="javascript:window.open('print.html', 'newwindow', 'width=300,height=250')">Print</a>
+                    onclick="window.open('app.whiteboard.php', 'newwindow', 'width=300,height=250'); return false;"
+                    
+                    https://stackoverflow.com/questions/12939928/make-a-link-open-a-new-window-not-tab
+                     -->
+            <div style="position: absolute; margin: 10px 165px; text-align: center;" class="text-sm"><a href="#"
+                target="_blank" onclick="toggleIframeUrl('app.whiteboard.php'); return false;"><img
                   style="text-align: center;"
                   src="<?= APP_BASE['resources'] . 'images/whiteboard.png' ?>" /></a><br /><a
                 href="?app=ace_editor&path=&file=app.whiteboard.php" style="text-align: center;">Whiteboard</a></div>
-            <div style="position: absolute; margin: 100px 260px; text-align: center;" class="text-sm"><a href="#!"
+            <div style="position: absolute; margin: 10px 260px; text-align: center;" class="text-sm"><a href="#!"
                 onclick="document.getElementById('app_notes-container').style.display='block'; return false;"><img
                   style="text-align: center;" src="<?= APP_BASE['resources'] . 'images/notes.png' ?>" /></a><br /><a
                 href="?app=ace_editor&path=&file=app.notes.php" style="text-align: center;">Notes</a></div>
-            <div style="position: absolute; margin: 100px 350px; text-align: center;" class="text-sm"><a href="#!"
-                onclick="document.getElementById('app_project-container').style.display='block'; return false;"><img
-                  style="text-align: center;" src="<?= APP_BASE['resources'] . 'images/project.png' ?>" /></a><br /><a
+            <div style="position: absolute; margin: 10px 350px; text-align: center;" class="text-sm">
+              <a href="#!"
+                onclick="document.getElementById('app_project-container').style.display='block'; document.getElementById('toggle-debug').checked = false; toggleSwitch(document.getElementById('toggle-debug')); return false;">
+                <img style="text-align: center;"
+                  src="<?= APP_BASE['resources'] . 'images/project.png' ?>" /></a><br /><a
                 href="?app=ace_editor&path=&file=app.project.php"><span style="text-align: center;">Project</span></a>
             </div>
-            <div style="position: absolute; margin: 100px 0 0 450px ; text-align: center;" class="text-sm"><a href="#!"
-                onclick="document.getElementById('app_debug-container').style.display='block'; return false;"><img
+            <div style="position: absolute; margin: 10px 0 0 450px ; text-align: center;" class="text-sm"><a href="#!"
+                onclick="document.getElementById('app_errors-container').style.display='block'; return false;"><img
                   style="text-align: center;" src="<?= APP_BASE['resources'] . 'images/debug.png' ?>" /><br /><span
                   style="text-align: center;">Debug</span></a></div>
-            <div style="position: absolute; margin: 100px 0 0 540px; text-align: center;" class="text-sm"><a href="#!"
+            <div style="position: absolute; margin: 10px 0 0 540px; text-align: center;" class="text-sm"><a href="#!"
                 onclick="document.getElementById('app_profile-container').style.display='block'; return false;"><img
                   style="text-align: center;" src="<?= APP_BASE['resources'] . 'images/user.png' ?>" /><br /><span
                   style="text-align: center;">Profile</span></a></div>
-            <div style="position: absolute; margin: 100px 0 0 630px; text-align: center;" class="text-sm"><a href="#!"
-                onclick="document.getElementById('app_browser-container').style.display='block'; return false;"><img
-                  style="text-align: center;" src="<?= APP_BASE['resources'] . 'images/browser.png' ?>" /><br /><span
+            <div style="position: absolute; margin: 10px 0 0 630px; text-align: center;" class="text-sm"><a href="#!"
+                onclick="toggleIframeUrl('app.browser.php'); return false;"><img style="text-align: center;"
+                  src="<?= APP_BASE['resources'] . 'images/browser.png' ?>" /><br /><span
                   style="text-align: center;">Browser</span></a></div>
-            <div style="position: absolute; margin: 200px 75px; text-align: center;" class="text-sm"><a href="#!"
+            <div style="position: absolute; margin: 110px 75px; text-align: center;" class="text-sm"><a href="#!"
                 onclick="document.getElementById('app_tools-container').style.display='block'; return false;"><img
                   style="text-align: center;" src="<?= APP_BASE['resources'] . 'images/apps.png' ?>" /><br /><span
                   style="text-align: center;">Apps.</span></a></div>
-            <div style="position: absolute; margin: 200px 170px; text-align: center;" class="text-sm"><a href="#!"
+            <div style="position: absolute; margin: 110px 170px; text-align: center;" class="text-sm"><a href="#!"
                 onclick="document.getElementById('app_calendar-container').style.display='block'; return false;"><img
                   style="text-align: center;" src="<?= APP_BASE['resources'] . 'images/calendar.png' ?>" /><br /><span
                   style="text-align: center;">Calendar</span></a></div>
-            <div
-              style="position: absolute; margin: 190px 240px; padding: 20px 40px; background-color: rgba(255, 255, 255, 0.8);">
+            <div style="position: absolute; margin: 118px 240px; padding: 20px 40px;">
               <form action="#!" method="GET">
                 <?= '            ' . (isset($_GET['project']) && !$_GET['project'] ? '<input type="hidden" name="client" value="" />' : '<input type="hidden" name="project" value="" />') ?>
                 <div style="margin: 0 auto;">
                   <div id="clockTime"></div>
                 </div>
                 <input class="input" id="toggle-project" type="checkbox"
-                  onchange="toggleSwitch(this); this.form.submit();" <?= (isset($_GET['project']) ? 'checked' : '') ?> />
+                  onchange="toggleSwitch(this); this.form.submit();" <?= isset($_GET['project']) ? 'checked' : '' ?> />
                 <label class="label" for="toggle-project" style="margin-left: -6px;">
-                  <div class="left"> Client </div>
-                  <div class="switch"><span class="slider round"></span></div>
-                  <div class="right"> Project </div>
+                  <div class="left" style="background-color: rgba(255, 255, 255, 0.8); text-shadow: 2px 2px;"> Client
+                  </div>
+                  <div class="switch" style="position: relative;"><span class="slider round"></span></div>
+                  <div class="right" style="background-color: rgba(255, 255, 255, 0.8); text-shadow: 2px 2px;"> Project
+                  </div>
                 </label>
               </form>
             </div>
-            <div style="position: absolute; margin: 200px 0 0 540px; text-align: center;" class="text-sm"><a href="#!"
-                onclick="document.getElementById('app_pong-container').style.display='block'; return false;"><img
-                  style="text-align: center;" src="<?= APP_BASE['resources'] . 'images/pong.png' ?>" /><br /><span
-                  style="text-align: center;">Pong</span></a></div>
-            <div style="position: absolute; margin: 200px 0 0 630px; text-align: center;" class="text-sm"><a href="#!"
+            <div style=" position: absolute; margin: 110px 0 0 540px; text-align: center;" class="text-sm"><a href="#!"
+                onclick="toggleIframeUrl('app.pong.php'); return false;"><img style="text-align: center;"
+                  src="<?= APP_BASE['resources'] . 'images/pong.png' ?>" /><br /><span
+                  style="text-align: center;">Pong</span></a>
+            </div>
+            <div style="position: absolute; margin: 110px 0 0 630px; text-align: center;" class="text-sm"><a href="#!"
                 onclick="document.getElementById('app_browser-container').style.display='block'; return false;"><img
                   style="text-align: center;" src="<?= APP_BASE['resources'] . 'images/regexp.png' ?>" /><br /><span
                   style="text-align: center;">RegExp</span></a></div>
-            <div style="position: absolute; margin: 300px 75px; text-align: center;" class="text-sm"><a href="#!"
+            <div style="position: absolute; margin: 210px 75px; text-align: center;" class="text-sm"><a href="#!"
                 onclick="document.getElementById('app_browser-container').style.display='block'; return false;"><img
                   style="text-align: center;" src="<?= APP_BASE['resources'] . 'images/chatgpt.png' ?>" /><br /><span
                   style="text-align: center;">ChatGPT</span></a></div>
-            <div style="position: absolute; margin: 300px 160px; text-align: center;" class="text-sm"><a href="#!"
+            <div style="position: absolute; margin: 210px 160px; text-align: center;" class="text-sm"><a href="#!"
                 onclick="document.getElementById('app_browser-container').style.display='block'; return false;"><img
                   style="text-align: center;"
                   src="<?= APP_BASE['resources'] . 'images/stackoverflow.png' ?>" /><br /><span
                   style="text-align: center;">Stackoverflow</span></a></div>
-            <div style="position: absolute; margin: 300px 260px; text-align: center;" class="text-sm"><a href="#!"
+            <div style="position: absolute; margin: 210px 260px; text-align: center;" class="text-sm"><a href="#!"
                 onclick="document.getElementById('app_browser-container').style.display='block'; return false;"><img
                   style="text-align: center;" src="<?= APP_BASE['resources'] . 'images/validatejs.png' ?>" /><br /><span
                   style="text-align: center;">ValidateJS</span></a></div>
             <!-- https://validator.w3.org/#validate_by_input // -->
-            <div style="position: absolute; margin: 300px 340px; text-align: center;" class="text-sm"><a href="#!"
+            <div style="position: absolute; margin: 210px 340px; text-align: center;" class="text-sm"><a href="#!"
                 onclick="document.getElementById('app_browser-container').style.display='block'; return false;"><img
                   style="text-align: center;" src="<?= APP_BASE['resources'] . 'images/w3c.png' ?>" /><br /><span
                   style="text-align: center;">W3C Validator</span></a></div>
             <!-- https://tailwindcss.com/docs/ // -->
-            <div style="position: absolute; margin: 300px 0 0 445px; text-align: center;" class="text-sm"><a href="#!"
+            <div style="position: absolute; margin: 210px 0 0 445px; text-align: center;" class="text-sm"><a href="#!"
                 onclick="document.getElementById('app_browser-container').style.display='block'; return false;"><img
                   style="text-align: center;"
                   src="<?= APP_BASE['resources'] . 'images/tailwindcss.png' ?>" /><br /><span
                   style="text-align: center;">TailwindCSS<br />Docs</span></a></div>
             <!-- https://www.php.net/docs.php // -->
-            <div style="position: absolute; margin: 300px 0 0 540px; text-align: center;" class="text-sm"><a href="#!"
+            <div style="position: absolute; margin: 210px 0 0 540px; text-align: center;" class="text-sm"><a href="#!"
                 onclick="document.getElementById('app_browser-container').style.display='block'; return false;"><img
                   style="text-align: center;" src="<?= APP_BASE['resources'] . 'images/php.png' ?>" /><br /><span
                   style="text-align: center;">PHP Docs</span></a></div>
             <!-- https://dev.mysql.com/doc/ // -->
-            <div style="position: absolute; margin: 300px 0 0 625px; text-align: center;" class="text-sm"><a href="#!"
+            <div style="position: absolute; margin: 210px 0 0 625px; text-align: center;" class="text-sm"><a href="#!"
                 onclick="document.getElementById('app_browser-container').style.display='block'; return false;"><img
                   style="text-align: center;" src="<?= APP_BASE['resources'] . 'images/mysql.png' ?>" /><br /><span
                   style="text-align: center;">MySQL Docs</span></a></div>
             <div
-              style="position: absolute; top: 400px; left: 65px; width: 80%; margin: 0 auto; height: 15px; border-bottom: 1px solid black; text-align: center; z-index: 0;">
-              <span style="font-size: 20px; background-color: #F3F5F6; padding: 0 20px; z-index: 1;"> USER APPS. </span>
+              style="position: absolute; top: 340px; left: 65px; width: 80%; margin: 0 auto; height: 15px; border-bottom: 1px solid black; text-align: center; z-index: 0;">
+              <span style="font-size: 20px; background-color: #F3F5F6; padding: 0 20px; z-index: 1;"> USER APPS.
+              </span>
             </div>
-            <div style="position: absolute; margin: 430px 75px; text-align: center;" class="text-sm"><a href="#!"
+            <div style="position: absolute; margin: 360px 75px; text-align: center;" class="text-sm"><a href="#!"
                 onclick="document.getElementById('app_install-container').style.display='block'; return false;"><span
                   style="text-align: center;">New App.</span><br /><img style="text-align: center;"
                   src="<?= APP_BASE['resources'] . 'images/install.png' ?>" /></a></div>
-            <div style="position: absolute; margin: 430px 170px; text-align: center;" class="text-sm">
+            <div style="position: absolute; margin: 360px 170px; text-align: center;" class="text-sm">
               <a href="?app=ace_editor&path=&file=app.user-app.php"><span style="text-align: center;">App
                   #1</span></a><br />
               <a href="#!"
@@ -818,9 +649,7 @@ else
             </div>
           </div>
         </div>
-
       </div>
-
 
       <?php /*
 <div id="app_project-container" style="display: none; position: absolute; top: 80px; padding: 20px; margin-left: auto; margin-right: auto; left: 0; right: 0; width: 700px; z-index: 2;">
@@ -835,19 +664,27 @@ else
 </form>
 </div>
 */ ?>
+
       <div style="position: relative;">
-        <?php if (isset($_GET['client']) && $_GET['client'] != '' && isset($_GET['domain']) && $_GET['domain'] != '') { ?>
+        <?php if (isset($_GET['client']) && $_GET['client'] != '') {
+
+          if (!empty(APP_HOST) && APP_HOST != '127.0.0.1' || APP_DOMAIN != 'localhost') {
+            if (check_http_status() && class_exists('Whois')) {
+              $whois = new Whois();
+
+              !defined('APP_WHOIS') and define('APP_WHOIS', $whois->lookup($query = APP_DOMAIN, false));
+            }
+          } ?>
           <div id="app_client-container"
-            style="position: relative; top: 100px; margin: 0 auto; width: 800px; height: 600px; background-color: rgba(255, 255, 255, 0.9); overflow-x: scroll;">
+            style="position: relative; display: <?= (!defined('APP_WHOIS') ? 'none' : 'block') . ';'; ?> top: 100px; margin: 0 auto; width: 800px; height: 600px; background-color: rgba(255, 255, 255, 0.9); overflow-x: scroll;">
             <div style="display: inline;">
               <span style="background-color: #B0B0B0; color: white;">
                 <input type="checkbox" checked /> Preview Domain
               </span>
             </div>
             <div style="display: inline; float: right; text-align: center; ">
-              <code style=" background-color: white; color: #0078D7;">
-                                    <a style="cursor: pointer; font-size: 13px;" onclick="document.getElementById('app_client-container').style.display='none';">[X]</a>
-                                    </code>
+              <code
+                style=" background-color: white; color: #0078D7;"><a style="cursor: pointer; font-size: 13px;" onclick="document.getElementById('app_client-container').style.display='none';">[X]</a></code>
             </div>
             <div style="margin: 0 10px;">
               <div style="display: inline-block; float: left; width: 49%;">
@@ -858,19 +695,14 @@ else
                 $decoded = urldecode($input);
 
                 // Use regex to extract name components
-                if (preg_match('/^\d*-(\w+)[,]\s*(\w+)$/', $decoded, $matches)) {
-                  // $matches[1] contains the last name, $matches[2] contains the first name
-                  $output = $matches[2] . ' ' . $matches[1];
-                } else {
-                  $output = 'Invalid Input';
-                }
+                $output = (preg_match('/^\d*-(\w+)[,]\s*(\w+)$/', $decoded, $matches)) ? "$matches[2] $matches[1]" : 'Invalid Input';
                 ?>
                 Work Status:
                 <select>
                   <?php
                   foreach (['000', '100', '200', '300', '400'] as $key => $status) {
 
-                    $links = array_filter(glob(APP_PATH . /*'../../'.*/ 'clientele/' . $status . '*'), 'is_dir');
+                    $links = array_filter(glob(APP_PATH . /*'../../'.*/ APP_BASE['clients'] . $status . '*'), 'is_dir');
                     $statusCode = $status;
                     $status = ($status == 000) ? "On-call" :
                       (($status == 100) ? "Working" :
@@ -878,11 +710,9 @@ else
                           (($status == 300) ? "Previous" :
                             (($status == 400) ? "Future" : "Unknown"))));
                     ?>
-                    <option><?= $statusCode . ' - ' . $status ?></option>
-                    <?php
-                    $count = 1;
-                  }
-                  ?>
+                    <option><?= "$statusCode - $status" ?></option>
+                    <?php $count = 1;
+                  } ?>
                 </select>
                 <br />
                 Name: <input type="text" value="<?= $output; ?>" /><br />
@@ -892,23 +722,24 @@ else
                 <span style="">
                   Domain:
                   <select>
-                    <option></option>
+                    <option><?= $_GET['domain'] ?? 'example.com' ?></option>
                   </select>
                 </span>
                 <br />
                 <span style="">Add Domain: <input type="text"></span><br />
                 <span>Domain Expiry: <input type="text" value="
-              <?php
-              $result = [];
+<?php
 
-              if (check_http_status()) {
-                $whois = new Whois();
-                $query = 'example.com';
-                $result = $whois->lookup($query, false);
-              }
+    // Get the domain name
+    if (defined('APP_WHOIS') && !empty(APP_WHOIS)) {
+      $result = APP_WHOIS;
+      echo !empty($result) && isset($result['regrinfo']['domain']['expires']) ? $result['regrinfo']['domain']['expires'] : 'Unknown';
+    } else {
+      echo 'Unknown';
+    }
 
-              echo !empty($result) && isset($result['regrinfo']['domain']['expires']) ? $result['regrinfo']['domain']['expires'] : 'Unknown';
-              ?>" style="text-align: right;" /></span><br /><br />
+    echo !empty($result) && isset($result['regrinfo']['domain']['expires']) ? $result['regrinfo']['domain']['expires'] : 'Unknown';
+    ?>" style="text-align: right;" /></span><br /><br />
               </div>
               <div style="clear: both;"></div>
               <div>
@@ -955,9 +786,9 @@ else
 
                           if (!empty($ip_addrs = gethostbynamel($dname['regrinfo']['domain']['name'] = 'example.com')))
                             foreach ($ip_addrs as $ip_addr) {
-                              echo '            <option>' . $ip_addr . '</option>' . "\n";
+                              echo "            <option>$ip_addr</option>\n";
                             } else
-                            echo '            <option></option>' . "\n";
+                            echo "            <option></option>\n";
 
                           ?>
                         </select>
@@ -1096,416 +927,989 @@ else
             </div>
           </div>
         <?php } ?>
-        <?= $app['directory']['body']; ?>
+
+        <?= $apps['directory']['body'] ?? ''; ?>
+
+        <div id="app_whois-container"
+          style="position: absolute; display: none; top: 100px; margin: 0 auto; width: 800px; height: 600px; background-color: rgba(255, 255, 255, 0.9); overflow-x: scroll;">
+          <div style="display: inline;">
+            <span style="background-color: #B0B0B0; color: white;">
+              <input type="checkbox" checked /> Preview Domain
+            </span>
+          </div>
+          <div style="display: inline; float: right; text-align: center; ">
+            <code style=" background-color: white; color: #0078D7;">
+      <a style="cursor: pointer; font-size: 13px;" onclick="document.getElementById('app_notes-container').style.display='none';">[X]</a>
+      </code>
+          </div>
+          <div style="margin: 0 10px;">
+            <div style="display: inline-block; float: left; width: 49%;">
+              <h3>Notes</h3>
+              <textarea style="width: 100%; height: 300px;"></textarea>
+            </div>
+            <div style="display: inline-block; float: right; text-align: right;">
+              <h3>Notes</h3>
+              <textarea style="width: 100%; height: 300px;"></textarea>
+            </div>
+          </div>
+        </div>
       </div>
 
-      <?= $app['timesheet']['body']; ?>
-      <?= $app['browser']['body']; ?>
-      <?= $app['github']['body']; ?>
-      <?= $app['packagist']['body']; ?>
-      <?= $app['whiteboard']['body']; ?>
-      <?= $app['notes']['body']; ?>
-      <!-- https://pong-2.com/ -->
-      <?= $app['pong']['body']; ?>
 
     </div>
-  </div>
-  <!-- /div -->
 
-  <?= (defined('UI_GIT') ? UI_GIT['body'] : null); ?>
-  <?= (defined('UI_PHP') ? UI_PHP['body'] : null); /* print(...) */ ?>
-  <?= (defined('UI_COMPOSER') ? UI_COMPOSER['body'] : null); /* (isset($appComposer) ? $appComposer['script'] : null); */ ?>
-  <?= (defined('UI_NPM') ? UI_NPM['body'] : null); ?>
-  <?= (defined('UI_ACE_EDITOR') ? UI_ACE_EDITOR['body'] : null); ?>
+    <?php
+    $ui_body = '';
+    $app_body = '';
 
-  <?= $app['project']['body']; ?>
+    foreach (UI_APPS as $key => $app) {
+      //dd($key, false);
+      if ($app['type'] === 'ui') {
+        $ui_body .= $app['body'];
+      } elseif ($app['type'] === 'app') {
+        $app_body .= $app['body'];
+      }
+    }
 
-  <?= $app['console']['body']; ?>
-  <!-- https://cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.min.js -->
-  <!-- https://code.jquery.com/jquery-3.7.1.min.js -->
-  <!-- script src="https://code.jquery.com/jquery-3.6.0.min.js" integrity="sha256-/xUj+3OJU5yExlq6GSYGSHk7tPXikynS7ogEvDej/m4=" crossorigin="anonymous"></script -->
-  <?php
-  is_dir($path = APP_PATH . APP_BASE['resources'] . 'js/jquery/') or mkdir($path, 0755, true);
-  if (is_file($path . 'jquery-3.7.1.min.js')) {
-    if (ceil(abs((strtotime(date('Y-m-d')) - strtotime(date('Y-m-d', strtotime('+5 days', filemtime($path . 'jquery-3.7.1.min.js'))))) / 86400)) <= 0) {
+    // Print UI scripts first
+    echo $ui_body;
+
+    // Then app scripts
+    echo $app_body; ?>
+
+    <?= defined('UI_MEDICATION_LOG') ? UI_MEDICATION_LOG['body'] : null; ?>
+
+
+    <!-- /div -->
+
+    <!-- https://cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.min.js -->
+    <!-- https://code.jquery.com/jquery-3.7.1.min.js -->
+    <!-- script src="https://code.jquery.com/jquery-3.6.0.min.js" integrity="sha256-/xUj+3OJU5yExlq6GSYGSHk7tPXikynS7ogEvDej/m4=" crossorigin="anonymous"></script -->
+
+    <?php
+    is_dir($path = APP_PATH . APP_BASE['resources'] . 'js/jquery/') or mkdir($path, 0755, true);
+    if (is_file("{$path}jquery-3.7.1.min.js")) {
+      if (ceil(abs((strtotime(date('Y-m-d')) - strtotime(date('Y-m-d', strtotime('+5 days', filemtime("{$path}jquery-3.7.1.min.js"))))) / 86400)) <= 0) {
+        $url = 'https://code.jquery.com/jquery-3.7.1.min.js';
+        $handle = curl_init($url);
+        curl_setopt($handle, CURLOPT_RETURNTRANSFER, true);
+
+        if (!empty($js = curl_exec($handle)))
+          file_put_contents("{$path}jquery-3.7.1.min.js", $js) or $errors['JS-JQUERY'] = "$url returned empty.";
+      }
+    } else {
       $url = 'https://code.jquery.com/jquery-3.7.1.min.js';
       $handle = curl_init($url);
       curl_setopt($handle, CURLOPT_RETURNTRANSFER, true);
 
       if (!empty($js = curl_exec($handle)))
-        file_put_contents($path . 'jquery-3.7.1.min.js', $js) or $errors['JS-JQUERY'] = $url . ' returned empty.';
+        file_put_contents("{$path}jquery-3.7.1.min.js", $js) or $errors['JS-JQUERY'] = "$url returned empty.";
     }
-  } else {
-    $url = 'https://code.jquery.com/jquery-3.7.1.min.js';
-    $handle = curl_init($url);
-    curl_setopt($handle, CURLOPT_RETURNTRANSFER, true);
+    unset($path);
+    include 'app.debug.php';
+    ?>
 
-    if (!empty($js = curl_exec($handle)))
-      file_put_contents($path . 'jquery-3.7.1.min.js', $js) or $errors['JS-JQUERY'] = $url . ' returned empty.';
-  }
-  unset($path);
-  ?>
-  <div style="position: fixed; top: 0; left: 0; z-index: 1; height: 500px; background-color: #FFF; width: 300px;">
-    <span>Loading Time: <?= round(microtime(true) - APP_START, 3); ?>s</span><br />
-    <span>Environment: <form style="display: inline;" action="" method="POST">
-        <select name="environment" onchange="this.form.submit();">
-          <option value="develop" <?= defined('APP_ENV') && APP_ENV == 'development' ? 'selected' : null ?>>Development
-          </option>
-          <option value="product" <?= defined('APP_ENV') && APP_ENV == 'production' ? 'selected' : null ?>>Production
-          </option>
-          <option value="stage" <?= defined('APP_ENV') && APP_ENV == 'staging' ? 'selected' : '' ?>>Staging</option>
-          <option value="math" <?= defined('APP_ENV') && APP_ENV == 'math' ? 'selected' : null ?>>Math</option>
-        </select>
-      </form></span><br />
-    <span>Domain: <?= APP_DOMAIN; ?></span><br />
-    <span>IP Address: </span><br />
-    <span>App Path: <?= APP_PATH; ?></span><br />
-  </div>
-  <script
-    src="<?= check_http_status('https://code.jquery.com/jquery-3.7.1.min.js') ? 'https://code.jquery.com/jquery-3.7.1.min.js' : APP_BASE['resources'] . 'js/jquery/' . 'jquery-3.7.1.min.js' ?>"></script>
-  <!-- You need to include jQueryUI for the extended easing options. -->
-  <?php /* https://stackoverflow.com/questions/12592279/typeerror-p-easingthis-easing-is-not-a-function */ ?>
-  <!-- script src="//code.jquery.com/jquery-1.12.4.js"></script -->
-  <script src="//code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
-  <!-- Uncaught ReferenceError: jQuery is not defined -->
-  <!-- For Text / Ace Editor -->
-  <!-- <script src="https://unpkg.com/@popperjs/core@2" type="text/javascript" charset="utf-8"></script> -->
-  <?php
-  is_dir($path = APP_PATH . APP_BASE['resources'] . 'js/requirejs/') or mkdir($path, 0755, true);
-  if (is_file($path . 'require-2.3.6.js')) {
-    if (ceil(abs((strtotime(date('Y-m-d')) - strtotime(date('Y-m-d', strtotime('+5 days', filemtime($path . '/require-2.3.6.js'))))) / 86400)) <= 0) {
+    <?php (APP_SELF !== APP_PATH_SERVER) and $socketInstance = Sockets::getInstance(); ?>
+    <div id="toggle-container" style="position: fixed; top: 0; left: 0; z-index: 10; display: flex;">
+      <div id="details-container"
+        style="display: none; width: 245px; background-color: white; border: 1px solid black; padding: 4px;">
+        <div style="float: left;">
+          <h3 style="font-weight: bolder;">
+            <?= !is_file($pid_file = APP_PATH . 'server.pid') ? '' : '(PID=' . (int) file_get_contents(APP_PATH . 'server.pid') . ')' ?>
+            Server
+          </h3>
+        </div>
+        <div style="float: right;">On / Off <input id="check_server_start" type="checkbox" <?= isset($_SERVER['SOCKET']) && is_resource($_SERVER['SOCKET']) ? 'checked="checked"' : '' ?> onclick="validate()" /></div>
+        <div style="clear: both;"></div>
+        <div style="display: inline-block;">$_ENV<br /><a href="">Status</a><br /><a href="">Help</a><br />Error Log
+        </div>
+        <img id="serverStatus"
+          src="/resources/images/server<?= isset($_SERVER['SOCKET']) && is_resource($_SERVER['SOCKET']) ? '-green' : '' ?>.gif"
+          style="float: right;" width="100" height="103">
+        <!--form action="#!" method="GET">
+      <?= isset($_GET['debug']) && !$_GET['debug'] ? '' : '<input type="hidden" name="debug" value / >' ?> 
+
+              <input class="input" id="toggle-debug" type="checkbox" onchange="this.form.submit();" <?= isset($_GET['debug']) || defined('APP_ENV') && APP_ENV == 'development' ? 'checked' : '' ?> / -->
+        <div style="position: relative;">
+          <div style="">&nbsp;&nbsp;&nbsp;&nbsp;<?= APP_NAME ?></div>
+          <!-- /form -->
+        </div>
+        <hr />
+        <a href="?logout=true">Logout</a><br />
+
+        <div id="" style="">
+          <span>Loading Time: <?= round(microtime(true) - APP_START, 3); ?>s</span><br />
+          <span>Environment: <?= PHP_OS; ?></span><br />
+          <span>Domain: <?= APP_DOMAIN; ?></span><br />
+          <span>IP Address: <?= APP_HOST; ?></span><br />
+          <span><?= isset($_GET['client']) ? 'Client: ' . '<a href="?client=' . $_GET['client'] . '">' . $_GET['client'] . '</a>' : (isset($_GET['project']) ? 'Project: ' . '<a href="?project=' . $_GET['project'] . '">' . $_GET['project'] . '</a>' : 'Document Root: ' . $_SERVER['DOCUMENT_ROOT']); ?></span><br />
+          <span>App Path: <?= APP_PATH; ?></span><br />
+          <span>Memory: <em><b
+                style="color: green;"><?= formatSizeUnits(memory_get_usage()) . '</b> @ <b>' . formatSizeUnits(convertToBytes(ini_get('memory_limit'))); ?></b></em></span><br />
+          <span>Source (code): <em
+              style="font-size: 13px;"><?= '[<b>' . formatSizeUnits($total_filesize) . '</b>] <b style="color: red;">' . $total_filesize - 1000000 . '</b>' ?></em></span>
+          <div style="position: relative; display: block;">
+            <div
+              style="position: absolute; display: block; float: right; right: 10px; width: 165px; text-align: right;">
+              <?= ' [(<a style="font-weight: bolder; color: green;" href="#" onclick="document.getElementById(\'app_nodes-container\').style.display = \'block\';">' . $total_include_files . ' loaded</a>) <b>' . $total_files . '</b> files] <br /> [<b style="color: green;">' . $total_include_lines . '</b> @ <b>' . $total_lines . '</b> lines]'; ?>
+            </div>
+          </div><br /><br />
+        </div>
+      </div>
+
+      <div id="toggle-button"
+        style="width: 40px; height: 64px; background-color: white; display: flex; align-items: center; justify-content: center; border: 1px solid black;">
+        <img src="resources/images/pc.png" width="32" data-checked="false"
+          onclick="toggleContainer(this, 'details-container', 'left');" style="cursor: pointer;" />
+      </div>
+
+    </div>
+    <div id="toggle-container"
+      style="position: fixed; display: block; bottom: 0; right: 0; padding: 4px; z-index: 1; text-align: right; border: 1px solid #000; height: auto;">
+
+      <div style="display: inline-block;">
+        <input class="input" id="toggle-debug" type="checkbox" onchange="toggleSwitch(this); return null;"
+          <?= isset($_GET['debug']) || defined('APP_ENV') && APP_ENV == 'development' ? 'checked' : '' ?> />
+        <label class="label" for="toggle-debug" style="margin: 0 auto; padding-top: 10px;">
+          <div class="switch" style="display: inline; z-index: 1;">
+            <span class="slider round"></span>
+          </div>
+        </label>
+      </div>
+
+      <div style="display: inline-block;">
+        <p style="color: #fff; background-color: #0078D7;">Developed by <a href="mailto:barryd.it@gmail.com"
+            style="color: #eee">Barry R. Dick</a><br />
+          <?= APP_NAME ?> (<a href="release-notes-<?= APP_VERSION ?>.html" style="color: #eee;">v<?= APP_VERSION ?></a>)
+        </p>
+      </div>
+
+    </div>
+
+    <div id="adhd_song-container" style="position: fixed; display: none; bottom: 0; right: 0; z-index: 2;">
+      <img src="/resources/reels/code_init.gif" />
+    </div>
+    <!--
+    <div id="ui_ace_editor" class="editor">This is the first editor.</div>
+    <div id="app_project_editor" class="editor">This is the second editor.</div>
+-->
+
+    <script
+      src="<?= check_http_status('https://code.jquery.com/jquery-3.7.1.min.js') ? 'https://code.jquery.com/jquery-3.7.1.min.js' : APP_BASE['resources'] . 'js/jquery/' . 'jquery-3.7.1.min.js' ?>"></script>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-easing/1.4.1/jquery.easing.min.js"></script>
+    <!-- You need to include jQueryUI for the extended easing options. -->
+    <!-- script src="//code.jquery.com/jquery-1.12.4.js"></script -->
+    <?php
+    if (!is_file($path = APP_PATH . APP_BASE['resources'] . 'js/jquery-ui/' . 'jquery-ui-1.12.1.js') || ceil(abs((strtotime(date('Y-m-d')) - strtotime(date('Y-m-d', strtotime('+5 days', filemtime($path))))) / 86400)) <= 0) {
+      if (!realpath($pathdir = dirname($path)))
+        if (!mkdir($pathdir, 0755, true))
+          $errors['DOCS'] = "$pathdir does not exist";
+
+      $url = 'https://code.jquery.com/ui/1.12.1/jquery-ui.min.js';
+      $handle = curl_init($url);
+      curl_setopt($handle, CURLOPT_RETURNTRANSFER, true);
+
+      if (!empty($js = curl_exec($handle)))
+        file_put_contents($path, $js) or $errors['JS-JQUERY-UI'] = "$url returned empty.";
+    } ?>
+
+    <script
+      src="<?= check_http_status('https://code.jquery.com/ui/1.12.1/jquery-ui.min.js') ? 'https://code.jquery.com/ui/1.12.1/jquery-ui.min.js' : APP_BASE['resources'] . 'js/jquery-ui/' . 'jquery-ui-1.12.1.js' ?>"></script>
+    <!-- Uncaught ReferenceError: jQuery is not defined -->
+
+    <!-- <script src="resources/js/ace/src/ace.js" type="text/javascript" charset="utf-8"></script> 
+    <script src="resources/js/ace/src/ext-language_tools.js" type="text/javascript" charset="utf-8"></script> -->
+    <!-- For Text / Ace Editor -->
+    <!-- <script src="https://unpkg.com/@popperjs/core@2" type="text/javascript" charset="utf-8"></script> -->
+
+    <!--
+    <script>
+$(document).ready(function() {
+    var editor = ace.edit("ui_ace_editor");
+    // Rest of your initialization code
+});
+    </script>
+</body>
+</html>
+-->
+    <?php
+
+    // (check_http_status('https://cdn.tailwindcss.com') ? 'https://cdn.tailwindcss.com' : APP_URL . 'resources/js/tailwindcss-3.3.5.js')?
+//!is_dir($path = APP_PATH . APP_BASE['resources'] . 'js/') or mkdir($path, 0755, true);
+    
+    if (!is_file($path = APP_PATH . APP_BASE['resources'] . 'js/requirejs/require.js') || ceil(abs((strtotime(date('Y-m-d')) - strtotime(date('Y-m-d', strtotime('+5 days', filemtime($path))))) / 86400)) <= 0) {
+      !is_dir($path = APP_PATH . APP_BASE['resources'] . 'js/requirejs') or @mkdir($path, 0755, true);
+      !is_dir($path) and $errors['JS-REQUIREJS'] = "JS-REQUIREJS - Failed to create directory: $path";
       $url = 'https://requirejs.org/docs/release/2.3.6/minified/require.js';
       $handle = curl_init($url);
       curl_setopt($handle, CURLOPT_RETURNTRANSFER, true);
 
       if (!empty($js = curl_exec($handle)))
-        file_put_contents($path . 'require-2.3.6.js', $js) or $errors['JS-REQUIREJS'] = $url . ' returned empty.';
+        file_put_contents($path, $js) or $errors['JS-REQUIREJS'] = "$url returned empty.";
     }
-  } else {
-    $url = 'https://requirejs.org/docs/release/2.3.6/minified/require.js';
-    $handle = curl_init($url);
-    curl_setopt($handle, CURLOPT_RETURNTRANSFER, true);
 
-    if (!empty($js = curl_exec($handle)))
-      file_put_contents($path . 'require-2.3.6.js', $js) or $errors['JS-REQUIREJS'] = $url . ' returned empty.';
-  }
-  unset($path);
-  ?>
-  <script src="<?= APP_BASE['resources'] . 'js/requirejs/require-2.3.6.js' ?? $url ?>" type="text/javascript"
-    charset="utf-8"></script>
-  <script src="resources/js/ace/src/ace.js" type="text/javascript" charset="utf-8"></script> <!-- -->
-  <script src="resources/js/ace/src/ext-language_tools.js" type="text/javascript" charset="utf-8"></script>
-  <!-- <script src="https://cdnjs.cloudflare.com/ajax/libs/ace/1.4.12/ext-language_tools.js"></script>
-      <script src="resources/js/ace/src/mode-php.js" type="text/javascript" charset="utf-8"></script>
-      
-      <script src="resources/js/ace/src/theme-dracula.js" type="text/javascript" charset="utf-8"></script> -->
-  <!--   <script src="dist/bundle.js" type="text/javascript" charset="utf-8"></script> -->
-  <!-- End: For Text / Ace Editor -->
-  <!-- <script src="resources/js/jquery/jquery.min.js"></script> -->
-  <?php if (date(/*Y-*/ 'm-d') == /*1928-*/ '08-07' ?? /*2023-*/ '03-30') { ?>
-    <script src="/resources/reels/leave-a-light-on.js" type="text/javascript" charset="utf-8"></script>
-  <?php } elseif (date(/*Y-*/ 'm-d') == /*1976-*/ '03-20' ?? /*2017-*/ '07-20') { ?>
-    <script src="/resources/reels/leave-a-light-on.js" type="text/javascript" charset="utf-8"></script>
-  <?php } else {  // array_rand() can't be empty ?>
-    <script
-      src="<?= !empty($reels = glob(APP_PATH . 'resources/reels/*.js')) ? APP_BASE['resources'] . 'reels/' . basename(array_rand(array_flip(array_filter($reels, 'is_file')), 1)) : ''; /* APP_BASE['resources'] */ ?>"
-      type="text/javascript" charset="utf-8"></script>
-  <?php } ?>
-  <script type="text/javascript" charset="utf-8">
-    function makeDraggable(windowId) {
-      const windowElement = document.getElementById(windowId);
-      const headerElement = windowElement.querySelector('.ui-widget-header');
+    if (!is_file($path)) { ?>
+
+      <script src="<?= APP_BASE['resources']; ?>js/requirejs/require.js" type="text/javascript" charset="utf-8"></script>
+
+      <script>
+        var globalEditor;
+        require.config({
+          baseUrl: window.location.protocol + "//" + window.location.host + window.location.pathname.split("/").slice(0, -1).join("/"),
+          paths: {
+            jquery: 'resources/js/jquery/jquery-3.7.1.min',
+            'jquery-ui': 'resources/js/jquery-ui/jquery-ui-1.12.1',
+            //domReady: 'resources/js/domReady',
+            //bootstrap: 'resources/js/bootstrap/dist/js/bootstrap',
+            ace: 'resources/js/ace/src/ace',
+            'ace/ext-language_tools': 'resources/js/ace/src/ext-language_tools',
+            'ace/mode/javascript': 'resources/js/ace/src/mode-javascript',
+            'ace/mode/html': 'resources/js/ace/src/mode-html',
+            'ace/mode/php': 'resources/js/ace/src/mode-php',
+            'ace/theme/monokai': 'resources/js/ace/src/theme-monokai',
+            'ace/theme/github': 'resources/js/ace/src/theme-github'
+          },
+          shim: {
+            'ace': {
+              deps: ['ace/ext-language_tools'],
+              exports: 'ace'
+            },
+            //'ace/ext-language_tools': ['ace'],
+            'ace/mode/javascript': ['ace'],
+            'ace/mode/html': ['ace'],
+            'ace/mode/php': ['ace'],
+            'ace/theme/monokai': ['ace'],
+            'ace/theme/github': ['ace']
+          }
+        });
+
+        //require(['jquery', 'domReady', 'ace', 'ace/ext-language_tools', 'ace/mode/javascript', 'ace/mode/html', 'ace/theme/monokai', 'ace/theme/github'], function($, domReady, ace) {
+        //    domReady(function() {}
+        //});
+
+        require(['ace', 'ace/ext-language_tools', 'ace/mode/php', 'ace/mode/javascript', 'ace/mode/html', 'ace/theme/monokai', 'ace/theme/github'], function () {
+          if (!ace) {
+            console.error("Ace editor not loaded");
+            return;
+          }
+
+          var editor1 = ace.edit("ui_ace_editor");
+          //var JavaScriptMode = ace.require("ace/mode/javascript").Mode;
+          editor1.setTheme("ace/theme/monokai");
+          editor1.session.setMode("ace/mode/php");
+          editor1.setAutoScrollEditorIntoView(true);
+          editor1.setShowPrintMargin(false);
+          editor1.setOptions({
+            //  resize: "both"
+            enableBasicAutocompletion: true,
+            enableLiveAutocompletion: true,
+            enableSnippets: true
+          });
+
+          var editor2 = ace.edit("app_project_editor");
+          editor2.setTheme("ace/theme/dracula");
+          // (file_ext .js = javascript, .php = php)
+          editor2.session.setMode("ace/mode/php");
+          editor2.setAutoScrollEditorIntoView(true);
+          editor2.setShowPrintMargin(false);
+          editor2.setOptions({
+            //  resize: "both"
+            enableBasicAutocompletion: true,
+            enableLiveAutocompletion: true,
+            enableSnippets: true
+          });
+
+          globalEditor = editor2;
+        }, function (err) {
+          console.error("Error loading Ace modules: ", err.requireModules);
+          console.error(err);
+        });
+      </script>
+      <?php
+    } elseif (is_dir($path = APP_PATH . APP_BASE['resources'] . 'js/ace')) { ?>
+
+      <script src="resources/js/ace/src/ace.js" type="text/javascript" charset="utf-8"></script>
+      <script src="resources/js/ace/src/ext-language_tools.js" type="text/javascript" charset="utf-8"></script>
+
+      <script>
+        var editors = {}; // relative path => [ace instances]
+
+        /*document.addEventListener("DOMContentLoaded", function () {
+         document.querySelectorAll('.editor').forEach(function (el) {
+           const id = el.id;
+           const relPath = el.dataset.filename;
+
+           const editor = ace.edit(id);
+           editor.setTheme("ace/theme/monokai");
+           editor.session.setMode("ace/mode/php");
+           editor.setAutoScrollEditorIntoView(true);
+           editor.setShowPrintMargin(false);
+           editor.setOptions({
+             enableBasicAutocompletion: true,
+             enableLiveAutocompletion: true,
+             enableSnippets: true
+           });
+
+           if (!editors[relPath]) editors[relPath] = [];
+           editors[relPath].push(editor);
+         });
+       });*/
+
+        function openNewEditorWindow(filepath, content = '') {
+          const baseId = 'editor_' + btoa(filepath).replace(/[^a-zA-Z0-9]/g, '_');
+          if (document.getElementById(baseId)) {
+            alert('File is already open.');
+            return;
+          }
+
+          const template = document.getElementById('editor_template');
+          const clone = template.firstElementChild.cloneNode(true);
+          const editorDiv = clone.querySelector('.editor');
+          const label = clone.querySelector('.filename-label');
+
+          clone.id = baseId;
+          editorDiv.id = baseId + '_ace';
+          clone.dataset.filename = filepath;
+          label.textContent = filepath;
+
+          document.body.appendChild(clone);
+
+          // Init ACE Editor
+          const editor = ace.edit(editorDiv.id);
+          editor.setTheme("ace/theme/dracula");
+          editor.session.setMode("ace/mode/php");
+          editor.setValue(content, -1);
+          editor.setOptions({
+            enableBasicAutocompletion: true,
+            enableLiveAutocompletion: true,
+            enableSnippets: true,
+            showPrintMargin: false
+          });
+
+          // Save reference
+          if (!window.editors) window.editors = {};
+          window.editors[filepath] = editor;
+
+          // Make draggable
+          makeDraggable2(clone);
+        }
+
+        /*
+        var globalEditor;
+        var editor1, editor2;
+
+        editor1 = ace.edit("ui_ace_editor");
+        //var JavaScriptMode = ace.require("ace/mode/javascript").Mode;
+        editor1.setTheme("ace/theme/monokai"); // github
+        editor1.session.setMode("ace/mode/php");
+        editor1.setAutoScrollEditorIntoView(true);
+        editor1.setShowPrintMargin(false);
+        editor1.setOptions({
+          //  resize: "both"
+          enableBasicAutocompletion: true,
+          enableLiveAutocompletion: true,
+          enableSnippets: true
+        });
+
+        var editor2 = ace.edit("app_project_editor");
+        editor2.setTheme("ace/theme/dracula");
+        // (file_ext .js = javascript, .php = php)
+        editor2.session.setMode("ace/mode/php");
+        editor2.setAutoScrollEditorIntoView(true);
+        editor2.setShowPrintMargin(false);
+        editor2.setOptions({
+          //  resize: "both"
+          enableBasicAutocompletion: true,
+          enableLiveAutocompletion: true,
+          enableSnippets: true
+        });
+        globalEditor = editor2;
+    */
+      </script>
+
+      <?php
+    }
+    unset($path);
+
+    if (date(/*Y-*/ 'm-d') == /*1928-*/ '08-07' ?? /*2023-*/ '03-30') { ?>
+      <script src="resources/reels/leave-a-light-on.js" type="text/javascript" charset="utf-8"></script>
+    <?php } elseif (date(/*Y-*/ 'm-d') == /*1976-*/ '03-20' ?? /*2017-*/ '07-20') { ?>
+      <script src="resources/reels/leave-a-light-on.js" type="text/javascript" charset="utf-8"></script>
+    <?php } else {  // array_rand() can't be empty ?>
+      <script
+        src="<?= APP_BASE['resources'] . 'reels/code_init.js'; /*kassy frequency something_happened disturbed_-_it_wasnt_me.js adhd_song.js !empty($reels = glob(APP_PATH . 'resources/reels/*.js')) ? APP_BASE['resources'] . 'reels/' . basename(array_rand(array_flip(array_filter($reels, 'is_file')), 1)) : ''; APP_BASE['resources'] */ ?>"
+        type="text/javascript" charset="utf-8"></script>
+    <?php } ?>
+    <script type="text/javascript" charset="utf-8">
 
       let isDragging = false;
-      let offsetX, offsetY;
+      let activeWindow = null;
 
-      headerElement.addEventListener('mousedown', function (event) {
-        // Bring the clicked window to the front
-        document.body.appendChild(windowElement);
-        offsetX = event.clientX - windowElement.getBoundingClientRect().left;
-        offsetY = event.clientY - windowElement.getBoundingClientRect().top;
-        isDragging = true;
-      });
+      function makeDraggable(windowId) {
+        const windowElement = document.getElementById(windowId);
+        const headerElement = windowElement.querySelector('.ui-widget-header');
+        let offsetX, offsetY;
 
-      document.addEventListener('mousemove', function (event) {
-        if (isDragging) {
-          const left = event.clientX - offsetX;
-          const top = event.clientY - offsetY;
-          //windowElement.style.left = `${left}px`;
-          //windowElement.style.top = `${top}px`;
+        headerElement.addEventListener('mousedown', function (event) {
+          if (!isDragging) {
+            // Bring the clicked window to the front
+            document.body.appendChild(windowElement);
+            offsetX = event.clientX - windowElement.getBoundingClientRect().left;
+            offsetY = event.clientY - windowElement.getBoundingClientRect().top;
+            isDragging = true;
+            activeWindow = windowElement;
+          }
+        });
 
-          // Boundary restrictions
-          const maxX = window.innerWidth - windowElement.clientWidth - 100;
-          const maxY = window.innerHeight - windowElement.clientHeight;
+        document.addEventListener('mousemove', function (event) {
+          if (isDragging && activeWindow === windowElement) {
+            const left = event.clientX - offsetX;
+            const top = event.clientY - offsetY;
 
-          windowElement.style.left = `${Math.max(-200, Math.min(left, maxX))}px`;
-          windowElement.style.top = `${Math.max(0, Math.min(top, maxY))}px`;
+            // Boundary restrictions
+            const maxX = window.innerWidth - windowElement.clientWidth; //  - 100
+            const maxY = window.innerHeight - windowElement.clientHeight;
+
+            windowElement.style.left = `${Math.max(0, Math.min(left, maxX))}px`;
+            windowElement.style.top = `${Math.max(0, Math.min(top, maxY))}px`;
+          }
+        });
+
+        document.addEventListener('mouseup', function () {
+          if (activeWindow === windowElement) {
+            isDragging = false;
+            activeWindow = null;
+          }
+        });
+      }
+
+      function makeDraggable2(el) {
+        const header = el.querySelector('.window-header');
+        let offsetX = 0, offsetY = 0, startX = 0, startY = 0;
+
+        header.onmousedown = function (e) {
+          e.preventDefault();
+          startX = e.clientX;
+          startY = e.clientY;
+          document.onmouseup = () => document.onmousemove = document.onmouseup = null;
+          document.onmousemove = function (e) {
+            offsetX = e.clientX - startX;
+            offsetY = e.clientY - startY;
+            el.style.top = (el.offsetTop + offsetY) + "px";
+            el.style.left = (el.offsetLeft + offsetX) + "px";
+            startX = e.clientX;
+            startY = e.clientY;
+          };
+        };
+      }
+
+      //makeDraggable('app_medication_log-container');
+      makeDraggable('app_notes-container');
+      makeDraggable('app_calendar-container');
+      //makeDraggable('app_errors-container');
+      makeDraggable('app_ace_editor-container');
+      makeDraggable('app_composer-container');
+      makeDraggable('app_project-container');
+      makeDraggable('app_git-container');
+      makeDraggable('app_npm-container');
+      makeDraggable('app_php-container');
+      makeDraggable('app_nodes-container');
+      makeDraggable('app_timesheet-container');
+      //makeDraggable('console-settings');
+
+      displayDirectoryBtn.addEventListener('click', () => {
+
+        event.preventDefault();
+        const appDirectoryContainer = document.getElementById('app_directory-container');
+
+        //const styles = window.getComputedStyle(appDirectoryContainer);
+        const displayDirectoryBtn = document.getElementById('displayDirectoryBtn');
+
+        console.log('state : ' + appDirectoryContainer.style.display);
+
+        /**/
+        if (appDirectoryContainer.style.display == 'none') {
+
+          <?php if (isset($_GET['client']) && !$_GET['client'] || isset($_GET['client']) && !$_GET['client'] && isset($_GET['path']) && !$_GET['path']) { ?>
+            if (confirm('Do you wish to display clients?')) {
+              // User clicked OK
+              console.log('User clicked OK');
+              $('#app_directory-container').slideDown("slow", function () {
+                // Animation complete.
+              });
+            } else {
+              // User clicked Cancel
+              console.log('User clicked Cancel');
+
+              $('#app_directory-container').slideUp("slow", function () {
+                // Animation complete.
+              });
+            } <?php } else { ?>
+            $('#app_directory-container').slideDown("slow", function () {
+              // Animation complete.
+            });
+          <?php } ?>
+          console.log('hide');
+          displayDirectoryBtn.innerHTML = '&nbsp;&#9650;';
+        } else {
+
+
+          $('#app_directory-container').slideUp("slow", function () {
+            // Animation complete.
+          });
+
+          displayDirectoryBtn.innerHTML = '&nbsp;&#9660;';
+          console.log('show');
         }
+
+        //show_console();
+
       });
 
-      document.addEventListener('mouseup', function () {
-        isDragging = false;
-      });
-    }
+      function toggleContainer(element /*, targetId, direction = "left", action = "toggle"*/) {
+        /*
+        let isImage = element.tagName === "IMG";
+        let isChecked = isImage ? element.getAttribute("data-checked") === "true" : element.checked;
+   
+        let $target = $("#" + targetId);
+   
+        if (action === "toggle") {
+          if ($target.is(":visible")) {
+            action = "hide";
+          } else {
+            action = "show";
+          }
+        }
+   
+        if (action === "show") {
+          $target.show("slide", { direction: direction }, 1000);
+        } else {
+          $target.hide("slide", { direction: direction }, 1000);
+        }
+   
+        // Toggle checked state if it's an image
+        if (isImage) {
+          element.setAttribute("data-checked", action === "show");
+        }
+        */
 
-    makeDraggable('app_ace_editor-container');
-    makeDraggable('app_composer-container');
-    // makeDraggable('app_project-container');
-    makeDraggable('app_git-container');
-    makeDraggable('app_npm-container');
-    makeDraggable('app_php-container');
+        let isChecked = element.getAttribute("data-checked") === "true";
 
+        if (isChecked) {
+          // Slide out (hide)
+          $("#details-container").animate({ width: "0px" }, 1000, function () {
+            $(this).hide();
+          });
+          $("#toggle-button").animate({ left: "0px" }, 1000);
+        } else {
+          // Slide in (show)
+          $("#details-container").show().animate({ width: "245px" }, 1000);
+          $("#toggle-button").animate({ left: "245px" }, 1000);
+        }
 
-    displayDirectoryBtn.addEventListener('click', () => {
-
-      event.preventDefault();
-      const appDirectoryContainer = document.getElementById('app_directory-container');
-
-      //const styles = window.getComputedStyle(appDirectoryContainer);
-      const displayDirectoryBtn = document.getElementById('displayDirectoryBtn');
-
-      console.log('state : ' + appDirectoryContainer.style.display);
-      if (appDirectoryContainer.style.display == 'none') {
-        $('#app_directory-container').slideDown("slow", function () {
-          // Animation complete.
-        });
-        console.log('hide');
-        displayDirectoryBtn.innerHTML = '&#9650;';
-      } else {
-
-        $('#app_directory-container').slideUp("slow", function () {
-          // Animation complete.
-        });
-
-        displayDirectoryBtn.innerHTML = '&#9660;';
-        console.log('show');
+        // Toggle the checked state
+        element.setAttribute("data-checked", !isChecked);
       }
-      //show_console();
 
-    });
-
-
-
-
-    function toggleSwitch(element) {
-
-      if (element.checked) {
-        // Third option is selected
-        // Add your logic here
-        console.log('checked');
-
-        $('#app_directory-container').slideDown("slow", function () {
-          // Animation complete.
-        });
-
-        $("#debug-content").show("slide", { direction: "left" }, 1000);
-
-        $("#app_backup-container").show("slide", { direction: "right" }, 1000);
-
-      } else {
-        // Third option is not selected
-        // Add your logic here
-        console.log('(not) checked');
-
-        $('#app_directory-container').slideUp("slow", function () {
-          // Animation complete.
-        });
-
-        $("#debug-content").hide("slide", { direction: "left" }, 1000);
-
-        $("#app_backup-container").hide("slide", { direction: "right" }, 1000);
+      /*
+      function toggleSwitch(element, targetId, direction = "left", action = "toggle") {
+        let isImage = element.tagName === "IMG";
+        let isChecked = isImage ? element.getAttribute("data-checked") === "true" : element.checked;
+   
+        let $target = $("#" + targetId);
+   
+        if (action === "toggle") {
+          if ($target.is(":visible")) {
+            action = "hide";
+          } else {
+            action = "show";
+          }
+        }
+   
+        if (action === "show") {
+          $target.show("slide", { direction: direction }, 1000);
+        } else {
+          $target.hide("slide", { direction: direction }, 1000);
+        }
+   
+        // Toggle checked state if it's an image
+        if (isImage) {
+          element.setAttribute("data-checked", action === "show");
+        }
       }
-    }
+   
+      function toggleSwitch(imgElement) {
+        let isChecked = imgElement.getAttribute("data-checked") === "true";
+   
+        if (isChecked) {
+          // Slide out (hide)
+          $("#details-container").animate({ width: "0px" }, 1000, function () {
+            $(this).hide();
+          });
+          $("#toggle-button").animate({ left: "0px" }, 1000);
+        } else {
+          // Slide in (show)
+          $("#details-container").show().animate({ width: "245px" }, 1000);
+          $("#toggle-button").animate({ left: "245px" }, 1000);
+        }
+   
+        // Toggle the checked state
+        imgElement.setAttribute("data-checked", !isChecked);
+      }*/
+      /**/
+      function toggleSwitch(element) {
 
-    $(document).ready(function () {
-      if ($("#app_directory-container").css('display') == 'none') {
-        <?php if (isset($_GET['debug'])) { ?>
+        if (element.checked) {
+          // Third option is selected
+          // Add your logic here
+          console.log('checked');
+
+          //getElementById('hide_notice-container');
+
+          $('#details-container').hide("slide", { direction: "right" }, 1000);
+
+          $('#app_container').slideDown("slow", function () {
+            // Animation complete.
+          });
+
+          <?php if (isset($errors['GIT_UPDATE'])) { ?>
+            $('#hide_notice-container').slideDown("slow", function () {
+              // Animation complete.
+            });
+          <?php } ?>
+
+          $('#app_console-container').slideDown("slow", function () {
+            // Animation complete.
+          });
+
+          <?php if (isset($_GET['client']) && $_GET['client']) {
+          } ?>
           $('#app_directory-container').slideDown("slow", function () {
             // Animation complete.
           });
+
+
+
+          $("#debug-content").css('overflow', 'visible');
+
+          $("#debug-content").show("slide", { direction: "up" }, 1000);
+
+          //$("#app_backup-container").show("slide", { direction: "right" }, 1000);
+
+        } else {
+
+          $('#app_container').slideUp("slow", function () {
+            // Animation complete.
+          });
+
+          $('#details-container').hide("slide", { direction: "left" }, 1000);
+
+          $('#hide_notice-container').slideUp("slow", function () {
+            // Animation complete.
+          });
+
+          $('#app_directory-container').slideUp("slow", function () {
+            // Animation complete.
+          });
+
+          // Third option is not selected
+          // Add your logic here
+          console.log('(not) checked');
+
+          $('#app_console-container').slideUp("slow", function () {
+            // Animation complete.
+          });
+
+          <?= !empty($errors) ? ' show_console();' : 'show_console();' ?>
+
+          $('#requestInput').attr('autofocus', true);
+
+          $("#debug-content").hide("slide", { direction: "up" }, 1000);
+
+          //$("#app_backup-container").hide("slide", { direction: "right" }, 1000);
+        }
+      }
+
+      function toggleIframeUrl(uri_location) {
+        // Uncheck the checkbox
+        document.getElementById('toggle-debug').checked = false;
+
+        toggleSwitch(document.getElementById('toggle-debug'));
+
+        // Set the src attribute of the iframe
+        document.getElementById('iWindow').src = uri_location;
+      }
+
+      $(document).ready(function () {
+
+        <?= (!defined('APP_NO_INTERNET_CONNECTION')) ? '' : 'alert(\'The internet is not connected.\');' ?>
+
+        $("#app_console-container").css('display', 'none');
+
+        <?php if (isset($_GET['path'])) { ?>
+
+          document.getElementById('toggle-debug').checked = true;
+
+          toggleSwitch(document.getElementById('toggle-debug'));
+          /**/
+          $('#app_directory-container').slideDown("slow", function () {
+            // Animation complete.
+          });
+
         <?php } ?>
-      }
-    });
+        if ($("#app_directory-container").css('display') == 'none') {
+          <?php
+          if (!empty(APP_URL['query']) || isset($_GET['debug']) || (defined(APP_DEBUG) && APP_DEBUG)) { ?>
 
-    <?= $app['console']['script']; ?>
+            document.getElementById('toggle-debug').checked = true;
 
-    // Define the function to be executed when "c" key is pressed
+            toggleSwitch(document.getElementById('toggle-debug'));
+            /**/
+            $('#app_directory-container').slideDown("slow", function () {
+              // Animation complete.
+            });
+          <?php } else if (isset($_GET['project'])) { ?>
+              document.getElementById('toggle-debug').checked = true;
+
+              toggleSwitch(document.getElementById('toggle-debug'));
+              /**/
+              $('#app_directory-container').slideDown("slow", function () {
+                // Animation complete.
+              });
+
+          <?php } else if (defined('APP_ROOT') && APP_ROOT != '' && isset($errors['GIT_UPDATE']) && isset($_ENV['DEFAULT_UPDATE_NOTICE']) && $_ENV['DEFAULT_UPDATE_NOTICE'] != true) { //  isset($_GET['client'])  !$_GET['client'] 
+          
+
+            if (isset($_GET['client']) && $_GET['client'] == '') { ?>
+                  document.getElementById('toggle-debug').checked = true;
+
+                  toggleSwitch(document.getElementById('toggle-debug'));
+                  /*
+                            $( '#app_directory-container' ).slideDown( "slow", function() {
+                             // Animation complete.
+                            });
+                  */
+            <?php } else if (isset($_GET['client']) && $_GET['client'] == '') { ?>
+
+                    document.getElementById('toggle-debug').checked = true;
+
+                    toggleSwitch(document.getElementById('toggle-debug'));
+
+            <?php } else { ?>
+
+              <?php if (!isset($_GET['domain'])) { // !$_GET['client'] ?>
+
+                      document.getElementById('toggle-debug').checked = true;
+
+                      toggleSwitch(document.getElementById('toggle-debug'));
+
+              <?php }
+            }
+          } else {
+            if (isset($_GET['client']) && !$_GET['client'] && isset($_GET['path']) || isset($_GET['client']) && !$_GET['client']) { ?>
+                  if (confirm('Do you wish to display clients 200?')) {
+                    // User clicked OK
+                    console.log('User clicked OK');
+                    $('#app_directory-container').slideDown("slow", function () {
+                      // Animation complete.
+                    });
+                  } else {
+                    // User clicked Cancel
+                    console.log('User clicked Cancel');
+                    $('#app_directory-container').slideUp("slow", function () {
+                      // Animation complete.
+                    });
+                  }
+
+              <?php if (!isset($_GET['domain'])) { // !$_GET['client'] ?>
+
+                    document.getElementById('toggle-debug').checked = true;
+
+                    toggleSwitch(document.getElementById('toggle-debug'));
+
+              <?php } else { ?>
+                    /*
+                              document.getElementById('toggle-debug').checked = true;
+ 
+                              toggleSwitch(document.getElementById('toggle-debug'));
+ 
+                              $( '#app_directory-container' ).slideDown( "slow", function() {
+                               // Animation complete.
+                              });
+                    */
+              <?php }
+            } else if (isset($_GET['client']) && $_GET['client'] != '') { ?>
+                    document.getElementById('toggle-debug').checked = false;
 
 
-    document.addEventListener('keydown', function () {
-      // Check if the pressed key is "c" (you can use event.key or event.keyCode)
-      if (event.key === '`' || event.keyCode === 192) // c||67
-        if (document.activeElement !== requestInput) {
-          // Replace the following line with your desired function
-          // If it's currently absolute, change to fixed
-          if (!isFixed)
-            requestInput.focus();
-          event.preventDefault();
-          show_console();
-        } else {
-          document.activeElement = null;
-          return false;
+                    //toggleSwitch(document.getElementById('toggle-debug'));
+
+                    //$( '#app_directory-container' ).slideDown( "slow", function() {
+                    // Animation complete.
+                    //});
+
+            <?php }
+          } ?>
         }
-      else if (event.key === 'c' || event.keyCode === 67) {
-        // Execute your desired function or code here
-        console.log('The "c" key was pressed!');
-        // Replace the above line with the actual code you want to execute
-      }
-      console.log('keyboard shortcut');
-    });
+      });
 
-    // Attach the event listener to the window object
-    window.addEventListener('keydown', function () {
-      // Check the condition before calling the show_console function
-      //if (myDiv.style.position !== 'fixed')
+      <?= $apps['console']['script'] ?? ''; ?>
 
-      if (event.key === '`' || event.keyCode === 192) // c||67
-        if (document.activeElement !== requestInput) {
-          // Replace the following line with your desired function
-          // If it's currently absolute, change to fixed
-          if (!isFixed)
-            requestInput.focus();
-          event.preventDefault();
-          if (isFixed) isFixed = !isFixed;
-          isFixed = false;
-          show_console();
-          return false;
+      // Define the function to be executed when "c" key is pressed
+
+
+      function validate() {
+        var serverStatus = document.getElementById('serverStatus');
+        serverStatus.src = '/resources/images/server-green.gif';
+
+        var remember = document.getElementById('check_server_start');
+        if (remember.checked) {
+          //alert("checked") ;
+          $('#requestInput').val('server start');
+          $('#requestSubmit').click();
         } else {
-          document.activeElement = null;
-          return false;
+          //alert("You didn't check it! Let me check it for you.");
+          $('#requestInput').val('server shutdown -f');
+          $('#requestSubmit').click();
+
         }
-
-
-      console.log('windowEvent');
-
-      var textField = document.getElementById('requestInput');
-
-      // Check if the text field is focused
-      var isFocused = textField === document.activeElement;
-
-      if (document.getElementById('app_console-container').style.position != 'absolute') {
-
-        if (!isFixed) {
-          //requestInput.focus();
-        } else {
-          //show_console();
-        }
-      } else {
-
-
-        if (isFixed) isFixed = !isFixed;
-        isFixed = true;
-
-        if (isFocused) show_console();
       }
-    });
-
-    <?= (defined('UI_GIT') ? UI_GIT['script'] : null); ?>
-    <?= (defined('UI_PHP') ? UI_PHP['script'] : null); /* print(...) */ ?>
-    <?= (defined('UI_COMPOSER') ? UI_COMPOSER['script'] : null); /* (isset($appComposer) ? $appComposer['script'] : null); */ ?>
-    <?= (defined('UI_NPM') ? UI_NPM['script'] : null); ?>
-      <?= /* Defined later! (defined('UI_ACE_EDITOR') ? UI_ACE_EDITOR['script'] : null);*/ NULL; ?>
-
-    <?= $app['browser']['script']; ?>
-
-    <?= $app['github']['script']; ?>
-
-    <?= $app['packagist']['script']; ?>
-      
-      <?= /*$appWhiteboard['script'];*/ NULL; ?>
-      
-      <?= /*$appNotes['script'];*/ NULL; ?>
-
-
-    <?= $app['backup']['script']; ?>
-
-
-    <?= $app['pong']['script']; ?>
-
-    /*
-    require.config({
-    baseUrl: window.location.protocol + "//" + window.location.host
-    + window.location.pathname.split("/").slice(0, -1).join("/"),
-    
-    paths: {
-      jquery: 'resources/js/jquery/jquery.min',
-      domReady: 'resources/js/domReady',
-      bootstrap: 'resources/js/bootstrap/dist/js/bootstrap',
-      ace: 'resources/js/ace/src/ace',
-      'lib/dom': 'resources/js/ace/src/lib/dom',
-      useragent: 'resources/js/ace/src/lib/useragent',
-      exports: 'resources/js/ace/src/lib/',
-      
-      //'../snippets': 'resources/js/ace/lib/ace/snippets',
-      //'./lib/oop': 'resources/js/ace/src/lib'
-    }
-    });
-    */
-
-    var globalEditor; // Define a global variable
-
-    require.config({
-      baseUrl: window.location.protocol + "//" + window.location.host
-        + window.location.pathname.split("/").slice(0, -1).join("/"),
-      paths: {
-        ace: "resources/js/ace/src"
-      }
-    });
-
-    define('testace', ['ace/ace'], function (ace) {
-      //console.log(langtools);
-
-      <?= defined('UI_ACE_EDITOR') ? UI_ACE_EDITOR['script'] : null; ?>
-      //require(["resources/js/requirejs/require-2.3.6!ace/ace"], function(e){
-      //editor.setValue(e);
-      //})
-
-      globalEditor = editor1;
-      return editor;
-    });
-
-    require(['testace'], function (editor) {
-      console.log(editor);
-    });
-
-
-    /*
-      require.config({paths: {ace: "../src"}})
-      define('testace', ['ace/ace'],
-          function(ace, langtools) {
-              console.log("This is the testace module");
-              var editor = ace.edit("editor");
-              editor.setTheme("ace/theme/twilight");
-              editor.session.setMode("ace/mode/javascript");
-              require(["ace/requirejs/text!src/ace"], function(e){
-                  editor.setValue(e);
-              })
+      document.addEventListener('keydown', function () {
+        // Check if the pressed key is "c" (you can use event.key or event.keyCode)
+        if (event.key === '`' || event.keyCode === 192) // c||67
+          if (document.activeElement !== requestInput) {
+            // Replace the following line with your desired function
+            // If it's currently absolute, change to fixed
+            if (!isFixed)
+              requestInput.focus();
+            event.preventDefault();
+            show_console();
+          } else {
+            document.activeElement = null;
+            return false;
           }
-      );
-      require(['testace'])
-    
-    require(['jquery', 'domReady', 'bootstrap', 'ace', 'lib/dom', 'useragent'], function($, domReady) {
-    console.log('domReady is working ... ');
-    // Code that uses 'lib/dom'
-    });
-    */
-    // ,'lib/dom', '../snippets', './lib/oop'
-    /*
-    require(['jquery','domReady','bootstrap','ace/ace'], function($, domReady) {
-      domReady(function () {
-    
-    console.log(require.config);
-    console.log('domReady is working ... ');
-    
-      })
-    });
-    */
+        else if (event.key === 'c' || event.keyCode === 67) {
+          // Execute your desired function or code here
+          console.log('The "c" key was pressed!');
+          // Replace the above line with the actual code you want to execute
+        }
+        console.log('keyboard shortcut');
+      });
 
-    <?= $app['timesheet']['script']; ?>
+      // Attach the event listener to the window object
+      window.addEventListener('keydown', function () {
+        // Check the condition before calling the show_console function
+        //if (myDiv.style.position !== 'fixed')
 
-    <?= $app['project']['script']; ?>
+        if (event.key === '`' || event.keyCode === 192) // c||67
+          if (document.activeElement !== requestInput) {
+            // Replace the following line with your desired function
+            // If it's currently absolute, change to fixed
+            if (!isFixed)
+              requestInput.focus();
+            event.preventDefault();
+            if (isFixed) isFixed = !isFixed;
+            isFixed = false;
+            show_console();
+            return false;
+          } else {
+            document.activeElement = null;
+            return false;
+          }
 
-  </script>
+
+        console.log('windowEvent');
+
+        var textField = document.getElementById('requestInput');
+
+        // Check if the text field is focused
+        var isFocused = textField === document.activeElement;
+
+        if (document.getElementById('app_console-container').style.position != 'absolute') {
+
+          if (!isFixed) {
+            //requestInput.focus();
+          } else {
+            //show_console();
+          }
+        } else {
+
+
+          if (isFixed) isFixed = !isFixed;
+          isFixed = true;
+
+          if (isFocused) show_console();
+        }
+      });
+
+      <?php
+      $ui_script = '';
+      $app_script = '';
+
+      foreach (UI_APPS as $key => $app) {
+        //dd($key, false);
+        if ($key == 'whiteboard')
+          continue;
+        if ($app['type'] === 'ui') {
+          $ui_script .= $app['script'];
+        } elseif ($app['type'] === 'app') {
+          $app_script .= $app['script'];
+        }
+      }
+
+      // Print UI scripts first
+      echo $ui_script;
+
+      // Then app scripts
+      echo $app_script; ?>
+      <?php
+      //defined('UI_NOTES') && isset(UI_NOTES['script']) ? UI_NOTES['script'] : ''; 
+      /* <?= UI_NOTES['script'] ?? '' ?> */
+      ?>
+
+
+      /*
+      require.config({
+      baseUrl: window.location.protocol + "//" + window.location.host
+      + window.location.pathname.split("/").slice(0, -1).join("/"),
+      
+      paths: {
+        jquery: 'resources/js/jquery/jquery.min',
+        domReady: 'resources/js/domReady',
+        bootstrap: 'resources/js/bootstrap/dist/js/bootstrap',
+        ace: 'resources/js/ace/src/ace',
+        'lib/dom': 'resources/js/ace/src/lib/dom',
+        useragent: 'resources/js/ace/src/lib/useragent',
+        exports: 'resources/js/ace/src/lib/',
+        
+        //'../snippets': 'resources/js/ace/lib/ace/snippets',
+        //'./lib/oop': 'resources/js/ace/src/lib'
+      }
+      });
+      */
+      <?php
+      if (isset($apps['timesheet']['script']))
+        echo $apps['timesheet']['script'];
+
+      if (isset($apps['project']['script']))
+        echo $apps['project']['script']; ?>
+
+
+      function showConfirm(message) {
+        document.getElementById('confirmMessage').textContent = message;
+        document.getElementById('overlay2').style.display = 'flex';
+      }
+
+      function confirmAction(isConfirmed) {
+        document.getElementById('overlay2').style.display = 'none';
+        if (isConfirmed) {
+          alert('Confirmed!');
+        } else {
+          alert('Cancelled!');
+        }
+      }
+    </script>
 </body>
 
 </html>

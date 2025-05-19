@@ -1,9 +1,24 @@
 <?php
 //die(getcwd());
 
+!defined('APP_PATH') and define('APP_PATH', dirname(__DIR__) . DIRECTORY_SEPARATOR);
+
 require_once 'functions.php';
+
+if (isset($_ENV['PHP']['EXEC']) && $_ENV['PHP']['EXEC'] != '' && !defined('PHP_EXEC'))
+    switch (PHP_BINARY) {
+        case $_ENV['PHP']['EXEC']: // isset issue
+            define('PHP_EXEC', PHP_BINARY);
+            break;
+        default:
+            define('PHP_EXEC', $_ENV['PHP']['EXEC'] ?? stripos(PHP_OS, 'LIN') === 0 ? '/usr/bin/php' : dirname(__DIR__) . DIRECTORY_SEPARATOR . 'bin/psexec.exe -d C:\xampp\php\php.exe -f ');
+            break;
+    }
+
+if (!defined('PHP_EXEC'))
+    define('PHP_EXEC', stripos(PHP_OS, 'LIN') === 0 ? '/usr/bin/php' : dirname(__DIR__) . DIRECTORY_SEPARATOR . 'bin/psexec.exe -d C:\xampp\php\php.exe -f ');
+
 require_once 'config.php';
-require_once 'constants.php';
 
 if (__FILE__ == get_required_files()[0] && __FILE__ == realpath($_SERVER["SCRIPT_FILENAME"]))
     if ($path = basename(dirname(get_required_files()[0])) == 'public') { // (basename(getcwd())
@@ -17,20 +32,11 @@ if (__FILE__ == get_required_files()[0] && __FILE__ == realpath($_SERVER["SCRIPT
 else
     require_once APP_PATH . 'bootstrap.php';
 
-if (isset($_ENV['COMPOSER']['PHP_EXEC']) && $_ENV['COMPOSER']['PHP_EXEC'] != '' && !defined('PHP_EXEC'))
-    switch (PHP_BINARY) {
-        case $_ENV['COMPOSER']['PHP_EXEC']: // isset issue
-            define('PHP_EXEC', PHP_BINARY);
-            break;
-        default:
-            define('PHP_EXEC', $_ENV['COMPOSER']['PHP_EXEC'] ?? stripos(PHP_OS, 'LIN') === 0 ? '/usr/bin/php' : dirname(__DIR__) . DIRECTORY_SEPARATOR . 'bin/psexec.exe -d C:\xampp\php\php.exe -f ');
-            break;
-    }
-
-if (!defined('PHP_EXEC'))
-    define('PHP_EXEC', stripos(PHP_OS, 'LIN') === 0 ? '/usr/bin/php' : dirname(__DIR__) . DIRECTORY_SEPARATOR . 'bin/psexec.exe -d C:\xampp\php\php.exe -f ');
 
 require_once 'constants.php';
+
+
+//require_once 'constants.php';
 
 //define('APP_SELF', __FILE__);
 
@@ -304,4 +310,4 @@ require_once 'python.php';
 //dd(APP_ROOT, false);
 
 //dd($_SERVER);
-//define('PHP_EXEC', $_ENV['COMPOSER']['PHP_EXEC'] ?? '/usr/bin/php'); // const PHP_EXEC = 'string only/non-block/ternary';
+//define('PHP_EXEC', $_ENV['PHP']['EXEC'] ?? '/usr/bin/php'); // const PHP_EXEC = 'string only/non-block/ternary';

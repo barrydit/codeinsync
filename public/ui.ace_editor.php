@@ -192,6 +192,19 @@ ob_end_clean();
 
 ob_start(); ?>
 
+<!-- Template Editor Window -->
+<div id="editor_template" style="display: none;">
+  <div class="editor-window"
+    style="position: fixed; top: 100px; left: 100px; width: 600px; height: 400px; resize: both; overflow: hidden; border: 1px solid #333; background: #111; z-index: 3;"
+    data-filename="">
+    <div class="window-header" style="background: #222; color: #fff; padding: 5px; cursor: move;">
+      <span class="filename-label">Untitled</span>
+      <button onclick="this.closest('.editor-window').remove()" style="float: right;">✖</button>
+    </div>
+    <div class="editor" style="width: 100%; height: calc(100% - 30px);"></div>
+  </div>
+</div>
+
 <div id="app_ace_editor-container"
   class="<?= __FILE__ == get_required_files()[0] || (isset($_GET['app']) && $_GET['app'] == 'ace_editor') && !isset($_GET['path']) ? 'selected' : '' ?>"
   style="position: fixed; display: <?= __FILE__ == get_required_files()[0] || (isset($_GET['app']) && $_GET['app'] == 'ace_editor') ? 'block' : 'none' ?>; resize: both; overflow: hidden;">
@@ -532,6 +545,7 @@ ob_start();
     var appEditor = ace.edit("ui_ace_editor");
     var aceContent = appEditor.getValue(); // Get the content from Ace Editor
     document.getElementById('ace_contents').value = aceContent; // Set it to the hidden textarea
+    console.log('Ace Editor content synced to textarea:');
   }
 
   // Function to update the textarea before form submission

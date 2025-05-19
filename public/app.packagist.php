@@ -1,5 +1,82 @@
 <?php
 
+
+
+$packagistUrl = 'https://packagist.org/';
+$cacheFile = APP_PATH . APP_BASE['var'] . 'packagist.org.html';
+$cacheDir = APP_PATH . APP_BASE['var'];
+
+// Ensure cache directory exists
+if (!is_dir($cacheDir)) {
+  mkdir($cacheDir, 0755);
+}
+
+// Determine whether to refresh cache
+$refreshCache = true;
+
+if (is_file($cacheFile)) {
+  $expiresInDays = 5;
+  $modifiedTime = filemtime($cacheFile);
+  $expiryDate = strtotime("+$expiresInDays days", $modifiedTime);
+  $currentDate = strtotime(date('Y-m-d'));
+
+  $refreshCache = ($currentDate >= $expiryDate);
+}
+
+// Fetch fresh content if needed
+if ($refreshCache) {
+  $handle = curl_init($packagistUrl);
+  curl_setopt($handle, CURLOPT_RETURNTRANSFER, true);
+
+  $html = curl_exec($handle);
+
+  if (!empty($html)) {
+    if (!file_put_contents($cacheFile, $html)) {
+      $errors['COMPOSER_LATEST'] = "$packagistUrl returned empty.";
+    }
+  } else {
+    $errors['COMPOSER_LATEST'] = curl_error($handle);
+  }
+
+  if (is_resource($handle)) {
+    curl_close($handle);
+  }
+}
+
+// Serve the HTML snapshot if `packagist` is requested
+if (array_key_first($_GET) === 'packagist') {
+  libxml_use_internal_errors(true);
+
+  $dom = new DOMDocument('1.0', 'utf-8');
+  $dom->loadHTML(file_get_contents($cacheFile), LIBXML_HTML_NOIMPLIED | LIBXML_HTML_NODEFDTD);
+
+  $xpath = new DOMXPath($dom);
+  $metaTags = $xpath->query('//head/meta');
+
+  if ($metaTags->length > 0) {
+    $baseTag = $dom->createDocumentFragment();
+    $baseTag->appendXML('<base href="https://packagist.org/" />');
+
+    $metaTags[0]->parentNode->insertBefore($baseTag, $metaTags[0]->nextSibling);
+  }
+
+  echo $dom->saveHTML();
+  exit();
+}
+/*
+switch ($_GET['app']) {
+  case 'packagist':
+
+    break;
+  default:
+    //$app['title'] = APP_NAME;
+    //$app['description'] = APP_DESCRIPTION;
+    //$app['keywords'] = APP_KEYWORDS;
+    break;
+}*/
+
+
+
 if (__FILE__ == get_required_files()[0]) //die(getcwd());
   if (
     $path = (basename(getcwd()) == 'public')
@@ -99,16 +176,19 @@ ob_start(); ?>
     color: black;
   }
 
-  <?php $app[$packagist]['style'] = ob_get_contents();
+  <?php $app['style'] = ob_get_contents();
   ob_end_clean();
   if (false) { ?>
-  </style><?php }
+  </style>
+<?php }
 
-  ob_start(); ?>
+  ob_start();
+
+  ?>
 
 <!-- <div class="container" style="border: 1px solid #000;"> -->
 <div id="app_packagist-container"
-  class="<?= (APP_SELF == __FILE__ || (isset($_GET['app']) && $_GET['app'] == 'packagist') ? 'selected' : '') ?>"
+  class="<?= APP_SELF == __FILE__ || (isset($_GET['app']) && $_GET['app'] == 'packagist') ? 'selected' : '' ?>"
   style="border: 1px solid #000;">
   <div class="header ui-widget-header">
     <div style="display: inline-block;">Packagist.org Package (Search)</div>
@@ -117,7 +197,7 @@ ob_start(); ?>
   </div>
 
   <div style="display: inline-block; width: auto; padding-left: 10px;">
-    <iframe src="<?= /* basename(__FILE__) */ NULL; ?>" style="height: 550px; width: 775px;"></iframe>
+    <iframe src="<?= /* basename(__FILE__) */ '?packagist'; ?>" style="height: 550px; width: 775px;"></iframe>
   </div>
 
   <!-- <pre id="ace-editor" class="ace_editor"></pre> -->
@@ -125,7 +205,7 @@ ob_start(); ?>
 </div>
 <!-- </div> -->
 
-<?php $app[$packagist]['body'] = ob_get_contents();
+<?php $app['body'] = ob_get_contents();
 ob_end_clean();
 
 if (false) { ?>
@@ -140,38 +220,8 @@ ob_start(); ?>
 
   ob_start(); ?>
 
-  <?php $app[$packagist]['html'] = ob_get_contents();
+  <?php $app['html'] = ob_get_contents();
   ob_end_clean();
-
-
-  is_dir(APP_PATH . APP_BASE['var']) or mkdir(APP_PATH . APP_BASE['var'], 0755);
-  if (is_file(APP_PATH . APP_BASE['var'] . 'packagist.org.html')) {
-    if (ceil(abs((strtotime(date('Y-m-d')) - strtotime(date('Y-m-d', strtotime('+5 days', filemtime(APP_PATH . APP_BASE['var'] . '/packagist.org.html'))))) / 86400)) <= 0) {
-      $url = 'https://packagist.org/';
-      $handle = curl_init($url);
-      curl_setopt($handle, CURLOPT_RETURNTRANSFER, true);
-
-      if (!empty($html = curl_exec($handle)))
-        file_put_contents(APP_PATH . APP_BASE['var'] . 'packagist.org.html', $html) or $errors['COMPOSER_LATEST'] = $url . ' returned empty.';
-    }
-  } else {
-    $url = 'https://packagist.org/';
-    $handle = curl_init($url);
-    curl_setopt($handle, CURLOPT_RETURNTRANSFER, true);
-
-    if (!empty($html = curl_exec($handle)))
-      file_put_contents(APP_PATH . APP_BASE['var'] . 'packagist.org.html', $html) or $errors['COMPOSER_LATEST'] = $url . ' returned empty.';
-  }
-
-  libxml_use_internal_errors(true); // Prevent HTML errors from displaying
-  $dom = new DOMDocument(1.0, 'utf-8');
-  $dom->loadHTML(file_get_contents(APP_PATH . APP_BASE['var'] . 'packagist.org.html'), LIBXML_HTML_NOIMPLIED | LIBXML_HTML_NODEFDTD);
-  $xpath = new DOMXPath($dom);
-
-  $destination = $xpath->query('//head/meta');
-  $template = $dom->createDocumentFragment();
-  $template->appendXML('<base href="https://packagist.org/" />');
-  $destination[0]->parentNode->insertBefore($template, $destination[0]->nextSibling);
 
   /*
   $dom = new DOMDocument(1.0, 'utf-8');
@@ -196,7 +246,9 @@ ob_start(); ?>
   //echo file_get_contents("https://packagist.org/");
   
   //check if file is included or accessed directly
-  if (__FILE__ == get_required_files()[0] || in_array(__FILE__, get_required_files()) && isset($_GET['app']) && $_GET['app'] == 'php' && APP_DEBUG)
+  if (__FILE__ == get_required_files()[0] || in_array(__FILE__, get_required_files()) && array_key_first($_GET) == 'packagist' && APP_DEBUG)
     Shutdown::setEnabled(false)->setShutdownMessage(function () use ($dom) {
       return $dom->saveHTML(); /* eval('?>' . $project_code); // -wow */
     })->shutdown(); // exit;
+  
+

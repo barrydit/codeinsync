@@ -381,7 +381,7 @@ z-index : 1;
 }
 
 
-<?php $app[$pong]['style'] = ob_get_contents();
+<?php $app['style'] = ob_get_contents();
 ob_end_clean();
 
 ob_start(); ?>
@@ -405,7 +405,7 @@ ob_start(); ?>
 </div>
 <!-- </div> -->
 
-<?php $app[$pong]['body'] = ob_get_contents();
+<?php $app['body'] = ob_get_contents();
 ob_end_clean();
 
 if (false) { ?>
@@ -413,7 +413,7 @@ if (false) { ?>
   <?php }
 ob_start(); ?>
   // Javascript comment
-  <?php $app[$pong]['script'] = ob_get_contents();
+  <?php $app['script'] = ob_get_contents();
   ob_end_clean();
 
   if (false) { ?></script><?php }
@@ -503,9 +503,9 @@ html, body { width: 100%; height: 100%; <?= $_SERVER['SCRIPT_FILENAME'] == __FIL
 </body>
 
 </html>
-<?php $app[$pong]['html'] = ob_get_contents();
+<?php $app['html'] = ob_get_contents();
 ob_end_clean();
 
 //check if file is included or accessed directly
 if (__FILE__ == realpath($_SERVER["SCRIPT_FILENAME"]) || in_array(__FILE__, get_required_files()) && isset($_GET['app']) && $_GET['app'] == 'pong' && APP_DEBUG)
-  die($app[$pong]['html']);
+  die($app['html']);

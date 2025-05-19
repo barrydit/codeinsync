@@ -16,10 +16,15 @@ if (__FILE__ == get_required_files()[0] && __FILE__ == realpath($_SERVER["SCRIPT
 
     if (isset($_GET['json'])) {
       header('Content-Type: application/json');
+      header('Access-Control-Allow-Origin: *');
+      header('Access-Control-Allow-Methods: GET, POST, OPTIONS');
+      header('Access-Control-Allow-Headers: Content-Type, Authorization, X-Requested-With');
+      header('Access-Control-Max-Age: 86400'); // 24 hours
+      header('Cache-Control: no-cache, no-store, must-revalidate'); // HTTP 1.1
+      header('Pragma: no-cache'); // HTTP 1.0
+      header('Expires: 0'); // Proxies
 
-      $jsonData = file_get_contents($file = APP_PATH . APP_BASE['data'] . 'weekly-timesheet-' . date('Y-m') . '.json');
-
-      echo $jsonData; //json_encode()
+      echo file_get_contents($file = APP_PATH . APP_BASE['data'] . 'weekly-timesheet-' . date('Y-m') . '.json'); //json_encode()
       //die(var_dump($file));
 
       exit;
@@ -149,8 +154,9 @@ if (!empty($json_data))
             ['Evening', new DateInterval('PT00H00M00S'), new DateInterval('PT00H00M00S')],
             ['Night', new DateInterval('PT00H00M00S'), new DateInterval('PT00H00M00S')]
           ]);
-      } elseif (!isset($weeklyHours[$matches[1]])) // $today->format('Y-m-d')
-        continue;
+      } elseif (!isset($weeklyHours[$matches[1]]))
+        continue; // $today->format('Y-m-d')
+
 
 
       $date = $matches[1];
@@ -294,7 +300,7 @@ if (!empty($json_data))
 
             // Calculate any carryovers
             $carryMinutes = floor($newSeconds / 60);
-            $newSeconds = $newSeconds % 60;
+            $newSeconds %= 60;
 
             $carryHours = floor(($newMinutes + $carryMinutes) / 60);
             $newMinutes = ($newMinutes + $carryMinutes) % 60;
@@ -638,7 +644,7 @@ if (!is_file($filePath)) {
 /*
 $Now = new DateTime(date('Y-m-d') . 'T' . date('H') . ':00:00', new DateTimeZone('-' . $timeRanges[4][2] . ':00')); // date('H') + 6 now
 
-$json = !is_file($file = APP_PATH . APP_BASE['var'] . 'weekly-timesheet-' . date('Y-m') . '.json')
+$json = !is_file($file = APP_PATH . APP_BASE['data'] . 'weekly-timesheet-' . date('Y-m') . '.json')
   ? (!@touch($file)
     ? (!file_get_contents($file, true)
       ? json_encode([$Now->format(DATE_RFC3339) => []])
@@ -718,7 +724,7 @@ height: 575px;
 position: fixed;
 top: calc(50% - 350px); /* 500 / 2 */
 left: calc(50% - 400px); /* 1207 / 2 */
-/*transform: translate(-50%, -50%);*/
+/* transform: translate(-50%, -50%); */
 z-index: 1;
 }
 
@@ -734,7 +740,7 @@ border : none;
 display : none;
 }
 
-<?php $app[$timesheet]['style'] = ob_get_contents();
+<?php $app['style'] = ob_get_contents();
 ob_end_clean();
 
 ob_start(); ?>
@@ -747,7 +753,7 @@ ob_start(); ?>
     <div style="display: inline; float: right; text-align: center;">[<a style="cursor: pointer; font-size: 13px;"
         onclick="document.getElementById('app_timesheet-container').style.display='none';">X</a>]</div>
   </div>
-  <div style=" overflow-x: scroll;">
+  <div style="overflow-x: scroll;">
     <form style="display: inline;"
       action="<?= APP_URL . basename(APP_SELF) . '?' . http_build_query(APP_QUERY + ['app' => 'php']) . (defined('APP_ENV') && APP_ENV == 'development' ? '#!' : '#') /*  $c_or_p . '=' . (empty($_GET[$c_or_p]) ? '' : $$c_or_p->name) . '&amp;app=composer' */ ?>"
       method="GET">
@@ -789,15 +795,13 @@ ob_start(); ?>
 
       <div style="display: flex; ">
         <div style="">|<a
-            href="?app=timesheet&date=<?= $date = date('Y-m-d', strtotime($today->format('Y-m-d') . ' -1 day')); ?>">&Lang;</a>&nbsp;..<a
-            href="?app=timesheet&time=<?= $date = date('h:i:s', strtotime($today->format('h:i:s') . ' -8 hour')); ?>">&nbsp;&lt;</a>|
+            href="?app=timesheet&date=<?= date('Y-m-d', strtotime($today->format('Y-m-d') . ' -1 day')); ?>">&Lang;</a>&nbsp;..<a
+            href="?app=timesheet&time=<?= date('h:i:s', strtotime($today->format('h:i:s') . ' -8 hour')); ?>">&nbsp;&lt;</a>|
         </div>
-        <div style="display: flex; margin: 0 auto; text-align: center;">
-          <?= $today->format('Y-m-d H:i:s'); ?>
-        </div>
+        <div style="display: flex; margin: 0 auto; text-align: center;"><?= date('Y-m-d H:i:s'); ?></div>
         <div style="display: flex; text-align: right;">|<a
-            href="?app=timesheet&date=<?= $date = date('h:i:s', strtotime($today->format('h:i:s') . ' +8 hour')); ?>">&gt;</a>&nbsp;..<a
-            href="?app=timesheet&date=<?= $date = date('Y-m-d', strtotime($today->format('Y-m-d') . ' +2 day')); ?>">&nbsp;&Rang;</a>|
+            href="?app=timesheet&date=<?= date('h:i:s', strtotime($today->format('h:i:s') . ' +8 hour')); ?>">&gt;</a>&nbsp;..<a
+            href="?app=timesheet&date=<?= date('Y-m-d', strtotime($today->format('Y-m-d') . ' +2 day')); ?>">&nbsp;&Rang;</a>|
         </div>
       </div>
 
@@ -818,19 +822,11 @@ ob_start(); ?>
     $rotationIndex = null;
 
     // If $rotationIndex is still null, use the last rotation (Night - Morning)
-    if ($rotationIndex === null) {
-      $rotationIndex = count($timeRanges) - 1;
-    } else {
-      $rotationIndex = $rotationIndex < 0 ? 0 : ($rotationIndex >= 4 ? 0 : $rotationIndex); //  || 
-      //dd($rotationIndex); // $rotationIndex -= 1;
-    }
+    $rotationIndex = ($rotationIndex === null) ? count($timeRanges) - 1 : ($rotationIndex < 0 ? 0 : ($rotationIndex >= 4 ? 0 : $rotationIndex));
 
-
-    //dd($rotationIndex);
-  
     foreach ($timeRanges as $index => $range) {
       if ($currentHour >= $range[1] && $currentHour < $range[2]) {
-        $rotationIndex = ($index < 0 ? 0 : ($index >= 4 ? 0 : $index));
+        $rotationIndex = $index < 0 ? 0 : ($index >= 4 ? 0 : $index);
         break;
       }
     }
@@ -869,7 +865,7 @@ ob_start(); ?>
     if ($firstPeriodStart <= $currentTime && $currentTime <= $firstPeriodEnd) {
       // $highlightOut = ($currentTime->format('i') >= 1 && $currentTime->format('i') <= 59);
       $remainingTime = $firstPeriodEnd->getTimestamp() - $currentTime->getTimestamp();
-      $highlightOut = ($remainingTime <= 3599); // 3599 seconds = 59 minutes and 59 seconds
+      $highlightOut = $remainingTime <= 3599; // 3599 seconds = 59 minutes and 59 seconds
     }
 
     /* Debug statements
@@ -897,7 +893,7 @@ ob_start(); ?>
     if ($today->format('N') == 1)
       echo <<<END
       <div style="display: flex; align-items: center; justify-content: center; font-size: 14px; width: 775px; border: 1px solid #000;">
-        <div style="display: inline-block; text-align: left; width: 145px; padding: 10px;">DAYS OF WEEK</div>
+        <div style="display: inline-block; text-align: left; width: 145px; padding: 10px;">WEEKDAYS</div>
 
         <div style="display: inline-block; text-align: center; width: 175px;">
           <div style="background-color: #E6EAF6; border: 1px solid #000; padding: 10px; font-weight: bold;">$firstPeriod</div>
@@ -927,7 +923,7 @@ ob_start(); ?>
 
 END;
 
-    $defaultBackgroundColor = ($today->format('Y-m-d') === $currentDate->format('Y-m-d') ? '#FFFF00' : '#FFFFFF');
+    $defaultBackgroundColor = $today->format('Y-m-d') === $currentDate->format('Y-m-d') ? '#FFFF00' : '#FFFFFF';
 
     //dd($highlightOut);
   
@@ -949,15 +945,27 @@ END;
         </div>
         <div style="display: inline-block; text-align: center; width: 130px;">
           <div style="display: inline-block; background-color: $backgroundColorThird; border-right: 1px solid #000; text-align: center; padding: 10px; margin: 0 -2px; height: 100%; width: 50%; box-sizing: border-box;">0.0</div>
-          <div style="display: inline-block; background-color: $backgroundColorFourth; border-left: 1px solid #000; text-align: center; padding: 10px; margin: 0 -2px; height: 100%; width: 50%; box-sizing: border-box;">0:0</div>
+          <div style="display: inline-block; background-color: $backgroundColorFourth; border-left: 1px solid #000; text-align: center; padding: 4px; margin: 0 -2px; height: 100%; width: 50%; box-sizing: border-box;">
+END;
+      echo implode(':', array_map(fn($p) => str_pad($p, 2, '0', STR_PAD_LEFT), explode(':', '0:0:0')));
+      echo <<<END
+      </div>
         </div>
         <div style="display: inline-block; text-align: center; width: 140px;">
           <div style="display: inline-block; border-left: 1px solid #000; border-right: 1px solid #000; text-align: center; padding: 10px; margin: 0 -2px; height: 100%; width: 50%; box-sizing: border-box;">0.0</div>
-          <div style="display: inline-block; border-left: 1px solid #000; border-right: 1px solid #000; text-align: center; padding: 10px; margin: 0 -2px; height: 100%; width: 50%; box-sizing: border-box;">0:0</div>
+          <div style="display: inline-block; border-left: 1px solid #000; border-right: 1px solid #000; text-align: center;  margin: 0 -2px; height: 100%; width: 50%; box-sizing: border-box;">
+END;
+      echo implode(':', array_map(fn($p) => str_pad($p, 2, '0', STR_PAD_LEFT), explode(':', '0:0:0')));
+      echo <<<END
+          </div>
         </div>
         <div style="display: inline-block; text-align: center; width: 130px;">
           <div style="display: inline-block; border-right: 1px solid #000; text-align: center; padding: 10px; margin: 0 -2px; height: 100%; width: 50%; box-sizing: border-box;">0</div>
-          <div style="display: inline-block; border-left: 1px solid #000; text-align: center; padding: 10px; margin: 0 -2px; height: 100%; width: 50%; box-sizing: border-box;">0</div>
+          <div style="display: inline-block; border-left: 1px solid #000; text-align: center; padding: 2px; margin: 0 -2px; height: 100%; width: 50%; box-sizing: border-box;">
+END;
+      echo implode(':', array_map(fn($p) => str_pad($p, 2, '0', STR_PAD_LEFT), explode(':', '0:0:0')));
+      echo <<<END
+          </div>
         </div>
         <div style="display: inline-block; text-align: center; width: 238px;">
           <div style="display: inline-block; border-left: 1px solid #000; border-right: 1px solid #000; text-align: center; padding: 10px; margin: 0 -2px; height: 100%; width: 50%; box-sizing: border-box;">0</div>
@@ -980,7 +988,7 @@ END;
 </div>
           <div style="display: inline-block; background-color: $backgroundColorFourth; border-left: 1px solid #000; text-align: center; padding: 10px; margin: 0 -2px; height: 100%; width: 50%; box-sizing: border-box;">
 END;
-      echo $weeklyHours[$date][$rotationIndex][2]->h . ':' . $weeklyHours[$date][$rotationIndex][2]->i . ':' . $weeklyHours[$date][$rotationIndex][2]->s;
+      echo implode(':', array_map(fn($p) => str_pad($p, 2, '0', STR_PAD_LEFT), explode(':', $weeklyHours[$date][$rotationIndex][2]->h . ':' . $weeklyHours[$date][$rotationIndex][2]->i . ':' . $weeklyHours[$date][$rotationIndex][2]->s)));
       echo <<<END
 </div>
         </div>
@@ -995,13 +1003,17 @@ END;
 </div>
           <div style="display: inline-block; border-left: 1px solid #000; border-right: 1px solid #000; text-align: center; padding: 10px; margin: 0 -2px; height: 100%; width: 50%; box-sizing: border-box;">
 END;
-      echo $weeklyHours[$date][$rotationNextIdx][2]->h . ':' . $weeklyHours[$date][$rotationNextIdx][2]->i . ':' . $weeklyHours[$date][$rotationNextIdx][2]->s;
+      echo implode(':', array_map(fn($p) => str_pad($p, 2, '0', STR_PAD_LEFT), explode(':', $weeklyHours[$date][$rotationNextIdx][2]->h . ':' . $weeklyHours[$date][$rotationNextIdx][2]->i . ':' . $weeklyHours[$date][$rotationNextIdx][2]->s)));
       echo <<<END
 </div>
         </div>
         <div style="display: inline-block; text-align: center; width: 130px;">
           <div style="display: inline-block; border-right: 1px solid #000; text-align: center; padding: 10px; margin: 0 -2px; height: 100%; width: 50%; box-sizing: border-box;">0</div>
-          <div style="display: inline-block; border-left: 1px solid #000; text-align: center; padding: 10px; margin: 0 -2px; height: 100%; width: 50%; box-sizing: border-box;">0</div>
+          <div style="display: inline-block; border-left: 1px solid #000; text-align: center; padding: 10px; margin: 0 -2px; height: 100%; width: 50%; box-sizing: border-box;">
+END;
+      echo implode(':', array_map(fn($p) => str_pad($p, 2, '0', STR_PAD_LEFT), explode(':', '0:0:0')));
+      echo <<<END
+          </div>
         </div>
         <div style="display: inline-block; text-align: center; width: 238px;">
           <div style="display: inline-block; border-left: 1px solid #000; border-right: 1px solid #000; text-align: center; padding: 10px; margin: 0 -2px; height: 100%; width: 50%; box-sizing: border-box;">
@@ -1032,9 +1044,10 @@ END;
       echo $totalHours[$rotationIndex][1]->h;
       echo <<<END
 </div>
-          <div style="display: inline-block; border-left: 1px solid #000; text-align: center; padding: 10px; margin: 0 -2px;  height: 100%; width: 50%; box-sizing: border-box;">
+          <div style="display: inline-block; border-left: 1px solid #000; text-align: center; margin: 0 -2px;  height: 100%; width: 50%; box-sizing: border-box;">
 END;
-      echo $totalHours[$rotationIndex][2]->h . ':' . $totalHours[$rotationIndex][2]->i . ':' . $totalHours[$rotationIndex][2]->s;
+      echo implode(':', array_map(fn($p) => str_pad($p, 2, '0', STR_PAD_LEFT), explode(':', $totalHours[$rotationIndex][2]->h . ':' . $totalHours[$rotationIndex][2]->i . ':' . $totalHours[$rotationIndex][2]->s)));
+
       echo <<<END
 </div>
         </div>
@@ -1046,15 +1059,21 @@ END;
       echo $totalHours[$rotationNextIdx][1]->h;
       echo <<<END
 </div>
-          <div style="display: inline-block; border-left: 1px solid #000; border-right: 1px solid #000; text-align: center; padding: 10px; margin: 0 -2px; height: 100%; width: 50%; box-sizing: border-box;">
+          <div style="display: inline-block; border-left: 1px solid #000; border-right: 1px solid #000; text-align: center; margin: 0 -2px; height: 100%; width: 50%; box-sizing: border-box;">
 END;
-      echo $totalHours[$rotationNextIdx][2]->h . ':' . $totalHours[$rotationNextIdx][2]->i . ':' . $totalHours[$rotationNextIdx][2]->s;
+
+      echo implode(':', array_map(fn($p) => str_pad($p, 2, '0', STR_PAD_LEFT), explode(':', $totalHours[$rotationNextIdx][2]->h . ':' . $totalHours[$rotationNextIdx][2]->i . ':' . $totalHours[$rotationNextIdx][2]->s)));
+
       echo <<<END
 </div>
         </div>
         <div style="display: inline-block; text-align: center; width: 130px;">
           <div style="display: inline-block; border-right: 1px solid #000; text-align: center; padding: 10px; margin: 0 -2px; height: 100%; width: 50%; box-sizing: border-box;">0</div>
-          <div style="display: inline-block; border-left: 1px solid #000; text-align: center; padding: 10px; margin: 0 -2px; height: 100%; width: 50%; box-sizing: border-box;">0</div>
+          <div style="display: inline-block; border-left: 1px solid #000; text-align: center; margin: 0 -2px; height: 100%; width: 50%; box-sizing: border-box;">
+END;
+      echo implode(':', array_map(fn($p) => str_pad($p, 2, '0', STR_PAD_LEFT), explode(':', '0:0:0')));
+      echo <<<END
+          </div>
         </div>
         <div style="display: inline-block; text-align: center; width: 238px;">
           <div style="display: inline-block; border-left: 1px solid #000; border-right: 1px solid #000; text-align: center; padding: 10px; margin: 0 -2px; height: 100%; width: 50%; box-sizing: border-box;">
@@ -1071,9 +1090,8 @@ END;
     }
     $today->modify('+1 day');
 
-    if ($today->format('l') === 'Monday') {
+    if ($today->format('l') === 'Monday')
       break; // Exit the loop when it's Monday again
-    }
   }
 
 
@@ -1083,7 +1101,7 @@ END;
 
 </div>
 
-<?php $app[$timesheet]['body'] = ob_get_contents();
+<?php $app['body'] = ob_get_contents();
 ob_end_clean();
 
 if (false) { ?>
@@ -1137,7 +1155,7 @@ ob_start(); ?>
     weekday[6] = "Sat,";
 
 
-    clocktime.innerHTML = '<a href="#" onclick="document.getElementById(\'app_calendar-container\').style.display=\'block\';"><i style="background-color: white; color: #0078D7;"> ' + weekday[date.getDay()] + ' ' + time +
+    clocktime.innerHTML = '<a href="#" onclick="document.getElementById(\'app_calendar-container\').style.display=\'block\';"><i style="background-color: #0078D7; color: white;"> ' + weekday[date.getDay()] + ' ' + time +
       ' ' + month + ' ' + date.getDate() + ' ' + date.getFullYear() + ' </i></a>';
 
     var dateSlot = document.getElementById('date_slot');
@@ -1191,6 +1209,7 @@ ob_start(); ?>
       if (isIntervalActive) {
         stopInterval();
         $("#ts-status-light").attr('src', 'resources/images/timesheet-light-R.gif');
+        document.getElementById('app_timesheet-container').style.display = 'block';
         $("#idleTime").html('<i style="color: red;">[Stopped] at: ' + toTime(occupiedTime)['time'] + '</i>');
       } else {
         startInterval();
@@ -1289,69 +1308,73 @@ ob_start(); ?>
 
     console.log(((idleTime >= 1) ? 'Idle: ' + idleTime + ' ' : '') + 'Work: ' + occupiedTime);
 
-    if (idleTime <= 0) { $("#ts-status-light").attr('src', 'resources/images/timesheet-light-R.gif'); } if (idleTime >
-      1) { // 1 second
-      //window.location.reload();
-      $("#idleTime").html('<i style="color: blue;">[Idling] for: ' + toTime(occupiedTime)['time'] + '</i>');
+    if (idleTime <= 0) { $("#ts-status-light").attr('src', 'resources/images/timesheet-light-R.gif'); }
+    else if (idleTime > 0 && idleTime < 10) { // 1 second
+      $("#ts-status-light").attr('src', 'resources/images/timesheet-light-Y.gif');
+      $("#idleTime").html('<i style="color: blue;">[Idling] for: ' + toTime(idleTime)['time'] + '</i>');
+    } else
+      if (idleTime > 1) { // 1 second
+        //window.location.reload();
+        $("#idleTime").html('<i style="color: blue;">[Idling] for: ' + toTime(occupiedTime)['time'] + '</i>');
 
-      if (idleTime >= 10) { // 60 second
+        if (idleTime >= 10) { // 60 second
 
-        $("#ts-status-light").attr('src', 'resources/images/timesheet-light-G.gif');
+          $("#ts-status-light").attr('src', 'resources/images/timesheet-light-G.gif');
 
-        try {
-          // Attempt to play the media element
+          try {
+            // Attempt to play the media element
+            if (typeof snd !== 'undefined') {
+              snd.play();
+            }
+
+          } catch (error) {
+            // Check if the error is a DOMException
+            if (error instanceof DOMException && error.name === 'NotAllowedError') {
+              // Handle the error (e.g., show a message to the user)
+              console.error('The play method is not allowed by the user agent or the platform.');
+            } else {
+              // If it's a different type of error, rethrow it
+              throw error;
+            }
+          }
+
+
+
+          //snd.pause();
+
+          $("#ts-status-light").attr('src', 'resources/images/timesheet-light-Y.gif');
+          $("#idleTime").html('<i style="color: blue;">[Idled] for: ' + toTime(idleTime)['hrs'] + 'h ' +
+            toTime(idleTime)['mins'] + 'm ' + toTime(idleTime)['secs'] + 's ' + '</i>');
+
+
+          time = date.toLocaleTimeString('en-US', {
+            hour: '2-digit', hour12: false, minute: '2-digit', second:
+              '2-digit'
+          });
+          if (idleTime == 10)
+            idlePenalty({ idletime: { time: time, idle: null } }); // toTime(idleTime)['time']
+
+        } else {
           if (typeof snd !== 'undefined') {
-            snd.play();
+            snd.pause();
           }
 
-        } catch (error) {
-          // Check if the error is a DOMException
-          if (error instanceof DOMException && error.name === 'NotAllowedError') {
-            // Handle the error (e.g., show a message to the user)
-            console.error('The play method is not allowed by the user agent or the platform.');
-          } else {
-            // If it's a different type of error, rethrow it
-            throw error;
-          }
+          $("#idleTime").html('<i style="color: blue;">[Idleing] for: ' + toTime(occupiedTime)['time'] + '</i>');
+          $("#ts-status-light").attr('src', 'resources/images/timesheet-light-G.gif');
+          occupiedTime = occupiedTime + 1;
         }
-
-
-
-        //snd.pause();
-
-        $("#ts-status-light").attr('src', 'resources/images/timesheet-light-Y.gif');
-        $("#idleTime").html('<i style="color: blue;">[Idled] for: ' + toTime(idleTime)['hrs'] + 'h ' +
-          toTime(idleTime)['mins'] + 'm ' + toTime(idleTime)['secs'] + 's ' + '</i>');
-
-
-        time = date.toLocaleTimeString('en-US', {
-          hour: '2-digit', hour12: false, minute: '2-digit', second:
-            '2-digit'
-        });
-        if (idleTime == 10)
-          idlePenalty({ idletime: { time: time, idle: null } }); // toTime(idleTime)['time']
-
       } else {
         if (typeof snd !== 'undefined') {
           snd.pause();
         }
-
-        $("#idleTime").html('<i style="color: blue;">[Idleing] for: ' + toTime(occupiedTime)['time'] + '</i>');
-        $("#ts-status-light").attr('src', 'resources/images/timesheet-light-G.gif');
+        document.getElementById('adhd_song-container').style.display = 'none';
+        $("#idleTime").html('<i style="color: green;">Working: ' + toTime(occupiedTime)['time'] + '</i>');
+        $("#ts-status-light").attr('src', 'resources/images/timesheet-light-GG.gif');
         occupiedTime = occupiedTime + 1;
       }
-    } else {
-      if (typeof snd !== 'undefined') {
-        snd.pause();
-      }
-      document.getElementById('adhd_song-container').style.display = 'none';
-      $("#idleTime").html('<i style="color: green;">Working: ' + toTime(occupiedTime)['time'] + '</i>');
-      $("#ts-status-light").attr('src', 'resources/images/timesheet-light-GG.gif');
-      occupiedTime = occupiedTime + 1;
-    }
   }
 
-  <?php $app[$timesheet]['script'] = ob_get_contents();
+  <?php $app['script'] = ob_get_contents();
   ob_end_clean();
 
   if (false) { ?></script><?php }
@@ -1391,12 +1414,12 @@ ob_start(); ?>
   <script src="<?= 'resources/js/tailwindcss-3.3.5.js' ?? $url ?>"></script>
 
   <style type="text/tailwindcss">
-    <?= $app[$timesheet]['style']; ?>
+    <?= $app['style']; ?>
 </style>
 </head>
 
 <body>
-  <?= $app[$timesheet]['body']; ?>
+  <?= $app['body']; ?>
 
   <!-- https://cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.min.js -->
   <script src="//code.jquery.com/jquery-1.12.4.js"></script>
@@ -1405,14 +1428,14 @@ ob_start(); ?>
 
   <script src="resources/js/play_sound.js"></script>
   <script>
-    <?= $app[$timesheet]['script']; ?>
+    <?= $app['script']; ?>
   </script>
 </body>
 
 </html>
-<?php $app[$timesheet]['html'] = ob_get_contents();
+<?php $app['html'] = ob_get_contents();
 ob_end_clean();
 
 //check if file is included or accessed directly
 if (__FILE__ == get_required_files()[0] || in_array(__FILE__, get_required_files()) && isset($_GET['app']) && $_GET['app'] == 'git' && APP_DEBUG)
-  die($app[$timesheet]['html']);
+  die($app['html']);

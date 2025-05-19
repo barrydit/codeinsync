@@ -111,7 +111,7 @@ if (defined('GIT_EXEC'))
 
 ob_start(); ?>
 #app_calendar-container {
-width : 415px;
+width : 326px;
 height : 450px;
 /* border: 1px solid black; */
 position : absolute;
@@ -220,6 +220,48 @@ padding : 8px;
 img {
 display : inline;
 }
+
+/* Hide the native radio input */
+input[type="radio"].green-radio {
+appearance: none;
+-webkit-appearance: none;
+background-color: lightgreen; /* Always green */
+border-color: green;
+margin: 0 5px 0 0;
+width: 1em;
+height: 1em;
+border: 2px solid white;
+border-radius: 50%;
+display: inline-block;
+vertical-align: middle;
+cursor: pointer;
+}
+
+input[type="radio"].green-radio:checked {
+/* Optional: change border when selected, or leave same */
+border-color: green;
+}
+
+/* Hide the native radio input */
+input[type="radio"].red-radio {
+appearance: none;
+-webkit-appearance: none;
+background-color: red; /* Always green */
+border-color: red;
+margin: 0 5px 0 0;
+width: 1em;
+height: 1em;
+border: 2px solid white;
+border-radius: 50%;
+display: inline-block;
+vertical-align: middle;
+cursor: pointer;
+}
+
+input[type="radio"].red-radio:checked {
+/* Optional: change border when selected, or leave same */
+border-color: darkred;
+}
 <?php $app['style'] = ob_get_contents();
 ob_end_clean();
 
@@ -243,9 +285,9 @@ ob_start(); ?>
         </div>
         <div
             style="position: absolute; right: 35px; display: inline-block; text-align: center; color: blue; width: auto; border: 2px solid lightblue;">
-            <a href="#time"
-                onclick="document.getElementById('app_medication_log-container').style.display='block';">Medication
-                Log</a>
+            <small><a href="#time"
+                    onclick="document.getElementById('app_medication_log-container').style.display='block';">Medication
+                    Log</a></small>
         </div>
         <div style="display: inline; float: right; text-align: center; color: blue;"><code
                 style="background-color: white; color: #0078D7;"><a style="cursor: pointer; font-size: 13px;" onclick="document.getElementById('app_calendar-container').style.display='none';">[X]</a></code>
@@ -393,9 +435,10 @@ else $count++;
                                                 value="<?= date('Y-m-d') ?>" />
                                             <input id="time_slot" type="time" name="time_slot"
                                                 value="<?= date('H:i') ?>" /><br />&nbsp;&nbsp;
-                                            <input type="radio" name="status"
-                                                value="taken" />Taken&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-                                            <input type="radio" name="status" value="missed" />Missed<br />
+                                            <input type="radio" name="status" value="taken"
+                                                class="green-radio" />Taken&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                                            <input type="radio" name="status" value="missed"
+                                                class="red-radio" />Missed<br />
                                             <input type="text" name="note" value="" />
                                             <input type="submit" value="Save" />
                                         </form>

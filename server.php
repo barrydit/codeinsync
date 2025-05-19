@@ -978,7 +978,10 @@ if (PHP_SAPI === 'cli')
       while ($running) {
         // Perform scheduled tasks
         $manager->checkNotifications();
+
+        //echo "SOCKET ID BEFORE BACKUP: " . (is_resource($socket) ? get_resource_id($socket) : 'CLOSED') . "\n";
         manageScheduledTask($lastExecutionTime, $interval);
+        //echo "SOCKET ID AFTER BACKUP: " . (is_resource($socket) ? get_resource_id($socket) : 'CLOSED') . "\n";
 
         //dd(get_resource_type($socket)); // var_export($socket, true) == Socket::__set_state(array( )) != resource
         //PHP7 >= (is_resource($socket) && get_resource_type($socket) === 'Socket')
@@ -1015,6 +1018,11 @@ if (PHP_SAPI === 'cli')
           if ($socket === false) {
             echo "DEBUG: Socket is FALSE.\n";
           }
+
+          //if (!is_resource($socket)) {
+          //  echo "Whoa, socket's already gone, aborting the loop.\n";
+          //  break;
+          //}
 
           // Accept new client connection
           $client = @socket_accept($socket);
@@ -1121,4 +1129,6 @@ register_shutdown_function(function () {
       'Server has stopped... PID=' . getmypid() . str_pad('', 10, " "),
       APP_DASHBOARD
     ) . PHP_EOL;
+
+  debug_backtrace();
 });

@@ -1,6 +1,10 @@
 <?php
-require_once 'bootstrap.php';
-require_once 'config' . DIRECTORY_SEPARATOR . 'config.php';
+//require_once 'bootstrap.php';
+//require_once 'config' . DIRECTORY_SEPARATOR . 'config.php';
+
+//die(var_dump(get_defined_constants(true)['user'], false)); // get_defined_constants(true) or die('get_defined_constants() failed.');
+//dd(get_required_files());
+//dd(PHP_EXEC);
 
 use PHPUnit\Event\Code\Throwable;
 /*
@@ -333,7 +337,7 @@ putenv("COMPOSER_HOME=$composerHome" ?? $_SERVER['HOME'] . '/.composer/'); // /v
 if (!file_exists(APP_PATH . 'composer.phar')) {
   copy('https://getcomposer.org/installer', 'composer-setup.php');
 
-  $error = shell_exec($_ENV['COMPOSER']['PHP_EXEC'] . ' composer-setup.php'); // php -d register_argc_argv=1
+  $error = shell_exec($_ENV['PHP']['EXEC'] . ' composer-setup.php'); // php -d register_argc_argv=1
 
   $errors['COMPOSER-PHAR'] = 'Composer setup was executed and ' . (file_exists(APP_PATH . 'composer.phar') ? 'does' : 'does not') . ' exist.';
 
@@ -569,7 +573,8 @@ if (defined('APP_ENV') and APP_ENV == 'development') {
   else {
     //die('test');
 
-    ob_start(); echo $composer_exec; ?> init --quiet --no-interaction
+    ob_start();
+    echo $composer_exec; ?> init --quiet --no-interaction
     --working-dir="<?= APP_PATH . APP_ROOT; ?>"
     --name="<?= $composerUser . '/' . $$c_or_p->name; ?>"
     --description="General Description"
@@ -661,7 +666,8 @@ defined('COMPOSER_JSON') or define('COMPOSER_JSON', [
   'path' => APP_PATH . APP_ROOT . 'composer.json'
 ]);
 
-ob_start(); echo $composer_exec; ?> init --quiet --no-interaction
+ob_start();
+echo $composer_exec; ?> init --quiet --no-interaction
   --working-dir="<?= APP_PATH . APP_ROOT; ?>"
   --name="<?= $composerUser . '/' . str_replace('.', '_', basename(APP_ROOT) ?? $componetPkg); ?>"
   --description="General Description"
@@ -894,7 +900,7 @@ ob_start(); echo $composer_exec; ?> init --quiet --no-interaction
       //(APP_SELF !== APP_PATH_SERVER) and 
   
       require_once 'config' . DIRECTORY_SEPARATOR . 'classes' . DIRECTORY_SEPARATOR . 'class.sockets.php';
-
+  
       //unset($socketInstance);
       if (!isset($socketInstance)) {
         $socketInstance = Sockets::getInstance();

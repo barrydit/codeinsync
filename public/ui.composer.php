@@ -2,6 +2,8 @@
 header("Access-Control-Allow-Origin: *"); // Allow all origins
 header("Access-Control-Allow-Methods: GET, POST, PUT, DELETE, OPTIONS");
 header("Access-Control-Allow-Headers: Content-Type, Authorization");
+
+//dd(get_required_files(), false);
 if (in_array(__FILE__, get_required_files())) {
   //echo "File $target_file was included.";
 
@@ -15,14 +17,13 @@ if (in_array(__FILE__, get_required_files())) {
 
   if (is_file($path = APP_PATH . APP_BASE['config'] . 'composer.php'))
     require_once $path;
-  else
-    die(var_dump("$path path was not found. file=" . basename($path)));
+  //else
+  //  die(var_dump("$path path was not found. file=" . basename($path)));
 
-  if ($path = basename(dirname(get_required_files()[0])) == 'public') { // (basename(getcwd())
-    if (is_file($path = realpath('index.php')))
-      require_once $path;
-  } else
-    die(var_dump("Path was not found. file=$path"));
+  //if ($path = basename(dirname(get_required_files()[0])) == 'public') { // (basename(getcwd())
+    // if (is_file($path = realpath('index.php'))) require_once $path;
+  //} else
+  //  die(var_dump("Path was not found. file=$path"));
 
   //dd(get_required_files());
 
@@ -383,12 +384,14 @@ position : absolute;
 display : none;
 left : 832px;
 top : 96px;
+resize : both; /* Make the div resizable */
 margin : 0 auto;
 z-index : 1;
 }
 
 #app_composer-container.selected {
 display : block;
+resize : both; /* Make the div resizable */
 z-index : 1;
 /* Add your desired styling for the selected container */
 /*
@@ -494,36 +497,37 @@ ob_end_clean();
 
 //(APP_SELF == __FILE__ || isset($_GET['app']) && $_GET['app'] == 'composer' ? 'selected' : (version_compare(COMPOSER_LATEST, COMPOSER_VERSION, '>') != 0 ? (isset($_GET['app']) && $_GET['app'] != 'composer' ? '' : 'selected') :  '')) 
 
-function highlightVersionDiff($installed, $latest) {
-    $installedParts = explode('.', $installed);
-    $latestParts = explode('.', $latest);
-    $result = '';
+function highlightVersionDiff($installed, $latest)
+{
+  $installedParts = explode('.', $installed);
+  $latestParts = explode('.', $latest);
+  $result = '';
 
-    $diffFound = false;
-    for ($i = 0; $i < max(count($installedParts), count($latestParts)); $i++) {
-        $installedPart = $installedParts[$i] ?? '';
-        $latestPart = $latestParts[$i] ?? '';
+  $diffFound = false;
+  for ($i = 0; $i < max(count($installedParts), count($latestParts)); $i++) {
+    $installedPart = $installedParts[$i] ?? '';
+    $latestPart = $latestParts[$i] ?? '';
 
-        if (!$diffFound && $installedPart === $latestPart) {
-            $result .= $latestPart;
-        } else {
-            if (!$diffFound) {
-                $diffFound = true;
-                $result .= '<span class="update" style="color: green; cursor: pointer;">';
-            }
-            $result .= $latestPart;
-        }
-
-        if ($i < max(count($installedParts), count($latestParts)) - 1) {
-            $result .= '.';
-        }
+    if (!$diffFound && $installedPart === $latestPart) {
+      $result .= $latestPart;
+    } else {
+      if (!$diffFound) {
+        $diffFound = true;
+        $result .= '<span class="update" style="color: green; cursor: pointer;">';
+      }
+      $result .= $latestPart;
     }
 
-    if ($diffFound) {
-        $result .= '</span>';
+    if ($i < max(count($installedParts), count($latestParts)) - 1) {
+      $result .= '.';
     }
+  }
 
-    return $result;
+  if ($diffFound) {
+    $result .= '</span>';
+  }
+
+  return $result;
 }
 
 
@@ -546,8 +550,8 @@ ob_start(); ?>
       <div style="display: inline;">
         <span style="background-color: #B0B0B0; color: white;">Composer
           <a href="#" alt="Installed: <?= COMPOSER_VERSION; ?>"><?= (defined('COMPOSER_VERSION') && version_compare(COMPOSER_LATEST, COMPOSER_VERSION, '>') !== 0)
-    ? highlightVersionDiff(COMPOSER_VERSION, COMPOSER_LATEST)
-    : COMPOSER_VERSION; ?></a>
+              ? highlightVersionDiff(COMPOSER_VERSION, COMPOSER_LATEST)
+              : COMPOSER_VERSION; ?></a>
         </span>
 
 
@@ -663,8 +667,8 @@ ob_start(); ?>
 
     <div class="absolute text-sm" style="position: absolute; bottom: 0; right: 0; padding: 2px; z-index: 1; ">
       <?= (defined('COMPOSER_VERSION') && version_compare(COMPOSER_LATEST, COMPOSER_VERSION, '>') !== 0)
-    ? 'Latest: ' . highlightVersionDiff(COMPOSER_VERSION, COMPOSER_LATEST)
-    : 'Installed: ' . COMPOSER_VERSION; ?>
+        ? 'Latest: ' . highlightVersionDiff(COMPOSER_VERSION, COMPOSER_LATEST)
+        : 'Installed: ' . COMPOSER_VERSION; ?>
     </div>
     <div style="position: relative; overflow: hidden; width: 398px; height: 250px;">
       <?php

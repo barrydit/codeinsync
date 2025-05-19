@@ -29,18 +29,19 @@ switch (APP_SELF) {
     //require_once dirname(__DIR__, 1) . DIRECTORY_SEPARATOR . 'config' . DIRECTORY_SEPARATOR . 'constants.php';
     break;
   default:
-    if ($php = realpath(dirname(__DIR__, 1) . DIRECTORY_SEPARATOR . 'config' . DIRECTORY_SEPARATOR . 'php.php')) {
+    if ($php = realpath(dirname(__DIR__, 1) . DIRECTORY_SEPARATOR . 'config' . DIRECTORY_SEPARATOR . 'php.php'))
       require_once $php; // APP_PATH . 'index.php'
-    } else {
+    else
       die(var_dump("$php was not found."));
-    }
-    break;
 }
+
+if ($file = realpath(dirname(__DIR__, 1) . DIRECTORY_SEPARATOR . 'index.php'))
+  require_once $file; // APP_PATH . 'index.php'
 
 
 //dd($_ENV, false);
 
-require_once 'config' . DIRECTORY_SEPARATOR . 'login.php';
+require_once dirname(__DIR__, 1) . DIRECTORY_SEPARATOR . 'config' . DIRECTORY_SEPARATOR . 'auth.php';
 
 //die(var_dump(APP_ROOT));
 
@@ -135,6 +136,7 @@ if (isset($_ENV['PHP']['LOG_PATH']) && is_readable($path = APP_PATH . APP_ROOT .
 
 // dd(getenv('PATH'));
 //die(phpinfo()); // get_defined_constants(true)['user']
+
 if (isset($_SERVER['REQUEST_METHOD']))
   switch ($_SERVER['REQUEST_METHOD']) {
     case 'POST':
@@ -265,169 +267,6 @@ if ($_SERVER['REQUEST_METHOD'] == 'GET' && __FILE__ == APP_PATH_PUBLIC)
 
 if (/*APP_SELF === APP_PATH_PUBLIC*/ dirname(APP_SELF) === dirname(APP_PATH_PUBLIC)) {
 
-  $appPaths = array_filter(glob(__DIR__ . DIRECTORY_SEPARATOR . 'app.*.php'), 'is_file'); // public/
-
-  // $globPaths[] = __DIR__ . DIRECTORY_SEPARATOR . 'app.console.php';
-  // $paths = array_values(array_unique(array_merge($additionalPaths, $globPaths)));
-
-  //if (isset($paths[APP_PATH . APP_BASE['public'] . 'app.install.php']))
-  //  unset($paths[APP_PATH . APP_BASE['public'] . 'app.install.php']);
-
-  // dd(get_included_files());
-
-  usort($appPaths, function ($a, $b) {
-    // Define your sorting criteria here
-    global $appPaths;
-
-    // install, debug, project, timesheet, browser, github, packagist, whiteboard, notes, pong, console
-    if (basename($a) === 'app.install.php')
-      return -1;
-    elseif (basename($b) === 'app.install.php')
-      return 1;
-    elseif (basename($a) === 'app.debug.php')
-      return -1;
-    elseif (basename($b) === 'app.debug.php')
-      return 1;
-    elseif (basename($a) === 'app.project.php')
-      return -1;
-    elseif (basename($b) === 'app.project.php')
-      return 1;
-    elseif (basename($a) === 'app.timesheet.php')
-      return -1;
-    elseif (basename($b) === 'app.timesheet.php')
-      return 1;
-    elseif (basename($a) === 'app.browser.php')
-      return -1;
-    elseif (basename($b) === 'app.browser.php')
-      return 1;
-    elseif (basename($a) === 'app.console.php')
-      return 1; // $a comes after $b
-    elseif (basename($b) === 'app.console.php')
-      return -1; // $a comes before $b
-    else
-      return strcmp(basename($a), basename($b)); // Compare other filenames alphabetically
-  });
-
-  if (in_array(APP_PATH . APP_BASE['public'] . 'app.install.php', $appPaths))
-    foreach ($appPaths as $key => $file)
-      if (basename($file) === 'app.install.php')
-        unset($appPaths[$key]);
-
-  $uiPaths = array_filter(glob(__DIR__ . DIRECTORY_SEPARATOR . '{ui}.*.php', GLOB_BRACE), 'is_file');
-
-  /*
-  if (in_array(APP_PATH . APP_BASE['public'] . 'ui.composer.php', $uiPaths))
-    foreach ($uiPaths as $key => $file)
-      if (basename($file) === 'ui.composer.php')
-        unset($uiPaths[$key]);
-  */
-
-  usort($uiPaths, function ($a, $b) {
-    $order = [
-      //'ui.medication_log.php' => -100, // Always first
-      'ui.calendar.php' => -10,
-      'ui.nodes.php' => -9,
-      'ui.php.php' => -8,
-      //'ui.errors.php' => -7,
-      'ui.composer.php' => 10,
-      'ui.npm.php' => 11,
-      'ui.ace_editor.php' => 12,
-      'ui.git.php' => 13,
-      'ui.notes.php' => 14,
-    ];
-
-    $aBase = basename($a);
-    $bBase = basename($b);
-
-    $aRank = $order[$aBase] ?? 0;
-    $bRank = $order[$bBase] ?? 0;
-
-    if ($aRank !== $bRank) {
-      return $aRank - $bRank;
-    }
-
-    return strcmp($aBase, $bBase); // Default alphabetical order
-  });
-
-  // If you want to reset the array keys to be numeric (optional)
-  $paths = array_values(array_unique(array_merge($uiPaths, $appPaths)));
-
-
-  //$paths = array_values(array_unique(array_merge($globPaths, $additionalPaths)));
-
-  /*9.4
-  do {
-      // Check if $paths is not empty
-      if (!empty($paths)) {
-          // Shift the first path from the array
-          $path = array_shift($paths);
-  
-          // Check if the path exists
-          if ($realpath = realpath($path)) {
-              // Require the file
-              require_once $realpath;
-          } else {
-              // Output a message if the file was not found
-              echo basename($path) . ' was not found. file=public/' . basename($path) . PHP_EOL;
-          }
-          
-          dd('finish time: ' . $path, false);
-      }
-      // Unset $paths if it is empty
-      if (empty($paths)) unset($paths);
-  } while (isset($paths) && !empty($paths));
-  */
-
-  //$path = '';
-  $app = $apps = [];
-
-  // Check if $paths is not empty
-  $path = ''; // Initialize to avoid undefined variable error
-
-  if (!empty($paths)) {
-    do {
-      $path = array_shift($paths); // Shift the first element
-
-      // Ensure $path exists before using it
-      //dd($path, false);
-      if ($realpath = realpath($path ?? '')) {
-
-        $returnedValue = (function () use ($realpath, &$app) {
-          //dd($realpath, false);
-          if ($realpath != rtrim(APP_PATH, '/'))
-            require_once $realpath;
-          ob_start();
-
-          $output = ob_get_clean();
-
-          $filename = basename($realpath);
-          if (preg_match('/^app\.([\w\-.]+)\.php$/', $filename, $matches)) {
-            return [$matches[1] => ['style' => $app[$matches[1]]['style'] ?? '', 'body' => $app[$matches[1]]['body'] ?? '', 'script' => $app[$matches[1]]['script'] ?? '']];
-          }
-
-          if (preg_match('/^ui\.([\w\-.]+)\.php$/', $filename, $matches)) {
-            $constantName = 'UI_' . strtoupper($matches[1]);
-            if (!defined($constantName)) {
-              define($constantName, ['style' => $app['style'] ?? '', 'body' => $app['body'] ?? '', 'script' => $app['script'] ?? '']);
-            }
-          }
-          //error_log(var_export(get_required_files(), true));
-          return null;
-        })();
-
-        if (is_array($returnedValue) && !empty($returnedValue)) {
-          $apps = array_merge($apps, $returnedValue);
-        }
-      } else {
-        error_log(basename($path) . " was not found. file=public/" . basename($path));
-      }
-
-    } while ($path);
-
-  } else {
-    error_log("No paths available for processing.");
-  }
-
   require_once 'idx.product.php';
   if (!empty($paths)) {
     do {
@@ -466,5 +305,5 @@ if (/*APP_SELF === APP_PATH_PUBLIC*/ dirname(APP_SELF) === dirname(APP_PATH_PUBL
     define('APP_ENV', 'production');
     require_once 'idx.product.php';
   }
-
+// comment
 }
