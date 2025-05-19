@@ -176,7 +176,7 @@ ob_start();
 
 <div id="app_git-container"
   class="<?= __FILE__ == get_required_files()[0] || isset($_GET['app']) && $_GET['app'] == 'git' || isset($errors['GIT_UPDATE']) ? 'selected' : (version_compare(GIT_LATEST, GIT_VERSION, '>') != 0 ? (isset($_GET['app']) && $_GET['app'] != 'git' ? '' : '') : '') ?>"
-  style="position: fixed; z-index: 1; width: 424px; background-color: rgba(255,255,255,0.8); padding: 10px;">
+  style="position: fixed; z-index: 3; width: 424px; background-color: rgba(255,255,255,0.8); padding: 10px;">
   <div
     style="position: relative; margin: 0 auto; width: 404px; height: 306px; border: 3px dashed #F05033; background-color: #FBF7F1;">
 

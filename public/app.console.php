@@ -290,7 +290,7 @@ background-color : lightblue;
 /* Styles for the absolute div */
 #app_console-container {
 position : fixed;
-bottom : 65px;
+bottom : 50px;
 left : 50%;
 transform : translateX(-50%);
 width : auto;
@@ -400,7 +400,7 @@ transform : translateX(100%);
 transform : translateX(-100%);
 }
 }*/
-<?php $app[$console]['style'] = ob_get_contents();
+<?php $app['style'] = ob_get_contents();
 ob_end_clean();
 
 ob_start(); ?>
@@ -408,7 +408,7 @@ ob_start(); ?>
 <!-- <div class="container" style="border: 1px solid #000;"> -->
 
 <div id="app_console-container" class="" style="border: 1px dashed #000; ">
-  <div id="process-list" class="process-list" onmouseout="stopScroll()">
+  <div id="process-list" class="process-list" onmouseout="stopScroll()" style="display: none;">
     <!--
       <div style="position: relative; width: 80px; height: 20px; background-color: #000; margin: 0 auto;">
         <div class="scroll-text" style="animation: none; border: 1px solid red; margin: auto; position: absolute; top: 50%; left: 30%; right: 50%; -ms-transform: translateY(-50%); transform: translateY(-50%);">
@@ -548,7 +548,7 @@ ob_start(); ?>
 
 <!-- </div> -->
 
-<?php $app[$console]['body'] = ob_get_contents();
+<?php $app['body'] = ob_get_contents();
 ob_end_clean();
 
 if (false) { ?>
@@ -618,7 +618,6 @@ ob_start(); ?>
   <?php if (defined('COMPOSER')) { ?>
     const initSubmit = document.getElementById('app_composer-init-submit');
   <?php } ?>
-
 
   let isFixed = false; // Store the current position state
 
@@ -694,7 +693,7 @@ ob_start(); ?>
         consoleContainer.style.top = '';
         consoleContainer.style.left = '50%';
         consoleContainer.style.right = '';
-        consoleContainer.style.bottom = '35px';
+        consoleContainer.style.bottom = '50px';
         consoleContainer.style.transform = 'translate(-50%, -50%)';
         consoleContainer.style.textAlign = 'center';
         consoleContainer.style.zIndex = '999';
@@ -715,7 +714,7 @@ ob_start(); ?>
         consoleContainer.style.position = 'fixed';
         consoleContainer.style.top = '35%'; // Set the fixed position as needed
         consoleContainer.style.left = '50%';
-        consoleContainer.style.bottom = '32px';
+        consoleContainer.style.bottom = '36px';
         consoleContainer.style.transform = 'translate(-50%, -50%)';
         consoleContainer.style.zIndex = '999';
 
@@ -1089,7 +1088,7 @@ ob_start(); ?>
               //data = data.trim(); // replace(/(\r\n|\n|\r)/gm, "")
 
               if (matches = argv.match(/edit(\s+(:?.*)?|)/gm)) {
-                editor1.setValue(data);
+                //editor1.setValue(data);
 
                 document.getElementById('app_ace_editor-container').style.display = 'block';
                 //console.log(data);
@@ -1282,7 +1281,7 @@ ob_start(); ?>
 
 });
 });
-  <?php $app[$console]['script'] = ob_get_contents();
+  <?php $app['script'] = ob_get_contents();
   ob_end_clean();
 
   if (false) { ?></script><?php }
@@ -1328,27 +1327,27 @@ ob_start(); ?>
     src="<?= !defined('APP_IS_ONLINE') || !APP_IS_ONLINE ? '' : (check_http_status($url) ? substr($url, strpos($url, parse_url($url)['host']) + strlen(parse_url($url)['host'])) : substr($path, strpos($path, dirname(APP_BASE['resources'] . 'js')))) ?>"></script>
 
   <style type="text/tailwindcss">
-    <?= $app[$console]['style']; ?>
+    <?= $app['style']; ?>
 </style>
 </head>
 
 <body>
-  <?= $app[$console]['body']; ?>
+  <?= $app['body']; ?>
 
   <!-- https://cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.min.js -->
   <script src="//code.jquery.com/jquery-1.12.4.js"></script>
   <script src="//code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
   <!-- <script src="resources/js/jquery/jquery.min.js"></script> -->
   <script>
-    <?= $app[$console]['script']; ?>
+    <?= $app['script']; ?>
   </script>
 </body>
 
 </html>
-<?php $app[$console]['html'] = ob_get_contents();
+<?php $app['html'] = ob_get_contents();
 ob_end_clean();
 
 //check if file is included or accessed directly
 if (__FILE__ == get_required_files()[0] || in_array(__FILE__, get_required_files()) && isset($_GET['app']) && $_GET['app'] == 'console' && APP_DEBUG)
-  die($app[$console]['html']);
+  die($app['html']);
 

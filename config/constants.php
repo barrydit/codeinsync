@@ -539,7 +539,7 @@ switch(get_included_files()[0]) {
 
   break;
 
-  case APP_PATH . 'login.php':
+  case APP_PATH . 'auth.php':
 
   break;
   

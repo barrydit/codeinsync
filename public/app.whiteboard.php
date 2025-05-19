@@ -101,7 +101,7 @@ text-align : center;
 padding : 10px;
 z-index : 1;
 }
-<?php $app[$whiteboard]['style'] = ob_get_contents();
+<?php $app['style'] = ob_get_contents();
 ob_end_clean();
 
 if (false) { ?></style><?php }
@@ -129,7 +129,7 @@ ob_start(); ?>
 </div>
 <!-- </div> -->
 
-<?php $app[$whiteboard]['body'] = ob_get_contents();
+<?php $app['body'] = ob_get_contents();
 ob_end_clean();
 
 if (false) { ?>
@@ -265,7 +265,7 @@ ob_start(); ?>
     prevent = false;
   }
 
-  <?php $app[$whiteboard]['script'] = ob_get_contents();
+  <?php $app['script'] = ob_get_contents();
   ob_end_clean();
 
   if (false) { ?></script><?php }
@@ -364,15 +364,15 @@ canvas
   <script src="//code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
   <!-- <script src="../resources/js/jquery/jquery.min.js"></script> -->
   <script>
-    <?= $app[$whiteboard]['script']; ?>
+    <?= $app['script']; ?>
   </script>
 </body>
 
 </html>
-<?php $app[$whiteboard]['html'] = ob_get_contents();
+<?php $app['html'] = ob_get_contents();
 ob_end_clean();
 
 //check if file is included or accessed directly
 if (__FILE__ == get_required_files()[0] || in_array(__FILE__, get_required_files()) && isset($_GET['app']) && $_GET['app'] == 'php' && APP_DEBUG)
-  die($app[$whiteboard]['html']);
+  die($app['html']);
 

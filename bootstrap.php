@@ -2,13 +2,12 @@
 
 // Define APP_PATH constant
 !defined('APP_PATH') and
-  define('APP_PATH', realpath(__DIR__ . DIRECTORY_SEPARATOR /*. '..' . DIRECTORY_SEPARATOR*/) . DIRECTORY_SEPARATOR);
+  define('APP_PATH', realpath(__DIR__ /*. '..' . DIRECTORY_SEPARATOR*/) . DIRECTORY_SEPARATOR);
 // Define base paths
 !defined('BASE_PATH') and
   define('BASE_PATH', __DIR__ . DIRECTORY_SEPARATOR) and
   is_string(BASE_PATH) ?: $errors['BASE_PATH'] = "BASE_PATH is not a valid string value.\n"; // APP_PATH
 define('CONFIG_PATH', BASE_PATH . 'config' . DIRECTORY_SEPARATOR);
-
 
 // CONFIG_PATH, PUBLIC_PATH, STORAGE_PATH, VENDOR_PATH, VIEW_PATH, CACHE_PATH, LOG_PATH, TEMP_PATH, UPLOAD_PATH, ASSETS_PATH, APP_PATH, BASE_PATH, ROOT_PATH, SRC_PATH, TEST_PATH, WWW_PATH
 /*
@@ -26,6 +25,8 @@ if (!defined('APP_ROOT')) {
     define('APP_ROOT', !empty(realpath(APP_PATH . ($path = rtrim($path, DIRECTORY_SEPARATOR)) ) && $path != '') ? (string) $path . DIRECTORY_SEPARATOR : '');  // basename() does not like null
 }*/
 
+// Define project and client folders based on GET parameters
+
 $projectFolder = 'projects' . DIRECTORY_SEPARATOR . 'internal' . DIRECTORY_SEPARATOR . ($_GET['project'] ?? '');
 $projectPath = __DIR__ . DIRECTORY_SEPARATOR . $projectFolder;
 
@@ -38,18 +39,17 @@ $clientPath = __DIR__ . DIRECTORY_SEPARATOR . $clientFolder;
 function resolveProject($dirs, $requestedProject = null)
 {
   // Match requested domain to available directories
-  if ($requestedProject) {
+  if ($requestedProject)
     foreach ($dirs as $dir) {
       if (basename($dir) === $requestedProject) {
         return basename($dir);
       }
     }
-  }
+
 
   // If no domain requested and exactly one directory exists, use it
-  if (count($dirs) === 1) {
+  if (count($dirs) === 1)
     return basename(reset($dirs));
-  }
 
   // No valid domain found
   return null;
@@ -62,18 +62,16 @@ function resolveProject($dirs, $requestedProject = null)
 function resolveDomain($dirs, $requestedDomain = null)
 {
   // Match requested domain to available directories
-  if ($requestedDomain) {
+  if ($requestedDomain)
     foreach ($dirs as $dir) {
-      if (basename($dir) === $requestedDomain) {
+      if (basename($dir) === $requestedDomain)
         return basename($dir);
-      }
     }
-  }
+
 
   // If no domain requested and exactly one directory exists, use it
-  if (count($dirs) === 1) {
+  if (count($dirs) === 1)
     return $_GET['domain'] = basename(reset($dirs));
-  }
 
   // No valid domain found
   return null;
@@ -85,9 +83,9 @@ function resolveDomain($dirs, $requestedDomain = null)
 function resolveClient($clientFolder)
 {
   // Check if the provided client folder exists
-  if (is_dir(__DIR__ . DIRECTORY_SEPARATOR . $clientFolder)) {
+  if (is_dir(__DIR__ . DIRECTORY_SEPARATOR . $clientFolder))
     return $clientFolder . DIRECTORY_SEPARATOR;
-  }
+
 
   // Return empty if client folder doesn't exist
   return '';

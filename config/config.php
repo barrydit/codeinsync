@@ -306,7 +306,7 @@ if (basename($dir = getcwd()) != 'config') {
     chdir('../');
 
   //require_once 'constants.php';
-  //require_once 'config' . DIRECTORY_SEPARATOR . 'login.php';
+  //require_once 'config' . DIRECTORY_SEPARATOR . 'auth.php';
   //dd(getcwd());
   require_once APP_PATH . 'bootstrap.php';
 
@@ -433,7 +433,7 @@ html, body {
 </html>
 END
       );
-  dd('testing...');
+  // dd('testing...');
   if (basename(get_required_files()[0]) !== 'release-notes.php')
     if (is_dir('config')) {
       $previousFilename = ''; // Initialize the previous filename variable
@@ -493,6 +493,7 @@ if (stripos(PHP_OS, 'WIN') === 0) {
 }
 
 
+//dd(get_defined_constants(true)['user']);
 
 /*
 if ($path = realpath((basename(__DIR__) != 'config' ? NULL : __DIR__ . DIRECTORY_SEPARATOR ) . 'constants.php')) // is_file('config' . DIRECTORY_SEPARATOR . 'constants.php')) 

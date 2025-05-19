@@ -98,7 +98,7 @@ z-index : 1;
 transform : translateZ(0);
 overflow-x : hidden;
 }
-<?php $app[$project]['style'] = ob_get_contents();
+<?php $app['style'] = ob_get_contents();
 ob_end_clean();
 if (false) { ?></style><?php }
 ob_start(); ?>
@@ -169,7 +169,7 @@ ob_start(); ?>
     </div>
   </div>
 </div>
-<?php $app[$project]['body'] = ob_get_contents();
+<?php $app['body'] = ob_get_contents();
 ob_end_clean();
 
 if (false) { ?>
@@ -252,7 +252,7 @@ ob_start(); ?>
 
   });
 
-  <?php $app[$project]['script'] = ob_get_contents();
+  <?php $app['script'] = ob_get_contents();
   ob_end_clean();
 
   if (false) { ?></script><?php }
@@ -293,12 +293,12 @@ ob_start(); ?>
   <script src="<?= 'resources/js/tailwindcss-3.3.5.js' ?? $url ?>"></script>
 
   <style type="text/tailwindcss">
-    <?= $app[$project]['style']; ?>
+    <?= $app['style']; ?>
 </style>
 </head>
 
 <body>
-  <?= $app[$project]['body']; ?>
+  <?= $app['body']; ?>
 
   <script
     src="<?= check_http_status('https://code.jquery.com/jquery-3.7.1.min.js') ? 'https://code.jquery.com/jquery-3.7.1.min.js' : "{$path}jquery-3.7.1.min.js" ?>"></script>
@@ -329,12 +329,12 @@ ob_start(); ?>
 
     });
 
-    <?= $app[$project]['script']; ?>
+    <?= $app['script']; ?>
   </script>
 </body>
 
 </html>
-<?php $app[$project]['html'] = ob_get_contents();
+<?php $app['html'] = ob_get_contents();
 ob_end_clean();
 
 //check if file is included or accessed directly

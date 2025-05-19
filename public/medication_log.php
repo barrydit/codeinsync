@@ -220,49 +220,66 @@ $logs = array_reverse($data); ?>
 
 <body>
     <?php
+    // Check if the data is an array, if not, initialize it as an empty array
+    $logMap = [];
+
+    // Normalize log by date for easy lookup
+    foreach ($data as $entry) {
+        if (!is_array($entry))
+            $entry = json_decode($entry, true);
+        if (isset($entry['date'])) {
+            $logMap[$entry['date']] = $entry['doses'];
+        }
+    }
+
+    // Calculate this week's Sunday–Saturday range
+    $today = new DateTime();
+    $startOfWeek = clone $today;
+    $startOfWeek->modify('last Sunday'); // Change to 'last Monday' if you prefer
+    $endOfWeek = clone $startOfWeek;
+    $endOfWeek->modify('+6 days');
+
     echo '<div style="text-align: center; width: 50%; margin: 0 auto;">
-        <div style="width: 400px; text-align: left; margin-left: auto; margin-right: auto; margin-bottom: 20px;">';
-    echo "<h2>Medication History</h2>";
+    <div style="width: 400px; text-align: left; margin-left: auto; margin-right: auto; margin-bottom: 20px;">';
+
+    echo "<h2>Dashboard's Stack</h2>";
     echo "<ul>";
 
-    foreach ($logs as $key => $entry) {
+    // WEEK HEADER
+    echo "<li style='background-color: #333; color: #fff; padding: 5px; font-weight: bold;'>
+        Monday - Sunday" /*. $startOfWeek->format("M j") . " - " . $endOfWeek->format("M j") . " (W" . $startOfWeek->format('W') . ")*/ . "
+      </li>";
 
-        // Decode JSON string to associative array
-        // Check if the entry is an array       
-        if (!is_array($entry)) {
-            $entry = json_decode($entry, true);
-            continue; // Skip this entry if it's not an array
-        }
-        // Check if the entry has the required keys
-        if (!isset($entry["date"]) || !isset($entry["doses"])) {
-            continue; // Skip this entry if it doesn't have the required keys
-        }
-        // Check if the doses are an array
-        if (!is_array($entry["doses"])) {
-            continue; // Skip this entry if doses are not an array
-        }
-        // Check if the doses have the required keys
-        foreach ($entry["doses"] as $dose) {
-            if (!isset($dose["time"]) || !isset($dose["status"]) || !isset($dose["note"])) {
-                continue; // Skip this dose if it doesn't have the required keys
+    // Build week view
+    for ($i = 7; $i >= 1; $i--) {
+        $date = clone $startOfWeek;
+        $date->modify("+$i day");
+        $dateStr = $date->format('Y-m-d');
+        $dayName = $date->format('l');
+        $isWeekend = in_array($date->format('w'), ['0', '6']);
+        $bgColor = $isWeekend ? 'background-color: #ffe6e6;' : ($i % 2 === 0 ? 'background-color: lightblue;' : '');
+
+        echo "<li style=\"$bgColor\">
+        <strong>$dateStr ($dayName)</strong>
+        <ul>";
+
+        if (isset($logMap[$dateStr])) {
+            // Reverse dose order (PM first, then AM)
+            $doses = array_reverse($logMap[$dateStr]);
+            foreach ($doses as $dose) {
+                $color = $dose["status"] === "missed" ? "red" : "green";
+                echo "<li style='color: $color;'>{$dose['time']} - {$dose['status']} ({$dose['note']})</li>";
             }
-        }
-        // Check if the date is in the correct format
-        echo "<li style=\"" . ($key % 2 === 0 ? 'background-color: lightblue;' : '') . "\">
-            <strong>{$entry['date']}</strong>
-            <ul>";
-        $entry["doses"] = array_reverse($entry["doses"]);
-        foreach ($entry["doses"] as $dose) { // Now looping through indexed array
-            $color = $dose["status"] === "missed" ? "red" : "green";
-            echo "<li style='color: $color;'>{$dose['time']} - {$dose['status']} ({$dose['note']})</li>";
+        } else {
+            // No entry? Assume both doses missed
+            //echo "<li style='color: red;'>10:00 PM - not yet?</li>";
+            //echo "<li style='color: red;'>10:00 AM - not yet?</li>";
         }
 
         echo "</ul></li>";
     }
 
-    echo "</ul>";
-    echo '</div></div>'; ?>
-
+    echo "</ul></div></div>"; ?>
 </body>
 
 </html>

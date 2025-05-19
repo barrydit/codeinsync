@@ -218,7 +218,7 @@ z-index : 1;
 
 
 
-<?php $app[$notes]['style'] = ob_get_contents();
+<?php $app['style'] = ob_get_contents();
 ob_end_clean();
 
 ob_start(); ?>
@@ -246,14 +246,14 @@ ob_start(); ?>
 </div>
 <!-- </div> -->
 
-<?php $app[$notes]['body'] = ob_get_contents();
+<?php $app['body'] = ob_get_contents();
 ob_end_clean();
 
 if (false) { ?>
   <script type="text/javascript"><?php }
 ob_start(); ?>
   // Javascript comment
-  <?php $app[$notes]['script'] = ob_get_contents();
+  <?php $app['script'] = ob_get_contents();
   ob_end_clean();
 
   if (false) { ?></script><?php }
@@ -361,7 +361,7 @@ pre {
             <input type="submit" value="Update/Save" /><br />
             Language:
             <select id="language" name="language">
-              <?php foreach (array('bash' => 'BASH', 'diff' => 'Diff', 'javascript' => 'JavaScript', 'php' => 'PHP', 'python' => 'Python', 'sql' => 'SQL', 'xml' => 'XML/HTML') as $key => $language) { ?>
+              <?php foreach (['bash' => 'BASH', 'diff' => 'Diff', 'javascript' => 'JavaScript', 'php' => 'PHP', 'python' => 'Python', 'sql' => 'SQL', 'xml' => 'XML/HTML'] as $key => $language) { ?>
                 <option value="language-<?= $key ?>"><?= $language; ?></option>
               <?php } ?>
             </select><br />
@@ -494,10 +494,10 @@ pre {
 </body>
 
 </html>
-<?php $app[$notes]['html'] = ob_get_contents();
+<?php $app['html'] = ob_get_contents();
 ob_end_clean();
 
 //check if file is included or accessed directly
 if (__FILE__ == get_required_files()[0] || in_array(__FILE__, get_required_files()) && isset($_GET['app']) && $_GET['app'] == 'php' && APP_DEBUG)
-  die($app[$notes]['html']);
+  die($app['html']);
 

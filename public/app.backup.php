@@ -98,7 +98,7 @@ white-space: pre-wrap;
 }
 
 
-<?php $app[$backup]['style'] = ob_get_contents();
+<?php $app['style'] = ob_get_contents();
 ob_end_clean();
 
 ob_start(); ?>
@@ -221,7 +221,7 @@ ob_start(); ?>
 
 </div>
 
-<?php $app[$backup]['body'] = ob_get_contents();
+<?php $app['body'] = ob_get_contents();
 ob_end_clean();
 
 if (false) { ?>
@@ -275,14 +275,14 @@ ob_start(); ?>
 
   dragElement(document.getElementById("separator"), "V");
 
-  <?php $app[$backup]['script'] = ob_get_contents();
+  <?php $app['script'] = ob_get_contents();
   ob_end_clean();
 
   if (false) { ?></script><?php }
 
   ob_start(); ?>
 
-<?php $app[$backup]['html'] = ob_get_contents();
+<?php $app['html'] = ob_get_contents();
 ob_end_clean();
 
 //check if file is included or accessed directly

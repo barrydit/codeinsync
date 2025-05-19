@@ -229,7 +229,7 @@ ob_start(); ?>
 
             <div style="clear: both;"></div>
 
-            <?= /*
+            <?php /*
 <div class="containerTbl" style="background-ground: #fff; border: 1px solid #000; display: <?= (isset($_GET['file']) && isset($_GET['path']) && is_file($_GET['path'] . $_GET['file']) ? 'none': 'block' ) ?>;">
 <table width="" style="border: 1px solid #000;">
 <tr>
@@ -270,7 +270,7 @@ else $count++;
 </tr>
 </table>
 </div>
-*/ NULL; ?>
+*/ ''; ?>
 
         </div>
 
@@ -342,11 +342,8 @@ if ($path)
 
 
     <!-- <pre id="ace-editor" class="errors"></pre> -->
-
-</div>
-
-<div id="app_notes-frameInit" class="app_notes-frame-container absolute" style="overflow: hidden; height: 270px;">
-    <!--
+    <div id="app_notes-frameInit" class="app_notes-frame-container absolute" style="overflow: hidden; height: 270px;">
+        <!--
     <form autocomplete="off" spellcheck="false" action="?app=git#!" method="POST">
       <div style="position: absolute; right: 0; float: right; text-align: center;">
         <input id="gitInitSubmit" class="btn" type="submit" value="Init/Run">
@@ -362,12 +359,14 @@ if ($path)
       </div>
     </form>
 -->
+    </div>
+
+    <div id="app_notes-frameExtra" style="position: relative; width: 100%; height: 100%; border: 1px #000 solid;">
+
+
+    </div>
 </div>
 
-<div id="app_notes-frameExtra" style="position: relative; width: 100%; height: 100%; border: 1px #000 solid;">
-
-
-</div>
 <?php
 
 $app['body'] = ob_get_contents();
