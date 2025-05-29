@@ -37,7 +37,7 @@ ob_start(); ?>
     display: none;
     left: 832px;
     top: 96px;
-    z-index: 99;
+    /* z-index: 99; */
   }
 
   .directory-grid {
@@ -82,76 +82,118 @@ ob_start(); ?>
 
   <div id="info"
     style="position: fixed; display: none; width: 570px; height: 500px; top: calc(50% - 300px); /* 500 / 2 */
-left: calc(50% - 265px); /* 1207 / 2 */ /*transform: translate(-50%, -50%);*/ border: 5px solid #000; background-repeat: no-repeat; background-color: #FFFFFF; background-image: url(resources/images/group_type.png); z-index:99;">
+left: calc(50% - 265px); /* 1207 / 2 */ /*transform: translate(-50%, -50%);*/ border: 5px solid #000; background-repeat: no-repeat; background-color: #FFFFFF; z-index:99;">
     <div
       style="position: absolute; display: block; background-color: #FFFFFF; z-index: 1; right: 0px; margin-top: -20px;">
       [<a href="#" onclick="document.getElementById('info').style.display = 'none';">x</a>]</div>
     <form method="post" action="/?path" enctype="multipart/form-data">
-      <button type="submit" style="position: absolute; top: 20px; left: 20px; border: 1px solid #000; padding: 3px;">Add /
-        Download</button>
-      <span style="position: absolute; text-align: right; left: 250px; top: 20px; width: 300px;">
-        <?php if ($group_type !== NULL) {
-          echo $group_type;
-        } ?>
-      </span>
-      <fieldset id="group_type">
-        <input style="position:absolute; top: 212px; left: 80px;" type="radio" value="file" name="group_type">
-        <input style="position:absolute; top: 212px; left: 204px;" type="radio" value="ftp" name="group_type">
-        <input style="position:absolute; top: 212px; left: 344px;" type="radio" value="github" name="group_type">
-        <input style="position:absolute; top: 212px; left: 473px;" type="radio" value="www" name="group_type">
-        <input style="position:absolute; top: 421px; left: 70px;" type="radio" value="client" name="group_type">
-        <input style="position:absolute; top: 421px; left: 473px;" type="radio" value="project" name="group_type">
-      </fieldset>
-
-      <div style="position: absolute; top: 300px; left: 190px; text-align: center;">Add A File<br />
-        <input name="file_name" type="text" required="required" style="width: 200px;" />
-
+      <div class="directory-grid">
+        <div class="directory-entry">
+          <div style="position: relative;">
+            <a href="#!" onclick="handleClick(event, '../');">
+              <img src="resources/images/new_file.png" width="58" height="69" />
+              New File</a>
+          </div>
+        </div>
+        <div class="directory-entry">
+          <div style="position: relative;">
+            <a href="#!" onclick="handleClick(event, '../');">
+              <img src="resources/images/git_clone.png" width="69" height="69" />
+              Git<br>(clone)</a>
+          </div>
+        </div>
+        <div class="directory-entry">
+          <div style="position: relative;">
+            <a href="#!" onclick="handleClick(event, '../');">
+              <img src="resources/images/ftp_conn.png" width="82" height="71" />
+              FTP</a>
+          </div>
+        </div>
+        <div class="directory-entry">
+          <div style="position: relative;">
+            <a href="#!" onclick="handleClick(event, '../');">
+              <img src="resources/images/www_curl.png" width="75" height="81" />
+              www<br>(curl)</a>
+          </div>
+        </div>
+        <div class="directory-entry">
+          <div style="position: relative;">
+            <a href="#!" onclick="handleClick(event, '../');">
+              <img src="resources/images/clients.png" width="74" height="79" />
+              Clients</a>
+          </div>
+        </div>
+        <div class="directory-entry">
+          <div style="position: relative;">
+            <a href="#!" onclick="handleClick(event, '../');">
+              <img src="resources/images/projects.png" width="74" height="79" />
+              Projects</a>
+          </div>
+        </div>
       </div>
+
     </form>
   </div>
 
   <?php
   //$path = APP_PATH . APP_ROOT . ($_GET['path'] ?? '');
-  //dd($_GET);
-  // Base navigation path
-  $basePath = rtrim(APP_PATH, DIRECTORY_SEPARATOR);
-  $clientPath = $_GET['client'] ?? null;
-  $domainPath = $_GET['domain'] ?? null;
-  $projectPath = $_GET['project'] ?? null;
-  $relativePath = isset($_GET['path']) ? trim($_GET['path'], DIRECTORY_SEPARATOR) : null;
+//dd($_GET);
+// Base navigation path
 
-  // Base link
-  $navigation = '<div style="height: 25px; display: inline;"><br /><br />[[ ' . APP_PATH . ' ]' . (APP_ROOT !== '' ? '[ ' . APP_ROOT . ' ]' : '') . (isset($_REQUEST['path']) && $_REQUEST['path'] !== '' ? '[ ' . (APP_BASE[rtrim($_REQUEST['path'], DIRECTORY_SEPARATOR)] ?? $_REQUEST['path']) . ' ]' : '') . '] ' . '</div><div style="display: inline;">' . '<div class="directory-grid"><div class="directory-entry">' . '<div style="position: relative; display: ' . (isset($_REQUEST['path']) && $_REQUEST['path'] !== '' ? 'block' : 'none' ) . ';">'
-    . '<a href="#!" onclick="handleClick(event, \'../\');">' // "?path=' . basename($path) . '" 
-    . '<img src="resources/images/directory.png" width="50" height="32" />'
-    . '../</a></div></div>' . "\n"
-    . '<div class="directory-entry">' . '<div style="position: relative;">'
-    . '<a href="#!" onclick="handleClick(event, \'../\');">' // "?path=' . basename($path) . '" 
-    . '<img src="resources/images/new_file.png" width="58" height="69" />'
-    . 'New File</a></div></div>' . "\n"
-    . '<div class="directory-entry">' . '<div style="position: relative;">'
-    . '<a href="#!" onclick="handleClick(event, \'../\');">' // "?path=' . basename($path) . '" 
-    . '<img src="resources/images/git_clone.png" width="69" height="69" />'
-    . 'Git<br>(clone)</a></div></div>' . "\n"
-    . '<div class="directory-entry">' . '<div style="position: relative;">'
-    . '<a href="#!" onclick="handleClick(event, \'../\');">' // "?path=' . basename($path) . '" 
-    . '<img src="resources/images/ftp_conn.png" width="82" height="71" />'
-    . 'FTP</a></div></div>' . "\n"
-    . '<div class="directory-entry">' . '<div style="position: relative;">'
-    . '<a href="#!" onclick="handleClick(event, \'../\');">' // "?path=' . basename($path) . '" 
-    . '<img src="resources/images/www_curl.png" width="75" height="81" />'
-    . 'www<br>(curl)</a></div></div>' . "\n"
-    . '<div class="directory-entry">' . '<div style="position: relative;">'
-    . '<a href="#!" onclick="handleClick(event, \'../\');">' // "?path=' . basename($path) . '" 
-    . '<img src="resources/images/clients.png" width="74" height="79" />'
-    . 'Clients</a></div></div>' . "\n"
-    . '<div class="directory-entry">' . '<div style="position: relative;">'
-    . '<a href="#!" onclick="handleClick(event, \'../\');">' // "?path=' . basename($path) . '" 
-    . '<img src="resources/images/projects.png" width="74" height="79" />'
-    . 'Projects</a></div></div>' . "\n"
-    . '</div></div>';
-  echo $navigation;
+  $base = rtrim(APP_PATH, '/');               // e.g., /mnt/c/www
+  $root = defined('APP_ROOT') ? trim(APP_ROOT, '/') : null;
+  $client = $_GET['client'] ?? null;
+  $domain = $_GET['domain'] ?? null;
+  $path = $_GET['path'] ?? null;
 
+  $segments = [];
+
+  // Segment 1: APP_PATH (always shown)
+  $segments[] = '[ <a href="' . basename(__FILE__) . '?path=" onclick="handleClick(event, \'./\')">' . $base . '/</a> ]';
+
+  // Segment 2: if APP_ROOT is defined
+  if ($root) {
+    // Split APP_ROOT to extract "projects/clients" + "000-Doe,John/domain"
+    $parts = explode('/', $root);
+
+    // Static prefix (projects/clients)
+    $static = implode('/', array_slice($parts, 0, 2));
+    $staticPath = $base . '/' . $static;
+
+    $segments[] = '[ <a href="' . basename(__FILE__) . '?client=" onclick="handleClick(event, \'' . basename($static) . '/\')">' . '(projects/)' . basename($static) . '</a> ]';
+
+    // Dynamic client/domain part
+    $dynamic = implode('/', array_slice($parts, 2));
+    $finalPath = $staticPath . '/' . $dynamic;
+
+    $segments[] = '[ <a href="#" class="breadcrumb" data-path="' . $finalPath . '">' . $dynamic . '/</a> ]';
+
+  } elseif ($client || $domain) {
+    // Only show static "projects/clients/" if APP_ROOT is not defined
+    $clientBase = 'projects/clients';
+    $clientPath = $base . '/' . $clientBase;
+    $segments[] = '[ <a href="' . basename(__FILE__) . '?client=" onclick="handleClick(event, \'' . $clientBase . '/\')">' . $clientBase . '/</a> ]';
+  }
+
+  // Optional fallback: If path is set and APP_ROOT not defined
+  if (!$root && $path) {
+    $segments[] = '[ <a href="' . basename(__FILE__) . '?path=' . urlencode($path) . '" onclick="handleClick(event, \'' . addslashes($path) . '\')">' . rtrim($path, '/') . '/</a> ]';
+  }
+
+  echo '<div id="breadcrumb" style="height: 25px; display: inline;"><br /><br />' . implode('', $segments) . '</div>';
+
+
+  /*
+    $basePath = rtrim(APP_PATH, DIRECTORY_SEPARATOR);
+    $clientPath = $_GET['client'] ?? null;
+    $domainPath = $_GET['domain'] ?? null;
+    $projectPath = $_GET['project'] ?? null;
+    $relativePath = isset($_GET['path']) ? trim($_GET['path'], DIRECTORY_SEPARATOR) : null;
+
+    // Base link
+    $navigation = '<div style="height: 25px; display: inline;"><br /><br />[[ <a href="#" onclick="handleClick(event, \'./\');">' . APP_PATH . '</a> ]' . (APP_ROOT !== '' ? '[ <a href="#" onclick="handleClick(event, \'../\');">' . APP_ROOT . '</a> ]' : '') . (isset($_REQUEST['path']) && $_REQUEST['path'] !== '' ? '[ <a href="#" onclick="handleClick(event, \'../\');">' . (APP_BASE[rtrim($_REQUEST['path'], DIRECTORY_SEPARATOR)] ?? $_REQUEST['path']) . '</a> ]' : '') . '] ' . '</div><div style="display: inline;">' . '</div>';
+    echo $navigation;
+  */
   /*  $cwd = getcwd();
   (str_starts_with($cwd, APP_PATH)
     ? substr($cwd, strlen(APP_PATH))
@@ -494,13 +536,26 @@ left: calc(50% - 265px); /* 1207 / 2 */ /*transform: translate(-50%, -50%);*/ bo
       <div class="directory-grid">
         <?php
 
+        if (isset($_REQUEST['path']) && $_REQUEST['path'] !== '') {
+          echo <<<END
+<div class="directory-entry">
+<div
+  style="position: relative; display: <?=  ? 'block' : 'none' ?> ;">
+  <a href="app.directory.php?client={$_REQUEST['client']}&domain={$_REQUEST['domain']}&path={$_REQUEST['path']}" onclick="handleClick(event, '../{$_REQUEST['path']}');">
+    <img src="resources/images/directory.png" width="50" height="32" />
+    ../</a>
+</div>
+</div>
+END;
+        }
+
         //dd(APP_CLIENT, false);
   
         //$path = (defined('APP_CLIENT')) ? APP_CLIENT : APP_PATH . (!isset($_GET['domain']) && isset($_GET['client']) ? APP_ROOT : APP_ROOT);
   
         //echo dirname($pathAvail) . DIRECTORY_SEPARATOR . ($_GET['path'] ?? '');
   
-        //$paths = ['thgsgfhfgh.php']; // dirname(APP_PATH . APP_ROOT) . DIRECTORY_SEPARATOR 
+        //$paths = ['thgsgfhfgh.php']; // dirname(APP_PATH . APP_ROOT) . DIRECTORY_SEPARATOR
         $paths = glob(rtrim($path . ($_GET['path'] ?? ''), DIRECTORY_SEPARATOR) . DIRECTORY_SEPARATOR . '{.[!.]*,*}', GLOB_BRACE | GLOB_MARK);
 
         unset($path);
@@ -1023,6 +1078,7 @@ left: calc(50% - 265px); /* 1207 / 2 */ /*transform: translate(-50%, -50%);*/ bo
     <?php }
 
   }
+
   $returnValue = ob_get_contents();
   ob_end_clean();
   return $returnValue;
@@ -1213,8 +1269,8 @@ left: calc(50% - 265px); /* 1207 / 2 */ /*transform: translate(-50%, -50%);*/ bo
 
   /*ob_start(); ?>
 
-<?php $app['style'] = ob_get_contents();
-ob_end_clean();  */
+  <?php $app['style'] = ob_get_contents();
+  ob_end_clean();  */
 
   ob_start();
   //dd(get_required_files(), false); ?>
@@ -1279,7 +1335,6 @@ ob_end_clean();  */
     overflow-y: auto;
     overflow-x: hidden;
     resize: vertical;
-    z-index: 1000;
   ">
   <?= $tableGen(); /*'';*/ ?>
 </div>
@@ -1337,70 +1392,98 @@ show_console();
 // $('#app_directory-container').html('Loading ' + folder + '...');
 }
 }
-<?php
-$app['script'] = ob_get_contents();
-ob_end_clean();
 
-ob_start(); ?>
-<!DOCTYPE html>
-<html>
+document.addEventListener('DOMContentLoaded', () => {
+// Support clicking
+document.querySelectorAll('.breadcrumb').forEach(link => {
+link.addEventListener('click', e => {
+e.preventDefault();
+const path = e.target.dataset.path;
+handleClick(e, path); // your custom function
+});
+link.setAttribute('tabindex', '0'); // make it keyboard focusable
+link.addEventListener('keydown', e => {
+if (e.key === 'Enter') {
+const path = e.target.dataset.path;
+handleClick(e, path);
+}
+});
+});
 
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
-  <link rel="stylesheet" href="//code.jquery.com/ui/1.12.1/themes/smoothness/jquery-ui.css" />
-
+// Optional: Left/Right arrow navigation
+let crumbs = Array.from(document.querySelectorAll('.breadcrumb'));
+crumbs.forEach((el, idx) => {
+el.addEventListener('keydown', e => {
+if (e.key === 'ArrowRight' && idx < crumbs.length - 1) { crumbs[idx + 1].focus(); } if (e.key==='ArrowLeft' && idx> 0) {
+  crumbs[idx - 1].focus();
+  }
+  });
+  });
+  });
   <?php
-  // (check_http_status('https://cdn.tailwindcss.com') ? 'https://cdn.tailwindcss.com' : APP_URL . 'resources/js/tailwindcss-3.3.5.js')?
+  $app['script'] = ob_get_contents();
+  ob_end_clean();
+
+  ob_start(); ?>
+  <!DOCTYPE html>
+  <html>
+
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <link rel="stylesheet" href="//code.jquery.com/ui/1.12.1/themes/smoothness/jquery-ui.css" />
+
+    <?php
+    // (check_http_status('https://cdn.tailwindcss.com') ? 'https://cdn.tailwindcss.com' : APP_URL . 'resources/js/tailwindcss-3.3.5.js')?
 // Path to the JavaScript file
-  $path = APP_PATH . APP_BASE['resources'] . 'js/tailwindcss-3.3.5.js';
+    $path = APP_PATH . APP_BASE['resources'] . 'js/tailwindcss-3.3.5.js';
 
-  // Create the directory if it doesn't exist
-  is_dir(dirname($path)) or mkdir(dirname($path), 0755, true);
+    // Create the directory if it doesn't exist
+    is_dir(dirname($path)) or mkdir(dirname($path), 0755, true);
 
-  // URL for the CDN
-  $url = 'https://cdn.tailwindcss.com';
+    // URL for the CDN
+    $url = 'https://cdn.tailwindcss.com';
 
-  // Check if the file exists and if it needs to be updated
-  if (defined('APP_IS_ONLINE') && APP_IS_ONLINE)
-    if (!is_file($path) || (time() - filemtime($path)) > 5 * 24 * 60 * 60) { // ceil(abs((strtotime(date('Y-m-d')) - strtotime(date('Y-m-d',strtotime('+5 days',filemtime($path . 'tailwindcss-3.3.5.js'))))) / 86400)) <= 0 
-      // Download the file from the CDN
-      $handle = curl_init($url);
-      curl_setopt($handle, CURLOPT_RETURNTRANSFER, true);
-      $js = curl_exec($handle);
+    // Check if the file exists and if it needs to be updated
+    if (defined('APP_IS_ONLINE') && APP_IS_ONLINE)
+      if (!is_file($path) || (time() - filemtime($path)) > 5 * 24 * 60 * 60) { // ceil(abs((strtotime(date('Y-m-d')) - strtotime(date('Y-m-d',strtotime('+5 days',filemtime($path . 'tailwindcss-3.3.5.js'))))) / 86400)) <= 0 
+        // Download the file from the CDN
+        $handle = curl_init($url);
+        curl_setopt($handle, CURLOPT_RETURNTRANSFER, true);
+        $js = curl_exec($handle);
 
-      // Check if the download was successful
-      if (!empty($js)) {
-        // Save the file
-        file_put_contents($path, $js) or $errors['JS-TAILWIND'] = $url . ' returned empty.';
-      }
-    } ?>
+        // Check if the download was successful
+        if (!empty($js)) {
+          // Save the file
+          file_put_contents($path, $js) or $errors['JS-TAILWIND'] = $url . ' returned empty.';
+        }
+      } ?>
 
-  <script
-    src="<?= defined('APP_IS_ONLINE') && APP_IS_ONLINE && check_http_status($url) ? substr($url, strpos($url, parse_url($url)['host']) + strlen(parse_url($url)['host'])) : substr($path, strpos($path, dirname(APP_BASE['resources'] . 'js'))) ?>"></script>
+    <script
+      src="<?= defined('APP_IS_ONLINE') && APP_IS_ONLINE && check_http_status($url) ? substr($url, strpos($url, parse_url($url)['host']) + strlen(parse_url($url)['host'])) : substr($path, strpos($path, dirname(APP_BASE['resources'] . 'js'))) ?>"></script>
 
-  <style type="text/tailwindcss">
-    <?= $app['style']; ?>
+    <style type="text/tailwindcss">
+      <?= $app['style']; ?>
   </style>
-</head>
+  </head>
 
-<body>
-  <?= $app['body']; ?>
+  <body>
+    <?= $app['body']; ?>
 
-  <!-- https://cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.min.js -->
-  <script src="//code.jquery.com/jquery-1.12.4.js"></script>
-  <script src="//code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
-  <!-- <script src="resources/js/jquery/jquery.min.js"></script> -->
-  <script>
-    <?= $app['script']; ?>
-  </script>
-</body>
+    <!-- https://cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.min.js -->
+    <script src="//code.jquery.com/jquery-1.12.4.js"></script>
+    <script src="//code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
+    <!-- <script src="resources/js/jquery/jquery.min.js"></script> -->
+    <script>
+      <?= $app['script']; ?>
+    </script>
+  </body>
 
-</html>
-<?php $app['html'] = ob_get_contents();
-ob_end_clean();
+  </html>
+  <?php $app['html'] = ob_get_contents();
+  ob_end_clean();
 
-//check if file is included or accessed directly
-if (__FILE__ == get_required_files()[0] || in_array(__FILE__, get_required_files()) && isset($_GET['app']) && $_GET['app'] == 'directory' && APP_DEBUG)
-  exit($app['html']);
+  //check if file is included or accessed directly
+  if (__FILE__ == get_required_files()[0] || in_array(__FILE__, get_required_files()) && isset($_GET['app']) && $_GET['app'] == 'directory' && APP_DEBUG)
+    exit($app['html']);

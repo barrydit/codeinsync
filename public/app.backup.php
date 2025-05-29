@@ -18,7 +18,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
       file_put_contents($path, $_POST['editor']);
 }
 
-define('APP_BACKUP_PATH', ($_SERVER['HOME'] ?? $_SERVER['DOCUMENT_ROOT']) . '/backup/'); // symlink(/mnt/d)
+define('APP_BACKUP_PATH', (defined('APP_PATH') ? APP_PATH : ($_SERVER['HOME'] ?? $_SERVER['DOCUMENT_ROOT']) . DIRECTORY_SEPARATOR) . 'backup' . DIRECTORY_SEPARATOR); // symlink(/mnt/d)
 
 if (preg_match('/^app\.([\w\-.]+)\.php$/', basename(__FILE__), $matches))
   ${$matches[1]} = $matches[1];
@@ -29,9 +29,12 @@ ob_start(); ?>
 #app_backup-container {
 position: absolute;
 display: none;
-top: 5%;
+top : 40%;
+left : 40%; //right: 50%;
+margin-left: -[212px]; //margin-right: -[212px];
+margin-top: -[153px];
 //bottom: 60px;
-right: 0;
+width: 425px;
 background-color: rgba(255, 255, 255, 0.9);
 color: black;
 text-align: center;
@@ -105,7 +108,7 @@ ob_start(); ?>
 
 <div id="app_backup-container"
   class="<?= APP_SELF == __FILE__ || isset($_GET['client']) && $_GET['client'] || (isset($_GET['app']) && $_GET['app'] == 'backup') ? 'selected' : '' ?>"
-  style="position: absolute; <?= isset($_GET['client']) && $_GET['client'] ? 'display: block;' : '' ?> border: 1px solid #000; right: 0; top: 0; z-index: 1;">
+  style="position: absolute; <?= isset($_GET['client']) && $_GET['client'] !== '' ? 'display: block;' : '' ?> border: 1px solid #000;">
 
   <?php
   if (isset($_GET['client']) && $_GET['client']) {
@@ -203,10 +206,10 @@ ob_start(); ?>
           </div>
           <div style="display: inline-block;">
             <input type="checkbox" id="backup" name="backup" value="<?= APP_BACKUP_PATH ?>" checked="" />&nbsp;<label
-              for="backup"><?= APP_BACKUP_PATH ?> (Backup)</label>
+              for="backup"><?= APP_BACKUP_PATH ?></label>
           </div>
           <div style="display: inline-block; float: right;">
-            <button type="submit" class="btn">Commit</button>
+            <button type="submit" class="btn">Backup</button>
           </div>
         </form>
 
