@@ -32,7 +32,7 @@ END;
 if (!is_dir($dirname = (defined('APP_PATH') ? APP_PATH : dirname(__DIR__) . DIRECTORY_SEPARATOR) . '.ssh'))
   (@!mkdir($dirname, 0755, true) ?: $errors['APP_BASE'][basename($dirname)] = "$dirname could not be created.");
 
-define('GIT_EXEC', stripos(PHP_OS, 'WIN') === 0 ? 'git.exe' : $_ENV['GIT']['EXEC'] ?? '/usr/local1/bin/git');
+define('GIT_EXEC', stripos(PHP_OS, 'WIN') === 0 ? 'git.exe' : $_ENV['GIT']['EXEC'] ?? '/usr/bin/git');
 //dd(GIT_EXEC);
 if (isset($_ENV['GITHUB']['EXPR_VERSION'])) {
   (function () {
@@ -79,48 +79,50 @@ function git_origin_sha_update()
   */
 
 
-
-  if (!empty($_GET['client']) || !empty($_GET['domain'])) {
-    $latest_remote_commit_url = 'https://api.github.com/repos/' . $_ENV['GITHUB']['USERNAME'] . '/' . ($_GET['domain'] ?? $_ENV['DEFAULT_DOMAIN']) . '/git/refs/heads/main'; // commits/main
-  } elseif (!empty($_GET['project'])) {
-    $path = APP_BASE['projects'] . $_GET['project'] . DIRECTORY_SEPARATOR;
-    if (is_dir(APP_PATH . $path)) {
-      //define('APP_PROJECT', new clientOrProj($path));
-      $latest_remote_commit_url = 'https://api.github.com/repos/' . $_ENV['GITHUB']['USERNAME'] . '/' . $_GET['project'] . '/git/refs/heads/main';
+  if (isset($_ENV['GITHUB']) && !empty($_ENV['GITHUB']['USERNAME'])) {
+    if (!empty($_GET['client']) || !empty($_GET['domain'])) {
+      $latest_remote_commit_url = 'https://api.github.com/repos/' . $_ENV['GITHUB']['USERNAME'] . '/' . ($_GET['domain'] ?? $_ENV['DEFAULT_DOMAIN']) . '/git/refs/heads/main'; // commits/main
+    } elseif (!empty($_GET['project'])) {
+      $path = APP_BASE['projects'] . $_GET['project'] . DIRECTORY_SEPARATOR;
+      if (is_dir(APP_PATH . $path)) {
+        //define('APP_PROJECT', new clientOrProj($path));
+        $latest_remote_commit_url = 'https://api.github.com/repos/' . $_ENV['GITHUB']['USERNAME'] . '/' . $_GET['project'] . '/git/refs/heads/main';
+      }
+    } else if (isset($_ENV['COMPOSER']) && !empty($_ENV['COMPOSER'])) {
+      $latest_remote_commit_url = 'https://api.github.com/repos/' . $_ENV['GITHUB']['USERNAME'] . '/' . $_ENV['COMPOSER']['PACKAGE'] . '/git/refs/heads/main';
     }
-  } else if (isset($_ENV['COMPOSER']) && !empty($_ENV['COMPOSER'])) {
-    $latest_remote_commit_url = 'https://api.github.com/repos/' . $_ENV['GITHUB']['USERNAME'] . '/' . $_ENV['COMPOSER']['PACKAGE'] . '/git/refs/heads/main';
-  }
 
-  $context = stream_context_create([
-    'http' => [
-      'method' => 'GET',
-      'header' => 'Authorization: token ' . ($_ENV['GITHUB']['OAUTH_TOKEN'] ?? '') . "\r\n" .
-        "User-Agent: My-App\r\n",
-    ],
-  ]);
+    if (isset($_ENV['GITHUB']['OAUTH_TOKEN']) || defined('COMPOSER_AUTH'))
+      $context = stream_context_create([
+        'http' => [
+          'method' => 'GET',
+          'header' => 'Authorization: token ' . ($_ENV['GITHUB']['OAUTH_TOKEN'] ?? COMPOSER_AUTH['token']) . "\r\n" .
+            "User-Agent: My-App\r\n",
+        ],
+      ]);
 
 
-  //dd($latest_remote_commit_url);
+    //dd($latest_remote_commit_url);
 
-  if (/* defined('APP_IS_ONLINE') &&check_http_status($_ENV['GIT']['ORIGIN_URL']) &&*/ !check_http_status($latest_remote_commit_url, 404)) {
+    if (/* defined('APP_IS_ONLINE') &&check_http_status($_ENV['GIT']['ORIGIN_URL']) &&*/ !check_http_status($latest_remote_commit_url, 404)) {
 
-    if ($context === false) {
-      error_log("Failed to create stream context.");
-      var_dump(error_get_last());
-    } else {
-      $response = $result = file_get_contents($latest_remote_commit_url, false, $context) ?? '{}';
-      if ($result === false) {
-        error_log("Failed to get contents from url.");
+      if ($context === false) {
+        error_log("Failed to create stream context.");
         var_dump(error_get_last());
       } else {
-        $decodedResult = json_decode($result, true);
-        if ($decodedResult === null && json_last_error() !== JSON_ERROR_NONE) {
-          error_log("Failed to decode json.");
-          var_dump(json_last_error_msg());
+        $response = $result = file_get_contents($latest_remote_commit_url, false, $context) ?? '{}';
+        if ($result === false) {
+          error_log("Failed to get contents from url.");
+          var_dump(error_get_last());
         } else {
-          // Process the decoded JSON data
-          //print_r($decodedResult);
+          $decodedResult = json_decode($result, true);
+          if ($decodedResult === null && json_last_error() !== JSON_ERROR_NONE) {
+            error_log("Failed to decode json.");
+            var_dump(json_last_error_msg());
+          } else {
+            // Process the decoded JSON data
+            //print_r($decodedResult);
+          }
         }
       }
     }
@@ -202,6 +204,7 @@ if (is_file(APP_PATH . APP_BASE['var'] . 'git-scm.com.html')) {
     file_put_contents(APP_PATH . APP_BASE['var'] . 'git-scm.com.html', $html) or $errors['GIT_LATEST'] = "$url returned empty.";
   }
 }
+
 libxml_use_internal_errors(true); // Prevent HTML errors from displaying
 $doc = new DOMDocument(1.0, 'utf-8');
 $doc->loadHTML(file_get_contents(APP_PATH . APP_BASE['var'] . 'git-scm.com.html'));

@@ -115,8 +115,7 @@ width : 326px;
 height : 450px;
 /* border: 1px solid black; */
 position : absolute;
-top : 60px;
-left : 70%;
+top : 12px;
 right : 0;
 z-index : 1;
 margin-bottom: -25px;

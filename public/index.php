@@ -305,5 +305,5 @@ if (/*APP_SELF === APP_PATH_PUBLIC*/ dirname(APP_SELF) === dirname(APP_PATH_PUBL
     define('APP_ENV', 'production');
     require_once 'idx.product.php';
   }
-// comment
+  // comment
 }

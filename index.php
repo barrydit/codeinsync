@@ -2,7 +2,7 @@
 
 require_once __DIR__ . DIRECTORY_SEPARATOR . 'config' . DIRECTORY_SEPARATOR . 'constants.php';
 
-if (/*APP_SELF === APP_PATH_PUBLIC*/ dirname(APP_SELF) === dirname(APP_PATH_PUBLIC)) {
+if (/*APP_SELF === APP_PATH_PUBLIC*/ dirname(APP_SELF) === dirname(APP_PATH_PUBLIC)) { ///   /mnt/www
     function getSortedUiAndAppPaths(): array
     {
         $paths = [];
@@ -110,5 +110,5 @@ if (/*APP_SELF === APP_PATH_PUBLIC*/ dirname(APP_SELF) === dirname(APP_PATH_PUBL
     }
 
     define('UI_APPS', loadAppsFromPaths(getSortedUiAndAppPaths()));
-}
 
+}

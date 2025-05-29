@@ -451,7 +451,7 @@ class Shutdown
 
     //dd(ENV_CHECKSUM . ' (ENV_CHECKSUM) == ' . $hash . ' (hash)', false);
 
-    $envFilePath = APP_PATH . APP_ROOT . '/.env';
+    $envFilePath = APP_PATH . APP_ROOT . '.env';
     $sections = [];
     $lines = [];
 

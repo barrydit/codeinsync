@@ -252,6 +252,23 @@ ob_start(); ?>
 
   });
 
+  document.addEventListener("DOMContentLoaded", function () {
+      var editor = ace.edit("app_project_editor");
+      editor.setTheme("ace/theme/dracula");
+      // (file_ext .js = javascript, .php = php)
+      editor.session.setMode("ace/mode/php");
+      editor.setAutoScrollEditorIntoView(true);
+      editor.setShowPrintMargin(false);
+      editor.setOptions({
+        //  resize: "both"
+        enableBasicAutocompletion: true,
+        enableLiveAutocompletion: true,
+        enableSnippets: true
+      });
+
+    });
+
+
   <?php $app['script'] = ob_get_contents();
   ob_end_clean();
 
@@ -313,22 +330,6 @@ ob_start(); ?>
   <script src="resources/js/ace/src/ext-language_tools.js" type="text/javascript" charset="utf-8"></script>
 
   <script>
-    document.addEventListener("DOMContentLoaded", function () {
-      var editor = ace.edit("app_project_editor");
-      editor.setTheme("ace/theme/dracula");
-      // (file_ext .js = javascript, .php = php)
-      editor.session.setMode("ace/mode/php");
-      editor.setAutoScrollEditorIntoView(true);
-      editor.setShowPrintMargin(false);
-      editor.setOptions({
-        //  resize: "both"
-        enableBasicAutocompletion: true,
-        enableLiveAutocompletion: true,
-        enableSnippets: true
-      });
-
-    });
-
     <?= $app['script']; ?>
   </script>
 </body>

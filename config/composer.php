@@ -521,13 +521,13 @@ if (is_file($authJsonPath)) {
     'path' => $authJsonPath
   ]);
 
-if (is_file($authJsonPath) && COMPOSER_AUTH['token'] !== $_ENV['GITHUB']['OAUTH_TOKEN'] ?? 'static token') {
+if (is_file($authJsonPath) && isset($_ENV['GITHUB']['OAUTH_TOKEN']) && COMPOSER_AUTH['token'] !== $_ENV['GITHUB']['OAUTH_TOKEN'] ?? 'static token') {
   $errors['COMPOSER_TOKEN'] = "COMPOSER_TOKEN does not match the GITHUB/OAUTH_TOKEN\n";
   if (isset($errors['COMPOSER_TOKEN']))
-    file_put_contents($authJsonPath, '{"github-oauth": {"github.com": "' . $_ENV['GITHUB']['OAUTH_TOKEN'] . '"}}');
-} else {
+    file_put_contents($authJsonPath, '{"github-oauth": {"github.com": "' . (COMPOSER_AUTH['token'] ?? $_ENV['GITHUB']['OAUTH_TOKEN']) . '"}}');
+} else
   putenv('COMPOSER_TOKEN=' . (COMPOSER_AUTH['token'] ?? 'static token')); // <GITHUB_ACCESS_TOKEN>
-}
+
 
 // dd(COMPOSER_AUTH['token'] . '   ' . $_ENV['GITHUB']['OAUTH_TOKEN']);
 
@@ -900,7 +900,7 @@ echo $composer_exec; ?> init --quiet --no-interaction
       //(APP_SELF !== APP_PATH_SERVER) and 
   
       require_once 'config' . DIRECTORY_SEPARATOR . 'classes' . DIRECTORY_SEPARATOR . 'class.sockets.php';
-  
+
       //unset($socketInstance);
       if (!isset($socketInstance)) {
         $socketInstance = Sockets::getInstance();
@@ -986,13 +986,13 @@ fclose($pipes[2]);
       if (!empty($composer_obj->{'require'}))
         foreach ($composer_obj->{'require'} as $package => $version) {
           // $_ENV['COMPOSER']['EXPR_NAME'] is missing because the clients' env file is overriding the global
-          if (preg_match(!isset($_ENV['COMPOSER']['EXPR_NAME']) ? COMPOSER_EXPR_NAME : $_ENV['COMPOSER']['EXPR_NAME'] . 'i', $package))
+          if (defined('COMPOSER_EXPR_NAME') && preg_match(!isset($_ENV['COMPOSER']['EXPR_NAME']) ? COMPOSER_EXPR_NAME : $_ENV['COMPOSER']['EXPR_NAME'] . 'i', $package))
             continue;  // $package == 'php'
           elseif (in_array($package, ['php',]))
             continue;
           else {
             //echo $package . ' => ' . $version . "\n" ;
-            $errors['COMPOSER-PACKAGE'] = $package . ' does not match the package. reg_expr=' . COMPOSER_EXPR_NAME;
+            $errors['COMPOSER-PACKAGE'] = $package . ' does not match the package. reg_expr=' . (!isset($_ENV['COMPOSER']['EXPR_NAME']) ? (!defined('COMPOSER_EXPR_NAME') ?: COMPOSER_EXPR_NAME) : $_ENV['COMPOSER']['EXPR_NAME']) . "\n";
             $output = [];
             $returnCode = 0;
             exec("composer show $package", $output, $returnCode);

@@ -4,6 +4,8 @@ if (dirname(get_required_files()[0]) == getcwd()) {
   if ($path = basename(dirname(get_required_files()[0])) == 'public') { //
     if (basename(getcwd())) {
       // if (is_file($path = realpath('index.php'))) require_once $path;
+
+
       if (is_file($path = realpath('..' . DIRECTORY_SEPARATOR . 'config' . DIRECTORY_SEPARATOR . 'php.php')))
         require_once $path;
       else
@@ -20,7 +22,8 @@ if (!headers_sent()) {
   header("Cache-Control: no-store, no-cache, must-revalidate, max-age=0");
   header("Expires: Sat, 26 Jul 1997 05:00:00 GMT");
   header("Pragma: no-cache");
-} ?>
+}
+?>
 <!DOCTYPE html>
 <html lang="en">
 

@@ -1,6 +1,13 @@
 CHANGELOG
 
 
+root@localhost:/mnt/c/www# git remote -v
+origin  git@github.com:barrydit/codeinsync.git (fetch)
+origin  git@github.com:barrydit/codeinsync.git (push)
+root@localhost:/mnt/c/www# git remote set-url origin https://github.com/barrydit/codeinsync.git
+root@localhost:/mnt/c/www# git push https://<TOKEN>@github.com/barrydit/codeinsync.git
+
+
 considering
 
 function () use ($json_decode) {
@@ -764,3 +771,98 @@ if (PHP_SAPI !== 'cli') {
     //echo "<p>Authorization header: {$_SERVER['HTTP_AUTHORIZATION']}</p>";
   }
 }
+
+
+----------------------------------
+
+
+To push to GitHub using only a token (no SSH) and remove any mention of SSH, follow these steps:
+✅ 1. Ensure You're Using HTTPS (Not SSH)
+
+First, check your remote:
+
+git remote -v
+
+If you see something like:
+
+origin  git@github.com:username/repo.git (fetch)
+origin  git@github.com:username/repo.git (push)
+
+That’s SSH. You need to change it to HTTPS:
+
+git remote set-url origin https://github.com/username/repo.git
+
+Replace username/repo with your actual GitHub path.
+✅ 2. Generate a GitHub Personal Access Token (PAT)
+
+    Go to https://github.com/settings/tokens
+
+    Click "Generate new token (classic)"
+
+    Give it scopes like:
+
+        repo (for private repos)
+
+        workflow (if using actions)
+
+    Copy the token (you won’t see it again)
+
+✅ 3. Push with the Token
+
+You can push like this from the command line:
+
+git push https://<TOKEN>@github.com/username/repo.git
+
+Example:
+
+git push https://ghp_abcd1234YourTokenHere@github.com/yourusername/yourrepo.git
+
+    ⚠️ Never paste this URL into your code or .git/config — use it once to cache credentials or store it in a credential manager.
+
+✅ 4. (Optional) Store Token in Git Credential Manager
+
+Use Git's credential helper to avoid typing your token each time:
+
+git config --global credential.helper store
+
+Then do a push, and Git will prompt you once:
+
+git push origin main
+
+Use:
+
+    Username: your GitHub username
+
+    Password: your token
+
+It gets saved in ~/.git-credentials.
+✅ 5. Verify No SSH References Remain
+
+Check .git/config:
+
+cat .git/config
+
+Ensure [remote "origin"] has an https:// URL, not git@.
+
+If needed, manually edit:
+
+nano .git/config
+
+Replace any line like:
+
+url = git@github.com:username/repo.git
+
+With:
+
+url = https://github.com/username/repo.git
+
+✅ Summary
+Action	Command/Step
+Convert SSH to HTTPS	git remote set-url origin https://...
+Push using token	git push https://<TOKEN>@github.com/...
+Avoid repeat logins	git config --global credential.helper store
+Remove SSH traces	Edit .git/config or check git remote -v
+
+Let me know if you want this token to be stored in a script or used in CI/CD pipelines.
+
+

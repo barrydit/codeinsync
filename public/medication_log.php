@@ -235,7 +235,7 @@ $logs = array_reverse($data); ?>
     // Calculate this week's Sunday–Saturday range
     $today = new DateTime();
     $startOfWeek = clone $today;
-    $startOfWeek->modify('last Sunday'); // Change to 'last Monday' if you prefer
+    $startOfWeek->modify('last Monday'); // Change to 'last Monday' if you prefer
     $endOfWeek = clone $startOfWeek;
     $endOfWeek->modify('+6 days');
 
