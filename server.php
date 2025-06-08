@@ -10,7 +10,7 @@ declare(/*strict_types=1,*/ ticks=1); // First Line Only!
 
 file_put_contents(PID_FILE, $pid = getmypid());
 
-require_once 'config' . DIRECTORY_SEPARATOR . 'php.php';
+require_once 'config/lang/php.php';
 
 ini_set('error_log', APP_PATH . 'server.log');
 ini_set('log_errors', 'true');
@@ -281,7 +281,7 @@ function clientInputHandler($input)
         if (realpath($_GET['path']) == realpath($basePath))
           $_GET['path'] = '';
         $tableValue = '';
-        require_once 'public' . DIRECTORY_SEPARATOR . 'app.directory.php';
+        require_once APP_BASE['app'] . 'directory.php';
         //dd('Path: ' . $_GET['path'] . "\n", false);
         //dd(getcwd());
         ob_start();
@@ -583,12 +583,10 @@ function clientInputHandler($input)
   */
   //$_POST['cmd'] = $cmd;
 
-  //require_once('public' . DIRECTORY_SEPARATOR . 'app.console.php');
-
   //ob_start(); // Start output buffering    ob_end_flush();
 
   error_log("Client [Output]: " . (strlen($output) > 50 ? substr($output, 0, 20) . '...' : $output));
-  echo "Client [Output]: " . /*(strlen($output) > 50 ? substr($output, 0, 20) . "...\n" : $output)*/ $output;
+  echo "Client [Output]: $output"; /*(strlen($output) > 50 ? substr($output, 0, 20) . "...\n" : $output)*/
 
   return $output;
 }

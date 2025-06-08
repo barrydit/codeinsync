@@ -3,7 +3,7 @@
 //require_once 'config' . DIRECTORY_SEPARATOR . 'config.php';
 
 //die(var_dump(get_defined_constants(true)['user'], false)); // get_defined_constants(true) or die('get_defined_constants() failed.');
-//dd(get_required_files());
+
 //dd(PHP_EXEC);
 
 use PHPUnit\Event\Code\Throwable;
@@ -36,10 +36,6 @@ $a = $b = 'string';
 /* PHP Assertion Exception Handling */
 
 global $errors;
-
-// include 'constants.php';
-
-//dd(get_required_files(), false);
 
 //if ($_SERVER['REQUEST_METHOD'] == 'POST') 
 //  die(var_dump($_GET));
@@ -237,7 +233,7 @@ if (!defined('APP_PATH_CONFIG') || !in_array(APP_PATH_CONFIG, get_required_files
 if (!function_exists('get_declared_classes')) {
   $autoloadContent = file_get_contents($include);
   if (!preg_match('/class\s+ComposerAutoloaderInit([a-f0-9]+)/', $autoloadContent, $matches))
-    $errors['COMPOSER-AutoloaderInit'] = 'ComposerAutoloaderInit failed to be matched. Check for autoload.php\n';
+    $errors['COMPOSER-AutoloaderInit'] = "ComposerAutoloaderInit failed to be matched. Check for autoload.php\n";
 } else if (!empty($classes = get_declared_classes())) {
   foreach ($classes as $key => $class) {
     if (preg_match('/(ComposerAutoloaderInit[a-f0-9]+)/', $class, $matches))
@@ -911,7 +907,7 @@ echo $composer_exec; ?> init --quiet --no-interaction
       if (defined('APP_IS_ONLINE'))
         if (!isset($_SERVER['SOCKET']) || !is_resource($_SERVER['SOCKET']) || empty($_SERVER['SOCKET'])) {
 
-          $proc = proc_open((stripos(PHP_OS, 'WIN') === 0 ? '' : APP_SUDO . '-u www-data ') . basename(COMPOSER_EXEC['bin']) . ' self-update', [["pipe", "r"], ["pipe", "w"], ["pipe", "w"]], $pipes);
+          $proc = proc_open((stripos(PHP_OS, 'WIN') === 0 ? '' : /*APP_SUDO . '-u www-data '*/ '') . basename(COMPOSER_EXEC['bin']) . ' self-update', [["pipe", "r"], ["pipe", "w"], ["pipe", "w"]], $pipes);
 
           [$stdout, $stderr, $exitCode] = [stream_get_contents($pipes[1]), stream_get_contents($pipes[2]), proc_close($proc)];
 

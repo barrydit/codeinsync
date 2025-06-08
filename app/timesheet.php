@@ -238,7 +238,7 @@ if (!empty($json_data))
 
             $newHours += $carryHours;
 
-            $errors['TIME'] = "Total hours time has been appended $newHours+=$hrs  index: ($rotationIndex)";
+            $errors['TIME_SHEET'] = "Total hours time has been appended $newHours+=$hrs  index: ($rotationIndex)\n";
 
             // Create a new DateInterval
             $totalHours[$rotationIndex][1] = new DateInterval("PT{$newHours}H{$newMinutes}M{$newSeconds}S");

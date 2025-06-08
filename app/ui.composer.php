@@ -3,7 +3,6 @@ header("Access-Control-Allow-Origin: *"); // Allow all origins
 header("Access-Control-Allow-Methods: GET, POST, PUT, DELETE, OPTIONS");
 header("Access-Control-Allow-Headers: Content-Type, Authorization");
 
-//dd(get_required_files(), false);
 if (in_array(__FILE__, get_required_files())) {
   //echo "File $target_file was included.";
 
@@ -24,8 +23,6 @@ if (in_array(__FILE__, get_required_files())) {
     // if (is_file($path = realpath('index.php'))) require_once $path;
   //} else
   //  die(var_dump("Path was not found. file=$path"));
-
-  //dd(get_required_files());
 
   /*
   if (__FILE__ == get_required_files()[0])

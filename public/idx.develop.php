@@ -1,16 +1,20 @@
-<?php //if (__FILE__==get_required_files()[0] && __FILE__==realpath($_SERVER["SCRIPT_FILENAME"]))
+<?php
+
+//if (__FILE__==get_required_files()[0] && __FILE__==realpath($_SERVER["SCRIPT_FILENAME"]))
 
 if (dirname(get_required_files()[0]) == getcwd()) {
   if ($path = basename(dirname(get_required_files()[0])) == 'public') { //
     if (basename(getcwd())) {
       // if (is_file($path = realpath('index.php'))) require_once $path;
+/*
       if (is_file($path = realpath('..' . DIRECTORY_SEPARATOR . 'config' . DIRECTORY_SEPARATOR . 'php.php')))
         require_once $path;
       else
         die(var_dump("Path was not found. file=$path"));
-
+*/
       if ($config = realpath(dirname(__DIR__, 1) . DIRECTORY_SEPARATOR . 'index.php'))
         require_once $config; // APP_PATH . 'index.php'
+
     }
   }
 }
@@ -64,9 +68,9 @@ margin : 0;
 padding : 0;
 box-sizing : border-box;
 <?php if (isset($_GET['debug'])) { ?>
-                border: 1px dashed #FF0000;
+  border: 1px dashed #FF0000;
 <?php } else { ?> 
-                /* border: 1px dashed #FF0000; */
+  /* border: 1px dashed #FF0000; */
 <?php } ?>
 }
 *:focus {
@@ -1643,7 +1647,7 @@ $(document).ready(function() {
 
       $(document).ready(function () {
 
-        <?= (!defined('APP_NO_INTERNET_CONNECTION')) ? '' : 'alert(\'The internet is not connected.\');' ?>
+        <?= (defined('APP_NO_INTERNET_CONNECTION')) ? '' : 'alert(\'The internet is not connected.\');' ?>
 
         $("#app_console-container").css('display', 'none');
 

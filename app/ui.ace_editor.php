@@ -12,9 +12,6 @@ if (__FILE__ == get_required_files()[0] && __FILE__ == realpath($_SERVER["SCRIPT
   } else
     die(var_dump("Path was not found. file=$path"));
 
-
-//dd(get_required_files(), false);
-
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 
   if (isset($_POST["restore_backup"])) {

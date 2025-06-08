@@ -16,11 +16,11 @@ $password = ''; // password
 $use_sudo = $_ENV['SHELL']['SUDO'] ?? true;
 
 // Define APP_SUDO constant based on OS
-if (!$use_sudo && !defined('APP_SUDO')) {
-  if (stripos(PHP_OS, 'WIN') === 0) {
+if (!$use_sudo && !defined('APP_SUDO'))
+  if (stripos(PHP_OS, 'WIN') === 0)
     // Windows command (insert specific command if needed)
     define('APP_SUDO', null /*'runas /user:Administrator "cmd /c" '*/);
-  } else {
+  else {
     // Linux command setup
     $sudoCommand = $use_sudo ? 'sudo -S ' : '';
     $passwordPart = $password ? 'echo ' . escapeshellarg($password) . ' | ' : '';
@@ -28,7 +28,7 @@ if (!$use_sudo && !defined('APP_SUDO')) {
 
     define('APP_SUDO', "{$passwordPart}{$sudoCommand}{$userPart}");
   }
-}
+
 /*
 !defined('APP_SUDO') and define('APP_SUDO', stripos(PHP_OS, 'WIN') === 0
   ? ''  // For Windows, you can insert the appropriate command 
@@ -39,6 +39,8 @@ if (!$use_sudo && !defined('APP_SUDO')) {
 );*/
 
 const CONSOLE = true;
+
+const APP_RUNNING = true;
 
 // Define APP_START constant
 !defined('APP_START') and define('APP_START', $_SERVER['REQUEST_TIME_FLOAT'] ?? microtime(true)) ?: is_float(APP_START) or $errors['APP_START'] = 'APP_START is not a valid float value.';
@@ -72,7 +74,7 @@ const APP_NAME = 'Dashboard';
 !is_string(APP_NAME)
   and $errors['APP_NAME'] = 'APP_NAME is not a string => ' . var_export(APP_NAME, true); // print('Name: ' . APP_NAME  . ' v' . APP_VERSION . "\n");
 
-define('APP_DASHBOARD', sprintf(<<<EOL
+define('APP_DASHBOARD', "\n" . sprintf(<<<EOL
 %s
       ______   _______  _______           ______   _______  _______  _______  ______  
      (  __  \ (  ___  )(  ____ \|\     /|(  ___ \ (  ___  )(  ___  )(  ____ )(  __  \ 
@@ -97,12 +99,12 @@ EOD, 'test'));
 */
 
 // Check if the request is using HTTPS
-if (isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] == 'on') { // $_SERVER['REQUEST_SCHEME']   
+if (isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] == 'on') // $_SERVER['REQUEST_SCHEME']   
   define('APP_HTTPS', TRUE);
-}
-if (defined('APP_HTTPS') && APP_HTTPS) {
+
+if (defined('APP_HTTPS') && APP_HTTPS)
   $errors['APP_HTTPS'] = (bool) var_export(APP_HTTPS, true); // print('HTTPS: ' . APP_HTTPS . "\n");
-}
+
 
 // Check if the script is running in CLI or HTTP environment
 if (php_sapi_name() === 'cli' || defined('STDIN')) {
@@ -173,6 +175,7 @@ switch (basename(__DIR__)) {
 
     // Define your paths as pure array (no associative keys unless you plan to use them)
     $base_paths = [ // https://stackoverflow.com/questions/8037266/get-the-url-of-a-file-included-by-php
+      'app',
       'config',
       'clients' => 'projects' . DIRECTORY_SEPARATOR . 'clients',
       'data',
@@ -190,13 +193,13 @@ switch (basename(__DIR__)) {
 
     $baseDir = defined('APP_PATH') ? APP_PATH : __DIR__ . DIRECTORY_SEPARATOR;
     $validated_paths = [];
-    $errors = [];
+    //$errors = [];
     $processedCommon = [];
 
     // Step 1: Validate base paths
     foreach ($base_paths as $key => $subpath) {
       $alias = is_string($key) ? $key : $subpath;
-      $full_path = realpath($baseDir . $subpath);
+      $full_path = realpath("$baseDir$subpath");
 
       if ($full_path && is_dir($full_path)) {
         $validated_paths[$alias] = $full_path;
@@ -222,9 +225,8 @@ switch (basename(__DIR__)) {
     $mapped_names = array_keys($validated_paths);
     $unmapped_dirs = array_diff($dirnames, $mapped_names);
 
-    if (!empty($unmapped_dirs)) {
-      $errors['UNMAPPED_DIRS'] = 'Directories not in $base_paths: ' . implode(', ', $unmapped_dirs);
-    }
+    if (!empty($unmapped_dirs))
+      $errors['APP_BASE'] = 'Base directories are not in $base_paths: ' . implode(', ', $unmapped_dirs) . "\n";
 
     // Step 4: Final check + auto-create if missing (debug only)
     if (empty($common)) {
@@ -235,7 +237,7 @@ switch (basename(__DIR__)) {
           continue;
         }
 
-        $fullPath = $baseDir . $subpath;
+        $fullPath = "$baseDir$subpath";
 
         if (!is_dir($fullPath) && defined('APP_DEBUG') && APP_DEBUG) {
           if (!@mkdir($fullPath, 0755, true)) {
@@ -329,7 +331,7 @@ switch (basename(__DIR__)) {
     //(defined('APP_PATH') && truepath(APP_PATH)) and $errors['APP_PATH'] = truepath(APP_PATH); // print('App Path: ' . APP_PATH . "\n" . "\t" . '$_SERVER[\'DOCUMENT_ROOT\'] => ' . $_SERVER['DOCUMENT_ROOT'] . "\n");
 
     define(
-      'APP_PATH_PUBLIC',
+      'PATH_PUBLIC',
       (defined('APP_PATH')
         ? APP_PATH
         : __DIR__ . DIRECTORY_SEPARATOR) . APP_BASE['public'] . str_replace(defined('APP_PATH')
@@ -342,7 +344,7 @@ switch (basename(__DIR__)) {
     //if (!defined('PHP_EXEC'))
     //define('PHP_EXEC', stripos(PHP_OS, 'LIN') === 0 ? '/usr/bin/php' : dirname(__DIR__) . DIRECTORY_SEPARATOR . 'bin/psexec.exe -d C:\xampp\php\php.exe -f ');
 
-    //if (APP_SELF != APP_PATH_SERVER || PHP_SAPI !== 'cli' && in_array(APP_PATH_PUBLIC, get_included_files()) /*APP_SELF == APP_PATH_PUBLIC*/)
+    //if (APP_SELF != APP_PATH_SERVER || PHP_SAPI !== 'cli' && in_array(PATH_PUBLIC, get_included_files()) /*APP_SELF == PATH_PUBLIC*/)
     //  require_once dirname(__DIR__) . DIRECTORY_SEPARATOR . 'config' . DIRECTORY_SEPARATOR . 'classes' . DIRECTORY_SEPARATOR . 'class.sockets.php';
 
     //dd(get_defined_constants(true)['user']);
@@ -355,7 +357,7 @@ switch (basename(__DIR__)) {
     // Resolve host to IP and check internet connection
 /*
     $ip = resolve_host_to_ip('google.com');
-    if (APP_SELF == APP_PATH_PUBLIC && check_internet_connection($ip)) {
+    if (APP_SELF == PATH_PUBLIC && check_internet_connection($ip)) {
       define('APP_IS_ONLINE', true);
     } else {
       define('APP_NO_INTERNET_CONNECTION', "Not connected to the internet."); // APP_CONNECTIVITY

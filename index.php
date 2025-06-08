@@ -1,33 +1,35 @@
 <?php
 
-require_once __DIR__ . DIRECTORY_SEPARATOR . 'config' . DIRECTORY_SEPARATOR . 'constants.php';
+require_once __DIR__ . DIRECTORY_SEPARATOR . 'bootstrap.php';
 
-if (/*APP_SELF === APP_PATH_PUBLIC*/ dirname(APP_SELF) === dirname(APP_PATH_PUBLIC)) { ///   /mnt/www
+if (/*APP_SELF === PATH_PUBLIC*/ dirname(APP_SELF) === dirname(PATH_PUBLIC)) { ///   /mnt/www
     function getSortedUiAndAppPaths(): array
     {
         $paths = [];
 
-        // Get app paths
-        $appPaths = array_filter(glob(APP_BASE['public'] . 'app.*.php'), 'is_file');
+        // Desired load order for app logic (basename without extension)
+        $priority = [
+            //'install',
+            //'debug',
+            'directory',
+            'packagist',
+            'project',
+            'timesheet',
+            'browser',
+            'github',
+            'whiteboard',
+            'notes',
+            'pong',
+            'console',
+        ];
 
-        usort($appPaths, function ($a, $b) {
-            $priority = [
-                'app.install.php',
-                'app.debug.php',
-                'app.directory.php',
-                'app.project.php',
-                'app.timesheet.php',
-                'app.browser.php',
-                'app.github.php',
-                'app.packagist.php',
-                'app.whiteboard.php',
-                'app.notes.php',
-                'app.pong.php',
-                'app.console.php',
-            ];
+        // Get app files (e.g., directory.php)
+        $appPaths = array_filter(glob(APP_BASE['app'] . '*.php'), 'is_file');
 
-            $aBase = basename($a);
-            $bBase = basename($b);
+        usort($appPaths, function ($a, $b) use ($priority) {
+            $aBase = basename($a, '.php');
+            $bBase = basename($b, '.php');
+
             $aIndex = array_search($aBase, $priority);
             $bIndex = array_search($bBase, $priority);
 
@@ -37,78 +39,64 @@ if (/*APP_SELF === APP_PATH_PUBLIC*/ dirname(APP_SELF) === dirname(APP_PATH_PUBL
             return $aIndex <=> $bIndex ?: strcmp($aBase, $bBase);
         });
 
-        // Remove app.install.php if present
-        foreach ($appPaths as $key => $file) {
-            if (basename($file) === 'app.install.php') {
-                unset($appPaths[$key]);
-            }
-        }
+        // Get UI paths (e.g., ui.directory.php)
+        $uiPaths = array_filter(glob(APP_BASE['app'] . 'ui.*.php'));
 
-        // Get ui paths
-        $uiPaths = array_filter(glob(APP_BASE['public'] . 'ui.*.php', GLOB_BRACE));
+        usort($uiPaths, function ($a, $b) use ($priority) {
+            $aKey = preg_replace('/^ui\.(.+)\.php$/', '$1', basename($a));
+            $bKey = preg_replace('/^ui\.(.+)\.php$/', '$1', basename($b));
 
-        usort($uiPaths, function ($a, $b) {
-            $order = [
-                'ui.calendar.php' => -10,
-                'ui.nodes.php' => -9,
-                'ui.php.php' => -8,
-                'ui.composer.php' => 10,
-                'ui.npm.php' => 11,
-                'ui.ace_editor.php' => 12,
-                'ui.git.php' => 13,
-                'ui.notes.php' => 14,
-            ];
+            $aIndex = array_search($aKey, $priority);
+            $bIndex = array_search($bKey, $priority);
 
-            $aBase = basename($a);
-            $bBase = basename($b);
+            $aIndex = $aIndex === false ? PHP_INT_MAX : $aIndex;
+            $bIndex = $bIndex === false ? PHP_INT_MAX : $bIndex;
 
-            $aRank = $order[$aBase] ?? 0;
-            $bRank = $order[$bBase] ?? 0;
-
-            return $aRank <=> $bRank ?: strcmp($aBase, $bBase);
+            return $aIndex <=> $bIndex ?: strcmp($aKey, $bKey);
         });
 
-        $paths = array_values(array_unique(array_merge($uiPaths, $appPaths)));
-
+        // Merge them in order: app logic first, then UI overlays
+        $paths = array_merge($appPaths, $uiPaths);
 
         return $paths;
     }
-
     function loadAppsFromPaths(array $paths): array
     {
-        $paths = array_filter($paths, fn($path) => is_file($path) && preg_match('/^(ui|app)\.([\w\-]+)\.php$/', basename($path)));
+        // Only include files like: 'notes.php' or 'ui.notes.php'
+        $paths = array_filter($paths, function ($path) {
+            $filename = basename($path);
+            return is_file($path) && preg_match('/^(ui\.)?([\w\-]+)\.php$/', $filename);
+        });
 
         $apps = [];
 
         foreach ($paths as $path) {
             if ($realpath = realpath($path)) {
-                // Clean out $app before loading
-                //$GLOBALS['app'] = [];
-
                 require_once $realpath;
 
-                // ob_start(); $output = ob_get_clean(); ob_end_flush();
-
                 $filename = basename($realpath);
-                if (preg_match('/^(ui|app)\.([\w\-]+)\.php$/', $filename, $matches)) {
-                    //dd($matches, false);
-                    $type = $matches[1]; // 'ui' or 'app'
-                    $name = $matches[2]; // e.g., 'notes'
+                if (preg_match('/^(ui\.)?([\w\-]+)\.php$/', $filename, $matches)) {
+                    $type = $matches[1] === 'ui.' ? 'ui' : 'app';
+                    $name = $matches[2];
 
-                    $apps[$name] = [
-                        'type' => $type,
-                        'style' => $app['style'] ?? '',
-                        'body' => $app['body'] ?? '',
-                        'script' => $app['script'] ?? '',
-                    ];
+                    $apps[$name] ??= ['type' => 'app', 'style' => '', 'body' => '', 'script' => ''];
+
+                    if ($type === 'ui') {
+                        $apps[$name]['type'] = 'ui'; // optional override
+                    }
+
+                    $apps[$name]['style'] .= $app['style'] ?? '';
+                    $apps[$name]['body'] .= $app['body'] ?? '';
+                    $apps[$name]['script'] .= $app['script'] ?? '';
                 }
             }
-            $app = []; // Clear the app variable to avoid conflicts
+
+            // Clear $app to prevent cross contamination between files
+            $app = [];
         }
 
         return $apps;
     }
 
     define('UI_APPS', loadAppsFromPaths(getSortedUiAndAppPaths()));
-
 }

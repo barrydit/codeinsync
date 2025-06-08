@@ -64,7 +64,7 @@ if (isset($_GET['json'])) {
     $requiredFiles = [
       //'server.php' => 'server.php',
       'public/index.php' => APP_ROOT . 'public/index.php',
-      //'config/php.php' => 'config/php.php',
+      //'config/lang/php.php' => 'config/lang/php.php',
       'config/composer.php' => APP_ROOT . 'config/composer.php',
       //'config/git.php' => 'config/git.php',
       //'public/idx.product.php' => 'public/idx.product.php',
@@ -81,7 +81,7 @@ if (isset($_GET['json'])) {
     $requiredFiles = [
       'server.php' => 'server.php',
       'public/index.php' => 'public/index.php',
-      //'config/php.php' => 'config/php.php',
+      //'config/php.php' => 'config/lang/php.php',
       'config/composer.php' => 'config/composer.php',
       //'config/git.php' => 'config/git.php',
       'public/idx.product.php' => 'public/idx.product.php',

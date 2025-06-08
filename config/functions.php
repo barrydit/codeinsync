@@ -579,7 +579,8 @@ set_error_handler([Shutdown::class, 'handleError']);
 set_exception_handler([Shutdown::class, 'handleException']);
 register_shutdown_function(function () {
   //Shutdown::triggerShutdown('');  // 
-  if (!empty($_ENV)) Shutdown::saveEnvToFile();
+  if (!empty($_ENV))
+    Shutdown::saveEnvToFile();
   //Shutdown::handleParseError();
 });
 
@@ -790,28 +791,42 @@ function resolve_host_to_ip($host)
  * @param string $ip The IP address to ping. Defaults to Google's DNS server.
  * @return bool True if the connection is successful, false otherwise.
  */
-function check_internet_connection($ip = '8.8.8.8')
+
+function check_internet_connection($host = '8.8.8.8'): bool
 {
   $status = null;
 
-  // Ping the host to check network connectivity
-  if (stripos(PHP_OS, 'WIN') === 0)
-    exec("ping -n 1 -w 1 " . /*-W 20 */ escapeshellarg($ip), $output, $status);  // parse_url($ip, PHP_URL_HOST)
-  else
-    exec(APP_SUDO . (!is_file('/usr/bin/ping') ? '' : '/usr/bin/') . "ping -c 1 -W 1 " . escapeshellarg($ip), $output, $status); // var_dump(\$status)
+  // Use just the host/IP if a full URL is passed
+  if (filter_var($host, FILTER_VALIDATE_URL)) {
+    $host = parse_url($host, PHP_URL_HOST);
+  }
 
-  // If ping fails, try fsockopen as a fallback
-  if ($status !== 0 && defined('APP_IS_ONLINE')) {
-    $connection = @fsockopen('www.google.com', 80, $errno, $errstr, 10);
-    if (!$connection) {
-      $errors['APP_NO_INTERNET_CONNECTION'] = 'No internet connection.';
-    } else {
+  // Platform-specific ping
+  if (stripos(PHP_OS, 'WIN') === 0) {
+    exec("ping -n 1 -w 1000 " . escapeshellarg($host), $output, $status);
+  } else {
+    $pingPath = is_file('/usr/bin/ping') ? '/usr/bin/ping' : 'ping';
+    exec(/*APP_SUDO . */ "$pingPath -c 1 -W 1 " . escapeshellarg($host), $output, $status);
+  }
+
+  // Optional fallback
+  if ($status !== 0) {
+    $connection = @fsockopen('www.google.com', 80, $errno, $errstr, 3);
+    if ($connection) {
       fclose($connection);
+      $status = 0;
+    } else {
+      $status = 1; // No internet connection
+      $errors['APP_NO_INTERNET_CONNECTION'] = 'No internet connection.';
     }
   }
 
+  // Optionally define a constant once determined
+  // if (!defined('APP_IS_ONLINE')) define('APP_IS_ONLINE', $status === 0);
+
   return $status === 0;
 }
+
 
 // die(var_dump(check_internet_connection()) ? true : false);
 
@@ -1172,5 +1187,3 @@ function getElementsByClass(&$parentNode, $tagName, $className)
 
   return $nodes;
 }
-
-require_once __DIR__ . DIRECTORY_SEPARATOR . 'php.php'; // 'constants.php';

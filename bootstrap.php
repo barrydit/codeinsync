@@ -141,18 +141,95 @@ switch (basename(__DIR__)) { // getcwd()
     break;
 }
 
-require_once 'config' . DIRECTORY_SEPARATOR . 'php.php';
 
-if ($config = realpath(APP_PATH . 'config' . DIRECTORY_SEPARATOR . 'config.php')) {
-  $path = $config;
-}  // elseif (is_file('config.php')) { $path = $config; }
+require_once 'config' . DIRECTORY_SEPARATOR . 'lang' . DIRECTORY_SEPARATOR . 'perl.php';
+require_once 'config' . DIRECTORY_SEPARATOR . 'lang' . DIRECTORY_SEPARATOR . 'python.php';
+//require_once 'config' . DIRECTORY_SEPARATOR . 'javascript.php';
+//require_once 'config' . DIRECTORY_SEPARATOR . 'ruby.php';
+//require_once 'config' . DIRECTORY_SEPARATOR . 'go.php';
+//require_once 'config' . DIRECTORY_SEPARATOR . 'java.php';
+//require_once 'config' . DIRECTORY_SEPARATOR . 'csharp.php';
+//require_once 'config' . DIRECTORY_SEPARATOR . 'rust.php';
+//require_once 'config' . DIRECTORY_SEPARATOR . 'php.php'; // PHP config
+//require_once 'config' . DIRECTORY_SEPARATOR . 'nodejs.php'; // Node.js config
+//require_once 'config' . DIRECTORY_SEPARATOR . 'composer.php'; // Composer config
+//require_once 'config' . DIRECTORY_SEPARATOR . 'autoload.php'; // Autoload configuration
+//require_once 'vendor' . DIRECTORY_SEPARATOR . 'autoload.php'; // Vendor autoload
+require_once 'config' . DIRECTORY_SEPARATOR . 'lang' . DIRECTORY_SEPARATOR . 'php.php'; // environment-level PHP config
+require_once 'config' . DIRECTORY_SEPARATOR . 'functions.php';
+require_once 'config' . DIRECTORY_SEPARATOR . 'constants.php';
+require_once 'config' . DIRECTORY_SEPARATOR . 'env.php';
 
-// Load the config file if found
-if ($path) {
-  require_once $path;
-} else {
+//require_once 'config' . DIRECTORY_SEPARATOR . 'autoload.php'; // Autoload configuration
+/*
+require_once 'config' . DIRECTORY_SEPARATOR . 'autoload_functions.php';
+require_once 'config' . DIRECTORY_SEPARATOR . 'autoload_classes.php';
+require_once 'config' . DIRECTORY_SEPARATOR . 'autoload_interfaces.php';
+require_once 'config' . DIRECTORY_SEPARATOR . 'autoload_traits.php';
+require_once 'config' . DIRECTORY_SEPARATOR . 'autoload_exceptions.php';
+require_once 'config' . DIRECTORY_SEPARATOR . 'autoload_constants.php';
+require_once 'config' . DIRECTORY_SEPARATOR . 'autoload_variables.php';
+require_once 'config' . DIRECTORY_SEPARATOR . 'autoload_globals.php';
+require_once 'config' . DIRECTORY_SEPARATOR . 'autoload_paths.php';
+require_once 'config' . DIRECTORY_SEPARATOR . 'autoload_config.php';
+require_once 'config' . DIRECTORY_SEPARATOR . 'autoload_helpers.php';
+require_once 'config' . DIRECTORY_SEPARATOR . 'autoload_services.php';
+require_once 'config' . DIRECTORY_SEPARATOR . 'autoload_commands.php';
+require_once 'config' . DIRECTORY_SEPARATOR . 'autoload_events.php';
+require_once 'config' . DIRECTORY_SEPARATOR . 'autoload_middlewares.php';
+require_once 'config' . DIRECTORY_SEPARATOR . 'autoload_routes.php';
+require_once 'config' . DIRECTORY_SEPARATOR . 'autoload_views.php';
+require_once 'config' . DIRECTORY_SEPARATOR . 'autoload_templates.php';
+require_once 'config' . DIRECTORY_SEPARATOR . 'autoload_assets.php';
+require_once 'config' . DIRECTORY_SEPARATOR . 'autoload_scripts.php';
+require_once 'config' . DIRECTORY_SEPARATOR . 'autoload_styles.php';
+require_once 'config' . DIRECTORY_SEPARATOR . 'autoload_migrations.php';
+require_once 'config' . DIRECTORY_SEPARATOR . 'autoload_seeds.php';
+require_once 'config' . DIRECTORY_SEPARATOR . 'autoload_tests.php';
+require_once 'config' . DIRECTORY_SEPARATOR . 'autoload_settings.php';
+require_once 'config' . DIRECTORY_SEPARATOR . 'autoload_translations.php';
+require_once 'config' . DIRECTORY_SEPARATOR . 'autoload_languages.php';
+require_once 'config' . DIRECTORY_SEPARATOR . 'autoload_locales.php';
+require_once 'config' . DIRECTORY_SEPARATOR . 'autoload_packages.php';
+require_once 'config' . DIRECTORY_SEPARATOR . 'autoload_modules.php';
+require_once 'config' . DIRECTORY_SEPARATOR . 'autoload_plugins.php';
+require_once 'config' . DIRECTORY_SEPARATOR . 'autoload_extensions.php';
+require_once 'config' . DIRECTORY_SEPARATOR . 'autoload_system.php';
+require_once 'config' . DIRECTORY_SEPARATOR . 'autoload_system_paths.php';
+require_once 'config' . DIRECTORY_SEPARATOR . 'autoload_system_config.php';
+require_once 'config' . DIRECTORY_SEPARATOR . 'autoload_system_helpers.php';
+require_once 'config' . DIRECTORY_SEPARATOR . 'autoload_system_services.php';
+require_once 'config' . DIRECTORY_SEPARATOR . 'autoload_system_commands.php';
+require_once 'config' . DIRECTORY_SEPARATOR . 'autoload_system_events.php';
+require_once 'config' . DIRECTORY_SEPARATOR . 'autoload_system_middlewares.php';
+require_once 'config' . DIRECTORY_SEPARATOR . 'autoload_system_routes.php';
+require_once 'config' . DIRECTORY_SEPARATOR . 'autoload_system_views.php';
+require_once 'config' . DIRECTORY_SEPARATOR . 'autoload_system_templates.php';
+require_once 'config' . DIRECTORY_SEPARATOR . 'autoload_system_assets.php';
+require_once 'config' . DIRECTORY_SEPARATOR . 'autoload_system_scripts.php';
+require_once 'config' . DIRECTORY_SEPARATOR . 'autoload_system_styles.php';
+require_once 'config' . DIRECTORY_SEPARATOR . 'autoload_system_migrations.php';
+require_once 'config' . DIRECTORY_SEPARATOR . 'autoload_system_seeds.php';
+require_once 'config' . DIRECTORY_SEPARATOR . 'autoload_system_tests.php';
+require_once 'config' . DIRECTORY_SEPARATOR . 'autoload_system_settings.php';
+require_once 'config' . DIRECTORY_SEPARATOR . 'autoload_system_translations.php';
+require_once 'config' . DIRECTORY_SEPARATOR . 'autoload_system_languages.php';
+require_once 'config' . DIRECTORY_SEPARATOR . 'autoload_system_locales.php';
+require_once 'config' . DIRECTORY_SEPARATOR . 'autoload_system_packages.php';
+require_once 'config' . DIRECTORY_SEPARATOR . 'autoload_system_modules.php';
+require_once 'config' . DIRECTORY_SEPARATOR . 'autoload_system_plugins.php';
+require_once 'config' . DIRECTORY_SEPARATOR . 'autoload_system_extensions.php';
+*/
+
+//require_once 'vendor' . DIRECTORY_SEPARATOR . 'autoload.php'; // Composer autoload
+
+// Check if the config file exists in the expected location
+// If the config file is not found, it will die with a var_dump of the path
+if ($path = $config = realpath(APP_PATH . 'config' . DIRECTORY_SEPARATOR . 'config.php'))
+  require_once $path; // Load the config file if found  project settings
+// elseif (is_file('config.php')) $path = $config;
+else
   die(var_dump($path));
-}
 
 
 /*

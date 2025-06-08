@@ -1,7 +1,6 @@
 <?php
 
-
-//require_once dirname(__DIR__, 1) . DIRECTORY_SEPARATOR . 'bootstrap.php';
+require_once dirname(__DIR__, 1) . DIRECTORY_SEPARATOR . 'bootstrap.php';
 
 $htaccess = <<<END
 # Enable Rewrite Engine
@@ -17,11 +16,11 @@ RewriteRule ^(.*)$ index.php/$1 [L]
 END;
 
 // if ($path = (basename(getcwd()) == 'public') chdir('..');
-//APP_PATH == dirname(APP_PATH_PUBLIC)
+//APP_PATH == dirname(PATH_PUBLIC)
 
 //
 
-!defined('APP_SELF') and define('APP_SELF', !empty(get_included_files()) ? get_included_files()[0] : __FILE__);
+!defined('APP_SELF') and define('APP_SELF', !empty(get_included_files()) ? get_included_files()[0] : __FILE__); //mnt/c/www/public/index.php
 
 switch (APP_SELF) {
   case __FILE__:
@@ -29,7 +28,7 @@ switch (APP_SELF) {
     //require_once dirname(__DIR__, 1) . DIRECTORY_SEPARATOR . 'config' . DIRECTORY_SEPARATOR . 'constants.php';
     break;
   default:
-    if ($php = realpath(dirname(__DIR__, 1) . DIRECTORY_SEPARATOR . 'config' . DIRECTORY_SEPARATOR . 'php.php'))
+    if ($php = realpath(dirname(__DIR__, 1) . DIRECTORY_SEPARATOR . 'config' . DIRECTORY_SEPARATOR . 'lang' . DIRECTORY_SEPARATOR . 'php.php'))
       require_once $php; // APP_PATH . 'index.php'
     else
       die(var_dump("$php was not found."));
@@ -42,6 +41,10 @@ if ($file = realpath(dirname(__DIR__, 1) . DIRECTORY_SEPARATOR . 'index.php'))
 //dd($_ENV, false);
 
 require_once dirname(__DIR__, 1) . DIRECTORY_SEPARATOR . 'config' . DIRECTORY_SEPARATOR . 'auth.php';
+
+//dd(get_defined_constants(true)['user']);
+
+
 
 //die(var_dump(APP_ROOT));
 
@@ -93,9 +96,8 @@ if (isset($_ENV['PHP']['LOG_PATH']) && is_readable($path = APP_PATH . APP_ROOT .
 
   // Parse the shell output line by line
   foreach (explode("\n", (string) $shellOutput) as $line) {
-    if ($line == '') {
+    if ($line == '')
       continue;
-    }
 
     $matched = false;
     foreach ($patterns as $pattern) {
@@ -106,9 +108,8 @@ if (isset($_ENV['PHP']['LOG_PATH']) && is_readable($path = APP_PATH . APP_ROOT .
       }
     }
 
-    if (!$matched) {
+    if (!$matched)
       $log_matches[] = $line;
-    }
   }
 
   // Append the last match count
@@ -244,7 +245,7 @@ switch ($_SERVER['REQUEST_METHOD']) {
 /**/
 //dd('req method==' . $_SERVER['REQUEST_METHOD'], false);
 
-if ($_SERVER['REQUEST_METHOD'] == 'GET' && __FILE__ == APP_PATH_PUBLIC)
+if ($_SERVER['REQUEST_METHOD'] == 'GET' && __FILE__ == PATH_PUBLIC)
   if (defined('APP_QUERY') && empty(APP_QUERY) || isset($_GET['CLIENT']) || isset($_GET['DOMAIN']) && !defined('APP_ROOT')) {
 
     //dd('does this do anything? 1234 ' . $_SERVER['REQUEST_METHOD']);
@@ -265,7 +266,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'GET' && __FILE__ == APP_PATH_PUBLIC)
 //dd($_GET);
 //dd(__DIR__ . DIRECTORY_SEPARATOR);
 
-if (/*APP_SELF === APP_PATH_PUBLIC*/ dirname(APP_SELF) === dirname(APP_PATH_PUBLIC)) {
+if (/*APP_SELF === PATH_PUBLIC*/ dirname(APP_SELF) === dirname(PATH_PUBLIC)) {
 
   require_once 'idx.product.php';
   if (!empty($paths)) {
