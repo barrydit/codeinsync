@@ -1,9 +1,6 @@
 <?php
-//die(getcwd());
 
 !defined('APP_PATH') and define('APP_PATH', dirname(__DIR__) . DIRECTORY_SEPARATOR);
-
-require_once 'functions.php';
 
 if (isset($_ENV['PHP']['EXEC']) && $_ENV['PHP']['EXEC'] != '' && !defined('PHP_EXEC'))
     switch (PHP_BINARY) {
@@ -18,43 +15,40 @@ if (isset($_ENV['PHP']['EXEC']) && $_ENV['PHP']['EXEC'] != '' && !defined('PHP_E
 if (!defined('PHP_EXEC'))
     define('PHP_EXEC', stripos(PHP_OS, 'LIN') === 0 ? '/usr/bin/php' : dirname(__DIR__) . DIRECTORY_SEPARATOR . 'bin/psexec.exe -d C:\xampp\php\php.exe -f ');
 
-require_once 'config.php';
-
 if (__FILE__ == get_required_files()[0] && __FILE__ == realpath($_SERVER["SCRIPT_FILENAME"]))
     if ($path = basename(dirname(get_required_files()[0])) == 'public') { // (basename(getcwd())
         chdir('../');
-        if ($path = realpath('bootstrap.php')) { // is_file()
+        if ($path = realpath('bootstrap.php')) // is_file()
             require_once $path;
-            //die('does this do anything?');
-        }
+        //die('does this do anything?');
+
     } else
         die(var_dump("Path was not found. file=$path"));
 else
     require_once APP_PATH . 'bootstrap.php';
 
+require_once APP_PATH . 'config' . DIRECTORY_SEPARATOR . 'functions.php';
+require_once APP_PATH . 'config' . DIRECTORY_SEPARATOR . 'constants.php';
+require_once APP_PATH . 'config' . DIRECTORY_SEPARATOR . 'env.php';
+//require_once APP_PATH . 'config' . DIRECTORY_SEPARATOR . 'app.php';
+require_once APP_PATH . 'config' . DIRECTORY_SEPARATOR . 'config.php';
+//require_once APP_PATH . 'config' . DIRECTORY_SEPARATOR . 'autoload.php';
 
-require_once 'constants.php';
-
-
-//require_once 'constants.php';
-
-//define('APP_SELF', __FILE__);
-
-//define('APP_PATH_PUBLIC', __DIR__);
-
+!defined('APP_SELF') and define('APP_SELF', get_required_files()[0] ?? realpath($_SERVER["SCRIPT_FILENAME"])); /*__FILE__*/
+// define('PATH_PUBLIC', __DIR__);
 
 $previousFilename = '';
 
 // Handle the 'php' app configuration
-$dirs = [APP_PATH . 'config' . DIRECTORY_SEPARATOR . 'php.php'];
+$dirs = [APP_PATH . 'config' . DIRECTORY_SEPARATOR . 'lang' . DIRECTORY_SEPARATOR . 'php.php'];
 
 // Handle the 'git' app configuration
 !isset($_GET['app']) || $_GET['app'] != 'git' ?:
-    (APP_SELF != APP_PATH_PUBLIC ?: $dirs[] = APP_PATH . APP_BASE['config'] . 'git.php');
+    (APP_SELF != PATH_PUBLIC ?: $dirs[] = APP_PATH . APP_BASE['config'] . 'git.php');
 
 // Handle the 'composer' app configuration
 !isset($_GET['app']) || $_GET['app'] != 'composer' ?:
-    $dirs = (APP_SELF != APP_PATH_PUBLIC)
+    $dirs = (APP_SELF != PATH_PUBLIC)
     ? array_merge(
         $dirs,
         [
@@ -74,12 +68,12 @@ $dirs = [APP_PATH . 'config' . DIRECTORY_SEPARATOR . 'php.php'];
 
 // Handle the 'npm' app configuration
 !isset($_GET['app']) || $_GET['app'] != 'npm' ?:
-    (APP_SELF != APP_PATH_PUBLIC ?:
+    (APP_SELF != PATH_PUBLIC ?:
         (!is_file($include = APP_PATH . APP_BASE['config'] . 'npm.php') ?: $dirs[] = $include));
 
 unset($include);
 
-if (APP_SELF != APP_PATH_PUBLIC) {
+if (APP_SELF != PATH_PUBLIC) {
     $priorityFiles = [
         //APP_PATH . APP_BASE['config'] . 'php.php',
         APP_PATH . APP_BASE['config'] . 'composer.php',
@@ -150,7 +144,7 @@ foreach ($dirs as $includeFile) {
 //die(var_dump(get_defined_constants(true)['user']));
 
 // Get all PHP files in the 'classes' directory
-$paths = array_filter(glob(__DIR__ . DIRECTORY_SEPARATOR . 'classes' . DIRECTORY_SEPARATOR . '*.php'), 'is_file');
+$paths = array_filter(glob(APP_PATH . 'config/classes' . DIRECTORY_SEPARATOR . '*.php'), 'is_file');
 
 // Define the filenames to be excluded
 $excludedFiles = [
@@ -236,14 +230,10 @@ if (isset($_SERVER['REQUEST_METHOD']) && $_SERVER['REQUEST_METHOD'] == 'POST')
                 getcwd();
             })->shutdown();
         } else {
-            require_once 'git.php';
-            $_ENV['COMPOSER']['AUTOLOAD'] = false;
-            require_once 'composer.php';
+            //require_once 'git.php';
+            //$_ENV['COMPOSER']['AUTOLOAD'] = false;
+            //require_once 'composer.php';
         }
-
-require_once 'perl.php';
-
-require_once 'python.php';
 
 /* else if (preg_match('/^composer\s+(:?(.*))/i', $_POST['cmd'], $match)) {
 

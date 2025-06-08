@@ -1,7 +1,11 @@
 <?php
-
-
-
+/**
+ * Packagist.org Package Search
+ *
+ * @package App
+ * @author Your Name
+ * @version 1.0
+ */
 $packagistUrl = 'https://packagist.org/';
 $cacheFile = APP_PATH . APP_BASE['var'] . 'packagist.org.html';
 $cacheDir = APP_PATH . APP_BASE['var'];
@@ -20,7 +24,7 @@ if (is_file($cacheFile)) {
   $expiryDate = strtotime("+$expiresInDays days", $modifiedTime);
   $currentDate = strtotime(date('Y-m-d'));
 
-  $refreshCache = ($currentDate >= $expiryDate);
+  $refreshCache = $currentDate >= $expiryDate;
 }
 
 // Fetch fresh content if needed

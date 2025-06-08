@@ -1,33 +1,25 @@
 <?php
 declare(strict_types=1); // First Line Only!
 
-require_once 'constants.php';
-
 !defined('APP_PATH') and define('APP_PATH', dirname(__DIR__) . DIRECTORY_SEPARATOR);
 
-// dd(get_required_files());
 //include 'dotenv.php';
-
-//die(var_export(get_required_files(), true));
-
-require_once 'functions.php';
 
 date_default_timezone_set('America/Vancouver');
 
-//die(date('Y-m-d H:i:s'));
-
-$errors = []; // (object)
+//$errors = []; // (object)
 
 // Directory of this script
 $isFile = function ($path) /*use (&$paths)*/ {
-  if (is_file($path)) {
+  if (is_file($path))
     require_once $path; // $paths[] = $path;
-  }
 };
 
 $isFile(APP_PATH . 'php.php') ?:
-  $isFile('config' . DIRECTORY_SEPARATOR . 'php.php') ?:
+  $isFile('config' . DIRECTORY_SEPARATOR . 'lang' . DIRECTORY_SEPARATOR . 'php.php') ?:
   $isFile('php.php');
+
+define('PATH_ASSETS', APP_IS_ONLINE ? 'cdn/' : 'local/');
 
 // Check if the dd function exists
 if (!function_exists('dd')) {
@@ -266,15 +258,15 @@ $ob_content = NULL;
 
 ob_start();
 
-if (isset($_GET['project'])) {
-  //require_once('composer.php');
-  //require_once('project.php');
-
+if (isset($_GET['project']))
   if (isset($_GET['app']) && $_GET['app'] == 'project')
-    require_once 'app.project.php';
-}
+    require_once 'app' . DIRECTORY_SEPARATOR . 'project.php';
+
 
 header("Cache-Control: no-store, no-cache, must-revalidate, max-age=0");
+header("Pragma: no-cache");
+header("Expires: 0");
+//header("Content-Type: text/html; charset=UTF-8");
 
 if (!is_dir($path = APP_PATH . APP_BASE['projects'])) {
   $errors['projects'] = "projects/internal directory does not exist.\n";
@@ -352,10 +344,10 @@ if (basename($dir = getcwd()) != 'config') {
   chdir(APP_PATH);
 
 } elseif (basename(dirname(APP_SELF)) == 'public_html') { // basename(__DIR__) == 'public_html'
-  $errors['APP_PATH_PUBLIC'] = "The `public_html` scenario was detected.\n";
+  $errors['PATH_PUBLIC'] = "The `public_html` scenario was detected.\n";
 
   if (is_dir(dirname(APP_SELF, 2) . DIRECTORY_SEPARATOR . 'config')) {
-    $errors['APP_PATH_PUBLIC'] .= "\t" . dirname(APP_SELF, 2) . DIRECTORY_SEPARATOR . 'config' . DIRECTORY_SEPARATOR . '*' . ' was found. This is not generally safe-scenario.';
+    $errors['PATH_PUBLIC'] .= "\t" . dirname(APP_SELF, 2) . DIRECTORY_SEPARATOR . 'config' . DIRECTORY_SEPARATOR . '*' . ' was found. This is not generally safe-scenario.';
   }
 
   chdir(dirname(__DIR__, 1));  //dd(getcwd());

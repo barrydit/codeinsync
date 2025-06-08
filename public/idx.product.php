@@ -4,8 +4,7 @@ if (dirname(get_required_files()[0]) == getcwd()) {
   if ($path = basename(dirname(get_required_files()[0])) == 'public') { //
     if (basename(getcwd())) {
       // if (is_file($path = realpath('index.php'))) require_once $path;
-
-
+/*
       if (is_file($path = realpath('..' . DIRECTORY_SEPARATOR . 'config' . DIRECTORY_SEPARATOR . 'php.php')))
         require_once $path;
       else
@@ -13,6 +12,7 @@ if (dirname(get_required_files()[0]) == getcwd()) {
 
       if ($index = realpath(dirname(__DIR__, 1) . DIRECTORY_SEPARATOR . 'index.php'))
         require_once $index; // APP_PATH . 'index.php'
+*/
     }
   }
 }
@@ -22,8 +22,7 @@ if (!headers_sent()) {
   header("Cache-Control: no-store, no-cache, must-revalidate, max-age=0");
   header("Expires: Sat, 26 Jul 1997 05:00:00 GMT");
   header("Pragma: no-cache");
-}
-?>
+} ?>
 <!DOCTYPE html>
 <html lang="en">
 
@@ -234,6 +233,8 @@ if (!headers_sent()) {
             onclick="document.getElementById('app_packagist-container').style.display='block'; return false;"></a>
         <a href="#"><img src="resources/images/git_icon.fw.png" width="32" height="32"
             onclick="document.getElementById('app_git-container').style.display='block'; return false;"></a>
+        <a href="#"><img src="resources/images/node_js.gif" alt="Logo" style="width: 83px; height: auto; margin: 0 5px;"
+            onclick="document.getElementById('app_node_js-container').style.display='block'; return false;"></a>
         <a href="#"><img src="resources/images/npm_icon.png" alt="Logo"
             style="width: 31px; height: auto; margin: 0 5px;"
             onclick="document.getElementById('app_npm-container').style.display='block'; return false;"></a>
@@ -661,10 +662,10 @@ $(document).ready(function() {
     makeDraggable('app_notes-container');
     makeDraggable('app_calendar-container');
     //makeDraggable('app_errors-container');
+    makeDraggable('app_git-container');
     makeDraggable('app_ace_editor-container');
     makeDraggable('app_composer-container');
     makeDraggable('app_project-container');
-    makeDraggable('app_git-container');
     makeDraggable('app_npm-container');
     makeDraggable('app_php-container');
     makeDraggable('app_nodes-container');
@@ -674,6 +675,9 @@ $(document).ready(function() {
 
 
     $(document).ready(function () {
+
+      <?= (defined('APP_NO_INTERNET_CONNECTION')) ? '' : 'alert(\'The internet is not connected.\');' ?>
+
       if ($("#app_directory-container").css('display') == 'none') {
         <?php
         //if (!empty(APP_URL['query']) || isset($_GET['debug']) || (defined(APP_DEBUG) && APP_DEBUG)) { ?>

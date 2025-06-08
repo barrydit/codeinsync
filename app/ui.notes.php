@@ -13,8 +13,6 @@ if (__FILE__ == get_required_files()[0] && __FILE__ == realpath($_SERVER["SCRIPT
         die(var_dump("Path was not found. file=$path"));
     }
 
-//dd(get_required_files(), false);
-
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 
     //dd($_POST, false);
@@ -293,9 +291,9 @@ else $count++;
             <div id="ui_notes" class="errors"
                 style="position: absolute; display: <?= isset($_GET['file']) && isset($_GET['path']) && is_file($_GET['path'] . $_GET['file']) ? 'block' : 'block' ?>; z-index: 1;">
                 <div style="background-color: white; height: 100%; width: 100%; overflow: hidden;">
-                    <iframe
+                    <!-- iframe
                         src="<?= (is_dir($path = APP_PATH . APP_BASE['public']) && getcwd() == realpath($path) ? APP_BASE['public'] : '') . basename('app.notes.php') ?>"
-                        style="overflow: scroll; height: 460px; width: 1200px; border: none;" scrolling="yes"></iframe>
+                        style="overflow: scroll; height: 460px; width: 1200px; border: none;" scrolling="yes"></iframe -->
                 </div>
             </div>
         </div>

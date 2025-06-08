@@ -1,7 +1,7 @@
 <?php
 
 // Ensure this file is loaded and php.php is not yet loaded
-require_once dirname(__DIR__, 1) . DIRECTORY_SEPARATOR . 'php.php';
+require_once dirname(__DIR__, 1) . DIRECTORY_SEPARATOR . 'lang' . DIRECTORY_SEPARATOR . 'php.php';
 class SocketException extends Exception
 {
 }
@@ -377,7 +377,7 @@ if (!isset($_SERVER['SOCKET']) || empty($_SERVER['SOCKET'])) {
 
     } else {
         //die('Socket connection failed.');
-        $errors['APP_SOCKET'] = "Have you checked your server.php file lately?\n";
+        $errors['APP_SOCKET'] = "\tHave you checked your server.php file lately?\n";
 
         //if (APP_DEBUG) { 
         //var_dump(trim($errors['APP_SOCKET']));

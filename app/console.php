@@ -25,10 +25,6 @@ if (__FILE__ == get_required_files()[0] && __FILE__ == realpath($_SERVER["SCRIPT
 else
   require_once APP_PATH . 'config' . DIRECTORY_SEPARATOR . 'config.php';
 
-//dd(APP_PATH . APP_ROOT);
-
-//require_once APP_PATH . APP_BASE['config'] . 'classes' . DIRECTORY_SEPARATOR . 'class.sockets.php';
-
 if (preg_match('/^app\.([\w\-.]+)\.php$/', basename(__FILE__), $matches))
   ${$matches[1]} = $matches[1];
 
@@ -45,8 +41,7 @@ if (preg_match('/^app\.([\w\-.]+)\.php$/', basename(__FILE__), $matches))
 
 
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
-
-  //dd(get_required_files());
+  // $auto_clear = isset($_POST['auto_clear']) && $_POST['auto_clear'] == 'on' ? true : false;
   if (isset($_POST['group_type'])) {
     switch ($_POST['group_type']) {
       case 'file':
@@ -1005,15 +1000,13 @@ ob_start(); ?>
             startScroll(newProcess);
           };
           // Send post request
-          // $.post('<?= basename(__FILE__) . '?' . $_SERVER['QUERY_STRING']; /*$projectRoot*/ ?>', { cmd: argv });
+          // $.post('<?= /* basename(__FILE__) .*/ '?' . $_SERVER['QUERY_STRING']; /*$projectRoot*/ ?>', { cmd: argv });
         }
       }, 3000);
 
       processList.prepend(newProcess);
 
-
       console.log('Argv: ' + argv);
-
 
       if (autoClear) $('#responseConsole').val('<?= $shell_prompt; ?>' + argv);
 

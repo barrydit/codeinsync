@@ -442,12 +442,12 @@ if (!in_array(APP_PATH . APP_BASE['config'] . 'composer.php', get_required_files
 if (!in_array(APP_PATH . APP_BASE['public'] . 'app.console.php', get_required_files()))
   if (
     $path = (basename(getcwd()) == 'public')
-    ? (is_file('app.console.php') ? 'app.console.php' : (is_file('../config/app.console.php') ? '../config/app.console.php' : null))
-    : (is_file('app.console.php') ? 'app.console.php' : (is_file('public/app.console.php') ? 'public/app.console.php' : 'app.console.php'))
+    ? (is_file(APP_BASE['app'] . 'console.php') ? APP_BASE['app'] . 'console.php' : (is_file('../config/console.php') ? '../config/console.php' : null))
+    : (is_file(APP_BASE['app'] . 'console.php') ? APP_BASE['app'] . 'console.php' : (is_file(APP_BASE['app'] . 'console.php') ? APP_BASE['app'] . 'console.php' : 'app.console.php'))
   )
-    require_once($path);
+    require_once $path;
   else
-    die(var_dump($path . ' path was not found. file=app.console.php'));
+    die("$path path was not found. file=" . APP_BASE['app'] . "console.php");
 
 /*  ...
     "autoload": {

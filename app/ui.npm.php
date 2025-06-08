@@ -340,7 +340,7 @@ ob_start(); ?>
 
     <style type="text/tailwindcss">
       <?= $app['style']; ?>
-                  </style>
+  </style>
   </head>
 
   <body>

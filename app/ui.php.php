@@ -13,8 +13,6 @@ if (__FILE__ == get_required_files()[0] && __FILE__ == realpath($_SERVER["SCRIPT
         die(var_dump("Path was not found. file=$path"));
     }
 
-//dd(get_required_files(), false);
-
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 
     //dd($_POST, false);
@@ -295,7 +293,7 @@ else $count++;
                 style="position: absolute; display: <?= isset($_GET['file']) && isset($_GET['path']) && is_file($_GET['path'] . $_GET['file']) ? 'block' : 'block' ?>; z-index: 1;">
                 <div style="background-color: white; height: 100%; width: 100%; overflow: hidden;">
                     <textarea cols="75" rows="25"><?php if (!empty($errors))
-                        foreach ($errors as $key => $value) { ?>$errors['<?= $key; ?>']; <?= (preg_match('/^ERROR_(LOG|PATH)$/', $key) || $key === 'COMPOSER-AutoloaderInit' ? (preg_match('/^(ERROR_LOG|COMPOSER).*$/', $key) ? "\n" : '') : 'Msg: ') . $value; ?><?php } ?>
+                        foreach ($errors as $key => $value) { ?>$errors['<?= $key; ?>'] <?= (preg_match('/^ERROR_(LOG|PATH)$/', $key) || $key === 'COMPOSER-AutoloaderInit' ? (preg_match('/^(ERROR_LOG|COMPOSER).*$/', $key) ? "\n" : '') : '=> ') . rtrim($value, " "); ?><?php } ?>
                 </textarea>
                 </div>
             </div>

@@ -1,6 +1,6 @@
 <?php
 
-if (preg_match('/^app\.([\w\-.]+)\.php$/', basename(__FILE__), $matches))
+if (preg_match('/^([\w\-.]+)\.php$/', basename(__FILE__), $matches))
   ${$matches[1]} = $matches[1];
 
 ob_start(); ?>
