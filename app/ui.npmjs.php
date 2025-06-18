@@ -1,13 +1,13 @@
 <?php
 /**
- * Packagist.org Package Search
+ * npmjs.com Package Search
  *
  * @package App
  * @author Your Name
  * @version 1.0
  */
-$packagistUrl = 'https://packagist.org/';
-$cacheFile = APP_PATH . APP_BASE['var'] . 'packagist.org.html';
+$npmjsUrl = 'https://www.npmjs.com/';
+$cacheFile = APP_PATH . APP_BASE['var'] . 'npmjs.com.html';
 $cacheDir = APP_PATH . APP_BASE['var'];
 
 // Ensure cache directory exists
@@ -29,14 +29,14 @@ if (is_file($cacheFile)) {
 
 // Fetch fresh content if needed
 if ($refreshCache) {
-  $handle = curl_init($packagistUrl);
+  $handle = curl_init($npmjsUrl);
   curl_setopt($handle, CURLOPT_RETURNTRANSFER, true);
 
   $html = curl_exec($handle);
 
   if (!empty($html)) {
     if (!file_put_contents($cacheFile, $html)) {
-      $errors['COMPOSER_LATEST'] = "$packagistUrl returned empty.";
+      $errors['COMPOSER_LATEST'] = "$npmjsUrl returned empty.";
     }
   } else {
     $errors['COMPOSER_LATEST'] = curl_error($handle);
@@ -47,8 +47,8 @@ if ($refreshCache) {
   }
 }
 
-// Serve the HTML snapshot if `packagist` is requested
-if (array_key_first($_GET) === 'packagist') {
+// Serve the HTML snapshot if `npmjs` is requested
+if (array_key_first($_GET) === 'npmjs') {
   libxml_use_internal_errors(true);
 
   $dom = new DOMDocument('1.0', 'utf-8');
@@ -59,7 +59,7 @@ if (array_key_first($_GET) === 'packagist') {
 
   if ($metaTags->length > 0) {
     $baseTag = $dom->createDocumentFragment();
-    $baseTag->appendXML('<base href="https://packagist.org/" />');
+    $baseTag->appendXML('<base href="https://www.npmjs.com/" />');
 
     $metaTags[0]->parentNode->insertBefore($baseTag, $metaTags[0]->nextSibling);
   }
@@ -69,7 +69,7 @@ if (array_key_first($_GET) === 'packagist') {
 }
 /*
 switch ($_GET['app']) {
-  case 'packagist':
+  case 'npmjs':
 
     break;
   default:
@@ -160,7 +160,7 @@ if (false) { ?>
 ob_start(); ?>
 
   /* Styles for the absolute div */
-  #app_packagist-container {
+  #app_npmjs-container {
     position: absolute;
     display: none;
     top: 5%;
@@ -191,17 +191,17 @@ ob_start(); ?>
   ?>
 
 <!-- <div class="container" style="border: 1px solid #000;"> -->
-<div id="app_packagist-container"
-  class="<?= APP_SELF == __FILE__ || (isset($_GET['app']) && $_GET['app'] == 'packagist') ? 'selected' : '' ?>"
+<div id="app_npmjs-container"
+  class="<?= APP_SELF == __FILE__ || (isset($_GET['app']) && $_GET['app'] == 'npmjs') ? 'selected' : '' ?>"
   style="border: 1px solid #000;">
   <div class="header ui-widget-header">
-    <div style="display: inline-block;">Packagist.org Package (Search)</div>
+    <div style="display: inline-block;">Npmjs.com Package (Search)</div>
     <div style="display: inline; float: right; text-align: center;">[<a style="cursor: pointer; font-size: 13px;"
-        onclick="document.getElementById('app_packagist-container').style.display='none';">X</a>]</div>
+        onclick="document.getElementById('app_npmjs-container').style.display='none';">X</a>]</div>
   </div>
 
   <div style="display: inline-block; width: auto; padding-left: 10px;">
-    <iframe src="<?= /* basename(__FILE__) */ '?packagist'; ?>" style="height: 550px; width: 775px;"></iframe>
+    <iframe src="<?= /* basename(__FILE__) */ '?npmjs'; ?>" style="height: 550px; width: 775px;"></iframe>
   </div>
 
   <!-- <pre id="ace-editor" class="ace_editor"></pre> -->
@@ -224,35 +224,35 @@ ob_start(); ?>
 
   ob_start(); ?>
 
-<?php $app['html'] = ob_get_contents();
-ob_end_clean();
+  <?php $app['html'] = ob_get_contents();
+  ob_end_clean();
 
-/*
-$dom = new DOMDocument(1.0, 'utf-8');
-$dom->loadHTML(file_get_contents(APP_PATH . APP_BASE['var'] . 'packagist.org.html'));
+  /*
+  $dom = new DOMDocument(1.0, 'utf-8');
+  $dom->loadHTML(file_get_contents(APP_PATH . APP_BASE['var'] . 'npmjs.com.html'));
 
-$divs = $dom->getElementsByTagName('head');
+  $divs = $dom->getElementsByTagName('head');
 
-$element = $dom->createElement('test', 'This is the root element!');
+  $element = $dom->createElement('test', 'This is the root element!');
 
-$elm = createElement($dom, 'foo', 'bar', array('attr_name'=>'attr_value'));
+  $elm = createElement($dom, 'foo', 'bar', array('attr_name'=>'attr_value'));
 
-$dom->appendChild($elm);
-*/
+  $dom->appendChild($elm);
+  */
 
-//dd($divs);
-
-//$content_node=$dom->getElementById("main");
+  //dd($divs);
+  
+  //$content_node=$dom->getElementById("main");
 //$node=getElementsByClass($content_node, 'p', 'latest');
-
-//$dom->saveHTML($dom->documentElement);
-
-//echo file_get_contents("https://packagist.org/");
-
-//check if file is included or accessed directly
-if (__FILE__ == get_required_files()[0] || in_array(__FILE__, get_required_files()) && array_key_first($_GET) == 'packagist' && APP_DEBUG)
-  Shutdown::setEnabled(false)->setShutdownMessage(function () use ($dom) {
-    return $dom->saveHTML(); /* eval('?>' . $project_code); // -wow */
-  })->shutdown(); // exit;
-
+  
+  //$dom->saveHTML($dom->documentElement);
+  
+  //echo file_get_contents("https://npmjs.com/");
+  
+  //check if file is included or accessed directly
+  if (__FILE__ == get_required_files()[0] || in_array(__FILE__, get_required_files()) && array_key_first($_GET) == 'npmjs' && APP_DEBUG)
+    Shutdown::setEnabled(false)->setShutdownMessage(function () use ($dom) {
+      return $dom->saveHTML(); /* eval('?>' . $project_code); // -wow */
+    })->shutdown(); // exit;
+  
 

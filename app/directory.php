@@ -661,7 +661,7 @@ left: calc(50% - 265px); /* 1207 / 2 */ /*transform: translate(-50%, -50%);*/ bo
                   break;
                 case 'node_modules':
                   echo '<div style="position: relative; border: 4px dashed #E14747;">'
-                    . '<a href="#!" onclick="handleClick(event, \'' . $relativePath . '\');document.getElementById(\'app_npm-container\').style.display=\'block\';"><img src="resources/images/directory-npm.gif" width="50" height="32" /></a>'
+                    . '<a href="#!" onclick="handleClick(event, \'' . $relativePath . '\');document.getElementById(\'app_npmjs-container\').style.display=\'block\';"><img src="resources/images/directory-npm.gif" width="50" height="32" /></a>'
                     . '<a href="' . /* basename(__FILE__) .*/ '?' . $url . '" onclick="handleClick(event, \'' . $relativePath . '\')">' . basename($path)  // "?path=' . basename($path) . '"         
                     . '/</a></div>' . "\n";
                   break;
@@ -982,10 +982,9 @@ left: calc(50% - 265px); /* 1207 / 2 */ /*transform: translate(-50%, -50%);*/ bo
                       . '<a href="' . htmlspecialchars($url) . '" onclick="handleClick(event, \'' . basename($relativePath) . '\')">' . basename($path) . '</a>'
                       /*            . (is_readable($path = ini_get('error_log')) && filesize($path) > 0 ? '<div style="position: absolute; right: 8px; bottom: -6px; color: red; font-weight: bold;">[1]</div>' : '' ) */
                       . '</div>' . "\n";
-                    break;
                 }
               } elseif (preg_match('/^package(?:-lock)?\.(json)/', basename($path))) {
-                echo '<div style="position: relative; border: 4px dashed #E14747;"><a href="' . /*basename(__FILE__) .*/ '?' . (!isset($_GET['client']) ? (!isset($_GET['project']) ? '' : 'project=' . $_GET['project'] . '&') : 'client=' . $_GET['client'] . '&') . (!isset($_GET['path']) ? '' : 'path=' . $_GET['path'] . '&') . 'app=ace_editor&' . /*'path=' . (basename(dirname($path)) == basename(parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH) ? 'failed' : basename(dirname($path)))) .*/ 'file=' . basename($path) . '" onclick="handleClick(event, \'' . basename($relativePath) . '\'); document.getElementById(\'app_npm-container\').style.display=\'block\';">';
+                echo '<div style="position: relative; border: 4px dashed #E14747;"><a href="' . /*basename(__FILE__) .*/ '?' . (!isset($_GET['client']) ? (!isset($_GET['project']) ? '' : 'project=' . $_GET['project'] . '&') : 'client=' . $_GET['client'] . '&') . (!isset($_GET['path']) ? '' : 'path=' . $_GET['path'] . '&') . 'app=ace_editor&' . /*'path=' . (basename(dirname($path)) == basename(parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH) ? 'failed' : basename(dirname($path)))) .*/ 'file=' . basename($path) . '" onclick="handleClick(event, \'' . basename($relativePath) . '\'); document.getElementById(\'app_node_js-container\').style.display=\'block\';">';
 
                 switch (basename($path)) {
                   case 'package.json':
@@ -1259,7 +1258,7 @@ left: calc(50% - 265px); /* 1207 / 2 */ /*transform: translate(-50%, -50%);*/ bo
       $output = [];
       //echo $buffer;
       unset($match);
-      require_once APP_BASE['app'] . 'console.php';
+      require_once /*APP_BASE['app'] .*/ 'console.php';
     }
 
     if (!isset($_POST['group_type']))
@@ -1436,7 +1435,7 @@ if (e.key === 'ArrowRight' && idx < crumbs.length - 1) { crumbs[idx + 1].focus()
     <link rel="stylesheet" href="//code.jquery.com/ui/1.12.1/themes/smoothness/jquery-ui.css" />
 
     <?php
-    // (check_http_status('https://cdn.tailwindcss.com') ? 'https://cdn.tailwindcss.com' : APP_URL . 'resources/js/tailwindcss-3.3.5.js')?
+    // (APP_IS_ONLINE && check_http_status('https://cdn.tailwindcss.com') ? 'https://cdn.tailwindcss.com' : APP_URL . 'resources/js/tailwindcss-3.3.5.js')?
 // Path to the JavaScript file
     $path = APP_PATH . APP_BASE['resources'] . 'js/tailwindcss-3.3.5.js';
 

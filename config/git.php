@@ -3,7 +3,7 @@ global $shell_prompt, $errors;
 /**/
 // https://techglimpse.com/git-push-github-token-based-passwordless/
 // git push https://<GITHUB_ACCESS_TOKEN>@github.com/<GITHUB_USERNAME>/<REPOSITORY_NAME>.git
-if ($path = realpath((basename(__DIR__) != 'config' ? NULL : __DIR__ . DIRECTORY_SEPARATOR) . 'constants.php'))
+if ($path = realpath((basename(__DIR__) != 'config' ? NULL : __DIR__ . DIRECTORY_SEPARATOR) . 'constants.paths.php'))
   require_once $path;
 
 
@@ -104,7 +104,7 @@ function git_origin_sha_update()
 
     //dd($latest_remote_commit_url);
 
-    if (/* defined('APP_IS_ONLINE') &&check_http_status($_ENV['GIT']['ORIGIN_URL']) &&*/ !check_http_status($latest_remote_commit_url, 404)) {
+    if (APP_IS_ONLINE /*&&check_http_status($_ENV['GIT']['ORIGIN_URL']) &&*/ && !check_http_status($latest_remote_commit_url, 404) && !check_http_status($latest_remote_commit_url, 401)) {
 
       if ($context === false) {
         error_log("Failed to create stream context.");
@@ -132,9 +132,7 @@ function git_origin_sha_update()
 
   if (isset($http_response_header) && strpos($http_response_header[0], '401') !== false) {
     $errors['git-unauthorized'] = "[git] You are not authorized. The token may have expired.\n";
-  } elseif (isset($errorDetails['message'])) {
-    $errors['other'] = 'An error occurred: ' . $errorDetails['message'];
-  }
+  } // elseif (isset($errorDetails['message'])) $errors['other'] = 'An error occurred: ' . $errorDetails['message'];
 
   //dd($response);
 

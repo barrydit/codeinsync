@@ -40,7 +40,7 @@ if (!headers_sent()) {
   <title>DASHBOARD</title>
 
   <?php
-  // (check_http_status('https://cdn.tailwindcss.com') ? 'https://cdn.tailwindcss.com' : APP_URL . 'resources/js/tailwindcss-3.3.5.js')?
+  // (APP_IS_ONLINE && check_http_status('https://cdn.tailwindcss.com') ? 'https://cdn.tailwindcss.com' : APP_URL . 'resources/js/tailwindcss-3.3.5.js')?
 // <link rel="stylesheet" href="https://code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css">
 // <link rel="stylesheet" href="resources/css/output.css">
   
@@ -592,7 +592,7 @@ cursor : pointer;
               </form>
             </div>
             <div style=" position: absolute; margin: 110px 0 0 540px; text-align: center;" class="text-sm"><a href="#!"
-                onclick="toggleIframeUrl('app.pong.php'); return false;"><img style="text-align: center;"
+                onclick="toggleIframeUrl('pong.php'); return false;"><img style="text-align: center;"
                   src="<?= APP_BASE['resources'] . 'images/pong.png' ?>" /><br /><span
                   style="text-align: center;">Pong</span></a>
             </div>
@@ -1099,7 +1099,7 @@ cursor : pointer;
 -->
 
     <script
-      src="<?= check_http_status('https://code.jquery.com/jquery-3.7.1.min.js') ? 'https://code.jquery.com/jquery-3.7.1.min.js' : APP_BASE['resources'] . 'js/jquery/' . 'jquery-3.7.1.min.js' ?>"></script>
+      src="<?= APP_IS_ONLINE && check_http_status('https://code.jquery.com/jquery-3.7.1.min.js') ? 'https://code.jquery.com/jquery-3.7.1.min.js' : APP_BASE['resources'] . 'js/jquery/' . 'jquery-3.7.1.min.js' ?>"></script>
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-easing/1.4.1/jquery.easing.min.js"></script>
     <!-- You need to include jQueryUI for the extended easing options. -->
@@ -1119,7 +1119,7 @@ cursor : pointer;
     } ?>
 
     <script
-      src="<?= check_http_status('https://code.jquery.com/ui/1.12.1/jquery-ui.min.js') ? 'https://code.jquery.com/ui/1.12.1/jquery-ui.min.js' : APP_BASE['resources'] . 'js/jquery-ui/' . 'jquery-ui-1.12.1.js' ?>"></script>
+      src="<?= APP_IS_ONLINE && check_http_status('https://code.jquery.com/ui/1.12.1/jquery-ui.min.js') ? 'https://code.jquery.com/ui/1.12.1/jquery-ui.min.js' : APP_BASE['resources'] . 'js/jquery-ui/' . 'jquery-ui-1.12.1.js' ?>"></script>
     <!-- Uncaught ReferenceError: jQuery is not defined -->
 
     <!-- <script src="resources/js/ace/src/ace.js" type="text/javascript" charset="utf-8"></script> 
@@ -1139,7 +1139,7 @@ $(document).ready(function() {
 -->
     <?php
 
-    // (check_http_status('https://cdn.tailwindcss.com') ? 'https://cdn.tailwindcss.com' : APP_URL . 'resources/js/tailwindcss-3.3.5.js')?
+    // (APP_IS_ONLINE && check_http_status('https://cdn.tailwindcss.com') ? 'https://cdn.tailwindcss.com' : APP_URL . 'resources/js/tailwindcss-3.3.5.js')?
 //!is_dir($path = APP_PATH . APP_BASE['resources'] . 'js/') or mkdir($path, 0755, true);
     
     if (!is_file($path = APP_PATH . APP_BASE['resources'] . 'js/requirejs/require.js') || ceil(abs((strtotime(date('Y-m-d')) - strtotime(date('Y-m-d', strtotime('+5 days', filemtime($path))))) / 86400)) <= 0) {
@@ -1416,7 +1416,8 @@ $(document).ready(function() {
       makeDraggable('app_composer-container');
       makeDraggable('app_project-container');
       makeDraggable('app_git-container');
-      makeDraggable('app_npm-container');
+      makeDraggable('app_node_js-container');
+      makeDraggable('app_npmjs-container');
       makeDraggable('app_php-container');
       makeDraggable('app_nodes-container');
       makeDraggable('app_timesheet-container');
@@ -1647,7 +1648,7 @@ $(document).ready(function() {
 
       $(document).ready(function () {
 
-        <?= (defined('APP_NO_INTERNET_CONNECTION')) ? '' : 'alert(\'The internet is not connected.\');' ?>
+        <?= !APP_NO_INTERNET_CONNECTION && APP_IS_ONLINE ? '' : 'alert(\'The internet is not connected.\');' ?>
 
         $("#app_console-container").css('display', 'none');
 

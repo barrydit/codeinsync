@@ -28,9 +28,31 @@ else
     require_once APP_PATH . 'bootstrap.php';
 
 require_once APP_PATH . 'config' . DIRECTORY_SEPARATOR . 'functions.php';
-require_once APP_PATH . 'config' . DIRECTORY_SEPARATOR . 'constants.php';
-require_once APP_PATH . 'config' . DIRECTORY_SEPARATOR . 'env.php';
-//require_once APP_PATH . 'config' . DIRECTORY_SEPARATOR . 'app.php';
+//require_once APP_PATH . 'config' . DIRECTORY_SEPARATOR . 'constants.php'; // This is not needed, constants are already defined below
+
+
+require_once APP_PATH . 'config' . DIRECTORY_SEPARATOR . 'constants.env.php';
+require_once APP_PATH . 'config' . DIRECTORY_SEPARATOR . 'constants.paths.php';
+require_once APP_PATH . 'config' . DIRECTORY_SEPARATOR . 'constants.runtime.php';
+require_once APP_PATH . 'config' . DIRECTORY_SEPARATOR . 'constants.url.php';
+//require_once APP_PATH . 'config' . DIRECTORY_SEPARATOR . 'constants.server.php';
+//require_once APP_PATH . 'config' . DIRECTORY_SEPARATOR . 'constants.app.base.php';
+require_once APP_PATH . 'config' . DIRECTORY_SEPARATOR . 'constants.app.php';
+//require_once APP_PATH . 'config' . DIRECTORY_SEPARATOR . 'constants.client.php';
+//require_once APP_PATH . 'config' . DIRECTORY_SEPARATOR . 'constants.project.php';
+
+file_put_contents(
+    APP_PATH . '.env.json',
+    json_encode(
+        array_filter(get_defined_constants(true)['user'], fn($k) => strpos($k, 'APP_') === 0 || strpos($k, 'PATH_') === 0, ARRAY_FILTER_USE_KEY),
+        JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES
+    )
+);
+
+//require_once APP_PATH . 'config' . DIRECTORY_SEPARATOR . 'constants.client-project.php';
+//require_once APP_PATH . 'config' . DIRECTORY_SEPARATOR . 'constants.backup.php';
+//require_once APP_PATH . 'config' . DIRECTORY_SEPARATOR . 'constants.php'; // This is not needed, constants are already defined above
+
 require_once APP_PATH . 'config' . DIRECTORY_SEPARATOR . 'config.php';
 //require_once APP_PATH . 'config' . DIRECTORY_SEPARATOR . 'autoload.php';
 
@@ -205,7 +227,6 @@ if (isset($_SERVER['REQUEST_METHOD']) && $_SERVER['REQUEST_METHOD'] == 'POST')
                 $_POST['cmd'] = 'php -v';
 
                 exec($_POST['cmd'], $output);
-
             }
 
             if (preg_match('/^hello/i', $_POST['cmd'], $match)) {
@@ -234,6 +255,7 @@ if (isset($_SERVER['REQUEST_METHOD']) && $_SERVER['REQUEST_METHOD'] == 'POST')
             //$_ENV['COMPOSER']['AUTOLOAD'] = false;
             //require_once 'composer.php';
         }
+
 
 /* else if (preg_match('/^composer\s+(:?(.*))/i', $_POST['cmd'], $match)) {
 

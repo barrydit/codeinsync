@@ -1,19 +1,31 @@
 {
-  "type": "module",
+  "name": "www",
+  "version": "1.0.0",
+  "description": "![Made with PHP](https://img.shields.io/badge/Made_with-PHP(Vanilla)-blue) ![Supports GIT(hub)](https://img.shields.io/badge/Supports-GIT(hub)-red) ![Supports Composer](https://img.shields.io/badge/Supports-Composer-brown) ![Dynamic JSON Badge](https://img.shields.io/badge/dynamic-json-green)",
+  "main": "main.js",
+  "directories": {
+    "doc": "docs",
+    "test": "tests"
+  },
   "scripts": {
-    "start": "NODE_ENV=development node main.js",
-    "build": "NODE_ENV=production webpack"
+    "test": "echo \"Error: no test specified\" && exit 1"
   },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/barrydit/codeinsync.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/barrydit/codeinsync/issues"
+  },
+  "homepage": "https://github.com/barrydit/codeinsync#readme",
   "devDependencies": {
-    "@babel/core": "^7.23.2",
-    "@babel/preset-env": "^7.23.2",
-    "babel-loader": "^9.1.3",
-    "webpack": "^5.93.0",
-    "webpack-cli": "^5.1.4"
-  },
-  "dependencies": {
-    "jquery": "^3.7.1",
-    "npm": "^10.2.3",
-    "tailwindcss": "^3.4.7"
+    "@tailwindcss/cli": "^4.1.10",
+    "autoprefixer": "^10.4.21",
+    "postcss": "^8.5.6",
+    "tailwind": "^4.0.0",
+    "tailwindcss": "^4.1.10"
   }
 }

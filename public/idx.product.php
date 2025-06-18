@@ -44,8 +44,6 @@ if (!headers_sent()) {
   <meta name="mobile-web-app-status-bar-style" content="black-translucent">
   <meta name="mobile-web-app-title" content="CodeInSync" -->
 
-  <script src="https://d3js.org/d3.v7.min.js"></script>
-
   <base
     href="<?= (!is_array(APP_URL) ? APP_URL : APP_URL_BASE) . (preg_match('/^\/(?!\?)$/', $_SERVER['REQUEST_URI'] ?? '') ? '?' : '') . (!defined('APP_DEBUG') ? '#' : '?' . (APP_URL_BASE['query'] != '' ? APP_URL_BASE['query'] : '')) . (defined('APP_ENV') && APP_ENV == 'development' ? '#!' : ''); ?>">
 
@@ -72,14 +70,20 @@ if (!headers_sent()) {
   <base
     href="<?= (!is_array(APP_URL) ? APP_URL : APP_URL_BASE) . (preg_match('/^\/(?!\?)$/', $_SERVER['REQUEST_URI'] ?? '') ? '?' : '') . (!defined('APP_DEBUG') ? '#' : '?' . (APP_URL_BASE['query'] != '' ? APP_URL_BASE['query'] : '')) . (defined('APP_ENV') && APP_ENV == 'development' ? '#!' : ''); ?>">
 
-  <title>DASHBOARD</title>
-
   <?php
   // (check_http_status('https://cdn.tailwindcss.com') ? 'https://cdn.tailwindcss.com' : APP_URL . 'resources/js/tailwindcss-3.3.5.js')?
 // <link rel="stylesheet" href="https://code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css">
 // <link rel="stylesheet" href="resources/css/output.css">
   
-  if (!is_file($path = APP_PATH . APP_BASE['resources'] . 'js' . DIRECTORY_SEPARATOR . 'tailwindcss-3.3.5.js') || ceil(abs((strtotime(date('Y-m-d')) - strtotime(date('Y-m-d', strtotime('+5 days', filemtime($path))))) / 86400)) <= 0) {
+  //
+//
+//
+//
+//
+  
+
+
+  if (!is_file($path = 'css' . DIRECTORY_SEPARATOR . 'tailwindcss.js') || ceil(abs((strtotime(date('Y-m-d')) - strtotime(date('Y-m-d', strtotime('+5 days', filemtime($path))))) / 86400)) <= 0) {
     $url = 'https://cdn.tailwindcss.com';
     $handle = curl_init($url);
     curl_setopt($handle, CURLOPT_RETURNTRANSFER, true);
@@ -88,12 +92,14 @@ if (!headers_sent()) {
       file_put_contents($path, $js) or $errors['JS-TAILWIND'] = "$url returned empty.";
   }
 
-  if (is_file($path)) { ?>
-    <script src="<?= 'resources/js/tailwindcss-3.3.5.js' ?? $url ?>"></script><?php }
+  if (is_file($path = 'css' . DIRECTORY_SEPARATOR . 'tailwindcss.js')) { ?>
+    <script src="<?= '/css/styles.css' ?? $url ?>"></script><?php }
   unset($path); ?>
 
-  <style type="text/tailwindcss">
-    <style>
+  <script src="https://d3js.org/d3.v7.min.js"></script>
+
+  <style type="text/tailwindcss"></style>
+  <style>
     * {
       overflow: hidden;
     }
@@ -218,6 +224,7 @@ if (!headers_sent()) {
 
 </head>
 
+
 <body>
 
 
@@ -225,6 +232,9 @@ if (!headers_sent()) {
     <div class="sidebar">Resizable Sidebar</div>
     <div class="top-panel">
       <div>
+        <a href="#"><img src="resources/images/phpclasses_icon.png" alt="Logo"
+            style="width: 31px; height: auto; margin: 0 5px;"
+            onclick="document.getElementById('app_phpclasses-container').style.display='block'; return false;"></a>
         <a href="#"><img src="resources/images/composer_icon.png" alt="Logo"
             style="width: 31px; height: auto; margin: 0 5px;"
             onclick="document.getElementById('app_composer-container').style.display='block'; return false;"></a>
@@ -237,7 +247,7 @@ if (!headers_sent()) {
             onclick="document.getElementById('app_node_js-container').style.display='block'; return false;"></a>
         <a href="#"><img src="resources/images/npm_icon.png" alt="Logo"
             style="width: 31px; height: auto; margin: 0 5px;"
-            onclick="document.getElementById('app_npm-container').style.display='block'; return false;"></a>
+            onclick="document.getElementById('app_npmjs-container').style.display='block'; return false;"></a>
         <a href="#"><img src="resources/images/console_icon.png" alt="Logo"
             style="width: 31px; height: auto; margin: 0 5px;"
             onclick="isFixed = true; show_console(); return false;"></a>
@@ -249,7 +259,7 @@ if (!headers_sent()) {
         <button style="border: 1px solid black; border-radius: 5px;">Clock-In</button>&nbsp;
         <button style="border: 1px solid black; border-radius: 5px;">Github</button>&nbsp;
         <input type="submit" value="Test" style="border: 1px solid black; border-radius: 5px;">
-        <div class="" style="position: relative; display: inline-block; top: 0; right: 0;">
+        <div class="" style="position: relative; display: inline-block; top: 0; right: 2px;">
           <img src="resources/images/calendar_icon.png" width="53" height="32">
         </div>
         <!-- button>Git</button>
@@ -333,7 +343,7 @@ if (!headers_sent()) {
 
 
   <script
-    src="<?= check_http_status('https://code.jquery.com/jquery-3.7.1.min.js') ? 'https://code.jquery.com/jquery-3.7.1.min.js' : APP_BASE['resources'] . 'js/jquery/' . 'jquery-3.7.1.min.js' ?>"></script>
+    src="<?= APP_IS_ONLINE && check_http_status('https://code.jquery.com/jquery-3.7.1.min.js') ? 'https://code.jquery.com/jquery-3.7.1.min.js' : APP_BASE['resources'] . 'js/jquery/' . 'jquery-3.7.1.min.js' ?>"></script>
 
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-easing/1.4.1/jquery.easing.min.js"></script>
   <!-- You need to include jQueryUI for the extended easing options. -->
@@ -353,7 +363,7 @@ if (!headers_sent()) {
   } ?>
 
   <script
-    src="<?= check_http_status('https://code.jquery.com/ui/1.12.1/jquery-ui.min.js') ? 'https://code.jquery.com/ui/1.12.1/jquery-ui.min.js' : APP_BASE['resources'] . 'js/jquery-ui/' . 'jquery-ui-1.12.1.js' ?>"></script>
+    src="<?= APP_IS_ONLINE && check_http_status('https://code.jquery.com/ui/1.12.1/jquery-ui.min.js') ? 'https://code.jquery.com/ui/1.12.1/jquery-ui.min.js' : APP_BASE['resources'] . 'js/jquery-ui/' . 'jquery-ui-1.12.1.js' ?>"></script>
 
 
   <!-- Uncaught ReferenceError: jQuery is not defined -->
@@ -375,7 +385,7 @@ $(document).ready(function() {
 -->
   <?php
 
-  // (check_http_status('https://cdn.tailwindcss.com') ? 'https://cdn.tailwindcss.com' : APP_URL . 'resources/js/tailwindcss-3.3.5.js')?
+  // APP_IS_ONLINE && check_http_status('https://cdn.tailwindcss.com' ? 'https://cdn.tailwindcss.com' : APP_URL . 'resources/js/tailwindcss.js')?
 //!is_dir($path = APP_PATH . APP_BASE['resources'] . 'js/') or mkdir($path, 0755, true);
   
   if (!is_file($path = APP_PATH . APP_BASE['resources'] . 'js/requirejs/require.js') || ceil(abs((strtotime(date('Y-m-d')) - strtotime(date('Y-m-d', strtotime('+5 days', filemtime($path))))) / 86400)) <= 0) {
@@ -666,17 +676,17 @@ $(document).ready(function() {
     makeDraggable('app_ace_editor-container');
     makeDraggable('app_composer-container');
     makeDraggable('app_project-container');
-    makeDraggable('app_npm-container');
+    makeDraggable('app_node_js-container');
+    makeDraggable('app_npmjs-container');
     makeDraggable('app_php-container');
+    makeDraggable('app_phpclasses-container');
     makeDraggable('app_nodes-container');
     makeDraggable('app_timesheet-container');
     //makeDraggable('console-settings');
 
-
-
     $(document).ready(function () {
 
-      <?= (defined('APP_NO_INTERNET_CONNECTION')) ? '' : 'alert(\'The internet is not connected.\');' ?>
+      <?= !APP_NO_INTERNET_CONNECTION && APP_IS_ONLINE ? '' : 'alert(\'The internet is not connected.\');' ?>
 
       if ($("#app_directory-container").css('display') == 'none') {
         <?php

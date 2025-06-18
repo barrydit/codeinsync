@@ -92,14 +92,14 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 ob_end_clean(); ?> */
 ob_start(); ?>
 #app_git-container {
-position : absolute;
+position : fixed; /* absolute */
 display : none;
 top : 20%;
-left : 40%; //right: 50%;
-margin-left: -[212px]; //margin-right: -[212px];
+left : 40%; /* right: 50%; */
+margin-left: -[212px]; /* margin-right: -[212px]; */
 margin-top: -[153px];
-//transform: translate(-50%, -50%);
-//margin: 0 auto;
+/* transform: translate(-50%, -50%); */
+/* margin: 0 auto; */
 }
 #app_git-container.selected {
 display : block;
@@ -181,7 +181,7 @@ ob_start();
     style="position: relative; margin: 0 auto; width: 404px; height: 306px; border: 3px dashed #F05033; background-color: #FBF7F1;">
 
     <div class="absolute ui-widget-header"
-      style="position: absolute; display: inline-block; width: 100%; height: 25px; margin: -50px 0 25px 0; padding: 24px 0; border-bottom: 1px solid #000; z-index: 3;">
+      style="position: fixed; display: inline-block; width: 400px; height: 25px; margin: -50px 0 25px 0; padding: 24px 0; border-bottom: 1px solid #000; z-index: 3;">
       <label class="git-home" style="cursor: pointer;">
         <div class="" style="position: relative; display: inline-block; top: 0; left: 0; margin-top: -5px;">
           <img src="resources/images/git_icon.fw.png" width="32" height="32" />
@@ -800,7 +800,7 @@ ob_start(); ?>
   <!-- link rel="stylesheet" href="//code.jquery.com/ui/1.12.1/themes/smoothness/jquery-ui.css" /-->
 
   <?php
-  // (check_http_status('https://cdn.tailwindcss.com') ? 'https://cdn.tailwindcss.com' : APP_URL . 'resources/js/tailwindcss-3.3.5.js')?
+  // (APP_IS_ONLINE && check_http_status('https://cdn.tailwindcss.com') ? 'https://cdn.tailwindcss.com' : APP_URL . 'resources/js/tailwindcss-3.3.5.js')?
   is_dir($path = APP_PATH . APP_BASE['resources'] . 'js/') or mkdir($path, 0755, true);
   if (is_file("{$path}tailwindcss-3.3.5.js")) {
     if (ceil(abs((strtotime(date('Y-m-d')) - strtotime(date('Y-m-d', strtotime('+5 days', filemtime("{$path}tailwindcss-3.3.5.js"))))) / 86400)) <= 0) {
@@ -832,7 +832,7 @@ ob_start(); ?>
   <?= $app['body']; ?>
 
   <script
-    src="<?= check_http_status('https://code.jquery.com/jquery-3.7.1.min.js') ? 'https://code.jquery.com/jquery-3.7.1.min.js' : "{$path}jquery-3.7.1.min.js" ?>"></script>
+    src="<?= APP_IS_ONLINE && check_http_status('https://code.jquery.com/jquery-3.7.1.min.js') ? 'https://code.jquery.com/jquery-3.7.1.min.js' : "{$path}jquery-3.7.1.min.js" ?>"></script>
   <!-- You need to include jQueryUI for the extended easing options. -->
   <?php /* https://stackoverflow.com/questions/12592279/typeerror-p-easingthis-easing-is-not-a-function */ ?>
   <!-- script src="//code.jquery.com/jquery-1.12.4.js"></script -->

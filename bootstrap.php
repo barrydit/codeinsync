@@ -141,24 +141,14 @@ switch (basename(__DIR__)) { // getcwd()
     break;
 }
 
-
-require_once 'config' . DIRECTORY_SEPARATOR . 'lang' . DIRECTORY_SEPARATOR . 'perl.php';
-require_once 'config' . DIRECTORY_SEPARATOR . 'lang' . DIRECTORY_SEPARATOR . 'python.php';
-//require_once 'config' . DIRECTORY_SEPARATOR . 'javascript.php';
-//require_once 'config' . DIRECTORY_SEPARATOR . 'ruby.php';
-//require_once 'config' . DIRECTORY_SEPARATOR . 'go.php';
-//require_once 'config' . DIRECTORY_SEPARATOR . 'java.php';
-//require_once 'config' . DIRECTORY_SEPARATOR . 'csharp.php';
-//require_once 'config' . DIRECTORY_SEPARATOR . 'rust.php';
-//require_once 'config' . DIRECTORY_SEPARATOR . 'php.php'; // PHP config
-//require_once 'config' . DIRECTORY_SEPARATOR . 'nodejs.php'; // Node.js config
-//require_once 'config' . DIRECTORY_SEPARATOR . 'composer.php'; // Composer config
-//require_once 'config' . DIRECTORY_SEPARATOR . 'autoload.php'; // Autoload configuration
-//require_once 'vendor' . DIRECTORY_SEPARATOR . 'autoload.php'; // Vendor autoload
 require_once 'config' . DIRECTORY_SEPARATOR . 'lang' . DIRECTORY_SEPARATOR . 'php.php'; // environment-level PHP config
 require_once 'config' . DIRECTORY_SEPARATOR . 'functions.php';
-require_once 'config' . DIRECTORY_SEPARATOR . 'constants.php';
-require_once 'config' . DIRECTORY_SEPARATOR . 'env.php';
+//require_once 'config' . DIRECTORY_SEPARATOR . 'constants.php'; // Global constants
+require_once 'config' . DIRECTORY_SEPARATOR . 'constants.env.php';
+require_once 'config' . DIRECTORY_SEPARATOR . 'constants.paths.php';
+require_once 'config' . DIRECTORY_SEPARATOR . 'constants.runtime.php';
+require_once 'config' . DIRECTORY_SEPARATOR . 'constants.url.php';
+require_once 'config' . DIRECTORY_SEPARATOR . 'constants.app.php';
 
 //require_once 'config' . DIRECTORY_SEPARATOR . 'autoload.php'; // Autoload configuration
 /*

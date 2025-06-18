@@ -1,0 +1,70 @@
+<html>
+
+<head>
+
+</head>
+
+<body>
+
+<form id="clientForm" style="max-width: 500px; margin: 1rem auto; padding: 1rem; border: 1px solid #ccc; border-radius: 8px;">
+  <h2>Add New Client / Domain</h2>
+
+  <!-- Toggle Mode -->
+  <label><input type="checkbox" id="domainMode" onchange="toggleMode()"> Register as Domain only</label>
+  <hr>
+
+  <!-- Name Section -->
+  <div id="nameSection">
+    <label>First Name:<br>
+      <input type="text" name="firstname" required>
+    </label><br><br>
+
+    <label>Last Name:<br>
+      <input type="text" name="lastname" required>
+    </label><br><br>
+
+    <label>Status:<br>
+      <select name="status">
+        <option value="000">On-call (000)</option>
+        <option value="100">Working (100)</option>
+        <option value="200">Planning (200)</option>
+        <option value="300">Previous (300)</option>
+        <option value="400">Future (400)</option>
+      </select>
+    </label>
+  </div>
+
+  <!-- Domain Section -->
+  <div id="domainSection" style="display: none;">
+    <label>Domain Name:<br>
+      <input type="text" name="domain">
+    </label><br><br>
+
+    <label>GitHub Clone URL:<br>
+      <input type="url" name="github">
+    </label><br><br>
+
+    <fieldset style="border: 1px solid #aaa; padding: 0.5rem;">
+      <legend>FTP Credentials (optional)</legend>
+      <label>Host: <input type="text" name="ftp_host"></label><br>
+      <label>User: <input type="text" name="ftp_user"></label><br>
+      <label>Pass: <input type="password" name="ftp_pass"></label>
+    </fieldset>
+  </div>
+
+  <br>
+  <label><input type="checkbox" name="create_project_folder"> Create <code>project1/</code> folder</label><br><br>
+
+  <button type="submit">Add Client</button>
+</form>
+
+<script>
+function toggleMode() {
+  const isDomain = document.getElementById('domainMode').checked;
+  document.getElementById('nameSection').style.display = isDomain ? 'none' : 'block';
+  document.getElementById('domainSection').style.display = isDomain ? 'block' : 'none';
+}
+</script>
+
+</body>
+</html>

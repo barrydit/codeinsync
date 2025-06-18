@@ -272,7 +272,7 @@ if (is_file(APP_PATH . APP_BASE['var'] . 'github.com.html')) {
 /*
 libxml_use_internal_errors(true); // Prevent HTML errors from displaying
 $dom = new DOMDocument(1.0, 'utf-8');
-$dom->loadHTML(file_get_contents(check_http_status('https://github.com/barrydit/codeinsync') ? 'https://github.com/barrydit/codeinsync' : APP_PATH . APP_BASE['var'] . 'github.com.html'), LIBXML_HTML_NOIMPLIED | LIBXML_HTML_NODEFDTD );   
+$dom->loadHTML(file_get_contents(APP_IS_ONLINE && check_http_status('https://github.com/barrydit/codeinsync') ? 'https://github.com/barrydit/codeinsync' : APP_PATH . APP_BASE['var'] . 'github.com.html'), LIBXML_HTML_NOIMPLIED | LIBXML_HTML_NODEFDTD );   
 $xpath = new DOMXPath($dom);
 
 // https://stackoverflow.com/questions/27358966/how-can-i-set-x-frame-options-on-an-iframe

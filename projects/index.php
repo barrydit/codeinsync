@@ -14,7 +14,6 @@ if (realpath($_SERVER["SCRIPT_FILENAME"]) == get_required_files()[0] && in_array
   } else {
     die(var_dump("Path was not found. file=$path"));
   }
-  //require_once(realpath('../config/constants.php')); 
 }
 */
 

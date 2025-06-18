@@ -63,7 +63,7 @@ function parse_ini_file_multi($file) {
       $temp = $values;
     }
   }
-  
+
   return $output;
 }
 function parse_ini_file_multi($file) {
@@ -479,6 +479,19 @@ class Shutdown
     }
   }
 
+
+  public static function unlinkEnvjson(): void
+  {
+    $envJsonPath = APP_PATH . APP_ROOT . '.env.json';
+    if (file_exists($envJsonPath)) {
+      if (!unlink($envJsonPath)) {
+        error_log("Failed to delete the file: $envJsonPath");
+      }
+    } else {
+      error_log("File does not exist: $envJsonPath");
+    }
+  }
+
   /**
    * Formats values:
    * - Wraps directory paths in double quotes
@@ -581,6 +594,8 @@ register_shutdown_function(function () {
   //Shutdown::triggerShutdown('');  // 
   if (!empty($_ENV))
     Shutdown::saveEnvToFile();
+  Shutdown::unlinkEnvjson();
+
   //Shutdown::handleParseError();
 });
 
@@ -593,9 +608,9 @@ register_shutdown_function(function () {
  * @param bool $debug Whether to include debug information in the output. Default is true.
  *
  * @return void Returns void if execution is stopped; otherwise, returns the result of var_dump().
- 
- 
- 
+
+
+
 function dump(mixed ...$vars): mixed
     {
         if (!$vars) {
@@ -805,12 +820,27 @@ function check_internet_connection($host = '8.8.8.8'): bool
   if (stripos(PHP_OS, 'WIN') === 0) {
     exec("ping -n 1 -w 1000 " . escapeshellarg($host), $output, $status);
   } else {
-    $pingPath = is_file('/usr/bin/ping') ? '/usr/bin/ping' : 'ping';
-    exec(/*APP_SUDO . */ "$pingPath -c 1 -W 1 " . escapeshellarg($host), $output, $status);
+    // $pingPath = is_file('/usr/bin/ping') ? '/usr/bin/ping' : 'ping';
+    // exec(/*APP_SUDO .*/ "$pingPath -c 1 -W 1 " . escapeshellarg($host), $output, $status);
+    $fp = @fsockopen($host, 80, $errno, $errstr, 2);
+    if ($fp) {
+      fclose($fp);
+      //echo "$host is reachable via TCP port 80";
+      $status = 0; // Connection successful
+    } else {
+      //echo "$host is not reachable ($errstr)";
+      $status = 1; // Connection failed
+    }
   }
 
   // Optional fallback
   if ($status !== 0) {
+    if (resolve_host_to_ip('google.com') !== false) {
+      //define('APP_IS_ONLINE', true);
+      return false; // If we can resolve google.com, assume online
+    } else
+      return true;
+
     $connection = @fsockopen('www.google.com', 80, $errno, $errstr, 3);
     if ($connection) {
       fclose($connection);
@@ -837,22 +867,56 @@ function check_internet_connection($host = '8.8.8.8'): bool
  * @param int $statusCode The HTTP status code to check for. Default is 200.
  * @return bool True if the URL does not return the specified status, false otherwise.
  */
-function check_http_status($url = 'http://8.8.8.8', $statusCode = 200)
+
+function check_http_status($url = 'http://8.8.8.8', $expectedStatus = [0 => 200]): bool
 {
-  //if (defined('APP_IS_ONLINE')) {
-  if ($url !== 'http://8.8.8.8' && !preg_match('/^https?:\/\//', $url))
+  if (!preg_match('/^https?:\/\//i', $url)) {
     $url = "http://$url";
+  }
 
+  $headers = @get_headers($url, 1); // 1 = associative array for headers
+  if ($headers === false || !isset($headers[0])) {
+    return false; // No response or DNS failure
+  }
 
-  //(!defined('APP_NO_INTERNET_CONNECTION')) or
-  $headers = @get_headers($url); // Error here to do with network_getaddresses ... jquery
+  preg_match('/\d{3}/', $headers[0], $matches);
+  $actualStatus = $matches[0] ?? null;
 
-  //var_dump($headers);
-  return !empty($headers) && strpos($headers[0], (string) $statusCode) === false;
-  //} else
-  //  return false;
-  //return true; // Special case for the default URL or if not connected
+  return ((int) $actualStatus === (int) $expectedStatus);
 }
+
+
+function check_http_status_curl(string $url, int $expectedStatus = 200, array $headers = []): bool
+{
+  if (!preg_match('/^https?:\/\//i', $url)) {
+    $url = "http://$url";
+  }
+
+  $ch = curl_init($url);
+
+  // Set default headers and merge with any custom ones
+  $defaultHeaders = [
+    'User-Agent: CodeInSync/1.0 (https://github.com/barrydit/codeinsync)'
+  ];
+  curl_setopt($ch, CURLOPT_HTTPHEADER, array_merge($defaultHeaders, $headers));
+
+  curl_setopt_array($ch, [
+    CURLOPT_RETURNTRANSFER => true,
+    CURLOPT_NOBODY => true,              // We only care about the headers
+    CURLOPT_TIMEOUT => 5,                // Fail fast if no response
+    CURLOPT_FOLLOWLOCATION => true,      // Follow redirects (301/302)
+    CURLOPT_HEADER => true,              // Include headers in the output
+    CURLOPT_SSL_VERIFYPEER => true,      // Use proper SSL checks
+  ]);
+
+  curl_exec($ch);
+  $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+
+  curl_close($ch);
+
+  return ($httpCode === $expectedStatus);
+}
+
 
 
 /**
