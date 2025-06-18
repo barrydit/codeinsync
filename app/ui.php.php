@@ -292,9 +292,43 @@ else $count++;
             <div id="ui_errors" class="errors"
                 style="position: absolute; display: <?= isset($_GET['file']) && isset($_GET['path']) && is_file($_GET['path'] . $_GET['file']) ? 'block' : 'block' ?>; z-index: 1;">
                 <div style="background-color: white; height: 100%; width: 100%; overflow: hidden;">
-                    <textarea cols="75" rows="25"><?php if (!empty($errors))
-                        foreach ($errors as $key => $value) { ?>$errors['<?= $key; ?>'] <?= (preg_match('/^ERROR_(LOG|PATH)$/', $key) || $key === 'COMPOSER-AutoloaderInit' ? (preg_match('/^(ERROR_LOG|COMPOSER).*$/', $key) ? "\n" : '') : '=> ') . rtrim($value, " "); ?><?php } ?>
-                </textarea>
+                    <textarea cols="75" rows="25"><?php
+                    if (!empty($errors)) {
+                        foreach ($errors as $key => $value) {
+                            echo "\$errors['$key'] ";
+                            echo preg_match('/^ERROR_(LOG|PATH)$/', $key) || $key === 'COMPOSER-AutoloaderInit'
+                                ? (preg_match('/^(ERROR_LOG|COMPOSER).*$/', $key) ? "\n" : '')
+                                : '=> ';
+                            echo is_string($value)
+                                ? rtrim($value, " ")
+                                : (is_array($value) ? json_encode($value) : (string) $value);
+                            echo "\n";
+                        }
+                    }
+/*
+$output = [];
+
+if (!empty($errors)) {
+    foreach ($errors as $key => $value) {
+        $line = "\$errors['$key'] ";
+
+        $line .= (
+            preg_match('/^ERROR_(LOG|PATH)$/', $key) || $key === 'COMPOSER-AutoloaderInit'
+            ? (preg_match('/^(ERROR_LOG|COMPOSER).*$/', $key) ? '' : '')
+            : '=> '
+        );
+
+        $line .= is_string($value)
+            ? rtrim($value, " ")
+            : (is_array($value) ? json_encode($value) : (string) $value);
+
+        $output[] = $line;
+    }
+}
+
+echo htmlspecialchars(implode("\n", $output));
+*/
+                    ?></textarea>
                 </div>
             </div>
         </div>

@@ -19,8 +19,6 @@ $isFile(APP_PATH . 'php.php') ?:
   $isFile('config' . DIRECTORY_SEPARATOR . 'lang' . DIRECTORY_SEPARATOR . 'php.php') ?:
   $isFile('php.php');
 
-define('PATH_ASSETS', APP_IS_ONLINE ? 'cdn/' : 'local/');
-
 // Check if the dd function exists
 if (!function_exists('dd')) {
   $errors['FUNCTIONS'] = 'functions.php failed to load. Therefore function dd() does not exist (yet).';
@@ -268,6 +266,7 @@ header("Pragma: no-cache");
 header("Expires: 0");
 //header("Content-Type: text/html; charset=UTF-8");
 
+
 if (!is_dir($path = APP_PATH . APP_BASE['projects'])) {
   $errors['projects'] = "projects/internal directory does not exist.\n";
   mkdir($path, 0777, true);
@@ -436,7 +435,7 @@ END
       //sort($files);
 
       foreach (array_filter(glob(__DIR__ . DIRECTORY_SEPARATOR . '*.php'), 'is_file') as $includeFile) {
-        //echo $includeFile . "<br />\n";
+        echo "$includeFile<br />\n";
 
         if (in_array($includeFile, get_required_files()))
           continue; // $includeFile == __FILE__
@@ -562,7 +561,7 @@ if ($installNeeded) {
     // copy('source_path/file.php', $srcDir . 'file.php');
     // copy('source_path/index.php', $publicDir . 'index.php');
     // copy('source_path/config.php', $configDir . 'config.php');
-    
+
     echo "Installation performed.";
 } else {
     echo "Installation not needed.";

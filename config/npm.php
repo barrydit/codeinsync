@@ -22,7 +22,7 @@ switch (substr(PHP_OS, 0, 3)) {
 }
 
 if (defined('NODE_EXEC')) {
-  $proc = proc_open((stripos(PHP_OS, 'WIN') === 0 ? '' : APP_SUDO) . NODE_EXEC . ' --version', [["pipe", "r"], ["pipe", "w"], ["pipe", "w"]], $pipes);
+  $proc = proc_open((stripos(PHP_OS, 'WIN') === 0 || !defined('APP_SUDO') ? '' : APP_SUDO) . NODE_EXEC . ' --version', [["pipe", "r"], ["pipe", "w"], ["pipe", "w"]], $pipes);
 
   $stdout = stream_get_contents($pipes[1]);
   $stderr = stream_get_contents($pipes[2]);
@@ -59,7 +59,7 @@ if (stripos(PHP_OS, 'WIN') === 0) {
       // npm_exec not found
       // handle the error here
 
-      $proc = proc_open((stripos(PHP_OS, 'WIN') === 0 ? '' : APP_SUDO) . NPM_EXEC . ' --version', [["pipe", "r"], ["pipe", "w"], ["pipe", "w"]], $pipes);
+      $proc = proc_open((stripos(PHP_OS, 'WIN') === 0 || !defined('APP_SUDO') ? '' : APP_SUDO) . NPM_EXEC . ' --version', [["pipe", "r"], ["pipe", "w"], ["pipe", "w"]], $pipes);
 
       $stdout = stream_get_contents($pipes[1]);
       $stderr = stream_get_contents($pipes[2]);
@@ -127,14 +127,14 @@ if (!is_dir(NODE_MODULES_PATH) && defined('NPM_EXEC')) {
     $pipes);
     [$stdout, $stderr, $exitCode] = [stream_get_contents($pipes[1]), stream_get_contents($pipes[2]), proc_close($proc)];
     $errors['NPM-UPDATE']= (!isset($stdout) ? NULL : $stdout . (isset($stderr) && $stderr === '' ? NULL : ' Error: ' . $stderr) . (isset($exitCode) && $exitCode == 0 ? NULL : 'Exit Code: ' . $exitCode));
-    
+
      // Error: npm WARN using --force Recommended protections disabled.
   */
   if (stripos(PHP_OS, 'WIN') !== 0 && defined('NPM_EXEC')) {
     $npmExecPath = shell_exec('which ' . NPM_EXEC);
     if ($npmExecPath !== false) {
       $proc = proc_open(
-        APP_SUDO . NPM_EXEC . ' cache clean -f',
+        (!defined('APP_SUDO') ? '' : APP_SUDO) . NPM_EXEC . ' cache clean -f',
         [
           ["pipe", "r"],
           ["pipe", "w"],
@@ -153,7 +153,7 @@ if (!is_dir(NODE_MODULES_PATH) && defined('NPM_EXEC')) {
 
     if (!is_dir(NODE_MODULES_PATH . 'jquery')) {
       $proc = proc_open(
-        (stripos(PHP_OS, 'WIN') === 0 ? '' : APP_SUDO) . NPM_EXEC . ' install jquery@3.7.1',
+        (stripos(PHP_OS, 'WIN') === 0 || !defined('APP_SUDO') ? '' : APP_SUDO) . NPM_EXEC . ' install jquery@3.7.1',
         [
           ["pipe", "r"],
           ["pipe", "w"],
@@ -168,7 +168,7 @@ if (!is_dir(NODE_MODULES_PATH) && defined('NPM_EXEC')) {
     //webpack - Packs CommonJs/AMD modules for the browser
 
     $proc = proc_open(
-      (stripos(PHP_OS, 'WIN') === 0 ? '' : APP_SUDO) . 'webpack --version', // Prints out System, Binaries, Packages
+      (stripos(PHP_OS, 'WIN') === 0 || !defined('APP_SUDO') ? '' : APP_SUDO) . 'webpack --version', // Prints out System, Binaries, Packages
       [
         ["pipe", "r"],
         ["pipe", "w"],

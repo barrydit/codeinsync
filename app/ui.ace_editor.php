@@ -8,6 +8,7 @@ if (__FILE__ == get_required_files()[0] && __FILE__ == realpath($_SERVER["SCRIPT
   if ($path = basename(dirname(get_required_files()[0])) == 'public') { // (basename(getcwd())
     if (is_file($path = realpath('../bootstrap.php'))) {
       require_once $path;
+
     }
   } else
     die(var_dump("Path was not found. file=$path"));
@@ -99,6 +100,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
   */
 }
 
+$_GET['app'] = '';
 /*
 $proc=proc_open('sudo ' . GIT_EXEC . ' ' . $match[1],
   array(
@@ -124,6 +126,7 @@ ob_start(); ?>
 #app_ace_editor-container {
 width : 550px;
 height : 450px;
+display: none; /* Initially hidden */
 /* border: 1px solid black; */
 position : absolute;
 top : 60px;
@@ -135,7 +138,7 @@ z-index : 1;
 }
 
 #app_ace_editor-container.selected {
-display : block;
+display : none;
 z-index : 1;
 resize : both; /* Make the div resizable */
 overflow : hidden; /* Hide overflow to ensure proper resizing */
@@ -613,8 +616,8 @@ ob_start();
 
   <?php
   is_dir($path = APP_PATH . APP_BASE['resources'] . 'js/jquery/') or mkdir($path, 0755, true);
-  if (is_file($path . 'jquery-3.7.1.min.js')) {
-    if (ceil(abs((strtotime(date('Y-m-d')) - strtotime(date('Y-m-d', strtotime('+5 days', filemtime($path . 'jquery-3.7.1.min.js'))))) / 86400)) <= 0) {
+  if (is_file("{$path}jquery-3.7.1.min.js")) {
+    if (ceil(abs((strtotime(date('Y-m-d')) - strtotime(date('Y-m-d', strtotime('+5 days', filemtime("{$path}jquery-3.7.1.min.js"))))) / 86400)) <= 0) {
       $url = 'https://code.jquery.com/jquery-3.7.1.min.js';
       $handle = curl_init($url);
       curl_setopt($handle, CURLOPT_RETURNTRANSFER, true);

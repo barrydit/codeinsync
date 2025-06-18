@@ -1,6 +1,6 @@
 <?php
 
-if (isset($_GET['json'])) {
+if (isset($_GET['app']) && $_GET['app'] == 'nodes' && isset($_GET['json'])) {
   defined('APP_PATH') or define('APP_PATH', realpath(__DIR__ . '/../') . '/');
   defined('APP_ROOT') or define('APP_ROOT', '');
   header('Content-Type: application/json');
@@ -348,7 +348,7 @@ if (false) { ?>
   <?php }
 ob_start(); ?>
 
-  fetch('<?= basename(__FILE__) ?>?json')
+  fetch('<?= /*basename(__FILE__)*/ '?app=nodes&' ?>json')
     .then(response => response.json())
     .then(data => createVisualization(data));
 
@@ -489,7 +489,7 @@ ob_start(); ?>
   <?= $app['body']; ?>
 
   <script
-    src="<?= check_http_status('https://code.jquery.com/jquery-3.7.1.min.js') ? 'https://code.jquery.com/jquery-3.7.1.min.js' : APP_BASE['resources'] . 'js/jquery/' . 'jquery-3.7.1.min.js' ?>"></script>
+    src="<?= APP_IS_ONLINE && check_http_status('https://code.jquery.com/jquery-3.7.1.min.js') ? 'https://code.jquery.com/jquery-3.7.1.min.js' : APP_BASE['resources'] . 'js/jquery/' . 'jquery-3.7.1.min.js' ?>"></script>
   <?php
   if (!is_file($path = APP_PATH . APP_BASE['resources'] . 'js/jquery-ui/' . 'jquery-ui-1.12.1.js') || ceil(abs((strtotime(date('Y-m-d')) - strtotime(date('Y-m-d', strtotime('+5 days', filemtime($path))))) / 86400)) <= 0) {
     if (!realpath($pathdir = dirname($path)))
@@ -505,7 +505,7 @@ ob_start(); ?>
   } ?>
 
   <script
-    src="<?= check_http_status('https://code.jquery.com/ui/1.12.1/jquery-ui.min.js') ? 'https://code.jquery.com/ui/1.12.1/jquery-ui.min.js' : APP_BASE['resources'] . 'js/jquery-ui/' . 'jquery-ui-1.12.1.js' ?>"></script>
+    src="<?= APP_IS_ONLINE && check_http_status('https://code.jquery.com/ui/1.12.1/jquery-ui.min.js') ? 'https://code.jquery.com/ui/1.12.1/jquery-ui.min.js' : APP_BASE['resources'] . 'js/jquery-ui/' . 'jquery-ui-1.12.1.js' ?>"></script>
 
   <script src="https://d3js.org/d3.v4.min.js"></script>
 

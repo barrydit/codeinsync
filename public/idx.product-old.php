@@ -1766,7 +1766,7 @@ header("Pragma: no-cache"); ?>
                             . '/</a></div>' . "\n";
                         elseif (basename($path) == 'node_modules')
                           echo '<div style="position: relative;">'
-                            . '<a href="#!" onclick="document.getElementById(\'app_npm-container\').style.display=\'block\';"><img src="resources/images/directory-npm.png" width="50" height="32" /></a><br />'
+                            . '<a href="#!" onclick="document.getElementById(\'app_npmjs-container\').style.display=\'block\';"><img src="resources/images/directory-npm.png" width="50" height="32" /></a><br />'
                             . '<a href="?' . (APP_ROOT != '' ? array_key_first($_GET) . '=' . $_GET[array_key_first($_GET)] . '&' : '') . 'path=' . basename($path) . '" onclick="">' . basename($path)  // "?path=' . basename($path) . '"         
                             . '/</a></div>' . "\n";
                         elseif (basename($path) == 'projects')
@@ -1966,13 +1966,13 @@ header("Pragma: no-cache"); ?>
 
 
   <script
-    src="<?= check_http_status('https://code.jquery.com/jquery-3.7.1.min.js') ? 'https://code.jquery.com/jquery-3.7.1.min.js' : APP_BASE['resources'] . 'js/jquery/' . 'jquery-3.7.1.min.js' ?>"></script>
+    src="<?= APP_IS_ONLINE && check_http_status('https://code.jquery.com/jquery-3.7.1.min.js') ? 'https://code.jquery.com/jquery-3.7.1.min.js' : APP_BASE['resources'] . 'js/jquery/' . 'jquery-3.7.1.min.js' ?>"></script>
   <!-- You need to include jQueryUI for the extended easing options. -->
   <?php /* https://stackoverflow.com/questions/12592279/typeerror-p-easingthis-easing-is-not-a-function */ ?>
   <!-- script src="//code.jquery.com/jquery-1.12.4.js"></script -->
 
   <?php
-  // (check_http_status('https://cdn.tailwindcss.com') ? 'https://cdn.tailwindcss.com' : APP_URL . 'resources/js/tailwindcss-3.3.5.js')? [[jquery-ui]-[1.12.1].js]
+  // (APP_IS_ONLINE && check_http_status('https://cdn.tailwindcss.com') ? 'https://cdn.tailwindcss.com' : APP_URL . 'resources/js/tailwindcss-3.3.5.js')? [[jquery-ui]-[1.12.1].js]
   is_dir($path = APP_PATH . APP_BASE['resources'] . 'js/jquery-ui/') or mkdir($path, 0755, true);
   if (is_file($path . 'jquery-ui-1.12.1.js')) {
     if (ceil(abs((strtotime(date('Y-m-d')) - strtotime(date('Y-m-d', strtotime('+5 days', filemtime($path . 'jquery-ui-1.12.1.js'))))) / 86400)) <= 0) {
@@ -2113,7 +2113,8 @@ header("Pragma: no-cache"); ?>
     makeDraggable('app_composer-container');
     // makeDraggable('app_project-container');
     makeDraggable('app_git-container');
-    makeDraggable('app_npm-container');
+    makeDraggable('app_node_js-container');
+    makeDraggable('app_npmjs-container');
     makeDraggable('app_php-container');
 
 

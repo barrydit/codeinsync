@@ -204,7 +204,7 @@ if (is_file(APP_PATH . APP_BASE['var'] . 'github.com.html')) {
 /*
 libxml_use_internal_errors(true); // Prevent HTML errors from displaying
 $dom = new DOMDocument(1.0, 'utf-8');
-$dom->loadHTML(file_get_contents(check_http_status('https://github.com/barrydit/codeinsync') ? 'https://github.com/barrydit/codeinsync' : APP_PATH . APP_BASE['var'] . 'github.com.html'), LIBXML_HTML_NOIMPLIED | LIBXML_HTML_NODEFDTD );   
+$dom->loadHTML(file_get_contents(APP_IS_ONLINE && check_http_status('https://github.com/barrydit/codeinsync') ? 'https://github.com/barrydit/codeinsync' : APP_PATH . APP_BASE['var'] . 'github.com.html'), LIBXML_HTML_NOIMPLIED | LIBXML_HTML_NODEFDTD );   
 $xpath = new DOMXPath($dom);
 
 //header('Content-Type: application/json');
@@ -260,7 +260,7 @@ $dom->appendChild($elm);
   <link rel="stylesheet" href="//code.jquery.com/ui/1.12.1/themes/smoothness/jquery-ui.css" />
 
   <?php
-  // (check_http_status('https://cdn.tailwindcss.com') ? 'https://cdn.tailwindcss.com' : APP_URL . 'resources/js/tailwindcss-3.3.5.js')?
+  // (APP_IS_ONLINE && check_http_status('https://cdn.tailwindcss.com') ? 'https://cdn.tailwindcss.com' : APP_URL . 'resources/js/tailwindcss-3.3.5.js')?
   is_dir($path = APP_PATH . APP_BASE['resources'] . 'js/') or mkdir($path, 0755, true);
   if (is_file("{$path}tailwindcss-3.3.5.js")) {
     if (ceil(abs((strtotime(date('Y-m-d')) - strtotime(date('Y-m-d', strtotime('+5 days', filemtime($path . 'tailwindcss-3.3.5.js'))))) / 86400)) <= 0) {

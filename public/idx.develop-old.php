@@ -316,7 +316,7 @@ else
 
   <title>WebPortal</title>
   <?php
-  // (check_http_status('https://cdn.tailwindcss.com') ? 'https://cdn.tailwindcss.com' : APP_URL . 'resources/js/tailwindcss-3.3.5.js')?
+  // (APP_IS_ONLINE && check_http_status('https://cdn.tailwindcss.com') ? 'https://cdn.tailwindcss.com' : APP_URL . 'resources/js/tailwindcss-3.3.5.js')?
   is_dir($path = APP_PATH . APP_BASE['resources'] . 'js/') or mkdir($path, 0755, true);
   if (is_file($path . 'tailwindcss-3.3.5.js')) {
     if (ceil(abs((strtotime(date('Y-m-d')) - strtotime(date('Y-m-d', strtotime('+5 days', filemtime("{$path}tailwindcss-3.3.5.js"))))) / 86400)) <= 0) {
@@ -555,7 +555,7 @@ else
               src="resources/images/github_icon.png" width="72" height="23"></a> |
           <a href="#" onclick="document.getElementById('app_git-container').style.display='block';"><img
               src="resources/images/git_icon.png" width="58" height="24"></a> | <a href="#"
-            onclick="document.getElementById('app_npm-container').style.display='block';"><img
+            onclick="document.getElementById('app_node_js-container').style.display='block';"><img
               src="resources/images/npm_icon.png" width="32" height="32"> Node.js</a>
           |
           <a href="#" onclick="document.getElementById('app_php-container').style.display='block';"><img
@@ -1162,7 +1162,7 @@ else
     <span>App Path: <?= APP_PATH; ?></span><br />
   </div>
   <script
-    src="<?= check_http_status('https://code.jquery.com/jquery-3.7.1.min.js') ? 'https://code.jquery.com/jquery-3.7.1.min.js' : APP_BASE['resources'] . 'js/jquery/' . 'jquery-3.7.1.min.js' ?>"></script>
+    src="<?= APP_IS_ONLINE && check_http_status('https://code.jquery.com/jquery-3.7.1.min.js') ? 'https://code.jquery.com/jquery-3.7.1.min.js' : APP_BASE['resources'] . 'js/jquery/' . 'jquery-3.7.1.min.js' ?>"></script>
   <!-- You need to include jQueryUI for the extended easing options. -->
   <?php /* https://stackoverflow.com/questions/12592279/typeerror-p-easingthis-easing-is-not-a-function */ ?>
   <!-- script src="//code.jquery.com/jquery-1.12.4.js"></script -->
@@ -1252,7 +1252,8 @@ else
     makeDraggable('app_composer-container');
     // makeDraggable('app_project-container');
     makeDraggable('app_git-container');
-    makeDraggable('app_npm-container');
+    makeDraggable('app_node_js-container');
+    makeDraggable('app_npmjs-container');
     makeDraggable('app_php-container');
 
 

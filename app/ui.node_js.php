@@ -2,8 +2,9 @@
 
 if (__FILE__ == get_required_files()[0])
   if (
-    $path = (basename(getcwd()) == 'public')
-    ? (is_file('config.php') ? 'config.php' : '..' . DIRECTORY_SEPARATOR . 'config' . DIRECTORY_SEPARATOR . 'config.php') : ''
+    $path = (basename(getcwd()) != 'public')
+    ?: (is_file('config.php') ? 'config.php' : '..' . DIRECTORY_SEPARATOR . 'config' . DIRECTORY_SEPARATOR . 'config.php')
+
   )
     require_once $path;
   else
@@ -13,14 +14,15 @@ if (is_file($path = APP_PATH . APP_BASE['config'] . 'npm.php') ? $path : '')
   require_once $path;
 
 ob_start(); ?>
-#app_npm-container {
+#app_node_js-container {
 position : absolute;
 display : none;
 margin : 0 auto;
 left : 832px;
 top : 96px;
 }
-#app_npm-container.selected {
+
+#app_node_js-container.selected {
 display : block;
 z-index : 1;
 /* Add your desired styling for the selected container */
@@ -34,6 +36,7 @@ font-weight: bold;
 #top { background-color: rgba(240, 224, 198, .75); }
 */
 }
+
 img {
 display : inline;
 }
@@ -41,7 +44,7 @@ display : inline;
 ob_end_clean();
 
 ob_start(); ?>
-<div id="app_npm-container"
+<div id="app_node_js-container"
   class="absolute <?= (__FILE__ == get_required_files()[0] || (isset($_GET['app']) && $_GET['app'] == 'npm') && !isset($_GET['path']) ? 'selected' : '') ?>"
   style="z-index: 1; width: 424px; background-color: rgba(255,255,255,0.8); padding: 10px;">
   <div
@@ -49,19 +52,20 @@ ob_start(); ?>
     <div class="absolute ui-widget-header"
       style="position: absolute; display: inline-block; width: 100%; height: 25px; margin: -50px 0 25px 0; padding: 24px 0; border-bottom: 1px solid #000; z-index: 3;">
       <label class="npm-home" style="cursor: pointer;">
-        <div class="" style="position: relative; display: inline-block; top: 0; left: 0; margin-top: -5px;">
-          <img src="resources/images/npm_icon.png" width="32" height="32" />
+        <div class=""
+          style="position: relative; display: inline-block; top: 0; left: 0; background-color: rgba(255,255,255,0.8); margin-top: -5px;">
+          <img src="resources/images/node_js.gif" width="83" height="32" />
         </div>
       </label>
       <div style="display: inline;">
-        <span style="background-color: white; color: #DD0000;">Node.js
+        <span style="background-color: white; color: #DD0000;">
           <?= /* (version_compare(NPM_LATEST, NPM_VERSION, '>') != 0 ? 'v'.substr(NPM_LATEST, 0, similar_text(NPM_LATEST, NPM_VERSION)) . '<span class="update" style="color: green; cursor: pointer;">' . substr(NPM_LATEST, similar_text(NPM_LATEST, NPM_VERSION)) . '</span>' : 'v'.NPM_VERSION ); */ NULL; ?></span>
         <span style="background-color: #0078D7; color: white;"><code class="text-sm"
-            style="background-color: white; color: #0078D7;">$ <?= defined('NPM_EXEC') ? NPM_EXEC : null; ?></code></span>
+            style="background-color: white; color: #0078D7;">$ <input type="text" value="node"> <?= defined('NPM_EXEC') ? NPM_EXEC : null; ?></code></span>
       </div>
 
       <div style="display: inline; float: right; text-align: center; color: blue;"><code
-          style="background-color: white; color: #0078D7;"><a style="cursor: pointer; font-size: 13px;" onclick="document.getElementById('app_npm-container').style.display='none';">[X]</a></code>
+          style="background-color: white; color: #0078D7;"><a style="cursor: pointer; font-size: 13px;" onclick="document.getElementById('app_node_js-container').style.display='none';">[X]</a></code>
       </div>
     </div>
 
@@ -72,9 +76,9 @@ ob_start(); ?>
         <div class="npm-menu text-sm"
           style="cursor: pointer; font-weight: bold; padding-left: 25px; border: 1px solid #000;">Main Menu</div>
         <div class="text-xs" style="display: inline-block; border: 1px solid #000;">
-          <a class="text-sm" id="app_npm-frameMenuPrev"
+          <a class="text-sm" id="app_npmjs-frameMenuPrev"
             href="<?= (!empty(APP_QUERY) ? '?' . http_build_query(APP_QUERY) : '') . (defined('APP_ENV') && APP_ENV == 'development' ? '#!' : '#') ?>">
-            &lt; Menu</a> | <a class="text-sm" id="app_npm-frameMenuNext"
+            &lt; Menu</a> | <a class="text-sm" id="app_npmjs-frameMenuNext"
             href="<?= (!empty(APP_QUERY) ? '?' . http_build_query(APP_QUERY) : '') . (defined('APP_ENV') && APP_ENV == 'development' ? '#!' : '#') ?>">Init
             &gt;</a>
         </div>
@@ -318,7 +322,7 @@ ob_start(); ?>
     <!-- link rel="stylesheet" href="//code.jquery.com/ui/1.12.1/themes/smoothness/jquery-ui.css" /-->
 
     <?php
-    // (check_http_status('https://cdn.tailwindcss.com') ? 'https://cdn.tailwindcss.com' : APP_URL . 'resources/js/tailwindcss-3.3.5.js')?
+    // (APP_IS_ONLINE && check_http_status('https://cdn.tailwindcss.com') ? 'https://cdn.tailwindcss.com' : APP_URL . 'resources/js/tailwindcss-3.3.5.js')?
   
     $path = APP_PATH . APP_BASE['resources'] . 'js/';
     $filename = 'tailwindcss-3.3.5.js';
@@ -340,14 +344,14 @@ ob_start(); ?>
 
     <style type="text/tailwindcss">
       <?= $app['style']; ?>
-  </style>
+        </style>
   </head>
 
   <body>
     <?= $app['body']; ?>
 
     <script
-      src="<?= check_http_status('https://code.jquery.com/jquery-3.7.1.min.js') ? 'https://code.jquery.com/jquery-3.7.1.min.js' : "{$path}jquery-3.7.1.min.js" ?>"></script>
+      src="<?= APP_IS_ONLINE && check_http_status('https://code.jquery.com/jquery-3.7.1.min.js') ? 'https://code.jquery.com/jquery-3.7.1.min.js' : "{$path}jquery-3.7.1.min.js" ?>"></script>
     <!-- You need to include jQueryUI for the extended easing options. -->
     <?php /* https://stackoverflow.com/questions/12592279/typeerror-p-easingthis-easing-is-not-a-function */ ?>
     <!-- script src="//code.jquery.com/jquery-1.12.4.js"></script -->
@@ -394,7 +398,7 @@ ob_start(); ?>
         });
       }
 
-      makeDraggable('app_npm-container');
+      makeDraggable('app_node_js-container');
 
       <?= $app['script']; ?>
     </script>

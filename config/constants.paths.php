@@ -17,10 +17,10 @@ $use_sudo = $_ENV['SHELL']['SUDO'] ?? true;
 
 // Define APP_SUDO constant based on OS
 if (!$use_sudo && !defined('APP_SUDO'))
-  if (stripos(PHP_OS, 'WIN') === 0)
+  if (stripos(PHP_OS, 'WIN') === 0) {
     // Windows command (insert specific command if needed)
     define('APP_SUDO', null /*'runas /user:Administrator "cmd /c" '*/);
-  else {
+  } else {
     // Linux command setup
     $sudoCommand = $use_sudo ? 'sudo -S ' : '';
     $passwordPart = $password ? 'echo ' . escapeshellarg($password) . ' | ' : '';
@@ -60,37 +60,7 @@ const APP_RUNNING = true;
 
 //echo 'Checking Constants: ' . "\n\n";
 
-// Application configuration
-const APP_VERSION = '1.0.0';
-
-!is_string(APP_VERSION) and $errors['APP_VERSION'] = 'APP_VERSION is not a valid string value.';
-
-(version_compare(APP_VERSION, '1.0.0', '>=') == 0)
-  and $errors['APP_VERSION'] = 'APP_VERSION is not a valid version (' . APP_VERSION . ').';
-
 $auto_clear = false;
-
-const APP_NAME = 'Dashboard';
-!is_string(APP_NAME)
-  and $errors['APP_NAME'] = 'APP_NAME is not a string => ' . var_export(APP_NAME, true); // print('Name: ' . APP_NAME  . ' v' . APP_VERSION . "\n");
-
-define('APP_DASHBOARD', "\n" . sprintf(<<<EOL
-%s
-      ______   _______  _______           ______   _______  _______  _______  ______  
-     (  __  \ (  ___  )(  ____ \|\     /|(  ___ \ (  ___  )(  ___  )(  ____ )(  __  \ 
-     | (  \  )| (   ) || (    \/| )   ( || (   ) )| (   ) || (   ) || (    )|| (  \  )
-     | |   ) || (___) || (_____ | (___) || (__/ / | |   | || (___) || (____)|| |   ) |
-     | |   | ||  ___  |(_____  )|  ___  ||  __ (  | |   | ||  ___  ||     __)| |   | |
-     | |   ) || (   ) |      ) || (   ) || (  \ \ | |   | || (   ) || (\ (   | |   ) |
-     | (__/  )| )   ( |/\____) || )   ( || )___) )| (___) || )   ( || ) \ \__| (__/  )
-     (______/ |/     \|\_______)|/     \||/ \___/ (_______)|/     \||/   \__/(______/ 
-     {{STATUS}}            Written by Barry Dick (2024)
-%s
-EOL
-  ,
-  $padding = str_pad('', 90, '='),
-  $padding
-));
 
 /*
 define('SOCKET_INFO', sprintf(<<<EOD
@@ -106,36 +76,7 @@ if (defined('APP_HTTPS') && APP_HTTPS)
   $errors['APP_HTTPS'] = (bool) var_export(APP_HTTPS, true); // print('HTTPS: ' . APP_HTTPS . "\n");
 
 
-// Check if the script is running in CLI or HTTP environment
-if (php_sapi_name() === 'cli' || defined('STDIN')) {
-  // CLI environment: set a default URL or placeholder
-  define('APP_URL', 'http://localhost/');
-} else {
-  // HTTP environment: construct the URL dynamically
-  define(
-    'APP_URL',
-    'http' . (defined('APP_HTTPS') ? 's' : '') . '://' .
-    ($_SERVER['SERVER_NAME'] ?? $_SERVER['HTTP_HOST'] ?? $_SERVER['SERVER_ADDR'] ?? 'localhost') .
-    parse_url($_SERVER['REQUEST_URI'] ?? '', PHP_URL_PATH)
-  );
-}
-
 //define('APP_URL', 'http' . (defined('APP_HTTPS') ? 's' : '') . '://' . isset($_SERVER['SERVER_NAME']) ? '' : ($_SERVER['SERVER_NAME'] ?? $_SERVER['HTTP_HOST'] ?? $_SERVER['SERVER_ADDR'] ?? 'localhost' . parse_url(isset($_SERVER['SERVER_NAME']) ? $_SERVER['REQUEST_URI'] : '' , PHP_URL_PATH)));
-
-define('APP_DOMAIN', array_key_exists('host', $domain = parse_url(APP_URL)) ? $domain['host'] : 'localhost');
-!is_string(APP_DOMAIN) and $errors['APP_DOMAIN'] = 'APP_DOMAIN is not valid. (' . APP_DOMAIN . ')' . "\n";
-
-define('APP_HOST', gethostbyname(APP_DOMAIN) ?? 'localhost');
-!is_string(APP_HOST) and $errors['APP_HOST'] = 'APP_HOST is not valid. (' . APP_HOST . ')' . "\n";
-
-const APP_PORT = '80';
-!is_int((int) APP_PORT) and $errors['APP_PORT'] = 'APP_PORT is not valid. (' . APP_PORT . ')' . "\n";
-
-const SERVER_HOST = APP_HOST ?? '0.0.0.0';
-!is_string(SERVER_HOST) and $errors['SERVER_HOST'] = 'SERVER_HOST is not valid. (' . SERVER_HOST . ')' . "\n";
-
-const SERVER_PORT = '8080'; // 9000
-!is_int((int) SERVER_PORT) and $errors['SERVER_PORT'] = 'SERVER_PORT is not valid. (' . SERVER_PORT . ')' . "\n";
 
 /*
 !defined('APP_PATH_SERVER') and define('APP_PATH_SERVER', (defined('APP_PATH') ? APP_PATH
@@ -165,6 +106,8 @@ if (defined('APP_LOGIN') && is_array(APP_LOGIN)) {
     $errors['APP_LOGIN'] = APP_LOGIN;
   }
 }
+
+require_once __DIR__ . DIRECTORY_SEPARATOR . 'constants.url.php';
 
 // absolute pathname 
 switch (basename(__DIR__)) {
@@ -269,7 +212,7 @@ switch (basename(__DIR__)) {
             if (isset($source_file->{$filename}))
               switch ($filename) {
                 case 'LICENSE':
-                  if (check_http_status('http://www.wtfpl.net/txt/copying'))
+                  if (APP_IS_ONLINE && check_http_status('http://www.wtfpl.net/txt/copying'))
                     file_put_contents($file, file_get_contents('http://www.wtfpl.net/txt/copying'));
                   else
                     file_put_contents($file, $source_file->{$filename});
@@ -405,69 +348,20 @@ switch (basename(__DIR__)) {
         }
       */
     // Set connectivity error if not connected
-    defined('APP_NO_INTERNET_CONNECTION') and
-      !defined('APP_IS_ONLINE') and $errors['APP_NO_INTERNET_CONNECTION'] = 'APP Connect(ed): ' . var_export(APP_NO_INTERNET_CONNECTION, true) . "\n"; // print('Connectivity: ' . APP_NO_INTERNET_CONNECTION . "\n");
+
+    if (APP_IS_ONLINE) {
+
+      $errors['APP_IS_ONLINE'] = 'APP Connect(ed): ' . (var_export(APP_IS_ONLINE, true) === true ? 'false (offline)' : 'true (online)') . "\n";
+    } elseif (!APP_NO_INTERNET_CONNECTION) {
+
+      $errors['APP_NO_INTERNET_CONNECTION'] = 'APP Connect(ed): ' . (var_export(APP_IS_ONLINE, true) === true ? 'false (offline)' : 'true (online)') . "\n";
+    }
 
     break;
 }
 
-const APP_ENV = 'development'; // define('APP_ENV', 'production') ? 'production' : 'development'; // APP_DEV |  APP_PROD
 
-if (defined('APP_DOMAIN') && !in_array(APP_DOMAIN, [/*'localhost',*/ '127.0.0.1', '::1'])) {
-  /* if (!is_file($file = APP_PATH . '.env') && @touch($file)) file_put_contents($file, "DB_UNAME=\nDB_PWORD="); */
-  //  defined('APP_ENV') or define('APP_ENV', 'production');
-} else {
-  /* if (!is_file($file = APP_PATH . '.env') && @touch($file)) file_put_contents($file, "DB_UNAME=\nDB_PWORD="); */
-  //  defined('APP_ENV') or define('APP_ENV', 'development'); // development
-} // APP_DEV |  APP_PROD
 
-if (defined('APP_ENV') && !is_string(APP_ENV)) {
-  $errors['APP_ENV'] = 'App Env: ' . var_export(APP_ENV, true);
-}
-
-/* if (APP_ENV == 'development') { 
-  if ($path = realpath((basename(__DIR__) != 'config' ? NULL : __DIR__ . DIRECTORY_SEPARATOR) . 'constants_backup.php')) // is_file('config' . DIRECTORY_SEPARATOR . 'constants.php')) 
-    require_once $path;
-
-  if ($path = realpath((basename(__DIR__) != 'config' ? NULL : __DIR__ . DIRECTORY_SEPARATOR) . 'constants_client-project.php')) // is_file('config' . DIRECTORY_SEPARATOR . 'constants.php')) 
-    require_once $path;
-} */
-
-//var_dump(APP_PATH . basename(dirname(__DIR__, 2)) . '/' . basename(dirname(__DIR__, 1)));
-if (PHP_SAPI === 'cli') {
-  // Replace the script name from REQUEST_URI when run in CLI
-  $scriptName = $_SERVER['PHP_SELF'];
-  $requestUri = preg_replace('/' . preg_quote($scriptName, '/') . '$/', '/', $_SERVER['REQUEST_URI'] ?? '');
-} else {
-  $requestUri = $_SERVER['REQUEST_URI'] ?? ($_SERVER['PHP_SELF'] ?? '');
-  if ($requestUri !== '') {
-    $queryString = isset($_SERVER['QUERY_STRING']) && $_SERVER['QUERY_STRING'] !== '' ? '?' . $_SERVER['QUERY_STRING'] : '';
-    $requestUri .= $queryString;
-  }
-}
-$parsedUrl = parse_url($requestUri);
-
-// substr( str_replace('\\', '/', __FILE__), strlen($_SERVER['DOCUMENT_ROOT']), strrpos(str_replace('\\', '/', __FILE__), '/') - strlen($_SERVER['DOCUMENT_ROOT']) + 1 )
-if (!is_array(APP_BASE)) {
-  $protocol = defined('APP_HTTPS') ? 'https' : 'http';
-  $appUrl = $protocol . '://' . APP_DOMAIN . $parsedUrl['path'];
-
-  define('APP_URL_BASE', $appUrl);
-} else {
-  $appUrl = [
-    'scheme' => (defined('APP_HTTPS') && APP_HTTPS ? 'https' : 'http'), // ($_SERVER['HTTPS'] == 'on', (isset($_SERVER['HTTPS']) === true ? 'https' : 'http')
-    /* https://www.php.net/manual/en/features.http-auth.php */
-    'user' => $_SERVER['PHP_AUTH_USER'] ?? null,
-    'pass' => $_SERVER['PHP_AUTH_PW'] ?? null,
-    'host' => APP_DOMAIN,
-    'port' => (int) ($_SERVER['SERVER_PORT'] ?? 80),
-    'path' => $parsedUrl['path'],
-    'query' => $_SERVER['QUERY_STRING'] ?? '', // array( key($_REQUEST) => current($_REQUEST) )
-    'fragment' => parse_url($_SERVER['REQUEST_URI'] ?? '', PHP_URL_FRAGMENT),
-  ];
-
-  define('APP_URL_BASE', $appUrl);
-}
 //die(var_dump(APP_URL));
 
 /*
@@ -500,7 +394,7 @@ var_dump(parse_url(APP_URL, PHP_URL_FRAGMENT)); */
 //  define('APP_URL_BASE', APP_URL['scheme'] . '://' . APP_URL['host'] . APP_URL['path']);
 
 // Define APP_BASE_URI
-define('APP_URL_PATH', is_array(APP_URL) ? APP_URL['path'] : APP_URL); // substr($_SERVER['REQUEST_URI'], 0, strrpos($_SERVER['REQUEST_URI'], '/') + 1)
+
 define('APP_QUERY', !empty(parse_url($_SERVER['REQUEST_URI'] ?? '')['query']) ? (parse_str(parse_url($_SERVER['REQUEST_URI'])['query'], $query) ? [] : $query) : []);
 
 !is_array(APP_URL)

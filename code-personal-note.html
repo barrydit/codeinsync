@@ -1,0 +1,57 @@
+<html>
+<head>
+<style>
+.note-menu {
+  display: flex;
+  justify-content: center;
+  gap: 3rem;
+  margin: 2rem auto;
+}
+
+.choice-circle {
+  width: 120px;
+  height: 120px;
+  border-radius: 50%;
+  color: #fff;
+  font-weight: bold;
+  text-align: center;
+  line-height: 120px;
+  cursor: pointer;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+  transition: all 0.3s ease;
+  user-select: none;
+}
+
+/* Specific circle colors */
+.choice-circle.personal {
+  background: linear-gradient(135deg, #f6a1a1, #d16d6d);
+}
+.choice-circle.personal:hover {
+  transform: scale(1.1);
+  background: linear-gradient(135deg, #d16d6d, #b03c3c);
+}
+
+.choice-circle.code {
+  background: linear-gradient(135deg, #8aa9f0, #5a76cc);
+}
+.choice-circle.code:hover {
+  transform: scale(1.1);
+  background: linear-gradient(135deg, #5a76cc, #2d4e9a);
+}
+</style>
+</head>
+</body>
+
+<div class="note-menu">
+  <div class="choice-circle personal" onclick="selectNoteType('personal')">Personal Note</div>
+  <div class="choice-circle code" onclick="selectNoteType('code')">Code Note</div>
+</div>
+
+<script>
+function selectNoteType(type) {
+  alert("Selected: " + (type === 'personal' ? 'Personal Note' : 'Code Note'));
+  // Load note form logic here...
+}
+</script>
+</body>
+</html>

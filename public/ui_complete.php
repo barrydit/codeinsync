@@ -2065,7 +2065,7 @@ for (i = 0; i < dropdowns.length; i++) { var openDropdown=dropdowns[i]; if (open
         <!-- link rel="stylesheet" href="//code.jquery.com/ui/1.12.1/themes/smoothness/jquery-ui.css" /-->
 
         <?php
-        // (check_http_status('https://cdn.tailwindcss.com') ? 'https://cdn.tailwindcss.com' : APP_URL . 'resources/js/tailwindcss-3.3.5.js')?
+        // (APP_IS_ONLINE && check_http_status('https://cdn.tailwindcss.com') ? 'https://cdn.tailwindcss.com' : APP_URL . 'resources/js/tailwindcss-3.3.5.js')?
         is_dir($path = APP_PATH . APP_BASE['resources'] . 'js/') or mkdir($path, 0755, true);
         if (is_file($path . 'tailwindcss-3.3.5.js')) {
           if (ceil(abs((strtotime(date('Y-m-d')) - strtotime(date('Y-m-d', strtotime('+5 days', filemtime($path . 'tailwindcss-3.3.5.js'))))) / 86400)) <= 0) {
@@ -2097,7 +2097,7 @@ for (i = 0; i < dropdowns.length; i++) { var openDropdown=dropdowns[i]; if (open
         <?= $appComposer['body']; ?>
 
         <script
-          src="<?= (check_http_status('https://code.jquery.com/jquery-3.7.1.min.js') ? 'https://code.jquery.com/jquery-3.7.1.min.js' : $path . 'jquery-3.7.1.min.js') ?>"></script>
+          src="<?= APP_IS_ONLINE && check_http_status('https://code.jquery.com/jquery-3.7.1.min.js') ? 'https://code.jquery.com/jquery-3.7.1.min.js' : "{$path}jquery-3.7.1.min.js" ?>"></script>
         <!-- You need to include jQueryUI for the extended easing options. -->
         <?php /* https://stackoverflow.com/questions/12592279/typeerror-p-easingthis-easing-is-not-a-function */ ?>
         <!-- script src="//code.jquery.com/jquery-1.12.4.js"></script -->
@@ -2876,7 +2876,7 @@ for (i = 0; i < dropdowns.length; i++) { var openDropdown=dropdowns[i]; if (open
 
 
               <?php
-              // (check_http_status('https://cdn.tailwindcss.com') ? 'https://cdn.tailwindcss.com' : APP_URL . 'resources/js/tailwindcss-3.3.5.js')?
+              // (APP_IS_ONLINE && check_http_status('https://cdn.tailwindcss.com') ? 'https://cdn.tailwindcss.com' : APP_URL . 'resources/js/tailwindcss-3.3.5.js')?
               is_dir($path = APP_PATH . APP_BASE['resources'] . 'js/') or mkdir($path, 0755, true);
               if (is_file($path . 'tailwindcss-3.3.5.js')) {
                 if (ceil(abs((strtotime(date('Y-m-d')) - strtotime(date('Y-m-d', strtotime('+5 days', filemtime($path . 'tailwindcss-3.3.5.js'))))) / 86400)) <= 0) {
@@ -2909,7 +2909,7 @@ for (i = 0; i < dropdowns.length; i++) { var openDropdown=dropdowns[i]; if (open
 
 
               <script
-                src="<?= check_http_status('https://code.jquery.com/jquery-3.7.1.min.js') ? 'https://code.jquery.com/jquery-3.7.1.min.js' : "{$path}jquery-3.7.1.min.js" ?>"></script>
+                src="<?= APP_IS_ONLINE && check_http_status('https://code.jquery.com/jquery-3.7.1.min.js') ? 'https://code.jquery.com/jquery-3.7.1.min.js' : "{$path}jquery-3.7.1.min.js" ?>"></script>
               <!-- You need to include jQueryUI for the extended easing options. -->
               <?php /* https://stackoverflow.com/questions/12592279/typeerror-p-easingthis-easing-is-not-a-function */ ?>
               <!-- script src="//code.jquery.com/jquery-1.12.4.js"></script -->
@@ -2941,8 +2941,8 @@ for (i = 0; i < dropdowns.length; i++) { var openDropdown=dropdowns[i]; if (open
 
             ob_start(); ?>
 
-            #app_npm-container { position: absolute; display: none; top: 60px; margin: 0 auto; left: 50%; right: 50%; }
-            #app_npm-container.selected { display: block; z-index: 1;
+            #app_node_js-container { position: absolute; display: none; top: 60px; margin: 0 auto; left: 50%; right: 50%; }
+            #app_node_js-container.selected { display: block; z-index: 1;
             /* Add your desired styling for the selected container */
             /*
             // background-color: rgb(240, 224, 198); // 240, 224, 198, .75 #FBF7F1; // rgba(240, 224, 198, .25);
@@ -2962,7 +2962,7 @@ for (i = 0; i < dropdowns.length; i++) { var openDropdown=dropdowns[i]; if (open
             ob_end_clean();
 
             ob_start(); ?>
-            <div id="app_npm-container"
+            <div id="app_node_js-container"
               class="absolute <?= (APP_SELF == __FILE__ || (isset($_GET['app']) && $_GET['app'] == 'npm') && !isset($_GET['path']) ? 'selected' : '') ?>"
               style="z-index: 1; width: 424px; background-color: rgba(255,255,255,0.8); padding: 10px;">
               <div
@@ -2982,7 +2982,7 @@ for (i = 0; i < dropdowns.length; i++) { var openDropdown=dropdowns[i]; if (open
                   </div>
 
                   <div style="display: inline; float: right; text-align: center; color: blue;"><code
-                      style="background-color: white; color: #0078D7;"><a style="cursor: pointer; font-size: 13px;" onclick="document.getElementById('app_npm-container').style.display='none';">[X]</a></code>
+                      style="background-color: white; color: #0078D7;"><a style="cursor: pointer; font-size: 13px;" onclick="document.getElementById('app_node_js-container').style.display='none';">[X]</a></code>
                   </div>
                 </div>
 
@@ -2994,9 +2994,9 @@ for (i = 0; i < dropdowns.length; i++) { var openDropdown=dropdowns[i]; if (open
                       style="cursor: pointer; font-weight: bold; padding-left: 25px; border: 1px solid #000;">Main Menu
                     </div>
                     <div class="text-xs" style="display: inline-block; border: 1px solid #000;">
-                      <a class="text-sm" id="app_npm-frameMenuPrev"
+                      <a class="text-sm" id="app_npmjs-frameMenuPrev"
                         href="<?= (!empty(APP_QUERY) ? '?' . http_build_query(APP_QUERY) : '') . (APP_ENV == 'development' ? '#!' : '') ?>">
-                        &lt; Menu</a> | <a class="text-sm" id="app_npm-frameMenuNext"
+                        &lt; Menu</a> | <a class="text-sm" id="app_npmjs-frameMenuNext"
                         href="<?= (!empty(APP_QUERY) ? '?' . http_build_query(APP_QUERY) : '') . (APP_ENV == 'development' ? '#!' : '') ?>">Init
                         &gt;</a>
                     </div>
@@ -3248,7 +3248,7 @@ for (i = 0; i < dropdowns.length; i++) { var openDropdown=dropdowns[i]; if (open
               <!-- link rel="stylesheet" href="//code.jquery.com/ui/1.12.1/themes/smoothness/jquery-ui.css" /-->
 
               <?php
-              // (check_http_status('https://cdn.tailwindcss.com') ? 'https://cdn.tailwindcss.com' : APP_URL . 'resources/js/tailwindcss-3.3.5.js')?
+              // (APP_IS_ONLINE && check_http_status('https://cdn.tailwindcss.com') ? 'https://cdn.tailwindcss.com' : APP_URL . 'resources/js/tailwindcss-3.3.5.js')?
               is_dir($path = APP_PATH . APP_BASE['resources'] . 'js/') or mkdir($path, 0755, true);
               if (is_file($path . 'tailwindcss-3.3.5.js')) {
                 if (ceil(abs((strtotime(date('Y-m-d')) - strtotime(date('Y-m-d', strtotime('+5 days', filemtime($path . 'tailwindcss-3.3.5.js'))))) / 86400)) <= 0) {
@@ -3280,7 +3280,7 @@ for (i = 0; i < dropdowns.length; i++) { var openDropdown=dropdowns[i]; if (open
               <?= $appNpm['body']; ?>
 
               <script
-                src="<?= (check_http_status('https://code.jquery.com/jquery-3.7.1.min.js') ? 'https://code.jquery.com/jquery-3.7.1.min.js' : $path . 'jquery-3.7.1.min.js') ?>"></script>
+                src="<?= APP_IS_ONLINE && check_http_status('https://code.jquery.com/jquery-3.7.1.min.js') ? 'https://code.jquery.com/jquery-3.7.1.min.js' : "{$path}jquery-3.7.1.min.js" ?>"></script>
               <!-- You need to include jQueryUI for the extended easing options. -->
               <?php /* https://stackoverflow.com/questions/12592279/typeerror-p-easingthis-easing-is-not-a-function */ ?>
               <!-- script src="//code.jquery.com/jquery-1.12.4.js"></script -->
@@ -3475,7 +3475,7 @@ for (i = 0; i < dropdowns.length; i++) { var openDropdown=dropdowns[i]; if (open
               <link rel="stylesheet" href="//code.jquery.com/ui/1.12.1/themes/smoothness/jquery-ui.css" />
 
               <?php
-              // (check_http_status('https://cdn.tailwindcss.com') ? 'https://cdn.tailwindcss.com' : APP_URL . 'resources/js/tailwindcss-3.3.5.js')?
+              // (APP_IS_ONLINE && check_http_status('https://cdn.tailwindcss.com') ? 'https://cdn.tailwindcss.com' : APP_URL . 'resources/js/tailwindcss-3.3.5.js')?
               is_dir($path = APP_PATH . APP_BASE['resources'] . 'js/') or mkdir($path, 0755, true);
               if (is_file($path . 'tailwindcss-3.3.5.js')) {
                 if (ceil(abs((strtotime(date('Y-m-d')) - strtotime(date('Y-m-d', strtotime('+5 days', filemtime($path . 'tailwindcss-3.3.5.js'))))) / 86400)) <= 0) {

@@ -1,0 +1,95 @@
+<html>
+<head>
+<style>
+.entry-form {
+  max-width: 600px;
+  margin: 2rem auto;
+  padding: 1.5rem;
+  border: 1px solid #ccc;
+  border-radius: 10px;
+  background: #f9f9f9;
+}
+.entry-form h2 {
+  margin-bottom: 1rem;
+}
+.entry-form label {
+  display: block;
+  margin-bottom: 0.5rem;
+  font-weight: bold;
+}
+.entry-form input, .entry-form textarea, .entry-form select {
+  width: 100%;
+  padding: 0.5rem;
+  margin-bottom: 1rem;
+  border-radius: 6px;
+  border: 1px solid #ccc;
+  font-size: 1rem;
+}
+.entry-form button {
+  padding: 0.6rem 1.2rem;
+  font-size: 1rem;
+  border: none;
+  border-radius: 6px;
+  background-color: #4a90e2;
+  color: white;
+  cursor: pointer;
+}
+</style>
+</head>
+
+<body>
+<form class="entry-form" onsubmit="handleSubmit(event)">
+  <h2>New Journal Entry</h2>
+
+  <label for="entry-date">Date:</label>
+  <input type="date" id="entry-date" name="date" required>
+
+  <label for="entry-time">Time:</label>
+  <input type="time" id="entry-time" name="time" required>
+
+  <label for="entry-title">Title:</label>
+  <input type="text" id="entry-title" name="title" required>
+
+  <label for="entry-content">Content:</label>
+  <textarea id="entry-content" name="content" rows="5" required></textarea>
+
+  <label for="entry-tags">Tags (comma separated):</label>
+  <input type="text" id="entry-tags" name="tags" placeholder="e.g. journal, mood, personal">
+
+  <label for="entry-mood">Mood (optional):</label>
+  <input type="text" id="entry-mood" name="mood" placeholder="e.g. relaxed, focused">
+
+  <label for="entry-weather">Weather (optional):</label>
+  <input type="text" id="entry-weather" name="weather" placeholder="e.g. sunny, cloudy">
+
+  <label for="entry-location">Location (optional):</label>
+  <input type="text" id="entry-location" name="location" placeholder="e.g. Riverside Park">
+
+  <button type="submit">Save Entry</button>
+</form>
+
+<script>
+function handleSubmit(event) {
+  event.preventDefault();
+
+  const form = event.target;
+  const entry = {
+    time: form.time.value,
+    title: form.title.value,
+    content: form.content.value,
+    tags: form.tags.value.split(',').map(tag => tag.trim()).filter(tag => tag),
+  };
+
+  // Optional fields
+  if (form.mood.value) entry.mood = form.mood.value;
+  if (form.weather.value) entry.weather = form.weather.value;
+  if (form.location.value) entry.location = form.location.value;
+
+  const date = form.date.value;
+
+  console.log("Journal Entry:", { [date]: [entry] });
+  alert("Entry saved! (See console output)");
+}
+</script>
+</body>
+</html>

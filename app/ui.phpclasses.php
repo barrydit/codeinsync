@@ -1,13 +1,13 @@
 <?php
 /**
- * Packagist.org Package Search
+ * PHPClassess.org Class Search
  *
  * @package App
  * @author Your Name
  * @version 1.0
  */
-$packagistUrl = 'https://packagist.org/';
-$cacheFile = APP_PATH . APP_BASE['var'] . 'packagist.org.html';
+$phpclassesUrl = 'https://phpclasses.org/';
+$cacheFile = APP_PATH . APP_BASE['var'] . 'phpclasses.org.html';
 $cacheDir = APP_PATH . APP_BASE['var'];
 
 // Ensure cache directory exists
@@ -29,14 +29,14 @@ if (is_file($cacheFile)) {
 
 // Fetch fresh content if needed
 if ($refreshCache) {
-  $handle = curl_init($packagistUrl);
+  $handle = curl_init($phpclassesUrl);
   curl_setopt($handle, CURLOPT_RETURNTRANSFER, true);
 
   $html = curl_exec($handle);
 
   if (!empty($html)) {
     if (!file_put_contents($cacheFile, $html)) {
-      $errors['COMPOSER_LATEST'] = "$packagistUrl returned empty.";
+      $errors['COMPOSER_LATEST'] = "$phpclassesUrl returned empty.";
     }
   } else {
     $errors['COMPOSER_LATEST'] = curl_error($handle);
@@ -47,8 +47,8 @@ if ($refreshCache) {
   }
 }
 
-// Serve the HTML snapshot if `packagist` is requested
-if (array_key_first($_GET) === 'packagist') {
+// Serve the HTML snapshot if `phpclasses` is requested
+if (array_key_first($_GET) === 'phpclasses') {
   libxml_use_internal_errors(true);
 
   $dom = new DOMDocument('1.0', 'utf-8');
@@ -59,7 +59,7 @@ if (array_key_first($_GET) === 'packagist') {
 
   if ($metaTags->length > 0) {
     $baseTag = $dom->createDocumentFragment();
-    $baseTag->appendXML('<base href="https://packagist.org/" />');
+    $baseTag->appendXML('<base href="https://phpclasses.org/" />');
 
     $metaTags[0]->parentNode->insertBefore($baseTag, $metaTags[0]->nextSibling);
   }
@@ -69,7 +69,7 @@ if (array_key_first($_GET) === 'packagist') {
 }
 /*
 switch ($_GET['app']) {
-  case 'packagist':
+  case 'phpclasses':
 
     break;
   default:
@@ -160,7 +160,7 @@ if (false) { ?>
 ob_start(); ?>
 
   /* Styles for the absolute div */
-  #app_packagist-container {
+  #app_phpclasses-container {
     position: absolute;
     display: none;
     top: 5%;
@@ -191,17 +191,18 @@ ob_start(); ?>
   ?>
 
 <!-- <div class="container" style="border: 1px solid #000;"> -->
-<div id="app_packagist-container"
-  class="<?= APP_SELF == __FILE__ || (isset($_GET['app']) && $_GET['app'] == 'packagist') ? 'selected' : '' ?>"
+<div id="app_phpclasses-container"
+  class="<?= APP_SELF == __FILE__ || (isset($_GET['app']) && $_GET['app'] == 'phpclasses') ? 'selected' : '' ?>"
   style="border: 1px solid #000;">
   <div class="header ui-widget-header">
-    <div style="display: inline-block;">Packagist.org Package (Search)</div>
+    <div style="display: inline-block;">PHPclasses.org Package (Search)</div>
     <div style="display: inline; float: right; text-align: center;">[<a style="cursor: pointer; font-size: 13px;"
-        onclick="document.getElementById('app_packagist-container').style.display='none';">X</a>]</div>
+        onclick="document.getElementById('app_phpclasses-container').style.display='none';">X</a>]</div>
   </div>
 
   <div style="display: inline-block; width: auto; padding-left: 10px;">
-    <iframe src="<?= /* basename(__FILE__) */ '?packagist'; ?>" style="height: 550px; width: 775px;"></iframe>
+    <iframe src="<?= /* basename(__FILE__) */ '?phpclasses'; ?>" style="height: 550px; width: 775px;"
+      sandbox="allow-scripts allow-same-origin" allowfullscreen="false"></iframe>
   </div>
 
   <!-- <pre id="ace-editor" class="ace_editor"></pre> -->
@@ -229,7 +230,7 @@ ob_end_clean();
 
 /*
 $dom = new DOMDocument(1.0, 'utf-8');
-$dom->loadHTML(file_get_contents(APP_PATH . APP_BASE['var'] . 'packagist.org.html'));
+$dom->loadHTML(file_get_contents(APP_PATH . APP_BASE['var'] . 'phpclasses.org.html'));
 
 $divs = $dom->getElementsByTagName('head');
 
@@ -247,10 +248,10 @@ $dom->appendChild($elm);
 
 //$dom->saveHTML($dom->documentElement);
 
-//echo file_get_contents("https://packagist.org/");
+//echo file_get_contents("https://phpclasses.org/");
 
 //check if file is included or accessed directly
-if (__FILE__ == get_required_files()[0] || in_array(__FILE__, get_required_files()) && array_key_first($_GET) == 'packagist' && APP_DEBUG)
+if (__FILE__ == get_required_files()[0] || in_array(__FILE__, get_required_files()) && array_key_first($_GET) == 'phpclasses' && APP_DEBUG)
   Shutdown::setEnabled(false)->setShutdownMessage(function () use ($dom) {
     return $dom->saveHTML(); /* eval('?>' . $project_code); // -wow */
   })->shutdown(); // exit;

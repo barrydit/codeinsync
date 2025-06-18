@@ -1,6 +1,6 @@
 <?php
 
-require_once dirname(__DIR__, 1) . DIRECTORY_SEPARATOR . 'bootstrap.php';
+require_once dirname(__DIR__, 1) . DIRECTORY_SEPARATOR . 'index.php';
 
 $htaccess = <<<END
 # Enable Rewrite Engine
@@ -25,7 +25,6 @@ END;
 switch (APP_SELF) {
   case __FILE__:
     require_once dirname(__DIR__, 1) . DIRECTORY_SEPARATOR . 'bootstrap.php';
-    //require_once dirname(__DIR__, 1) . DIRECTORY_SEPARATOR . 'config' . DIRECTORY_SEPARATOR . 'constants.php';
     break;
   default:
     if ($php = realpath(dirname(__DIR__, 1) . DIRECTORY_SEPARATOR . 'config' . DIRECTORY_SEPARATOR . 'lang' . DIRECTORY_SEPARATOR . 'php.php'))
