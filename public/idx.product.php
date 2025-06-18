@@ -100,126 +100,606 @@ if (!headers_sent()) {
 
   <style type="text/tailwindcss"></style>
   <style>
-    * {
-      overflow: hidden;
-    }
+* {
+  overflow: hidden;
+}
 
-    html,
-    body {
-      margin: 0;
-      height: 100%;
-      overflow: hidden;
-      font-family: sans-serif;
-    }
+html,
+body {
+  margin: 0;
+  height: 100%;
+  overflow: hidden;
+  font-family: sans-serif;
+}
 
-    .container {
-      position: relative;
-      height: 100vh;
-      width: 100%;
-      overflow: hidden;
-    }
+.container {
+  position: relative;
+  height: 100vh;
+  width: 100%;
+  overflow: hidden;
+}
 
-    .sidebar {
-      position: absolute;
-      top: 0;
-      left: 0;
-      width: 200px;
-      height: 100%;
-      background: #ccc;
-      border-right: 2px solid #999;
-      resize: horizontal;
-      overflow: auto;
-      min-width: 100px;
-      max-width: auto;
-      z-index: 20;
-    }
+.sidebar {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 200px;
+  height: 100%;
+  background: #ccc;
+  border-right: 2px solid #999;
+  resize: horizontal;
+  overflow: auto;
+  min-width: 100px;
+  max-width: auto;
+  z-index: 20;
+}
 
-    .top-panel,
-    .bottom-panel,
-    .free-space {
-      position: absolute;
-      left: 200px;
-      /* initial left = sidebar width */
-      width: calc(100% - 200px);
+.top-panel,
+.bottom-panel,
+.free-space {
+  position: absolute;
+  left: 200px;
+  width: calc(100% - 200px);
+}
 
-    }
+.top-panel {
+  top: 0;
+  height: 44px;
+  background: #EEEEEE;
+  border-bottom: 1px solid #999;
+  z-index: 20;
+}
 
-    .top-panel {
-      top: 0;
-      height: 44px;
-      background: #EEEEEE;
-      border-bottom: 1px solid #999;
-      z-index: 20;
-    }
+.bottom-panel {
+  bottom: 0;
+  height: 100px;
+  background: #444444;
+  color: white;
+  border-top: 1px solid #999;
+  z-index: 1;
+}
 
-    .bottom-panel {
-      bottom: 0;
-      height: 100px;
-      background: #444444;
-      color: white;
-      border-top: 1px solid #999;
-      z-index: 1;
-    }
+.free-space {
+  top: 44px;
+  bottom: 100px;
+  background: #f5f5f5;
+  z-index: 1;
+}
 
-    .free-space {
-      top: 44px;
-      bottom: 100px;
-      background: #f5f5f5;
-      z-index: 1;
-    }
+/* App container styles */
+#app_notes-container,
+#app_ace_editor-container,
+#app_calendar-container,
+#app_medication_log-container,
+#app_composer-container,
+#app_git-container,
+#app_node_js-container,
+#app_nodes-container,
+#app_npmjs-container,
+#app_packagist-container,
+#app_php-container,
+#app_phpclasses-container,
+#app_directory-container,
+#app_project-container,
+#app_timesheet-container,
+#app_browser-container,
+#app_github-container,
+#app_whiteboard-container,
+#app_console-container,
+#app_backup-container,
+#app_pong-container {
+  position: absolute;
+  display: none;
+  z-index: 1;
+  background-color: rgba(255, 255, 255, 0.9);
+  color: black;
+}
 
-    <?php
-    $ui_style = '';
-    $app_style = '';
+/* Specific container styles */
+#app_notes-container {
+  width: 1207px;
+  height: 500px;
+  top: calc(50% - 250px);
+  left: calc(50% - 603.5px);
+}
 
-    foreach (UI_APPS as $key => $app) {
-      //dd($key, false);
-      if ($app['type'] === 'ui') {
-        $ui_style .= $app['style'];
-      } elseif ($app['type'] === 'app') {
-        $app_style .= $app['style'];
-      }
-    }
+#app_ace_editor-container {
+  width: 550px;
+  height: 450px;
+  top: 60px;
+  left: 30%;
+}
 
-    // Print UI scripts first
-    echo $ui_style;
+#app_calendar-container {
+  width: 326px;
+  height: 450px;
+  top: 12px;
+  right: 0;
+  margin-bottom: -25px;
+}
 
-    // Then app scripts
-    echo $app_style; ?>
+#app_medication_log-container {
+  width: 320px;
+  height: 220px;
+  border: 1px solid #000;
+}
 
-    /* Add your custom styles here */
-    .sidebar a {
-      text-decoration: none;
-      color: #000;
-    }
+#app_composer-container {
+  left: 832px;
+  top: 96px;
+}
 
-    .sidebar a:hover {
-      text-decoration: underline;
-    }
+#app_git-container {
+  top: 20%;
+  left: 40%;
+}
 
-    .sidebar ul {
-      list-style-type: none;
-      padding: 0;
-    }
+#app_node_js-container {
+  left: 832px;
+  top: 96px;
+}
 
-    .sidebar li {
-      padding: 5px 10px;
-    }
+#app_nodes-container {
+  width: 550px;
+  height: 450px;
+  top: 60px;
+  left: 30%;
+}
 
-    .sidebar li:hover {
-      background-color: #ddd;
-    }
+#app_npmjs-container,
+#app_packagist-container,
+#app_phpclasses-container {
+  top: 5%;
+  left: 50%;
+  transform: translateX(-50%);
+  height: 600px;
+  text-align: center;
+  padding: 10px;
+}
 
-    a {
-      text-decoration: none;
-      color: #000;
-    }
+#app_php-container {
+  width: 669px;
+  height: 567px;
+  top: 60px;
+  left: 30%;
+}
 
-    a:hover {
-      text-decoration: underline;
-    }
+#app_directory-container,
+#app_project-container {
+  left: 832px;
+  top: 96px;
+  height: auto;
+}
 
-    /* Additional styles truncated for brevity */
+#app_timesheet-container {
+  height: 575px;
+  top: calc(50% - 350px);
+  left: calc(50% - 400px);
+  padding: 10px;
+}
+
+#app_browser-container {
+  top: 5%;
+  left: 50%;
+  transform: translateX(-50%);
+  height: 100vh;
+  text-align: center;
+  padding: 10px;
+}
+
+#app_github-container,
+#app_whiteboard-container {
+  top: 5%;
+  left: 50%;
+  transform: translateX(-50%);
+  text-align: center;
+  padding: 10px;
+}
+
+#app_github-container {
+  height: 600px;
+}
+
+#app_whiteboard-container {
+  height: 500px;
+}
+
+#app_console-container {
+  position: fixed;
+  bottom: 50px;
+  left: 50%;
+  transform: translateX(-50%);
+  height: 45px;
+  background-color: #FFA6A6;
+  color: white;
+  text-align: center;
+}
+
+#app_backup-container {
+  top: 40%;
+  left: 40%;
+  width: 425px;
+  text-align: center;
+  padding: 10px;
+}
+
+#app_pong-container {
+  top: 5%;
+  left: 50%;
+  transform: translateX(-50%);
+  height: 400px;
+  text-align: center;
+  padding: 10px;
+}
+
+/* Selected state */
+.selected {
+  display: block;
+  resize: both;
+  overflow: hidden;
+}
+
+/* UI elements */
+#ui_errors,
+#ui_medication_log,
+#ui_ace_editor {
+  width: 100%;
+  height: calc(100% - 80px);
+  position: absolute;
+}
+
+#errors,
+#medication_log,
+#ace-editor {
+  margin: 0;
+  position: relative;
+  overflow: auto;
+  white-space: pre-wrap;
+}
+
+#responseConsole {
+  position: relative;
+  display: block;
+  margin: 0 auto;
+  background-color: #D0D0D0;
+  color: black;
+  cursor: pointer;
+  height: 235px;
+}
+
+/* Tables */
+.containerTbl {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+}
+
+table {
+  border-collapse: collapse;
+}
+
+td, th {
+  border: black solid 1px;
+  padding: 8px;
+}
+
+/* Form elements */
+input {
+  color: black;
+}
+
+input[type="radio"].green-radio,
+input[type="radio"].red-radio {
+  appearance: none;
+  -webkit-appearance: none;
+  margin: 0 5px 0 0;
+  width: 1em;
+  height: 1em;
+  border: 2px solid white;
+  border-radius: 50%;
+  display: inline-block;
+  vertical-align: middle;
+  cursor: pointer;
+}
+
+input[type="radio"].green-radio {
+  background-color: lightgreen;
+  border-color: green;
+}
+
+input[type="radio"].green-radio:checked {
+  border-color: green;
+}
+
+input[type="radio"].red-radio {
+  background-color: red;
+  border-color: red;
+}
+
+input[type="radio"].red-radio:checked {
+  border-color: darkred;
+}
+
+/* Splitter */
+.splitter {
+  width: 100%;
+  height: 250px;
+  position: relative;
+}
+
+#separator {
+  cursor: row-resize;
+  background-color: #aaa;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='100' height='3'%3E%3Cpath d='M2 30 L0 M5 0 V30 M8 0 V30' fill='none' stroke='black' /%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: center;
+  width: 100%;
+  height: 15px;
+  z-index: 2;
+  transform: translateZ(0);
+  -moz-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
+}
+
+#first {
+  background-color: #dde;
+  width: 100%;
+  height: 100%;
+  min-width: 10px;
+  z-index: 1;
+  transform: translateZ(0);
+}
+
+#second {
+  background-color: #eee;
+  width: 100%;
+  height: 100%;
+  min-width: 10px;
+  z-index: 1;
+  transform: translateZ(0);
+  overflow-x: hidden;
+}
+
+/* Process list */
+.process-list {
+  position: absolute;
+  background-color: #FFA6A6;
+  left: -150px;
+  width: 150px;
+  height: 117px;
+  border: 2px solid #000;
+  overflow: hidden;
+  display: block;
+}
+
+.process {
+  border: #000 solid 1px;
+  color: #fff;
+  padding: 10px;
+  margin: 5px 0;
+  display: block;
+  position: relative;
+  white-space: nowrap;
+  width: fit-content;
+  clear: both;
+  overflow: hidden;
+}
+
+@keyframes scroll {
+  0% { transform: translateX(15%); }
+  100% { transform: translateX(-75%); }
+}
+
+.scrolling {
+  animation: scroll 10s linear infinite;
+}
+
+/* Vertical slider */
+.vert-slider-container {
+  position: relative;
+  float: right;
+  width: 10px;
+  height: 100px;
+  background-color: #f0f0f0;
+}
+
+.vert-slider {
+  position: absolute;
+  top: 45px;
+  left: -70px;
+  width: 100px;
+  height: 10px;
+  background: #4CAF50;
+  transform: rotate(90deg);
+  cursor: pointer;
+}
+
+.vert-slider::-webkit-slider-thumb {
+  appearance: none;
+  width: 20px;
+  height: 20px;
+  background: #fff;
+  border: #4CAF50 solid 2px;
+  border-radius: 50%;
+  cursor: pointer;
+  margin-top: -10px;
+  margin-left: -10px;
+}
+
+.vert-slider::-moz-range-thumb {
+  width: 20px;
+  height: 20px;
+  background: #fff;
+  border: #4CAF50 solid 2px;
+  border-radius: 50%;
+  cursor: pointer;
+}
+
+/* Directory grid */
+.directory-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  padding: 10px;
+}
+
+.directory-entry {
+  flex: 1 0 10%;
+  max-width: 115px;
+  text-align: center;
+  border: 0;
+  padding: 4px;
+  box-sizing: border-box;
+}
+
+.directory-entry img {
+  display: block;
+  margin: 0 auto 4px auto;
+  width: 40px;
+  height: auto;
+}
+
+/* Node visualization */
+#visualization {
+  margin-top: -60px;
+  width: 100%;
+  height: calc(100% - 260px);
+  position: absolute;
+  z-index: 1;
+}
+
+.node circle {
+  fill: #999;
+  stroke: #fff;
+  stroke-width: 3px;
+}
+
+.link {
+  fill: none;
+  stroke: #555;
+  stroke-width: 1.5px;
+}
+
+.link.green {
+  stroke: green;
+}
+
+text {
+  font: 10px sans-serif;
+}
+
+/* Dropdown */
+.dropbtn {
+  background-color: #3498DB;
+  color: white;
+  padding: 2px 7px;
+  font-size: 14px;
+  border: none;
+  cursor: pointer;
+}
+
+.dropbtn:hover, .dropbtn:focus {
+  background-color: #2980B9;
+}
+
+.dropdown {
+  position: relative;
+  display: inline-block;
+  float: right;
+  z-index: 1;
+}
+
+.dropdown-content {
+  display: none;
+  position: absolute;
+  background-color: #f1f1f1;
+  min-width: 160px;
+  margin: -100px;
+  overflow: auto;
+}
+
+.dropdown-content a {
+  color: black;
+  padding: 8px 12px;
+  text-decoration: none;
+  display: block;
+}
+
+.dropdown a:hover {
+  background-color: #ddd;
+}
+
+.show {
+  display: block;
+}
+
+/* Buttons */
+.btn {
+  @apply rounded-md px-2 py-1 text-center font-medium text-slate-900 shadow-sm ring-1 ring-slate-900/10 hover:bg-slate-50;
+}
+
+/* Links */
+a {
+  text-decoration: none;
+  color: #000;
+}
+
+a:hover {
+  text-decoration: underline;
+}
+
+.sidebar a {
+  text-decoration: none;
+  color: #000;
+}
+
+.sidebar a:hover {
+  text-decoration: underline;
+}
+
+.sidebar ul {
+  list-style-type: none;
+  padding: 0;
+}
+
+.sidebar li {
+  padding: 5px 10px;
+}
+
+.sidebar li:hover {
+  background-color: #ddd;
+}
+
+/* Images */
+img {
+  display: inline;
+}
+
+/* Utility classes */
+.hidden {
+  display: none;
+}
+    <?php /*
+$ui_style = '';
+$app_style = '';
+
+foreach (UI_APPS as $key => $app) {
+ //dd($key, false);
+ if ($app['type'] === 'ui') {
+   $ui_style .= $app['style'];
+ } elseif ($app['type'] === 'app') {
+   $app_style .= $app['style'];
+ }
+}
+
+// Print UI scripts first
+echo $ui_style;
+
+// Then app scripts
+echo $app_style; ?>
+*/ ?>    
   </style>
 
 </head>
