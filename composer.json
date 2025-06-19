@@ -41,7 +41,7 @@
     },
     "autoload": {
         "psr-4": {
-            "MyProject\\MyNamespace": "src/"
+            "MyProject\\MyNamespace\\": "src/"
         },
         "classmap": [
             "src/"
@@ -49,5 +49,8 @@
         "files": [
             "src/testclass.php"
         ]
+    },
+    "autoload-dev": {
+        "MyProject\\MyNamespace\\Tests\\": "tests/"
     }
 }
