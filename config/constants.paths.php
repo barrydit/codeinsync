@@ -107,14 +107,17 @@ if (defined('APP_LOGIN') && is_array(APP_LOGIN)) {
   }
 }
 
-require_once __DIR__ . DIRECTORY_SEPARATOR . 'constants.url.php';
+// require_once __DIR__ . DIRECTORY_SEPARATOR . 'constants.url.php';
 
-// absolute pathname 
 switch (basename(__DIR__)) {
   case 'config':
   default:
-    if (empty(APP_HOST) || APP_HOST == '127.0.0.1' || APP_DOMAIN == 'localhost')
-      $errors['WHOIS'] = "WHOIS is disabled on localhost.\n";
+    $host = defined('APP_HOST') ? APP_HOST : ($_SERVER['HTTP_HOST'] ?? '127.0.0.1');
+    $domain = defined('APP_DOMAIN') ? APP_DOMAIN : ($host ?? 'localhost');
+
+    if ($host === '127.0.0.1' || $domain === 'localhost') {
+        $errors['WHOIS'] = "WHOIS is disabled on localhost.\n";
+    }
 
     // Define your paths as pure array (no associative keys unless you plan to use them)
     $base_paths = [ // https://stackoverflow.com/questions/8037266/get-the-url-of-a-file-included-by-php
@@ -394,7 +397,7 @@ var_dump(parse_url(APP_URL, PHP_URL_FRAGMENT)); */
 //  define('APP_URL_BASE', APP_URL['scheme'] . '://' . APP_URL['host'] . APP_URL['path']);
 
 // Define APP_BASE_URI
-
+/*
 define('APP_QUERY', !empty(parse_url($_SERVER['REQUEST_URI'] ?? '')['query']) ? (parse_str(parse_url($_SERVER['REQUEST_URI'])['query'], $query) ? [] : $query) : []);
 
 !is_array(APP_URL)
@@ -410,7 +413,7 @@ define('APP_QUERY', !empty(parse_url($_SERVER['REQUEST_URI'] ?? '')['query']) ? 
       )
     )
   );
-
+*/
 
 //dd(get_defined_constants(true)['user']);
 

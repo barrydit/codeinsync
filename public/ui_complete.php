@@ -873,7 +873,7 @@ ob_start(); ?>
       </form>
     </div>
     <div class="absolute"
-      style="position: absolute; margin: 0px auto; text-align: center; height: 275px; width: 100%; background-repeat: no-repeat; <?= (version_compare(COMPOSER_LATEST, COMPOSER_VERSION, '>') != 0 ? "background-image: url('https://editablegifs.com/gifs/gifs/fireworks-1/output.gif?egv=3258')" : '') ?> ;">
+      style="position: absolute; margin: 0px auto; text-align: center; height: 275px; width: 100%; background-repeat: no-repeat; <?= (version_compare(COMPOSER_LATEST, COMPOSER_VERSION, '>') != 0 ? "background-image: url('https://cliply.co/wp-content/uploads/2021/09/CLIPLY_372109170_FREE_FIREWORKS_400.gif')" : '') ?> ;">
     </div>
 
     <div class="absolute"
@@ -2318,7 +2318,7 @@ for (i = 0; i < dropdowns.length; i++) { var openDropdown=dropdowns[i]; if (open
           </div>
 
           <div class="absolute"
-            style="position: absolute; top: 0; margin: 0px auto; text-align: center; height: 200px; width: 100%; background-repeat: no-repeat; <?= (version_compare(GIT_LATEST, GIT_VERSION, '>') != 0 ? "background-image: url('https://editablegifs.com/gifs/gifs/fireworks-1/output.gif?egv=3258'); opacity: 0.2;" : '') ?> z-index: 1;">
+            style="position: absolute; top: 0; margin: 0px auto; text-align: center; height: 200px; width: 100%; background-repeat: no-repeat; <?= (version_compare(GIT_LATEST, GIT_VERSION, '>') != 0 ? "background-image: url('https://cliply.co/wp-content/uploads/2021/09/CLIPLY_372109170_FREE_FIREWORKS_400.gif'); opacity: 0.2;" : '') ?> z-index: 1;">
           </div>
           <div
             style="position: absolute; top: 0; left: 0; right: 0; margin: 10px auto; opacity: 1.0; text-align: center; cursor: pointer; z-index: 1; ">

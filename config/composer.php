@@ -908,9 +908,9 @@ echo $composer_exec; ?> init --quiet --no-interaction
       if (defined('APP_IS_ONLINE'))
         if (!isset($_SERVER['SOCKET']) || !is_resource($_SERVER['SOCKET']) || empty($_SERVER['SOCKET'])) {
 
-          $proc = proc_open((stripos(PHP_OS, 'WIN') === 0 ? '' : /*APP_SUDO . '-u www-data '*/ '') . basename(COMPOSER_EXEC['bin']) . ' self-update', [["pipe", "r"], ["pipe", "w"], ["pipe", "w"]], $pipes);
+          //$proc = proc_open((stripos(PHP_OS, 'WIN') === 0 ? '' : /*APP_SUDO . '-u www-data '*/ '') . basename(COMPOSER_EXEC['bin']) . ' self-update', [["pipe", "r"], ["pipe", "w"], ["pipe", "w"]], $pipes);
 
-          [$stdout, $stderr, $exitCode] = [stream_get_contents($pipes[1]), stream_get_contents($pipes[2]), proc_close($proc)];
+          //[$stdout, $stderr, $exitCode] = [stream_get_contents($pipes[1]), stream_get_contents($pipes[2]), proc_close($proc)];
 
           if ($exitCode !== 0) {
             if (empty($stdout)) {
@@ -1714,7 +1714,7 @@ END
 
         if (empty($stdout)) {
           if (!empty($stderr))
-            $errors['COMPOSER_INSTALL'] = '$stderr = ' . $stderr;
+            $errors['COMPOSER_INSTALL'] = "\$stderr = $stderr";
         } else
           $errors['COMPOSER_INSTALL'] = $stdout;
 

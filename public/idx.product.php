@@ -170,7 +170,7 @@ body {
 #app_notes-container,
 #app_ace_editor-container,
 #app_calendar-container,
-#app_medication_log-container,
+/* #app_medication_log-container, */
 #app_composer-container,
 #app_git-container,
 #app_node_js-container,
@@ -185,10 +185,10 @@ body {
 #app_browser-container,
 #app_github-container,
 #app_whiteboard-container,
-#app_console-container,
+/* #app_console-container, */
 #app_backup-container,
 #app_pong-container {
-  position: absolute;
+  position: fixed;
   display: none;
   z-index: 1;
   background-color: rgba(255, 255, 255, 0.9);
@@ -208,14 +208,6 @@ body {
   height: 450px;
   top: 60px;
   left: 30%;
-}
-
-#app_calendar-container {
-  width: 326px;
-  height: 450px;
-  top: 12px;
-  right: 0;
-  margin-bottom: -25px;
 }
 
 #app_medication_log-container {
@@ -306,10 +298,11 @@ body {
 
 #app_console-container {
   position: fixed;
+  display: block;
   bottom: 50px;
   left: 50%;
-  transform: translateX(-50%);
-  height: 45px;
+  /* transform: translateX(-50%); */
+  /* height: 45px; */
   background-color: #FFA6A6;
   color: white;
   text-align: center;
@@ -709,7 +702,11 @@ echo $app_style; ?>
 
 
   <div class="container1">
-    <div class="sidebar">Resizable Sidebar</div>
+    <div class="sidebar"><p style="color: white; background-color: #0078D7;">Github: <a href="https://github.com/barrydit/codeinsync" target="_blank" rel="noopener noreferrer" style="background-color: white;">barrydit/codeinsync</a></p>
+  <pre style="position: absolute; bottom: 0; z-index: 999;">
+  <?= $errors['NPM-WEBPACK']; ?>
+  </pre>
+  </div>
     <div class="top-panel">
       <div>
         <a href="#"><img src="resources/images/phpclasses_icon.png" alt="Logo"
@@ -726,21 +723,23 @@ echo $app_style; ?>
         <a href="#"><img src="resources/images/node_js.gif" alt="Logo" style="width: 83px; height: auto; margin: 0 5px;"
             onclick="document.getElementById('app_node_js-container').style.display='block'; return false;"></a>
         <a href="#"><img src="resources/images/npm_icon.png" alt="Logo"
-            style="width: 31px; height: auto; margin: 0 5px;"
+            style="width: 31px; height: auto; margin: 10px 5px;"
             onclick="document.getElementById('app_npmjs-container').style.display='block'; return false;"></a>
         <a href="#"><img src="resources/images/console_icon.png" alt="Logo"
             style="width: 31px; height: auto; margin: 0 5px;"
             onclick="isFixed = true; show_console(); return false;"></a>
       </div>
 
-      <div style="position: absolute; top: 10px; right: 270px;">
-        <img src="resources/images/php_icon.png" alt="Logo" style="width: 31px; height: auto; margin: 0 5px;"
-          onclick="document.getElementById('app_php-container').style.display='block'; return false;">
+      <div style="position: absolute; top: 5px; right: 270px;">
+        <img src="resources/images/php_icon.png" alt="Logo" style="width: 31px; height: auto; margin: 0 0;"
+          onclick="document.getElementById('app_php-container').style.display='block'; return false;"> PHP
         <button style="border: 1px solid black; border-radius: 5px;">Clock-In</button>&nbsp;
         <button style="border: 1px solid black; border-radius: 5px;">Github</button>&nbsp;
         <input type="submit" value="Test" style="border: 1px solid black; border-radius: 5px;">
         <div class="" style="position: relative; display: inline-block; top: 0; right: 2px;">
-          <img src="resources/images/calendar_icon.png" width="53" height="32">
+          <img src="resources/images/calendar_icon.png" width="41" height="41"
+            onclick="document.getElementById('app_calendar-container').style.display='block'; return false;"
+            style="cursor: pointer; margin: -6px 5px;">
         </div>
         <!-- button>Git</button>
         <button>GitHub</button>
@@ -752,7 +751,7 @@ echo $app_style; ?>
         <button>GitX</button>
         <button>GitAhead</button -->
       </div>
-      <div style="position: absolute; width: auto; top: 10px; right: 0; border: 1px dashed green; height: 20px;">
+      <div style="position: absolute; width: auto; top: 5px; right: 0; border: 1px dashed green; height: 20px;">
         <div id="clockTime" style="padding-right: 35px; background-color: rgba(255, 255, 255, 0.5); text-align: left;">
           <a href="#" onclick="document.getElementById('app_calendar-container').style.display='block';"><i
               style="background-color: white; color: #0078D7;"> Mon, 04:52:49 PM May 12 2025 </i></a>
@@ -1150,7 +1149,7 @@ $(document).ready(function() {
 
     //makeDraggable('app_medication_log-container');
     makeDraggable('app_notes-container');
-    makeDraggable('app_calendar-container');
+    //makeDraggable('app_calendar-container');
     //makeDraggable('app_errors-container');
     makeDraggable('app_git-container');
     makeDraggable('app_ace_editor-container');

@@ -164,19 +164,20 @@ ob_start(); ?>
 
 <div id="app_composer-container"
   class="<?= defined('COMPOSER_VERSION') and __FILE__ == get_required_files()[0] || (isset($_GET['app']) && $_GET['app'] == 'composer') || (defined('COMPOSER') && !is_object(COMPOSER['json']) && count((array) COMPOSER) === 0) || version_compare(COMPOSER_LATEST, COMPOSER_VERSION, '>') != 0 && defined('APP_DEBUG') && APP_DEBUG ? 'selected' : '' ?>"
-  style="position: fixed; z-index: 1; width: 424px; background-color: rgba(255,255,255,0.8); padding: 10px;">
+  style="position: fixed; z-index: 1; width: 424px; background-color: rgba(255, 255, 255, 0.8); padding: 10px; display: block; left: 612px; top: 104px;">
 
   <div
     style="position: relative; margin: 0 auto; width: 404px; height: 324px; border: 3px dashed #6B4329; background-color: #FBF7F1;">
 
-    <div class="absolute ui-widget-header" id=""
-      style="position: absolute; display: inline-block; width: 100%; height: 25px; margin: -50px 0 25px 0; padding: 24px 0; border-bottom: 1px solid #000; z-index: 3;">
+    <div class="fixed ui-widget-header" id=""
+      style="position: fixed; display: inline-block; width: 404px; height: 25px; margin: -45px 0 25px 0; padding: 10px 0 10px 0; border-bottom: 1px solid #000; z-index: 3;">
       <label class="composer-home" style="cursor: pointer;">
-        <div class="absolute" style="position: relative; display: inline-block; top: 0; left: 0; margin-top: -5px;">
+        <div class="absolute"
+          style="position: relative; float: left; display: inline-block; top: 0; left: 0; margin-top: -5px;">
           <img src="resources/images/composer_icon.png" width="32" height="40" />
         </div>
       </label>
-      <div style="display: inline;">
+      <div style="display: inline; float: left; margin-top: 10px;">
         <span style="background-color: #B0B0B0; color: white;">Composer
           <a href="#" alt="Installed: <?= COMPOSER_VERSION; ?>"><?= (defined('COMPOSER_VERSION') && version_compare(COMPOSER_LATEST, COMPOSER_VERSION, '>') !== 0)
               ? highlightVersionDiff(COMPOSER_VERSION, COMPOSER_LATEST)
@@ -262,11 +263,11 @@ ob_start(); ?>
       </form>
     </div>
     <div class="absolute"
-      style="position: absolute; margin: 0px auto; text-align: center; height: 275px; width: 100%; background-repeat: no-repeat; <?= defined('COMPOSER_VERSION') and version_compare(COMPOSER_LATEST, COMPOSER_VERSION, '>') != 0 ? "background-image: url('https://editablegifs.com/gifs/gifs/fireworks-1/output.gif?egv=3258')" : '' ?> ;">
+      style="position: absolute; margin: 0px auto; text-align: center; height: 275px; width: 100%; background-repeat: no-repeat; <?= defined('COMPOSER_VERSION') and version_compare(COMPOSER_LATEST, COMPOSER_VERSION, '>') != 0 ? "background-image: url('https://cliply.co/wp-content/uploads/2021/09/CLIPLY_372109170_FREE_FIREWORKS_400.gif')" : '' ?> ;">
     </div>
 
     <div class="absolute"
-      style="position: absolute; top: 0; left: 0; right: 0; margin: 10px auto; opacity: 1.0; text-align: center; cursor: pointer; z-index: 1;">
+      style="position: absolute; top: 0; left: 0; right: 0; margin: 10px auto; opacity: 1.0; text-align: center; cursor: pointer; /*z-index: 1;*/">
       <img
         class="<?= defined('COMPOSER_VERSION') and version_compare(COMPOSER_LATEST, COMPOSER_VERSION, '>') != 0 ? 'composer-update' : 'composer-menu' ?>"
         src="resources/images/composer.fw.png" style="margin-top: 45px;" width="150" height="198" />

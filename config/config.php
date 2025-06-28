@@ -16,7 +16,7 @@ $isFile = function ($path) /*use (&$paths)*/ {
 };
 
 $isFile(APP_PATH . 'php.php') ?:
-  $isFile('config' . DIRECTORY_SEPARATOR . 'lang' . DIRECTORY_SEPARATOR . 'php.php') ?:
+  $isFile('config' . DIRECTORY_SEPARATOR . 'runtime' . DIRECTORY_SEPARATOR . 'php.php') ?:
   $isFile('php.php');
 
 // Check if the dd function exists

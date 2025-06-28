@@ -2,19 +2,41 @@
 
 !defined('APP_PATH') and define('APP_PATH', dirname(__DIR__) . DIRECTORY_SEPARATOR);
 
-if (isset($_ENV['PHP']['EXEC']) && $_ENV['PHP']['EXEC'] != '' && !defined('PHP_EXEC'))
-    switch (PHP_BINARY) {
-        case $_ENV['PHP']['EXEC']: // isset issue
-            define('PHP_EXEC', PHP_BINARY);
-            break;
-        default:
-            define('PHP_EXEC', $_ENV['PHP']['EXEC'] ?? stripos(PHP_OS, 'LIN') === 0 ? '/usr/bin/php' : dirname(__DIR__) . DIRECTORY_SEPARATOR . 'bin/psexec.exe -d C:\xampp\php\php.exe -f ');
-            break;
+// Define PHP_EXEC if not already defined
+if (!defined('PHP_EXEC')) {
+    define('PHP_EXEC', $_ENV['PHP']['EXEC'] ?? PHP_BINARY ?? '/usr/bin/php');
+}
+
+// Register PHP runner in the global runtime registry
+$GLOBALS['runtimes']['php'] = [
+    'name' => 'PHP',
+    'exec' => PHP_EXEC,
+    'file_ext' => 'php',
+    'args' => '-d display_errors=1',
+    'template' => "<?php\n\n%s\n",  // Optional: wrap code in a template
+    'run' => function (string $code, array $options = []) {
+        $exec = $options['exec'] ?? PHP_EXEC;
+        $args = $options['args'] ?? '-d display_errors=1';
+
+        // Create a temporary file
+        $tmpFile = tempnam(sys_get_temp_dir(), 'code_') . '.php';
+        $wrappedCode = sprintf($options['template'] ?? "<?php\n\n%s\n", $code);
+        file_put_contents($tmpFile, $wrappedCode);
+
+        // Build and run command
+        $cmd = escapeshellcmd("$exec $args " . escapeshellarg($tmpFile));
+        $output = shell_exec($cmd);
+
+        // Optionally clean up
+        if (empty($options['keep_file'])) {
+            unlink($tmpFile);
+        }
+
+        return $output;
     }
+];
 
-if (!defined('PHP_EXEC'))
-    define('PHP_EXEC', stripos(PHP_OS, 'LIN') === 0 ? '/usr/bin/php' : dirname(__DIR__) . DIRECTORY_SEPARATOR . 'bin/psexec.exe -d C:\xampp\php\php.exe -f ');
-
+/*
 if (__FILE__ == get_required_files()[0] && __FILE__ == realpath($_SERVER["SCRIPT_FILENAME"]))
     if ($path = basename(dirname(get_required_files()[0])) == 'public') { // (basename(getcwd())
         chdir('../');
@@ -27,10 +49,6 @@ if (__FILE__ == get_required_files()[0] && __FILE__ == realpath($_SERVER["SCRIPT
 else
     require_once APP_PATH . 'bootstrap.php';
 
-require_once APP_PATH . 'config' . DIRECTORY_SEPARATOR . 'functions.php';
-//require_once APP_PATH . 'config' . DIRECTORY_SEPARATOR . 'constants.php'; // This is not needed, constants are already defined below
-
-
 require_once APP_PATH . 'config' . DIRECTORY_SEPARATOR . 'constants.env.php';
 require_once APP_PATH . 'config' . DIRECTORY_SEPARATOR . 'constants.paths.php';
 require_once APP_PATH . 'config' . DIRECTORY_SEPARATOR . 'constants.runtime.php';
@@ -40,6 +58,19 @@ require_once APP_PATH . 'config' . DIRECTORY_SEPARATOR . 'constants.url.php';
 require_once APP_PATH . 'config' . DIRECTORY_SEPARATOR . 'constants.app.php';
 //require_once APP_PATH . 'config' . DIRECTORY_SEPARATOR . 'constants.client.php';
 //require_once APP_PATH . 'config' . DIRECTORY_SEPARATOR . 'constants.project.php';
+
+require_once APP_PATH . 'config' . DIRECTORY_SEPARATOR . 'functions.php';
+require_once APP_PATH . 'config' . DIRECTORY_SEPARATOR . 'config.php';
+//require_once APP_PATH . 'config' . DIRECTORY_SEPARATOR . 'constants.php'; // This is not needed, constants are already defined below */
+
+if (!defined('APP_BOOTSTRAPPED')) {
+    //require_once APP_PATH . 'config' . DIRECTORY_SEPARATOR . 'constants.env.php';
+    //require_once APP_PATH . 'config' . DIRECTORY_SEPARATOR . 'constants.paths.php';
+    //require_once APP_PATH . 'config' . DIRECTORY_SEPARATOR . 'constants.runtime.php';
+    //require_once APP_PATH . 'config' . DIRECTORY_SEPARATOR . 'constants.url.php';
+    //require_once APP_PATH . 'config' . DIRECTORY_SEPARATOR . 'constants.app.php';
+    require_once APP_PATH . 'bootstrap.php';
+}
 
 file_put_contents(
     APP_PATH . '.env.json',
@@ -53,7 +84,6 @@ file_put_contents(
 //require_once APP_PATH . 'config' . DIRECTORY_SEPARATOR . 'constants.backup.php';
 //require_once APP_PATH . 'config' . DIRECTORY_SEPARATOR . 'constants.php'; // This is not needed, constants are already defined above
 
-require_once APP_PATH . 'config' . DIRECTORY_SEPARATOR . 'config.php';
 //require_once APP_PATH . 'config' . DIRECTORY_SEPARATOR . 'autoload.php';
 
 !defined('APP_SELF') and define('APP_SELF', get_required_files()[0] ?? realpath($_SERVER["SCRIPT_FILENAME"])); /*__FILE__*/
@@ -61,8 +91,10 @@ require_once APP_PATH . 'config' . DIRECTORY_SEPARATOR . 'config.php';
 
 $previousFilename = '';
 
+// 0.381 seconds
+
 // Handle the 'php' app configuration
-$dirs = [APP_PATH . 'config' . DIRECTORY_SEPARATOR . 'lang' . DIRECTORY_SEPARATOR . 'php.php'];
+$dirs = [APP_PATH . 'config' . DIRECTORY_SEPARATOR . 'runtime' . DIRECTORY_SEPARATOR . 'php.php'];  // pre-load?
 
 // Handle the 'git' app configuration
 !isset($_GET['app']) || $_GET['app'] != 'git' ?:
@@ -81,7 +113,7 @@ $dirs = [APP_PATH . 'config' . DIRECTORY_SEPARATOR . 'lang' . DIRECTORY_SEPARATO
         $dirs,
         [
             (!file_exists($include = APP_PATH . APP_BASE['config'] . 'composer.php') && !is_file($include) ?: $include),
-            (!file_exists($include = APP_PATH . APP_BASE['vendor'] . 'autoload.php') && !is_file($include) ?: $include),
+            (!file_exists($include = APP_PATH . APP_ROOT . APP_BASE['vendor'] . 'autoload.php') && !is_file($include) ?: $include),
         ]
     );
 
@@ -121,7 +153,6 @@ if (APP_SELF != PATH_PUBLIC) {
         return strcmp(basename($a), basename($b));
     });
 }
-
 
 //dd($dirs, false);
 foreach ($dirs as $includeFile) {
@@ -184,6 +215,8 @@ usort($paths, function ($a, $b) {
     return strcmp(basename($a), basename($b));
 });
 
+// 0.242 secs
+
 // Require each file in $paths
 foreach ($paths as $path) {
     if ($resolvedPath = realpath($path)) {
@@ -193,69 +226,89 @@ foreach ($paths as $path) {
     }
 }
 
-if (isset($_SERVER['REQUEST_METHOD']) && $_SERVER['REQUEST_METHOD'] == 'POST')
-    if (isset($_POST['cmd']) && $_POST['cmd'] != '')
-        if (preg_match('/^php\s*(:?.*)/i', $_POST['cmd'], $match)) {
-            if (preg_match('/^php\s+(?!(-r))/i', $_POST['cmd'])) {
-                $match[1] = trim($match[1], '"');
-                $output[] = eval ($match[1] . (substr($match[1], -1) != ';' ? ';' : ''));
-            } else if (preg_match('/^php\s+(?:(-r))\s+(:?(.*))/i', $_POST['cmd'], $match)) {
-                $match[2] = trim($match[2], '"');
-                $_POST['cmd'] = 'php -r "' . $match[2] . (substr($match[2], -1) != ';' ? ';' : '') . '"';
+// 0.249 secs
 
-                if (!isset($_SERVER['SOCKET']) || !$_SERVER['SOCKET'])
-                    exec($_POST['cmd'], $output);
-                else {
-                    $errors['server-1'] = "Connected to Server: " . SERVER_HOST . ':' . SERVER_PORT . "\n";
 
-                    // Send a message to the server
-                    $errors['server-2'] = 'Client request: ' . $message = "cmd: " . $_POST['cmd'] . "\n";
+//$output = run_code($runtime, $code);
+//echo "<pre>$output</pre>";
 
-                    fwrite($_SERVER['SOCKET'], $message);
-                    $output[] = $_POST['cmd'] . ': ';
-                    // Read response from the server
-                    while (!feof($_SERVER['SOCKET'])) {
-                        $response = fgets($_SERVER['SOCKET'], 1024);
-                        $errors['server-3'] = "Server responce: $response\n";
-                        if (isset($output[end($output)]))
-                            $output[end($output)] .= trim($response);
-                        //if (!empty($response)) break;
-                    }
-                }
-                //$output[] = $_POST['cmd'];
-            } else {
-                $_POST['cmd'] = 'php -v';
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && !empty($_POST['cmd'])) {
+    $cmd = trim($_POST['cmd']);
+    $output = [];
 
-                exec($_POST['cmd'], $output);
+
+    //dd(APP_QUERY);
+    require_once APP_PATH . 'app' . DIRECTORY_SEPARATOR . 'directory.php';
+
+    // Match: php <inline code>  (not -r)
+    if (preg_match('/^php\s+(?!-r)(.*)$/i', $cmd, $match)) {
+        $code = rtrim(trim($match[1], "\"'"));
+        if (substr($code, -1) !== ';')
+            $code .= ';';
+
+
+        $runtime = $_POST['runtime'] ?? 'php';
+        $output[] = run_code($runtime, $code); // $output[] = eval ($match[1] . (substr($match[1], -1) != ';' ? ';' : ''));
+
+        // Fallback to eval if no callable runtime found
+        try {
+            // Sanitize/normalize code to end with semicolon
+            $code = rtrim($code);
+            if ($code !== '' && substr($code, -1) !== ';') {
+                $code .= ';';
             }
+            // Use eval to execute the code
+            $output[] = eval ($code);
 
-            if (preg_match('/^hello/i', $_POST['cmd'], $match)) {
-                dd('test');
-                $output[] = shell_exec('./hello');
-            }
-
-
-
-            if (isset($output) && is_array($output)) {
-                switch (count($output)) {
-                    case 1:
-                        echo /*(isset($match[1]) ? $match[1] : 'PHP') . ' >>> ' . */ join("\n... <<< ", $output);
-                        break;
-                    default:
-                        echo join("\n", $output);
-                        break;
-                }
-            }
-
-            Shutdown::setEnabled(true)->setShutdownMessage(function () {
-                getcwd();
-            })->shutdown();
-        } else {
-            //require_once 'git.php';
-            //$_ENV['COMPOSER']['AUTOLOAD'] = false;
-            //require_once 'composer.php';
+        } catch (Throwable $e) {
+            return "Error: eval failed — " . $e->getMessage();
         }
 
+        // ***   Match: php -r "<code>"   ****
+    } elseif (preg_match('/^php\s+-r\s+["\']?(.*?)["\']?$/i', $cmd, $match)) {
+        $inlineCode = rtrim(trim($match[1]), ';') . ';';
+        $cmdFormatted = "php -r \"$inlineCode\"";
+
+        if (!isset($_SERVER['SOCKET']) || !$_SERVER['SOCKET']) {
+            exec($cmdFormatted, $output);
+        } else {
+            $message = "cmd: $cmdFormatted\n";
+            $errors['server-1'] = "Connected to Server: " . SERVER_HOST . ':' . SERVER_PORT;
+            $errors['server-2'] = "Client request: $message";
+
+            fwrite($_SERVER['SOCKET'], $message);
+            $output[] = "$cmdFormatted: ";
+
+            while (!feof($_SERVER['SOCKET'])) {
+                $response = fgets($_SERVER['SOCKET'], 1024);
+                if (!empty($response)) {
+                    $errors['server-3'] = "Server response: $response";
+                    $output[count($output) - 1] .= trim($response);
+                }
+            }
+        }
+
+        // Match: hello
+    } elseif (preg_match('/^hello/i', $cmd)) {
+        $output[] = shell_exec('./hello');
+
+        // Fallback: php -v
+    } else {
+        exec('php -v', $output);
+    }
+    //dd($_POST);
+    // Output logic
+    if (!empty($output)) {
+        echo (count($output) === 1)
+            ? join("\n... <<< ", $output)
+            : join("\n", $output);
+    }
+
+    // Optional shutdown behavior
+    Shutdown::setEnabled(true)->setShutdownMessage(function () use ($output) {
+        //return var_export($output, true); // return getcwd(); // fallback to current working directory
+    })->shutdown();
+}
 
 /* else if (preg_match('/^composer\s+(:?(.*))/i', $_POST['cmd'], $match)) {
 
@@ -300,7 +353,7 @@ if (isset($_SERVER['REQUEST_METHOD']) && $_SERVER['REQUEST_METHOD'] == 'POST')
    // Read response from the server
    while (!feof($_SERVER['SOCKET'])) {
      $response = fgets($_SERVER['SOCKET'], 1024);
-       
+
      $errors['server-3'] = "Server responce: $response\n";
      if (isset($output[end($output)])) $output[end($output)] .= trim($response);
      else $output[1] .= trim($response);

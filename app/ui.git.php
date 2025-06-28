@@ -183,11 +183,12 @@ ob_start();
     <div class="absolute ui-widget-header"
       style="position: fixed; display: inline-block; width: 400px; height: 25px; margin: -50px 0 25px 0; padding: 24px 0; border-bottom: 1px solid #000; z-index: 3;">
       <label class="git-home" style="cursor: pointer;">
-        <div class="" style="position: relative; display: inline-block; top: 0; left: 0; margin-top: -5px;">
+        <div class=""
+          style="position: relative; float: left; display: inline-block; top: 0; left: 0; margin-top: -5px;">
           <img src="resources/images/git_icon.fw.png" width="32" height="32" />
         </div>
       </label>
-      <div style="display: inline;">
+      <div style="float: left; display: inline;">
         <span style="background-color: white; color: #F05033;">Git
           <?= (version_compare(GIT_LATEST, GIT_VERSION, '>') != 0 ? 'v' . substr(GIT_LATEST, 0, similar_text(GIT_LATEST, GIT_VERSION)) . '<span class="update" style="color: green; cursor: pointer;">' . substr(GIT_LATEST, similar_text(GIT_LATEST, GIT_VERSION)) . '</span>' : 'v' . GIT_VERSION) . ' '; ?></span><span
           style="background-color: #0078D7; color: white;"><code class="text-sm"
@@ -226,12 +227,12 @@ ob_start();
     </div>
 
     <div class="absolute"
-      style="position: absolute; top: 0; margin: 0px auto; text-align: center; height: 200px; width: 100%; background-repeat: no-repeat; <?= version_compare(GIT_LATEST, GIT_VERSION, '>') != 0 ? "background-image: url('https://editablegifs.com/gifs/gifs/fireworks-1/output.gif?egv=3258'); opacity: 0.2;" : '' ?> z-index: 1;">
+      style="position: absolute; top: 0; margin: 0px auto; text-align: center; height: 200px; width: 100%; background-repeat: no-repeat; <?= version_compare(GIT_LATEST, GIT_VERSION, '>') != 0 ? "background-image: url('https://cliply.co/wp-content/uploads/2021/09/CLIPLY_372109170_FREE_FIREWORKS_400.gif'); opacity: 0.2;" : '' ?> z-index: 1;">
     </div>
     <div
-      style="position: absolute; top: 0; left: 0; right: 0; margin: 10px auto; opacity: 1.0; text-align: center; cursor: pointer; z-index: 1; ">
+      style="position: absolute; top: 0; left: 0; right: 0; margin: 10px auto; opacity: 1.0; text-align: center; cursor: pointer; /*z-index: 1;*/ ">
       <img class="<?= version_compare(GIT_LATEST, GIT_VERSION, '>') != 0 ? 'git-menu' : 'git-update' ?>"
-        src="resources/images/git_logo.gif<?= /*.fw.png*/ NULL; ?>" style="" width="229" height="96" />
+        src="resources/images/git_logo.gif<?= /*.fw.png*/ NULL; ?>" style="" width="229" height="300" />
 
     </div>
     <div class="absolute" style="position: absolute; bottom: 24px; left: 0; right: 0; width: 100%; text-align: center;">
@@ -347,7 +348,7 @@ ob_start();
               <option value="commit">commit</option>
             </select>
           </div>
-          <div style="display: inline-block; width: 33%; padding-top: 2px;">
+          <div style="display: inline-block; width: 14%; padding-top: 2px;">
             <form id="app_git-cmd-selected" method="GET">
               <button type="submit"><img src="resources/images/git_icon_selected.fw.png" width="44" height="29"
                   style="border: 1px dashed #F05033;" /></button>

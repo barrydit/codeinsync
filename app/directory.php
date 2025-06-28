@@ -155,13 +155,13 @@ left: calc(50% - 265px); /* 1207 / 2 */ /*transform: translate(-50%, -50%);*/ bo
 
     // Static prefix (projects/clients)
     $static = implode('/', array_slice($parts, 0, 2));
-    $staticPath = $base . '/' . $static;
+    $staticPath = "$base/$static";
 
     $segments[] = '[ <a href="' . /* basename(__FILE__) .*/ '?client=" onclick="handleClick(event, \'' . basename($static) . '/\')">' . '(projects/)' . basename($static) . '</a> ]';
 
     // Dynamic client/domain part
     $dynamic = implode('/', array_slice($parts, 2));
-    $finalPath = $staticPath . '/' . $dynamic;
+    $finalPath = "$staticPath/$dynamic";
 
     $segments[] = '[ <a href="#" class="breadcrumb" data-path="' . $finalPath . '">' . $dynamic . '/</a> ]';
 
@@ -596,14 +596,14 @@ left: calc(50% - 265px); /* 1207 / 2 */ /*transform: translate(-50%, -50%);*/ bo
         usort($paths, function ($a, $b) {
             $aIsDir = is_dir($a);
             $bIsDir = is_dir($b);
-            
+
             // Directories go first, then files
             if ($aIsDir && !$bIsDir) {
                 return -1;
             } elseif (!$aIsDir && $bIsDir) {
                 return 1;
             }
-        
+
             // If both are directories or both are files, sort alphabetically
             return strcasecmp($a, $b);
         });
@@ -830,15 +830,15 @@ left: calc(50% - 265px); /* 1207 / 2 */ /*transform: translate(-50%, -50%);*/ bo
                                     if (!empty($_GET['domain'])) {
                                         $relativePath = str_replace($_GET['domain'] . '/', '', $relativePath);
                                     }
-                                    
+
                                     // Constructing URL parameters
                                     $clientParam = isset($_GET['client']) ? 'client=' . $_GET['client'] . '&' : '';
                                     $domainParam = isset($_GET['domain']) ? 'domain=' . $_GET['domain'] . '&' : '';
                                     $pathParam = "path=$relativePath";
-                                    
+
                                     // Final URL without including the domain in the path
                                     $url = "?$clientParam$domainParam$pathParam";
-                                    
+
                                     // Render link
                                     echo '<a href="' . htmlspecialchars($url) . '" onclick="handleClick(event, \'' . $relativePath . '/\')">Link Text</a>'
 
@@ -1155,7 +1155,7 @@ left: calc(50% - 265px); /* 1207 / 2 */ /*transform: translate(-50%, -50%);*/ bo
                 //if (is_file($include = APP_PATH . APP_ROOT . APP_BASE['vendor'] . 'autoload.php'))
                 //if (isset($_ENV['COMPOSER']['AUTOLOAD']) && (bool) $_ENV['COMPOSER']['AUTOLOAD'] === TRUE)
                 //  require_once $include;
-
+  
                 isset($tableGen) and $tableValue = $tableGen();
                 ob_end_clean();
                 return $tableValue ?? ''; // $app['directory']['body'];
@@ -1171,10 +1171,10 @@ left: calc(50% - 265px); /* 1207 / 2 */ /*transform: translate(-50%, -50%);*/ bo
               if ($path = realpath(APP_PATH . APP_ROOT . rtrim(trim($match[1]), '/'))) {
                 // Define the root directory you don't want to go past
                 $root_dir = realpath(APP_PATH . APP_ROOT);
-          
+
                 // Resolve the parent directory path
                 $parent_dir = realpath("$path/../");
-          
+
                 // Check if the parent directory is within the allowed root
                 if (strpos($parent_dir, $root_dir) === 0 && strlen($parent_dir) >= strlen($root_dir)) {
                   // Proceed with your existing logic if the path is valid
@@ -1183,7 +1183,7 @@ left: calc(50% - 265px); /* 1207 / 2 */ /*transform: translate(-50%, -50%);*/ bo
                     if (realpath($_GET['path'] = preg_replace('/' . preg_quote(APP_PATH . APP_ROOT, '/') . '/', '', $path)) == realpath(APP_PATH . APP_ROOT))
                       $_GET['path'] = '';
                     ob_start();
-                    require 'app.directory.php';
+                    require 'app/directory.php';
                     $tableValue = $tableGen();
                     ob_end_clean();
                     return $tableValue; // $app['directory']['body'];

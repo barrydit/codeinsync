@@ -9,6 +9,11 @@
   is_string(BASE_PATH) ?: $errors['BASE_PATH'] = "BASE_PATH is not a valid string value.\n"; // APP_PATH
 define('CONFIG_PATH', BASE_PATH . 'config' . DIRECTORY_SEPARATOR);
 
+if (!defined('APP_BOOTSTRAPPED')) {
+  define('APP_BOOTSTRAPPED', true);
+  // Load constants and initialize the app
+}
+
 // CONFIG_PATH, PUBLIC_PATH, STORAGE_PATH, VENDOR_PATH, VIEW_PATH, CACHE_PATH, LOG_PATH, TEMP_PATH, UPLOAD_PATH, ASSETS_PATH, APP_PATH, BASE_PATH, ROOT_PATH, SRC_PATH, TEST_PATH, WWW_PATH
 /*
 !defined('DOMAIN_EXPR') and 
@@ -45,7 +50,6 @@ function resolveProject($dirs, $requestedProject = null)
         return basename($dir);
       }
     }
-
 
   // If no domain requested and exactly one directory exists, use it
   if (count($dirs) === 1)
@@ -141,14 +145,25 @@ switch (basename(__DIR__)) { // getcwd()
     break;
 }
 
-require_once 'config' . DIRECTORY_SEPARATOR . 'lang' . DIRECTORY_SEPARATOR . 'php.php'; // environment-level PHP config
 require_once 'config' . DIRECTORY_SEPARATOR . 'functions.php';
-//require_once 'config' . DIRECTORY_SEPARATOR . 'constants.php'; // Global constants
-require_once 'config' . DIRECTORY_SEPARATOR . 'constants.env.php';
+
+require_once 'config' . DIRECTORY_SEPARATOR . 'constants.env.php'; // 'constants.php'; // Global constants
 require_once 'config' . DIRECTORY_SEPARATOR . 'constants.paths.php';
 require_once 'config' . DIRECTORY_SEPARATOR . 'constants.runtime.php';
 require_once 'config' . DIRECTORY_SEPARATOR . 'constants.url.php';
 require_once 'config' . DIRECTORY_SEPARATOR . 'constants.app.php';
+
+// Check if the config file exists in the expected location
+// If the config file is not found, it will die with a var_dump of the path
+if ($path = realpath(APP_PATH . 'config' . DIRECTORY_SEPARATOR . 'config.php'))
+  require_once $path; // Load the config file if found  project settings
+// elseif (is_file('config.php')) $path = $config;
+else
+  die(var_dump($path));
+
+require_once 'config' . DIRECTORY_SEPARATOR . 'runtime' . DIRECTORY_SEPARATOR . 'php.php'; // environment-level PHP config
+
+// 0.257 seconds
 
 //require_once 'config' . DIRECTORY_SEPARATOR . 'autoload.php'; // Autoload configuration
 /*
@@ -212,14 +227,6 @@ require_once 'config' . DIRECTORY_SEPARATOR . 'autoload_system_extensions.php';
 */
 
 //require_once 'vendor' . DIRECTORY_SEPARATOR . 'autoload.php'; // Composer autoload
-
-// Check if the config file exists in the expected location
-// If the config file is not found, it will die with a var_dump of the path
-if ($path = $config = realpath(APP_PATH . 'config' . DIRECTORY_SEPARATOR . 'config.php'))
-  require_once $path; // Load the config file if found  project settings
-// elseif (is_file('config.php')) $path = $config;
-else
-  die(var_dump($path));
 
 
 /*

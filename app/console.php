@@ -93,10 +93,10 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     /*
     Error: To https://github.com/barrydit/codeinsync.git
      5fbad5b..29f689e  main -> main
-     
+
     ^To\s(?:[a-z]+\:\/\/)?(?:[a-z0-9\\-]+\.)+[a-z]{2,6}(?:\/\S*)?
-     
-     
+
+
     */
     // 
 
@@ -289,7 +289,7 @@ bottom : 50px;
 left : 50%;
 transform : translateX(-50%);
 width : auto;
-height : 45px;
+/* height : 45px; */
 background-color : #FFA6A6; /* rgba(255, 0, 0, 0.35) */
 color : white;
 text-align : center;
@@ -519,7 +519,8 @@ ob_start(); ?>
           foreach ($output['command'] as $command) {
             if (!empty($output['results'])) {
               echo $shell_prompt . $command;
-              foreach ($output['results'] as $result) foreach ($result as $line) {
+              foreach ($output['results'] as $result)
+                foreach ($result as $line) {
                   echo "$line\n";
                 }
             }
@@ -688,7 +689,7 @@ ob_start(); ?>
         consoleContainer.style.top = '';
         consoleContainer.style.left = '50%';
         consoleContainer.style.right = '';
-        consoleContainer.style.bottom = '50px';
+        consoleContainer.style.bottom = '0';
         consoleContainer.style.transform = 'translate(-50%, -50%)';
         consoleContainer.style.textAlign = 'center';
         consoleContainer.style.zIndex = '999';

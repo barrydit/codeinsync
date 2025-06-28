@@ -109,10 +109,11 @@ if (defined('GIT_EXEC'))
 
 ob_start(); ?>
 #app_calendar-container {
-width : 326px;
-height : 450px;
-/* border: 1px solid black; */
 position : absolute;
+width : 405px;
+height : calc(100% + 5px);
+/* border: 1px solid black; */
+
 top : 12px;
 right : 0;
 z-index : 1;
@@ -266,15 +267,16 @@ ob_start(); ?>
 
 <div id="app_calendar-container"
     class="<?= __FILE__ == get_required_files()[0] || (isset($_GET['app']) && $_GET['app'] == 'errors') && !isset($_GET['path']) ? 'selected' : '' ?>"
-    style="position: fixed; display: <?= __FILE__ == get_required_files()[0] || (isset($_GET['app']) && $_GET['app'] == 'errors') ? 'block' : 'block' ?>; overflow: hidden;">
+    style="position: absolute; display: <?= __FILE__ == get_required_files()[0] || (isset($_GET['app']) && $_GET['app'] == 'errors') ? 'block' : 'block' ?>; overflow: hidden; right: 0; top: 50px;">
     <div class="ui-widget-header"
-        style="position: relative; display: inline-block; width: 100%; cursor: move; border-bottom: 1px solid #000;background-color: #FFF;">
+        style="position: relative; display: inline-block; width: 100%; cursor: move; border-bottom: 1px solid #000;background-color: #FFF; height: 40px;">
         <label class="calendar-home" style="cursor: pointer;">
             <div class="" style="position: relative; display: inline-block; top: 0; left: 0;">
-                <img src="resources/images/calendar_icon.png" width="53" height="32" />
+                <img src="resources/images/calendar_icon.png" width="41" height="41" />
             </div>
         </label>
-        <div style="display: inline;">
+        <div
+            style="position: absolute; top: 11px; left: 45px; display: inline-block; text-align: center; display: inline;">
             <span style="background-color: #38B1FF; color: #FFF; margin-top: 10px;">PHP Calendar
                 <?= /* (version_compare(NPM_LATEST, NPM_VERSION, '>') != 0 ? 'v'.substr(NPM_LATEST, 0, similar_text(NPM_LATEST, NPM_VERSION)) . '<span class="update" style="color: green; cursor: pointer;">' . substr(NPM_LATEST, similar_text(NPM_LATEST, NPM_VERSION)) . '</span>' : 'v'.NPM_VERSION ); */ NULL; ?></span>
             <span style="background-color: #0078D7; color: white;"><code id="AceEditorVersionBox" class="text-sm"
@@ -293,7 +295,7 @@ ob_start(); ?>
 
     <!-- form id="" name="ace_form"
         style="position: relative; width: 100%; height: 100%; border: 3px dashed #38B1FF; background-color: rgba(56,177,255,0.6);"
-        action="app.directory.php<?= /*basename(__FILE__) . */ '?' . http_build_query(APP_QUERY + ['app' => 'errors']) . (defined('APP_ENV') && APP_ENV == 'development' ? '#!' : '') /* $c_or_p . '=' . (empty($_GET[$c_or_p]) ? '' : $$c_or_p->name) . '&amp;app=composer' */ ?>"
+        action="app/directory.php<?= /*basename(__FILE__) . */ '?' . http_build_query(APP_QUERY + ['app' => 'errors']) . (defined('APP_ENV') && APP_ENV == 'development' ? '#!' : '') /* $c_or_p . '=' . (empty($_GET[$c_or_p]) ? '' : $$c_or_p->name) . '&amp;app=composer' */ ?>"
         method="POST" onsubmit="syncAceContent()">
         <input type="hidden" name="ace_path" value="<?= /* APP_PATH . APP_BASE['public']; */ NULL; ?>" / -->
 
@@ -392,9 +394,9 @@ else $count++;
                                     <img src="resources/images/medication_log_icon.png" width="53" height="32" />
                                 </div>
                             </label>
-                            <div style="display: inline;">
-                                <span style="background-color: #38B1FF; color: #FFF; margin-top: 10px;">Medication
-                                    log
+                            <div
+                                style="position: absolute; top: 11px; left: 45px; display: inline-block; text-align: center; display: inline;">
+                                <span style="background-color: #38B1FF; color: #FFF; margin-top: 10px;">Medication log
                                     <?= /* (version_compare(NPM_LATEST, NPM_VERSION, '>') != 0 ? 'v'.substr(NPM_LATEST, 0, similar_text(NPM_LATEST, NPM_VERSION)) . '<span class="update" style="color: green; cursor: pointer;">' . substr(NPM_LATEST, similar_text(NPM_LATEST, NPM_VERSION)) . '</span>' : 'v'.NPM_VERSION ); */ NULL; ?></span>
                                 <span style="background-color: #0078D7; color: white;"><code id="AceEditorVersionBox"
                                         class="text-sm" style="background-color: white; color: #0078D7;"></code></span>
@@ -501,10 +503,10 @@ if ($path)
                             $prevMonth = (clone $currentDate)->modify('-1 month')->format('F');
 
                             $calendar = "<table border='1' cellpadding='5' cellspacing='0'>";
-                            $calendar .= '<tr><th colspan="7"><div class="float-left w-auto">
+                            $calendar .= '<tr><th colspan="7"><div class="float-left w-auto" style="display: inline;">
                     <a class="text-sm" id="app_calendar-frameMenuPrev"
-                        href="' . (!empty(APP_QUERY) ? '?' . http_build_query(APP_QUERY) : '') . (defined('APP_ENV') && APP_ENV === 'development' ? '#!' : '#') . '">&lt; ' . $prevMonth . '</a></div>' . date('F Y', $firstDayOfMonth) .
-                                '<div class="float-right w-auto">
+                        href="' . (!empty(APP_QUERY) ? '?' . http_build_query(APP_QUERY) : '') . (defined('APP_ENV') && APP_ENV === 'development' ? '#!' : '#') . '">&lt; ' . $prevMonth . '</a> | </div>' . date('F Y', $firstDayOfMonth) .
+                                '<div class="float-right w-auto" style="display: inline;"> | 
                     <a class="text-sm" id="app_calendar-frameMenuNext"
                         href="' . (!empty(APP_QUERY) ? '?' . http_build_query(APP_QUERY) : '') . (defined('APP_ENV') && APP_ENV === 'development' ? '#!' : '#') . '">' . $nextMonth . ' &gt;</a></div></th></tr>';
 

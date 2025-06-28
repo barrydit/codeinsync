@@ -10,7 +10,7 @@ declare(/*strict_types=1,*/ ticks=1); // First Line Only!
 
 file_put_contents(PID_FILE, $pid = getmypid());
 
-require_once 'config/lang/php.php';
+require_once 'config/runtime/php.php';
 
 ini_set('error_log', APP_PATH . 'server.log');
 ini_set('log_errors', 'true');
