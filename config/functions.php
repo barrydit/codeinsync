@@ -807,56 +807,57 @@ function resolve_host_to_ip($host)
  * @return bool True if the connection is successful, false otherwise.
  */
 
-function check_internet_connection($host = '8.8.8.8'): bool
+function check_internet_connection(?string $host = null): bool
 {
-  $status = null;
+  // Default to a reliable web host
+  $host = $host ?: 'www.google.com';
 
-  // Use just the host/IP if a full URL is passed
+  // Normalize if URL
   if (filter_var($host, FILTER_VALIDATE_URL)) {
     $host = parse_url($host, PHP_URL_HOST);
   }
 
-  // Platform-specific ping
+  $port = 80;
+  $timeout = 2;
+  $status = false;
+
+  // Windows: use ping
   if (stripos(PHP_OS, 'WIN') === 0) {
-    exec("ping -n 1 -w 1000 " . escapeshellarg($host), $output, $status);
+    exec("ping -n 1 -w 1000 " . escapeshellarg($host), $output, $exitCode);
+    $status = ($exitCode === 0);
   } else {
-    // $pingPath = is_file('/usr/bin/ping') ? '/usr/bin/ping' : 'ping';
-    // exec(/*APP_SUDO .*/ "$pingPath -c 1 -W 1 " . escapeshellarg($host), $output, $status);
-    $fp = @fsockopen($host, 80, $errno, $errstr, 2);
-    if ($fp) {
-      fclose($fp);
-      //echo "$host is reachable via TCP port 80";
-      $status = 0; // Connection successful
-    } else {
-      //echo "$host is not reachable ($errstr)";
-      $status = 1; // Connection failed
-    }
-  }
-
-  // Optional fallback
-  if ($status !== 0) {
-    if (resolve_host_to_ip('google.com') !== false) {
-      //define('APP_IS_ONLINE', true);
-      return false; // If we can resolve google.com, assume online
-    } else
-      return true;
-
-    $connection = @fsockopen('www.google.com', 80, $errno, $errstr, 3);
+    // Unix-like: use stream_socket_client on TCP port 80
+    $connection = @stream_socket_client("tcp://$host:$port", $errno, $errstr, $timeout);
     if ($connection) {
       fclose($connection);
-      $status = 0;
-    } else {
-      $status = 1; // No internet connection
-      $errors['APP_NO_INTERNET_CONNECTION'] = 'No internet connection.';
+      $status = true;
     }
   }
 
-  // Optionally define a constant once determined
-  // if (!defined('APP_IS_ONLINE')) define('APP_IS_ONLINE', $status === 0);
+  // Fallback attempts
+  if (!$status) {
+    // Try resolving DNS first
+    if (resolve_host_to_ip('google.com') !== false) {
+      return true;
+    }
 
-  return $status === 0;
+    // Try UDP DNS-style probe (Google DNS)
+    $dnsConnection = @stream_socket_client("udp://8.8.8.8:53", $errno, $errstr, $timeout);
+    if ($dnsConnection) {
+      fclose($dnsConnection);
+      return true;
+    }
+
+    // Final TCP fallback
+    $fallback = @stream_socket_client("tcp://www.google.com:80", $errno, $errstr, 3);
+    if ($fallback) {
+      fclose($fallback);
+      $status = true;
+    }
+  }
+
+  return $status;
 }
-
 
 // die(var_dump(check_internet_connection()) ? true : false);
 
@@ -1251,3 +1252,17 @@ function getElementsByClass(&$parentNode, $tagName, $className)
 
   return $nodes;
 }
+
+function run_code(?string $runtime, string $code, array $options = []): string
+{
+  $runtime ??= 'php';
+
+  // Check if the runtime exists and has a valid 'run' callable
+  if (isset($GLOBALS['runtimes'][$runtime]) && is_callable($GLOBALS['runtimes'][$runtime]['run'])) {
+    $runner = $GLOBALS['runtimes'][$runtime];
+    $result = $runner['run']($code, $options);
+    return (string) ($result ?? '');
+  }
+
+}
+

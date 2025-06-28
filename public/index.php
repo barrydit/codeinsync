@@ -2,6 +2,8 @@
 
 require_once dirname(__DIR__, 1) . DIRECTORY_SEPARATOR . 'index.php';
 
+//require_once dirname(__DIR__, 1) . DIRECTORY_SEPARATOR . 'config/functions.php';
+
 $htaccess = <<<END
 # Enable Rewrite Engine
 RewriteEngine On
@@ -27,7 +29,7 @@ switch (APP_SELF) {
     require_once dirname(__DIR__, 1) . DIRECTORY_SEPARATOR . 'bootstrap.php';
     break;
   default:
-    if ($php = realpath(dirname(__DIR__, 1) . DIRECTORY_SEPARATOR . 'config' . DIRECTORY_SEPARATOR . 'lang' . DIRECTORY_SEPARATOR . 'php.php'))
+    if ($php = realpath(dirname(__DIR__, 1) . DIRECTORY_SEPARATOR . 'config' . DIRECTORY_SEPARATOR . 'runtime' . DIRECTORY_SEPARATOR . 'php.php'))
       require_once $php; // APP_PATH . 'index.php'
     else
       die(var_dump("$php was not found."));
@@ -37,9 +39,10 @@ if ($file = realpath(dirname(__DIR__, 1) . DIRECTORY_SEPARATOR . 'index.php'))
   require_once $file; // APP_PATH . 'index.php'
 
 
+//die(var_export($_GET, true));
+
 //dd($_ENV, false);
 
-require_once dirname(__DIR__, 1) . DIRECTORY_SEPARATOR . 'config' . DIRECTORY_SEPARATOR . 'auth.php';
 
 //dd(get_defined_constants(true)['user']);
 
@@ -307,3 +310,4 @@ if (/*APP_SELF === PATH_PUBLIC*/ dirname(APP_SELF) === dirname(PATH_PUBLIC)) {
   }
   // comment
 }
+

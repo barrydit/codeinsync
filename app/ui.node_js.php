@@ -49,15 +49,15 @@ ob_start(); ?>
   style="z-index: 1; width: 424px; background-color: rgba(255,255,255,0.8); padding: 10px;">
   <div
     style="position: relative; margin: 0 auto; width: 404px; height: 306px; border: 3px dashed #DD0000; background-color: #FBF7F1;">
-    <div class="absolute ui-widget-header"
-      style="position: absolute; display: inline-block; width: 100%; height: 25px; margin: -50px 0 25px 0; padding: 24px 0; border-bottom: 1px solid #000; z-index: 3;">
+    <div class="fixed ui-widget-header"
+      style="position: fixed; display: inline-block; width: 404px; height: 0; margin: -48px 0 25px 0; padding: 24px 0; border-bottom: 1px solid #000; z-index: 3;">
       <label class="npm-home" style="cursor: pointer;">
         <div class=""
-          style="position: relative; display: inline-block; top: 0; left: 0; background-color: rgba(255,255,255,0.8); margin-top: -5px;">
+          style="position: relative; float: left; display: inline-block; top: 0; left: 0; background-color: rgba(255,255,255,0.8); margin-top: -5px;">
           <img src="resources/images/node_js.gif" width="83" height="32" />
         </div>
       </label>
-      <div style="display: inline;">
+      <div style="display: inline; float: left;">
         <span style="background-color: white; color: #DD0000;">
           <?= /* (version_compare(NPM_LATEST, NPM_VERSION, '>') != 0 ? 'v'.substr(NPM_LATEST, 0, similar_text(NPM_LATEST, NPM_VERSION)) . '<span class="update" style="color: green; cursor: pointer;">' . substr(NPM_LATEST, similar_text(NPM_LATEST, NPM_VERSION)) . '</span>' : 'v'.NPM_VERSION ); */ NULL; ?></span>
         <span style="background-color: #0078D7; color: white;"><code class="text-sm"
@@ -97,7 +97,7 @@ ob_start(); ?>
     </div>
 
     <div class=""
-      style="position: absolute; top: 0; left: 0; right: 0; margin: 10px auto; opacity: 1.0; text-align: center; cursor: pointer; z-index: 1;">
+      style="position: absolute; top: 0; left: 0; right: 0; margin: 10px auto; opacity: 1.0; text-align: center; cursor: pointer; /*z-index: 1;*/">
       <img class="npm-menu" src="resources/images/node_npm.fw.png" style="margin-top: 45px;" width="150" height="198" />
     </div>
 
@@ -344,7 +344,7 @@ ob_start(); ?>
 
     <style type="text/tailwindcss">
       <?= $app['style']; ?>
-        </style>
+            </style>
   </head>
 
   <body>

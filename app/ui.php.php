@@ -182,12 +182,12 @@ ob_start(); ?>
     <div class="ui-widget-header"
         style="position: relative; display: inline-block; width: 100%; cursor: move; border-bottom: 1px solid #000;background-color: #FFF;">
         <label class="errors-home" style="cursor: pointer;">
-            <div class="" style="position: relative; display: inline-block; top: 0; left: 0;">
+            <div class="" style="position: relative; float: left; display: inline-block; top: 0; left: 0;">
                 <img src="resources/images/errors_icon.png" width="53" height="32" />
             </div>
         </label>
-        <div style="display: inline;">
-            <span style="background-color: #38B1FF; color: #FFF; margin-top: 10px;">PHP $errors
+        <div style="display: inline; float: left; margin-top: 14px;">
+            <span style="background-color: #38B1FF; color: #FFF;">PHP $errors
                 <?= /* (version_compare(NPM_LATEST, NPM_VERSION, '>') != 0 ? 'v'.substr(NPM_LATEST, 0, similar_text(NPM_LATEST, NPM_VERSION)) . '<span class="update" style="color: green; cursor: pointer;">' . substr(NPM_LATEST, similar_text(NPM_LATEST, NPM_VERSION)) . '</span>' : 'v'.NPM_VERSION ); */ NULL; ?></span>
             <span style="background-color: #0078D7; color: white;"><code id="AceEditorVersionBox" class="text-sm"
                     style="background-color: white; color: #0078D7;"></code></span>
@@ -305,29 +305,29 @@ else $count++;
                             echo "\n";
                         }
                     }
-/*
-$output = [];
+                    /*
+                    $output = [];
 
-if (!empty($errors)) {
-    foreach ($errors as $key => $value) {
-        $line = "\$errors['$key'] ";
+                    if (!empty($errors)) {
+                        foreach ($errors as $key => $value) {
+                            $line = "\$errors['$key'] ";
 
-        $line .= (
-            preg_match('/^ERROR_(LOG|PATH)$/', $key) || $key === 'COMPOSER-AutoloaderInit'
-            ? (preg_match('/^(ERROR_LOG|COMPOSER).*$/', $key) ? '' : '')
-            : '=> '
-        );
+                            $line .= (
+                                preg_match('/^ERROR_(LOG|PATH)$/', $key) || $key === 'COMPOSER-AutoloaderInit'
+                                ? (preg_match('/^(ERROR_LOG|COMPOSER).*$/', $key) ? '' : '')
+                                : '=> '
+                            );
 
-        $line .= is_string($value)
-            ? rtrim($value, " ")
-            : (is_array($value) ? json_encode($value) : (string) $value);
+                            $line .= is_string($value)
+                                ? rtrim($value, " ")
+                                : (is_array($value) ? json_encode($value) : (string) $value);
 
-        $output[] = $line;
-    }
-}
+                            $output[] = $line;
+                        }
+                    }
 
-echo htmlspecialchars(implode("\n", $output));
-*/
+                    echo htmlspecialchars(implode("\n", $output));
+                    */
                     ?></textarea>
                 </div>
             </div>

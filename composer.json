@@ -23,7 +23,7 @@
         "friendsofphp/php-cs-fixer": "^3.64.0",
         "phpunit/phpunit": "^10.5"
     },
-    "license": "WTFPL",
+    "license": "Unlicensed",
     "authors": [
         {
             "name": "Barry Dick",
@@ -42,13 +42,7 @@
     "autoload": {
         "psr-4": {
             "MyProject\\MyNamespace\\": "src/"
-        },
-        "classmap": [
-            "src/"
-        ],
-        "files": [
-            "src/testclass.php"
-        ]
+        }
     },
     "autoload-dev": {
         "MyProject\\MyNamespace\\Tests\\": "tests/"

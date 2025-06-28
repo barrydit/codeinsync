@@ -243,10 +243,7 @@ $dom->appendChild($elm);
 
 //echo 
 
-
-?>
-
-<?php ob_start(); ?>
+ob_start(); ?>
 <!DOCTYPE html>
 <html>
 

