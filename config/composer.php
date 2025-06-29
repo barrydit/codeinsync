@@ -534,11 +534,11 @@ putenv('PWD=' . APP_PATH . APP_ROOT);
 
 /*
   This section of code will need to correspond to a project
-  
+
     A project file will need to look for first, and then look for the applications' composer.json
-    
+
        Can a constant be a object, or does an object need to be able to write to itself ...
-     
+
        If !defined(COMPOSER_JSON) and define('COMPOSER_JSON', APP_PATH . '/composer.json');
 */
 
@@ -909,9 +909,9 @@ echo $composer_exec; ?> init --quiet --no-interaction
         if (!isset($_SERVER['SOCKET']) || !is_resource($_SERVER['SOCKET']) || empty($_SERVER['SOCKET'])) {
 
           //$proc = proc_open((stripos(PHP_OS, 'WIN') === 0 ? '' : /*APP_SUDO . '-u www-data '*/ '') . basename(COMPOSER_EXEC['bin']) . ' self-update', [["pipe", "r"], ["pipe", "w"], ["pipe", "w"]], $pipes);
-
+  
           //[$stdout, $stderr, $exitCode] = [stream_get_contents($pipes[1]), stream_get_contents($pipes[2]), proc_close($proc)];
-
+  
           if ($exitCode !== 0) {
             if (empty($stdout)) {
               if (!empty($stderr)) {
@@ -967,7 +967,7 @@ fclose($pipes[2]);
 */
       /*
         [$stdout, $stderr, $exitCode] = [stream_get_contents($pipes[1]), stream_get_contents($pipes[2]), proc_close($proc)];
-        
+
         if (empty($stdout)) {
           if (!empty($stderr))
             $errors['COMPOSER_UPDATE'] = $stderr;
@@ -1139,7 +1139,7 @@ fclose($pipes[2]);
                     $errors['COMPOSER-UPDATE'] = $stderr;
                 } else $errors['COMPOSER-UPDATE'] = $stdout;
             //else $debug['COMPOSER-UPDATE'] = '$stdout=' $stdout . "\n".  '$stderr = ' . $stderr;
-          
+
               (preg_match('/Composer is operating significantly slower than normal because you do not have the PHP curl extension enabled./m', $stdout))
                 and $errors['ext/curl'] = 'PHP cURL needs to be installed and enabled.';
       */
@@ -1524,12 +1524,14 @@ fclose($pipes[2]);
             }
         }
     */
-
-    //dd($_POST);
+    //dd(get_required_files());
+    //dd(get_defined_constants(true)['user']);
     if (isset($_SERVER['REQUEST_METHOD']) && $_SERVER['REQUEST_METHOD'] == 'POST') {
+
+      require_once APP_PATH . 'bootstrap.php';
       if (isset($_POST['composer']['autoload'])) {
         $_ENV['COMPOSER']['AUTOLOAD'] = $_POST['composer']['autoload'] === 'on' ? true : false;
-
+        //dd(get_required_files());
         Shutdown::setEnabled(false)->setShutdownMessage(fn() => header('Location: ' . APP_BASE_URL))->shutdown();
       }
 

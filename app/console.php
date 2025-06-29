@@ -491,7 +491,7 @@ ob_start(); ?>
             (auto)</button>
           <input id="app_console-auto_clear" type="checkbox" name="auto_clear" <?= $auto_clear ? 'checked="" ' : '' ?> />&nbsp;
         </div>
-        <form action="http://localhost/?path" method="post" style="float: right;">
+        <form action="http://localhost/?path" method="POST" style="float: right;">
           <div style="float: left; display: inline;">
             <button id="consoleSudo" class="text-xs" type="submit"
               style="border: 1px dashed #FFF; padding: 2px 2px; background-color: red;">sudo</button>
@@ -508,7 +508,7 @@ ob_start(); ?>
     </div>
     <button id="changePositionBtn" style="float: right; margin: 5px 10px 0 0;" type="submit">&#9650;</button>
     <textarea id="responseConsole" spellcheck="false" rows="14" cols="92" name="responseConsole"
-      style="font-family: Monospace;" readonly=""><?php
+      style="font-family: Monospace; overflow-y: auto;" readonly=""><?php
       //$errors->{'CONSOLE'}  = 'wtf';
       
       //dd($errors);
