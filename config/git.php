@@ -3,9 +3,8 @@ global $shell_prompt, $errors;
 /**/
 // https://techglimpse.com/git-push-github-token-based-passwordless/
 // git push https://<GITHUB_ACCESS_TOKEN>@github.com/<GITHUB_USERNAME>/<REPOSITORY_NAME>.git
-if ($path = realpath((basename(__DIR__) != 'config' ? NULL : __DIR__ . DIRECTORY_SEPARATOR) . 'constants.paths.php'))
-  require_once $path;
-
+//if ($path = realpath((basename(__DIR__) != 'config' ? NULL : __DIR__ . DIRECTORY_SEPARATOR) . 'constants.paths.php'))
+//  require_once $path;
 
 $gitconfig = <<<END
 [safe]
@@ -229,7 +228,7 @@ if (preg_match($pattern, $node[0]->nodeValue, $matches)) {
 //if (dirname(APP_SELF) == dirname(__DIR__) . DIRECTORY_SEPARATOR . 'public')
 //  if ($path = realpath(dirname(APP_SELF) . DIRECTORY_SEPARATOR . 'ui.git.php')) $app['html'] = require_once $path;
 
-if (isset($_SERVER['REQUEST_METHOD']) && $_SERVER['REQUEST_METHOD'] == 'POST')
+if (isset($_SERVER['REQUEST_METHOD']) && $_SERVER['REQUEST_METHOD'] === 'POST')
   if (isset($_POST['cmd']) && $_POST['cmd'] != '')
     if (preg_match('/^git\s*(:?.*)/i', $_POST['cmd'], $match)) {
       //(function() use ($path) {
@@ -318,23 +317,23 @@ END;
         } else if (preg_match('/^git\s+clone\s+(http(?:s)?:\/\/github\.com\/[\w.-]+\/[\w.-]+\.git)(?:\s*([\w.-]+))?/', $_POST['cmd'], $github_repo)) { // matches without token
           /*
                       if (realpath($github_repo[3])) $output[] = realpath($github_repo[3]);
-          
+
                       //$output[] = dd($github_repo);
                       if (!is_dir('.git')) exec((stripos(PHP_OS, 'WIN') === 0 ? '' : APP_SUDO) . 'git init', $output);
-          
+
                       exec('git branch -m master main', $output);
-          
+
                       //exec('git remote add origin ' . $github_repo[2], $output);
                       //...git remote set-url origin http://...@github.com/barrydit/
-          
+
                       exec((stripos(PHP_OS, 'WIN') === 0 ? '' : APP_SUDO)  . 'git config core.sparseCheckout true', $output);
-          
+
                       //touch('.git/info/sparse-checkout');
-          
+
                       file_put_contents('.git/info/sparse-checkout', '*'); /// exec('echo "*" >> .git/info/sparse-checkout', $output);
-          
+
                       exec((stripos(PHP_OS, 'WIN') === 0 ? '' : APP_SUDO) . 'git pull origin main', $output);
-          
+
                       //exec(APP_SUDO . ' git init', $output);
                       //$output[] = dd($output);
                     $output[] = 'This works ... ';
@@ -408,7 +407,7 @@ END;
       if (preg_match('/Your branch is up to date with \'origin\/main\'\./' /**nothing to commit, working tree clean/s'*/ , end($output))) {
         //echo "Repository is up-to-date.";
       } else {
-        echo "Repository has changes.";
+        echo "Repository has changes.\n";
       }
 
       if (isset($output) && is_array($output)) {

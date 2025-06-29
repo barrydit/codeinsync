@@ -181,7 +181,7 @@ ob_start();
     style="position: relative; margin: 0 auto; width: 404px; height: 306px; border: 3px dashed #F05033; background-color: #FBF7F1;">
 
     <div class="absolute ui-widget-header"
-      style="position: fixed; display: inline-block; width: 400px; height: 25px; margin: -50px 0 25px 0; padding: 24px 0; border-bottom: 1px solid #000; z-index: 3;">
+      style="position: fixed; display: inline-block; width: 400px; height: 0; margin: -50px 0 0 0; padding: 24px 0; border-bottom: 1px solid #000; z-index: 3;">
       <label class="git-home" style="cursor: pointer;">
         <div class=""
           style="position: relative; float: left; display: inline-block; top: 0; left: 0; margin-top: -5px;">
@@ -192,7 +192,7 @@ ob_start();
         <span style="background-color: white; color: #F05033;">Git
           <?= (version_compare(GIT_LATEST, GIT_VERSION, '>') != 0 ? 'v' . substr(GIT_LATEST, 0, similar_text(GIT_LATEST, GIT_VERSION)) . '<span class="update" style="color: green; cursor: pointer;">' . substr(GIT_LATEST, similar_text(GIT_LATEST, GIT_VERSION)) . '</span>' : 'v' . GIT_VERSION) . ' '; ?></span><span
           style="background-color: #0078D7; color: white;"><code class="text-sm"
-            style="background-color: white; color: #0078D7;">$ <?= (defined('GIT_EXEC') ? GIT_EXEC : null); ?></code></span>
+            style="background-color: white; color: #0078D7;">$ <a href="#" style="background-color: white; color: #0078D7;" onclick="isFixed = true; show_console(); return false;"><?= defined('GIT_EXEC') ? GIT_EXEC : null; ?></a></code></span>
       </div>
 
       <div style="display: inline; float: right; text-align: center; color: blue;"><code
@@ -279,7 +279,7 @@ ob_start();
         </div>
         <div style="display: block; margin: 10px auto; width: 100%; background-color: rgb(255,255,255,.75);">
           <div
-            style="position: absolute; top: 5px; left: 10px; border: 1px dashed #000; height: 104px; overflow-x: auto;"
+            style="position: absolute; top: 5px; left: 10px; border: 1px dashed #000; height: 104px; overflow-y: auto; z-index:4;"
             class="text-xs">
             <div style="position: absolute; top: 0; right: 25px;"><img src="resources/images/oauth-token.gif"
                 style="position: fixed; cursor: pointer;" width="20" height="23" alt="Git token" title="OAuth Token"
@@ -307,7 +307,7 @@ ob_start();
           </div>
 
           <div id="app_git-oauth"
-            style="position: absolute; display: none; top: 40px; left: 0; background-color: rgba(0, 0, 0, 0.5); border: 1px solid rgb(0, 0, 0); width: 100%; height: 100px; text-align: center; padding-top: 40px;">
+            style="position: absolute; display: none; top: 40px; left: 0; background-color: rgba(0, 0, 0, 0.5); border: 1px solid rgb(0, 0, 0); width: 100%; height: 100px; text-align: center; padding-top: 40px; z-index: 4;">
             <div
               style="position: absolute; top: 25px; left: 45px; color: red; height: 14px; font-weight: bold; background-color: #FFF; line-height: 8px;">
               <a style="cursor: pointer; font-size: 13px;"
@@ -337,7 +337,7 @@ ob_start();
           <div style="display: inline-block; width: 32%; text-align: right;"><img src="resources/images/git.fw.png"
               width="52" height="37" style=" border: 1px dashed #F05033;" /></div>
           <div
-            style="display: inline-block; width: 32%; text-align: center; border: 1px dashed #F05033; height: 44px; padding: 7px;">
+            style="position: relative; display: inline-block; top: 20px; width: 32%; text-align: center; border: 1px dashed #F05033; height: 44px; padding: 7px;">
             <select id="app_git-frameSelector">
               <!-- <option value="">---</option> -->
               <option value="init" <?= is_dir(APP_PATH . APP_ROOT . '.git') ? 'disabled' : 'selected'; ?>>init</option>
@@ -349,7 +349,8 @@ ob_start();
             </select>
           </div>
           <div style="display: inline-block; width: 14%; padding-top: 2px;">
-            <form id="app_git-cmd-selected" method="GET">
+            <form id="app_git-cmd-selected" action="/?app=git" method="POST" autocomplete="off" spellcheck="false">
+              <input type="hidden" name="git[cmd]" value="<?= isset($_POST['git']['cmd']) ? $_POST['git']['cmd'] : 'init'; ?>" />
               <button type="submit"><img src="resources/images/git_icon_selected.fw.png" width="44" height="29"
                   style="border: 1px dashed #F05033;" /></button>
             </form>

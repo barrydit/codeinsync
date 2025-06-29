@@ -161,8 +161,31 @@ if ($path = realpath(APP_PATH . 'config' . DIRECTORY_SEPARATOR . 'config.php'))
 else
   die(var_dump($path));
 
-require_once 'config' . DIRECTORY_SEPARATOR . 'runtime' . DIRECTORY_SEPARATOR . 'php.php'; // environment-level PHP config
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+  //dd($_POST);
+  if (isset($_GET['app']) && $_GET['app'] === 'git' || preg_match('/^git\s+(:?(.*))/i', $_POST['cmd'], $match)) {
+    // Handle git commands if the request is a POST for the git app
+    require_once 'config' . DIRECTORY_SEPARATOR . 'git.php';
+  } elseif (isset($_GET['app']) && $_GET['app'] === 'composer' || preg_match('/^composer\s+(:?(.*))/i', $_POST['cmd'], $match)) {
+    // Handle git commands if the request is a POST for the git app
+    require_once 'config' . DIRECTORY_SEPARATOR . 'composer.php';
+  } elseif (isset($_GET['app']) && $_GET['app'] === 'npm' || preg_match('/^npm\s+(:?(.*))/i', $_POST['cmd'], $match)) {
+    // Handle git commands if the request is a POST for the git app
+    require_once 'config' . DIRECTORY_SEPARATOR . 'npm.php';
+  } elseif (preg_match('/^chdir\s+(:?(.*))/i', $_POST['cmd'], $match) || isset($_GET['path'])) {
+    // Handle git commands if the request is a POST for the git app
+    require_once 'app' . DIRECTORY_SEPARATOR . 'console.php';
+    //dd($_POST);
+  }
 
+} else {
+  // Load the main application logic
+  // require_once 'config' . DIRECTORY_SEPARATOR . 'app.php';
+
+}
+
+require_once 'config' . DIRECTORY_SEPARATOR . 'runtime' . DIRECTORY_SEPARATOR . 'php.php'; // environment-level PHP config
+//dd(get_required_files());
 // 0.257 seconds
 
 //require_once 'config' . DIRECTORY_SEPARATOR . 'autoload.php'; // Autoload configuration
