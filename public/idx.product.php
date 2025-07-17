@@ -674,8 +674,122 @@ img {
 .hidden {
   display: none;
 }
-    <?php /*
-$ui_style = '';
+
+#app_composer-container {
+position : absolute;
+display : none;
+left : 832px;
+top : 96px;
+resize : both; /* Make the div resizable */
+margin : 0 auto;
+z-index : 1;
+}
+
+#app_composer-container.selected {
+display : block;
+resize : both; /* Make the div resizable */
+z-index : 1;
+/* Add your desired styling for the selected container */
+/*
+// background-color: rgb(240, 224, 198); // 240, 224, 198, .75 #FBF7F1; // rgba(240, 224, 198, .25);
+
+bg-[#FBF7F1];
+bg-opacity-75;
+
+font-weight: bold;
+#top { background-color: rgba(240, 224, 198, .75); }
+*/
+}
+
+.app_composer-frame-container {
+position : absolute;
+display : none;
+top : 0;
+left : 0;
+width : 400px;
+}
+.app_composer-frame-container.selected {
+display : block;
+z-index : 1;
+}
+
+/* #app_composer-frameName == ['menu', 'conf', 'install', 'init', 'update'] */
+
+
+
+
+#app_composer-frameMenu {}
+#app_composer-frameMenuPrev {} /* composerMenuPrev */
+#app_composer-frameMenuNext {} /* composerMenuNext */
+
+#app_composer-frameMenuConf {}
+#app_composer-frameMenuInstall {}
+#app_composer-frameMenuInit {}
+#app_composer-frameMenuUpdate {}
+
+#app_composer-frameConf {}
+#app_composer-frameInstall {}
+#app_composer-frameInit {}
+#app_composer-frameUpdate {}
+
+#update { backgropund-color: rgba(240, 224, 198, .75); }
+#middle { backgropund-color: rgba(240, 224, 198, .75); }
+#bottom { backgropund-color: rgba(240, 224, 198, .75); }
+
+.btn {
+@apply rounded-md px-2 py-1 text-center font-medium text-slate-900 shadow-sm ring-1 ring-slate-900/10 hover:bg-slate-50
+}
+
+
+
+.composer-menu {
+cursor : pointer;
+}
+.dropbtn {
+background-color : #3498DB;
+color : white;
+padding : 2px 7px;
+font-size : 14px;
+border : none;
+cursor : pointer;
+}
+.dropbtn:hover, .dropbtn:focus {
+background-color : #2980B9;
+}
+.dropdown {
+position : relative;
+display : inline-block;
+float : right;
+z-index : 1;
+}
+.dropdown-content {
+display : none;
+position : absolute;
+background-color : #f1f1f1;
+min-width : 160px;
+margin : -100px;
+overflow : auto;
+}
+.dropdown-content a {
+color : black;
+padding : 8px 12px;
+text-decoration : none;
+display : block;
+}
+.dropdown a:hover {
+background-color : #ddd;
+}
+.show {
+display : block;
+}
+img {
+display : inline;
+}
+
+
+
+    <?php
+/* $ui_style = '';
 $app_style = '';
 
 foreach (UI_APPS as $key => $app) {
@@ -691,8 +805,8 @@ foreach (UI_APPS as $key => $app) {
 echo $ui_style;
 
 // Then app scripts
-echo $app_style; ?>
-*/ ?>    
+echo $app_style;
+ */ ?>    
   </style>
 
 </head>
@@ -706,7 +820,25 @@ echo $app_style; ?>
   <pre style="position: absolute; bottom: 0; z-index: 999;">
   <?= $errors['NPM-WEBPACK']; ?>
   </pre>
-  </div>
+  </div> 
+      <div style="position: absolute; width: auto; top: 5px; right: 0; border: 1px dashed green; height: 20px; z-index: 99;">
+        <div id="clockTime" style="padding-right: 35px; background-color: rgba(255, 255, 255, 0.5); text-align: left;">
+          <a href="#" onclick="document.getElementById('app_calendar-container').style.display='block';"><i
+              style="background-color: white; color: #0078D7;"> Mon, 04:52:49 PM May 12 2025 </i></a>
+        </div>
+        <div style="display: inline-block; width: auto; background-color: #FFF;">
+          <div id="idleTime" style="display: inline; margin: 10px 5px;"><i style="color: blue;">[Idled] for: 0h 0m 11s
+            </i></div>
+          <div>
+            <div id="stats"><!-- Idle: [0]&nbsp;&nbsp;<span style="color: black;">00:00:00</span --></div>
+          </div>
+        </div>
+        <div style="display: inline-block; width: auto; ">
+          <img id="ts-status-light" style="padding-bottom: 10px; cursor: pointer;"
+            src="resources/images/timesheet-light-Y.gif" width="80" height="30">
+        </div>
+
+      </div>
     <div class="top-panel">
       <div>
         <a href="#"><img src="resources/images/phpclasses_icon.png" alt="Logo"
@@ -751,24 +883,7 @@ echo $app_style; ?>
         <button>GitX</button>
         <button>GitAhead</button -->
       </div>
-      <div style="position: absolute; width: auto; top: 5px; right: 0; border: 1px dashed green; height: 20px;">
-        <div id="clockTime" style="padding-right: 35px; background-color: rgba(255, 255, 255, 0.5); text-align: left;">
-          <a href="#" onclick="document.getElementById('app_calendar-container').style.display='block';"><i
-              style="background-color: white; color: #0078D7;"> Mon, 04:52:49 PM May 12 2025 </i></a>
-        </div>
-        <div style="display: inline-block; width: auto; background-color: #FFF;">
-          <div id="idleTime" style="display: inline; margin: 10px 5px;"><i style="color: blue;">[Idled] for: 0h 0m 11s
-            </i></div>
-          <div>
-            <div id="stats"><!-- Idle: [0]&nbsp;&nbsp;<span style="color: black;">00:00:00</span --></div>
-          </div>
-        </div>
-        <div style="display: inline-block; width: auto; ">
-          <img id="ts-status-light" style="padding-bottom: 10px; cursor: pointer;"
-            src="resources/images/timesheet-light-Y.gif" width="80" height="30">
-        </div>
 
-      </div>
 
     </div>
     <div class="bottom-panel">Bottom Panel

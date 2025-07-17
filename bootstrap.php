@@ -172,11 +172,33 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
   } elseif (isset($_GET['app']) && $_GET['app'] === 'npm' || preg_match('/^npm\s+(:?(.*))/i', $_POST['cmd'], $match)) {
     // Handle git commands if the request is a POST for the git app
     require_once 'config' . DIRECTORY_SEPARATOR . 'npm.php';
-  } elseif (preg_match('/^chdir\s+(:?(.*))/i', $_POST['cmd'], $match) || isset($_GET['path'])) {
+  } elseif (preg_match('/^chdir\s+(:?(.*))/i', $_POST['cmd'], $match) && isset($_GET['path'])) {
     // Handle git commands if the request is a POST for the git app
-    require_once 'app' . DIRECTORY_SEPARATOR . 'console.php';
+    require_once 'app' . DIRECTORY_SEPARATOR . 'directory.php';
     //dd($_POST);
   }
+
+  /* if (preg_match('/^ruby\s*(:?.*)/i', $_POST['cmd'], $match))
+     require_once APP_PATH . 'config' . DIRECTORY_SEPARATOR . 'runtime' . DIRECTORY_SEPARATOR . 'ruby.php';
+   if (preg_match('/^go\s*(:?.*)/i', $_POST['cmd'], $match))
+     require_once APP_PATH . 'config' . DIRECTORY_SEPARATOR . 'runtime' . DIRECTORY_SEPARATOR . 'go.php';
+   if (preg_match('/^java\s*(:?.*)/i', $_POST['cmd'], $match))
+     require_once APP_PATH . 'config' . DIRECTORY_SEPARATOR . 'runtime' . DIRECTORY_SEPARATOR . 'java.php';
+   if (preg_match('/^csharp\s*(:?.*)/i', $_POST['cmd'], $match))
+     require_once APP_PATH . 'config' . DIRECTORY_SEPARATOR . 'runtime' . DIRECTORY_SEPARATOR . 'csharp.php'; */
+  //require_once 'config' . DIRECTORY_SEPARATOR . 'javascript.php';
+  //require_once 'config' . DIRECTORY_SEPARATOR . 'ruby.php';
+  //require_once 'config' . DIRECTORY_SEPARATOR . 'go.php';
+  //require_once 'config' . DIRECTORY_SEPARATOR . 'java.php';
+  //require_once 'config' . DIRECTORY_SEPARATOR . 'csharp.php';
+  //require_once 'config' . DIRECTORY_SEPARATOR . 'rust.php';
+  //require_once 'config' . DIRECTORY_SEPARATOR . 'php.php'; // PHP config
+  //require_once 'config' . DIRECTORY_SEPARATOR . 'nodejs.php'; // Node.js config
+  //require_once 'config' . DIRECTORY_SEPARATOR . 'composer.php'; // Composer config
+  //require_once 'config' . DIRECTORY_SEPARATOR . 'autoload.php'; // Autoload configuration
+  //require_once 'vendor' . DIRECTORY_SEPARATOR . 'autoload.php'; // Vendor autoload
+  //require_once 'config' . DIRECTORY_SEPARATOR . 'runtime' . DIRECTORY_SEPARATOR . 'perl.php';
+  //require_once 'config' . DIRECTORY_SEPARATOR . 'runtime' . DIRECTORY_SEPARATOR . 'python.php';
 
 } else {
   // Load the main application logic
@@ -185,6 +207,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 }
 
 require_once 'config' . DIRECTORY_SEPARATOR . 'runtime' . DIRECTORY_SEPARATOR . 'php.php'; // environment-level PHP config
+
 //dd(get_required_files());
 // 0.257 seconds
 
