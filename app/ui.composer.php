@@ -490,7 +490,7 @@ php composer.phar -v
           <div
             style="position: relative; display: inline-block; background-color: rgb(225,196,151,.25); width: 100%; z-index: 1;">
             <?php //if (defined('COMPOSER_JSON')) $composer = json_decode(COMPOSER_JSON['json']); ?>
-            <div class="text-sm" style="display: inline;">
+            <div class="text-sm" style="display: inline; font-size: xx-small;">
               <!-- <input id="composerJson" type="checkbox" style="cursor: pointer;" name="composerJson" value="true" checked=""> -->
               <label for="composerJson" id="appComposerJsonLabel" class="text-sm"
                 style="background-color: #6B4329; <?= defined('COMPOSER_JSON') && realpath(COMPOSER_JSON['path']) ? 'color: #F0E0C6; text-decoration: underline; ' : 'color:red; text-decoration: underline; text-decoration: line-through;' ?> cursor: pointer; font-weight: bold;"

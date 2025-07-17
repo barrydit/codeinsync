@@ -236,9 +236,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && !empty($_POST['cmd'])) {
     $cmd = trim($_POST['cmd']);
     $output = [];
 
-
     //dd(APP_QUERY);
-    require_once APP_PATH . 'app' . DIRECTORY_SEPARATOR . 'directory.php';
+    //require_once APP_PATH . 'app' . DIRECTORY_SEPARATOR . 'directory.php';
 
     // Match: php <inline code>  (not -r)
     if (preg_match('/^php\s+(?!-r)(.*)$/i', $cmd, $match)) {
