@@ -84,16 +84,26 @@ if ($endpoint && isset($endpoints[$endpoint])) {
 
 */
 
-if (__FILE__ == get_required_files()[0]) //die(getcwd());
-  if (
-    $path = (basename(getcwd()) == 'public')
-    ? (is_file('config.php') ? 'config.php' : '..' . DIRECTORY_SEPARATOR . 'config' . DIRECTORY_SEPARATOR . 'config.php') : ''
-  )
+$mainFile = get_required_files()[0];
+
+if (__FILE__ === $mainFile) {
+  $cwd = getcwd();
+  $isInPublic = basename($cwd) === 'public';
+
+  if ($isInPublic) {
+    $path = is_file('config.php')
+      ? 'config.php'
+      : '..' . DIRECTORY_SEPARATOR . 'config' . DIRECTORY_SEPARATOR . 'config.php';
+  } else {
+    $path = '';
+  }
+
+  if ($path && is_file($path)) {
     require_once $path;
-  else
+  } else {
     die(var_dump("$path path was not found. file=config.php"));
-
-
+  }
+}
 
 if (preg_match('/^app\.([\w\-.]+)\.php$/', basename(__FILE__), $matches))
   ${$matches[1]} = $matches[1];

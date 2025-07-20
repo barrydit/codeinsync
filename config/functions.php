@@ -177,6 +177,7 @@ function parse_ini_file_multi($file): array
 /**
  * Summary of Shutdown
  */
+
 class Shutdown
 {
   private static $instance = false;
@@ -306,6 +307,8 @@ class Shutdown
   */
   private function initializeEnv(): void
   {
+    defined('APP_ROOT') or define('APP_ROOT', ''); // Define APP_ROOT if not already defined
+
     $globalPath = APP_PATH . '.env';
     $clientPath = APP_PATH . APP_ROOT . '.env';
 
@@ -482,6 +485,7 @@ class Shutdown
 
   public static function unlinkEnvjson(): void
   {
+    require_once dirname(__DIR__, 1) . DIRECTORY_SEPARATOR . 'config' . DIRECTORY_SEPARATOR . 'config.php';
     $envJsonPath = APP_PATH . APP_ROOT . '.env.json';
     if (file_exists($envJsonPath)) {
       if (!unlink($envJsonPath)) {
@@ -1261,8 +1265,7 @@ function run_code(?string $runtime, string $code, array $options = []): string
   if (isset($GLOBALS['runtimes'][$runtime]) && is_callable($GLOBALS['runtimes'][$runtime]['run'])) {
     $runner = $GLOBALS['runtimes'][$runtime];
     $result = $runner['run']($code, $options);
-    return (string) ($result ?? '');
   }
-
+  return (string) ($result ?? '');
 }
 

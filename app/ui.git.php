@@ -181,7 +181,7 @@ ob_start();
     style="position: relative; margin: 0 auto; width: 404px; height: 306px; border: 3px dashed #F05033; background-color: #FBF7F1;">
 
     <div class="absolute ui-widget-header"
-      style="position: fixed; display: inline-block; width: 400px; height: 0; margin: -50px 0 0 0; padding: 24px 0; border-bottom: 1px solid #000; z-index: 3;">
+      style="position: fixed; display: inline-block; width: 400px; height: 0; cursor: move; margin: -50px 0 0 0; padding: 24px 0; border-bottom: 1px solid #000; z-index: 3;">
       <label class="git-home" style="cursor: pointer;">
         <div class=""
           style="position: relative; float: left; display: inline-block; top: 0; left: 0; margin-top: -5px;">
@@ -350,7 +350,8 @@ ob_start();
           </div>
           <div style="display: inline-block; width: 14%; padding-top: 2px;">
             <form id="app_git-cmd-selected" action="/?app=git" method="POST" autocomplete="off" spellcheck="false">
-              <input type="hidden" name="git[cmd]" value="<?= isset($_POST['git']['cmd']) ? $_POST['git']['cmd'] : 'init'; ?>" />
+              <input type="hidden" name="git[cmd]"
+                value="<?= isset($_POST['git']['cmd']) ? $_POST['git']['cmd'] : 'init'; ?>" />
               <button type="submit"><img src="resources/images/git_icon_selected.fw.png" width="44" height="29"
                   style="border: 1px dashed #F05033;" /></button>
             </form>

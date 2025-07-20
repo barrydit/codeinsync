@@ -24,7 +24,7 @@ if (isset($_SERVER['REQUEST_METHOD']) && $_SERVER['REQUEST_METHOD'] == 'POST')
                 $match[2] = trim($match[2], '"');
                 $_POST['cmd'] = 'python -r "' . $match[2] . (substr($match[2], -1) != ';' ? ';' : '') . '"';
 
-                if (!isset($_SERVER['SOCKET']) || !$_SERVER['SOCKET'])
+                if (!isset($GLOBALS['runtime']['socket']) || !$GLOBALS['runtime']['socket'])
                     exec($_POST['cmd'], $output);
                 else {
                     $errors['server-1'] = "Connected to Server: " . SERVER_HOST . ':' . SERVER_PORT . "\n";
@@ -32,11 +32,11 @@ if (isset($_SERVER['REQUEST_METHOD']) && $_SERVER['REQUEST_METHOD'] == 'POST')
                     // Send a message to the server
                     $errors['server-2'] = 'Client request: ' . $message = "cmd: " . $_POST['cmd'] . "\n";
 
-                    fwrite($_SERVER['SOCKET'], $message);
+                    fwrite($GLOBALS['runtime']['socket'], $message);
                     $output[] = $_POST['cmd'] . ': ';
                     // Read response from the server
-                    while (!feof($_SERVER['SOCKET'])) {
-                        $response = fgets($_SERVER['SOCKET'], 1024);
+                    while (!feof($GLOBALS['runtime']['socket'])) {
+                        $response = fgets($GLOBALS['runtime']['socket'], 1024);
                         $errors['server-3'] = "Server responce: $response\n";
                         if (isset($output[end($output)]))
                             $output[end($output)] .= trim($response);

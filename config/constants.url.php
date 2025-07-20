@@ -80,11 +80,14 @@ if (defined('APP_DOMAIN') && !in_array(APP_DOMAIN, [/*'localhost',*/ '127.0.0.1'
 !defined('APP_PORT') and define('APP_PORT', '80'); // const APP_PORT
 !is_int((int) APP_PORT) and $errors['APP_PORT'] = 'APP_PORT is not valid. (' . APP_PORT . ')' . "\n";
 
-const SERVER_PORT = '8080'; // 9000
+defined('SERVER_PORT') or 
+define('SERVER_PORT', '9000'); // 8080
 !is_int((int) SERVER_PORT) and $errors['SERVER_PORT'] = 'SERVER_PORT is not valid. (' . SERVER_PORT . ')' . "\n";
 
 // Use APP_HOST directly for SERVER_HOST
-const SERVER_HOST = APP_HOST ?? '0.0.0.0';
+
+defined('SERVER_HOST') or 
+define('SERVER_HOST', APP_HOST ?? '0.0.0.0');
 !is_string(SERVER_HOST) and $errors['SERVER_HOST'] = 'SERVER_HOST is not valid. (' . SERVER_HOST . ')' . "\n";
 
 if (defined('APP_BASE') && !is_array(APP_BASE)) {

@@ -6,7 +6,7 @@
 
 if (__FILE__ == get_required_files()[0] && __FILE__ == realpath($_SERVER["SCRIPT_FILENAME"]))
     if ($path = basename(dirname(get_required_files()[0])) == 'public') { // (basename(getcwd())
-        if (is_file($path = realpath('../bootstrap.php'))) {
+        if (is_file($path = realpath('..' . DIRECTORY_SEPARATOR . 'bootstrap' . DIRECTORY_SEPARATOR . 'bootstrap.php'))) {
             require_once $path;
         }
     } else {
@@ -269,7 +269,7 @@ ob_start(); ?>
     class="<?= __FILE__ == get_required_files()[0] || (isset($_GET['app']) && $_GET['app'] == 'errors') && !isset($_GET['path']) ? 'selected' : '' ?>"
     style="position: absolute; display: <?= __FILE__ == get_required_files()[0] || (isset($_GET['app']) && $_GET['app'] == 'errors') ? 'block' : 'block' ?>; overflow: hidden; right: 0; top: 50px;">
     <div class="ui-widget-header"
-        style="position: relative; display: inline-block; width: 100%; cursor: move; border-bottom: 1px solid #000;background-color: #FFF; height: 40px;">
+        style="position: relative; display: inline-block; width: 100%; /*cursor: move;*/ border-bottom: 1px solid #000;background-color: #FFF; height: 40px;">
         <label class="calendar-home" style="cursor: pointer;">
             <div class="" style="position: relative; display: inline-block; top: 0; left: 0;">
                 <img src="resources/images/calendar_icon.png" width="41" height="41" />

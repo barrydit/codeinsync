@@ -12,7 +12,7 @@ if (__FILE__ == get_required_files()[0] && __FILE__ == realpath($_SERVER["SCRIPT
 
   if ($path = basename(dirname(get_required_files()[0])) == 'public') { // (basename(getcwd())
 
-    require_once '../bootstrap.php';
+    require_once '..' . DIRECTORY_SEPARATOR . 'bootstrap' . DIRECTORY_SEPARATOR . 'bootstrap.php';
 
     if (isset($_GET['json'])) {
       header('Content-Type: application/json');

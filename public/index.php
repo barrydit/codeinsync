@@ -1,7 +1,7 @@
 <?php
 
-require_once dirname(__DIR__, 1) . DIRECTORY_SEPARATOR . 'index.php';
-
+require_once dirname(__DIR__, 1) . DIRECTORY_SEPARATOR . 'autoload.php';
+//die(var_dump(get_required_files()));
 //require_once dirname(__DIR__, 1) . DIRECTORY_SEPARATOR . 'config/functions.php';
 
 $htaccess = <<<END
@@ -22,11 +22,14 @@ END;
 
 //
 
+defined('APP_ROOT') or
+  define('APP_ROOT', '');
+
 !defined('APP_SELF') and define('APP_SELF', !empty(get_included_files()) ? get_included_files()[0] : __FILE__); //mnt/c/www/public/index.php
 
 switch (APP_SELF) {
   case __FILE__:
-    require_once dirname(__DIR__, 1) . DIRECTORY_SEPARATOR . 'bootstrap.php';
+    require_once dirname(__DIR__, 1) . DIRECTORY_SEPARATOR . 'bootstrap' . DIRECTORY_SEPARATOR . 'bootstrap.php';
     break;
   default:
     if ($php = realpath(dirname(__DIR__, 1) . DIRECTORY_SEPARATOR . 'config' . DIRECTORY_SEPARATOR . 'runtime' . DIRECTORY_SEPARATOR . 'php.php'))

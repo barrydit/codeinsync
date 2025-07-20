@@ -166,7 +166,7 @@ function git_origin_sha_update()
   return $_ENV['GITHUB']['REMOTE_SHA'] = $latest_local_commit_sha;
 }
 
-git_origin_sha_update();
+//git_origin_sha_update();
 /*
 
 
@@ -174,9 +174,9 @@ dd($errors['GIT_UPDATE']);
 */
 
 //dd($latest_remote_commit_url);
-if (is_file($file = APP_PATH . APP_ROOT . '.env') && date('Y-m-d', filemtime($file)) != date('Y-m-d')) {
+if (is_file($file = APP_PATH . APP_ROOT . '.env') && date('Y-m-d', filemtime($file)) == date('Y-m-d')) {
   if (isset($_ENV['GITHUB']['REMOTE_SHA']) && git_origin_sha_update() !== $_ENV['GITHUB']['REMOTE_SHA']) {
-    //
+
   }
 }
 
@@ -235,7 +235,12 @@ if (isset($_SERVER['REQUEST_METHOD']) && $_SERVER['REQUEST_METHOD'] === 'POST')
       //  ob_start();
       //require_once APP_PATH . 'config' . DIRECTORY_SEPARATOR . 'git.php';
 
-      $command = (defined('APP_SUDO') ? APP_SUDO . '-u www-data ' : '') . 'git' . ' --git-dir="' . APP_PATH . APP_ROOT . '.git" --work-tree="' . APP_PATH . APP_ROOT . '" commit --allow-empty --dry-run';
+      $sudo_prefix = '';
+      if (defined('APP_SUDO') && trim(APP_SUDO) !== '') {
+        $sudo_prefix = APP_SUDO . ' -u www-data ';
+      }
+
+      $command = $sudo_prefix . 'git' . ' --git-dir="' . APP_PATH . APP_ROOT . '.git" --work-tree="' . APP_PATH . APP_ROOT . '" commit --allow-empty --dry-run';
 
       // Append `; echo $?` to capture the exit code in the output
       $shellOutput = shell_exec("$command ; echo $?");
@@ -287,7 +292,13 @@ if (isset($_SERVER['REQUEST_METHOD']) && $_SERVER['REQUEST_METHOD'] === 'POST')
   
   git checkout -b branchName
 END;
-        $output[] = $command = (defined(APP_SUDO) ? APP_SUDO . '-u www-data ' : '') . (defined('GIT_EXEC') ? GIT_EXEC : 'git') . (is_dir($path = APP_PATH . APP_ROOT . '.git') || APP_PATH . APP_ROOT != APP_PATH ? '' : '') . ' ' . $match[1];
+
+        $sudo_prefix = '';
+        if (defined('APP_SUDO') && trim(APP_SUDO) !== '') {
+          $sudo_prefix = APP_SUDO . ' -u www-data ';
+        }
+
+        $output[] = $command = $sudo_prefix . (defined('GIT_EXEC') ? GIT_EXEC : 'git') . (is_dir($path = APP_PATH . APP_ROOT . '.git') || APP_PATH . APP_ROOT != APP_PATH ? '' : '') . ' ' . $match[1];
 
         $proc = proc_open(
           $command,
@@ -348,9 +359,13 @@ END;
 
         if (isset($github_repo) && !empty($github_repo)) {
 
-          if (!isset($_SERVER['SOCKET']) || !is_resource($_SERVER['SOCKET']) || empty($_SERVER['SOCKET'])) {
+          if (!isset($GLOBALS['runtime']['socket']) || !is_resource($GLOBALS['runtime']['socket']) || empty($GLOBALS['runtime']['socket'])) {
+            $sudo_prefix = '';
+            if (defined('APP_SUDO') && trim(APP_SUDO) !== '') {
+              $sudo_prefix = APP_SUDO . ' -u www-data ';
+            }
             $errors['server-1'] = 'no socket was detected.';
-            $proc = proc_open((defined(APP_SUDO) ? APP_SUDO . '-u www-data ' : '') . $command, [["pipe", "r"], ["pipe", "w"], ["pipe", "w"]], $pipes);
+            $proc = proc_open($sudo_prefix . $command, [["pipe", "r"], ["pipe", "w"], ["pipe", "w"]], $pipes);
 
             [$stdout, $stderr, $exitCode] = [stream_get_contents($pipes[1]), stream_get_contents($pipes[2]), proc_close($proc)];
 
@@ -375,12 +390,12 @@ END;
             $errors['server-2'] = 'Client request: ' . $message = "cmd: $command\n";
             /* Known socket  Error / Bug is mis-handled and An established connection was aborted by the software in your host machine */
 
-            fwrite($_SERVER['SOCKET'], $message);
+            fwrite($GLOBALS['runtime']['socket'], $message);
 
             //$output[] = trim($message) . ': ';
             // Read response from the server
-            while (!feof($_SERVER['SOCKET'])) {
-              $response = fgets($_SERVER['SOCKET'], 1024);
+            while (!feof($GLOBALS['runtime']['socket'])) {
+              $response = fgets($GLOBALS['runtime']['socket'], 1024);
               $errors['server-3'] = "Server responce: $response\n";
               if (isset($output[end($output)]))
                 $output[end($output)] .= $response = trim((string) $response);
@@ -388,7 +403,7 @@ END;
             }
 
             // Close and reopen socket
-            fclose($_SERVER['SOCKET']);
+            fclose($GLOBALS['runtime']['socket']);
 
           }
 
@@ -398,7 +413,12 @@ END;
 
       }
 
-      $command = (defined('APP_SUDO') ? APP_SUDO . '-u www-data ' : '') . 'git' . ' --git-dir="' . APP_PATH . APP_ROOT . '.git" --work-tree="' . APP_PATH . APP_ROOT . '" ' . $match[1];
+      $sudo_prefix = '';
+      if (defined('APP_SUDO') && trim(APP_SUDO) !== '') {
+        $sudo_prefix = APP_SUDO . ' -u www-data ';
+      }
+
+      $command = $sudo_prefix . 'git' . ' --git-dir="' . APP_PATH . APP_ROOT . '.git" --work-tree="' . APP_PATH . APP_ROOT . '" ' . $match[1];
 
       $output[] = "$shell_prompt$command";
 

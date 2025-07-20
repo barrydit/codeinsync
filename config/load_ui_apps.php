@@ -1,6 +1,11 @@
 <?php
 
 if (/*APP_SELF === PATH_PUBLIC*/ dirname(APP_SELF) === dirname(PATH_PUBLIC)) { //  /mnt/www
+    /**
+     * Get sorted paths for UI and app files.
+     *
+     * @return array Sorted paths.
+     */
     function getSortedUiAndAppPaths(): array
     {
         $paths = [];
@@ -22,7 +27,7 @@ if (/*APP_SELF === PATH_PUBLIC*/ dirname(APP_SELF) === dirname(PATH_PUBLIC)) { /
         ];
 
         // Get app files (e.g., directory.php)
-        $appPaths = array_filter(glob(APP_BASE['app'] . '*.php'), 'is_file');
+        $appPaths = array_filter(glob(APP_PATH . 'app' . DIRECTORY_SEPARATOR . '*.php'), 'is_file');
 
         usort($appPaths, function ($a, $b) use ($priority) {
             $aBase = basename($a, '.php');
@@ -38,7 +43,7 @@ if (/*APP_SELF === PATH_PUBLIC*/ dirname(APP_SELF) === dirname(PATH_PUBLIC)) { /
         });
 
         // Get UI paths (e.g., ui.directory.php)
-        $uiPaths = array_filter(glob(APP_BASE['app'] . 'ui.*.php'));
+        $uiPaths = array_filter(glob(APP_PATH . 'app' . DIRECTORY_SEPARATOR . 'ui.*.php'));
 
         usort($uiPaths, function ($a, $b) use ($priority) {
             $aKey = preg_replace('/^ui\.(.+)\.php$/', '$1', basename($a));
@@ -58,6 +63,13 @@ if (/*APP_SELF === PATH_PUBLIC*/ dirname(APP_SELF) === dirname(PATH_PUBLIC)) { /
 
         return $paths;
     }
+
+    /**
+     * Load apps from the given paths.
+     *
+     * @param array $paths Paths to load apps from.
+     * @return array Loaded apps.
+     */
     function loadAppsFromPaths(array $paths): array
     {
         // Only include files like: 'notes.php' or 'ui.notes.php'
@@ -96,5 +108,16 @@ if (/*APP_SELF === PATH_PUBLIC*/ dirname(APP_SELF) === dirname(PATH_PUBLIC)) { /
         return $apps;
     }
 
-    define('UI_APPS', loadAppsFromPaths(getSortedUiAndAppPaths()));
+
+    if (defined('APP_CONTEXT') && APP_CONTEXT === 'www') {
+
+        define('UI_APPS', loadAppsFromPaths(getSortedUiAndAppPaths()));
+
+    }
+
+    //dd(loadAppsFromPaths(getSortedUiAndAppPaths())); // []
+}
+else {
+    // If not in public context, define UI_APPS as empty array
+    define('UI_APPS', []);
 }

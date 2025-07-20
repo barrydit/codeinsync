@@ -2,7 +2,7 @@
 
 if (__FILE__ == get_required_files()[0] && __FILE__ == realpath($_SERVER["SCRIPT_FILENAME"])) {
   if ($path = basename(dirname(get_required_files()[0])) == 'public') { // (basename(getcwd())
-    if (is_file($path = realpath('../bootstrap.php'))) {
+    if (is_file($path = realpath('..' . DIRECTORY_SEPARATOR . 'bootstrap' . DIRECTORY_SEPARATOR . 'bootstrap.php'))) {
       require_once $path;
     }
   } elseif (is_file($path = realpath('config' . DIRECTORY_SEPARATOR . 'config.php')))

@@ -40,14 +40,14 @@ $GLOBALS['runtimes']['php'] = [
 if (__FILE__ == get_required_files()[0] && __FILE__ == realpath($_SERVER["SCRIPT_FILENAME"]))
     if ($path = basename(dirname(get_required_files()[0])) == 'public') { // (basename(getcwd())
         chdir('../');
-        if ($path = realpath('bootstrap.php')) // is_file()
+        if ($path = realpath('bootstrap' . DIRECTORY_SEPARATOR . 'bootstrap.php')) // is_file()
             require_once $path;
         //die('does this do anything?');
 
     } else
         die(var_dump("Path was not found. file=$path"));
 else
-    require_once APP_PATH . 'bootstrap.php';
+    require_once APP_PATH . 'bootstrap' . DIRECTORY_SEPARATOR . 'bootstrap.php';
 
 require_once APP_PATH . 'config' . DIRECTORY_SEPARATOR . 'constants.env.php';
 require_once APP_PATH . 'config' . DIRECTORY_SEPARATOR . 'constants.paths.php';
@@ -69,7 +69,7 @@ if (!defined('APP_BOOTSTRAPPED')) {
     //require_once APP_PATH . 'config' . DIRECTORY_SEPARATOR . 'constants.runtime.php';
     //require_once APP_PATH . 'config' . DIRECTORY_SEPARATOR . 'constants.url.php';
     //require_once APP_PATH . 'config' . DIRECTORY_SEPARATOR . 'constants.app.php';
-    require_once APP_PATH . 'bootstrap.php';
+    require_once APP_PATH . 'bootstrap' . DIRECTORY_SEPARATOR . 'bootstrap.php';
 }
 
 file_put_contents(
@@ -106,18 +106,18 @@ $dirs = [APP_PATH . 'config' . DIRECTORY_SEPARATOR . 'runtime' . DIRECTORY_SEPAR
     ? array_merge(
         $dirs,
         [
-            (file_exists($include = APP_PATH . APP_BASE['config'] . 'composer.php') && !is_file($include) ?: $include)
+            (file_exists($include = APP_PATH . APP_BASE['public'] . 'api' . DIRECTORY_SEPARATOR . 'composer.php') && !is_file($include) ?: $include)
         ]
     )
     : array_merge(
         $dirs,
         [
-            (!file_exists($include = APP_PATH . APP_BASE['config'] . 'composer.php') && !is_file($include) ?: $include),
+            (!file_exists($include = APP_PATH . APP_BASE['public'] . 'api' . DIRECTORY_SEPARATOR . 'composer.php') && !is_file($include) ?: $include),
             (!file_exists($include = APP_PATH . APP_ROOT . APP_BASE['vendor'] . 'autoload.php') && !is_file($include) ?: $include),
         ]
     );
 
-//if (is_file($path = APP_PATH . APP_BASE['config'] . 'composer.php')) require_once $path; 
+//if (is_file($path = APP_PATH . APP_BASE['public'] . DIRECTORY_SEPARATOR . 'api' . DIRECTORY_SEPARATOR . 'composer.php')) require_once $path; 
 //else die(var_dump("$path path was not found. file=" . basename($path)));
 
 // Handle the 'npm' app configuration
@@ -130,7 +130,7 @@ unset($include);
 if (APP_SELF != PATH_PUBLIC) {
     $priorityFiles = [
         //APP_PATH . APP_BASE['config'] . 'php.php',
-        APP_PATH . APP_BASE['config'] . 'composer.php',
+        APP_PATH . APP_BASE['public'] . 'api' . DIRECTORY_SEPARATOR . 'composer.php',
         APP_PATH . APP_ROOT . APP_BASE['vendor'] . 'autoload.php',
         APP_PATH . APP_BASE['config'] . 'git.php',
         // APP_PATH . APP_BASE['config'] . 'npm.php', // Uncomment if needed
@@ -197,11 +197,11 @@ foreach ($dirs as $includeFile) {
 //die(var_dump(get_defined_constants(true)['user']));
 
 // Get all PHP files in the 'classes' directory
-$paths = array_filter(glob(APP_PATH . 'config/classes' . DIRECTORY_SEPARATOR . '*.php'), 'is_file');
+$paths = array_filter(glob(APP_PATH . 'classes' . DIRECTORY_SEPARATOR . '*.php'), 'is_file');
 
 // Define the filenames to be excluded
 $excludedFiles = [
-    //'class.sockets.php',
+    'class.socketserver.php',
     'class.websocketserver.php'
 ];
 
@@ -220,7 +220,7 @@ usort($paths, function ($a, $b) {
 // Require each file in $paths
 foreach ($paths as $path) {
     if ($resolvedPath = realpath($path)) {
-        require_once $resolvedPath;
+        // require_once $resolvedPath;
     } else {
         die(var_dump(basename($path) . ' was not found. file=' . $path));
     }
@@ -268,18 +268,18 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && !empty($_POST['cmd'])) {
         $inlineCode = rtrim(trim($match[1]), ';') . ';';
         $cmdFormatted = "php -r \"$inlineCode\"";
 
-        if (!isset($_SERVER['SOCKET']) || !$_SERVER['SOCKET']) {
+        if (!isset($GLOBALS['runtime']['socket']) || !$GLOBALS['runtime']['socket']) {
             exec($cmdFormatted, $output);
         } else {
             $message = "cmd: $cmdFormatted\n";
             $errors['server-1'] = "Connected to Server: " . SERVER_HOST . ':' . SERVER_PORT;
             $errors['server-2'] = "Client request: $message";
 
-            fwrite($_SERVER['SOCKET'], $message);
+            fwrite($GLOBALS['runtime']['socket'], $message);
             $output[] = "$cmdFormatted: ";
 
-            while (!feof($_SERVER['SOCKET'])) {
-                $response = fgets($_SERVER['SOCKET'], 1024);
+            while (!feof($GLOBALS['runtime']['socket'])) {
+                $response = fgets($GLOBALS['runtime']['socket'], 1024);
                 if (!empty($response)) {
                     $errors['server-3'] = "Server response: $response";
                     $output[count($output) - 1] .= trim($response);
@@ -311,7 +311,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && !empty($_POST['cmd'])) {
 
 /* else if (preg_match('/^composer\s+(:?(.*))/i', $_POST['cmd'], $match)) {
 
- if (!isset($_SERVER['SOCKET']) || !$_SERVER['SOCKET']) {
+ if (!isset($GLOBALS['runtime']['socket']) || !$GLOBALS['runtime']['socket']) {
 
    //$output[] = dd(COMPOSER_EXEC);
    //$output[] = APP_SUDO . COMPOSER_EXEC['bin'] . ' ' . $match[1];
@@ -338,20 +338,20 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && !empty($_POST['cmd'])) {
    $output[] = $_POST['cmd'] . ': ';
 
    //dd($message, false);
-   if (isset($_SERVER['SOCKET']) && is_resource($_SERVER['SOCKET'])) {
-     switch (get_resource_type($_SERVER['SOCKET'])) {
+   if (isset($GLOBALS['runtime']['socket']) && is_resource($GLOBALS['runtime']['socket'])) {
+     switch (get_resource_type($GLOBALS['runtime']['socket'])) {
        case 'stream':
-         fwrite($_SERVER['SOCKET'], $message);
+         fwrite($GLOBALS['runtime']['socket'], $message);
          break;
        default:
-         socket_write($_SERVER['SOCKET'], $message);
+         socket_write($GLOBALS['runtime']['socket'], $message);
          break;
      }
    }
 
    // Read response from the server
-   while (!feof($_SERVER['SOCKET'])) {
-     $response = fgets($_SERVER['SOCKET'], 1024);
+   while (!feof($GLOBALS['runtime']['socket'])) {
+     $response = fgets($GLOBALS['runtime']['socket'], 1024);
 
      $errors['server-3'] = "Server responce: $response\n";
      if (isset($output[end($output)])) $output[end($output)] .= trim($response);

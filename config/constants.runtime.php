@@ -1,6 +1,16 @@
 <?php
 // This file defines constants for the Realtime application environment
-define('PATH_ASSETS', APP_IS_ONLINE ? 'cdn/' : 'local/');
+if (!defined('APP_IS_ONLINE')) {
+    if (is_file(APP_PATH . 'config/constants.env.php'))
+        require_once APP_PATH . 'config/constants.env.php';
+    else {
+        die('APP_IS_ONLINE not defined and constants.env.php missing');
+    }
+} else {
+    define('PATH_ASSETS', APP_IS_ONLINE ? 'cdn/' : 'local/');
+}
+
+
 
 if (isset($_ENV['PHP']['EXEC']) && $_ENV['PHP']['EXEC'] != '' && !defined('PHP_EXEC'))
     switch (PHP_BINARY) {

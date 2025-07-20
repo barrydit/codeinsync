@@ -1,5 +1,5 @@
 <?php
-require_once '../bootstrap.php';
+require_once '..' . DIRECTORY_SEPARATOR . 'bootstrap' . DIRECTORY_SEPARATOR . 'bootstrap.php';
 
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     function medication_log()
