@@ -10,7 +10,7 @@ if (__FILE__ == get_required_files()[0])
   else
     die(var_dump("$path path was not found. file=$path"));
 
-if (is_file($path = APP_PATH . APP_BASE['config'] . 'npm.php') ? $path : '')
+if (is_file($path = APP_PATH . APP_BASE['config'] . 'npm.php'))
   require_once $path;
 
 ob_start(); ?>
@@ -344,7 +344,7 @@ ob_start(); ?>
 
     <style type="text/tailwindcss">
       <?= $app['style']; ?>
-            </style>
+              </style>
   </head>
 
   <body>

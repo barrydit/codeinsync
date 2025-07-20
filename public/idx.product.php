@@ -22,7 +22,9 @@ if (!headers_sent()) {
   header("Cache-Control: no-store, no-cache, must-revalidate, max-age=0");
   header("Expires: Sat, 26 Jul 1997 05:00:00 GMT");
   header("Pragma: no-cache");
-} ?>
+}
+//dd(get_required_files());
+?>
 <!DOCTYPE html>
 <html lang="en">
 
@@ -101,7 +103,7 @@ if (!headers_sent()) {
   <style type="text/tailwindcss"></style>
   <style>
 * {
-  overflow: hidden;
+/*  overflow: hidden;*/
 }
 
 html,
@@ -740,6 +742,9 @@ z-index : 1;
 @apply rounded-md px-2 py-1 text-center font-medium text-slate-900 shadow-sm ring-1 ring-slate-900/10 hover:bg-slate-50
 }
 
+.text-sm {
+@apply text-sm;
+}
 
 
 .composer-menu {
@@ -788,6 +793,50 @@ display : inline;
 
 
 
+
+.toggle-switch {
+      position: absolute;
+      bottom: 0px;
+      right: 0px;
+      display: flex;
+      align-items: center;
+      float: right;
+    }
+
+    .toggle-switch input {
+      display: none;
+    }
+
+    .slider {
+      position: relative;
+      width: 60px;
+      height: 30px;
+      background: #888;
+      border-radius: 30px;
+      cursor: pointer;
+      transition: 0.3s;
+    }
+
+    .slider::before {
+      content: '';
+      position: absolute;
+      width: 26px;
+      height: 26px;
+      border-radius: 50%;
+      background: white;
+      top: 2px;
+      left: 2px;
+      transition: 0.3s;
+    }
+
+    input:checked + .slider::before {
+      transform: translateX(30px);
+    }
+
+    input:checked + .slider {
+      background: #2196F3;
+    }
+
     <?php
 /* $ui_style = '';
 $app_style = '';
@@ -818,7 +867,7 @@ echo $app_style;
   <div class="container1">
     <div class="sidebar"><p style="color: white; background-color: #0078D7;">Github: <a href="https://github.com/barrydit/codeinsync" target="_blank" rel="noopener noreferrer" style="background-color: white;">barrydit/codeinsync</a></p>
   <pre style="position: absolute; bottom: 0; z-index: 999;">
-  <?= $errors['NPM-WEBPACK']; ?>
+  <?= !isset($errors['NPM-WEBPACK']) ? '' : $errors['NPM-WEBPACK']; ?>
   </pre>
   </div> 
       <div style="position: absolute; width: auto; top: 5px; right: 0; border: 1px dashed green; height: 20px; z-index: 99;">
@@ -827,7 +876,7 @@ echo $app_style;
               style="background-color: white; color: #0078D7;"> Mon, 04:52:49 PM May 12 2025 </i></a>
         </div>
         <div style="display: inline-block; width: auto; background-color: #FFF;">
-          <div id="idleTime" style="display: inline; margin: 10px 5px;"><i style="color: blue;">[Idled] for: 0h 0m 11s
+          <div id="idleTime" style="display: inline; float: left; margin: 10px 5px;"><i style="color: blue;">[Idled] for: 0h 0m 11s
             </i></div>
           <div>
             <div id="stats"><!-- Idle: [0]&nbsp;&nbsp;<span style="color: black;">00:00:00</span --></div>
@@ -840,7 +889,7 @@ echo $app_style;
 
       </div>
     <div class="top-panel">
-      <div>
+      <div style="position: relative;">
         <a href="#"><img src="resources/images/phpclasses_icon.png" alt="Logo"
             style="width: 31px; height: auto; margin: 0 5px;"
             onclick="document.getElementById('app_phpclasses-container').style.display='block'; return false;"></a>
@@ -860,6 +909,9 @@ echo $app_style;
         <a href="#"><img src="resources/images/console_icon.png" alt="Logo"
             style="width: 31px; height: auto; margin: 0 5px;"
             onclick="isFixed = true; show_console(); return false;"></a>
+
+        <a href="#" style="margin: -10px 5px;" onclick="document.getElementById('app_tools-container').style.display='block';">
+          <img src="resources/images/apps_icon.gif" width="20" height="20"> Tools</a>
       </div>
 
       <div style="position: absolute; top: 5px; right: 270px;">
@@ -894,14 +946,19 @@ echo $app_style;
           href="?app=ace_editor&amp;path=&amp;file=app.notes.php"
           style="text-align: center; background-color: #0078D7;">Notes</a></div>
 
-
       <div style="position: absolute; left: 100px; top: 0; text-align: center;" class="text-sm"><a href="#!"
           onclick="document.getElementById('app_ace_editor-container').style.display='block'; return false;"><img
             style="text-align: center;" src="resources/images/ace_editor.png"></a><br>
         <a href="?app=ace_editor&amp;path=&amp;file=app.notes.php"
           style="text-align: center; background-color: #0078D7;">Ace Editor</a>
       </div>
-
+      <div class="toggle-switch">
+      <label>
+        <input type="checkbox" id="viewToggle">
+        <div class="slider"></div>
+      </label>
+      <span style="margin-left: 0.5em; color: #ccc;">Developer</span>
+    </div>
     </div>
     <div class="free-space" id="free-space" style="overflow: auto; padding: 0 5px 0 5px;">
       <div id="info-plus"
@@ -914,6 +971,134 @@ echo $app_style;
     </div>
   </div>
 
+  <div id="app_tools-container"
+          style="position: absolute; top: 5%; left: 50%; transform: translate(-50%, -50%); width: 800px; height: 500px; background-color: rgba(255, 255, 255, 0.9); margin-top: 350px; z-index: 5; display: none;">
+          <div style="position: fixed; margin: -5px 45px; text-align: center; z-index: 5;" class="text-sm"><a href="#!"
+              onclick="document.getElementById('app_tools-container').style.display='none'; return false;"><img
+                style="text-align: center; position: fixed;" height="25" width="25"
+                src="<?= APP_BASE['resources'] . 'images/close-red.png' ?>" /></a><br /></div>
+  <div
+    style="position: absolute; overflow-x: scroll; overflow-y: hidden; height: 100%; width: 100%; padding-top: 25px; border: 1px solid #000; ">
+    <div style="position: absolute; margin: 10px 75px; text-align: center;" class="text-sm"><a href="#!"
+        onclick="isFixed = true; show_console(); return false;"><img style="text-align: center;"
+          src="<?= APP_BASE['resources'] . 'images/cli.png' ?>" /></a><br /><a
+        href="?app=ace_editor&path=&file=app.console.php" style="text-align: center;">(CLI)</a></div>
+    <!-- 
+                    <a href="javascript:window.open('print.html', 'newwindow', 'width=300,height=250')">Print</a>
+                    onclick="window.open('app.whiteboard.php', 'newwindow', 'width=300,height=250'); return false;"
+                    
+                    https://stackoverflow.com/questions/12939928/make-a-link-open-a-new-window-not-tab
+                     -->
+    <div style="position: absolute; margin: 10px 165px; text-align: center;" class="text-sm"><a href="#" target="_blank"
+        onclick="toggleIframeUrl('app.whiteboard.php'); return false;"><img style="text-align: center;"
+          src="<?= APP_BASE['resources'] . 'images/whiteboard.png' ?>" /></a><br /><a
+        href="?app=ace_editor&path=&file=app.whiteboard.php" style="text-align: center;">Whiteboard</a></div>
+    <div style="position: absolute; margin: 10px 260px; text-align: center;" class="text-sm"><a href="#!"
+        onclick="document.getElementById('app_notes-container').style.display='block'; return false;"><img
+          style="text-align: center;" src="<?= APP_BASE['resources'] . 'images/notes.png' ?>" /></a><br /><a
+        href="?app=ace_editor&path=&file=app.notes.php" style="text-align: center;">Notes</a></div>
+    <div style="position: absolute; margin: 10px 350px; text-align: center;" class="text-sm">
+      <a href="#!"
+        onclick="document.getElementById('app_project-container').style.display='block'; document.getElementById('toggle-debug').checked = false; toggleSwitch(document.getElementById('toggle-debug')); return false;">
+        <img style="text-align: center;" src="<?= APP_BASE['resources'] . 'images/project.png' ?>" /></a><br /><a
+        href="?app=ace_editor&path=&file=app.project.php"><span style="text-align: center;">Project</span></a>
+    </div>
+    <div style="position: absolute; margin: 10px 0 0 450px ; text-align: center;" class="text-sm"><a href="#!"
+        onclick="document.getElementById('app_errors-container').style.display='block'; return false;"><img
+          style="text-align: center;" src="<?= APP_BASE['resources'] . 'images/debug.png' ?>" /><br /><span
+          style="text-align: center;">Debug</span></a></div>
+    <div style="position: absolute; margin: 10px 0 0 540px; text-align: center;" class="text-sm"><a href="#!"
+        onclick="document.getElementById('app_profile-container').style.display='block'; return false;"><img
+          style="text-align: center;" src="<?= APP_BASE['resources'] . 'images/user.png' ?>" /><br /><span
+          style="text-align: center;">Profile</span></a></div>
+    <div style="position: absolute; margin: 10px 0 0 630px; text-align: center;" class="text-sm"><a href="#!"
+        onclick="toggleIframeUrl('app.browser.php'); return false;"><img style="text-align: center;"
+          src="<?= APP_BASE['resources'] . 'images/browser.png' ?>" /><br /><span
+          style="text-align: center;">Browser</span></a></div>
+    <div style="position: absolute; margin: 110px 75px; text-align: center;" class="text-sm"><a href="#!"
+        onclick="document.getElementById('app_tools-container').style.display='block'; return false;"><img
+          style="text-align: center;" src="<?= APP_BASE['resources'] . 'images/apps.png' ?>" /><br /><span
+          style="text-align: center;">Apps.</span></a></div>
+    <div style="position: absolute; margin: 110px 170px; text-align: center;" class="text-sm"><a href="#!"
+        onclick="document.getElementById('app_calendar-container').style.display='block'; return false;"><img
+          style="text-align: center;" src="<?= APP_BASE['resources'] . 'images/calendar.png' ?>" /><br /><span
+          style="text-align: center;">Calendar</span></a></div>
+    <div style="position: absolute; margin: 118px 240px; padding: 20px 40px;">
+      <form action="#!" method="GET">
+        <?= '            ' . (isset($_GET['project']) && !$_GET['project'] ? '<input type="hidden" name="client" value="" />' : '<input type="hidden" name="project" value="" />') ?>
+        <div style="margin: 0 auto;">
+          <div id="clockTime"></div>
+        </div>
+        <input class="input" id="toggle-project" type="checkbox" onchange="toggleSwitch(this); this.form.submit();"
+          <?= isset($_GET['project']) ? 'checked' : '' ?> />
+        <label class="label" for="toggle-project" style="margin-left: -6px;">
+          <div class="left" style="background-color: rgba(255, 255, 255, 0.8); text-shadow: 2px 2px;"> Client
+          </div>
+          <div class="switch" style="position: relative;"><span class="slider round"></span></div>
+          <div class="right" style="background-color: rgba(255, 255, 255, 0.8); text-shadow: 2px 2px;"> Project
+          </div>
+        </label>
+      </form>
+    </div>
+    <div style=" position: absolute; margin: 110px 0 0 540px; text-align: center;" class="text-sm"><a href="#!"
+        onclick="toggleIframeUrl('pong.php'); return false;"><img style="text-align: center;"
+          src="<?= APP_BASE['resources'] . 'images/pong.png' ?>" /><br /><span
+          style="text-align: center;">Pong</span></a>
+    </div>
+    <div style="position: absolute; margin: 110px 0 0 630px; text-align: center;" class="text-sm"><a href="#!"
+        onclick="document.getElementById('app_browser-container').style.display='block'; return false;"><img
+          style="text-align: center;" src="<?= APP_BASE['resources'] . 'images/regexp.png' ?>" /><br /><span
+          style="text-align: center;">RegExp</span></a></div>
+    <div style="position: absolute; margin: 210px 75px; text-align: center;" class="text-sm"><a href="#!"
+        onclick="document.getElementById('app_browser-container').style.display='block'; return false;"><img
+          style="text-align: center;" src="<?= APP_BASE['resources'] . 'images/chatgpt.png' ?>" /><br /><span
+          style="text-align: center;">ChatGPT</span></a></div>
+    <div style="position: absolute; margin: 210px 160px; text-align: center;" class="text-sm"><a href="#!"
+        onclick="document.getElementById('app_browser-container').style.display='block'; return false;"><img
+          style="text-align: center;" src="<?= APP_BASE['resources'] . 'images/stackoverflow.png' ?>" /><br /><span
+          style="text-align: center;">Stackoverflow</span></a></div>
+    <div style="position: absolute; margin: 210px 260px; text-align: center;" class="text-sm"><a href="#!"
+        onclick="document.getElementById('app_browser-container').style.display='block'; return false;"><img
+          style="text-align: center;" src="<?= APP_BASE['resources'] . 'images/validatejs.png' ?>" /><br /><span
+          style="text-align: center;">ValidateJS</span></a></div>
+    <!-- https://validator.w3.org/#validate_by_input // -->
+    <div style="position: absolute; margin: 210px 340px; text-align: center;" class="text-sm"><a href="#!"
+        onclick="document.getElementById('app_browser-container').style.display='block'; return false;"><img
+          style="text-align: center;" src="<?= APP_BASE['resources'] . 'images/w3c.png' ?>" /><br /><span
+          style="text-align: center;">W3C Validator</span></a></div>
+    <!-- https://tailwindcss.com/docs/ // -->
+    <div style="position: absolute; margin: 210px 0 0 445px; text-align: center;" class="text-sm"><a href="#!"
+        onclick="document.getElementById('app_browser-container').style.display='block'; return false;"><img
+          style="text-align: center;" src="<?= APP_BASE['resources'] . 'images/tailwindcss.png' ?>" /><br /><span
+          style="text-align: center;">TailwindCSS<br />Docs</span></a></div>
+    <!-- https://www.php.net/docs.php // -->
+    <div style="position: absolute; margin: 210px 0 0 540px; text-align: center;" class="text-sm"><a href="#!"
+        onclick="document.getElementById('app_browser-container').style.display='block'; return false;"><img
+          style="text-align: center;" src="<?= APP_BASE['resources'] . 'images/php.png' ?>" /><br /><span
+          style="text-align: center;">PHP Docs</span></a></div>
+    <!-- https://dev.mysql.com/doc/ // -->
+    <div style="position: absolute; margin: 210px 0 0 625px; text-align: center;" class="text-sm"><a href="#!"
+        onclick="document.getElementById('app_browser-container').style.display='block'; return false;"><img
+          style="text-align: center;" src="<?= APP_BASE['resources'] . 'images/mysql.png' ?>" /><br /><span
+          style="text-align: center;">MySQL Docs</span></a></div>
+    <div
+      style="position: absolute; top: 340px; left: 65px; width: 80%; margin: 0 auto; height: 15px; border-bottom: 1px solid black; text-align: center; z-index: 0;">
+      <span style="font-size: 20px; background-color: #F3F5F6; padding: 0 20px; z-index: 1;"> USER APPS.
+      </span>
+    </div>
+    <div style="position: absolute; margin: 360px 75px; text-align: center;" class="text-sm"><a href="#!"
+        onclick="document.getElementById('app_install-container').style.display='block'; return false;"><span
+          style="text-align: center;">New App.</span><br /><img style="text-align: center;"
+          src="<?= APP_BASE['resources'] . 'images/install.png' ?>" /></a></div>
+    <div style="position: absolute; margin: 360px 170px; text-align: center;" class="text-sm">
+      <a href="?app=ace_editor&path=&file=app.user-app.php"><span style="text-align: center;">App
+          #1</span></a><br />
+      <a href="#!" onclick="document.getElementById('app_browser-container').style.display='block'; return false;"><img
+          style="text-align: center;" src="<?= APP_BASE['resources'] . 'images/php-app.png' ?>" /></a>
+      <div style="height: 75px;"></div>
+    </div>
+  </div>
+</div>
   <?php
   $ui_body = '';
   $app_body = '';
@@ -1330,6 +1515,31 @@ $(document).ready(function() {
 
     // Then app scripts
     echo $app_script; ?>
+
+
+function loadApp(appName) {
+  fetch(`/api/app-loader.php?app=${appName}`)
+    .then(res => res.json())
+    .then(data => {
+      // Append styles
+      if (data.style) {
+        const style = document.createElement('style');
+        style.innerHTML = data.style;
+        document.head.appendChild(style);
+      }
+
+      // Append body content
+      const appContainer = document.getElementById('app-container');
+      appContainer.innerHTML = data.body;
+
+      // Run script
+      if (data.script) {
+        const script = document.createElement('script');
+        script.innerHTML = data.script;
+        document.body.appendChild(script);
+      }
+    });
+}
   </script>
 </body>
 

@@ -15,7 +15,7 @@ if (__FILE__ == get_required_files()[0] && __FILE__ == realpath($_SERVER["SCRIPT
   if ($path = basename(dirname(get_required_files()[0])) == 'public') { // (basename(getcwd())
     chdir('../');
     if (isset($_SERVER['REQUEST_METHOD']) && $_SERVER['REQUEST_METHOD'] == 'POST')
-      require_once realpath('bootstrap.php');
+      require_once realpath('bootstrap' . DIRECTORY_SEPARATOR . 'bootstrap.php');
     elseif ($path = realpath('config' . DIRECTORY_SEPARATOR . 'config.php')) { // is_file(config/php.php
       //dd('does this do anything?');
       require_once $path;
@@ -28,7 +28,7 @@ else
 if (preg_match('/^app\.([\w\-.]+)\.php$/', basename(__FILE__), $matches))
   ${$matches[1]} = $matches[1];
 
-//require_once realpath(__DIR__ . DIRECTORY_SEPARATOR . '..' . DIRECTORY_SEPARATOR  . 'config' . DIRECTORY_SEPARATOR . 'classes' . DIRECTORY_SEPARATOR . 'class.sockets.php');
+//require_once realpath(__DIR__ . DIRECTORY_SEPARATOR . '..' . DIRECTORY_SEPARATOR  . DIRECTORY_SEPARATOR . 'classes' . DIRECTORY_SEPARATOR . 'class.sockets.php');
 
 //if (__FILE__ == $_SERVER["SCRIPT_FILENAME"]) {
 //  echo "called directly";
@@ -64,11 +64,11 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 
     //$output[] = $shell_prompt = 'www-data@localhost:' . getcwd() . '# ' . $_POST['cmd'];
     //$socketInstance = Sockets::getInstance();
-    //$_SERVER['SOCKET'] = $socketInstance->getSocket();
+    //$GLOBALS['runtime']['socket'] = $socketInstance->getSocket();
 
-    //$output[] = var_export(is_resource($_SERVER['SOCKET']), true);
+    //$output[] = var_export(is_resource($GLOBALS['runtime']['socket']), true);
 
-    $_SERVER['SOCKET'] = fsockopen(SERVER_HOST, SERVER_PORT, $errno, $errstr, 5);
+    //$GLOBALS['runtime']['socket'] = fsockopen(SERVER_HOST, SERVER_PORT, $errno, $errstr, 5);
 
     if ($_POST['cmd'] && $_POST['cmd'] != '')
       if (preg_match('/^help/i', $_POST['cmd']))
@@ -76,7 +76,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
       else if (preg_match('/^server\s*start$/i', $_POST['cmd'])) {
         //require_once APP_PATH . 'server.php';
 
-        $_SERVER['SOCKET']->initializeSocket();
+        $GLOBALS['runtime']['socket']->initializeSocket();
 
         /*
                   if (file_exists($pidFile = APP_PATH . 'server.pid')) {
@@ -108,7 +108,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     exec("wget -qO- {$match[1]} &> /dev/null", $output);
   else {
 
-    if (!isset($_SERVER['SOCKET']) || !$_SERVER['SOCKET']) {
+    if (!isset($GLOBALS['runtime']['socket']) || !$GLOBALS['runtime']['socket']) {
       //exec($_POST['cmd'], $output);
       if (preg_match('/^(\w+)\s+(:?(.*))/i', $_POST['cmd'], $match))
         if (isset($match[1]) && in_array($match[1], $help = ['tail', 'cat', 'unlink', 'echo', 'env', 'sudo', 'whoami'])) {
@@ -145,19 +145,19 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 
       //$socketInstance = Sockets::getInstance(); // new Sockets();
 
-      //$_SERVER['SOCKET'] = $socketInstance->getSocket();
+      //$GLOBALS['runtime']['socket'] = $socketInstance->getSocket();
 
       $output = []; //$_POST['cmd'] . ' test3: ';
 
-      fwrite($_SERVER['SOCKET'], $message);
+      fwrite($GLOBALS['runtime']['socket'], $message);
 
       $buffer = '';
 
       $response = '';
 
       // Read response from the server
-      while (!feof($_SERVER['SOCKET'])) {
-        $chunk = fgets($_SERVER['SOCKET'], 1024); // Read chunks of 1024 bytes
+      while (!feof($GLOBALS['runtime']['socket'])) {
+        $chunk = fgets($GLOBALS['runtime']['socket'], 1024); // Read chunks of 1024 bytes
         echo ' test 123';
         if ($chunk === false) {
           // Handle any reading error
@@ -199,13 +199,13 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 
       // Read response from the server
 /*
-              while (!feof($_SERVER['SOCKET'])) {
-                $response = fgets($_SERVER['SOCKET'], 1024); // Read in chunks of 1024 bytes
+              while (!feof($GLOBALS['runtime']['socket'])) {
+                $response = fgets($GLOBALS['runtime']['socket'], 1024); // Read in chunks of 1024 bytes
                 if ($response !== false) {
                     $buffer .= $response; // Accumulate the response
                 }
 
-                  $response = fgets($_SERVER['SOCKET'], 1024); // Reading the response 1024 bytes at a time
+                  $response = fgets($GLOBALS['runtime']['socket'], 1024); // Reading the response 1024 bytes at a time
                   $errors['server-3'] = "Server response: $response\n";
           
                   // Append or add the response to the output array
@@ -221,9 +221,9 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                   }
               }
 */
-      //die(var_dump($_SERVER['SOCKET']));
+      //die(var_dump($GLOBALS['runtime']['socket']));
 
-      fclose($_SERVER['SOCKET']);
+      fclose($GLOBALS['runtime']['socket']);
     }
 
 
@@ -255,8 +255,8 @@ if ($path = (basename(getcwd()) == 'public')
 else die(var_dump($path . ' path was not found. file=git.php'));
 
 if ($path = (basename(getcwd()) == 'public')
-  ? (is_file('../composer.php') ? '../composer.php' : (is_file('../config/composer.php') ? '../config/composer.php' : null))
-  : (is_file('composer.php') ? 'composer.php' : (is_file('config/composer.php') ? 'config/composer.php' : null))) require_once $path; 
+  ? (is_file('../composer.php') ? '../composer.php' : (is_file('../public/api/composer.php') ? '../public/api/composer.php' : null))
+  : (is_file('composer.php') ? 'composer.php' : (is_file('public/api/composer.php') ? 'public/api/composer.php' : null))) require_once $path; 
 else die(var_dump($path . ' path was not found. file=composer.php'));
 
 if ($path = (basename(getcwd()) == 'public')

@@ -116,7 +116,7 @@ switch (basename(__DIR__)) {
     $domain = defined('APP_DOMAIN') ? APP_DOMAIN : ($host ?? 'localhost');
 
     if ($host === '127.0.0.1' || $domain === 'localhost') {
-        $errors['WHOIS'] = "WHOIS is disabled on localhost.\n";
+      $errors['WHOIS'] = "WHOIS is disabled on localhost.\n";
     }
 
     // Define your paths as pure array (no associative keys unless you plan to use them)
@@ -276,7 +276,7 @@ switch (basename(__DIR__)) {
     //dd(APP_BASE);
     //(defined('APP_PATH') && truepath(APP_PATH)) and $errors['APP_PATH'] = truepath(APP_PATH); // print('App Path: ' . APP_PATH . "\n" . "\t" . '$_SERVER[\'DOCUMENT_ROOT\'] => ' . $_SERVER['DOCUMENT_ROOT'] . "\n");
 
-    define(
+    defined('PATH_PUBLIC') or define(
       'PATH_PUBLIC',
       (defined('APP_PATH')
         ? APP_PATH
@@ -291,7 +291,7 @@ switch (basename(__DIR__)) {
     //define('PHP_EXEC', stripos(PHP_OS, 'LIN') === 0 ? '/usr/bin/php' : dirname(__DIR__) . DIRECTORY_SEPARATOR . 'bin/psexec.exe -d C:\xampp\php\php.exe -f ');
 
     //if (APP_SELF != APP_PATH_SERVER || PHP_SAPI !== 'cli' && in_array(PATH_PUBLIC, get_included_files()) /*APP_SELF == PATH_PUBLIC*/)
-    //  require_once dirname(__DIR__) . DIRECTORY_SEPARATOR . 'config' . DIRECTORY_SEPARATOR . 'classes' . DIRECTORY_SEPARATOR . 'class.sockets.php';
+    //  require_once dirname(__DIR__) . DIRECTORY_SEPARATOR . 'classes' . DIRECTORY_SEPARATOR . 'class.sockets.php';
 
     //dd(get_defined_constants(true)['user']);
     //error_log(var_export(get_required_files(), true));
@@ -310,17 +310,17 @@ switch (basename(__DIR__)) {
     }
 */
     /*
-        if (isset($_SERVER['SOCKET']) && is_resource($_SERVER['SOCKET']) && !empty($_SERVER['SOCKET']) && $_SERVER['REQUEST_METHOD'] != 'POST') {
+        if (isset($GLOBALS['runtime']['socket']) && is_resource($GLOBALS['runtime']['socket']) && !empty($GLOBALS['runtime']['socket']) && $_SERVER['REQUEST_METHOD'] != 'POST') {
           $errors['server-1'] = "Connected to Server: " . SERVER_HOST . ':' . SERVER_PORT . "\n";
-      
+
           // Send a message to the server
           $errors['server-2'] = 'Client request: ' . $message = "cmd: app connected\n";
-      
-          fwrite($_SERVER['SOCKET'], $message);
+
+          fwrite($GLOBALS['runtime']['socket'], $message);
           $output[] = trim($message); // . ': '
           // Read response from the server
-          while (!feof($_SERVER['SOCKET'])) {
-              $response = fgets($_SERVER['SOCKET'], 1024);
+          while (!feof($GLOBALS['runtime']['socket'])) {
+              $response = fgets($GLOBALS['runtime']['socket'], 1024);
               $errors['server-3'] = "Server responce: $response\n";
               if (isset($output[end($output)])) $output[end($output)] .= $response = trim($response);
               else $output[1] = "$response\n";
@@ -338,7 +338,7 @@ switch (basename(__DIR__)) {
                 define('APP_NO_INTERNET_CONNECTION', "Not connected to the internet.");
                 break;
             }
-        } elseif (!isset($_SERVER['SOCKET']) || !$_SERVER['SOCKET']) {
+        } elseif (!isset($GLOBALS['runtime']['socket']) || !$GLOBALS['runtime']['socket']) {
           $ip = resolve_host_to_ip('google.com');
           if (check_internet_connection($ip)) {
             define('APP_IS_ONLINE', true);
@@ -351,9 +351,12 @@ switch (basename(__DIR__)) {
         }
       */
     // Set connectivity error if not connected
-
-    if (APP_IS_ONLINE) {
-
+    if (!defined('APP_IS_ONLINE'))
+      if (is_file(APP_PATH . 'config/constants.env.php'))
+        require_once APP_PATH . 'config/constants.env.php';
+      else {
+        die('APP_IS_ONLINE not defined and constants.env.php missing');
+      } elseif (APP_IS_ONLINE) {
       $errors['APP_IS_ONLINE'] = 'APP Connect(ed): ' . (var_export(APP_IS_ONLINE, true) === true ? 'false (offline)' : 'true (online)') . "\n";
     } elseif (!APP_NO_INTERNET_CONNECTION) {
 
@@ -441,17 +444,17 @@ switch(get_included_files()[0]) {
   case APP_PATH . 'auth.php':
 
   break;
-  
+
   case APP_PATH . 'logout.php':
 
   break;
 
   default:
-  
+
     //var_dump(get_included_files());
     //header('Location: ' . APP_BASE_URL);
     //exit;
-    
+
   break;
 }
 */

@@ -221,7 +221,7 @@ what is/does the url look like http://localhost/app.directory.php?
 
   check_internet_connection()
   
---  6 => '/mnt/c/www/config/classes/class.sockets.php',
+--  6 => '/mnt/c/www/classes/class.sockets.php',
   
   345 - //fclose(self::$socket);
   
@@ -230,9 +230,9 @@ what is/does the url look like http://localhost/app.directory.php?
   
     fsockopen
   
---  7 => '/mnt/c/www/config/classes/class.clientorproj.php',
---  8 => '/mnt/c/www/config/classes/class.logger.php',
---  9 => '/mnt/c/www/config/classes/class.notification.php',
+--  7 => '/mnt/c/www/classes/class.clientorproj.php',
+--  8 => '/mnt/c/www/classes/class.logger.php',
+--  9 => '/mnt/c/www/classes/class.notification.php',
 
 
 Alert when php/composer/git, .env file are not available
@@ -308,13 +308,13 @@ get_required_files() ==
   1  "/mnt/c/www/index.php" (inaccessbile index.php file used to include config.php)
   2    "/mnt/c/www/config/config.php"
   3      "/mnt/c/www/config/functions.php"
-  4        "/mnt/c/www/config/classes/class.clientorproj.php"
-  5        "/mnt/c/www/config/classes/class.logger.php"
-  6        "/mnt/c/www/config/classes/class.notification.php"
-  7        "/mnt/c/www/config/classes/class.shutdown.php"
+  4        "/mnt/c/www/classes/class.clientorproj.php"
+  5        "/mnt/c/www/classes/class.logger.php"
+  6        "/mnt/c/www/classes/class.notification.php"
+  7        "/mnt/c/www/classes/class.shutdown.php"
   8      "/mnt/c/www/config/constants.php"
   9      "/mnt/c/www/config/php.php"
-  10        "/mnt/c/www/config/classes/class.sockets.php"
+  10        "/mnt/c/www/classes/class.sockets.php"
 
 get_required_files() == 
  [0]=> "/mnt/c/www/server.php" (Socket Server 0.0.0.0:8080) ||
@@ -323,11 +323,11 @@ get_required_files() ==
  [2]=>     "/mnt/c/www/config/php.php"
  [3]=>       "/mnt/c/www/config/config.php"
  [4]=>       "/mnt/c/www/config/functions.php"
- [5]=>         "/mnt/c/www/config/classes/class.clientorproj.php"
- [6]=>         "/mnt/c/www/config/classes/class.logger.php"
- [7]=>         "/mnt/c/www/config/classes/class.notification.php"
+ [5]=>         "/mnt/c/www/classes/class.clientorproj.php"
+ [6]=>         "/mnt/c/www/classes/class.logger.php"
+ [7]=>         "/mnt/c/www/classes/class.notification.php"
  [8]=>       "/mnt/c/www/config/constants.php"
- [9]=>         "/mnt/c/www/config/classes/class.sockets.php"
+ [9]=>         "/mnt/c/www/classes/class.sockets.php"
  [10]=>    "/mnt/c/www/public/ui.ace_editor.php"
  [11]=>    "/mnt/c/www/public/ui.composer.php"
  [12]=>    "/mnt/c/www/config/composer.php"
@@ -469,23 +469,23 @@ Sockets
 
 /*
 
-stream_set_blocking($_SERVER['SOCKET'], false);
+stream_set_blocking($GLOBALS['runtime']['socket'], false);
 
-stream_set_timeout($_SERVER['SOCKET'], 10);
+stream_set_timeout($GLOBALS['runtime']['socket'], 10);
 
-$writtenBytes = fwrite($_SERVER['SOCKET'], $message);
+$writtenBytes = fwrite($GLOBALS['runtime']['socket'], $message);
 if ($writtenBytes === false) {
-  $error = socket_last_error($_SERVER['SOCKET']);
+  $error = socket_last_error($GLOBALS['runtime']['socket']);
   $errorMessage = socket_strerror($error);
   echo "Socket write error: $errorMessage\n";
 
 } else {
-  fflush($_SERVER['SOCKET']); // Flush the buffer
+  fflush($GLOBALS['runtime']['socket']); // Flush the buffer
   echo "Bytes written: $writtenBytes\n";
 }
 
 // Check if the socket is ready for reading
-$read = [$_SERVER['SOCKET']];
+$read = [$GLOBALS['runtime']['socket']];
 $write = null;
 $except = null;
 $ready = stream_select($read, $write, $except, 5); // 5 seconds timeout
@@ -548,7 +548,7 @@ vendor/composer/installed.php
 
 :: PHP
 
-if (!is_resource($_SERVER['SOCKET']) || empty($_SERVER['SOCKET'])) { // get_resource_type($stream) == 'stream'
+if (!is_resource($GLOBALS['runtime']['socket']) || empty($GLOBALS['runtime']['socket'])) { // get_resource_type($stream) == 'stream'
 
   $proc = proc_open((stripos(PHP_OS, 'WIN') === 0 ? '' : APP_SUDO) . 'APPLICATION', [["pipe", "r"], ["pipe", "w"], ["pipe", "w"]], $pipes);
 
@@ -571,11 +571,11 @@ if (!is_resource($_SERVER['SOCKET']) || empty($_SERVER['SOCKET'])) { // get_reso
   // Send a message to the server
   $errors['server-2'] = 'Client request: ' . $message = "cmd: composer update\n";
     
-  fwrite($_SERVER['SOCKET'], $message);
+  fwrite($GLOBALS['runtime']['socket'], $message);
   $output[] = trim($message) . ': ';
   // Read response from the server
-  while (!feof($_SERVER['SOCKET'])) {
-    $response = fgets($_SERVER['SOCKET'], 1024);
+  while (!feof($GLOBALS['runtime']['socket'])) {
+    $response = fgets($GLOBALS['runtime']['socket'], 1024);
     $errors['server-3'] = "Server responce: $response\n";
     if (isset($output[end($output)])) $output[end($output)] .= $response = trim($response);
     //if (!empty($response)) break;

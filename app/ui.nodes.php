@@ -6,10 +6,10 @@ if (isset($_GET['app']) && $_GET['app'] == 'nodes' && isset($_GET['json'])) {
   header('Content-Type: application/json');
   /*
     //$_GET['client'] = '000-Hardy,Darrell';
-    if (is_file('../bootstrap.php'))
-      require_once '../bootstrap.php';
+    if (is_file('..' . DIRECTORY_SEPARATOR . 'bootstrap' . DIRECTORY_SEPARATOR . 'bootstrap.php'))
+      require_once '..' . DIRECTORY_SEPARATOR . 'bootstrap' . DIRECTORY_SEPARATOR . 'bootstrap.php';
     else
-      require_once 'bootstrap.php';
+      require_once 'bootstrap' . DIRECTORY_SEPARATOR . 'bootstrap.php';
   */
   /**
    * Get required files from a script and return their paths
@@ -63,7 +63,7 @@ if (isset($_GET['app']) && $_GET['app'] == 'nodes' && isset($_GET['json'])) {
       //'server.php' => 'server.php',
       'public/index.php' => APP_ROOT . 'public/index.php',
       //'config/runtime/php.php' => 'config/runtime/php.php',
-      'config/composer.php' => APP_ROOT . 'config/composer.php',
+      'api/composer.php' => APP_ROOT . 'api' . DIRECTORY_SEPARATOR . 'composer.php',
       //'config/git.php' => 'config/git.php',
       //'public/idx.product.php' => 'public/idx.product.php',
     ];
@@ -77,10 +77,10 @@ if (isset($_GET['app']) && $_GET['app'] == 'nodes' && isset($_GET['json'])) {
     //die(getcwd());
     // Define scripts to process
     $requiredFiles = [
-      'server.php' => 'server.php',
+      //'server.php' => 'server.php',
       'public/index.php' => 'public/index.php',
       //'config/php.php' => 'config/runtime/php.php',
-      'config/composer.php' => 'config/composer.php',
+      'api/composer.php' => 'api' . DIRECTORY_SEPARATOR . 'composer.php',
       //'config/git.php' => 'config/git.php',
       'public/idx.product.php' => 'public/idx.product.php',
     ];
@@ -94,7 +94,7 @@ if (isset($_GET['app']) && $_GET['app'] == 'nodes' && isset($_GET['json'])) {
   }
 
   // Ensure vendor packages are only under composer.php
-  if (isset($jsonData['config/composer.php'], $jsonData['public/index.php'])) {
+  if (isset($jsonData['public/api/composer.php'], $jsonData['public/index.php'])) {
     $vendorPackages = array_filter(
       $jsonData['public/index.php'],
       fn($file) => str_contains($file, 'vendor/')
@@ -110,8 +110,8 @@ if (isset($_GET['app']) && $_GET['app'] == 'nodes' && isset($_GET['json'])) {
           $vendorPackages
         );
     */
-    $jsonData['config/composer.php'] = array_merge(
-      $jsonData['config/composer.php'],
+    $jsonData['public/api/composer.php'] = array_merge(
+      $jsonData['public/api/composer.php'],
       $vendorPackages
     );
 

@@ -1,6 +1,9 @@
 <?php
-require_once dirname(__DIR__, 1) . DIRECTORY_SEPARATOR . 'config/composer.php';
 
+require_once dirname(__DIR__, 1) . DIRECTORY_SEPARATOR . 'config' . DIRECTORY_SEPARATOR . 'constants.composer.php';
+
+
+//dd(COMPOSER_BIN);
 /*
 <?php ob_start(); ?>
 <HTML ...>
@@ -159,7 +162,6 @@ function highlightVersionDiff($installed, $latest)
   return $result;
 }
 
-
 ob_start(); ?>
 
 <div id="app_composer-container"
@@ -170,7 +172,7 @@ ob_start(); ?>
     style="position: relative; margin: 0 auto; width: 404px; height: 324px; border: 3px dashed #6B4329; background-color: #FBF7F1;">
 
     <div class="fixed ui-widget-header" id=""
-      style="position: fixed; display: inline-block; width: 404px; height: 25px; margin: -45px 0 25px 0; padding: 10px 0 10px 0; border-bottom: 1px solid #000; z-index: 3;">
+      style="position: fixed; display: inline-block; width: 404px; height: 25px; cursor: move; margin: -45px 0 25px 0; padding: 10px 0 10px 0; border-bottom: 1px solid #000; z-index: 3;">
       <label class="composer-home" style="cursor: pointer;">
         <div class="absolute"
           style="position: relative; float: left; display: inline-block; top: 0; left: 0; margin-top: -5px;">
@@ -226,7 +228,7 @@ ob_start(); ?>
             &gt;</a>
         </div>
         <form style="display: inline-block;" action="<?= '?app=composer' ?? basename(__FILE__); ?>" method="POST">
-          <div class="text-sm">
+          <div class="text-sm" style="font-size: small;">
             <input type="hidden" name="composer[autoload]" value="off">
             <!-- Checkbox input that overrides the hidden input if checked -->
             <input type="checkbox" name="composer[autoload]" value="on" onchange="this.form.submit();"
@@ -490,7 +492,7 @@ php composer.phar -v
           <div
             style="position: relative; display: inline-block; background-color: rgb(225,196,151,.25); width: 100%; z-index: 1;">
             <?php //if (defined('COMPOSER_JSON')) $composer = json_decode(COMPOSER_JSON['json']); ?>
-            <div class="text-sm" style="display: inline; font-size: xx-small;">
+            <div class="text-sm" style="display: inline;">
               <!-- <input id="composerJson" type="checkbox" style="cursor: pointer;" name="composerJson" value="true" checked=""> -->
               <label for="composerJson" id="appComposerJsonLabel" class="text-sm"
                 style="background-color: #6B4329; <?= defined('COMPOSER_JSON') && realpath(COMPOSER_JSON['path']) ? 'color: #F0E0C6; text-decoration: underline; ' : 'color:red; text-decoration: underline; text-decoration: line-through;' ?> cursor: pointer; font-weight: bold;"
@@ -508,7 +510,7 @@ php composer.phar -v
             <?php if (defined('COMPOSER_JSON') && realpath(COMPOSER_JSON['path'])) { ?>
               <div style="display: inline-block; width: 100%; margin-bottom: 10px;">
                 <div class="text-xs" style="display: inline-block; float: left; background-color: #0078D7; color: white;">
-                  Last Update: <span <?= isset(COMPOSER['json']->time) && COMPOSER['json']->time === '' ? 'style="background-color: white; color: red;"' : 'style="background-color: white; color: #0078D7;"' ?>><?= isset(COMPOSER['json']->time) && COMPOSER['json']->time !== '' ? COMPOSER['json']->{'time'} : date('Y-m-d H:i:s') ?></span>
+                  Last Update: <span <?= defined('COMPOSER') && isset(COMPOSER['json']->time) && COMPOSER['json']->time === '' ? 'style="background-color: white; color: red;"' : 'style="background-color: white; color: #0078D7;"' ?>><?= defined('COMPOSER') && isset(COMPOSER['json']->time) && COMPOSER['json']->time !== '' ? COMPOSER['json']->{'time'} : date('Y-m-d H:i:s') ?></span>
                 </div>
 
 
@@ -520,7 +522,7 @@ php composer.phar -v
                 </div>
               </div>
             <?php } ?>
-            <div style="display: inline-block; width: 100%;"><span <?= (isset(COMPOSER['json']->{'name'}) && COMPOSER['json']->{'name'} !== '' ? '' : 'style="background-color: #fff; color: red;" title="Either Vendor or Package is missing"') ?>>Name:</span>
+            <div style="display: inline-block; width: 100%;"><span <?= defined('COMPOSER') && isset(COMPOSER['json']->{'name'}) && COMPOSER['json']->{'name'} !== '' ? '' : 'style="background-color: #fff; color: red;" title="Either Vendor or Package is missing"' ?>>Name:</span>
               <div style="position: relative; float: right;">
                 <div class="absolute font-bold"
                   style="position: absolute; top: -8px; left: 5px; font-size: 10px; z-index: 1;">Vendor</div>
@@ -533,8 +535,7 @@ php composer.phar -v
                   size="13" />
               </div>
             </div>
-            <div style="display: inline-block; width: 100%;"><label for="composer-description"
-                <?= isset(COMPOSER['json']->{'description'}) && COMPOSER['json']->{'description'} !== '' ? '' : 'style="background-color: #fff; color: red; cursor: pointer;" title="Description is missing"' ?>>Description:</label>
+            <div style="display: inline-block; width: 100%;"><label for="composer-description" <?= defined('COMPOSER') && isset(COMPOSER['json']->{'description'}) && COMPOSER['json']->{'description'} !== '' ? '' : 'style="background-color: #fff; color: red; cursor: pointer;" title="Description is missing"' ?>>Description:</label>
               <div style="float: right;">
                 <input id="composer-description" type="text" name="composer[config][description]" placeholder="Details"
                   value="<?= defined('COMPOSER') && isset(COMPOSER['json']->description) ? COMPOSER['json']->description : ''; ?>">
@@ -542,8 +543,7 @@ php composer.phar -v
             </div>
 
             <!-- version -->
-            <div style="display: inline-block; width: 100%;"><label for="composer-version"
-                <?= isset(COMPOSER['json']->{'version'}) && preg_match(COMPOSER_EXPR_VER, COMPOSER['json']->{'version'}) ? '' : 'style="background-color: #fff; color: red; cursor: pointer;" title="Version must follow this format: ' . COMPOSER_EXPR_VER . '"' ?>>Version:</label>
+            <div style="display: inline-block; width: 100%;"><label for="composer-version" <?= defined('COMPOSER') && isset(COMPOSER['json']->{'version'}) && preg_match(COMPOSER_EXPR_VER, COMPOSER['json']->{'version'}) ? '' : 'style="background-color: #fff; color: red; cursor: pointer;" title="Version must follow this format: ' . COMPOSER_EXPR_VER . '"' ?>>Version:</label>
               <div style="float: right;">
                 <input id="composer-version" type="text" name="composer[config][version]" size="10"
                   placeholder="(Version) 1.2.3" style="text-align: right;" pattern="(\d+\.\d+(?:\.\d+)?)"

@@ -5,7 +5,7 @@ global $errors;
 if (__FILE__ == get_required_files()[0] && __FILE__ == realpath($_SERVER["SCRIPT_FILENAME"]))
   if ($path = basename(dirname(get_required_files()[0])) == 'public') { // (basename(getcwd())
     chdir('../');
-    if ($path = realpath(/*'config' . DIRECTORY_SEPARATOR . */ 'bootstrap.php')) // is_file('bootstrap.php')
+    if ($path = realpath(/*'config' . DIRECTORY_SEPARATOR . */ 'bootstrap' . DIRECTORY_SEPARATOR . 'bootstrap.php')) // is_file('bootstrap.php')
       require_once $path;
     //die(var_dump(APP_PATH));
   } else
@@ -14,7 +14,7 @@ else
   require_once APP_PATH . 'config' . DIRECTORY_SEPARATOR . 'config.php';
 
 //require_once APP_PATH . APP_ROOT . APP_BASE['vendor'] . 'autoload.php';
-//require_once APP_PATH . APP_ROOT . APP_BASE['config'] . 'composer.php';
+//require_once APP_PATH . APP_ROOT . 'app' . DIRECTORY_SEPARATOR . 'composer.php';
 
 // !isset($_GET['path']) and $_GET['path'] = '';
 
@@ -502,7 +502,7 @@ left: calc(50% - 265px); /* 1207 / 2 */ /*transform: translate(-50%, -50%);*/ bo
 
         //if ($_ENV['COMPOSER']['AUTOLOAD'] == true)
         require_once APP_PATH . APP_ROOT . APP_BASE['vendor'] . 'autoload.php';
-        require_once APP_PATH . APP_BASE['config'] . 'composer.php'; ?>
+        require_once APP_PATH . 'app' . DIRECTORY_SEPARATOR . 'composer.php'; ?>
         <!-- iframe src="composer_pkg.php" style="height: 500px; width: 700px;"></iframe -->
         <div style="width: 700px; ">
           <div style="display: inline-block; width: 350px;"><a href="#!"
@@ -724,6 +724,7 @@ left: calc(50% - 265px); /* 1207 / 2 */ /*transform: translate(-50%, -50%);*/ bo
 
                     $queryParams['path'] = $calculatedPath;
                   }
+
                   /*
                                       if (!empty($_GET['client'])) {
                                         $queryParams['client'] = $_GET['client'];
@@ -1099,7 +1100,7 @@ left: calc(50% - 265px); /* 1207 / 2 */ /*transform: translate(-50%, -50%);*/ bo
 
       $output = [];
 
-      //$_SERVER['SOCKET'] = fsockopen(SERVER_HOST, SERVER_PORT, $errno, $errstr, 5);
+      //$GLOBALS['runtime']['socket'] = fsockopen(SERVER_HOST, SERVER_PORT, $errno, $errstr, 5);
   
       if ($_POST['cmd'] && $_POST['cmd'] != '')
         if (preg_match('/^chdir\s+(:?(.*))/i', $_POST['cmd'], $match)) {
@@ -1277,11 +1278,12 @@ left: calc(50% - 265px); /* 1207 / 2 */ /*transform: translate(-50%, -50%);*/ bo
 <div style="position: fixed; z-index: 50;">
   <div
     style="position: absolute; top: -10px; left: 0px; width: 395px; z-index: 50; background-color: rgb(250, 250, 250); border: 1px solid black; box-shadow: rgba(0, 0, 0, 0.5) 0px 0px 10px; border-radius: 5px; padding: 3px;">
-
-    <!-- <input type="hidden" name="path" value="" /> -->
-    <button id="displayDirectoryBtn" style="margin: 2px 5px 0 0;" type=""><img
-        src="resources/images/directory-www.fw.png" width="18" height="10"
-        style="vertical-align: middle;">&nbsp;&#9650;</button>
+    <form action="" method="GET" style="display: inline; margin: 0;">
+      <input type="hidden" name="path" value="" />
+      <button id="displayDirectoryBtn" style="margin: 2px 5px 0 0; border: 3px dashed red;" type=""
+        onclick="this.form.submit();"><img src="resources/images/directory-www.fw.png" width="18" height="10"
+          style="vertical-align: middle;">&nbsp;&#9650;</button>
+    </form>
     <div style="display: inline; margin-top: -3px;"><a style="font-size: 18pt; font-weight: bold; padding: 0 3px 0 0 ;"
         href="/">&#8962;</a></div>
     <form style="display: inline;" autocomplete="off" spellcheck="false" action="" method="GET">/
@@ -1330,7 +1332,7 @@ left: calc(50% - 265px); /* 1207 / 2 */ /*transform: translate(-50%, -50%);*/ bo
     right: 0;
     margin: 0 auto;
     background-color: rgba(255, 255, 255, 0.1);
-    height: auto;
+    /*height: auto;*/
     max-height: 80vh;
     overflow-y: auto;
     overflow-x: hidden;

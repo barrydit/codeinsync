@@ -3,6 +3,8 @@ declare(strict_types=1); // First Line Only!
 
 !defined('APP_PATH') and define('APP_PATH', dirname(__DIR__) . DIRECTORY_SEPARATOR);
 
+!defined('APP_ROOT') ? define('APP_ROOT', '') : '';
+
 //include 'dotenv.php';
 
 date_default_timezone_set('America/Vancouver');
@@ -15,9 +17,16 @@ $isFile = function ($path) /*use (&$paths)*/ {
     require_once $path; // $paths[] = $path;
 };
 
-$isFile(APP_PATH . 'php.php') ?:
-  $isFile('config' . DIRECTORY_SEPARATOR . 'runtime' . DIRECTORY_SEPARATOR . 'php.php') ?:
-  $isFile('php.php');
+//$isFile(APP_PATH . 'php.php') ?:
+//  $isFile('config' . DIRECTORY_SEPARATOR . 'runtime' . DIRECTORY_SEPARATOR . 'php.php') ?:
+//  $isFile('php.php');
+
+if (PHP_SAPI !== 'cli' && PHP_SAPI !== 'phpdbg') {
+  $isFile(APP_PATH . 'bootstrap' . DIRECTORY_SEPARATOR . 'bootstrap.php'); // constants.php
+}
+
+
+// require_once APP_PATH . 'bootstrap' . DIRECTORY_SEPARATOR . 'bootstrap.php';
 
 // Check if the dd function exists
 if (!function_exists('dd')) {
@@ -50,6 +59,8 @@ if (!function_exists('dd')) {
   // Set the custom error handler
   set_error_handler("customErrorHandler");
 }
+
+require_once APP_PATH . 'config' . DIRECTORY_SEPARATOR . 'constants.env.php';
 
 // Enable debugging and error handling based on APP_DEBUG and APP_ERROR constants
 !defined('APP_ERROR') and define('APP_ERROR', false);
@@ -160,23 +171,22 @@ while ($path = array_shift($paths)) {
 // Load the required files
 //$paths[] = __DIR__ . DIRECTORY_SEPARATOR . 'constants.php'; //require('constants.php'); 
 
-if (!defined('APP_ROOT')) {
-
+if (!defined('APP_ROOT'))
   if (array_key_first($_GET) != 'path') {
 
     // Determine base paths for client, domain, or project
     $clientPath = isset($_GET['client'])
-      ? APP_BASE['clients'] . $_GET['client'] . DIRECTORY_SEPARATOR
-      : (!empty($_ENV['DEFAULT_CLIENT']) && isset($_GET['client']) ? APP_BASE['clients'] . $_ENV['DEFAULT_CLIENT'] . DIRECTORY_SEPARATOR : '');
+      ? 'clients' . DIRECTORY_SEPARATOR . $_GET['client'] . DIRECTORY_SEPARATOR
+      : (!empty($_ENV['DEFAULT_CLIENT']) && isset($_GET['client']) ? 'clients' . DIRECTORY_SEPARATOR . $_ENV['DEFAULT_CLIENT'] . DIRECTORY_SEPARATOR : '');
 
     $domainPath = isset($_GET['domain']) && $_GET['domain'] !== ''
       ? (isset($_GET['client'])
         ? $clientPath . $_GET['domain'] . DIRECTORY_SEPARATOR
-        : APP_BASE['clients'] . $_GET['domain'] . DIRECTORY_SEPARATOR)
-      : (!empty($_ENV['DEFAULT_DOMAIN']) ? APP_BASE['clients'] . $_ENV['DEFAULT_CLIENT'] . DIRECTORY_SEPARATOR . (array_key_first($_GET) == 'path' ? '' : (isset($_SERVER['REQUEST_METHOD']) && $_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['cmd']) && in_array($_POST['cmd'], ['cd ../', 'chdir ../']) ? '' : $_ENV['DEFAULT_DOMAIN']) . DIRECTORY_SEPARATOR) : '')/*''*/ ;
+        : 'clients' . DIRECTORY_SEPARATOR . $_GET['domain'] . DIRECTORY_SEPARATOR)
+      : (!empty($_ENV['DEFAULT_DOMAIN']) ? 'clients' . DIRECTORY_SEPARATOR . $_ENV['DEFAULT_CLIENT'] . DIRECTORY_SEPARATOR . (array_key_first($_GET) == 'path' ? '' : (isset($_SERVER['REQUEST_METHOD']) && $_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['cmd']) && in_array($_POST['cmd'], ['cd ../', 'chdir ../']) ? '' : $_ENV['DEFAULT_DOMAIN']) . DIRECTORY_SEPARATOR) : '')/*''*/ ;
 
     $projectPath = isset($_GET['project'])
-      ? APP_BASE['projects'] . $_GET['project'] . DIRECTORY_SEPARATOR
+      ? 'projects' . DIRECTORY_SEPARATOR . $_GET['project'] . DIRECTORY_SEPARATOR
       : '';
 
     // Final path prioritizing client/domain and falling back to project if present
@@ -194,7 +204,7 @@ if (!defined('APP_ROOT')) {
     define('APP_ROOT', '');
     $errors['APP_ROOT'] = 'APP_ROOT was NOT defined.';
   }
-}
+
 
 !defined('APP_ROOT') and define('APP_ROOT', '');
 
@@ -266,22 +276,21 @@ header("Pragma: no-cache");
 header("Expires: 0");
 //header("Content-Type: text/html; charset=UTF-8");
 
-
-if (!is_dir($path = APP_PATH . APP_BASE['projects'])) {
+if (!is_dir($path = APP_PATH . 'projects' . DIRECTORY_SEPARATOR . 'internal')) {
   $errors['projects'] = "projects/internal directory does not exist.\n";
   mkdir($path, 0777, true);
 }
 
-if (!is_file($file = APP_PATH . APP_BASE['projects'] . 'index.php')) {
-  $errors['projects'] = APP_BASE['projects'] . 'index.php does not exist.';
-  if (is_file($source_file = APP_PATH . APP_BASE['data'] . 'source_code.json')) {
+if (!is_file($file = APP_PATH . 'projects' . DIRECTORY_SEPARATOR . 'index.php')) {
+  $errors['projects'] = 'projects' . DIRECTORY_SEPARATOR . 'index.php does not exist.';
+  if (is_file($source_file = APP_PATH . 'data' . DIRECTORY_SEPARATOR . 'source_code.json')) {
     $source_file = json_decode(file_get_contents($source_file));
     if ($source_file)
       file_put_contents($file, $source_file->{'projects/internal/index.php'});
   }
   unset($source_file);
-} elseif (is_file(APP_PATH . APP_BASE['projects'] . 'index.php') && isset($_GET['project']) && $_GET['project'] == 'show') {
-  /* Shutdown::setEnabled(false)->setShutdownMessage(fn() => eval ('?>' . file_get_contents(APP_PATH . APP_BASE['projects'] . 'index.php')))->shutdown(); */
+} elseif (is_file(APP_PATH . 'projects' . DIRECTORY_SEPARATOR . 'index.php') && isset($_GET['project']) && $_GET['project'] == 'show') {
+  /* Shutdown::setEnabled(false)->setShutdownMessage(fn() => eval ('?>' . file_get_contents(APP_PATH . 'projects' . DIRECTORY_SEPARATOR . 'index.php')))->shutdown(); */
 }
 
 // function loadEnvConfig($file) {
@@ -299,7 +308,12 @@ if (basename($dir = getcwd()) != 'config') {
   //require_once 'constants.php';
   //require_once 'config' . DIRECTORY_SEPARATOR . 'auth.php';
   //dd(getcwd());
-  require_once APP_PATH . 'bootstrap.php';
+
+  if (!defined('APP_CLI') || !APP_CLI) {
+    // If running in CLI mode, load the bootstrap file
+    // This is useful for command-line scripts that need to initialize the application
+    require_once APP_PATH . 'bootstrap' . DIRECTORY_SEPARATOR . 'bootstrap.php';
+  }
 
   chdir(APP_PATH . APP_ROOT);
   if (is_file($file = APP_PATH . APP_ROOT . '.env')) {
@@ -358,10 +372,10 @@ if (basename($dir = getcwd()) != 'config') {
 
   //dd(APP_BASE);
 
-  if (!is_file(APP_PATH . APP_BASE['public'] . 'install.php'))
-    if (@touch(APP_PATH . APP_BASE['public'] . 'install.php'))
+  if (!is_file(APP_PATH . 'public' . DIRECTORY_SEPARATOR . 'install.php'))
+    if (@touch(APP_PATH . 'public' . DIRECTORY_SEPARATOR . 'install.php'))
       file_put_contents(
-        APP_PATH . APP_BASE['public'] . 'install.php',
+        APP_PATH . 'public' . DIRECTORY_SEPARATOR . 'install.php',
         '<?php ' . <<<END
 if (\$_SERVER['REQUEST_METHOD'] == 'POST') {
     foreach (['composer.php', 'config.php', 'constants.php', 'functions.php', 'git.php'] as \$file) {

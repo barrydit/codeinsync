@@ -1023,12 +1023,12 @@ cursor : pointer;
             Server
           </h3>
         </div>
-        <div style="float: right;">On / Off <input id="check_server_start" type="checkbox" <?= isset($_SERVER['SOCKET']) && is_resource($_SERVER['SOCKET']) ? 'checked="checked"' : '' ?> onclick="validate()" /></div>
+        <div style="float: right;">On / Off <input id="check_server_start" type="checkbox" <?= isset($GLOBALS['runtime']['socket']) && is_resource($GLOBALS['runtime']['socket']) ? 'checked="checked"' : '' ?> onclick="validate()" /></div>
         <div style="clear: both;"></div>
         <div style="display: inline-block;">$_ENV<br /><a href="">Status</a><br /><a href="">Help</a><br />Error Log
         </div>
         <img id="serverStatus"
-          src="/resources/images/server<?= isset($_SERVER['SOCKET']) && is_resource($_SERVER['SOCKET']) ? '-green' : '' ?>.gif"
+          src="/resources/images/server<?= isset($GLOBALS['runtime']['socket']) && is_resource($GLOBALS['runtime']['socket']) ? '-green' : '' ?>.gif"
           style="float: right;" width="100" height="103">
         <!--form action="#!" method="GET">
       <?= isset($_GET['debug']) && !$_GET['debug'] ? '' : '<input type="hidden" name="debug" value / >' ?> 

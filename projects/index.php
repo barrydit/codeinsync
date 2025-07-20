@@ -17,7 +17,7 @@ if (realpath($_SERVER["SCRIPT_FILENAME"]) == get_required_files()[0] && in_array
 }
 */
 
-if (is_file($bootstrap = dirname(__DIR__, 1) . DIRECTORY_SEPARATOR . 'bootstrap.php')) {
+if (is_file($bootstrap = dirname(__DIR__, 1) . 'bootstrap' . DIRECTORY_SEPARATOR . 'bootstrap.php')) {
   require_once $bootstrap;
 }
 !defined('APP_PATH') and define('APP_PATH', __DIR__ . DIRECTORY_SEPARATOR);
