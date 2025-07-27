@@ -10,7 +10,7 @@ if (__FILE__ == get_required_files()[0])
   else
     die(var_dump("$path path was not found. file=$path"));
 
-if (is_file($path = APP_PATH . APP_BASE['config'] . 'npm.php'))
+if (is_file($path = APP_PATH . APP_BASE['config'] . 'constants.npm.php'))
   require_once $path;
 
 ob_start(); ?>
@@ -50,7 +50,7 @@ ob_start(); ?>
   <div
     style="position: relative; margin: 0 auto; width: 404px; height: 306px; border: 3px dashed #DD0000; background-color: #FBF7F1;">
     <div class="fixed ui-widget-header"
-      style="position: fixed; display: inline-block; width: 404px; height: 0; margin: -48px 0 25px 0; padding: 24px 0; border-bottom: 1px solid #000; z-index: 3;">
+      style="position: fixed; display: inline-block; width: 404px; height: 0; cursor: move; margin: -48px 0 25px 0; padding: 24px 0; border-bottom: 1px solid #000; z-index: 3;">
       <label class="npm-home" style="cursor: pointer;">
         <div class=""
           style="position: relative; float: left; display: inline-block; top: 0; left: 0; background-color: rgba(255,255,255,0.8); margin-top: -5px;">
@@ -344,7 +344,7 @@ ob_start(); ?>
 
     <style type="text/tailwindcss">
       <?= $app['style']; ?>
-              </style>
+                </style>
   </head>
 
   <body>

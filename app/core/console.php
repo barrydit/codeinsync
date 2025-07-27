@@ -1,6 +1,7 @@
 <?php
 
 //dd($_POST);
+require_once dirname(__DIR__, 1) . DIRECTORY_SEPARATOR . 'config' . DIRECTORY_SEPARATOR . 'constants.runtime.php';
 
 global $shell_prompt, $auto_clear, $errors;
 
@@ -402,7 +403,7 @@ ob_start(); ?>
 
 <!-- <div class="container" style="border: 1px solid #000;"> -->
 
-<div id="app_console-container" class="" style="border: 1px dashed #000; ">
+<div id="app_console-container" class="" style="border: 1px dashed #000; display: block;">
   <div id="process-list" class="process-list" onmouseout="stopScroll()" style="display: none;">
     <!--
       <div style="position: relative; width: 80px; height: 20px; background-color: #000; margin: 0 auto;">

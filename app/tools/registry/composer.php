@@ -2,8 +2,13 @@
 
 require_once dirname(__DIR__, 1) . DIRECTORY_SEPARATOR . 'config' . DIRECTORY_SEPARATOR . 'constants.composer.php';
 
+$COMPOSER_JSON = json_encode($composer_obj); // @file_get_contents("composer.json");
+$COMPOSER = json_decode($COMPOSER_JSON, true);
 
-//dd(COMPOSER_BIN);
+define("COMPOSER_JSON_RAW", $COMPOSER_JSON);
+define("COMPOSER", ['json' => $composer_obj]); // ← This is what’s missing!
+
+//dd(COMPOSER);
 /*
 <?php ob_start(); ?>
 <HTML ...>

@@ -25,7 +25,16 @@ END;
 defined('APP_ROOT') or
   define('APP_ROOT', '');
 
-!defined('APP_SELF') and define('APP_SELF', !empty(get_included_files()) ? get_included_files()[0] : __FILE__); //mnt/c/www/public/index.php
+// Always resolve to full paths
+defined('APP_PATH') or define('APP_PATH', realpath(__DIR__) . DIRECTORY_SEPARATOR);
+
+defined('PATH_PUBLIC') or define(
+  'PATH_PUBLIC',
+  realpath(APP_PATH . 'public/index.php')
+);
+
+defined('APP_SELF') or
+  define('APP_SELF', realpath($_SERVER['SCRIPT_FILENAME'] ?? (get_included_files()[0] ?? __FILE__))); //mnt/c/www/public/index.php
 
 switch (APP_SELF) {
   case __FILE__:
@@ -168,7 +177,7 @@ if (isset($_SERVER['REQUEST_METHOD']))
 
         $_ENV['APP_ENV'] = APP_ENV;
         //die('testing ' . $_SERVER['REQUEST_METHOD'] );
-        Shutdown::setEnabled(false)->setShutdownMessage(fn() => header('Location: ' . APP_URL))->shutdown();
+        Shutdown::setEnabled(false)->setShutdownMessage(fn() => header('Location: ' . APP_URL))->shutdown(); // Message left in error_log
       }
 
       if (isset($_ENV['APP_ENV']) && !empty($_ENV))
@@ -271,7 +280,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'GET' && __FILE__ == PATH_PUBLIC)
 //dd($_GET);
 //dd(__DIR__ . DIRECTORY_SEPARATOR);
 
-if (/*APP_SELF === PATH_PUBLIC*/ dirname(APP_SELF) === dirname(PATH_PUBLIC)) {
+if (/*APP_SELF === PATH_PUBLIC*/ dirname(APP_SELF) === realpath(PATH_PUBLIC)) {
 
   require_once 'idx.product.php';
   if (!empty($paths)) {

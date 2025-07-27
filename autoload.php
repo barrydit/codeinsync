@@ -1,35 +1,54 @@
 <?php
 
-!defined('APP_PATH') and
-    define('APP_PATH', realpath(__DIR__ /*. '..'*/) . DIRECTORY_SEPARATOR);
+// ------------------------------------------------------
+// Path Constants (fully resolved, consistent trailing slashes)
+// ------------------------------------------------------
 
-!defined('APP_SELF') ? define('APP_SELF', basename($_SERVER['SCRIPT_FILENAME'] ?? '')) : '';
+defined('APP_PATH') || define(
+    'APP_PATH',
+    rtrim(realpath(__DIR__), '/\\') . DIRECTORY_SEPARATOR
+);
 
-!defined('PATH_PUBLIC') ? define('PATH_PUBLIC', basename(APP_PATH . 'public/index.php' ?? '')) : '';
+defined('APP_SELF') || define(
+    'APP_SELF',
+    realpath($_SERVER['SCRIPT_FILENAME'] ?? (get_included_files()[0] ?? __FILE__))
+);
 
-// Resolve CONFIG_PATH, APP_PATH, etc., if not already set
-defined('CONFIG_PATH') or define('CONFIG_PATH', APP_PATH . 'config');
-defined('BOOTSTRAP_PATH') or define('BOOTSTRAP_PATH', APP_PATH . 'bootstrap');
+defined('PATH_PUBLIC') || define(
+    'PATH_PUBLIC',
+    APP_PATH . 'public' . DIRECTORY_SEPARATOR
+);
 
-if (!defined('APP_CONTEXT')) {
-    define('APP_CONTEXT', match (true) {
-        PHP_SAPI === 'cli' && isset($argv[1]) && str_starts_with($argv[1], 'socket') => 'socket',
-        PHP_SAPI === 'cli' => 'cli',
-        //PHP_SAPI !== 'cli' => 'socket', // Default to 'cmd' for web requests
-        default => 'www',
-    });
-}
+defined('CONFIG_PATH') || define('CONFIG_PATH', APP_PATH . 'config' . DIRECTORY_SEPARATOR);
+defined('BOOTSTRAP_PATH') || define('BOOTSTRAP_PATH', APP_PATH . 'bootstrap' . DIRECTORY_SEPARATOR);
 
-require_once APP_PATH . 'autoload-trap.php'; // log or intercept paths
+// ------------------------------------------------------
+// Context Detection (cli, socket, or www)
+// ------------------------------------------------------
 
-// Basic manual class loader (if no composer autoload)
-spl_autoload_register(function ($class) {
-    // PSR-4-style autoload for namespaced classes like App\Core\Registry
+defined('APP_CONTEXT') || define('APP_CONTEXT', match (true) {
+    PHP_SAPI === 'cli' && isset($argv[1]) && str_starts_with($argv[1], 'socket') => 'socket',
+    PHP_SAPI === 'cli' => 'cli',
+    default => 'www',
+});
+
+// ------------------------------------------------------
+// Autoloader Registration
+// ------------------------------------------------------
+defined('BOOTSTRAP_PATH') || define('BOOTSTRAP_PATH', APP_PATH . 'bootstrap' . DIRECTORY_SEPARATOR);
+
+// ------------------------------------------------------
+// Autoloader Registration (PSR-4 + Legacy Fallback)
+// ------------------------------------------------------
+
+function autoload_class(string $class): void
+{
     $prefix = 'App\\';
     $baseDir = APP_PATH . 'classes/';
 
+    // PSR-4-style loading
     if (str_starts_with($class, $prefix)) {
-        $relativeClass = substr($class, strlen($prefix)); // e.g. Core\Registry
+        $relativeClass = substr($class, strlen($prefix));
         $file = $baseDir . str_replace('\\', '/', $relativeClass) . '.php';
 
         if (is_file($file)) {
@@ -38,7 +57,7 @@ spl_autoload_register(function ($class) {
         }
     }
 
-    // Legacy support for global class.classname.php, interfaces/, commands/
+    // Legacy fallback support
     $lowerClass = strtolower($class);
     $fallbackPaths = [
         APP_PATH . "classes/class.$lowerClass.php",
@@ -53,9 +72,42 @@ spl_autoload_register(function ($class) {
         }
     }
 
-    // Optional: Log failure to load class
     error_log("Autoloader could not find class: $class");
+}
+
+spl_autoload_register('autoload_class');
+
+// ------------------------------------------------------
+// Shutdown Hook (for fatal error logging & profiling)
+// ------------------------------------------------------
+
+register_shutdown_function(function () {
+    $error = error_get_last();
+
+    if ($error) {
+        $message = sprintf(
+            "Fatal error: %s in %s on line %d",
+            $error['message'],
+            $error['file'],
+            $error['line']
+        );
+        error_log(date('c') . " | " . $message);
+        file_put_contents(APP_PATH . 'error_log', date('c') . " | " . $message . PHP_EOL, FILE_APPEND);
+        return;
+    }
+
+    defined('APP_START') || define('APP_START', $_SERVER['REQUEST_TIME_FLOAT'] ?? microtime(true));
+    $execTime = round((defined('APP_END') ? APP_END : microtime(true)) - APP_START, 3);
+
+    error_log("APP_CONTEXT: " . APP_CONTEXT);
+    // error_log("Execution time: {$execTime}s | CWD: " . getcwd());
 });
+
+// ------------------------------------------------------
+// Bootstrap Sequence
+// ------------------------------------------------------
+
+require_once BOOTSTRAP_PATH . 'bootstrap.php';
 
 
 /*if (isset($_SERVER['REQUEST_METHOD']) && $_SERVER['REQUEST_METHOD'] == 'POST') {
@@ -72,8 +124,5 @@ spl_autoload_register(function ($class) {
     //if (isset($_POST['php']) || preg_match('/^php\s*(:?.*)/i', $_POST['cmd'], $match))
     require_once APP_PATH . 'config' . DIRECTORY_SEPARATOR . 'runtime' . DIRECTORY_SEPARATOR . 'php.php';
 }*/
-
-require_once APP_PATH . 'bootstrap' . DIRECTORY_SEPARATOR . 'bootstrap.php';
-require_once APP_PATH . 'bootstrap' . DIRECTORY_SEPARATOR . 'dispatcher.php';
 
 //require_once APP_PATH . 'config' . DIRECTORY_SEPARATOR . 'routes.php';

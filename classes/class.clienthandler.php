@@ -239,7 +239,7 @@ class ClientHandler
         } elseif (preg_match('/^cmd:\s*composer\s*(.*)(?=\r?\n$)?/si', $input, $matches)) {
             //$output = shell_exec($matches[1]);
 
-            require_once APP_PATH . APP_BASE['public'] . 'api' . DIRECTORY_SEPARATOR . 'composer.php';
+            require_once APP_PATH . 'api' . DIRECTORY_SEPARATOR . 'composer.php';
 
             $sudo_prefix = '';
             if (defined('APP_SUDO') && trim(APP_SUDO) !== '') {

@@ -1,0 +1,77 @@
+{
+    "tools": [
+        {
+            "id": "packagist",
+            "file": "registry/packagist.php",
+            "label": "Packagist",
+            "description": "Search for PHP packages (feeds Composer)",
+            "category": "registry"
+        },
+        {
+            "id": "composer",
+            "file": "registry/composer.php",
+            "label": "Composer",
+            "description": "Install/manage PHP dependencies from Packagist",
+            "category": "registry"
+        }
+        {
+            "id": "npmjs",
+            "file": "registry/npmjs.php",
+            "label": "NPM (JS Registry)",
+            "description": "Search and manage NPM packages.",
+            "category": "registry"
+        },
+        {
+            "id": "phpclasses",
+            "file": "registry/phpclasses.php",
+            "label": "PHP Classes",
+            "description": "Browse packages from PHPClasses.org.",
+            "category": "registry"
+        },
+        {
+            "id": "git",
+            "file": "code/git.php",
+            "label": "Git",
+            "description": "Interface with Git version control.",
+            "category": "code"
+        },
+        {
+            "id": "php",
+            "file": "platform/php.php",
+            "label": "PHP Info",
+            "description": "Show PHP configuration details.",
+            "category": "platform"
+        },
+        {
+            "id": "chatgpt",
+            "file": "platform/chatgpt.php",
+            "label": "ChatGPT",
+            "description": "Integrate with OpenAI for code assistance.",
+            "category": "platform"
+        },
+        {
+            "id": "nodejs",
+            "file": "runtime/node_js.php",
+            "label": "Node.js Runtime",
+            "description": "Inspect installed Node.js versions and binaries.",
+            "category": "runtime",
+            "tags": [
+                "node",
+                "runtime",
+                "env"
+            ]
+        },
+        {
+            "id": "python",
+            "file": "runtime/python.php",
+            "label": "Python Runtime",
+            "description": "Inspect installed Python versions and binaries.",
+            "category": "runtime",
+            "tags": [
+                "python",
+                "runtime",
+                "env"
+            ]
+        }
+    ]
+}

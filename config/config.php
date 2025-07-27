@@ -637,7 +637,7 @@ if (is_array($errors) && !empty($errors)) { ?>
 
 
 
-if (class_exists('Dotenv')) {
+if (class_exists('Dotenv\Dotenv', false)) {
   $dotenv = Dotenv\Dotenv::createImmutable(dirname(__DIR__, 1));
   $dotenv->safeLoad();
 }
