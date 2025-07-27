@@ -94,7 +94,7 @@ if (isset($_GET['app']) && $_GET['app'] == 'nodes' && isset($_GET['json'])) {
   }
 
   // Ensure vendor packages are only under composer.php
-  if (isset($jsonData['public/api/composer.php'], $jsonData['public/index.php'])) {
+  if (isset($jsonData['api/composer.php'], $jsonData['public/index.php'])) {
     $vendorPackages = array_filter(
       $jsonData['public/index.php'],
       fn($file) => str_contains($file, 'vendor/')
@@ -110,8 +110,8 @@ if (isset($_GET['app']) && $_GET['app'] == 'nodes' && isset($_GET['json'])) {
           $vendorPackages
         );
     */
-    $jsonData['public/api/composer.php'] = array_merge(
-      $jsonData['public/api/composer.php'],
+    $jsonData['api/composer.php'] = array_merge(
+      $jsonData['api/composer.php'],
       $vendorPackages
     );
 

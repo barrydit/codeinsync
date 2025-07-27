@@ -2,19 +2,23 @@
 
 use App\Core\Registry;
 
-defined('BASE_PATH') and
+!defined('BASE_PATH') and
   define('BASE_PATH', __DIR__ . DIRECTORY_SEPARATOR) and
   is_string(BASE_PATH) ?: $errors['BASE_PATH'] = "BASE_PATH is not a valid string value.\n"; // APP_PATH
 // Define APP_PATH constant
 !defined('APP_PATH') && defined('BASE_PATH') and
-  define('APP_PATH', realpath(BASE_PATH /*. '..' . DIRECTORY_SEPARATOR*/) . DIRECTORY_SEPARATOR);
+  define('APP_PATH', realpath(BASE_PATH . '..' . DIRECTORY_SEPARATOR) . DIRECTORY_SEPARATOR);
 // Define base paths
 
-defined('CONFIG_PATH') or define('CONFIG_PATH', BASE_PATH . 'config' . DIRECTORY_SEPARATOR);
+defined('CONFIG_PATH') or define('CONFIG_PATH', APP_PATH . 'config' . DIRECTORY_SEPARATOR);
 
 require_once APP_PATH . 'autoload.php';
 
-require_once APP_PATH . 'config' . DIRECTORY_SEPARATOR . 'functions.php';
+require_once CONFIG_PATH . 'functions.php';
+
+if ($_SERVER['SCRIPT_NAME'] == '/dispatcher.php')
+  require_once APP_PATH . 'bootstrap' . DIRECTORY_SEPARATOR . 'dispatcher.php';
+
 
 // Unified app param
 $app = $_POST['app'] ?? $_GET['app'] ?? null;
@@ -41,7 +45,6 @@ if ($_SERVER['REQUEST_METHOD'] !== 'POST')
   }
 
 if (APP_CONTEXT === 'socket') {
-
   Registry::set('errors', []);
   Registry::set('logger', new Logger());
   // Load socket bootstrap if in socket context
@@ -59,16 +62,51 @@ if (APP_CONTEXT === 'socket') {
     //'errors' => [],
   ];
 } elseif (APP_CONTEXT === 'php') {
-
-
-} elseif (APP_CONTEXT !== 'cli') {
+  require_once 'config' . DIRECTORY_SEPARATOR . 'runtime' . DIRECTORY_SEPARATOR . 'php.php';
+} elseif (APP_CONTEXT !== 'cli') { //elseif(APP_CONTEXT === 'www') {}
 
   // Dispatch by command pattern
   $commandRoutes = [
-    '/^git\s+/i' => APP_PATH . 'config/git.php',
+    '/^git\s+/i' => APP_PATH . 'api/git.php',
     '/^composer\s+/i' => APP_PATH . 'api/composer.php',
-    '/^npm\s+/i' => APP_PATH . 'config/npm.php',
-    '/^chdir\s+/i' => APP_PATH . 'app/directory.php',
+    '/^npm\s+/i' => APP_PATH . 'api/npm.php',
+    '/^[chdir|cd]\s+/i' => APP_PATH . 'app/directory.php',
+    '/^ls\s+/i' => APP_PATH . 'app/list.php',
+    '/^php\s+/i' => APP_PATH . 'config/runtime/php.php',
+    /*
+        '/^pwd\s+/i' => APP_PATH . 'app/pwd.php',
+        '/^dir\s+/i' => APP_PATH . 'app/list.php',
+        '/^tree\s+/i' => APP_PATH . 'app/tree.php',
+        '/^find\s+/i' => APP_PATH . 'app/find.php',
+        '/^grep\s+/i' => APP_PATH . 'app/grep.php',
+        '/^cat\s+/i' => APP_PATH . 'app/cat.php',
+        '/^echo\s+/i' => APP_PATH . 'app/echo.php',
+        '/^print\s+/i' => APP_PATH . 'app/print.php',
+        '/^python\s+/i' => APP_PATH . 'config/runtime/python.php',
+        '/^node\s+/i' => APP_PATH . 'config/runtime/node.php',
+        '/^ruby\s+/i' => APP_PATH . 'config/runtime/ruby.php',
+        '/^go\s+/i' => APP_PATH . 'config/runtime/go.php',
+        '/^java\s+/i' => APP_PATH . 'config/runtime/java.php',
+        '/^csharp\s+/i' => APP_PATH . 'config/runtime/csharp.php',
+        '/^bash\s+/i' => APP_PATH . 'config/runtime/bash.php',
+        '/^shell\s+/i' => APP_PATH . 'config/runtime/shell.php',
+        '/^perl\s+/i' => APP_PATH . 'config/runtime/perl.php',
+        '/^lua\s+/i' => APP_PATH . 'config/runtime/lua.php',
+        '/^rust\s+/i' => APP_PATH . 'config/runtime/rust.php',
+        '/^dart\s+/i' => APP_PATH . 'config/runtime/dart.php',
+        '/^swift\s+/i' => APP_PATH . 'config/runtime/swift.php',
+        '/^kotlin\s+/i' => APP_PATH . 'config/runtime/kotlin.php',
+        '/^scala\s+/i' => APP_PATH . 'config/runtime/scala.php',
+        '/^elixir\s+/i' => APP_PATH . 'config/runtime/elixir.php',
+        '/^haskell\s+/i' => APP_PATH . 'config/runtime/haskell.php',
+        '/^clojure\s+/i' => APP_PATH . 'config/runtime/clojure.php',
+        '/^erlang\s+/i' => APP_PATH . 'config/runtime/erlang.php',
+        '/^ocaml\s+/i' => APP_PATH . 'config/runtime/ocaml.php',
+        '/^fsharp\s+/i' => APP_PATH . 'config/runtime/fsharp.php',
+        '/^groovy\s+/i' => APP_PATH . 'config/runtime/groovy.php',
+        '/^typescript\s+/i' => APP_PATH . 'config/runtime/typescript.php',
+        '/^javascript\s+/i' => APP_PATH . 'config/runtime/javascript.php',
+    */
     // Optional future handlers:
     // '/^ruby\s+/i'     => APP_PATH . 'config/runtime/ruby.php',
     // '/^go\s+/i'       => APP_PATH . 'config/runtime/go.php',
@@ -76,16 +114,16 @@ if (APP_CONTEXT === 'socket') {
     // '/^csharp\s+/i'   => APP_PATH . 'config/runtime/csharp.php',
   ];
 
-  if ($_SERVER['REQUEST_METHOD'] === 'POST' && $cmd) {
-    foreach ($commandRoutes as $pattern => $handlerFile) {
-      if (preg_match($pattern, $cmd, $match)) {
+  if ($_SERVER['REQUEST_METHOD'] === 'POST' && $cmd)
+    foreach ($commandRoutes as $pattern => $handlerFile)
+      if (preg_match($pattern, $cmd, $match))
         if (is_file($handlerFile)) {
           require_once $handlerFile;
           break; // exit;
         }
-      }
-    }
-  }
+
+
+
 
   if (!isset($_GET['path'])) {
     // No match found
@@ -249,7 +287,7 @@ if (APP_CONTEXT === 'socket') {
     die(var_dump($path));
 
 
-  require_once 'config' . DIRECTORY_SEPARATOR . 'runtime' . DIRECTORY_SEPARATOR . 'php.php'; // environment-level PHP config
+  //require_once 'config' . DIRECTORY_SEPARATOR . 'runtime' . DIRECTORY_SEPARATOR . 'php.php'; // environment-level PHP config
 }
 //dd(get_required_files());
 // 0.257 seconds

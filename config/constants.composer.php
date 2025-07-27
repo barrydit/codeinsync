@@ -210,8 +210,8 @@ if (is_file($include = APP_PATH . !defined('APP_ROOT') ?: APP_ROOT . 'vendor' . 
 
 
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
-    if (!defined('APP_PATH_CONFIG') || !in_array(APP_PATH_CONFIG, get_required_files()))
-        die("const(APP_PATH_CONFIG) is missing. Presumed that this file was opened on its own.");
+    //if (!defined('APP_PATH_CONFIG') || !in_array(APP_PATH_CONFIG, get_required_files()))
+    //    die("const(APP_PATH_CONFIG) is missing. Presumed that this file was opened on its own.");
 } else {
     /*  if ($path = realpath(APP_PATH . 'config' . DIRECTORY_SEPARATOR . 'constants.env.php'))
         require_once $path;
@@ -273,7 +273,7 @@ if (isset($matches[1])) {
 $loadedLibraries = [];
 
 // Load a library
-if (class_exists(Composer\Autoload\ClassLoader::class)) {
+if (class_exists(Composer\Autoload\ClassLoader::class, false)) {
     $loadedLibraries[] = 'Composer\Autoload\ClassLoader';
 }
 
@@ -283,7 +283,7 @@ if (in_array(Composer\Autoload\ClassLoader::class, $loadedLibraries)) {
 //  echo 'Library found.';
     //$loadedLibraries;
 
-    if (class_exists("Composer\\InstalledVersions")) {
+    if (class_exists("Composer\\InstalledVersions", false)) {
         $installedPackages = Composer\InstalledVersions::getInstalledPackages();
         // Process $installedPackages as needed
     } else {
@@ -930,7 +930,7 @@ echo $composer_exec; ?> init --quiet --no-interaction
             //dd(basename(COMPOSER_EXEC['bin']) . ' self-update;'); // (stripos(PHP_OS, 'WIN') === 0 ? '' : APP_SUDO) . 
             //(APP_SELF !== APP_PATH_SERVER) and 
     
-            if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+            if ($_SERVER['REQUEST_METHOD'] !== 'POST' && APP_CONTEXT === 'cli') {
                 Registry::set('logger', new Logger());
                 //unset($socketInstance);
                 if (!isset($socketInstance)) {
@@ -1456,8 +1456,8 @@ fclose($pipes[2]);
                     die(var_dump("$path path was not found. file=" . basename($path)));
             }
 
-            if (is_file($path = APP_PATH . 'api' . DIRECTORY_SEPARATOR . 'composer.php'))
-                require_once $path;
+            //if (is_file($path = APP_PATH . 'api' . DIRECTORY_SEPARATOR . 'composer.php'))
+            //    require_once $path;
             //else
             //  die(var_dump("$path path was not found. file=" . basename($path)));
     

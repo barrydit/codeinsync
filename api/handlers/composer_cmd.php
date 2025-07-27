@@ -3,6 +3,11 @@
 //require_once __DIR__ . '/../../config/constants.paths.php';
 //require_once APP_PATH . 'classes/class.composer.php';
 
+use App\Core\Registry;
+//use App\Handlers\COMPOSER;
+//use App\Handlers\ComposerHandler;
+//use App\Handlers\ComposerHandlerInterface;
+
 function execute_composer_command(string $cmd): void
 {
     $logger = Registry::get('logger');
@@ -51,5 +56,28 @@ switch ($action) {
         //cho json_encode(['error' => 'Unknown action']);
         break;
 }
+
+
+
+function handle_composer_api(): void
+{
+    /*
+    if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+      http_response_code(405);
+      echo json_encode(['error' => 'Only POST is allowed']);
+      return;
+    }*/
+
+    $cmd = $_POST['cmd'] ?? null;
+
+    if ($cmd) {
+        execute_composer_command($cmd);
+    } //else {
+    //http_response_code(400);
+    //echo json_encode(['error' => 'Missing cmd']);
+    //}
+}
+
+handle_composer_api();
 
 //exit;

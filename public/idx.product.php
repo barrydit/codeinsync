@@ -837,6 +837,7 @@ display : inline;
       background: #2196F3;
     }
 
+
     <?php
 /* $ui_style = '';
 $app_style = '';
@@ -882,7 +883,7 @@ echo $app_style;
             <div id="stats"><!-- Idle: [0]&nbsp;&nbsp;<span style="color: black;">00:00:00</span --></div>
           </div>
         </div>
-        <div style="display: inline-block; width: auto; ">
+        <div style="position: relative; top: -5px; display: inline-block; width: auto; ">
           <img id="ts-status-light" style="padding-bottom: 10px; cursor: pointer;"
             src="resources/images/timesheet-light-Y.gif" width="80" height="30">
         </div>
@@ -966,7 +967,7 @@ echo $app_style;
         <p>Info about the directory structure and usage.</p>
         <button onclick="document.getElementById('info').style.display = 'none';">Close</button>
       </div>
-      <?= UI_APPS['directory']['body'] ?? ''; ?>
+<?= defined('UI_APPS') && UI_APPS['directory']['body'] ?? ''; ?>
       <!-- div class="free-space">Main Workspace</div -->
     </div>
   </div>

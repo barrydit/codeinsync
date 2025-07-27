@@ -2,7 +2,9 @@
 <?php
 declare(/*strict_types=1,*/ ticks=1); // First Line Only!
 
-define('APP_PATH', __DIR__ . '/');
+defined('APP_PATH') ||
+    define('APP_PATH', rtrim(realpath(__DIR__), '/\\') . DIRECTORY_SEPARATOR);
+
 define('PID_FILE', APP_PATH . 'server.pid');
 define('SERVER_SCRIPT', __FILE__);
 const SERVER_HOST = '127.0.0.1';

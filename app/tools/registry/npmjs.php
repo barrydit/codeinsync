@@ -224,35 +224,35 @@ ob_start(); ?>
 
   ob_start(); ?>
 
-  <?php $app['html'] = ob_get_contents();
-  ob_end_clean();
+<?php $app['html'] = ob_get_contents();
+ob_end_clean();
 
-  /*
-  $dom = new DOMDocument(1.0, 'utf-8');
-  $dom->loadHTML(file_get_contents(APP_PATH . APP_BASE['var'] . 'npmjs.com.html'));
+/*
+$dom = new DOMDocument(1.0, 'utf-8');
+$dom->loadHTML(file_get_contents(APP_PATH . APP_BASE['var'] . 'npmjs.com.html'));
 
-  $divs = $dom->getElementsByTagName('head');
+$divs = $dom->getElementsByTagName('head');
 
-  $element = $dom->createElement('test', 'This is the root element!');
+$element = $dom->createElement('test', 'This is the root element!');
 
-  $elm = createElement($dom, 'foo', 'bar', array('attr_name'=>'attr_value'));
+$elm = createElement($dom, 'foo', 'bar', array('attr_name'=>'attr_value'));
 
-  $dom->appendChild($elm);
-  */
+$dom->appendChild($elm);
+*/
 
-  //dd($divs);
-  
-  //$content_node=$dom->getElementById("main");
+//dd($divs);
+
+//$content_node=$dom->getElementById("main");
 //$node=getElementsByClass($content_node, 'p', 'latest');
-  
-  //$dom->saveHTML($dom->documentElement);
-  
-  //echo file_get_contents("https://npmjs.com/");
-  
-  //check if file is included or accessed directly
-  if (__FILE__ == get_required_files()[0] || in_array(__FILE__, get_required_files()) && array_key_first($_GET) == 'npmjs' && APP_DEBUG)
-    Shutdown::setEnabled(false)->setShutdownMessage(function () use ($dom) {
-      return $dom->saveHTML(); /* eval('?>' . $project_code); // -wow */
-    })->shutdown(); // exit;
-  
+
+//$dom->saveHTML($dom->documentElement);
+
+//echo file_get_contents("https://npmjs.com/");
+
+//check if file is included or accessed directly
+if (__FILE__ == get_required_files()[0] || in_array(__FILE__, get_required_files()) && array_key_first($_GET) == 'npmjs' && APP_DEBUG)
+  Shutdown::setEnabled(false)->setShutdownMessage(function () use ($dom) {
+    return $dom->saveHTML(); /* eval('?>' . $project_code); // -wow */
+  })->shutdown(); // exit;
+
 

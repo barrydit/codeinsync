@@ -37,15 +37,15 @@ class Sockets
                 self::handleSocketConnection();
             }
 
-            if (APP_SELF !== APP_PATH_SERVER) {
+            //if (APP_SELF !== APP_PATH_SERVER) {
 
-                // If the app is not running on the server path, handle client requests
-                $this->handleClientRequest($_POST['cmd'] ?? null);
+            // If the app is not running on the server path, handle client requests
+            $this->handleClientRequest($_POST['cmd'] ?? null);
 
-                if (!self::isSocketAvailable()) {
-                    self::$logger->log("Socket not available after reconnect attempt. Failed to connect to socket at " . SERVER_HOST . ":" . SERVER_PORT); // throw new SocketException()
-                }
+            if (!self::isSocketAvailable()) {
+                self::$logger->log("Socket not available after reconnect attempt. Failed to connect to socket at " . SERVER_HOST . ":" . SERVER_PORT); // throw new SocketException()
             }
+            //}
         } catch (SocketException $e) {
             // Optionally handle exceptions here, log them, or trigger shutdown
             die($e->getMessage());

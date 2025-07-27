@@ -595,11 +595,22 @@ class Shutdown
 set_error_handler([Shutdown::class, 'handleError']);
 set_exception_handler([Shutdown::class, 'handleException']);
 register_shutdown_function(function () {
-  //Shutdown::triggerShutdown('');  // 
+  //Shutdown::triggerShutdown('');  //
+
   if (!empty($_ENV))
     Shutdown::saveEnvToFile();
   Shutdown::unlinkEnvjson();
-
+  $error = error_get_last();
+  if ($error) {
+    $message = sprintf(
+      "Fatal error: %s in %s on line %d",
+      $error['message'],
+      $error['file'],
+      $error['line']
+    );
+    file_put_contents('/mnt/c/www/error_log', date('c') . " | " . $message . PHP_EOL, FILE_APPEND);
+    error_log($message);
+  }
   //Shutdown::handleParseError();
 });
 
@@ -890,6 +901,51 @@ function check_http_status($url = 'http://8.8.8.8', $expectedStatus = [0 => 200]
   return ((int) $actualStatus === (int) $expectedStatus);
 }
 
+function build_url_from_parts(array $parts): string
+{
+  $url = '';
+
+  // Scheme
+  if (!empty($parts['scheme'])) {
+    $url .= $parts['scheme'] . '://';
+  }
+
+  // User and pass
+  if (!empty($parts['user'])) {
+    $url .= $parts['user'];
+    if (!empty($parts['pass'])) {
+      $url .= ':' . $parts['pass'];
+    }
+    $url .= '@';
+  }
+
+  // Host
+  if (!empty($parts['host'])) {
+    $url .= $parts['host'];
+  }
+
+  // Port
+  if (!empty($parts['port']) && $parts['port'] != 80 && $parts['port'] != 443) {
+    $url .= ':' . $parts['port'];
+  }
+
+  // Path
+  if (!empty($parts['path'])) {
+    $url .= '/' . ltrim($parts['path'], '/');
+  }
+
+  // Query string
+  if (!empty($parts['query'])) {
+    $url .= '?' . $parts['query'];
+  }
+
+  // Fragment
+  if (!empty($parts['fragment'])) {
+    $url .= '#' . $parts['fragment'];
+  }
+
+  return $url;
+}
 
 function check_http_status_curl(string $url, int $expectedStatus = 200, array $headers = []): bool
 {

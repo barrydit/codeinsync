@@ -1,6 +1,6 @@
 <?php
 
-if (/*APP_SELF === PATH_PUBLIC*/ dirname(APP_SELF) === dirname(PATH_PUBLIC)) { //  /mnt/www
+if (/*APP_SELF === PATH_PUBLIC*/ dirname(APP_SELF) === realpath(PATH_PUBLIC)) { //  /mnt/www
     /**
      * Get sorted paths for UI and app files.
      *
@@ -116,8 +116,6 @@ if (/*APP_SELF === PATH_PUBLIC*/ dirname(APP_SELF) === dirname(PATH_PUBLIC)) { /
     }
 
     //dd(loadAppsFromPaths(getSortedUiAndAppPaths())); // []
-}
-else {
-    // If not in public context, define UI_APPS as empty array
-    define('UI_APPS', []);
-}
+} //else {}
+// If not in public context, define UI_APPS as empty array
+defined('UI_APPS') or define('UI_APPS', []);

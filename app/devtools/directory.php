@@ -1,17 +1,31 @@
 <?php
 
+
+defined('APP_BASE') or
+  require_once APP_PATH . 'config/constants.paths.php';
+
 global $errors;
+
+defined('APP_ROOT') or
+  define('APP_ROOT', APP_BASE['root'] ?? '');
 
 if (__FILE__ == get_required_files()[0] && __FILE__ == realpath($_SERVER["SCRIPT_FILENAME"]))
   if ($path = basename(dirname(get_required_files()[0])) == 'public') { // (basename(getcwd())
     chdir('../');
     if ($path = realpath(/*'config' . DIRECTORY_SEPARATOR . */ 'bootstrap' . DIRECTORY_SEPARATOR . 'bootstrap.php')) // is_file('bootstrap.php')
       require_once $path;
+
     //die(var_dump(APP_PATH));
   } else
     die(var_dump("Path was not found. file=$path"));
-else
-  require_once APP_PATH . 'config' . DIRECTORY_SEPARATOR . 'config.php';
+//else {}
+
+defined('APP_URL_BASE') or
+  require_once APP_PATH . 'config/constants.url.php';
+
+require_once APP_PATH . 'config' . DIRECTORY_SEPARATOR . 'config.php';
+
+
 
 //require_once APP_PATH . APP_ROOT . APP_BASE['vendor'] . 'autoload.php';
 //require_once APP_PATH . APP_ROOT . 'app' . DIRECTORY_SEPARATOR . 'composer.php';
@@ -168,7 +182,7 @@ left: calc(50% - 265px); /* 1207 / 2 */ /*transform: translate(-50%, -50%);*/ bo
   } elseif ($client || $domain) {
     // Only show static "projects/clients/" if APP_ROOT is not defined
     $clientBase = 'projects/clients';
-    $clientPath = $base . '/' . $clientBase;
+    $clientPath = "$base/$clientBase";
     $segments[] = '[ <a href="' . /* basename(__FILE__) .*/ '?client=" onclick="handleClick(event, \'' . $clientBase . '/\')">' . $clientBase . '/</a> ]';
   }
 
@@ -297,9 +311,7 @@ left: calc(50% - 265px); /* 1207 / 2 */ /*transform: translate(-50%, -50%);*/ bo
                 $count = 1;
               else
                 $count++;
-            }
-
-            ?>
+            } ?>
         </table>
       <?php }
     }
@@ -355,7 +367,7 @@ left: calc(50% - 265px); /* 1207 / 2 */ /*transform: translate(-50%, -50%);*/ bo
       ?>
     </table>
   <?php } elseif (isset($_GET['path']) && preg_match('/^client(?:s|ele)?\/?/', $_GET['path']) || isset($_GET['client']) && empty($_GET['client'])) { ?>
-    <?php if (isset($_SERVER['HOME']) && readlinkToEnd($_SERVER['HOME'] . DIRECTORY_SEPARATOR . 'clients' . DIRECTORY_SEPARATOR) == '/mnt/c/www/' . APP_BASE['clients'] || realpath(APP_PATH . APP_BASE['clients'])) { ?>
+    <?php if (isset($_SERVER['HOME']) && readlinkToEnd($_SERVER['HOME'] . DIRECTORY_SEPARATOR . 'clients' . DIRECTORY_SEPARATOR) == '/mnt/c/www/clients' || realpath(APP_PATH . 'clients')) { ?>
       <h3>&#9660; Domains: </h3>
       <table width="" style="border: none;">
         <tr style="border: none;">
@@ -366,7 +378,7 @@ left: calc(50% - 265px); /* 1207 / 2 */ /*transform: translate(-50%, -50%);*/ bo
           //  echo '<option value="" selected>---</option>' . "\n"; // label="     "
           //} else  //dd($links);
     
-          $links = array_filter(glob(APP_PATH . APP_BASE['clients'] . '*', GLOB_ONLYDIR), function ($link) {
+          $links = array_filter(glob(APP_PATH . 'clients' . DIRECTORY_SEPARATOR . '*', GLOB_ONLYDIR), function ($link) {
             // Apply regex to the basename (last part of the path)
             return preg_match('/^(?!\d{3}-)[a-z0-9\-]+\.[a-z]{2,6}$/i', basename($link));
           });
@@ -501,8 +513,8 @@ left: calc(50% - 265px); /* 1207 / 2 */ /*transform: translate(-50%, -50%);*/ bo
       if (isset($_GET['path']) && preg_match('/^vendor\/?/', $_GET['path'])) {
 
         //if ($_ENV['COMPOSER']['AUTOLOAD'] == true)
-        require_once APP_PATH . APP_ROOT . APP_BASE['vendor'] . 'autoload.php';
-        require_once APP_PATH . 'app' . DIRECTORY_SEPARATOR . 'composer.php'; ?>
+        require_once APP_PATH . APP_ROOT . 'vendor' . DIRECTORY_SEPARATOR . 'autoload.php';
+        require_once APP_PATH . 'api' . DIRECTORY_SEPARATOR . 'composer.php'; ?>
         <!-- iframe src="composer_pkg.php" style="height: 500px; width: 700px;"></iframe -->
         <div style="width: 700px; ">
           <div style="display: inline-block; width: 350px;"><a href="#!"
@@ -1259,7 +1271,7 @@ left: calc(50% - 265px); /* 1207 / 2 */ /*transform: translate(-50%, -50%);*/ bo
       $output = [];
       //echo $buffer;
       unset($match);
-      require_once /*APP_BASE['app'] .*/ 'console.php';
+      //require_once /*APP_BASE['app'] .*/ 'console.php';
     }
 
     if (!isset($_POST['group_type']))
@@ -1387,8 +1399,8 @@ $('#requestSubmit').click();
 //document.getElementsByClassName('ace_text-input')[0].value = 'hello world';
 }
 
-if (!isFixed) isFixed = false;
-show_console();
+//if (!isFixed) isFixed = false;
+//show_console();
 
 // Optionally, you could update the div directly if needed
 // $('#app_directory-container').html('Loading ' + folder + '...');
