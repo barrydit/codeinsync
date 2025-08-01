@@ -2223,7 +2223,7 @@ header("Pragma: no-cache"); ?>
           // Animation complete.
         });
 
-        <?= (!empty($errors) ? ' show_console();' : 'show_console();') ?>
+        <?= !empty($errors) ? ' show_console();' : 'show_console();' ?>
 
         $('#requestInput').attr('autofocus', true);
 

@@ -1401,10 +1401,10 @@ else
       }
     });
 
-    <?= (defined('UI_GIT') ? UI_GIT['script'] : null); ?>
-    <?= (defined('UI_PHP') ? UI_PHP['script'] : null); /* print(...) */ ?>
-    <?= (defined('UI_COMPOSER') ? UI_COMPOSER['script'] : null); /* (isset($appComposer) ? $appComposer['script'] : null); */ ?>
-    <?= (defined('UI_NPM') ? UI_NPM['script'] : null); ?>
+    <?= defined('UI_GIT') ? UI_GIT['script'] : null; ?>
+    <?= defined('UI_PHP') ? UI_PHP['script'] : null; /* print(...) */ ?>
+    <?= defined('UI_COMPOSER') ? UI_COMPOSER['script'] : null; /* (isset($appComposer) ? $appComposer['script'] : null); */ ?>
+    <?= defined('UI_NPM') ? UI_NPM['script'] : null; ?>
       <?= /* Defined later! (defined('UI_ACE_EDITOR') ? UI_ACE_EDITOR['script'] : null);*/ NULL; ?>
 
     <?= $app['browser']['script']; ?>

@@ -1,5 +1,5 @@
 <?php
-
+require_once __DIR__ . '/config/environment.php';
 // ------------------------------------------------------
 // Path Constants (fully resolved, consistent trailing slashes)
 // ------------------------------------------------------
@@ -20,7 +20,7 @@ defined('PATH_PUBLIC') || define(
 );
 
 defined('CONFIG_PATH') || define('CONFIG_PATH', APP_PATH . 'config' . DIRECTORY_SEPARATOR);
-defined('BOOTSTRAP_PATH') || define('BOOTSTRAP_PATH', APP_PATH . 'bootstrap' . DIRECTORY_SEPARATOR);
+
 
 // ------------------------------------------------------
 // Context Detection (cli, socket, or www)
@@ -101,13 +101,15 @@ register_shutdown_function(function () {
 
     error_log("APP_CONTEXT: " . APP_CONTEXT);
     // error_log("Execution time: {$execTime}s | CWD: " . getcwd());
+
+    // check_internet_connection();
 });
 
 // ------------------------------------------------------
 // Bootstrap Sequence
 // ------------------------------------------------------
 
-require_once BOOTSTRAP_PATH . 'bootstrap.php';
+file_exists(BOOTSTRAP_PATH . 'bootstrap.php') && require_once BOOTSTRAP_PATH . 'bootstrap.php';
 
 
 /*if (isset($_SERVER['REQUEST_METHOD']) && $_SERVER['REQUEST_METHOD'] == 'POST') {

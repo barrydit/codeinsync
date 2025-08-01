@@ -1,22 +1,5 @@
 <?php
 
-// Handle logout requests
-if (filter_input(INPUT_GET, 'logout')) {
-    logoutUser();
-    exit;
-}
-
-// Redirect if no credentials are present
-if (empty($_SERVER['PHP_AUTH_USER'])) {
-    sendAuthPrompt();
-    exit;
-}
-
-// Ensure authentication for non-CLI environments
-if (PHP_SAPI !== 'cli') {
-    authenticateUser();
-}
-
 /**
  * Logs out the user by forcing the browser to clear Basic Auth credentials.
  */
@@ -90,4 +73,21 @@ function sendAuthPrompt(): void
 END;
 
     exit($auth_require);
+}
+
+// Handle logout requests
+if (filter_input(INPUT_GET, 'logout')) {
+    logoutUser();
+    exit;
+}
+
+// Redirect if no credentials are present
+if (empty($_SERVER['PHP_AUTH_USER'])) {
+    sendAuthPrompt();
+    exit;
+}
+
+// Ensure authentication for non-CLI environments
+if (PHP_SAPI !== 'cli') {
+    authenticateUser();
 }

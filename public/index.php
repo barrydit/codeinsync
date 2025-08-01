@@ -1,6 +1,7 @@
 <?php
 
-require_once dirname(__DIR__, 1) . DIRECTORY_SEPARATOR . 'autoload.php';
+//dd(get_required_files());
+
 //die(var_dump(get_required_files()));
 //require_once dirname(__DIR__, 1) . DIRECTORY_SEPARATOR . 'config/functions.php';
 
@@ -20,17 +21,15 @@ END;
 // if ($path = (basename(getcwd()) == 'public') chdir('..');
 //APP_PATH == dirname(PATH_PUBLIC)
 
-//
-
 defined('APP_ROOT') or
   define('APP_ROOT', '');
 
 // Always resolve to full paths
-defined('APP_PATH') or define('APP_PATH', realpath(__DIR__) . DIRECTORY_SEPARATOR);
+//defined('APP_PATH') or define('APP_PATH', realpath(__DIR__) . DIRECTORY_SEPARATOR);
 
 defined('PATH_PUBLIC') or define(
   'PATH_PUBLIC',
-  realpath(APP_PATH . 'public/index.php')
+  realpath(__DIR__)
 );
 
 defined('APP_SELF') or
@@ -38,7 +37,7 @@ defined('APP_SELF') or
 
 switch (APP_SELF) {
   case __FILE__:
-    require_once dirname(__DIR__, 1) . DIRECTORY_SEPARATOR . 'bootstrap' . DIRECTORY_SEPARATOR . 'bootstrap.php';
+    file_exists(dirname(__DIR__, 1) . '/bootstrap/bootstrap.php') && require_once dirname(__DIR__, 1) . '/bootstrap/bootstrap.php';
     break;
   default:
     if ($php = realpath(dirname(__DIR__, 1) . DIRECTORY_SEPARATOR . 'config' . DIRECTORY_SEPARATOR . 'runtime' . DIRECTORY_SEPARATOR . 'php.php'))
@@ -46,9 +45,9 @@ switch (APP_SELF) {
     else
       die(var_dump("$php was not found."));
 }
-
-if ($file = realpath(dirname(__DIR__, 1) . DIRECTORY_SEPARATOR . 'index.php'))
-  require_once $file; // APP_PATH . 'index.php'
+//dd(get_required_files());
+//if ($file = realpath(dirname(__DIR__, 1) . DIRECTORY_SEPARATOR . 'autoload.php'))
+//  require_once $file; // APP_PATH . 'autoload.php'
 
 
 //die(var_export($_GET, true));
@@ -192,6 +191,7 @@ if (isset($_SERVER['REQUEST_METHOD']))
 
       // Now $queryArray contains the parsed query parameters as an array
 //dd($_SERVER);
+      //dd(get_required_files());
       if (preg_match('/^\/(?!\?)$/', $_SERVER['REQUEST_URI']))
         exit(header('Location: ' . APP_URL . '?'));
 
@@ -279,18 +279,18 @@ if ($_SERVER['REQUEST_METHOD'] == 'GET' && __FILE__ == PATH_PUBLIC)
   }
 //dd($_GET);
 //dd(__DIR__ . DIRECTORY_SEPARATOR);
+// Get the first required file (entry point script)
+$entryFile = get_required_files()[0] ?? null;
 
-if (/*APP_SELF === PATH_PUBLIC*/ dirname(APP_SELF) === realpath(PATH_PUBLIC)) {
+// Resolve the directory of the entry script
+$entryDir = $entryFile ? realpath(dirname($entryFile)) : null;
 
+// Strict check: entry script dir must equal PATH_PUBLIC
+if ($entryDir && $entryDir === realpath(PATH_PUBLIC)) {
   require_once 'idx.product.php';
-  if (!empty($paths)) {
-    do {
-      $path = array_shift($paths);
+}
 
-      require_once 'idx.product.php'; // Always execute this
-    } while ($path);
-  }
-
+if (/*APP_SELF === PATH_PUBLICrealpath(APP_PATH) . '/public' === realpath(dirname(APP_SELF))*/ false) {
 
   //require_once 'idx.product.php';
   // isset($paths) && !empty($paths)
