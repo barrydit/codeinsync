@@ -1,5 +1,7 @@
 <?php
 
+file_exists(APP_PATH . 'config/constants.paths.php') && require_once APP_PATH . 'config/constants.paths.php';
+
 if (isset($_GET['app']) && $_GET['app'] == 'nodes' && isset($_GET['json'])) {
   defined('APP_PATH') or define('APP_PATH', realpath(__DIR__ . '/../') . '/');
   defined('APP_ROOT') or define('APP_ROOT', '');

@@ -105,7 +105,7 @@ ob_start(); ?>
   }
 
   // Add non-recursive scanning for the root baseDir for *.php files
-  $rootPhpFiles = glob($baseDir . '{*.php}', GLOB_BRACE);
+  $rootPhpFiles = glob("{$baseDir}{*.php}", GLOB_BRACE);
   foreach ($rootPhpFiles as $file) {
     if (is_file($file)) {
       $relativePath = str_replace($baseDir, '', $file);

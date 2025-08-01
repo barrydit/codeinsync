@@ -1103,8 +1103,9 @@ echo $app_style;
   <?php
   $ui_body = '';
   $app_body = '';
-
-  foreach (UI_APPS as $key => $app) {
+  if (defined('UI_APPS') && is_array(UI_APPS) && !empty(UI_APPS))
+    //dd(UI_APPS, false);
+    foreach (UI_APPS as $key => $app) {
     //dd($key, false);
     if ($key == 'directory')
       continue;
@@ -1114,7 +1115,9 @@ echo $app_style;
       $app_body .= $app['body'];
     }
   }
-
+  else
+    $errors['UI_APPS'] = 'UI_APPS is not defined or empty.';
+  
   // Print UI scripts first
   echo $ui_body;
 
@@ -1499,7 +1502,7 @@ $(document).ready(function() {
     <?php
     $ui_script = '';
     $app_script = '';
-
+    if (defined('UI_APPS') && is_array(UI_APPS) && !empty(UI_APPS))
     foreach (UI_APPS as $key => $app) {
       //dd($key, false);
       if ($key == 'whiteboard')
@@ -1510,7 +1513,8 @@ $(document).ready(function() {
         $app_script .= $app['script'];
       }
     }
-
+    else
+      $errors['UI_APPS'] = 'UI_APPS is not defined or empty.';
     // Print UI scripts first
     echo $ui_script;
 

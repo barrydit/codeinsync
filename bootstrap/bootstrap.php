@@ -1,364 +1,201 @@
 <?php
+// bootstrap/bootstrap.php
 
 use App\Core\Registry;
 
+// [1] BASE DEFINITIONS (Unchanged)
 !defined('BASE_PATH') and
-  define('BASE_PATH', __DIR__ . DIRECTORY_SEPARATOR) and
-  is_string(BASE_PATH) ?: $errors['BASE_PATH'] = "BASE_PATH is not a valid string value.\n"; // APP_PATH
-// Define APP_PATH constant
+    define('BASE_PATH', __DIR__ . DIRECTORY_SEPARATOR) and
+    is_string(BASE_PATH) ?: $errors['BASE_PATH'] = "BASE_PATH is not a valid string value.\n";
+
 !defined('APP_PATH') && defined('BASE_PATH') and
-  define('APP_PATH', realpath(BASE_PATH . '..' . DIRECTORY_SEPARATOR) . DIRECTORY_SEPARATOR);
-// Define base paths
+    define('APP_PATH', realpath(BASE_PATH . '..' . DIRECTORY_SEPARATOR) . DIRECTORY_SEPARATOR);
 
 defined('CONFIG_PATH') or define('CONFIG_PATH', APP_PATH . 'config' . DIRECTORY_SEPARATOR);
 
-require_once APP_PATH . 'autoload.php';
+// [2] EARLY INCLUDES (Still Required Everywhere)
+$autoloadPath = APP_PATH . 'autoload.php';
 
-require_once CONFIG_PATH . 'functions.php';
+if (!file_exists($autoloadPath)) {
+    die("Autoload file not found at: {$autoloadPath}");
+}
 
-if ($_SERVER['SCRIPT_NAME'] == '/dispatcher.php')
-  require_once APP_PATH . 'bootstrap' . DIRECTORY_SEPARATOR . 'dispatcher.php';
+require_once $autoloadPath; //file_exists(APP_PATH . 'autoload.php') && require_once APP_PATH . 'autoload.php';
 
+// [3] Bootstrap protection
 
-// Unified app param
+if (!defined('APP_BOOTSTRAPPED') && (!defined('APP_MODE') || APP_MODE !== 'dispatcher')) {
+    // [7] Load constants and config files
+    define('APP_BOOTSTRAPPED', true);
+
+    $constants = [
+        'constants.env.php',
+        'constants.paths.php',
+        'constants.runtime.php',
+        'constants.url.php',
+        'constants.app.php',
+    ];
+
+    foreach ($constants as $file) {
+        $path = CONFIG_PATH . $file;
+        if (file_exists($path))
+            require_once $path;
+    }
+
+} else {
+    // If already bootstrapped, skip loading constants and config
+    $errors['APP_BOOTSTRAPPED'] = 'APP_BOOTSTRAPPED is already defined.';
+    file_exists(CONFIG_PATH . 'constants.env.php') && require_once CONFIG_PATH . 'constants.env.php';
+    file_exists(CONFIG_PATH . 'constants.url.php') && require_once CONFIG_PATH . 'constants.url.php';
+}
+
+$configFile = CONFIG_PATH . 'config.php';
+if (is_file($configFile)) {
+    require_once $configFile;
+}
+
+file_exists(CONFIG_PATH . 'functions.php') && require_once CONFIG_PATH . 'functions.php';
+
+// [4] EARLY EXIT if shallow access (dispatcher.php or GET without app/cmd)
+
+function isShallowDispatcherCall(): bool
+{
+    return $_SERVER['SCRIPT_NAME'] === '/dispatcher.php'
+        && $_SERVER['REQUEST_METHOD'] !== 'POST'
+        && !isset($_GET['app'], $_POST['app'], $_POST['cmd']);
+}
+
+if (isShallowDispatcherCall()) {
+    return;
+}
+
+// [5] Unified app param
 $app = $_POST['app'] ?? $_GET['app'] ?? null;
 $cmd = $_POST['cmd'] ?? null;
 
-// Map app names to handler files
+// [6] App Route Dispatch (Unchanged)
 $routes = [
-  'composer' => APP_PATH . 'api/composer.php',
-  'git' => APP_PATH . 'api/git.php',
-  'npm' => APP_PATH . 'api/npm.php',
+    'composer' => APP_PATH . 'api/composer.php',
+    'git' => APP_PATH . 'api/git.php',
+    'npm' => APP_PATH . 'api/npm.php',
 ];
-//die(var_dump(get_required_files()));
-// Early dispatch for known app via GET/POST param
+
 if ($app && isset($routes[$app])) {
-  require_once $routes[$app];
-  exit;
+    require_once $routes[$app];
+    exit;
 }
+// [6] App Initialization
+//$app_id = 'tools_code_git'; // Unique ID for the app
+//$container_id = 'tools_code_git-container'; // Unique ID for the container  
 
-if ($_SERVER['REQUEST_METHOD'] !== 'POST')
-  if (!defined('APP_BOOTSTRAPPED')) {
-    define('APP_BOOTSTRAPPED', true);
-    // Load constants and initialize the app
-    //require_once APP_PATH . 'bootstrap' . DIRECTORY_SEPARATOR . 'bootstrap.cli.php';
-  }
+// [7] Contextual Bootstraps
+if (defined('APP_CONTEXT') && APP_CONTEXT === 'socket') {
+    Registry::set('errors', []);
+    Registry::set('logger', new Logger());
 
-if (APP_CONTEXT === 'socket') {
-  Registry::set('errors', []);
-  Registry::set('logger', new Logger());
-  // Load socket bootstrap if in socket context
-  require_once APP_PATH . 'bootstrap/bootstrap.sockets.php';
-
-  $GLOBALS['runtime'] = ($_SERVER['REQUEST_METHOD'] === 'GET') ? [
-    'socket' => Sockets::getInstance(Registry::get('logger')), //  fsockopen('localhost', 9000),
-    'pid' => getmypid(),
-    //'client_id' => $clientId,
-    //'errors' => [],
-  ] : [
-    'socket' => fsockopen('localhost', 9000),
-    'pid' => getmypid(),
-    //'client_id' => $clientId,
-    //'errors' => [],
-  ];
-} elseif (APP_CONTEXT === 'php') {
-  require_once 'config' . DIRECTORY_SEPARATOR . 'runtime' . DIRECTORY_SEPARATOR . 'php.php';
-} elseif (APP_CONTEXT !== 'cli') { //elseif(APP_CONTEXT === 'www') {}
-
-  // Dispatch by command pattern
-  $commandRoutes = [
-    '/^git\s+/i' => APP_PATH . 'api/git.php',
-    '/^composer\s+/i' => APP_PATH . 'api/composer.php',
-    '/^npm\s+/i' => APP_PATH . 'api/npm.php',
-    '/^[chdir|cd]\s+/i' => APP_PATH . 'app/directory.php',
-    '/^ls\s+/i' => APP_PATH . 'app/list.php',
-    '/^php\s+/i' => APP_PATH . 'config/runtime/php.php',
-    /*
-        '/^pwd\s+/i' => APP_PATH . 'app/pwd.php',
-        '/^dir\s+/i' => APP_PATH . 'app/list.php',
-        '/^tree\s+/i' => APP_PATH . 'app/tree.php',
-        '/^find\s+/i' => APP_PATH . 'app/find.php',
-        '/^grep\s+/i' => APP_PATH . 'app/grep.php',
-        '/^cat\s+/i' => APP_PATH . 'app/cat.php',
-        '/^echo\s+/i' => APP_PATH . 'app/echo.php',
-        '/^print\s+/i' => APP_PATH . 'app/print.php',
-        '/^python\s+/i' => APP_PATH . 'config/runtime/python.php',
-        '/^node\s+/i' => APP_PATH . 'config/runtime/node.php',
-        '/^ruby\s+/i' => APP_PATH . 'config/runtime/ruby.php',
-        '/^go\s+/i' => APP_PATH . 'config/runtime/go.php',
-        '/^java\s+/i' => APP_PATH . 'config/runtime/java.php',
-        '/^csharp\s+/i' => APP_PATH . 'config/runtime/csharp.php',
-        '/^bash\s+/i' => APP_PATH . 'config/runtime/bash.php',
-        '/^shell\s+/i' => APP_PATH . 'config/runtime/shell.php',
-        '/^perl\s+/i' => APP_PATH . 'config/runtime/perl.php',
-        '/^lua\s+/i' => APP_PATH . 'config/runtime/lua.php',
-        '/^rust\s+/i' => APP_PATH . 'config/runtime/rust.php',
-        '/^dart\s+/i' => APP_PATH . 'config/runtime/dart.php',
-        '/^swift\s+/i' => APP_PATH . 'config/runtime/swift.php',
-        '/^kotlin\s+/i' => APP_PATH . 'config/runtime/kotlin.php',
-        '/^scala\s+/i' => APP_PATH . 'config/runtime/scala.php',
-        '/^elixir\s+/i' => APP_PATH . 'config/runtime/elixir.php',
-        '/^haskell\s+/i' => APP_PATH . 'config/runtime/haskell.php',
-        '/^clojure\s+/i' => APP_PATH . 'config/runtime/clojure.php',
-        '/^erlang\s+/i' => APP_PATH . 'config/runtime/erlang.php',
-        '/^ocaml\s+/i' => APP_PATH . 'config/runtime/ocaml.php',
-        '/^fsharp\s+/i' => APP_PATH . 'config/runtime/fsharp.php',
-        '/^groovy\s+/i' => APP_PATH . 'config/runtime/groovy.php',
-        '/^typescript\s+/i' => APP_PATH . 'config/runtime/typescript.php',
-        '/^javascript\s+/i' => APP_PATH . 'config/runtime/javascript.php',
-    */
-    // Optional future handlers:
-    // '/^ruby\s+/i'     => APP_PATH . 'config/runtime/ruby.php',
-    // '/^go\s+/i'       => APP_PATH . 'config/runtime/go.php',
-    // '/^java\s+/i'     => APP_PATH . 'config/runtime/java.php',
-    // '/^csharp\s+/i'   => APP_PATH . 'config/runtime/csharp.php',
-  ];
-
-  if ($_SERVER['REQUEST_METHOD'] === 'POST' && $cmd)
-    foreach ($commandRoutes as $pattern => $handlerFile)
-      if (preg_match($pattern, $cmd, $match))
-        if (is_file($handlerFile)) {
-          require_once $handlerFile;
-          break; // exit;
-        }
-
-
-
-
-  if (!isset($_GET['path'])) {
-    // No match found
-    //http_response_code(404);
-    //echo json_encode(['error' => 'Invalid or missing app or command']);
-    //exit;
-  }
-
-
-
-
-  // CONFIG_PATH, PUBLIC_PATH, STORAGE_PATH, VENDOR_PATH, VIEW_PATH, CACHE_PATH, LOG_PATH, TEMP_PATH, UPLOAD_PATH, ASSETS_PATH, APP_PATH, BASE_PATH, ROOT_PATH, SRC_PATH, TEST_PATH, WWW_PATH
-/*
-!defined('DOMAIN_EXPR') and 
-  // const DOMAIN_EXPR = 'string only/non-block/ternary'; 
-  define('DOMAIN_EXPR', $_ENV['SHELL']['EXPR_DOMAIN'] ?? '/(?:[a-z]+\:\/\/)?(?:[a-z0-9\-]+\.)+[a-z]{2,6}(?:\/\S*)?/i') and is_string(DOMAIN_EXPR) ? '' : $errors['DOMAIN_EXPR'] = 'DOMAIN_EXPR is not a valid string value.'; // /(?:\.(?:([-a-z0-9]+){1,}?)?)?\.[a-z]{2,6}$/';
-*/
-
-  /*
-  if (!defined('APP_ROOT')) {
-    $path = !isset($_GET['client']) ? (!isset($_GET['project']) ? '' : APP_BASE['projects'] . $_GET['project']) : APP_BASE['clients'] . $_GET['client'] . DIRECTORY_SEPARATOR . (isset($_GET['domain']) && $_GET['domain'] != '' ? $_GET['domain'] : '') . DIRECTORY_SEPARATOR; /* ($_GET['path'] . '/' ?? '')*/
-  //die($path);
-//is_dir(APP_PATH . $_GET['path'])
-/*  !$path || !is_dir(APP_PATH . $path) ?:  
-    define('APP_ROOT', !empty(realpath(APP_PATH . ($path = rtrim($path, DIRECTORY_SEPARATOR)) ) && $path != '') ? (string) $path . DIRECTORY_SEPARATOR : '');  // basename() does not like null
-}*/
-
-  // Define project and client folders based on GET parameters
-
-  $projectFolder = 'projects' . DIRECTORY_SEPARATOR . 'internal' . DIRECTORY_SEPARATOR . ($_GET['project'] ?? '');
-  $projectPath = __DIR__ . DIRECTORY_SEPARATOR . $projectFolder;
-
-  $clientFolder = 'projects' . DIRECTORY_SEPARATOR . 'clients' . DIRECTORY_SEPARATOR . ($_GET['client'] ?? '');
-  $clientPath = __DIR__ . DIRECTORY_SEPARATOR . $clientFolder;
-
-  /**
-   * Resolve domain from available directories or fallback to the client folder.
-   */
-  function resolveProject($dirs, $requestedProject = null)
-  {
-    // Match requested domain to available directories
-    if ($requestedProject)
-      foreach ($dirs as $dir) {
-        if (basename($dir) === $requestedProject) {
-          return basename($dir);
-        }
-      }
-
-    // If no domain requested and exactly one directory exists, use it
-    if (count($dirs) === 1)
-      return basename(reset($dirs));
-
-    // No valid domain found
-    return null;
-  }
-
-
-  /**
-   * Resolve domain from available directories or fallback to the client folder.
-   */
-  function resolveDomain($dirs, $requestedDomain = null)
-  {
-    // Match requested domain to available directories
-    if ($requestedDomain)
-      foreach ($dirs as $dir) {
-        if (basename($dir) === $requestedDomain)
-          return basename($dir);
-      }
-
-
-    // If no domain requested and exactly one directory exists, use it
-    if (count($dirs) === 1)
-      return $_GET['domain'] = basename(reset($dirs));
-
-    // No valid domain found
-    return null;
-  }
-
-  /**
-   * Resolve the client folder path if no domain is provided.
-   */
-  function resolveClient($clientFolder)
-  {
-    // Check if the provided client folder exists
-    if (is_dir(__DIR__ . DIRECTORY_SEPARATOR . $clientFolder))
-      return $clientFolder . DIRECTORY_SEPARATOR;
-
-
-    // Return empty if client folder doesn't exist
-    return '';
-  }
-
-  // Retrieve directories that match the client path
-  $proj_dirs = array_filter(glob(dirname($projectPath) . DIRECTORY_SEPARATOR . '*'), 'is_dir');
-
-  // Retrieve directories that match the client path
-  $dirs = array_filter(glob($clientPath . DIRECTORY_SEPARATOR . '*'), 'is_dir');
-
-  // Main logic to resolve the path
-  $path = null;
-  $project = resolveProject($proj_dirs, $_GET['project'] ?? null);
-  $domain = resolveDomain($dirs, $_GET['domain'] ?? null);
-
-  //die(var_dump($_GET['domain']));
-//die(var_dump($projectFolder));
-  if ($project) {
-    $path = $projectFolder . DIRECTORY_SEPARATOR;
-  } elseif ($domain) {
-    // Resolve path based on domain
-    $path = rtrim($clientFolder, DIRECTORY_SEPARATOR) . DIRECTORY_SEPARATOR . $domain . DIRECTORY_SEPARATOR;
-  } elseif (!empty($_GET['client'])) {
-    // Special case: resolve based on client folder
-    $path = resolveClient($clientFolder); // ;
-  } elseif (count($dirs) === 1) {
-    // Default to the only directory if one exists
-    $path = reset($dirs);
-  } else {
-    // Fallback to an empty path
-    $path = '';
-  }
-
-  // Remove APP_PATH prefix for clean path definition
-  $path = preg_replace(
-    '#' . preg_quote(APP_PATH, '#') . '#',
-    '',
-    $path
-  );
-  //define('APP_ROOT', $_GET['client'] . '/' . $_GET['domain']);
-// Define APP_ROOT using the directory of the resolved path
-  defined('APP_ROOT') || define('APP_ROOT', !is_dir(APP_PATH . $path) ?: $path);
-
-  //die(APP_ROOT);
-// Check if the config file exists in various locations based on the current working directory
-  $path = null;
-
-  // Determine the path based on current location and check if file exists
-  switch (basename(__DIR__)) { // getcwd()
-    case 'public':
-      chdir(dirname(__DIR__));
-      break;
-  }
-
-  require_once APP_PATH . 'config' . DIRECTORY_SEPARATOR . 'constants.env.php'; // 'constants.php'; // Global constants
-  require_once APP_PATH . 'config' . DIRECTORY_SEPARATOR . 'constants.paths.php';
-  require_once APP_PATH . 'config' . DIRECTORY_SEPARATOR . 'constants.runtime.php';
-  require_once APP_PATH . 'config' . DIRECTORY_SEPARATOR . 'constants.url.php';
-  require_once APP_PATH . 'config' . DIRECTORY_SEPARATOR . 'constants.app.php';
-  if ($GLOBALS['runtime']['socket'] ?? false) {
-    if (APP_CONTEXT === 'socket' && is_file($socketConstants = CONFIG_PATH . 'constants.socket.php')) {
-      require_once $socketConstants;
+    // Optional socket constants
+    if (is_file(CONFIG_PATH . 'constants.socket.php')) {
+        require_once CONFIG_PATH . 'constants.socket.php';
     }
 
-    require_once APP_PATH . 'bootstrap' . DIRECTORY_SEPARATOR . 'bootstrap.sockets.php';
-  }
-  // Check if the config file exists in the expected location
-// If the config file is not found, it will die with a var_dump of the path
-  if ($path = realpath(APP_PATH . 'config' . DIRECTORY_SEPARATOR . 'config.php'))
-    require_once $path; // Load the config file if found  project settings
-// elseif (is_file('config.php')) $path = $config;
-  else
-    die(var_dump($path));
+    // Load socket bootstrap
+    require_once APP_PATH . 'bootstrap/bootstrap.sockets.php';
 
+    $GLOBALS['runtime'] = ($_SERVER['REQUEST_METHOD'] === 'GET') ? [
+        'socket' => Sockets::getInstance(Registry::get('logger')),
+        'pid' => getmypid(),
+    ] : [
+        'socket' => fsockopen('localhost', 9000),
+        'pid' => getmypid(),
+    ];
+} elseif (APP_CONTEXT === 'php') {
+    require_once CONFIG_PATH . 'runtime/php.php';
+} elseif (APP_CONTEXT !== 'cli') {
+    // [8] Command Dispatch
+    $commandRoutes = [
+        '/^git\s+/i' => APP_PATH . 'api/git.php',
+        '/^composer\s+/i' => APP_PATH . 'api/composer.php',
+        '/^npm\s+/i' => APP_PATH . 'api/npm.php',
+        '/^(chdir|cd)\s+/i' => APP_PATH . 'app/devtools/directory.php',
+        '/^ls\s+/i' => APP_PATH . 'app/list.php',
+        '/^php\s+/i' => CONFIG_PATH . 'runtime/php.php',
+    ];
 
-  //require_once 'config' . DIRECTORY_SEPARATOR . 'runtime' . DIRECTORY_SEPARATOR . 'php.php'; // environment-level PHP config
+    if ($_SERVER['REQUEST_METHOD'] === 'POST' && $cmd) {
+        foreach ($commandRoutes as $pattern => $handlerFile) {
+            if (preg_match($pattern, $cmd)) {
+                if (is_file($handlerFile)) {
+                    require_once $handlerFile;
+                    break;
+                }
+            }
+        }
+    }
+
+    // [9] Project/Client/Domain Resolution Logic (Unchanged)
+    $projectFolder = 'projects/internal/' . ($_GET['project'] ?? '');
+    $projectPath = __DIR__ . '/' . $projectFolder;
+
+    $clientFolder = 'projects/clients/' . ($_GET['client'] ?? '');
+    $clientPath = __DIR__ . '/' . $clientFolder;
+
+    function resolveProject($dirs, $requestedProject = null)
+    {
+        if ($requestedProject)
+            foreach ($dirs as $dir)
+                if (basename($dir) === $requestedProject)
+                    return basename($dir);
+        return count($dirs) === 1 ? basename(reset($dirs)) : null;
+    }
+
+    function resolveDomain($dirs, $requestedDomain = null)
+    {
+        if ($requestedDomain)
+            foreach ($dirs as $dir)
+                if (basename($dir) === $requestedDomain)
+                    return basename($dir);
+        return count($dirs) === 1 ? $_GET['domain'] = basename(reset($dirs)) : null;
+    }
+
+    function resolveClient($clientFolder)
+    {
+        return is_dir(__DIR__ . '/' . $clientFolder) ? $clientFolder . '/' : '';
+    }
+
+    $proj_dirs = array_filter(glob(dirname($projectPath) . '/*'), 'is_dir');
+    $dirs = array_filter(glob($clientPath . '/*'), 'is_dir');
+
+    $path = null;
+    $project = resolveProject($proj_dirs, $_GET['project'] ?? null);
+    $domain = resolveDomain($dirs, $_GET['domain'] ?? null);
+
+    if ($project) {
+        $path = $projectFolder . '/';
+    } elseif ($domain) {
+        $path = rtrim($clientFolder, '/') . '/' . $domain . '/';
+    } elseif (!empty($_GET['client'])) {
+        $path = resolveClient($clientFolder);
+    } elseif (count($dirs) === 1) {
+        $path = reset($dirs);
+    } else {
+        $path = '';
+    }
+
+    $path = preg_replace('#' . preg_quote(APP_PATH, '#') . '#', '', $path);
+    defined('APP_ROOT') || define('APP_ROOT', !is_dir(APP_PATH . $path) ?: $path);
+
+    // [10] Adjust path if needed
+    switch (basename(__DIR__)) {
+        case 'public':
+            chdir(dirname(__DIR__));
+            break;
+    }
+
+    // [11] Config Load (Unchanged)
+    $configFile = CONFIG_PATH . 'config.php';
+    if (is_file($configFile)) {
+        require_once $configFile;
+    } else {
+        die(var_dump($configFile));
+    }
 }
-//dd(get_required_files());
-// 0.257 seconds
-
-//require_once 'config' . DIRECTORY_SEPARATOR . 'autoload.php'; // Autoload configuration
-/*
-require_once 'config' . DIRECTORY_SEPARATOR . 'autoload_functions.php';
-require_once 'config' . DIRECTORY_SEPARATOR . 'autoload_classes.php';
-require_once 'config' . DIRECTORY_SEPARATOR . 'autoload_interfaces.php';
-require_once 'config' . DIRECTORY_SEPARATOR . 'autoload_traits.php';
-require_once 'config' . DIRECTORY_SEPARATOR . 'autoload_exceptions.php';
-require_once 'config' . DIRECTORY_SEPARATOR . 'autoload_constants.php';
-require_once 'config' . DIRECTORY_SEPARATOR . 'autoload_variables.php';
-require_once 'config' . DIRECTORY_SEPARATOR . 'autoload_globals.php';
-require_once 'config' . DIRECTORY_SEPARATOR . 'autoload_paths.php';
-require_once 'config' . DIRECTORY_SEPARATOR . 'autoload_config.php';
-require_once 'config' . DIRECTORY_SEPARATOR . 'autoload_helpers.php';
-require_once 'config' . DIRECTORY_SEPARATOR . 'autoload_services.php';
-require_once 'config' . DIRECTORY_SEPARATOR . 'autoload_commands.php';
-require_once 'config' . DIRECTORY_SEPARATOR . 'autoload_events.php';
-require_once 'config' . DIRECTORY_SEPARATOR . 'autoload_middlewares.php';
-require_once 'config' . DIRECTORY_SEPARATOR . 'autoload_routes.php';
-require_once 'config' . DIRECTORY_SEPARATOR . 'autoload_views.php';
-require_once 'config' . DIRECTORY_SEPARATOR . 'autoload_templates.php';
-require_once 'config' . DIRECTORY_SEPARATOR . 'autoload_assets.php';
-require_once 'config' . DIRECTORY_SEPARATOR . 'autoload_scripts.php';
-require_once 'config' . DIRECTORY_SEPARATOR . 'autoload_styles.php';
-require_once 'config' . DIRECTORY_SEPARATOR . 'autoload_migrations.php';
-require_once 'config' . DIRECTORY_SEPARATOR . 'autoload_seeds.php';
-require_once 'config' . DIRECTORY_SEPARATOR . 'autoload_tests.php';
-require_once 'config' . DIRECTORY_SEPARATOR . 'autoload_settings.php';
-require_once 'config' . DIRECTORY_SEPARATOR . 'autoload_translations.php';
-require_once 'config' . DIRECTORY_SEPARATOR . 'autoload_languages.php';
-require_once 'config' . DIRECTORY_SEPARATOR . 'autoload_locales.php';
-require_once 'config' . DIRECTORY_SEPARATOR . 'autoload_packages.php';
-require_once 'config' . DIRECTORY_SEPARATOR . 'autoload_modules.php';
-require_once 'config' . DIRECTORY_SEPARATOR . 'autoload_plugins.php';
-require_once 'config' . DIRECTORY_SEPARATOR . 'autoload_extensions.php';
-require_once 'config' . DIRECTORY_SEPARATOR . 'autoload_system.php';
-require_once 'config' . DIRECTORY_SEPARATOR . 'autoload_system_paths.php';
-require_once 'config' . DIRECTORY_SEPARATOR . 'autoload_system_config.php';
-require_once 'config' . DIRECTORY_SEPARATOR . 'autoload_system_helpers.php';
-require_once 'config' . DIRECTORY_SEPARATOR . 'autoload_system_services.php';
-require_once 'config' . DIRECTORY_SEPARATOR . 'autoload_system_commands.php';
-require_once 'config' . DIRECTORY_SEPARATOR . 'autoload_system_events.php';
-require_once 'config' . DIRECTORY_SEPARATOR . 'autoload_system_middlewares.php';
-require_once 'config' . DIRECTORY_SEPARATOR . 'autoload_system_routes.php';
-require_once 'config' . DIRECTORY_SEPARATOR . 'autoload_system_views.php';
-require_once 'config' . DIRECTORY_SEPARATOR . 'autoload_system_templates.php';
-require_once 'config' . DIRECTORY_SEPARATOR . 'autoload_system_assets.php';
-require_once 'config' . DIRECTORY_SEPARATOR . 'autoload_system_scripts.php';
-require_once 'config' . DIRECTORY_SEPARATOR . 'autoload_system_styles.php';
-require_once 'config' . DIRECTORY_SEPARATOR . 'autoload_system_migrations.php';
-require_once 'config' . DIRECTORY_SEPARATOR . 'autoload_system_seeds.php';
-require_once 'config' . DIRECTORY_SEPARATOR . 'autoload_system_tests.php';
-require_once 'config' . DIRECTORY_SEPARATOR . 'autoload_system_settings.php';
-require_once 'config' . DIRECTORY_SEPARATOR . 'autoload_system_translations.php';
-require_once 'config' . DIRECTORY_SEPARATOR . 'autoload_system_languages.php';
-require_once 'config' . DIRECTORY_SEPARATOR . 'autoload_system_locales.php';
-require_once 'config' . DIRECTORY_SEPARATOR . 'autoload_system_packages.php';
-require_once 'config' . DIRECTORY_SEPARATOR . 'autoload_system_modules.php';
-require_once 'config' . DIRECTORY_SEPARATOR . 'autoload_system_plugins.php';
-require_once 'config' . DIRECTORY_SEPARATOR . 'autoload_system_extensions.php';
-*/
-
-//require_once 'vendor' . DIRECTORY_SEPARATOR . 'autoload.php'; // Composer autoload
-
-
-/*
-if (isset($_GET['debug'])) 
-  require_once 'public' . DIRECTORY_SEPARATOR . 'index.php';
-else
-  die(header('Location: public' . DIRECTORY_SEPARATOR . 'index.php'));
-*/

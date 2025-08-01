@@ -1,59 +1,124 @@
 <?php
 
-if (isset($_SERVER['REQUEST_METHOD']) && $_SERVER['REQUEST_METHOD'] === 'POST')
-    /*
-    git reset filename   (unstage a specific file)
+use App\Core\Shutdown;
 
-    git branch
-      -m   oldBranch newBranch   (Renaming a git branch)
-      -d   Safe deletion
-      -D   Forceful deletion
+function handle_git_command(string $cmd): array
+{
+    $output = [];
+    $errors = [];
 
-    git commit -am "Default message"
-
-    git checkout -b branchName
-    */
-
-    /*
-    function testGit()
-      {
-        $descriptorspec = [
-          1 => ['pipe', 'w'],
-          2 => ['pipe', 'w'],
+    if (!preg_match('/^git\s+(.*)/i', $cmd, $match)) {
+        return [
+            'status' => 'error',
+            'message' => 'Invalid or missing git command',
         ];
-        $pipes = [];
-        $resource = proc_open(Git::getBin(), $descriptorspec, $pipes);
+    }
 
-        foreach ($pipes as $pipe) {
-          fclose($pipe);
+    $gitCmd = $match[1];
+    $sudo = defined('APP_SUDO') && trim(APP_SUDO) !== '' ? APP_SUDO . ' -u www-data ' : '';
+    $gitExec = defined('GIT_EXEC') ? GIT_EXEC : 'git';
+    $gitDir = APP_PATH . APP_ROOT . '.git';
+    $workTree = APP_PATH . APP_ROOT;
+    $shell_prompt = '$ ';
+
+    $fullCommand = "$sudo$gitExec --git-dir=\"$gitDir\" --work-tree=\"$workTree\" $gitCmd";
+
+    // Special help handler
+    if (preg_match('/^help\b/i', $gitCmd)) {
+        $output[] = <<<END
+git reset filename   (unstage a specific file)
+
+git branch
+  -m   oldBranch newBranch   (Rename branch)
+  -d   Safe delete
+  -D   Force delete
+
+git commit -am "Message"
+git checkout -b newBranch
+END;
+    }
+
+    // Special case: git update
+    elseif (preg_match('/^update\b/i', $gitCmd)) {
+        $output[] = function_exists('git_origin_sha_update') ? git_origin_sha_update() : 'git_origin_sha_update() not available.';
+    }
+
+    // Special case: git clone
+    elseif (preg_match('/^clone\b/i', $gitCmd)) {
+        if (
+            preg_match('/^git\s+clone\s+(http(?:s)?:\/\/([^@\s]+)@github\.com\/[\w.-]+\/[\w.-]+\.git)(?:\s*([\w.-]+))?/', $cmd, $github_repo)
+            || preg_match('/^git\s+clone\s+(http(?:s)?:\/\/github\.com\/[\w.-]+\/[\w.-]+\.git)(?:\s*([\w.-]+))?/', $cmd, $github_repo)
+        ) {
+
+            $parsedUrl = parse_url($_ENV['GIT']['ORIGIN_URL']);
+            $token = $_ENV['GITHUB']['OAUTH_TOKEN'] ?? '';
+            $remoteUrl = "https://$token@" . $parsedUrl['host'] . $parsedUrl['path'] . '.git';
+
+            $fullCommand = "$cmd --git-dir=\"$gitDir\" --work-tree=\"$workTree\" $remoteUrl";
+
+            if (!isset($GLOBALS['runtime']['socket']) || !is_resource($GLOBALS['runtime']['socket'])) {
+                $proc = proc_open($fullCommand, [["pipe", "r"], ["pipe", "w"], ["pipe", "w"]], $pipes);
+                [$stdout, $stderr, $exitCode] = [stream_get_contents($pipes[1]), stream_get_contents($pipes[2]), proc_close($proc)];
+                $output[] = $stdout;
+                if (!empty($stderr))
+                    $errors[] = $stderr;
+            } else {
+                // socket handling
+                $message = "cmd: $fullCommand\n";
+                fwrite($GLOBALS['runtime']['socket'], $message);
+                $response = '';
+                while (!feof($GLOBALS['runtime']['socket'])) {
+                    $response .= fgets($GLOBALS['runtime']['socket'], 1024);
+                }
+                fclose($GLOBALS['runtime']['socket']);
+                $output[] = trim($response);
+            }
         }
+    }
 
-        $status = trim(proc_close($resource));
+    // Default git command
+    else {
+        $proc = proc_open($fullCommand, [["pipe", "r"], ["pipe", "w"], ["pipe", "w"]], $pipes);
+        [$stdout, $stderr, $exitCode] = [stream_get_contents($pipes[1]), stream_get_contents($pipes[2]), proc_close($proc)];
 
-        return ($status != 127);
-      }
+        if ($exitCode !== 0 && empty($stdout)) {
+            if (!empty($stderr)) {
+                $errors["GIT-$cmd"] = $stderr;
+                error_log($stderr);
+            }
+        } else {
+            $output[] = $stdout;
+            if (!empty($stderr))
+                $output[] = "stderr: $stderr";
+        }
+    }
 
-    $repo = Git::open('/path/to/repo');  // -or- Git::create('/path/to/repo')
+    return [
+        'status' => empty($errors) ? 'success' : 'error',
+        'command' => $cmd,
+        'output' => $output,
+        'errors' => $errors,
+    ];
+}
 
-    $repo->add('.');
+// === Execution point ===
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['cmd'])) {
+    $response = handle_git_command($_POST['cmd']);
 
-        if (is_array($files))
-        $files = '"'.implode('" "', $files).'"';
-        GIT_EXEC . " add $files -v";
+    // If routed via dispatcher (wants a return)
+    if (basename($_SERVER['SCRIPT_FILENAME']) === 'dispatcher.php') {
+        return $response;
+    }
 
-    $repo->commit('Some commit message');
+    // Else (direct POST), echo as JSON
+    header('Content-Type: application/json');
+    echo json_encode($response, JSON_PRETTY_PRINT);
+    Shutdown::setEnabled(true)->shutdown();
+    exit;
+}
 
-        GIT_EXEC . ' commit -av -m ' . escapeshellarg($message)
-
-
-    $repo->push('origin', 'master');
-
-        GIT_EXEC . " push $remote $branch"
-
-    */
-
-
-    // 
+/*
+if (isset($_SERVER['REQUEST_METHOD']) && $_SERVER['REQUEST_METHOD'] === 'POST')
 
     if (isset($_POST['cmd']) && $_POST['cmd'] != '')
         if (preg_match('/^git\s*(:?.*)/i', $_POST['cmd'], $match)) {
@@ -152,36 +217,37 @@ END;
                     // (?:(?=(.*?[^@\s]+))[^@\s]+@)?
 
                 } else if (preg_match('/^git\s+clone\s+(http(?:s)?:\/\/github\.com\/[\w.-]+\/[\w.-]+\.git)(?:\s*([\w.-]+))?/', $_POST['cmd'], $github_repo)) { // matches without token
-                    /*
-                                if (realpath($github_repo[3])) $output[] = realpath($github_repo[3]);
 
-                                //$output[] = dd($github_repo);
-                                if (!is_dir('.git')) exec((stripos(PHP_OS, 'WIN') === 0 ? '' : APP_SUDO) . 'git init', $output);
+                    if (realpath($github_repo[3]))
+                        $output[] = realpath($github_repo[3]);
 
-                                exec('git branch -m master main', $output);
+                    //$output[] = dd($github_repo);
+                    if (!is_dir('.git'))
+                        exec((stripos(PHP_OS, 'WIN') === 0 ? '' : APP_SUDO) . 'git init', $output);
 
-                                //exec('git remote add origin ' . $github_repo[2], $output);
-                                //...git remote set-url origin http://...@github.com/barrydit/
+                    exec('git branch -m master main', $output);
 
-                                exec((stripos(PHP_OS, 'WIN') === 0 ? '' : APP_SUDO)  . 'git config core.sparseCheckout true', $output);
+                    //exec('git remote add origin ' . $github_repo[2], $output);
+                    //...git remote set-url origin http://...@github.com/barrydit/
 
-                                //touch('.git/info/sparse-checkout');
+                    exec((stripos(PHP_OS, 'WIN') === 0 ? '' : APP_SUDO) . 'git config core.sparseCheckout true', $output);
 
-                                file_put_contents('.git/info/sparse-checkout', '*'); /// exec('echo "*" >> .git/info/sparse-checkout', $output);
+                    //touch('.git/info/sparse-checkout');
 
-                                exec((stripos(PHP_OS, 'WIN') === 0 ? '' : APP_SUDO) . 'git pull origin main', $output);
+                    file_put_contents('.git/info/sparse-checkout', '*'); /// exec('echo "*" >> .git/info/sparse-checkout', $output);
 
-                                //exec(APP_SUDO . ' git init', $output);
-                                //$output[] = dd($output);
-                              $output[] = 'This works ... ';
-                    */
+                    exec((stripos(PHP_OS, 'WIN') === 0 ? '' : APP_SUDO) . 'git pull origin main', $output);
+
+                    //exec(APP_SUDO . ' git init', $output);
+                    //$output[] = dd($output);
+                    $output[] = 'This works ... ';
+
                 }
 
                 $parsedUrl = parse_url($_ENV['GIT']['ORIGIN_URL']);
 
                 $output[] = $command = $_POST['cmd'] . ' --git-dir="' . APP_PATH . APP_ROOT . '.git" --work-tree="' . APP_PATH . APP_ROOT . '" https://' . $_ENV['GITHUB']['OAUTH_TOKEN'] . '@' . $parsedUrl['host'] . $parsedUrl['path'] . '.git';
 
-                /**/
 
                 if (isset($github_repo) && !empty($github_repo)) {
 
@@ -214,7 +280,7 @@ END;
 
                         // Send a message to the server
                         $errors['server-2'] = 'Client request: ' . $message = "cmd: $command\n";
-                        /* Known socket  Error / Bug is mis-handled and An established connection was aborted by the software in your host machine */
+                        // Known socket  Error / Bug is mis-handled and An established connection was aborted by the software in your host machine 
 
                         fwrite($GLOBALS['runtime']['socket'], $message);
 
@@ -250,7 +316,7 @@ END;
 
             $output[] = shell_exec("$command ; echo $?");
 
-            if (preg_match('/Your branch is up to date with \'origin\/main\'\./' /**nothing to commit, working tree clean/s'*/ , end($output))) {
+            if (preg_match('/Your branch is up to date with \'origin\/main\'\./', end($output))) { //  nothing to commit, working tree clean/s'
                 //echo "Repository is up-to-date.";
             } else {
                 echo "Repository has changes.\n";
@@ -259,7 +325,7 @@ END;
             if (isset($output) && is_array($output)) {
                 switch (count($output) > 0) {
                     case true:
-                        echo /*(isset($match[1]) ? $match[1] : 'PHP') . ' >>> ' . */ join("\n" /*. ... <<<*/ , $output);
+                        echo join("\n" , $output); //  (isset($match[1]) ? $match[1] : 'PHP') . ' >>> ' . ... <<<
                         break;
                     default:
                         echo join("\n", $output);
@@ -273,3 +339,5 @@ END;
                 //else var_dump(get_class_methods($repo));
             }
         }
+
+        */

@@ -842,10 +842,18 @@ function check_internet_connection(?string $host = null): bool
     $status = ($exitCode === 0);
   } else {
     // Unix-like: use stream_socket_client on TCP port 80
-    $connection = @stream_socket_client("tcp://$host:$port", $errno, $errstr, $timeout);
-    if ($connection) {
+    $connection = @stream_socket_client(
+      "tcp://$host:$port",
+      $errno,
+      $errstr,
+      $timeout,
+      STREAM_CLIENT_ASYNC_CONNECT | STREAM_CLIENT_CONNECT
+    );
+
+    if ($connection !== false) {
+      stream_set_blocking($connection, false); // don't block
       fclose($connection);
-      $status = true;
+      $status = true; // connection started, not guaranteed complete
     }
   }
 
