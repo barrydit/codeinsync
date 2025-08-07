@@ -1,6 +1,23 @@
 <?php
 
-require_once dirname(__DIR__, 1) . DIRECTORY_SEPARATOR . 'config' . DIRECTORY_SEPARATOR . 'constants.composer.php';
+require_once (defined('APP_PATH') ? APP_PATH : dirname(__DIR__, 3)) . DIRECTORY_SEPARATOR . 'config' . DIRECTORY_SEPARATOR . 'constants.composer.php';
+
+$app_id = 'tools/registry/composer';
+$container_id = str_replace(['/', '-'], '_', $app_id) . '-container';
+$selector = '#app_' . ($container_id ?? 'composer') . '-container';
+
+switch (__FILE__) {
+  case get_required_files()[0]:
+
+    if ($path = (basename(getcwd()) == 'public') ? (is_file('config.php') ? 'config.php' : '../config/config.php') : '')
+      require_once $path;
+    else
+      die(var_dump("$path path was not found. file=config.php"));
+
+    break;
+  default:
+    file_exists(APP_PATH . 'config/constants.paths.php') && require_once APP_PATH . 'config/constants.paths.php';
+}
 
 $COMPOSER_JSON = json_encode($composer_obj); // @file_get_contents("composer.json");
 $COMPOSER = json_decode($COMPOSER_JSON, true);
@@ -8,25 +25,25 @@ $COMPOSER = json_decode($COMPOSER_JSON, true);
 define("COMPOSER_JSON_RAW", $COMPOSER_JSON);
 define("COMPOSER", ['json' => $composer_obj]); // ← This is what’s missing!
 
-//dd(COMPOSER);
+//dd(get_required_files());
 /*
 <?php ob_start(); ?>
 <HTML ...>
-<?php $app['css'] = ob_get_contents(); ?>
+<?php $UI_APP['css'] = ob_get_contents(); ?>
 */
 
 ob_start(); ?>
-#app_composer-container {
+<?= $selector ?> {
 position : absolute;
 display : none;
 left : 832px;
 top : 96px;
 resize : both; /* Make the div resizable */
 margin : 0 auto;
-z-index : 1;
+/* z-index : 1; */
 }
 
-#app_composer-container.selected {
+<?= $selector ?>.selected {
 display : block;
 resize : both; /* Make the div resizable */
 z-index : 1;
@@ -56,9 +73,6 @@ z-index : 1;
 
 /* #app_composer-frameName == ['menu', 'conf', 'install', 'init', 'update'] */
 
-
-
-
 #app_composer-frameMenu {}
 #app_composer-frameMenuPrev {} /* composerMenuPrev */
 #app_composer-frameMenuNext {} /* composerMenuNext */
@@ -80,8 +94,6 @@ z-index : 1;
 .btn {
 @apply rounded-md px-2 py-1 text-center font-medium text-slate-900 shadow-sm ring-1 ring-slate-900/10 hover:bg-slate-50
 }
-
-
 
 .composer-menu {
 cursor : pointer;
@@ -126,7 +138,7 @@ display : block;
 img {
 display : inline;
 }
-<?php $app['style'] = ob_get_contents();
+<?php $UI_APP['style'] = ob_get_contents();
 ob_end_clean();
 
 
@@ -169,48 +181,48 @@ function highlightVersionDiff($installed, $latest)
 
 ob_start(); ?>
 
-<div id="app_composer-container"
-  class="<?= defined('COMPOSER_VERSION') and __FILE__ == get_required_files()[0] || (isset($_GET['app']) && $_GET['app'] == 'composer') || (defined('COMPOSER') && !is_object(COMPOSER['json']) && count((array) COMPOSER) === 0) || version_compare(COMPOSER_LATEST, COMPOSER_VERSION, '>') != 0 && defined('APP_DEBUG') && APP_DEBUG ? 'selected' : '' ?>"
-  style="position: fixed; z-index: 1; width: 424px; background-color: rgba(255, 255, 255, 0.8); padding: 10px; display: block; left: 612px; top: 104px;">
-
-  <div
-    style="position: relative; margin: 0 auto; width: 404px; height: 324px; border: 3px dashed #6B4329; background-color: #FBF7F1;">
-
-    <div class="fixed ui-widget-header" id=""
-      style="position: fixed; display: inline-block; width: 404px; height: 25px; cursor: move; margin: -45px 0 25px 0; padding: 10px 0 10px 0; border-bottom: 1px solid #000; z-index: 3;">
-      <label class="composer-home" style="cursor: pointer;">
-        <div class="absolute"
-          style="position: relative; float: left; display: inline-block; top: 0; left: 0; margin-top: -5px;">
-          <img src="resources/images/composer_icon.png" width="32" height="40" />
-        </div>
-      </label>
-      <div style="display: inline; float: left; margin-top: 10px;">
-        <span style="background-color: #B0B0B0; color: white;">Composer
-          <a href="#" alt="Installed: <?= COMPOSER_VERSION; ?>"><?= (defined('COMPOSER_VERSION') && version_compare(COMPOSER_LATEST, COMPOSER_VERSION, '>') !== 0)
-              ? highlightVersionDiff(COMPOSER_VERSION, COMPOSER_LATEST)
-              : COMPOSER_VERSION; ?></a>
-        </span>
+<div class="fixed ui-widget-header" id=""
+  style="position: fixed; display: inline-block; width: 445px; height: 25px; cursor: move; margin: -45px 0 25px 0; padding: 10px 0 10px 0; border-bottom: 1px solid #000; z-index: 3;">
+  <label class="composer-home" style="cursor: pointer;">
+    <div class="absolute"
+      style="position: relative; float: left; display: inline-block; top: 0; left: 0; margin-top: -5px;">
+      <img src="resources/images/composer_icon.png" width="32" height="40" />
+    </div>
+  </label>
+  <div style="display: inline; float: left; margin-top: 10px;">
+    <span style="background-color: #B0B0B0; color: white;">Composer
+      <a href="#" alt="Installed: <?= COMPOSER_VERSION; ?>"><?= (defined('COMPOSER_VERSION') && version_compare(COMPOSER_LATEST, COMPOSER_VERSION, '>') !== 0)
+          ? highlightVersionDiff(COMPOSER_VERSION, COMPOSER_LATEST)
+          : COMPOSER_VERSION; ?></a>
+    </span>
 
 
-        <form style="display: inline;" autocomplete="off" spellcheck="false"
-          action="<?= APP_URL . '?' . http_build_query(APP_QUERY + ['app' => 'composer']) . (defined('APP_ENV') && APP_ENV == 'development' ? '#!' : '') /* $c_or_p . '=' . (empty($_GET[$c_or_p]) ? '' : $$c_or_p->name) . '&amp;app=composer' */ ?>"
-          method="GET">
-          <?php if (isset($_GET['debug'])) { ?> <input type="hidden" name="debug" value="" /> <?php } ?>
+    <form style="display: inline;" autocomplete="off" spellcheck="false"
+      action="<?= APP_URL . '?' . http_build_query(APP_QUERY + ['app' => 'composer']) . (defined('APP_ENV') && APP_ENV == 'development' ? '#!' : '') /* $c_or_p . '=' . (empty($_GET[$c_or_p]) ? '' : $$c_or_p->name) . '&amp;app=composer' */ ?>"
+      method="GET">
+      <?php if (isset($_GET['debug'])) { ?> <input type="hidden" name="debug" value="" /> <?php } ?>
 
-          <code class="text-sm" style="background-color: #fff; color: #0078D7;">$ 
+      <code class="text-sm" style="background-color: #fff; color: #0078D7;">$ 
         <input type="hidden" name="app" value="composer" />
         <select name="exec" onchange="this.form.submit();">
           <?php if (defined('COMPOSER_BIN')) { ?><option <?= COMPOSER_EXEC == COMPOSER_BIN ? 'selected' : '' ?> value="bin"><?= COMPOSER_BIN['bin']; ?></option><?php } ?>
           <option <?= defined('COMPOSER_EXEC') and COMPOSER_EXEC == COMPOSER_PHAR ? 'selected' : '' ?> value="phar"><?= 'php composer.phar' /*COMPOSER_PHAR['bin']*/ ; ?></option>
         </select>
       </code>
-        </form>
+    </form>
 
-      </div>
-      <div style="display: inline; float: right; text-align: center; "><code
-          style=" background-color: white; color: #0078D7;"><a style="cursor: pointer; font-size: 13px;" onclick="document.getElementById('app_composer-container').style.display='none';">[X]</a></code>
-      </div>
-    </div>
+  </div>
+  <div style="display: inline; float: right; margin-top: 10px; text-align: center; "><code
+      style=" background-color: white; color: #0078D7;"><a style="cursor: pointer; font-size: 13px;" onclick="closeApp('tools/registry/composer'); document.getElementById('app_composer-container').style.display='none';">[X]</a></code>
+  </div>
+</div>
+
+<div id="<?= $container_id ?? '' ?>"
+  class="<?= defined('COMPOSER_VERSION') and __FILE__ == get_required_files()[0] || (isset($_GET['app']) && $_GET['app'] == 'composer') || (defined('COMPOSER') && !is_object(COMPOSER['json']) && count((array) COMPOSER) === 0) || version_compare(COMPOSER_LATEST, COMPOSER_VERSION, '>') != 0 && defined('APP_DEBUG') && APP_DEBUG ? 'selected' : '' ?>"
+  style="width: 424px; background-color: rgba(255, 255, 255, 0.8); padding: 10px; display: block; left: 612px; top: 104px;">
+
+  <div
+    style="position: relative; margin: 0 auto; width: 404px; height: 324px; border: 3px dashed #6B4329; background-color: #FBF7F1;">
 
     <div class="ui-widget-content"
       style="position: relative; display: block; width: 398px; background-color: rgba(251,247,241); z-index: 2;">
@@ -1133,7 +1145,7 @@ php composer.phar -v
   <!-- future feature: convert div from absolute to fixed. make screen bigger. <div style="position: relative; text-align: right; cursor: pointer; width: 400px; margin: 0 auto; border: 1px solid #000;"> &#9660;</div> -->
 </div>
 
-<?php $app['body'] = ob_get_contents();
+<?php $UI_APP['body'] = ob_get_contents();
 ob_end_clean();
 
 if (false) { ?>
@@ -1460,7 +1472,7 @@ ob_start(); ?>
 
   <?php
 
-  $app['script'] = ob_get_contents();
+  $UI_APP['script'] = ob_get_contents();
   ob_end_clean();
 
   if (false) { ?></script><?php }
@@ -1501,12 +1513,12 @@ ob_start(); ?>
   <script src="<?= 'resources/js/tailwindcss-3.3.5.js' ?? $url ?>"></script>
 
   <style type="text/tailwindcss">
-    <?= $app['style']; ?>
+    <?= $UI_APP['style']; ?>
   </style>
 </head>
 
 <body>
-  <?= $app['body']; ?>
+  <?= $UI_APP['body']; ?>
 
   <script
     src="<?= APP_IS_ONLINE && check_http_status('https://code.jquery.com/jquery-3.7.1.min.js') ? 'https://code.jquery.com/jquery-3.7.1.min.js' : "{$path}jquery-3.7.1.min.js" ?>"></script>
@@ -1517,7 +1529,7 @@ ob_start(); ?>
   <!-- Uncaught ReferenceError: jQuery is not defined -->
 
   <script>
-    <?= $app['script']; ?>
+    <?= $UI_APP['script']; ?>
   </script>
 </body>
 
@@ -1528,7 +1540,7 @@ ob_end_clean();
 
 //check if file is included or accessed directly
 if (__FILE__ == get_required_files()[0] || in_array(__FILE__, get_required_files()) && isset($_GET['app']) && $_GET['app'] == 'composer' && APP_DEBUG) {
-  return $app['html'];
+  return $UI_APP['html'];
 } else {
-  return $app;
+  return $UI_APP; // = ['style' => '', 'body' => $UI_APP['body'], 'script' => ''];
 }

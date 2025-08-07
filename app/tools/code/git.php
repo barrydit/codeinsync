@@ -2,6 +2,10 @@
 
 global $errors;
 
+$app_id = 'tools/code/git';
+$container_id = str_replace(['/', '-'], '_', $app_id) . '-container';
+$selector = '#app_' . ($container_id ?? 'git-container');
+
 switch (__FILE__) {
   case get_required_files()[0]:
     if ($path = (basename(getcwd()) == 'public') ? (is_file('config.php') ? 'config.php' : '../config/config.php') : '')
@@ -11,12 +15,13 @@ switch (__FILE__) {
 
     break;
   default:
+    file_exists(APP_PATH . 'config/constants.paths.php') && require_once APP_PATH . 'config/constants.paths.php';
 }
 
-if ($path = realpath(APP_PATH . APP_BASE['config'] . 'constants.git.php'))
+if ($path = realpath(APP_PATH . APP_BASE['config'] . 'constants.git.php')) {
   require_once $path;
-else
-  die(var_dump("$path path was not found. file=" . basename($path)));
+} else
+  die(var_dump("constants.git.php path was not found. file=" . basename($path)));
 
 /* https://stackoverflow.com/questions/73026623/how-to-ignore-or-permanently-block-the-files-which-contain-date-or-datetime-in */
 
@@ -30,12 +35,12 @@ else die(var_dump($path . ' path was not found. file=git.php')); */
 /*
 <?php ob_start(); ?>
 <HTML ...>
-<?php $app['css'] = ob_get_contents();
+<?php $UI_APP['css'] = ob_get_contents();
 ob_end_clean(); ?> */
 ob_start(); ?>
-#app_git-container {
+<?= $selector ?> {
 position : fixed; /* absolute */
-display : none;
+display : block;
 top : 20%;
 left : 40%; /* right: 50%; */
 margin-left: -[212px]; /* margin-right: -[212px]; */
@@ -43,9 +48,11 @@ margin-top: -[153px];
 /* transform: translate(-50%, -50%); */
 /* margin: 0 auto; */
 }
-#app_git-container.selected {
+
+
+<?= $selector ?>.selected {
 display : block;
-z-index : 1;
+/* z-index : 1;*/
 /* Add your desired styling for the selected container */
 /*
 // background-color: rgb(240, 224, 198); // 240, 224, 198, .75 #FBF7F1; // rgba(240, 224, 198, .25);
@@ -98,7 +105,6 @@ z-index : 1;
 @apply rounded-md px-2 py-1 text-center font-medium text-slate-900 shadow-sm ring-1 ring-slate-900/10 hover:bg-slate-50
 }
 
-
 .git-menu {
 cursor : pointer;
 }
@@ -108,39 +114,43 @@ display : inline;
 .show {
 display : block;
 }
-
-<?php $app['style'] = ob_get_contents();
+<?php $UI_APP['style'] = ob_get_contents();
 ob_end_clean();
 
 ob_start();
 defined('GIT_VERSION') or define('GIT_VERSION', '1.0.0');
-defined('GIT_LATEST') or define('GIT_LATEST', GIT_VERSION); ?>
+defined('GIT_LATEST') or define('GIT_LATEST', GIT_VERSION);
 
-<div id="app_git-container"
+/*
+ */
+?>
+
+
+<div class="absolute ui-widget-header"
+  style="position: fixed; display: inline-block; width: 450px; height: 0; cursor: move; margin: -50px 0 0 0; padding: 24px 0; border-bottom: 1px solid #000; z-index: 3;">
+  <label class="git-home" style="cursor: pointer;">
+    <div class="" style="position: relative; float: left; display: inline-block; top: 0; left: 0; margin-top: -5px;">
+      <img src="resources/images/git_icon.fw.png" width="32" height="32" />
+    </div>
+  </label>
+  <div style="float: left; display: inline;">
+    <span style="background-color: white; color: #F05033;">Git
+      <?= (version_compare(GIT_LATEST, GIT_VERSION, '>') != 0 ? 'v' . substr(GIT_LATEST, 0, similar_text(GIT_LATEST, GIT_VERSION)) . '<span class="update" style="color: green; cursor: pointer;">' . substr(GIT_LATEST, similar_text(GIT_LATEST, GIT_VERSION)) . '</span>' : 'v' . GIT_VERSION) . ' '; ?></span><span
+      style="background-color: #0078D7; color: white;"><code class="text-sm"
+        style="background-color: white; color: #0078D7;">$ <a href="#" style="background-color: white; color: #0078D7;" onclick="isFixed = true; show_console(); return false;"><?= defined('GIT_EXEC') ? GIT_EXEC : null; ?></a></code></span>
+  </div>
+
+  <div style="display: inline; float: right; text-align: center; color: blue;"><code
+      style="background-color: white; color: #0078D7;"><a style="cursor: pointer; font-size: 13px;" onclick="closeApp('tools/code/git')">[X]</a></code>
+    <!-- document.getElementById('<?= $container_id ?>').style.display='none'; -->
+  </div>
+</div>
+<div id="<?= $container_id ?>"
   class="<?= __FILE__ == get_required_files()[0] || isset($_GET['app']) && $_GET['app'] == 'git' || isset($errors['GIT_UPDATE']) ? 'selected' : (version_compare(GIT_LATEST, GIT_VERSION, '>') != 0 ? (isset($_GET['app']) && $_GET['app'] != 'git' ? '' : '') : '') ?>"
   style="position: fixed; z-index: 3; width: 424px; background-color: rgba(255,255,255,0.8); padding: 10px;">
+
   <div
     style="position: relative; margin: 0 auto; width: 404px; height: 306px; border: 3px dashed #F05033; background-color: #FBF7F1;">
-
-    <div class="absolute ui-widget-header"
-      style="position: fixed; display: inline-block; width: 400px; height: 0; cursor: move; margin: -50px 0 0 0; padding: 24px 0; border-bottom: 1px solid #000; z-index: 3;">
-      <label class="git-home" style="cursor: pointer;">
-        <div class=""
-          style="position: relative; float: left; display: inline-block; top: 0; left: 0; margin-top: -5px;">
-          <img src="resources/images/git_icon.fw.png" width="32" height="32" />
-        </div>
-      </label>
-      <div style="float: left; display: inline;">
-        <span style="background-color: white; color: #F05033;">Git
-          <?= (version_compare(GIT_LATEST, GIT_VERSION, '>') != 0 ? 'v' . substr(GIT_LATEST, 0, similar_text(GIT_LATEST, GIT_VERSION)) . '<span class="update" style="color: green; cursor: pointer;">' . substr(GIT_LATEST, similar_text(GIT_LATEST, GIT_VERSION)) . '</span>' : 'v' . GIT_VERSION) . ' '; ?></span><span
-          style="background-color: #0078D7; color: white;"><code class="text-sm"
-            style="background-color: white; color: #0078D7;">$ <a href="#" style="background-color: white; color: #0078D7;" onclick="isFixed = true; show_console(); return false;"><?= defined('GIT_EXEC') ? GIT_EXEC : null; ?></a></code></span>
-      </div>
-
-      <div style="display: inline; float: right; text-align: center; color: blue;"><code
-          style="background-color: white; color: #0078D7;"><a style="cursor: pointer; font-size: 13px;" onclick="document.getElementById('app_git-container').style.display='none';">[X]</a></code>
-      </div>
-    </div>
 
     <div class="ui-widget-content"
       style="position: relative; display: block; width: 398px; background-color: rgba(251,247,241); z-index: 2;">
@@ -158,7 +168,7 @@ defined('GIT_LATEST') or define('GIT_LATEST', GIT_VERSION); ?>
       <div class="absolute"
         style="position: absolute; display: inline-block; top: 4px; text-align: right; width: 272px; ">
         <div class="text-xs" style="display: inline-block;">
-          + 1626 <a href="https://github.com/git/git/graphs/contributors">contributors</a>
+          + 2327 <a href="https://github.com/git/git/graphs/contributors">contributors</a>
           <br /><a href="http://github.com/git"><img src="resources/images/github.fw.png" title="http://github.com/git"
               width="18" height="18" /></a>
           <a style="color: blue; text-decoration-line: underline; text-decoration-style: solid;"
@@ -468,13 +478,19 @@ defined('GIT_LATEST') or define('GIT_LATEST', GIT_VERSION); ?>
     </div>
   </div>
 </div>
-<?php $app['body'] = ob_get_contents();
+<?php $UI_APP['body'] = ob_get_contents();
 ob_end_clean();
-
+/**/
 if (false) { ?>
   <script type="text/javascript">
   <?php }
 ob_start(); ?>
+  /* IIFE 
+  (() => {
+    let|const element = document.getElementById('app_git-container');
+    // all your logic inside this block
+  })(); */
+
   // Select the element
   const element = document.getElementById('app_git-container');
 
@@ -729,7 +745,7 @@ ob_start(); ?>
           */
   });
 
-  <?php $app['script'] = ob_get_contents();
+  <?php $UI_APP['script'] = ob_get_contents();
   ob_end_clean();
 
   if (false) { ?></script><?php }
@@ -769,12 +785,12 @@ ob_start(); ?>
   <script src="<?= 'resources/js/tailwindcss-3.3.5.js' ?? $url ?>"></script>
 
   <style type="text/tailwindcss">
-    <?= $app['style']; ?>
+    <?= $UI_APP['style']; ?>
 </style>
 </head>
 
 <body>
-  <?= $app['body']; ?>
+  <?= $UI_APP['body']; ?>
 
   <script
     src="<?= APP_IS_ONLINE && check_http_status('https://code.jquery.com/jquery-3.7.1.min.js') ? 'https://code.jquery.com/jquery-3.7.1.min.js' : "{$path}jquery-3.7.1.min.js" ?>"></script>
@@ -789,13 +805,13 @@ ob_start(); ?>
   <!-- script src="//code.jquery.com/ui/1.12.1/jquery-ui.js"></script -->
   <!-- <script src="resources/js/jquery/jquery.min.js"></script> -->
   <script>
-    <?= $app['script']; ?>
+    <?= $UI_APP['script']; ?>
   </script>
 </body>
 
 </html>
 <?php
-$app['html'] = ob_get_contents();
+$UI_APP['html'] = ob_get_contents();
 ob_end_clean();
 
 //check if file is included or accessed directly
@@ -803,7 +819,9 @@ if (__FILE__ == get_required_files()[0] || in_array(__FILE__, get_required_files
   header("Cache-Control: no-store, no-cache, must-revalidate, max-age=0");
   header("Pragma: no-cache");
 
-  return $app['html'];
-} else {
-  return $app;
+  return $UI_APP['html'];
 }
+//dd($UI_APP);
+
+//str_replace(["\r", "\n"], "", $UI_APP['style']); preg_match('#\n|\r#', $UI_APP['style'], $matches) or $UI_APP['style'] = str_replace($matches[0], '', $UI_APP['style']);
+$UI_APP = ['style' => $UI_APP['style'], 'body' => $UI_APP['body'], 'script' => $UI_APP['script']];

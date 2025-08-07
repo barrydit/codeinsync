@@ -19,7 +19,7 @@ function logoutUser(): void
 
     // Redirect to the homepage (public page)
     echo '<div style="position: absolute; left: 50%; right: 50%; width: 200px; border: 1px solid #ffb;">You have been logged out.</div>';
-    header('Refresh: 2; URL=/'); // Redirect after 2 seconds
+    header('Refresh: 2; URL=' . ($_SERVER['REQUEST_URI'] ?? '/')); // Redirect after 2 seconds
     exit;
 }
 

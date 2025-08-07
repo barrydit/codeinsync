@@ -7,8 +7,11 @@ defined('APP_PATH') ||
 
 define('PID_FILE', APP_PATH . 'server.pid');
 define('SERVER_SCRIPT', __FILE__);
-const SERVER_HOST = '127.0.0.1';
-const SERVER_PORT = 9000;
+
+defined('SERVER_HOST') or define('SERVER_HOST', '127.0.0.1');
+defined('SERVER_PORT') or define('SERVER_PORT', 9000);
+
+defined('SERVER_DEBUG') or define('SERVER_DEBUG', false);
 
 // Minimal includes (no bootstrap.php for CLI)
 //require_once APP_PATH . 'classes' . DIRECTORY_SEPARATOR . 'class.logger.php';
