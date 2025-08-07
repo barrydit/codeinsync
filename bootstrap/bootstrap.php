@@ -32,8 +32,14 @@ if (!defined('APP_BOOTSTRAPPED') && (!defined('APP_MODE') || APP_MODE !== 'dispa
         'constants.env.php',
         'constants.paths.php',
         'constants.runtime.php',
+        'constants.cli.php',
+        //'constants.socketLoader.php',
+        // constants.client.php',
+        //'constants.sockets.php',
+        'constants.exec.php',
+        'filesystem.ensure.php',
         'constants.url.php',
-        'constants.app.php',
+        'constants.app.php'
     ];
 
     foreach ($constants as $file) {
@@ -45,8 +51,13 @@ if (!defined('APP_BOOTSTRAPPED') && (!defined('APP_MODE') || APP_MODE !== 'dispa
 } else {
     // If already bootstrapped, skip loading constants and config
     $errors['APP_BOOTSTRAPPED'] = 'APP_BOOTSTRAPPED is already defined.';
+    if (defined('APP_DEBUG') && APP_DEBUG) {
+        error_log('[bootstrap] Skipped full boot because APP_BOOTSTRAPPED is set');
+    }
+
     file_exists(CONFIG_PATH . 'constants.env.php') && require_once CONFIG_PATH . 'constants.env.php';
     file_exists(CONFIG_PATH . 'constants.url.php') && require_once CONFIG_PATH . 'constants.url.php';
+    file_exists(CONFIG_PATH . 'constants.app.php') && require_once CONFIG_PATH . 'constants.app.php';
 }
 
 $configFile = CONFIG_PATH . 'config.php';

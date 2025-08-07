@@ -1,69 +1,101 @@
 <?php
 
+const IS_CLIENT = true;
+
 file_exists(dirname(__DIR__, 1) . '/bootstrap/bootstrap.php') && require_once dirname(__DIR__, 1) . '/bootstrap/bootstrap.php';
 
-$files = get_required_files();
+/*
+$trace = debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS, 1)[0];
+
+$file = $trace['file'];
+$line = $trace['line'];
+
+dd("Executing in: $file @ line $line\n");*/
+
+/**
+ * File Analysis Summary for PHP Project
+ * Counts PHP files, lines of code, and included files excluding vendor/.
+ */
+
 $baseDir = APP_PATH;
-$organizedFiles = [];
+$includedFiles = get_required_files();
+$trackedFiles = [];
 $directoriesToScan = [];
 
-// Collect directories from the list of files
-foreach ($files as $key => $file) {
+// Step 1: Track included files excluding vendor/
+foreach ($includedFiles as $key => $file) {
   $relativePath = str_replace($baseDir, '', $file);
   $directory = dirname($relativePath);
-  //var_dump($directory);
-  if (preg_match('/^vendor(\/.*$|)/', $directory)) {
-    unset($files[$key]);
+
+  if (str_starts_with($directory, 'vendor')) {
+    unset($includedFiles[$key]);
     continue;
   }
+
   if (!in_array($directory, $directoriesToScan)) {
     $directoriesToScan[] = $directory;
   }
-  // Add the relative path to the organizedFiles array if it is a .php file and not already present
-  if (pathinfo($relativePath, PATHINFO_EXTENSION) == 'php' && !in_array($relativePath, $organizedFiles)) {
-    $organizedFiles[] = $relativePath;
+
+  if (pathinfo($relativePath, PATHINFO_EXTENSION) === 'php' && !in_array($relativePath, $trackedFiles)) {
+    $trackedFiles[] = $relativePath;
   }
 }
 
-// Add non-recursive scanning for the root baseDir for *.php files
-$rootPhpFiles = glob("{$baseDir}{*.php}", GLOB_BRACE);
-foreach ($rootPhpFiles as $file) {
-  if (is_file($file)) {
-    $relativePath = str_replace($baseDir, '', $file);
-    // Add the relative path to the array if it is a .php file and not already present
-    if (pathinfo($relativePath, PATHINFO_EXTENSION) == 'php' && !in_array($relativePath, $organizedFiles)) {
-      if ($relativePath == 'composer-setup.php')
-        continue;
-      $organizedFiles[] = $relativePath;
-    }
+// Step 2: Scan non-recursive root for *.php excluding known installer scripts
+foreach (glob("{$baseDir}*.php") as $file) {
+  $relativePath = str_replace($baseDir, '', $file);
+  if ($relativePath === 'composer-setup.php')
+    continue;
+  if (pathinfo($relativePath, PATHINFO_EXTENSION) === 'php' && !in_array($relativePath, $trackedFiles)) {
+    $trackedFiles[] = $relativePath;
   }
 }
 
-// Scan the specified directories
-scanDirectories($directoriesToScan, $baseDir, $organizedFiles);
+// Step 3: Scan project directories recursively
+scanDirectories($directoriesToScan, $baseDir, $trackedFiles);
 
-// Display the results
-$sortedArray = customSort($organizedFiles);
+// Step 4: Sort files
+$sortedFiles = customSort($trackedFiles);
 
-$total_include_files = count($files);
+// Step 5: Count stats
+$total_include_files = count($includedFiles);
 $total_include_lines = 0;
 $total_filesize = 0;
-$total_files = count($sortedArray);
+$total_files = count($sortedFiles);
 $total_lines = 0;
 
-//dd($files);
+foreach ($sortedFiles as $index => $path) {
+  $fullPath = str_starts_with($path, DIRECTORY_SEPARATOR)
+    ? $path  // Already absolute, don't prepend
+    : $baseDir . $path;
 
-foreach ($sortedArray as $key => $path) {
-  $sortedArray[$key] = ['path' => APP_PATH . $path, 'filesize' => filesize(APP_PATH . $path), 'filemtime' => filemtime(APP_PATH . $path)];
-  //$total_files++;
-  in_array($sortedArray[$key]['path'], $files) and $total_include_lines += count(file($sortedArray[$key]['path'])); //or $total_include_files++;
-  $total_filesize += $sortedArray[$key]['filesize'];
-  $total_lines += count(file($sortedArray[$key]['path']));
+  $fileSize = filesize($fullPath);
+
+  //dd($fullPath, false);
+
+  $lineCount = count(file($fullPath));
+
+  $sortedFiles[$index] = [
+    'path' => $fullPath,
+    'filesize' => $fileSize,
+    'filemtime' => filemtime($fullPath)
+  ];
+
+  if (in_array($fullPath, $includedFiles)) {
+    $total_include_lines += $lineCount;
+  }
+
+  $total_filesize += $fileSize;
+  $total_lines += $lineCount;
 }
+
 
 session_start();
 $isDev = $_SESSION['mode'] ?? 'unset';
-unset($_SESSION['mode']) ?>
+unset($_SESSION['mode']);
+
+//dd(get_required_files());
+?>
 <!DOCTYPE html>
 <html lang="en">
 
@@ -270,6 +302,8 @@ unset($_SESSION['mode']) ?>
       transform: translateX(100%);
     }
 
+    /* Toggle switch styles */
+
     .toggle-switch {
       position: absolute;
       bottom: 0px;
@@ -356,13 +390,12 @@ unset($_SESSION['mode']) ?>
               style="width: 31px; height: auto; margin: 0 5px;"
               onclick="document.getElementById('app_phpclasses-container').style.display='block'; return false;"></a>
           <a href="#"><img src="resources/images/composer_icon.png" alt="Logo"
-              style="width: 31px; height: auto; margin: 0 5px;"
-              onclick="document.getElementById('app_composer-container').style.display='block'; return false;"></a>
+              style="width: 31px; height: auto; margin: 0 5px;" onclick="openApp('tools/registry/composer');"></a>
           <a href="#"><img src="resources/images/packagist_icon.png" alt="Logo"
               style="width: 31px; height: auto; margin: 0 5px;"
               onclick="document.getElementById('app_packagist-container').style.display='block'; return false;"></a>
           <a href="#"><img src="resources/images/git_icon.fw.png" width="32" height="32"
-              onclick="openApp('tools/code/git'); document.getElementById('app_git-container').style.display='block'; return false;"></a>
+              onclick="openApp('tools/code/git');"></a>
           <a href="#"><img src="resources/images/node_js.gif" alt="Logo"
               style="width: 83px; height: auto; margin: 0 5px;"
               onclick="document.getElementById('app_node_js-container').style.display='block'; return false;"></a>
@@ -565,6 +598,8 @@ unset($_SESSION['mode']) ?>
     </div>
     <div id="app_nodes-container" class="app-container">
     </div>
+    <div id="app_composer-container" class="app-container">
+    </div>
   </div>
   <div class="client-view" id="clientView">
     <iframe src="test.php"></iframe>
@@ -578,49 +613,75 @@ unset($_SESSION['mode']) ?>
   </div>
 
 
+  <script
+    src="<?= APP_IS_ONLINE && check_http_status('https://code.jquery.com/jquery-3.7.1.min.js') ? 'https://code.jquery.com/jquery-3.7.1.min.js' : APP_BASE['resources'] . 'js/jquery/' . 'jquery-3.7.1.min.js' ?>"></script>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-easing/1.4.1/jquery.easing.min.js"></script>
+  <!-- You need to include jQueryUI for the extended easing options. -->
+  <!-- script src="//code.jquery.com/jquery-1.12.4.js"></script -->
+  <?php
+  if (!is_file($path = APP_PATH . APP_BASE['resources'] . 'js/jquery-ui/' . 'jquery-ui-1.12.1.js') || ceil(abs((strtotime(date('Y-m-d')) - strtotime(date('Y-m-d', strtotime('+5 days', filemtime($path))))) / 86400)) <= 0) {
+    if (!realpath($pathdir = dirname($path)))
+      if (!mkdir($pathdir, 0755, true))
+        $errors['DOCS'] = "$pathdir does not exist";
+
+    $url = 'https://code.jquery.com/ui/1.12.1/jquery-ui.min.js';
+    $handle = curl_init($url);
+    curl_setopt($handle, CURLOPT_RETURNTRANSFER, true);
+
+    if (!empty($js = curl_exec($handle)))
+      file_put_contents($path, $js) or $errors['JS-JQUERY-UI'] = "$url returned empty.";
+  } ?>
+
+  <script
+    src="<?= APP_IS_ONLINE && check_http_status('https://code.jquery.com/ui/1.12.1/jquery-ui.min.js') ? 'https://code.jquery.com/ui/1.12.1/jquery-ui.min.js' : APP_BASE['resources'] . 'js/jquery-ui/' . 'jquery-ui-1.12.1.js' ?>"></script>
+
 
   <script>
-
-    let isDragging = false;
-    let activeWindow = null;
+    let isDragging = false, activeWindow = null;
 
     function makeDraggable(windowId) {
       const windowElement = document.getElementById(windowId);
-      const headerElement = windowElement.querySelector('.ui-widget-header');
+      if (!windowElement) {
+        console.warn("Window not found:", windowId);
+        return;
+      }
+
+      const headerElement = windowElement.querySelector(".ui-widget-header") || windowElement;
+      if (!headerElement) {
+        console.warn("Header not found inside:", windowId);
+        return;
+      }
+
+      console.log("Draggable initialized for", windowId, "using", headerElement);
+
       let offsetX, offsetY;
 
-      headerElement.addEventListener('mousedown', function (event) {
-        if (!isDragging) {
-          // Bring the clicked window to the front
-          document.body.appendChild(windowElement);
-          offsetX = event.clientX - windowElement.getBoundingClientRect().left;
-          offsetY = event.clientY - windowElement.getBoundingClientRect().top;
-          isDragging = true;
-          activeWindow = windowElement;
-        }
+      headerElement.addEventListener("mousedown", (event) => {
+        document.body.appendChild(windowElement); // bring to front
+        offsetX = event.clientX - windowElement.getBoundingClientRect().left;
+        offsetY = event.clientY - windowElement.getBoundingClientRect().top;
+        isDragging = true;
+        activeWindow = windowElement;
       });
 
-      document.addEventListener('mousemove', function (event) {
+      document.addEventListener("mousemove", (event) => {
         if (isDragging && activeWindow === windowElement) {
           const left = event.clientX - offsetX;
           const top = event.clientY - offsetY;
 
-          // Boundary restrictions
-          const maxX = window.innerWidth - windowElement.clientWidth; //  - 100
-          const maxY = window.innerHeight - windowElement.clientHeight;
-
-          windowElement.style.left = `${Math.max(0, Math.min(left, maxX))}px`;
-          windowElement.style.top = `${Math.max(0, Math.min(top, maxY))}px`;
+          windowElement.style.position = "absolute";
+          windowElement.style.left = `${left}px`;
+          windowElement.style.top = `${top}px`;
         }
       });
 
-      document.addEventListener('mouseup', function () {
-        if (activeWindow === windowElement) {
-          isDragging = false;
-          activeWindow = null;
-        }
+      document.addEventListener("mouseup", () => {
+        isDragging = false;
+        activeWindow = null;
       });
     }
+
 
     function makeDraggable2(el) {
       const header = el.querySelector('.window-header');
@@ -641,6 +702,8 @@ unset($_SESSION['mode']) ?>
         };
       };
     }
+
+
     const viewProject = document.getElementById('viewProject');
     const viewToggle = document.getElementById('viewToggle');
     const sidebar = document.getElementById('sidebar');
@@ -711,25 +774,74 @@ unset($_SESSION['mode']) ?>
 
       console.log(`Opening app: ${appPath} with slug: ${slug}`);
 
-      fetch(`/dispatcher.php?app=${appPath}`)
-        .then(res => res.json())
-        .then(app => {
-          const container = document.getElementById(`app_${slug}-container`);
-          // Inject styles
-          if (app.style && !document.getElementById(`style-${slug}`)) {
-            const styleEl = document.createElement(" style"); styleEl.id = `style-${slug}`; styleEl.innerHTML = app.style;
+      fetch("dispatcher.php?app=" + encodeURIComponent(appPath))
+        .then(r => r.json())
+        .then(data => {
+          if (data.error) {
+            console.error(`Failed to load app ${slug}:`, data.error);
+            return;
+          }
+
+          // Inject CSS once
+          if (data.style && !document.querySelector(`[data-app-style="${appPath}"]`)) {
+            const styleEl = document.createElement("style");
+            styleEl.id = `style-${slug}`;
+            styleEl.type = "text/css";
+            styleEl.dataset.appStyle = appPath;
+            styleEl.textContent = data.style;
             document.head.appendChild(styleEl);
-          } // Inject scripts
-          if (app.script && !document.getElementById(`script-${slug}`)) {
+          }
+
+          // Insert body into app container
+          const targetId = `app_${slug}-container`;
+          let target = document.getElementById(targetId);
+
+          if (!target) {
+            target = document.createElement("div");
+            target.id = targetId;
+            target.className = "app-container";
+            document.getElementById("container").appendChild(target);
+          }
+
+          // Always make visible when opened
+          target.style.display = "block";
+
+          if (data.body) {
+            target.innerHTML = data.body;
+          }
+
+          // Inject script once
+          if (data.script && !document.querySelector(`[data-app-script="${appPath}"]`)) {
             const scriptEl = document.createElement("script");
-            scriptEl.id = `script-${slug}`; scriptEl.innerHTML = app.script; document.body.appendChild(scriptEl);
-          } // Show body
-          if (container) { container.innerHTML = app.body; container.style.display = "block"; }
-        }).catch(err => {
-          console.error(err);
-          document.getElementById(`app_${slug}-container`).textContent =
-            'Error loading app.';
+            scriptEl.id = `script-${slug}`;
+            scriptEl.type = "module";
+            scriptEl.dataset.appScript = appPath;
+            scriptEl.textContent = data.script;
+            document.body.appendChild(scriptEl);
+          }
+
+          // Generic draggable support
+          makeDraggable(targetId);
+
+          // App-specific hooks
+          if (slug === "nodes") {
+            fetch("dispatcher.php?app=visual/nodes&json")
+              .then(response => response.json())
+              .then(data => createVisualization(data))
+              .catch(err => console.error("Visualization load failed:", err));
+          }
+
+          console.log(`App ${slug} loaded successfully.`);
+        })
+        .catch(err => {
+          console.error("Dispatcher fetch error:", err);
+          const errorTarget = document.getElementById(`app_${slug}-container`);
+          if (errorTarget) {
+            errorTarget.style.display = "block";
+            errorTarget.textContent = "Error loading app.";
+          }
         });
+
     }
 
     function closeApp(appPath) {
@@ -744,7 +856,37 @@ unset($_SESSION['mode']) ?>
         container.style.display = "none";
       }
     }
+
+    document.addEventListener("DOMContentLoaded", () => {
+      makeDraggable('app_git-container');
+      makeDraggable('app_nodes-container');
+      makeDraggable('app_composer-container');
+
+      <?php
+      if (!empty($_GET['app'])):
+        $safeApp = htmlspecialchars(addslashes($_GET['app']), ENT_QUOTES);
+        ?>
+        openApp('<?= $safeApp ?>');
+      <?php else: ?>
+        // No app specified
+        openApp('visual/nodes');
+      <?php endif; ?>
+
+    });
   </script>
+
+  <script src="https://d3js.org/d3.v4.min.js"></script>
+
+  <script>
+    if (typeof jQuery === 'undefined') {
+      console.error("jQuery is not loaded. Please check the script source.");
+    } else {
+      console.log("jQuery version:", jQuery.fn.jquery);
+    }
+
+  </script>
+  <?php
+  if (false) { ?></script><?php } ?>
 
   <?php
   if (isset($_GET['setmode'])) {
@@ -752,6 +894,7 @@ unset($_SESSION['mode']) ?>
     exit;
   }
   ?>
+
 </body>
 
 </html>

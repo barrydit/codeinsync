@@ -1,5 +1,6 @@
 <?php
 require_once __DIR__ . '/config/environment.php';
+require_once __DIR__ . '/config/auth.php';
 // ------------------------------------------------------
 // Path Constants (fully resolved, consistent trailing slashes)
 // ------------------------------------------------------

@@ -2,7 +2,12 @@
 
 file_exists(APP_PATH . 'config/constants.paths.php') && require_once APP_PATH . 'config/constants.paths.php';
 
-if (isset($_GET['app']) && $_GET['app'] == 'nodes' && isset($_GET['json'])) {
+$app_id = 'visual/nodes';
+$container_id = str_replace(['/', '-'], '_', $app_id) . '-container';
+$selector = '#app_' . ($container_id ?? 'nodes') . '-container';
+
+
+if (isset($_GET['app']) && $_GET['app'] == 'visual/nodes' && isset($_GET['json'])) {
   defined('APP_PATH') or define('APP_PATH', realpath(__DIR__ . '/../') . '/');
   defined('APP_ROOT') or define('APP_ROOT', '');
   header('Content-Type: application/json');
@@ -81,8 +86,9 @@ if (isset($_GET['app']) && $_GET['app'] == 'nodes' && isset($_GET['json'])) {
     $requiredFiles = [
       //'server.php' => 'server.php',
       'public/index.php' => 'public/index.php',
+      'autoload.php' => 'autoload.php',
       //'config/php.php' => 'config/runtime/php.php',
-      'api/composer.php' => 'api' . DIRECTORY_SEPARATOR . 'composer.php',
+      //'api/composer.php' => 'api' . DIRECTORY_SEPARATOR . 'composer.php',
       //'config/git.php' => 'config/git.php',
       'public/idx.product.php' => 'public/idx.product.php',
     ];
@@ -122,15 +128,14 @@ if (isset($_GET['app']) && $_GET['app'] == 'nodes' && isset($_GET['json'])) {
       $vendorPackages
     ));
 
-    $jsonData['public/idx.product.php'] = array_values(array_diff(
-      $jsonData['public/idx.product.php'],
-      $vendorPackages
-    ));
+    //$jsonData['public/idx.product.php'] = array_values(array_diff(
+    //  $jsonData['public/idx.product.php'],
+    //  $vendorPackages
+    //));
   }
   echo json_encode($jsonData);
   exit;
 }
-
 
 
 if (__FILE__ == get_required_files()[0] && __FILE__ == realpath($_SERVER["SCRIPT_FILENAME"]))
@@ -153,24 +158,27 @@ if (defined('GIT_EXEC'))
   }
 
 ob_start(); ?>
-#app_nodes-container {
-width : 550px;
-height : 450px;
+<?= $selector ?? '' ?> {
+/*width: 550px;
+height: 450px;*/
 /* border: 1px solid black; */
-position : absolute;
-top : 60px;
-left : 30%;
-right : 0;
-z-index : 1;
+position: absolute;
+top: 60px;
+left: 30%;
+right: 0;
+/* z-index: 1; */
 /* resize: both; Make the div resizable */
 /* overflow: hidden; Hide overflow to ensure proper resizing */
 }
 
-#app_nodes-container.selected {
-display : block;
-z-index : 1;
-resize : both; /* Make the div resizable */
-overflow : hidden; /* Hide overflow to ensure proper resizing */
+<?= $selector ?? '' ?>.selected {
+display: block;
+z-index: 1;
+resize: both;
+/* Make the div resizable */
+cursor: move;
+overflow: hidden;
+/* Hide overflow to ensure proper resizing */
 /* Add your desired styling for the selected container */
 /*
 // background-color: rgb(240, 224, 198); // 240, 224, 198, .75 #FBF7F1; // rgba(240, 224, 198, .25);
@@ -184,87 +192,90 @@ font-weight: bold;
 }
 
 #visualization {
-margin-top: -60px;
-width : 100%;
-height : calc(100% - 260px);
-position : absolute;
-z-index : 1;
+margin-top: -50px;
+width: 100%;
+height: calc(100% - 260px);
+position: absolute;
+z-index: 1;
 }
 
 .node circle {
-fill : #999;
-stroke : #fff;
-stroke-width : 3px;
+fill: #999;
+stroke: #fff;
+stroke-width: 3px;
 }
 
 .link {
-fill : none;
-stroke : #555;
-stroke-width : 1.5px;
+fill: none;
+stroke: #555;
+stroke-width: 1.5px;
 }
 
 .link.green {
-stroke : green;
+stroke: green;
 }
 
 text {
-font : 10px sans-serif;
+font: 10px sans-serif;
 }
-<?php $app['style'] = ob_get_contents();
+
+<?php $UI_APP['style'] = ob_get_contents();
 ob_end_clean();
 
-ob_start(); ?>
-
-<div id="app_nodes-container"
+/*
+<div id="<?= $container_id ?>"
   class="absolute <?= __FILE__ == get_required_files()[0] || (isset($_GET['app']) && $_GET['app'] == 'nodes') && !isset($_GET['path']) ? 'selected' : '' ?>"
-  style="display: <?= __FILE__ == get_required_files()[0] || (isset($_GET['app']) && $_GET['app'] == 'nodes') ? 'block' : 'none' ?>; resize: both; overflow: hidden;">
-  <div class="ui-widget-header"
-    style="position: relative; display: inline-block; width: 100%; cursor: move; border-bottom: 1px solid #000;background-color: #FFF;">
-    <label class="nodes-home" style="cursor: pointer;">
-      <div class="" style="position: relative; display: inline-block; top: 0; left: 0;">
-        <img src="resources/images/ace_editor_icon.png" width="32" height="32" />
-      </div>
-    </label>
-    <div style="display: inline;">
-      <span style="background-color: #38B1FF; color: #FFF; margin-top: 10px;">Nodes
-        <?= /* (version_compare(NPM_LATEST, NPM_VERSION, '>') != 0 ? 'v'.substr(NPM_LATEST, 0, similar_text(NPM_LATEST, NPM_VERSION)) . '<span class="update" style="color: green; cursor: pointer;">' . substr(NPM_LATEST, similar_text(NPM_LATEST, NPM_VERSION)) . '</span>' : 'v'.NPM_VERSION ); */ NULL; ?></span>
-      <span style="background-color: #0078D7; color: white;"><code id="AceEditorVersionBox" class="text-sm"
-          style="background-color: white; color: #0078D7;"></code></span>
-    </div>
+  style="display: <?= __FILE__ == get_required_files()[0] || (isset($_GET['app']) && $_GET['app'] == 'nodes') ? 'block' : 'block' ?>; resize: both; overflow: hidden;">
+*/
 
-    <div style="display: inline; float: right; text-align: center; color: blue; z-index: -1;"><code
-        style="background-color: white; color: #0078D7;"><a style="cursor: pointer; font-size: 13px;" onclick="document.getElementById('app_nodes-container').style.display='none';">[X]</a></code>
+ob_start(); ?>
+<div class="ui-widget-header"
+  style="position: relative; display: inline-block; width: 100%; cursor: move; border-bottom: 1px solid #000;background-color: #FFF;">
+  <label class="nodes-home" style="cursor: pointer;">
+    <div class="" style="position: relative; display: inline-block; top: 0; left: 0;">
+      <img src="resources/images/d3_icon.png" width="32" height="32" />
     </div>
+  </label>
+  <div style="display: inline;">
+    <span style="background-color: #38B1FF; color: #FFF; margin-top: 10px;">Nodes
+      <?= /* (version_compare(NPM_LATEST, NPM_VERSION, '>') != 0 ? 'v'.substr(NPM_LATEST, 0, similar_text(NPM_LATEST, NPM_VERSION)) . '<span class="update" style="color: green; cursor: pointer;">' . substr(NPM_LATEST, similar_text(NPM_LATEST, NPM_VERSION)) . '</span>' : 'v'.NPM_VERSION ); */ NULL; ?></span>
+    <span style="background-color: #0078D7; color: white;"><code id="AceEditorVersionBox" class="text-sm"
+        style="background-color: white; color: #0078D7;"></code></span>
   </div>
 
-  <div id=""
-    style="position: relative; width: 100%; height: 100%; border: 3px dashed #38B1FF; background-color: rgba(56,177,255,0.6);">
+  <div style="display: inline; float: right; margin-top: 10px; text-align: center; color: blue; z-index: -1;"><code
+      style="background-color: white; color: #0078D7;"><a style="cursor: pointer; font-size: 13px;" onclick="document.getElementById('app_nodes-container').style.display='none';">[X]</a></code>
+  </div>
+</div>
 
-    <div class="ui-widget-content"
-      style="position: relative; display: block; margin: 0 auto; width: calc(100% - 2px); height: 50px; background-color: rgba(251,247,241);">
-      <div style="display: inline-block; text-align: left; width: 125px;">
-        <div class="npm-menu text-sm"
-          style="cursor: pointer; font-weight: bold; padding-left: 25px; border: 1px solid #000;">Main Menu</div>
-        <div class="text-xs" style="display: inline-block; border: 1px solid #000;">
-          <a class="text-sm" id="app_nodes-frameMenuPrev"
-            href="<?= (!empty(APP_QUERY) ? '?' . http_build_query(APP_QUERY) : '') . (defined('APP_ENV') && APP_ENV == 'development' ? '#!' : '#') ?>">
-            &lt; Menu</a> | <a class="text-sm" id="app_nodes-frameMenuNext"
-            href="<?= (!empty(APP_QUERY) ? '?' . http_build_query(APP_QUERY) : '') . (defined('APP_ENV') && APP_ENV == 'development' ? '#!' : '#') ?>">Init
-            &gt;</a>
-        </div>
-      </div>
-      <div class="absolute"
-        style="position: absolute; display: inline-block; top: 5px; right: 0; text-align: right; float: right;">
-        <div class="text-xs" style="position: relative; display: inline-block;">
-          + 478 <a href="https://github.com/ajaxorg/ace/graphs/contributors">contributors</a>
-          <br /><!-- a href="https://github.com/ajaxorg"><img src="resources/images/node.js.png" title="https://github.com/nodejs" width="18" height="18" /></a -->
-          <a style="color: blue; text-decoration-line: underline; text-decoration-style: solid;"
-            href="https://ace.c9.io/" title="https://ace.c9.io/">https://ace.c9.io/</a>
-        </div>
-      </div>
-      <div style="clear: both;"></div>
+<div id=""
+  style="position: relative; width: 100%; height: 100%; border: 3px dashed #F5834A; background-color: #D0684D;">
 
-      <?= /*
+  <div class="ui-widget-content"
+    style="position: relative; display: block; margin: 0 auto; width: calc(100% - 2px); height: 50px; background-color: rgba(251,247,241);">
+    <div style="display: inline-block; text-align: left; width: 125px;">
+      <div class="npm-menu text-sm"
+        style="cursor: pointer; font-weight: bold; padding-left: 25px; border: 1px solid #000;">Main Menu</div>
+      <div class="text-xs" style="display: inline-block; border: 1px solid #000;">
+        <a class="text-sm" id="app_nodes-frameMenuPrev"
+          href="<?= (!empty(APP_QUERY) ? '?' . http_build_query(APP_QUERY) : '') . (defined('APP_ENV') && APP_ENV == 'development' ? '#!' : '#') ?>">
+          &lt; Menu</a> | <a class="text-sm" id="app_nodes-frameMenuNext"
+          href="<?= (!empty(APP_QUERY) ? '?' . http_build_query(APP_QUERY) : '') . (defined('APP_ENV') && APP_ENV == 'development' ? '#!' : '#') ?>">Init
+          &gt;</a>
+      </div>
+    </div>
+    <div class="absolute"
+      style="position: absolute; display: inline-block; top: 5px; right: 0; text-align: right; float: right;">
+      <div class="text-xs" style="position: relative; display: inline-block;">
+        + 153 <a href="https://github.com/d3/d3/graphs/contributors">contributors</a>
+        <br /><!-- a href="https://github.com/ajaxorg"><img src="resources/images/node.js.png" title="https://github.com/nodejs" width="18" height="18" /></a -->
+        <a style="color: blue; text-decoration-line: underline; text-decoration-style: solid;" href="https://ace.c9.io/"
+          title="https://d3js.org/">https://d3js.org/</a>
+      </div>
+    </div>
+    <div style="clear: both;"></div>
+
+    <?= /*
 <div class="containerTbl" style="background-ground: #fff; border: 1px solid #000; display: <?= (isset($_GET['file']) && isset($_GET['path']) && is_file($_GET['path'] . $_GET['file']) ? 'none': 'block' ) ?>;">
 <table width="" style="border: 1px solid #000;">
 <tr>
@@ -305,18 +316,18 @@ else $count++;
 </tr>
 </table>
 </div>
-*/ NULL; ?>
+*/ ''; ?>
 
-    </div>
+  </div>
 
 
 
-    <div style="position: relative; margin: 0 auto; width: calc(100% - 2px); height: 100%; background-color: #fff;">
-      <div id="visualization"></div>
-    </div>
+  <div style="position: relative; margin: 0 auto; width: calc(100% - 2px); height: 250px; background-color: #fff;">
+    <div id="visualization"></div>
+  </div>
+  <!--
+  <div id="app_nodes-frameInit" class="app_nodes-frame-container absolute" style="overflow: hidden; height: 270px;">
 
-    <div id="app_nodes-frameInit" class="app_nodes-frame-container absolute" style="overflow: hidden; height: 270px;">
-      <!--
     <form autocomplete="off" spellcheck="false" action="?app=git#!" method="POST">
       <div style="position: absolute; right: 0; float: right; text-align: center;">
         <input id="gitInitSubmit" class="btn" type="submit" value="Init/Run">
@@ -331,24 +342,24 @@ else $count++;
         <textarea cols="40" rows="2" name="git[init]">git init</textarea>
       </div>
     </form>
--->
-    </div>
 
-    <div id="app_nodes-frameExtra" style="position: relative; width: 100%; height: 100%; border: 1px #000 solid;">
-
-    </div>
   </div>
+
+  <div id="app_nodes-frameExtra" style="position: relative; width: 100%; height: 100%; border: 1px #000 solid;">
+
+  </div> -->
 </div>
 
-<?php $app['body'] = ob_get_contents();
-ob_end_clean();
 
+<?php $UI_APP['body'] = ob_get_contents();
+ob_end_clean();
+/*</div>*/
 if (false) { ?>
   <script type="text/javascript">
   <?php }
 ob_start(); ?>
 
-  fetch('<?= /*basename(__FILE__)*/ '?app=nodes&' ?>json')
+  fetch('<?= /*basename(__FILE__)*/ '?app=visual/nodes&' ?>json')
     .then(response => response.json())
     .then(data => createVisualization(data));
 
@@ -387,7 +398,8 @@ ob_start(); ?>
     const svg = d3.select("#visualization")
       .append("svg")
       .attr("width", width)
-      .attr("height", height);
+      .attr("height", height)
+      .attr("style", "margin-top: -20px; background-color: white;");
 
     const simulation = d3.forceSimulation(nodes)
       .force("link", d3.forceLink(links).id(d => d.index).distance(100))
@@ -438,7 +450,7 @@ ob_start(); ?>
     alsoResize: "#visualization"
   });
 
-  <?php $app['script'] = ob_get_contents();
+  <?php $UI_APP['script'] = ob_get_contents();
   ob_end_clean();
 
   if (false) { ?></script><?php }
@@ -481,12 +493,12 @@ ob_start(); ?>
   <script src="<?= 'resources/js/tailwindcss-3.3.5.js' ?? $url ?>"></script>
 
   <style type="text/tailwindcss">
-    <?= $app['style']; ?>
+    <?= $UI_APP['style']; ?>
 </style>
 </head>
 
 <body>
-  <?= $app['body']; ?>
+  <?= $UI_APP['body']; ?>
 
   <script
     src="<?= APP_IS_ONLINE && check_http_status('https://code.jquery.com/jquery-3.7.1.min.js') ? 'https://code.jquery.com/jquery-3.7.1.min.js' : APP_BASE['resources'] . 'js/jquery/' . 'jquery-3.7.1.min.js' ?>"></script>
@@ -553,7 +565,7 @@ ob_start(); ?>
 
     makeDraggable('app_nodes-container');
 
-    <?= $app['script']; ?>
+    <?= $UI_APP['script']; ?>
   </script>
 </body>
 
@@ -568,4 +580,6 @@ if (__FILE__ == get_required_files()[0] && __FILE__ == realpath($_SERVER["SCRIPT
 elseif (in_array(__FILE__, get_required_files()) && isset($_GET['app']) && $_GET['app'] == 'nodes' && APP_DEBUG)
   return $return_contents;
 else
-  return $app;
+  return $UI_APP;
+
+//$UI_APP = ['style' => '', 'body' => $UI_APP['body'], 'script' => ''];

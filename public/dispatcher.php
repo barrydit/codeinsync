@@ -32,7 +32,7 @@ if (!$resolvedPath || strpos($resolvedPath, $appRoot) !== 0 || !is_file($resolve
 $UI_APP = [
     'slug' => basename(str_replace('\\', '/', $appPath)), // <- short name, safe for DOM
     'style' => '',
-    'body' => 'testing',
+    'body' => '',
     'script' => '',
 ];
 

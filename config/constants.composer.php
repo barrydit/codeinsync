@@ -514,7 +514,7 @@ if (realpath(COMPOSER_HOME) && !file_exists($configJsonPath)) {
 }
 
 if (is_file($configJsonPath)) {
-    define('COMPOSER_CONFIG', [
+    !defined('COMPOSER_CONFIG') and define('COMPOSER_CONFIG', [
         'json' => '{}',
         'path' => $configJsonPath
     ]);
