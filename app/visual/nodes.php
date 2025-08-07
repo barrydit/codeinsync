@@ -359,12 +359,8 @@ if (false) { ?>
   <?php }
 ob_start(); ?>
 
-  fetch('<?= /*basename(__FILE__)*/ '?app=visual/nodes&' ?>json')
-    .then(response => response.json())
-    .then(data => createVisualization(data));
-
   function createVisualization(data) {
-    const width = 940, height = 680;
+    const width = 490, height = 245;
 
     const nodes = [];
     const links = [];
@@ -390,7 +386,7 @@ ob_start(); ?>
 
     Object.keys(data).forEach(file => {
       data[file].forEach(childFile => {
-        const color = (data['server.php'].includes(childFile) && data['public/index.php'].includes(childFile)) ? 'green' : '';
+        const color = (/*data['server.php'].includes(childFile) &&*/ data['public/index.php'].includes(childFile)) ? 'green' : '';
         addLink(file, childFile, color);
       });
     });
@@ -399,7 +395,7 @@ ob_start(); ?>
       .append("svg")
       .attr("width", width)
       .attr("height", height)
-      .attr("style", "margin-top: -20px; background-color: white;");
+      .attr("style", "margin-top: 50px; background-color: white;");
 
     const simulation = d3.forceSimulation(nodes)
       .force("link", d3.forceLink(links).id(d => d.index).distance(100))
@@ -445,6 +441,10 @@ ob_start(); ?>
         .attr("transform", d => `translate(${d.x},${d.y})`);
     }
   }
+
+  fetch('<?= /*basename(__FILE__)*/ '?app=visual/nodes&' ?>json')
+    .then(response => response.json())
+    .then(data => createVisualization(data));
 
   $("#app_nodes-container").resizable({ // , #ui_ace_editor
     alsoResize: "#visualization"
@@ -572,14 +572,24 @@ ob_start(); ?>
 </html>
 <?php
 $return_contents = ob_get_contents();
-
 ob_end_clean();
 
 if (__FILE__ == get_required_files()[0] && __FILE__ == realpath($_SERVER["SCRIPT_FILENAME"]))
   print $return_contents;
-elseif (in_array(__FILE__, get_required_files()) && isset($_GET['app']) && $_GET['app'] == 'nodes' && APP_DEBUG)
-  return $return_contents;
-else
-  return $UI_APP;
+elseif (in_array(__FILE__, get_required_files()) && isset($_GET['app']) && $_GET['app'] == 'visual/nodes' && APP_DEBUG)
+  return $return_contents; // Return only script if requested
+else {
+  //dd($_GET);
+  if (isset($_GET['script'])) {
+    header('Content-Type: application/json');
+    die($UI_APP['script']);
+
+    //echo json_encode($UI_APP, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE);
+
+  }
+  //return $UI_APP['script'] ?? $UI_APP;
+
+}
+//
 
 //$UI_APP = ['style' => '', 'body' => $UI_APP['body'], 'script' => ''];

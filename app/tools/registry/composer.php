@@ -1535,7 +1535,7 @@ ob_start(); ?>
 
 </html>
 <?php
-$app['html'] = ob_get_contents();
+$UI_APP['html'] = ob_get_contents();
 ob_end_clean();
 
 //check if file is included or accessed directly
