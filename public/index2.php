@@ -823,14 +823,39 @@ unset($_SESSION['mode']);
           // Generic draggable support
           makeDraggable(targetId);
 
-          // App-specific hooks
-          if (slug === "nodes") {
-            fetch("dispatcher.php?app=visual/nodes&json")
-              .then(response => response.json())
-              .then(data => createVisualization(data))
-              .catch(err => console.error("Visualization load failed:", err));
+          function loadScript(src) {
+            return new Promise((resolve, reject) => {
+              const script = document.createElement('script');
+              script.src = src;
+              script.onload = resolve;
+              script.onerror = reject;
+              document.head.appendChild(script);
+            });
           }
 
+          if (slug === "nodes") {
+            Promise.all([
+              loadScript("dispatcher.php?app=visual/nodes&script"), // load script first
+              fetch("dispatcher.php?app=visual/nodes&json").then(r => r.json()) // then fetch data
+            ])
+              .then(([_, data]) => {
+                if (typeof createVisualization === 'function') {
+                  createVisualization(data);
+                } else {
+                  console.error("createVisualization is not defined");
+                }
+              })
+              .catch(err => console.error("Visualization load failed:", err));
+          }
+          /*
+                    // App-specific hooks
+                    if (slug === "nodes") {
+                      fetch("dispatcher.php?app=visual/nodes&json")
+                        .then(response => response.json())
+                        .then(data => createVisualization(data))
+                        .catch(err => console.error("Visualization load failed:", err));
+                    }
+          */
           console.log(`App ${slug} loaded successfully.`);
         })
         .catch(err => {
@@ -858,9 +883,9 @@ unset($_SESSION['mode']);
     }
 
     document.addEventListener("DOMContentLoaded", () => {
-      makeDraggable('app_git-container');
-      makeDraggable('app_nodes-container');
-      makeDraggable('app_composer-container');
+      //makeDraggable('app_git-container');
+      //makeDraggable('app_nodes-container');
+      //makeDraggable('app_composer-container');
 
       <?php
       if (!empty($_GET['app'])):
@@ -883,10 +908,7 @@ unset($_SESSION['mode']);
     } else {
       console.log("jQuery version:", jQuery.fn.jquery);
     }
-
   </script>
-  <?php
-  if (false) { ?></script><?php } ?>
 
   <?php
   if (isset($_GET['setmode'])) {
