@@ -1,6 +1,5 @@
 <?php
-require_once __DIR__ . '/config/environment.php';
-require_once __DIR__ . '/config/auth.php';
+
 // ------------------------------------------------------
 // Path Constants (fully resolved, consistent trailing slashes)
 // ------------------------------------------------------
@@ -97,7 +96,7 @@ register_shutdown_function(function () {
         return;
     }
 
-    defined('APP_START') || define('APP_START', $_SERVER['REQUEST_TIME_FLOAT'] ?? microtime(true));
+    !defined('APP_START') and define('APP_START', $_SERVER['REQUEST_TIME_FLOAT'] ?? microtime(true));
     $execTime = round((defined('APP_END') ? APP_END : microtime(true)) - APP_START, 3);
 
     error_log("APP_CONTEXT: " . APP_CONTEXT);

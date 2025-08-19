@@ -1,8 +1,17 @@
 <?php
 
+!defined('APP_START') and define('APP_START', $_SERVER['REQUEST_TIME_FLOAT'] ?? microtime(true));
+
 const IS_CLIENT = true;
 
-file_exists(dirname(__DIR__, 1) . '/bootstrap/bootstrap.php') && require_once dirname(__DIR__, 1) . '/bootstrap/bootstrap.php';
+defined('APP_PATH') || require_once dirname(__DIR__, 1) . '/bootstrap/bootstrap.php'; // require_once (...);
+
+// file_exists(dirname(__DIR__, 1) . '/bootstrap/bootstrap.php') && require_once dirname(__DIR__, 1) . '/bootstrap/bootstrap.php';
+
+$handled = require BOOTSTRAP_PATH . 'dispatcher.php';
+if ($handled === true) {
+  exit;
+}
 
 /*
 $trace = debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS, 1)[0];
@@ -71,7 +80,10 @@ foreach ($sortedFiles as $index => $path) {
 
   $fileSize = filesize($fullPath);
 
-  //dd($fullPath, false);
+  if (file($fullPath) === false) {
+    // Handle the error
+    throw new Exception("Failed to read the file: $fullPath");
+  }
 
   $lineCount = count(file($fullPath));
 
@@ -94,7 +106,7 @@ session_start();
 $isDev = $_SESSION['mode'] ?? 'unset';
 unset($_SESSION['mode']);
 
-//dd(get_required_files());
+// dd(get_required_files());
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -202,7 +214,7 @@ unset($_SESSION['mode']);
       display: none;
       position: fixed;
       width: 500px;
-      height: 300px;
+      height: 400px;
       top: 100px;
       left: 100px;
       z-index: 100;

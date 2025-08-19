@@ -1,5 +1,3 @@
-
-
 <?php
 // /bootstrap/dispatcher.php
 
@@ -11,8 +9,8 @@ return (function () {
     // Route for predefined apps
     $routes = [
         'composer' => APP_PATH . 'api/composer.php',
-        'git'      => APP_PATH . 'api/git.php',
-        'npm'      => APP_PATH . 'api/npm.php',
+        'git' => APP_PATH . 'api/git.php',
+        'npm' => APP_PATH . 'api/npm.php',
     ];
 
     // === 1. If app route matched
@@ -23,12 +21,12 @@ return (function () {
 
     // === 2. Command pattern routes
     $commandRoutes = [
-        '/^git\s+/i'      => APP_PATH . 'api/git.php',
+        '/^git\s+/i' => APP_PATH . 'api/git.php',
         '/^composer\s+/i' => APP_PATH . 'api/composer.php',
-        '/^npm\s+/i'      => APP_PATH . 'api/npm.php',
+        '/^npm\s+/i' => APP_PATH . 'api/npm.php',
         '/^(chdir|cd)\s+/i' => APP_PATH . 'app/directory.php',
-        '/^ls\s+/i'       => APP_PATH . 'app/list.php',
-        '/^php\s+/i'      => CONFIG_PATH . 'runtime/php.php',
+        '/^ls\s+/i' => APP_PATH . 'app/list.php',
+        '/^php\s+/i' => CONFIG_PATH . 'runtime/php.php',
     ];
 
     if ($_SERVER['REQUEST_METHOD'] === 'POST' && $cmd) {

@@ -1,5 +1,12 @@
 <?php
 
+
+if (!defined('APP_BOOTSTRAPPED')) { // defined('APP_PATH') || require_once (...);
+  require_once dirname(__DIR__, 3) . '/bootstrap/bootstrap.php';
+}
+dd(get_required_files());
+//defined('APP_URL') || require_once dirname(__DIR__, 3) . '/config/constants.url.php'; // require_once (...);
+
 global $errors;
 
 $app_id = 'tools/code/git';

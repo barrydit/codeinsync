@@ -83,3 +83,16 @@ foreach ($executables as $bin) {
         }
     }
 }
+
+// 3. Load connection checker if not available
+if (!function_exists('check_internet_connection')) {
+    require_once __DIR__ . DIRECTORY_SEPARATOR . 'functions.php';
+}
+
+if (!defined('APP_IS_ONLINE')) {
+    $online = function_exists('check_internet_connection')
+        ? check_internet_connection()
+        : true; // or a cheap fallback
+    define('APP_IS_ONLINE', $online);
+    define('APP_NO_INTERNET_CONNECTION', !$online);
+}

@@ -17,6 +17,9 @@
 !defined('SOCKET_TIMEOUT') and define('SOCKET_TIMEOUT', 5); // seconds
 !defined('SOCKET_PROTOCOL') and define('SOCKET_PROTOCOL', getprotobyname('tcp'));
 
+!defined('APP_LOG_DIR') and define('APP_LOG_DIR', APP_PATH . 'logs' . DIRECTORY_SEPARATOR);
+!defined('APP_TMP_DIR') and define('APP_TMP_DIR', APP_PATH . 'tmp' . DIRECTORY_SEPARATOR);
+
 // ---------------------------------------------------------
 // [2] Files for Locking / PID (for socket-specific usage)
 // ---------------------------------------------------------

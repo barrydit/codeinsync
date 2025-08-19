@@ -2,7 +2,7 @@
 
 class COMPOSER
 {
-    protected $projectPath;
+    protected $projectPath = '../';
 
     public function __construct($projectPath = null)
     {

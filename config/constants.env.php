@@ -1,5 +1,34 @@
 <?php
 
+require_once __DIR__ . DIRECTORY_SEPARATOR . '../classes/class.shutdown.php';
+
+$envPath = APP_PATH . '.env';
+
+if (!file_exists($envPath)) {
+    throw new RuntimeException("$envPath file does not exist");
+}
+
+$_ENV = Shutdown::parseIniFileWithSections($envPath);
+
+// Now define constants if needed
+foreach ($_ENV as $key => $value) {
+    if (!defined($key)) {
+        //define($key, $value);
+    }
+}
+
+$order = ini_get("variables_order");   // e.g. "EGPCS"
+
+// Required letters
+$required = [/*'E', */'G', 'P', 'C', 'S'];
+
+// Find missing
+$missing = array_diff($required, str_split($order));
+
+if (!empty($missing)) {
+    $errors['MISSING'][] = implode(', ', $missing) . ' missing from variables_order';
+} // else { }
+
 // 1. Define APP_ENV safely
 if (!defined('APP_ENV')) {
     $env = getenv('APP_ENV');
@@ -19,7 +48,6 @@ if (!defined('APP_DOMAIN')) {
     define('APP_DOMAIN', parse_url('http://' . APP_HOST, PHP_URL_HOST));
 }
 
-// 3. Load connection checker if not available
 if (!function_exists('check_internet_connection')) {
     require_once __DIR__ . DIRECTORY_SEPARATOR . 'functions.php';
 }
