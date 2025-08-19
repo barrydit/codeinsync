@@ -192,7 +192,7 @@ font-weight: bold;
 }
 
 #visualization {
-margin-top: -50px;
+/* margin-top: -50px; */
 width: 100%;
 height: calc(100% - 260px);
 position: absolute;
@@ -360,7 +360,7 @@ if (false) { ?>
 ob_start(); ?>
 
   function createVisualization(data) {
-    const width = 490, height = 245;
+    const width = 490, height = 180;
 
     const nodes = [];
     const links = [];
@@ -394,8 +394,8 @@ ob_start(); ?>
     const svg = d3.select("#visualization")
       .append("svg")
       .attr("width", width)
-      .attr("height", height)
-      .attr("style", "margin-top: 50px; background-color: white;");
+      .attr("height", 325)
+      .attr("style", "margin-top: 0; background-color: white;");
 
     const simulation = d3.forceSimulation(nodes)
       .force("link", d3.forceLink(links).id(d => d.index).distance(100))
@@ -581,7 +581,7 @@ elseif (in_array(__FILE__, get_required_files()) && isset($_GET['app']) && $_GET
 else {
   //dd($_GET);
   if (isset($_GET['script'])) {
-    header('Content-Type: application/json');
+    header('Content-Type: application/javascript');
     die($UI_APP['script']);
 
     //echo json_encode($UI_APP, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE);

@@ -1,29 +1,46 @@
 <?php
+// app/tools/registry/composer.php
 
-require_once (defined('APP_PATH') ? APP_PATH : dirname(__DIR__, 3)) . DIRECTORY_SEPARATOR . 'config' . DIRECTORY_SEPARATOR . 'constants.composer.php';
+if (!defined('APP_BOOTSTRAPPED')) { // defined('APP_PATH') || require_once (...);
+  require_once dirname(__DIR__, 3) . '/bootstrap/bootstrap.php';
+  if (!defined('APP_URL')) {
+    require_once CONFIG_PATH . 'constants.url.php';
+  }
 
-$app_id = 'tools/registry/composer';
-$container_id = str_replace(['/', '-'], '_', $app_id) . '-container';
-$selector = '#app_' . ($container_id ?? 'composer') . '-container';
+  if (!defined('CONSOLE')) {
+    require_once CONFIG_PATH . 'constants.app.php';
+  }
+}
+
+$app_id = 'tools/registry/composer'; // full path-style ID
+$slug = basename($app_id);         // composer
+
+$container_id = "{$slug}-container"; // str_replace(['/', '-'], '_', $app_id) // composer-container
+$selector = "#app_{$container_id}"; // #app_composer-container
 
 switch (__FILE__) {
   case get_required_files()[0]:
-
     if ($path = (basename(getcwd()) == 'public') ? (is_file('config.php') ? 'config.php' : '../config/config.php') : '')
       require_once $path;
     else
       die(var_dump("$path path was not found. file=config.php"));
-
     break;
   default:
     file_exists(APP_PATH . 'config/constants.paths.php') && require_once APP_PATH . 'config/constants.paths.php';
+}
+
+if (!isset($composer_obj)) {
+  if (function_exists('load_feature_constants')) {
+    load_feature_constants('composer');
+  }
+  $composer_obj = json_decode(COMPOSER_JSON['json']);
 }
 
 $COMPOSER_JSON = json_encode($composer_obj); // @file_get_contents("composer.json");
 $COMPOSER = json_decode($COMPOSER_JSON, true);
 
 define("COMPOSER_JSON_RAW", $COMPOSER_JSON);
-define("COMPOSER", ['json' => $composer_obj]); // ← This is what’s missing!
+!defined('COMPOSER') && define("COMPOSER", ['json' => $composer_obj]); // ← This is what’s missing!
 
 //dd(get_required_files());
 /*
@@ -31,6 +48,8 @@ define("COMPOSER", ['json' => $composer_obj]); // ← This is what’s missing!
 <HTML ...>
 <?php $UI_APP['css'] = ob_get_contents(); ?>
 */
+
+//dd(get_required_files());
 
 ob_start(); ?>
 <?= $selector ?> {
@@ -191,9 +210,10 @@ ob_start(); ?>
   </label>
   <div style="display: inline; float: left; margin-top: 10px;">
     <span style="background-color: #B0B0B0; color: white;">Composer
-      <a href="#" alt="Installed: <?= COMPOSER_VERSION; ?>"><?= (defined('COMPOSER_VERSION') && version_compare(COMPOSER_LATEST, COMPOSER_VERSION, '>') !== 0)
-          ? highlightVersionDiff(COMPOSER_VERSION, COMPOSER_LATEST)
-          : COMPOSER_VERSION; ?></a>
+      <a href="#" alt="Installed: <?= defined('COMPOSER_VERSION') or define('COMPOSER_VERSION', (defined('COMPOSER_VERSION') && version_compare(COMPOSER_LATEST, COMPOSER_VERSION, '>') !== 0)
+        ? highlightVersionDiff(COMPOSER_VERSION, COMPOSER_LATEST)
+        : '1.0.0');
+      COMPOSER_VERSION ?>"><?= COMPOSER_VERSION ?></a>
     </span>
 
 
@@ -483,8 +503,8 @@ php composer.phar -v
             <div class="text-sm" style="display: inline;">
               <!-- <input id="composerJson" type="checkbox" style="cursor: pointer;" name="composerJson" value="true" checked=""> -->
               <label for="composerJson" id="appComposerConfigLabel"
-                title="<?= defined('COMPOSER_CONFIG') ? (is_file(COMPOSER_CONFIG['path']) ? COMPOSER_CONFIG['path'] : COMPOSER_CONFIG['path']) : '' /*NULL*/ ; ?>"
-                style="background-color: #6B4329; <?= defined('COMPOSER_CONFIG') ? (is_file(COMPOSER_CONFIG['path']) ? 'color: #F0E0C6; text-decoration: underline; ' : 'color: red; text-decoration: underline; text-decoration: line-through;') : '' ?> cursor: pointer; font-weight: bold;">&#9660;
+                title="<?= defined('COMPOSER_CONFIG') && isset(COMPOSER_CONFIG['path']) ? (is_file(COMPOSER_CONFIG['path']) ? COMPOSER_CONFIG['path'] : '') : '' /*NULL*/ ; ?>"
+                style="background-color: #6B4329; <?= defined('COMPOSER_CONFIG') ? (is_file(COMPOSER_CONFIG['path'] ?? '') ? 'color: #F0E0C6; text-decoration: underline; ' : 'color: red; text-decoration: underline; text-decoration: line-through;') : '' ?> cursor: pointer; font-weight: bold;">&#9660;
                 <code>COMPOSER_HOME/config.json</code></label>
             </div>
           </div>

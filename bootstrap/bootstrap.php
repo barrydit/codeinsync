@@ -13,51 +13,147 @@ use App\Core\Registry;
 
 defined('CONFIG_PATH') or define('CONFIG_PATH', APP_PATH . 'config' . DIRECTORY_SEPARATOR);
 
-// [2] EARLY INCLUDES (Still Required Everywhere)
+// [2] Normalize process CWD to project root
+if (!@chdir(APP_PATH /*. APP_ROOT*/)) {
+    throw new RuntimeException("Failed to chdir() to APP_PATH: " . APP_PATH);
+}
+
+!defined('APP_CWD') and define('APP_CWD', getcwd()); // optional: for debugging/logs
+
+// Ensure assertions throw exceptions globally
+//ini_set('assert.exception', 1);
+
+// Verify setting is applied (optional in production)
+//if (!ini_get('assert.exception')) {
+//    die('assert.exception is not enabled');
+//}
+
+// [3] EARLY INCLUDES (Still Required Everywhere)
 $autoloadPath = APP_PATH . 'autoload.php';
 
 if (!file_exists($autoloadPath)) {
     die("Autoload file not found at: {$autoloadPath}");
 }
 
+/*
+if (isset($_GET['project']))
+    if (isset($_GET['app']) && $_GET['app'] == 'project')
+        require_once 'app' . DIRECTORY_SEPARATOR . 'project.php';*/
+
 require_once $autoloadPath; //file_exists(APP_PATH . 'autoload.php') && require_once APP_PATH . 'autoload.php';
+
+require_once CONFIG_PATH . 'environment.php';
+require_once CONFIG_PATH . 'constants.env.php';
+require_once CONFIG_PATH . 'functions.php';
+require_once CONFIG_PATH . 'constants.paths.php';
+require_once CONFIG_PATH . 'auth.php';
+
+/* require_once CONFIG_PATH . 'constants.runtime.php';
+require_once CONFIG_PATH . 'constants.exec.php';
+require_once CONFIG_PATH . 'constants.url.php';   // ← add this back
+require_once CONFIG_PATH . 'constants.app.php'; */
 
 // [3] Bootstrap protection
 
-if (!defined('APP_BOOTSTRAPPED') && (!defined('APP_MODE') || APP_MODE !== 'dispatcher')) {
-    // [7] Load constants and config files
+$context = defined('APP_CONTEXT') ? APP_CONTEXT : 'web';
+$dir = rtrim(APP_PATH, '/\\') . DIRECTORY_SEPARATOR . 'config' . DIRECTORY_SEPARATOR;
+
+// --- helpers ---------------------------------------------------------------
+$requireIf = static function (string $path): void {
+    if (is_file($path))
+        require_once $path;
+};
+
+$requireNamed = static function (string $name) use ($dir, $requireIf): void {
+    $requireIf("$dir$name");
+};
+
+// --- priority map (lower = earlier) ---------------------------------------
+$PRIORITY = [
+    'constants.env.php' => 10,
+    'constants.paths.php' => 20,
+    'constants.runtime.php' => 30,
+    'constants.cli.php' => 40,
+    'constants.socketLoader.php' => 45,
+    'constants.client.php' => 50,
+    'constants.exec.php' => 60,
+    'constants.url.php' => 70,
+    'constants.app.php' => 80,
+];
+
+// --- full load or minimal fallback? ---------------------------------------
+$needsFullLoad = !defined('APP_BOOTSTRAPPED') && (!defined('APP_MODE') || APP_MODE !== 'dispatcher');
+
+if ($needsFullLoad) {
+    // mark bootstrapped
     define('APP_BOOTSTRAPPED', true);
 
-    $constants = [
-        'constants.env.php',
-        'constants.paths.php',
-        'constants.runtime.php',
-        'constants.cli.php',
-        //'constants.socketLoader.php',
-        // constants.client.php',
-        //'constants.sockets.php',
-        'constants.exec.php',
-        'filesystem.ensure.php',
-        'constants.url.php',
-        'constants.app.php'
-    ];
+    // dotenv (safe)
+    if (class_exists('Dotenv\\Dotenv', false)) {
+        Dotenv\Dotenv::createImmutable(dirname(__DIR__, 1))->safeLoad();
+    }
 
-    foreach ($constants as $file) {
-        $path = CONFIG_PATH . $file;
-        if (file_exists($path))
-            require_once $path;
+    // discover files (constants* plus your extra)
+    $files = glob("{$dir}constants*.php") ?: [];
+    if (is_file("{$dir}filesystem.ensure.php")) {
+        $files[] = "{$dir}filesystem.ensure.php";
+    }
+
+    // filter by context (normalize to 'web'/'cli'/'socket')
+    $files = array_values(array_filter($files, function ($f) use ($context) {
+        $base = basename($f);
+        if ($base === 'constants.cli.php' && $context !== 'cli')
+            return false;
+        if ($base === 'constants.client.php' && $context !== 'web')
+            return false; // was 'www'
+        if ($base === 'constants.socketLoader.php' && $context !== 'socket')
+            return false;
+        if ($base === 'constants.composer.php' && $context !== 'web')
+            return false; // was 'www'
+        if ($base === 'constants.git.php' && $context !== 'web')
+            return false; // was 'www'
+        if ($base === 'constants.npm.php' && $context !== 'web')
+            return false; // was 'www'
+        if ($base === 'constants.socket.php' && $context !== 'web')
+            return false; // was 'www'
+        return true;
+    }));
+
+    // sort by priority then name
+    usort($files, function ($a, $b) use ($PRIORITY) {
+        $A = basename($a);
+        $B = basename($b);
+        $pa = $PRIORITY[$A] ?? 90;
+        $pb = $PRIORITY[$B] ?? 90;
+        return ($pa <=> $pb) ?: strcmp($A, $B);
+    });
+
+    // require once in order
+    foreach ($files as $file) {
+        require_once $file;
     }
 
 } else {
-    // If already bootstrapped, skip loading constants and config
-    $errors['APP_BOOTSTRAPPED'] = 'APP_BOOTSTRAPPED is already defined.';
+
+    // --- minimal fallback path --------------------------------------------
+    // Don’t sweep-load everything. Only the prerequisites needed for URLs,
+    // lightweight flags, and app-level constants.
     if (defined('APP_DEBUG') && APP_DEBUG) {
-        error_log('[bootstrap] Skipped full boot because APP_BOOTSTRAPPED is set');
+        error_log('[bootstrap] Minimal constants load (already bootstrapped or dispatcher mode).');
     }
 
-    file_exists(CONFIG_PATH . 'constants.env.php') && require_once CONFIG_PATH . 'constants.env.php';
-    file_exists(CONFIG_PATH . 'constants.url.php') && require_once CONFIG_PATH . 'constants.url.php';
-    file_exists(CONFIG_PATH . 'constants.app.php') && require_once CONFIG_PATH . 'constants.app.php';
+    // dotenv is cheap and safe to call here too (it’s no-op if absent)
+    if (class_exists('Dotenv\\Dotenv', false)) {
+        Dotenv\Dotenv::createImmutable(dirname(__DIR__, 1))->safeLoad();
+    }
+
+    // strictly minimal chain — adjust if you need one more file:
+    // env -> paths -> runtime -> url -> app
+    $requireNamed('constants.env.php');
+    //$requireNamed('constants.paths.php');
+    //$requireNamed('constants.runtime.php');
+    $requireNamed('constants.url.php');
+    $requireNamed('constants.app.php');
 }
 
 $configFile = CONFIG_PATH . 'config.php';
@@ -86,6 +182,7 @@ $cmd = $_POST['cmd'] ?? null;
 
 // [6] App Route Dispatch (Unchanged)
 $routes = [
+    
     'composer' => APP_PATH . 'api/composer.php',
     'git' => APP_PATH . 'api/git.php',
     'npm' => APP_PATH . 'api/npm.php',

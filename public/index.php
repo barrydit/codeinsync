@@ -5,19 +5,6 @@
 //die(var_dump(get_required_files()));
 //require_once dirname(__DIR__, 1) . DIRECTORY_SEPARATOR . 'config/functions.php';
 
-$htaccess = <<<END
-# Enable Rewrite Engine
-RewriteEngine On
-
-# Set the base directory (adjust if your application is in a subfolder)
-RewriteBase /
-
-# Redirect all requests to index.php except if the file or directory exists
-RewriteCond %{REQUEST_FILENAME} !-f
-RewriteCond %{REQUEST_FILENAME} !-d
-RewriteRule ^(.*)$ index.php/$1 [L]
-END;
-
 // if ($path = (basename(getcwd()) == 'public') chdir('..');
 //APP_PATH == dirname(PATH_PUBLIC)
 
