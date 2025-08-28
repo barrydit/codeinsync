@@ -157,7 +157,7 @@ ob_start(); ?>
           type="submit" style="visibility: hidden;" /></form>
     </div>
     <iframe
-      src="<?= /* (is_dir($path = APP_PATH . APP_BASE['public']) && getcwd() == realpath($path) ? APP_BASE['public'] : '') . basename(__FILE__) */ NULL; ?>"
+      src="<?= /* (is_dir($path = APP_BASE['public']) && getcwd() == realpath($path) ? APP_BASE['public'] : '') . basename(__FILE__) */ NULL; ?>"
       style="height: 100vh; width: 100%;"></iframe>
   </div>
 
@@ -182,15 +182,15 @@ ob_start(); ?>
 <?php $app['html'] = ob_get_contents();
 ob_end_clean();
 
-is_dir(APP_PATH . APP_BASE['var']) or mkdir(APP_PATH . APP_BASE['var'], 0755);
-if (is_file(APP_PATH . APP_BASE['var'] . 'github.com.html')) {
-  if (ceil(abs((strtotime(date('Y-m-d')) - strtotime(date('Y-m-d', strtotime('+5 days', filemtime(APP_PATH . APP_BASE['var'] . '/github.com.html'))))) / 86400)) <= 0) {
+is_dir(APP_BASE['var']) or mkdir(APP_BASE['var'], 0755);
+if (is_file(APP_BASE['var'] . 'github.com.html')) {
+  if (ceil(abs((strtotime(date('Y-m-d')) - strtotime(date('Y-m-d', strtotime('+5 days', filemtime(APP_BASE['var'] . '/github.com.html'))))) / 86400)) <= 0) {
     $url = 'https://github.com/barrydit/codeinsync';
     $handle = curl_init($url);
     curl_setopt($handle, CURLOPT_RETURNTRANSFER, true);
 
     if (!empty($html = curl_exec($handle)))
-      file_put_contents(APP_PATH . APP_BASE['var'] . 'github.com.html', $html) or $errors['COMPOSER_LATEST'] = "$url returned empty.";
+      file_put_contents(APP_BASE['var'] . 'github.com.html', $html) or $errors['COMPOSER_LATEST'] = "$url returned empty.";
   }
 } else {
   $url = 'https://github.com/barrydit/codeinsync';
@@ -198,13 +198,13 @@ if (is_file(APP_PATH . APP_BASE['var'] . 'github.com.html')) {
   curl_setopt($handle, CURLOPT_RETURNTRANSFER, true);
 
   if (!empty($html = curl_exec($handle)))
-    file_put_contents(APP_PATH . APP_BASE['var'] . 'github.com.html', $html) or $errors['COMPOSER_LATEST'] = "$url returned empty.";
+    file_put_contents(APP_BASE['var'] . 'github.com.html', $html) or $errors['COMPOSER_LATEST'] = "$url returned empty.";
 }
 
 /*
 libxml_use_internal_errors(true); // Prevent HTML errors from displaying
 $dom = new DOMDocument(1.0, 'utf-8');
-$dom->loadHTML(file_get_contents(APP_IS_ONLINE && check_http_status('https://github.com/barrydit/codeinsync') ? 'https://github.com/barrydit/codeinsync' : APP_PATH . APP_BASE['var'] . 'github.com.html'), LIBXML_HTML_NOIMPLIED | LIBXML_HTML_NODEFDTD );   
+$dom->loadHTML(file_get_contents(APP_IS_ONLINE && check_http_status('https://github.com/barrydit/codeinsync') ? 'https://github.com/barrydit/codeinsync' : APP_BASE['var'] . 'github.com.html'), LIBXML_HTML_NOIMPLIED | LIBXML_HTML_NODEFDTD );   
 $xpath = new DOMXPath($dom);
 
 //header('Content-Type: application/json');
@@ -223,7 +223,7 @@ $destination[0]->parentNode->insertBefore($template, $destination[0]->nextSiblin
 
 /*
 $dom = new DOMDocument(1.0, 'utf-8');
-$dom->loadHTML(file_get_contents(APP_PATH . APP_BASE['var'] . 'github.com.html'));
+$dom->loadHTML(file_get_contents(APP_BASE['var'] . 'github.com.html'));
 
 $divs = $dom->getElementsByTagName('head');
 
@@ -258,7 +258,7 @@ ob_start(); ?>
 
   <?php
   // (APP_IS_ONLINE && check_http_status('https://cdn.tailwindcss.com') ? 'https://cdn.tailwindcss.com' : APP_URL . 'resources/js/tailwindcss-3.3.5.js')?
-  is_dir($path = APP_PATH . APP_BASE['resources'] . 'js/') or mkdir($path, 0755, true);
+  is_dir($path = APP_BASE['resources'] . 'js/') or mkdir($path, 0755, true);
   if (is_file("{$path}tailwindcss-3.3.5.js")) {
     if (ceil(abs((strtotime(date('Y-m-d')) - strtotime(date('Y-m-d', strtotime('+5 days', filemtime($path . 'tailwindcss-3.3.5.js'))))) / 86400)) <= 0) {
       $url = 'https://cdn.tailwindcss.com';

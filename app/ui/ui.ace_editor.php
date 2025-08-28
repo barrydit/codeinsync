@@ -17,7 +17,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 
   if (isset($_POST["restore_backup"])) {
 
-    $file = APP_PATH . APP_BASE['data'] . 'source_code.json';
+    $file = APP_BASE['data'] . 'source_code.json';
 
     if (is_file($file)) {
       $source_code = json_decode(file_get_contents($file), true);
@@ -114,7 +114,7 @@ $proc=proc_open('sudo ' . GIT_EXEC . ' ' . $match[1],
 */
 
 if (defined('GIT_EXEC'))
-  if (is_dir($path = APP_PATH . APP_BASE['resources'] . 'js/ace') && empty(glob($path)))
+  if (is_dir($path = APP_BASE['resources'] . 'js/ace') && empty(glob($path)))
     exec((stripos(PHP_OS, 'WIN') === 0 ? '' : APP_SUDO) . GIT_EXEC . ' clone https://github.com/ajaxorg/ace-builds.git resources/js/ace', $output, $returnCode) or $errors['GIT-CLONE-ACE'] = $output;
   elseif (!is_dir($path)) {
     if (!mkdir($path, 0755, true))
@@ -230,7 +230,7 @@ ob_start(); ?>
   <div id="backupForm-container"
     style="position: absolute; bottom: 0; right: 0px; color: red; z-index: 10; background-color: rgba(255,255,255, 0.7); padding: 5px 15px;">
     <?php
-    $file = APP_PATH . APP_BASE['data'] . 'source_code.json';
+    $file = APP_BASE['data'] . 'source_code.json';
     if (is_file($file)) {
       $source_code = json_decode(file_get_contents($file), true);
       if (!empty($source_code)) {
@@ -251,7 +251,7 @@ ob_start(); ?>
     style="position: relative; width: 100%; height: 100%; border: 3px dashed #38B1FF; background-color: rgba(56,177,255,0.6);"
     action="<?= basename(__FILE__) . /**/ '?' . http_build_query(APP_QUERY + ['path' => $_GET['path'] ?? '', 'app' => 'ace_editor']) . (defined('APP_ENV') && APP_ENV == 'development' ? '#!' : '') /* $c_or_p . '=' . (empty($_GET[$c_or_p]) ? '' : $$c_or_p->name) . '&amp;app=composer' */ ?>"
     method="POST" onsubmit="syncAceContent()">
-    <input type="hidden" name="ace_path" value="<?= /* APP_PATH . APP_BASE['public']; */ NULL; ?>" />
+    <input type="hidden" name="ace_path" value="<?= /* APP_BASE['public']; */ NULL; ?>" />
 
     <div class="ui-widget-content"
       style="position: relative; display: block; margin: 0 auto; width: calc(100% - 2px); height: 50px; background-color: rgba(251,247,241);">
@@ -494,7 +494,7 @@ ob_start();
 
   <?php
   //}
-  if (is_dir($path = APP_PATH . APP_BASE['resources'] . 'js/ace')) { ?>
+  if (is_dir($path = APP_BASE['resources'] . 'js/ace')) { ?>
     $(function () {
       //$("#resizable").resizable();
 
@@ -583,7 +583,7 @@ ob_start();
   <!-- link rel="stylesheet" href="//code.jquery.com/ui/1.12.1/themes/smoothness/jquery-ui.css" / -->
 
   <?php
-  is_dir($path = APP_PATH . APP_BASE['resources'] . 'js/') or mkdir($path, 0755, true);
+  is_dir($path = APP_BASE['resources'] . 'js/') or mkdir($path, 0755, true);
   if (is_file($path . 'tailwindcss-3.3.5.js')) {
     if (ceil(abs((strtotime(date('Y-m-d')) - strtotime(date('Y-m-d', strtotime('+5 days', filemtime($path . 'tailwindcss-3.3.5.js'))))) / 86400)) <= 0) {
       $url = 'https://cdn.tailwindcss.com';
@@ -615,7 +615,7 @@ ob_start();
   <?= $app['body']; ?>
 
   <?php
-  is_dir($path = APP_PATH . APP_BASE['resources'] . 'js/jquery/') or mkdir($path, 0755, true);
+  is_dir($path = APP_BASE['resources'] . 'js/jquery/') or mkdir($path, 0755, true);
   if (is_file("{$path}jquery-3.7.1.min.js")) {
     if (ceil(abs((strtotime(date('Y-m-d')) - strtotime(date('Y-m-d', strtotime('+5 days', filemtime("{$path}jquery-3.7.1.min.js"))))) / 86400)) <= 0) {
       $url = 'https://code.jquery.com/jquery-3.7.1.min.js';

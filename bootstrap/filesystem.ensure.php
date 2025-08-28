@@ -61,7 +61,7 @@ END;
 // [3] Populate core files from source_code.json (if available)
 // ---------------------------------------------------------
 
-$sourceMapFile = APP_PATH . APP_BASE['data'] . 'source_code.json';
+$sourceMapFile = APP_BASE['data'] . 'source_code.json';
 $source_code = [];
 
 if (is_file($sourceMapFile)) {

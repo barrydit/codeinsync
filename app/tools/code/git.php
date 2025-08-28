@@ -1,10 +1,9 @@
 <?php
 
-
 if (!defined('APP_BOOTSTRAPPED')) { // defined('APP_PATH') || require_once (...);
   require_once dirname(__DIR__, 3) . '/bootstrap/bootstrap.php';
 }
-dd(get_required_files());
+
 //defined('APP_URL') || require_once dirname(__DIR__, 3) . '/config/constants.url.php'; // require_once (...);
 
 global $errors;
@@ -25,7 +24,7 @@ switch (__FILE__) {
     file_exists(APP_PATH . 'config/constants.paths.php') && require_once APP_PATH . 'config/constants.paths.php';
 }
 
-if ($path = realpath(APP_PATH . APP_BASE['config'] . 'constants.git.php')) {
+if ($path = realpath(APP_BASE['config'] . 'constants.git.php')) {
   require_once $path;
 } else
   die(var_dump("constants.git.php path was not found. file=" . basename($path)));
@@ -769,7 +768,7 @@ ob_start(); ?>
 
   <?php
   // (APP_IS_ONLINE && check_http_status('https://cdn.tailwindcss.com') ? 'https://cdn.tailwindcss.com' : APP_URL . 'resources/js/tailwindcss-3.3.5.js')?
-  is_dir($path = APP_PATH . APP_BASE['resources'] . 'js/') or mkdir($path, 0755, true);
+  is_dir($path = APP_BASE['resources'] . 'js/') or mkdir($path, 0755, true);
   if (is_file("{$path}tailwindcss-3.3.5.js")) {
     if (ceil(abs((strtotime(date('Y-m-d')) - strtotime(date('Y-m-d', strtotime('+5 days', filemtime("{$path}tailwindcss-3.3.5.js"))))) / 86400)) <= 0) {
       $url = 'https://cdn.tailwindcss.com';

@@ -307,7 +307,7 @@ ob_start(); ?>
 
   <?php
 
-  is_dir($path = APP_PATH . APP_BASE['resources'] . 'js/') or mkdir($path, 0755, true);
+  is_dir($path = APP_BASE['resources'] . 'js/') or mkdir($path, 0755, true);
   if (is_file($path . 'tailwindcss-3.3.5.js')) {
     if (ceil(abs((strtotime(date('Y-m-d')) - strtotime(date('Y-m-d', strtotime('+5 days', filemtime($path . 'tailwindcss-3.3.5.js'))))) / 86400)) <= 0) {
       $url = 'https://cdn.tailwindcss.com';
@@ -429,7 +429,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
   */
 }
 
-if (!in_array(APP_PATH . APP_BASE['config'] . 'composer.php', get_required_files()))
+if (!in_array(APP_BASE['config'] . 'composer.php', get_required_files()))
   if (
     $path = (basename(getcwd()) == 'public')
     ? (is_file('../composer.php') ? '../composer.php' : (is_file('../config/composer.php') ? '../config/composer.php' : null))
@@ -439,7 +439,7 @@ if (!in_array(APP_PATH . APP_BASE['config'] . 'composer.php', get_required_files
   else
     die(var_dump($path . ' path was not found. file=composer.php'));
 
-if (!in_array(APP_PATH . APP_BASE['public'] . 'app.console.php', get_required_files()))
+if (!in_array(APP_BASE['public'] . 'app.console.php', get_required_files()))
   if (
     $path = (basename(getcwd()) == 'public')
     ? (is_file(APP_BASE['app'] . 'console.php') ? APP_BASE['app'] . 'console.php' : (is_file('../config/console.php') ? '../config/console.php' : null))
@@ -2066,7 +2066,7 @@ for (i = 0; i < dropdowns.length; i++) { var openDropdown=dropdowns[i]; if (open
 
         <?php
         // (APP_IS_ONLINE && check_http_status('https://cdn.tailwindcss.com') ? 'https://cdn.tailwindcss.com' : APP_URL . 'resources/js/tailwindcss-3.3.5.js')?
-        is_dir($path = APP_PATH . APP_BASE['resources'] . 'js/') or mkdir($path, 0755, true);
+        is_dir($path = APP_BASE['resources'] . 'js/') or mkdir($path, 0755, true);
         if (is_file($path . 'tailwindcss-3.3.5.js')) {
           if (ceil(abs((strtotime(date('Y-m-d')) - strtotime(date('Y-m-d', strtotime('+5 days', filemtime($path . 'tailwindcss-3.3.5.js'))))) / 86400)) <= 0) {
             $url = 'https://cdn.tailwindcss.com';
@@ -2877,7 +2877,7 @@ for (i = 0; i < dropdowns.length; i++) { var openDropdown=dropdowns[i]; if (open
 
               <?php
               // (APP_IS_ONLINE && check_http_status('https://cdn.tailwindcss.com') ? 'https://cdn.tailwindcss.com' : APP_URL . 'resources/js/tailwindcss-3.3.5.js')?
-              is_dir($path = APP_PATH . APP_BASE['resources'] . 'js/') or mkdir($path, 0755, true);
+              is_dir($path = APP_BASE['resources'] . 'js/') or mkdir($path, 0755, true);
               if (is_file($path . 'tailwindcss-3.3.5.js')) {
                 if (ceil(abs((strtotime(date('Y-m-d')) - strtotime(date('Y-m-d', strtotime('+5 days', filemtime($path . 'tailwindcss-3.3.5.js'))))) / 86400)) <= 0) {
                   $url = 'https://cdn.tailwindcss.com';
@@ -3249,7 +3249,7 @@ for (i = 0; i < dropdowns.length; i++) { var openDropdown=dropdowns[i]; if (open
 
               <?php
               // (APP_IS_ONLINE && check_http_status('https://cdn.tailwindcss.com') ? 'https://cdn.tailwindcss.com' : APP_URL . 'resources/js/tailwindcss-3.3.5.js')?
-              is_dir($path = APP_PATH . APP_BASE['resources'] . 'js/') or mkdir($path, 0755, true);
+              is_dir($path = APP_BASE['resources'] . 'js/') or mkdir($path, 0755, true);
               if (is_file($path . 'tailwindcss-3.3.5.js')) {
                 if (ceil(abs((strtotime(date('Y-m-d')) - strtotime(date('Y-m-d', strtotime('+5 days', filemtime($path . 'tailwindcss-3.3.5.js'))))) / 86400)) <= 0) {
                   $url = 'https://cdn.tailwindcss.com';
@@ -3476,7 +3476,7 @@ for (i = 0; i < dropdowns.length; i++) { var openDropdown=dropdowns[i]; if (open
 
               <?php
               // (APP_IS_ONLINE && check_http_status('https://cdn.tailwindcss.com') ? 'https://cdn.tailwindcss.com' : APP_URL . 'resources/js/tailwindcss-3.3.5.js')?
-              is_dir($path = APP_PATH . APP_BASE['resources'] . 'js/') or mkdir($path, 0755, true);
+              is_dir($path = APP_BASE['resources'] . 'js/') or mkdir($path, 0755, true);
               if (is_file($path . 'tailwindcss-3.3.5.js')) {
                 if (ceil(abs((strtotime(date('Y-m-d')) - strtotime(date('Y-m-d', strtotime('+5 days', filemtime($path . 'tailwindcss-3.3.5.js'))))) / 86400)) <= 0) {
                   $url = 'https://cdn.tailwindcss.com';

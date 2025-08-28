@@ -24,7 +24,7 @@ if (__FILE__ == get_required_files()[0] && __FILE__ == realpath($_SERVER["SCRIPT
       header('Pragma: no-cache'); // HTTP 1.0
       header('Expires: 0'); // Proxies
 
-      echo file_get_contents($file = APP_PATH . APP_BASE['data'] . 'weekly-timesheet-' . date('Y-m') . '.json'); //json_encode()
+      echo file_get_contents($file = APP_BASE['data'] . 'weekly-timesheet-' . date('Y-m') . '.json'); //json_encode()
       //die(var_dump($file));
 
       exit;
@@ -107,9 +107,9 @@ END;
 
 //$jsonInput = file_get_contents('php://input');
 
-is_file($jsonFile = APP_PATH . APP_BASE['data'] . 'weekly-timesheet-' . date('Y-m') . '.json') ?: @touch($jsonFile);
+is_file($jsonFile = APP_BASE['data'] . 'weekly-timesheet-' . date('Y-m') . '.json') ?: @touch($jsonFile);
 
-$json_data = file_exists($jsonFile) ? file_get_contents(APP_PATH . APP_BASE['data'] . 'weekly-timesheet-' . date('Y-m') . '.json') : '{' . '"' . date('Y-m-d') . 'T' . date('H') . ':00:00-24:00' . '": {' . '} }';
+$json_data = file_exists($jsonFile) ? file_get_contents(APP_BASE['data'] . 'weekly-timesheet-' . date('Y-m') . '.json') : '{' . '"' . date('Y-m-d') . 'T' . date('H') . ':00:00-24:00' . '": {' . '} }';
 
 
 if (!empty($json_data))
@@ -616,7 +616,7 @@ $now->setTime((int) date('H'), 0); // Set minute and second to 0
 //dd($now->format('Y-m-d H:i:s'));
 
 // Define the path to the weekly timesheet JSON file
-$filePath = realpath(APP_PATH . APP_BASE['data'] . 'weekly-timesheet-' . date('Y-m') . '.json'); // 
+$filePath = realpath(APP_BASE['data'] . 'weekly-timesheet-' . date('Y-m') . '.json'); // 
 
 // Initialize or load the JSON data
 if (!is_file($filePath)) {
@@ -644,7 +644,7 @@ if (!is_file($filePath)) {
 /*
 $Now = new DateTime(date('Y-m-d') . 'T' . date('H') . ':00:00', new DateTimeZone('-' . $timeRanges[4][2] . ':00')); // date('H') + 6 now
 
-$json = !is_file($file = APP_PATH . APP_BASE['data'] . 'weekly-timesheet-' . date('Y-m') . '.json')
+$json = !is_file($file = APP_BASE['data'] . 'weekly-timesheet-' . date('Y-m') . '.json')
   ? (!@touch($file)
     ? (!file_get_contents($file, true)
       ? json_encode([$Now->format(DATE_RFC3339) => []])
@@ -693,7 +693,7 @@ switch ($_SERVER['REQUEST_METHOD']) {
 
       $_POST['idletime'] = json_encode($_POST['idletime']);
 
-      file_put_contents(APP_PATH . APP_BASE['data'] . 'weekly-timesheet-' . date("Y-m") . '.json', json_encode($json_decode), LOCK_EX);
+      file_put_contents(APP_BASE['data'] . 'weekly-timesheet-' . date("Y-m") . '.json', json_encode($json_decode), LOCK_EX);
 
       //Shutdown::setEnabled(false)->setShutdownMessage()->shutdown(); 
       Shutdown::setEnabled(false)->setShutdownMessage(function () use ($json_decode) {
@@ -706,8 +706,8 @@ switch ($_SERVER['REQUEST_METHOD']) {
     //Shutdown::setEnabled(false)->shutdown(json_encode($json_decode));// $_POST['idletime']
     break;
   case 'GET':
-    if (!is_file(APP_PATH . APP_BASE['data'] . 'weekly-timesheet-' . date("Y-m") . '.json'))
-      file_put_contents(APP_PATH . APP_BASE['data'] . 'weekly-timesheet-' . date("Y-m") . '.json', json_encode([$now->format('Y-m-d\TH:i:sP') => []]), LOCK_EX);
+    if (!is_file(APP_BASE['data'] . 'weekly-timesheet-' . date("Y-m") . '.json'))
+      file_put_contents(APP_BASE['data'] . 'weekly-timesheet-' . date("Y-m") . '.json', json_encode([$now->format('Y-m-d\TH:i:sP') => []]), LOCK_EX);
     //exit; // $now->format('H:i:s') => null
     break;
 }
@@ -1266,7 +1266,7 @@ ob_start(); ?>
     time = date.toLocaleTimeString('en-US', { hour: '2-digit', hour12: false, minute: '2-digit', second: '2-digit' });
     // .replace(/AM|PM/,'') console.log("File Recorded - Time: " + idleTime);
     $.ajax({
-      url: '<?= (is_dir($path = APP_PATH . APP_BASE['public']) && getcwd() == realpath($path) ? '1.' . APP_BASE['public'] : '') . basename(__FILE__) . '' ?>',
+      url: '<?= (is_dir($path = APP_BASE['public']) && getcwd() == realpath($path) ? '1.' . APP_BASE['public'] : '') . basename(__FILE__) . '' ?>',
       type: 'POST',
       data: idletimeobj, // { idletime: { time: time, idle: toTime(idleTime)['time'], note: "" } }
       dataType: 'json',
@@ -1391,7 +1391,7 @@ ob_start(); ?>
 
   <?php
   // (check_http_status'https://cdn.tailwindcss.com') ? 'https://cdn.tailwindcss.com' : APP_URL . 'resources/js/tailwindcss-3.3.5.js')?
-  is_dir($path = APP_PATH . APP_BASE['resources'] . 'js/') or mkdir($path, 0755, true);
+  is_dir($path = APP_BASE['resources'] . 'js/') or mkdir($path, 0755, true);
   if (is_file($path . 'tailwindcss-3.3.5.js')) {
     if (ceil(abs((strtotime(date('Y-m-d')) - strtotime(date('Y-m-d', strtotime('+5 days', filemtime($path . 'tailwindcss-3.3.5.js'))))) / 86400)) <= 0) {
       $url = 'https://cdn.tailwindcss.com';

@@ -140,7 +140,7 @@ Psr/
 
 //echo getcwd();
 /**/
-if (in_array(APP_PATH . APP_BASE['config'] . 'composer.php', get_required_files())) {
+if (in_array(APP_BASE['config'] . 'composer.php', get_required_files())) {
   /*
       if (class_exists('LogLevel'))
         if (null !== LogLevel::DEBUG) // isset() || 
@@ -162,8 +162,8 @@ $appPaths = array_filter(glob(__DIR__ . DIRECTORY_SEPARATOR . 'app.*.php'), 'is_
 // $globPaths[] = __DIR__ . DIRECTORY_SEPARATOR . 'app.console.php';
 // $paths = array_values(array_unique(array_merge($additionalPaths, $globPaths)));
 
-//if (isset($paths[APP_PATH . APP_BASE['public'] . 'app.install.php']))
-//  unset($paths[APP_PATH . APP_BASE['public'] . 'app.install.php']);
+//if (isset($paths[APP_BASE['public'] . 'app.install.php']))
+//  unset($paths[APP_BASE['public'] . 'app.install.php']);
 
 // dd(get_included_files());
 
@@ -212,7 +212,7 @@ elseif (basename($b) === 'composer.php')
     return strcmp(basename($a), basename($b)); // Compare other filenames alphabetically
 });
 
-if (in_array(APP_PATH . APP_BASE['public'] . 'app.install.php', $appPaths))
+if (in_array(APP_BASE['public'] . 'app.install.php', $appPaths))
   foreach ($appPaths as $key => $file)
     if (basename($file) === 'app.install.php')
       unset($appPaths[$key]);
@@ -412,7 +412,7 @@ header("Pragma: no-cache"); ?>
   <title>WebPortal</title>
   <?php
   // (check_http_status('https://cdn.tailwindcss.com') ? 'https://cdn.tailwindcss.com' : APP_URL . 'resources/js/tailwindcss-3.3.5.js')?
-  is_dir($path = APP_PATH . APP_BASE['resources'] . 'js/') or mkdir($path, 0755, true);
+  is_dir($path = APP_BASE['resources'] . 'js/') or mkdir($path, 0755, true);
   if (is_file($path . 'tailwindcss-3.3.5.js')) {
     if (ceil(abs((strtotime(date('Y-m-d')) - strtotime(date('Y-m-d', strtotime('+5 days', filemtime($path . 'tailwindcss-3.3.5.js'))))) / 86400)) <= 0) {
       $url = 'https://cdn.tailwindcss.com';
@@ -1299,7 +1299,7 @@ header("Pragma: no-cache"); ?>
 
                 $dirs = [];
 
-                foreach (array_filter(glob(APP_PATH . APP_BASE['var'] . 'packages' . DIRECTORY_SEPARATOR . '*.php'), 'is_file') as $key => $dir) {
+                foreach (array_filter(glob(APP_BASE['var'] . 'packages' . DIRECTORY_SEPARATOR . '*.php'), 'is_file') as $key => $dir) {
                   if (preg_match('/^(.*)-(.*).php$/', basename($dir), $matches)) {
                     $name = $matches[1];
                     if (!isset($uniqueNames[$name])) {
@@ -1926,7 +1926,7 @@ header("Pragma: no-cache"); ?>
   <!-- https://code.jquery.com/jquery-3.7.1.min.js -->
   <!-- script src="https://code.jquery.com/jquery-3.6.0.min.js" integrity="sha256-/xUj+3OJU5yExlq6GSYGSHk7tPXikynS7ogEvDej/m4=" crossorigin="anonymous"></script -->
   <?php
-  is_dir($path = APP_PATH . APP_BASE['resources'] . 'js/jquery/') or mkdir($path, 0755, true);
+  is_dir($path = APP_BASE['resources'] . 'js/jquery/') or mkdir($path, 0755, true);
   if (is_file($path . 'jquery-3.7.1.min.js')) {
     if (ceil(abs((strtotime(date('Y-m-d')) - strtotime(date('Y-m-d', strtotime('+5 days', filemtime($path . 'jquery-3.7.1.min.js'))))) / 86400)) <= 0) {
       $url = 'https://code.jquery.com/jquery-3.7.1.min.js';
@@ -1973,7 +1973,7 @@ header("Pragma: no-cache"); ?>
 
   <?php
   // (APP_IS_ONLINE && check_http_status('https://cdn.tailwindcss.com') ? 'https://cdn.tailwindcss.com' : APP_URL . 'resources/js/tailwindcss-3.3.5.js')? [[jquery-ui]-[1.12.1].js]
-  is_dir($path = APP_PATH . APP_BASE['resources'] . 'js/jquery-ui/') or mkdir($path, 0755, true);
+  is_dir($path = APP_BASE['resources'] . 'js/jquery-ui/') or mkdir($path, 0755, true);
   if (is_file($path . 'jquery-ui-1.12.1.js')) {
     if (ceil(abs((strtotime(date('Y-m-d')) - strtotime(date('Y-m-d', strtotime('+5 days', filemtime($path . 'jquery-ui-1.12.1.js'))))) / 86400)) <= 0) {
       $url = 'https://code.jquery.com/ui/1.12.1/jquery-ui.js';
@@ -2000,7 +2000,7 @@ header("Pragma: no-cache"); ?>
   <!-- For Text / Ace Editor -->
   <!-- <script src="https://unpkg.com/@popperjs/core@2" type="text/javascript" charset="utf-8"></script> -->
   <?php
-  is_dir($path = APP_PATH . APP_BASE['resources'] . 'js/requirejs/') or mkdir($path, 0755, true);
+  is_dir($path = APP_BASE['resources'] . 'js/requirejs/') or mkdir($path, 0755, true);
   if (is_file($path . 'require-2.3.6.js')) {
     if (ceil(abs((strtotime(date('Y-m-d')) - strtotime(date('Y-m-d', strtotime('+5 days', filemtime($path . '/require-2.3.6.js'))))) / 86400)) <= 0) {
       $url = 'https://requirejs.org/docs/release/2.3.6/minified/require.js';
@@ -2024,7 +2024,7 @@ header("Pragma: no-cache"); ?>
   <script src="<?= APP_BASE['resources'] . 'js/requirejs/require-2.3.6.js' ?? $url ?>" type="text/javascript"
     charset="utf-8"></script>
 
-  <?php if (is_dir($path = APP_PATH . APP_BASE['resources'] . 'js/ace')) { ?>
+  <?php if (is_dir($path = APP_BASE['resources'] . 'js/ace')) { ?>
 
     <script src="resources/js/ace/src/ace.js" type="text/javascript" charset="utf-8"></script> <!-- -->
     <script src="resources/js/ace/src/ext-language_tools.js" type="text/javascript" charset="utf-8"></script>
@@ -2466,7 +2466,7 @@ header("Pragma: no-cache"); ?>
     });
     */
     <?php
-    if (is_dir($path = APP_PATH . APP_BASE['resources'] . 'js/ace')) { ?>
+    if (is_dir($path = APP_BASE['resources'] . 'js/ace')) { ?>
       var globalEditor; // Define a global variable
 
       require.config({

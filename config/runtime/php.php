@@ -98,7 +98,7 @@ $dirs = [APP_PATH . 'config' . DIRECTORY_SEPARATOR . 'runtime' . DIRECTORY_SEPAR
 
 // Handle the 'git' app configuration
 !isset($_GET['app']) || $_GET['app'] != 'git' ?:
-    (APP_SELF != PATH_PUBLIC ?: $dirs[] = APP_PATH . APP_BASE['config'] . 'git.php');
+    (APP_SELF != PATH_PUBLIC ?: $dirs[] = APP_BASE['config'] . 'git.php');
 
 // Handle the 'composer' app configuration
 !isset($_GET['app']) || $_GET['app'] != 'composer' ?:
@@ -106,34 +106,34 @@ $dirs = [APP_PATH . 'config' . DIRECTORY_SEPARATOR . 'runtime' . DIRECTORY_SEPAR
     ? array_merge(
         $dirs,
         [
-            (file_exists($include = APP_PATH . APP_BASE['public'] . 'api' . DIRECTORY_SEPARATOR . 'composer.php') && !is_file($include) ?: $include)
+            (file_exists($include = APP_BASE['public'] . 'api' . DIRECTORY_SEPARATOR . 'composer.php') && !is_file($include) ?: $include)
         ]
     )
     : array_merge(
         $dirs,
         [
-            (!file_exists($include = APP_PATH . APP_BASE['public'] . 'api' . DIRECTORY_SEPARATOR . 'composer.php') && !is_file($include) ?: $include),
-            (!file_exists($include = APP_PATH . APP_ROOT . APP_BASE['vendor'] . 'autoload.php') && !is_file($include) ?: $include),
+            (!file_exists($include = APP_BASE['public'] . 'api' . DIRECTORY_SEPARATOR . 'composer.php') && !is_file($include) ?: $include),
+            (!file_exists($include = APP_PATH . APP_ROOT . APP_BASE_REL['vendor'] . 'autoload.php') && !is_file($include) ?: $include),
         ]
     );
 
-//if (is_file($path = APP_PATH . APP_BASE['public'] . DIRECTORY_SEPARATOR . 'api' . DIRECTORY_SEPARATOR . 'composer.php')) require_once $path; 
+//if (is_file($path = APP_BASE['public'] . DIRECTORY_SEPARATOR . 'api' . DIRECTORY_SEPARATOR . 'composer.php')) require_once $path; 
 //else die(var_dump("$path path was not found. file=" . basename($path)));
 
 // Handle the 'npm' app configuration
 !isset($_GET['app']) || $_GET['app'] != 'npm' ?:
     (APP_SELF != PATH_PUBLIC ?:
-        (!is_file($include = APP_PATH . APP_BASE['config'] . 'npm.php') ?: $dirs[] = $include));
+        (!is_file($include = APP_BASE['config'] . 'npm.php') ?: $dirs[] = $include));
 
 unset($include);
 
 if (APP_SELF != PATH_PUBLIC) {
     $priorityFiles = [
-        //APP_PATH . APP_BASE['config'] . 'php.php',
-        APP_PATH . APP_BASE['public'] . 'api' . DIRECTORY_SEPARATOR . 'composer.php',
-        APP_PATH . APP_ROOT . APP_BASE['vendor'] . 'autoload.php',
-        APP_PATH . APP_BASE['config'] . 'git.php',
-        // APP_PATH . APP_BASE['config'] . 'npm.php', // Uncomment if needed
+        //APP_BASE['config'] . 'php.php',
+        APP_BASE['public'] . 'api' . DIRECTORY_SEPARATOR . 'composer.php',
+        APP_ROOT . APP_BASE_REL['vendor'] . 'autoload.php',
+        APP_BASE['config'] . 'git.php',
+        // APP_BASE['config'] . 'npm.php', // Uncomment if needed
     ];
 
     usort($dirs, function ($a, $b) use ($priorityFiles) {
@@ -367,7 +367,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && !empty($_POST['cmd'])) {
 
 
 // Do not include index.php here at the end, $_ENV is not available in index.php ... to be figured out.
-//PHP_SAPI === 'cli' ?: require_once APP_PATH . APP_BASE['public'] . 'index.php';
+//PHP_SAPI === 'cli' ?: require_once APP_BASE['public'] . 'index.php';
 
 //dd(get_defined_constants(true)['user']);
 

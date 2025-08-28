@@ -9,7 +9,7 @@ if (__FILE__ == get_required_files()[0] && __FILE__ == realpath($_SERVER["SCRIPT
     die(var_dump("Path was not found. file=$path"));
 
 
-if (!$path = realpath(APP_PATH . APP_BASE['projects'] . 'index.php')) // file_put_contents($path, $_POST['contents']);
+if (!$path = realpath(APP_BASE['projects'] . 'index.php')) // file_put_contents($path, $_POST['contents']);
   $errors['project.php'] = APP_BASE['projects'] . "index.php was missing. Using template.\n";
 
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
@@ -287,7 +287,7 @@ ob_start(); ?>
 
   <?php
   // (APP_IS_ONLINE && check_http_status('https://cdn.tailwindcss.com') ? 'https://cdn.tailwindcss.com' : APP_URL . 'resources/js/tailwindcss-3.3.5.js')?
-  is_dir($path = APP_PATH . APP_BASE['resources'] . 'js/') or mkdir($path, 0755, true);
+  is_dir($path = APP_BASE['resources'] . 'js/') or mkdir($path, 0755, true);
   if (is_file($path . 'tailwindcss-3.3.5.js')) {
     if (ceil(abs((strtotime(date('Y-m-d')) - strtotime(date('Y-m-d', strtotime('+5 days', filemtime($path . 'tailwindcss-3.3.5.js'))))) / 86400)) <= 0) {
       $url = 'https://cdn.tailwindcss.com';

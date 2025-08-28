@@ -216,7 +216,7 @@ left: calc(50% - 265px); /* 1207 / 2 */ /*transform: translate(-50%, -50%);*/ bo
   //dd(APP_CLIENT, false);
 
   if (isset($_GET['path']) && preg_match('/^project\/?/', $_GET['path']) || isset($_GET['project']) && empty($_GET['project'])) {
-    if (isset($_SERVER['HOME']) && readlinkToEnd($_SERVER['HOME'] . DIRECTORY_SEPARATOR . APP_BASE['projects'] . DIRECTORY_SEPARATOR) == '/mnt/c/www/' . APP_BASE['projects'] || realpath(APP_PATH . APP_BASE['projects'])) { ?>
+    if (isset($_SERVER['HOME']) && readlinkToEnd($_SERVER['HOME'] . DIRECTORY_SEPARATOR . APP_BASE['projects'] . DIRECTORY_SEPARATOR) == '/mnt/c/www/' . APP_BASE['projects'] || realpath(APP_BASE['projects'])) { ?>
       <div style="text-align: center; border: none;" class="text-xs">
         <a class="pkg_dir" href="#" onclick="document.getElementById('app_project-container').style.display='block';">
           <img src="resources/images/project-icon.png" width="50" height="32" style="" /></a><br /><a
@@ -255,7 +255,7 @@ left: calc(50% - 265px); /* 1207 / 2 */ /*transform: translate(-50%, -50%);*/ bo
     </table>
     <!--
       <li>
-      <?php if (isset($_SERVER['HOME']) && readlinkToEnd($_SERVER['HOME'] . DIRECTORY_SEPARATOR . APP_BASE['projects'] . DIRECTORY_SEPARATOR) == '/mnt/c/www/' . APP_BASE['projects'] || realpath(APP_PATH . APP_BASE['projects'])) { ?>
+      <?php if (isset($_SERVER['HOME']) && readlinkToEnd($_SERVER['HOME'] . DIRECTORY_SEPARATOR . APP_BASE['projects'] . DIRECTORY_SEPARATOR) == '/mnt/c/www/' . APP_BASE['projects'] || realpath(APP_BASE['projects'])) { ?>
       <a href="projects/">project/</a>
         <ul style="padding-left: 10px;">
           <form action method="GET">
@@ -1450,7 +1450,7 @@ if (e.key === 'ArrowRight' && idx < crumbs.length - 1) { crumbs[idx + 1].focus()
     <?php
     // (APP_IS_ONLINE && check_http_status('https://cdn.tailwindcss.com') ? 'https://cdn.tailwindcss.com' : APP_URL . 'resources/js/tailwindcss-3.3.5.js')?
 // Path to the JavaScript file
-    $path = APP_PATH . APP_BASE['resources'] . 'js/tailwindcss-3.3.5.js';
+    $path = APP_BASE['resources'] . 'js/tailwindcss-3.3.5.js';
 
     // Create the directory if it doesn't exist
     is_dir(dirname($path)) or mkdir(dirname($path), 0755, true);

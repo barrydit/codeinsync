@@ -1,174 +1,190 @@
 <?php
-
 /**
- * config/constants.composer.php
+ * config/constants.composer.php (refactored)
  *
- * Centralized Composer constants + tiny helpers.
- * - No shell exec here (safe for early bootstrap)
- * - Supports env overrides
- * - Works cross-platform (Windows/Unix)
- * - Optional auto-create of COMPOSER_HOME/config.json
- *
- * Depends on:
- *   - APP_PATH (required)
- *   - APP_BASE['vendor'] (optional; defined by constants.paths.php)
+ * Single source of truth for Composer-related paths and execution.
+ * - Stable types: strings for paths/commands, arrays for debug struct.
+ * - Idempotent: safe to include multiple times.
+ * - Robust: prefers system composer bin, falls back to local composer.phar.
  */
 
-// ---------------------------------------------------------------------------
-// Small shared helpers (guarded)
-// ---------------------------------------------------------------------------
+declare(strict_types=1);
+
+$ctx = app_context();
+if ($ctx !== 'web') {
+    // skip network fetch / scraping in CLI/socket etc.
+}
+
+// -----------------------------------------------------------------------------
+// Helpers
+// -----------------------------------------------------------------------------
+
+if (!function_exists('define_if_absent')) {
+    function define_if_absent(string $name, $value): void
+    {
+        if (!defined($name)) {
+            define($name, $value);
+        }
+    }
+}
 
 if (!function_exists('normalize_dir')) {
     function normalize_dir(string $path): string
     {
-        if ($path === '')
-            return '';
-        $sep = DIRECTORY_SEPARATOR;
-        $path = str_replace(['\\', '/'], $sep, $path);
-        $path = rtrim($path, $sep) . $sep;
-        return preg_replace('#' . preg_quote($sep, '#') . '+#', $sep, $path);
+        return $path === '' ? '' : rtrim($path, "/\\") . DIRECTORY_SEPARATOR;
     }
 }
 
-if (!function_exists('join_path')) {
-    function join_path(string ...$parts): string
-    {
-        $sep = DIRECTORY_SEPARATOR;
-        $path = implode($sep, array_filter($parts, fn($p) => $p !== '' && $p !== $sep));
-        $path = str_replace(['\\', '/'], $sep, $path);
-        return preg_replace('#' . preg_quote($sep, '#') . '+#', $sep, $path);
-    }
+// -----------------------------------------------------------------------------
+// Base expectations (APP_PATH must be defined earlier in your bootstrap)
+// -----------------------------------------------------------------------------
+
+if (!defined('APP_PATH')) {
+    throw new \RuntimeException('APP_PATH must be defined before loading constants.composer.php');
 }
 
-if (!function_exists('ensure_dir')) {
-    function ensure_dir(string $abs, int $mode = 0775): bool
-    {
-        if (is_dir($abs))
-            return true;
-        return @mkdir($abs, $mode, true);
-    }
-}
+// Normalize process CWD to project root if you want consistency everywhere.
+// Do this once in bootstrap; left here commented as a reminder.
+// @chdir(APP_PATH);
 
-if (!function_exists('safe_json_encode')) {
-    function safe_json_encode($data): string
-    {
-        $json = json_encode($data, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT);
-        return $json === false ? "{}" : $json;
-    }
-}
+// -----------------------------------------------------------------------------
+/**
+ * Inputs provided by earlier config/boot steps (optional). These are only used
+ * as fallbacks if the corresponding constants are not already defined.
+ * If you set any of these $VARs before including this file, they will be used.
+ */
+// -----------------------------------------------------------------------------
 
-// ---------------------------------------------------------------------------
-// Platform flags
-// ---------------------------------------------------------------------------
+$COMPOSER_HOME = $COMPOSER_HOME ?? normalize_dir(APP_PATH . '.composer');
+$COMPOSER_PROJECT_ROOT = $COMPOSER_PROJECT_ROOT ?? normalize_dir(APP_PATH);
+$COMPOSER_VENDOR_DIR = $COMPOSER_VENDOR_DIR ?? normalize_dir($COMPOSER_PROJECT_ROOT . 'vendor');
+$COMPOSER_JSON = $COMPOSER_JSON ?? ($COMPOSER_PROJECT_ROOT . 'composer.json');
+$COMPOSER_LOCK = $COMPOSER_LOCK ?? ($COMPOSER_PROJECT_ROOT . 'composer.lock');
+$COMPOSER_CONFIG_JSON = $COMPOSER_CONFIG_JSON ?? ($COMPOSER_HOME . 'config.json');
+$COMPOSER_AUTH_JSON = $COMPOSER_AUTH_JSON ?? ($COMPOSER_HOME . 'auth.json');
+$COMPOSER_CACHE_DIR = $COMPOSER_CACHE_DIR ?? normalize_dir($COMPOSER_HOME . 'cache');
+$COMPOSER_DEFAULT_ARGS = $COMPOSER_DEFAULT_ARGS ?? '--no-interaction';
 
-defined('IS_WINDOWS') || define('IS_WINDOWS', strtoupper(substr(PHP_OS, 0, 3)) === 'WIN');
+// Optional explicit bin (absolute path) computed earlier
+$COMPOSER_BIN = $COMPOSER_BIN ?? null;
 
-// ---------------------------------------------------------------------------
-// Defaults + env overrides (no IO yet)
-// ---------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
+// Define path constants (idempotent)
+// -----------------------------------------------------------------------------
 
-$errors ??= [];
+define_if_absent('COMPOSER_HOME', normalize_dir($COMPOSER_HOME));
+define_if_absent('COMPOSER_PROJECT_ROOT', normalize_dir($COMPOSER_PROJECT_ROOT));
+define_if_absent('COMPOSER_VENDOR_DIR', normalize_dir($COMPOSER_VENDOR_DIR));
+define_if_absent('COMPOSER_JSON', $COMPOSER_JSON);
+define_if_absent('COMPOSER_LOCK', $COMPOSER_LOCK);
+define_if_absent('COMPOSER_CONFIG', $COMPOSER_CONFIG_JSON);
+define_if_absent('COMPOSER_AUTH', $COMPOSER_AUTH_JSON);
+define_if_absent('COMPOSER_CACHE_DIR', normalize_dir($COMPOSER_CACHE_DIR));
+define_if_absent('COMPOSER_DEFAULT_ARGS', $COMPOSER_DEFAULT_ARGS);
 
-// 1) Composer home
-//    Priority: APP_COMPOSER_HOME -> COMPOSER_HOME -> default to app-local var/composer/
-$envHome = getenv('APP_COMPOSER_HOME') ?: getenv('COMPOSER_HOME') ?: '';
-$defaultHome = defined('APP_BASE') && !empty(APP_BASE['var'])
-    ? join_path(APP_BASE['var'], 'composer')
-    : join_path(APP_PATH, 'var', 'composer');
-
-$COMPOSER_HOME = $envHome !== '' ? $envHome : $defaultHome;
-$COMPOSER_HOME = normalize_dir($COMPOSER_HOME);
-
-// 2) Composer bin (how we will invoke it)
-//    Priority: APP_COMPOSER_BIN -> COMPOSER_BIN -> project composer.phar -> vendor/bin/composer -> 'composer'
-$envBin = getenv('APP_COMPOSER_BIN') ?: getenv('COMPOSER_BIN') ?: '';
-$candPhar = join_path(APP_PATH, 'composer.phar');
-$candVend = defined('APP_BASE') && !empty(APP_BASE['vendor'])
-    ? join_path(APP_BASE['vendor'], 'bin', IS_WINDOWS ? 'composer.bat' : 'composer')
-    : join_path(APP_PATH, 'vendor', 'bin', IS_WINDOWS ? 'composer.bat' : 'composer');
-
-$COMPOSER_BIN = 'composer';
-if ($envBin && (is_file($envBin) || !str_contains($envBin, DIRECTORY_SEPARATOR))) {
-    $COMPOSER_BIN = $envBin;
-} elseif (is_file($candPhar)) {
-    $COMPOSER_BIN = PHP_BINARY . ' -d detect_unicode=0 ' . escapeshellarg($candPhar);
-} elseif (is_file($candVend)) {
-    $COMPOSER_BIN = $candVend;
-} // else rely on PATH: "composer"
-
-// 3) Project composer.json, lock, vendor dir
-$COMPOSER_PROJECT_ROOT = normalize_dir(getenv('APP_COMPOSER_PROJECT_ROOT') ?: APP_PATH);
-$COMPOSER_JSON = join_path($COMPOSER_PROJECT_ROOT, 'composer.json');
-$COMPOSER_LOCK = join_path($COMPOSER_PROJECT_ROOT, 'composer.lock');
-$COMPOSER_VENDOR_DIR = defined('APP_BASE') && !empty(APP_BASE['vendor'])
-    ? rtrim(APP_BASE['vendor'], DIRECTORY_SEPARATOR)  // already absolute + trailing slash removed below
-    : join_path($COMPOSER_PROJECT_ROOT, 'vendor');
-$COMPOSER_VENDOR_DIR = rtrim($COMPOSER_VENDOR_DIR, DIRECTORY_SEPARATOR);
-
-// 4) Derived files in COMPOSER_HOME
-$COMPOSER_CONFIG_JSON = join_path($COMPOSER_HOME, 'config.json');
-$COMPOSER_AUTH_JSON = join_path($COMPOSER_HOME, 'auth.json');
-$COMPOSER_CACHE_DIR = join_path($COMPOSER_HOME, 'cache'); // you may wire this via env later
-
-// 5) Behavior flags (no side effects here)
-defined('COMPOSER_AUTOCREATE_HOME') || define('COMPOSER_AUTOCREATE_HOME', (getenv('COMPOSER_AUTOCREATE_HOME') ?: '1') === '1');
-defined('COMPOSER_AUTOCREATE_CONFIG') || define('COMPOSER_AUTOCREATE_CONFIG', (getenv('COMPOSER_AUTOCREATE_CONFIG') ?: '1') === '1');
-
-// 6) Default args (tune per your API handler)
-$COMPOSER_DEFAULT_ARGS = trim(getenv('APP_COMPOSER_DEFAULT_ARGS') ?: '--no-interaction');
-
-// ---------------------------------------------------------------------------
-// Validation (non-fatal; populate $errors)
-// ---------------------------------------------------------------------------
-
-if (!is_dir($COMPOSER_PROJECT_ROOT)) {
-    $errors['COMPOSER'][] = "Project root not found: $COMPOSER_PROJECT_ROOT";
-}
-
-if (!is_dir($COMPOSER_VENDOR_DIR)) {
-    // Not an error: vendor/ may not exist yet
-    // $errors['COMPOSER'][] = "Vendor dir missing (ok if not installed): $COMPOSER_VENDOR_DIR";
-}
-
-if (!is_dir($COMPOSER_HOME)) {
-    if (COMPOSER_AUTOCREATE_HOME) {
-        if (!ensure_dir($COMPOSER_HOME)) {
-            $errors['COMPOSER'][] = "Unable to create COMPOSER_HOME: $COMPOSER_HOME";
+if (!defined('COMPOSER_VERSION')) {
+    $output = @shell_exec('composer --version 2>/dev/null');
+    if ($output) {
+        // Typical: "Composer version 2.7.9 2025-02-20 10:11:12"
+        if (preg_match('/Composer\s+version\s+(\S+)/i', $output, $m)) {
+            define('COMPOSER_VERSION', (defined('COMPOSER_VERSION') && version_compare(COMPOSER_LATEST, COMPOSER_VERSION, '>') !== 0)
+                ? highlightVersionDiff($m[1], COMPOSER_LATEST)
+                : $m[1]);
         }
+    }
+}
+
+// Fallback if detection fails
+if (!defined('COMPOSER_VERSION')) {
+    define('COMPOSER_VERSION', 'unknown');
+}
+
+defined('COMPOSER_EXPR_VER') or define(
+    'COMPOSER_EXPR_VER',
+    '/^(?:' .
+    'v?(?:0|[1-9]\d*)\.(?:0|[1-9]\d*)\.(?:0|[1-9]\d*)' .               // x.y.z
+    '(?:-[0-9A-Za-z\-\.]+)?' .                                         // -prerelease
+    '(?:\+[0-9A-Za-z\-\.]+)?' .                                        // +build
+    '|' .
+    'dev-[A-Za-z0-9._\-\/]+' .
+    ')$/'
+);
+
+defined('COMPOSER_GITHUB_OAUTH_TOKEN') or define(
+    'COMPOSER_GITHUB_OAUTH_TOKEN',
+    (function () {
+        if (is_file(COMPOSER_AUTH)) {
+            $json = file_get_contents(COMPOSER_AUTH);
+            $data = json_decode($json, true);
+            if (
+                json_last_error() === JSON_ERROR_NONE &&
+                isset($data['github-oauth']['github.com']) &&
+                !empty($data['github-oauth']['github.com'])
+            ) {
+                return $data['github-oauth']['github.com'];
+            }
+        }
+        return '<GitHub OAuth Token>'; // fallback placeholder
+    })()
+);
+
+// -----------------------------------------------------------------------------
+// Resolve the composer executable
+// Preference: system bin → local phar → null
+// -----------------------------------------------------------------------------
+
+$resolvedBin = null;
+
+// 1) Use provided/known bin if executable
+if ($COMPOSER_BIN && is_string($COMPOSER_BIN) && @is_executable($COMPOSER_BIN)) {
+    $resolvedBin = $COMPOSER_BIN;
+}
+
+// 2) Probe common locations
+if (!$resolvedBin) {
+    foreach (['/usr/local/bin/composer', '/usr/bin/composer', '/bin/composer'] as $cand) {
+        if (@is_executable($cand)) {
+            $resolvedBin = $cand;
+            break;
+        }
+    }
+}
+
+// 3) Local phar fallback
+$pharPath = APP_PATH . 'composer.phar';
+$pharExec = null;
+if (is_file($pharPath)) {
+    $pharExec = 'php ' . escapeshellarg($pharPath);
+}
+
+// Define BIN and PHAR (if found)
+if ($resolvedBin) {
+    define_if_absent('COMPOSER_BIN', $resolvedBin);
+}
+if ($pharExec) {
+    define_if_absent('COMPOSER_PHAR', ['path' => $pharPath, 'exec' => $pharExec]);
+}
+
+// -----------------------------------------------------------------------------
+// Chosen command to run + Debug struct
+// -----------------------------------------------------------------------------
+
+if (!defined('COMPOSER_EXEC_CMD')) {
+    if (defined('COMPOSER_BIN')) {
+        define('COMPOSER_EXEC_CMD', COMPOSER_BIN);
+    } elseif (defined('COMPOSER_PHAR')) {
+        define('COMPOSER_EXEC_CMD', COMPOSER_PHAR['exec']);
     } else {
-        $errors['COMPOSER'][] = "COMPOSER_HOME directory missing: $COMPOSER_HOME";
+        define('COMPOSER_EXEC_CMD', null);
     }
 }
-
-if (is_dir($COMPOSER_HOME) && !is_file($COMPOSER_CONFIG_JSON) && COMPOSER_AUTOCREATE_CONFIG) {
-    // Create a minimal config.json
-    $ok = @file_put_contents($COMPOSER_CONFIG_JSON, "{}\n");
-    if ($ok === false) {
-        $errors['COMPOSER'][] = "Failed to create config.json at: $COMPOSER_CONFIG_JSON";
-    }
-}
-
-// ---------------------------------------------------------------------------
-// Defines (idempotent)
-// ---------------------------------------------------------------------------
-
-defined('COMPOSER_HOME') || define('COMPOSER_HOME', $COMPOSER_HOME);
-defined('COMPOSER_BIN') || define('COMPOSER_BIN', $COMPOSER_BIN);
-defined('COMPOSER_PROJECT_ROOT') || define('COMPOSER_PROJECT_ROOT', $COMPOSER_PROJECT_ROOT);
-defined('COMPOSER_JSON') || define('COMPOSER_JSON', $COMPOSER_JSON);
-defined('COMPOSER_LOCK') || define('COMPOSER_LOCK', $COMPOSER_LOCK);
-defined('COMPOSER_VENDOR_DIR') || define('COMPOSER_VENDOR_DIR', $COMPOSER_VENDOR_DIR);
-defined('COMPOSER_CONFIG') || define('COMPOSER_CONFIG', $COMPOSER_CONFIG_JSON);
-defined('COMPOSER_AUTH') || define('COMPOSER_AUTH', $COMPOSER_AUTH_JSON);
-defined('COMPOSER_CACHE_DIR') || define('COMPOSER_CACHE_DIR', $COMPOSER_CACHE_DIR);
-defined('COMPOSER_DEFAULT_ARGS') || define('COMPOSER_DEFAULT_ARGS', $COMPOSER_DEFAULT_ARGS);
 
 // A compact struct you can dd() for debugging
-defined('COMPOSER_EXEC') || define('COMPOSER_EXEC', [
-    'bin' => COMPOSER_BIN,           // string, executable or phar invocation
-    'args' => COMPOSER_DEFAULT_ARGS,  // string, default args
-    'cwd' => COMPOSER_PROJECT_ROOT,  // default working directory
-    'json' => COMPOSER_JSON,          // project composer.json
+define_if_absent('COMPOSER_EXEC', [
+    'exec' => COMPOSER_EXEC_CMD,     // string|null (bin or "php /path/composer.phar")
+    'args' => COMPOSER_DEFAULT_ARGS, // default args string
+    'cwd' => COMPOSER_PROJECT_ROOT, // working directory to run in
+    'json' => COMPOSER_JSON,         // project composer.json
     'lock' => COMPOSER_LOCK,
     'home' => COMPOSER_HOME,
     'config' => COMPOSER_CONFIG,
@@ -177,85 +193,49 @@ defined('COMPOSER_EXEC') || define('COMPOSER_EXEC', [
     'vendor_dir' => COMPOSER_VENDOR_DIR,
 ]);
 
-// ---------------------------------------------------------------------------
-// Tiny helpers for your API layer (no execution here)
-// ---------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
+// Ensure COMPOSER_HOME/config.json exists (best-effort, non-fatal)
+// -----------------------------------------------------------------------------
 
-if (!function_exists('composer_build_command')) {
+$configJsonPath = COMPOSER_CONFIG;
+if (!is_file($configJsonPath)) {
+    // Ensure COMPOSER_HOME exists
+    if (!is_dir(COMPOSER_HOME)) {
+        @mkdir(COMPOSER_HOME, 0775, true);
+    }
+    @file_put_contents($configJsonPath, "{}", LOCK_EX);
+}
+
+// -----------------------------------------------------------------------------
+// Optional helper to run composer reliably (use proc_open for more control)
+// -----------------------------------------------------------------------------
+
+if (!function_exists('run_composer')) {
     /**
-     * Build a composer command string with safe quoting.
-     * Usage: composer_build_command(['install', '--no-dev'])
-     *        composer_build_command('update symfony/*')
+     * @param string $subcmd   e.g. "install", "update symfony/process"
+     * @param string $extra    e.g. "--prefer-dist"
+     * @param string|null $cwd Working directory; defaults to COMPOSER_PROJECT_ROOT
+     * @return array{code:int,out:string,err:string}
      */
-    function composer_build_command(array|string $args, ?string $cwd = null): string
+    function run_composer(string $subcmd, string $extra = '', ?string $cwd = null): array
     {
-        $bin = COMPOSER_BIN;
-        $cwd = $cwd ?: COMPOSER_PROJECT_ROOT;
-
-        // Normalize arguments
-        if (is_string($args)) {
-            $args = trim($args) === '' ? [] : preg_split('/\s+/', $args);
+        $cwd = $cwd ?? COMPOSER_PROJECT_ROOT;
+        $exec = COMPOSER_EXEC_CMD;
+        if (!$exec) {
+            return ['code' => 127, 'out' => '', 'err' => 'composer executable not found'];
         }
 
-        // Default args
-        $default = trim(COMPOSER_DEFAULT_ARGS);
-        $argv = $default !== '' ? preg_split('/\s+/', $default) : [];
-        foreach ($args as $a) {
-            if ($a === null || $a === '')
-                continue;
-            $argv[] = $a;
+        $cmd = trim($exec . ' ' . COMPOSER_DEFAULT_ARGS . ' ' . $subcmd . ' ' + $extra);
+        $desc = [1 => ['pipe', 'w'], 2 => ['pipe', 'w']];
+        $proc = @proc_open($cmd, $desc, $pipes, $cwd, null);
+        if (!\is_resource($proc)) {
+            return ['code' => 1, 'out' => '', 'err' => 'proc_open failed'];
         }
-
-        // Env for Composer to honor home/cache (build a prefix like KEY=VAL KEY2=VAL2 cmd ...)
-        $env = [
-            'COMPOSER_HOME' => COMPOSER_HOME,
-            'COMPOSER_CACHE_DIR' => COMPOSER_CACHE_DIR,
-            // honor vendor dir if you want: 'COMPOSER_VENDOR_DIR' => COMPOSER_VENDOR_DIR,
-        ];
-
-        $prefix = '';
-        if (!IS_WINDOWS) {
-            // POSIX: KEY=VAL KEY2=VAL2
-            foreach ($env as $k => $v) {
-                $prefix .= $k . '=' . escapeshellarg($v) . ' ';
-            }
-        }
-        // Windows: rely on proc_open to set env (recommended). If you *must* build a string for logs, include no env prefix.
-
-        // Quote args safely
-        $quoted = array_map(
-            fn($a) => IS_WINDOWS ? escapeshellarg($a) : escapeshellarg($a),
-            $argv
-        );
-
-        $cmd = trim($prefix . $bin . ' ' . implode(' ', $quoted));
-
-        // Include a cwd comment for logs/debug
-        return $cmd . '  # cwd=' . $cwd;
-    }
-}
-
-// Optional: very small JSON helpers for composer config/auth (API code can call these)
-
-if (!function_exists('composer_read_json')) {
-    function composer_read_json(string $file): array
-    {
-        if (!is_file($file))
-            return [];
-        $raw = @file_get_contents($file);
-        if ($raw === false || trim($raw) === '')
-            return [];
-        $data = json_decode($raw, true);
-        return is_array($data) ? $data : [];
-    }
-}
-
-if (!function_exists('composer_write_json')) {
-    function composer_write_json(string $file, array $data): bool
-    {
-        $dir = dirname($file);
-        if (!is_dir($dir) && !ensure_dir($dir))
-            return false;
-        return @file_put_contents($file, safe_json_encode($data) . "\n") !== false;
+        $out = stream_get_contents($pipes[1]);
+        fclose($pipes[1]);
+        $err = stream_get_contents($pipes[2]);
+        fclose($pipes[2]);
+        $code = proc_close($proc);
+        return ['code' => (int) $code, 'out' => (string) $out, 'err' => (string) $err];
     }
 }

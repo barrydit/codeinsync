@@ -91,7 +91,7 @@ Psr/
 
 //echo getcwd();
 /**/
-if (in_array(APP_PATH . APP_BASE['config'] . 'composer.php', get_required_files())) {
+if (in_array(APP_BASE['config'] . 'composer.php', get_required_files())) {
   if (class_exists('LogLevel'))
     if (null !== LogLevel::DEBUG) // isset() || 
       if (defined('LogLevel'))
@@ -317,7 +317,7 @@ else
   <title>WebPortal</title>
   <?php
   // (APP_IS_ONLINE && check_http_status('https://cdn.tailwindcss.com') ? 'https://cdn.tailwindcss.com' : APP_URL . 'resources/js/tailwindcss-3.3.5.js')?
-  is_dir($path = APP_PATH . APP_BASE['resources'] . 'js/') or mkdir($path, 0755, true);
+  is_dir($path = APP_BASE['resources'] . 'js/') or mkdir($path, 0755, true);
   if (is_file($path . 'tailwindcss-3.3.5.js')) {
     if (ceil(abs((strtotime(date('Y-m-d')) - strtotime(date('Y-m-d', strtotime('+5 days', filemtime("{$path}tailwindcss-3.3.5.js"))))) / 86400)) <= 0) {
       $url = 'https://cdn.tailwindcss.com';
@@ -1125,7 +1125,7 @@ else
   <!-- https://code.jquery.com/jquery-3.7.1.min.js -->
   <!-- script src="https://code.jquery.com/jquery-3.6.0.min.js" integrity="sha256-/xUj+3OJU5yExlq6GSYGSHk7tPXikynS7ogEvDej/m4=" crossorigin="anonymous"></script -->
   <?php
-  is_dir($path = APP_PATH . APP_BASE['resources'] . 'js/jquery/') or mkdir($path, 0755, true);
+  is_dir($path = APP_BASE['resources'] . 'js/jquery/') or mkdir($path, 0755, true);
   if (is_file($path . 'jquery-3.7.1.min.js')) {
     if (ceil(abs((strtotime(date('Y-m-d')) - strtotime(date('Y-m-d', strtotime('+5 days', filemtime($path . 'jquery-3.7.1.min.js'))))) / 86400)) <= 0) {
       $url = 'https://code.jquery.com/jquery-3.7.1.min.js';
@@ -1171,7 +1171,7 @@ else
   <!-- For Text / Ace Editor -->
   <!-- <script src="https://unpkg.com/@popperjs/core@2" type="text/javascript" charset="utf-8"></script> -->
   <?php
-  is_dir($path = APP_PATH . APP_BASE['resources'] . 'js/requirejs/') or mkdir($path, 0755, true);
+  is_dir($path = APP_BASE['resources'] . 'js/requirejs/') or mkdir($path, 0755, true);
   if (is_file($path . 'require-2.3.6.js')) {
     if (ceil(abs((strtotime(date('Y-m-d')) - strtotime(date('Y-m-d', strtotime('+5 days', filemtime($path . '/require-2.3.6.js'))))) / 86400)) <= 0) {
       $url = 'https://requirejs.org/docs/release/2.3.6/minified/require.js';

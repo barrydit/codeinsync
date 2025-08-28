@@ -99,7 +99,7 @@ $proc=proc_open('sudo ' . GIT_EXEC . ' ' . $match[1],
 */
 
 if (defined('GIT_EXEC'))
-    if (is_dir($path = APP_PATH . APP_BASE['resources'] . 'js/ace') && empty(glob($path)))
+    if (is_dir($path = APP_BASE['resources'] . 'js/ace') && empty(glob($path)))
         exec((stripos(PHP_OS, 'WIN') === 0 ? '' : APP_SUDO) . GIT_EXEC . ' clone https://github.com/ajaxorg/ace-builds.git resources/js/ace', $output, $returnCode) or $errors['GIT-CLONE-ACE'] = $output;
     elseif (!is_dir($path)) {
         if (!mkdir($path, 0755, true))
@@ -201,7 +201,7 @@ ob_start(); ?>
         style="position: relative; width: 100%; height: 100%; border: 3px dashed #38B1FF; background-color: rgba(56,177,255,0.6);"
         action="app.directory.php<?= /*basename(__FILE__) . */ '?' . http_build_query(APP_QUERY + ['app' => 'errors']) . (defined('APP_ENV') && APP_ENV == 'development' ? '#!' : '') /* $c_or_p . '=' . (empty($_GET[$c_or_p]) ? '' : $$c_or_p->name) . '&amp;app=composer' */ ?>"
         method="POST" onsubmit="syncAceContent()">
-        <input type="hidden" name="ace_path" value="<?= /* APP_PATH . APP_BASE['public']; */ NULL; ?>" />
+        <input type="hidden" name="ace_path" value="<?= /* APP_BASE['public']; */ NULL; ?>" />
 
         <div class="ui-widget-content"
             style="position: relative; display: none; margin: 0 auto; width: calc(100% - 2px); height: 50px; background-color: rgba(251,247,241);">
@@ -292,7 +292,7 @@ else $count++;
                 style="position: absolute; display: <?= isset($_GET['file']) && isset($_GET['path']) && is_file($_GET['path'] . $_GET['file']) ? 'block' : 'block' ?>; z-index: 1;">
                 <div style="background-color: white; height: 100%; width: 100%; overflow: hidden;">
                     <!-- iframe
-                        src="<?= (is_dir($path = APP_PATH . APP_BASE['public']) && getcwd() == realpath($path) ? APP_BASE['public'] : '') . basename('app.notes.php') ?>"
+                        src="<?= (is_dir($path = APP_BASE['public']) && getcwd() == realpath($path) ? APP_BASE['public'] : '') . basename('app.notes.php') ?>"
                         style="overflow: scroll; height: 460px; width: 1200px; border: none;" scrolling="yes"></iframe -->
                 </div>
             </div>
@@ -398,7 +398,7 @@ ob_start();
     <!-- link rel="stylesheet" href="//code.jquery.com/ui/1.12.1/themes/smoothness/jquery-ui.css" / -->
 
     <?php
-    is_dir($path = APP_PATH . APP_BASE['resources'] . 'js/') or mkdir($path, 0755, true);
+    is_dir($path = APP_BASE['resources'] . 'js/') or mkdir($path, 0755, true);
     if (is_file("{$path}tailwindcss-3.3.5.js")) {
         if (ceil(abs((strtotime(date('Y-m-d')) - strtotime(date('Y-m-d', strtotime('+5 days', filemtime("{$path}tailwindcss-3.3.5.js"))))) / 86400)) <= 0) {
             $url = 'https://cdn.tailwindcss.com';
@@ -430,7 +430,7 @@ ob_start();
     <?= $app['body']; ?>
 
     <?php
-    is_dir($path = APP_PATH . APP_BASE['resources'] . 'js/jquery/') or mkdir($path, 0755, true);
+    is_dir($path = APP_BASE['resources'] . 'js/jquery/') or mkdir($path, 0755, true);
     if (is_file($path . 'jquery-3.7.1.min.js')) {
         if (ceil(abs((strtotime(date('Y-m-d')) - strtotime(date('Y-m-d', strtotime('+5 days', filemtime($path . 'jquery-3.7.1.min.js'))))) / 86400)) <= 0) {
             $url = 'https://code.jquery.com/jquery-3.7.1.min.js';

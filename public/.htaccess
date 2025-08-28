@@ -1,0 +1,13 @@
+# Enable Rewrite Engine
+RewriteEngine On
+
+# Set the base directory (adjust if your application is in a subfolder)
+RewriteBase /
+
+# Redirect all requests to index.php except if the file or directory exists
+# RewriteCond %{REQUEST_FILENAME} !-f
+# RewriteCond %{REQUEST_FILENAME} !-d
+# RewriteRule ^(.*)$ index.php/$1 [L]
+
+# Redirect resource calls from /assets/ to /resources/
+RewriteRule ^resources/(.*)$ ../resources/$1 [L]

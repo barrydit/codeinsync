@@ -120,7 +120,7 @@ ob_start(); ?>
 
   <div style="display: inline-block; width: auto;">
     <iframe
-      src="<?= (is_dir($path = APP_PATH . APP_BASE['public']) && getcwd() == realpath($path) ? APP_BASE['public'] : '') . basename(__FILE__) ?>"
+      src="<?= (is_dir($path = APP_BASE['public']) && getcwd() == realpath($path) ? APP_BASE['public'] : '') . basename(__FILE__) ?>"
       style="height: 460px; width: 800px;"></iframe>
   </div>
 
@@ -283,7 +283,7 @@ ob_start(); ?>
 
   <?php
   // (check_http_status('https://cdn.tailwindcss.com') ? 'https://cdn.tailwindcss.com' : APP_URL . 'resources/js/tailwindcss-3.3.5.js')?
-  is_dir($path = APP_PATH . APP_BASE['resources'] . 'js/') or mkdir($path, 0755, true);
+  is_dir($path = APP_BASE['resources'] . 'js/') or mkdir($path, 0755, true);
   if (is_file("{$path}tailwindcss-3.3.5.js")) {
     if (ceil(abs((strtotime(date('Y-m-d')) - strtotime(date('Y-m-d', strtotime('+5 days', filemtime("{$path}tailwindcss-3.3.5.js"))))) / 86400)) <= 0) {
       $url = 'https://cdn.tailwindcss.com';

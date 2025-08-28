@@ -55,10 +55,13 @@ foreach (glob("{$baseDir}*.php") as $file) {
   $relativePath = str_replace($baseDir, '', $file);
   if ($relativePath === 'composer-setup.php')
     continue;
+  if ($relativePath === 'install.php')
+    continue;
   if (pathinfo($relativePath, PATHINFO_EXTENSION) === 'php' && !in_array($relativePath, $trackedFiles)) {
     $trackedFiles[] = $relativePath;
   }
 }
+
 
 // Step 3: Scan project directories recursively
 scanDirectories($directoriesToScan, $baseDir, $trackedFiles);
@@ -101,12 +104,10 @@ foreach ($sortedFiles as $index => $path) {
   $total_lines += $lineCount;
 }
 
-
 session_start();
 $isDev = $_SESSION['mode'] ?? 'unset';
 unset($_SESSION['mode']);
 
-// dd(get_required_files());
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -626,13 +627,13 @@ unset($_SESSION['mode']);
 
 
   <script
-    src="<?= APP_IS_ONLINE && check_http_status('https://code.jquery.com/jquery-3.7.1.min.js') ? 'https://code.jquery.com/jquery-3.7.1.min.js' : APP_BASE['resources'] . 'js/jquery/' . 'jquery-3.7.1.min.js' ?>"></script>
+    src="<?= APP_IS_ONLINE && check_http_status('https://code.jquery.com/jquery-3.7.1.min.js') ? 'https://code.jquery.com/jquery-3.7.1.min.js' : APP_BASE_REL['resources'] . 'js/jquery/' . 'jquery-3.7.1.min.js' ?>"></script>
 
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-easing/1.4.1/jquery.easing.min.js"></script>
   <!-- You need to include jQueryUI for the extended easing options. -->
   <!-- script src="//code.jquery.com/jquery-1.12.4.js"></script -->
   <?php
-  if (!is_file($path = APP_PATH . APP_BASE['resources'] . 'js/jquery-ui/' . 'jquery-ui-1.12.1.js') || ceil(abs((strtotime(date('Y-m-d')) - strtotime(date('Y-m-d', strtotime('+5 days', filemtime($path))))) / 86400)) <= 0) {
+  if (!is_file($path = APP_BASE_REL['resources'] . 'js/jquery-ui/' . 'jquery-ui-1.12.1.js') || ceil(abs((strtotime(date('Y-m-d')) - strtotime(date('Y-m-d', strtotime('+5 days', filemtime($path))))) / 86400)) <= 0) {
     if (!realpath($pathdir = dirname($path)))
       if (!mkdir($pathdir, 0755, true))
         $errors['DOCS'] = "$pathdir does not exist";
@@ -646,7 +647,7 @@ unset($_SESSION['mode']);
   } ?>
 
   <script
-    src="<?= APP_IS_ONLINE && check_http_status('https://code.jquery.com/ui/1.12.1/jquery-ui.min.js') ? 'https://code.jquery.com/ui/1.12.1/jquery-ui.min.js' : APP_BASE['resources'] . 'js/jquery-ui/' . 'jquery-ui-1.12.1.js' ?>"></script>
+    src="<?= APP_IS_ONLINE && check_http_status('https://code.jquery.com/ui/1.12.1/jquery-ui.min.js') ? 'https://code.jquery.com/ui/1.12.1/jquery-ui.min.js' : APP_BASE_REL['resources'] . 'js/jquery-ui/' . 'jquery-ui-1.12.1.js' ?>"></script>
 
 
   <script>

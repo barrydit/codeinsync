@@ -33,7 +33,7 @@ if (!isset($composer_obj)) {
   if (function_exists('load_feature_constants')) {
     load_feature_constants('composer');
   }
-  $composer_obj = json_decode(COMPOSER_JSON['json']);
+  $composer_obj = json_decode(COMPOSER_JSON ?? '{}');
 }
 
 $COMPOSER_JSON = json_encode($composer_obj); // @file_get_contents("composer.json");
@@ -49,7 +49,7 @@ define("COMPOSER_JSON_RAW", $COMPOSER_JSON);
 <?php $UI_APP['css'] = ob_get_contents(); ?>
 */
 
-//dd(get_required_files());
+// dd(get_required_files());
 
 ob_start(); ?>
 <?= $selector ?> {
@@ -209,11 +209,9 @@ ob_start(); ?>
     </div>
   </label>
   <div style="display: inline; float: left; margin-top: 10px;">
+
     <span style="background-color: #B0B0B0; color: white;">Composer
-      <a href="#" alt="Installed: <?= defined('COMPOSER_VERSION') or define('COMPOSER_VERSION', (defined('COMPOSER_VERSION') && version_compare(COMPOSER_LATEST, COMPOSER_VERSION, '>') !== 0)
-        ? highlightVersionDiff(COMPOSER_VERSION, COMPOSER_LATEST)
-        : '1.0.0');
-      COMPOSER_VERSION ?>"><?= COMPOSER_VERSION ?></a>
+      <a href="#" alt="Installed: <?= COMPOSER_VERSION ?>"><?= COMPOSER_VERSION ?></a>
     </span>
 
 
@@ -225,8 +223,19 @@ ob_start(); ?>
       <code class="text-sm" style="background-color: #fff; color: #0078D7;">$ 
         <input type="hidden" name="app" value="composer" />
         <select name="exec" onchange="this.form.submit();">
-          <?php if (defined('COMPOSER_BIN')) { ?><option <?= COMPOSER_EXEC == COMPOSER_BIN ? 'selected' : '' ?> value="bin"><?= COMPOSER_BIN['bin']; ?></option><?php } ?>
-          <option <?= defined('COMPOSER_EXEC') and COMPOSER_EXEC == COMPOSER_PHAR ? 'selected' : '' ?> value="phar"><?= 'php composer.phar' /*COMPOSER_PHAR['bin']*/ ; ?></option>
+
+  <?php if (defined('COMPOSER_BIN')): ?>
+                  <option <?= COMPOSER_EXEC_CMD === COMPOSER_BIN ? 'selected' : '' ?>
+                      value="bin"><?= COMPOSER_BIN ?></option>
+    <?php endif; ?>
+  
+    <?php if (defined('COMPOSER_PHAR')): ?>
+                  <option <?= COMPOSER_EXEC_CMD === COMPOSER_PHAR['exec'] ? 'selected' : '' ?>
+                    value="phar">
+                    <?= COMPOSER_PHAR['exec'] ?>
+                  </option>
+  <?php endif; ?>
+
         </select>
       </code>
     </form>
@@ -347,7 +356,7 @@ ob_start(); ?>
         foreach (COMPOSER['json']->require as $key => $require) {
           if (preg_match('/.*\/.*:.*/', $key . ':' . $require))
             if (preg_match('/(.*)\/.*/', $key, $match))
-              if (!empty($match) && !is_dir(APP_PATH . APP_BASE['vendor'] . $match[1] . '/'))
+              if (!empty($match) && !is_dir(APP_BASE['vendor'] . $match[1] . '/'))
                 $count++;
         }
       ?>
@@ -434,7 +443,7 @@ php composer.phar -v
       <?= defined('COMPOSER_LATEST') && defined('COMPOSER_VERSION') ? (version_compare(COMPOSER_LATEST, COMPOSER_VERSION, '>') == 0 ? NULL : $frameUpdateContents) : ''; ?>
 
       <div id="app_composer-frameInit"
-        class="app_composer-frame-container absolute <?= is_file(COMPOSER_JSON['path']) ? '' : (defined('COMPOSER') && is_object(COMPOSER) && count((array) COMPOSER) !== 0 ? '' : 'selected'); ?>"
+        class="app_composer-frame-container absolute <?= is_file(COMPOSER_PROJECT_ROOT) ? '' : (defined('COMPOSER') && is_object(COMPOSER) && count((array) COMPOSER) !== 0 ? '' : 'selected'); ?>"
         style="overflow: hidden; height: 270px;">
         <?php if (!defined('CONSOLE') && CONSOLE != true) { ?>
           <form autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"
@@ -455,7 +464,7 @@ php composer.phar -v
             <label>Composer Command</label>
             <textarea id="app_composer-init-input" style="width: 100%" cols="40" rows="6" name="composer[init]"
               autocomplete="off" autocorrect="off" autocapitalize="off"
-              spellcheck="false"><?= preg_replace('/\n\s*--/', "--", COMPOSER_INIT_PARAMS); ?></textarea>
+              spellcheck="false"><?= preg_replace('/\n\s*--/', "--", COMPOSER_DEFAULT_ARGS); ?></textarea>
           </div>
           <?php if (!defined('CONSOLE') && CONSOLE != true) { ?>
           </form>
@@ -473,15 +482,15 @@ php composer.phar -v
           <div style="position: absolute; right: 0; float: right; text-align: center; z-index: 2;">
             <button class="btn absolute" id="composerJsonSubmit" type="submit"
               style="position: absolute; top: 0; right: 0;"
-              value=""><?= defined('COMPOSER_AUTH') && realpath(COMPOSER_AUTH['path']) ? 'Modify' : 'Create'; ?></button>
+              value=""><?= defined('COMPOSER_AUTH') && realpath(COMPOSER_AUTH) ? 'Modify' : 'Create'; ?></button>
           </div>
           <div
             style="position: relative; display: inline-block; width: 100%; background-color: rgb(225,196,151,.25); z-index: 1;">
             <div class="text-sm" style="display: inline;">
               <!-- <input id="composerJson" type="checkbox" style="cursor: pointer;" name="composerJson" value="true" checked=""> -->
               <label for="composerJson" id="appComposerAuthLabel"
-                title="<?= defined('COMPOSER_AUTH') && realpath(COMPOSER_AUTH['path']) ? COMPOSER_AUTH['path'] : COMPOSER_AUTH['path'] /*NULL*/ ; ?>"
-                style="background-color: #6B4329; <?= defined('COMPOSER_JSON') && realpath(COMPOSER_AUTH['path']) ? 'color: #F0E0C6; text-decoration: underline; ' : 'color: red; text-decoration: underline; text-decoration: line-through;' ?> cursor: pointer; font-weight: bold;">&#9660;
+                title="<?= defined('COMPOSER_AUTH') && realpath(COMPOSER_AUTH) ? COMPOSER_AUTH : '' /*NULL*/ ; ?>"
+                style="background-color: #6B4329; <?= defined('COMPOSER_AUTH') && realpath(COMPOSER_AUTH) ? 'color: #F0E0C6; text-decoration: underline; ' : 'color: red; text-decoration: underline; text-decoration: line-through;' ?> cursor: pointer; font-weight: bold;">&#9660;
                 <code>COMPOSER_HOME/auth.json</code></label>
             </div>
           </div>
@@ -490,10 +499,10 @@ php composer.phar -v
             <a class="text-sm" style="color: blue; text-decoration: underline;"
               href="https://github.com/settings/tokens?page=1">GitHub OAuth Token</a>:
             <span class="text-sm"
-              style="float: right;"><?= is_file(COMPOSER_AUTH['path']) ? ceil(abs((strtotime(date('Y-m-d')) - strtotime(date('Y-m-d', strtotime('+30 days', filemtime(COMPOSER_AUTH['path']))))) / 86400)) : '' ?>
+              style="float: right;"><?= is_file(COMPOSER_AUTH) ? ceil(abs((strtotime(date('Y-m-d')) - strtotime(date('Y-m-d', strtotime('+30 days', filemtime(COMPOSER_AUTH))))) / 86400)) : '' ?>
               (Days left)</span>
             <div style="float: right;">
-              <input type="text" size="40" name="auth[github_oauth]" value="<?= COMPOSER_AUTH['token'] ?? '' ?>" />
+              <input type="text" size="40" name="auth[github_oauth]" value="<?= COMPOSER_GITHUB_OAUTH_TOKEN ?? '' ?>" />
             </div>
             <div style="clear: both;"></div>
           </div>
@@ -503,8 +512,8 @@ php composer.phar -v
             <div class="text-sm" style="display: inline;">
               <!-- <input id="composerJson" type="checkbox" style="cursor: pointer;" name="composerJson" value="true" checked=""> -->
               <label for="composerJson" id="appComposerConfigLabel"
-                title="<?= defined('COMPOSER_CONFIG') && isset(COMPOSER_CONFIG['path']) ? (is_file(COMPOSER_CONFIG['path']) ? COMPOSER_CONFIG['path'] : '') : '' /*NULL*/ ; ?>"
-                style="background-color: #6B4329; <?= defined('COMPOSER_CONFIG') ? (is_file(COMPOSER_CONFIG['path'] ?? '') ? 'color: #F0E0C6; text-decoration: underline; ' : 'color: red; text-decoration: underline; text-decoration: line-through;') : '' ?> cursor: pointer; font-weight: bold;">&#9660;
+                title="<?= defined('COMPOSER_CONFIG') ? (is_file(COMPOSER_CONFIG) ? COMPOSER_CONFIG : '') : '' /*NULL*/ ; ?>"
+                style="background-color: #6B4329; <?= defined('COMPOSER_CONFIG') ? (is_file(COMPOSER_CONFIG ?? '') ? 'color: #F0E0C6; text-decoration: underline; ' : 'color: red; text-decoration: underline; text-decoration: line-through;') : '' ?> cursor: pointer; font-weight: bold;">&#9660;
                 <code>COMPOSER_HOME/config.json</code></label>
             </div>
           </div>
@@ -528,12 +537,12 @@ php composer.phar -v
           <!--  -->
           <div
             style="position: relative; display: inline-block; background-color: rgb(225,196,151,.25); width: 100%; z-index: 1;">
-            <?php //if (defined('COMPOSER_JSON')) $composer = json_decode(COMPOSER_JSON['json']); ?>
+            <?php //if (defined('COMPOSER_JSON')) $composer = json_decode(COMPOSER_JSON); ?>
             <div class="text-sm" style="display: inline;">
               <!-- <input id="composerJson" type="checkbox" style="cursor: pointer;" name="composerJson" value="true" checked=""> -->
               <label for="composerJson" id="appComposerJsonLabel" class="text-sm"
-                style="background-color: #6B4329; <?= defined('COMPOSER_JSON') && realpath(COMPOSER_JSON['path']) ? 'color: #F0E0C6; text-decoration: underline; ' : 'color:red; text-decoration: underline; text-decoration: line-through;' ?> cursor: pointer; font-weight: bold;"
-                title="<?= defined('COMPOSER_JSON') && realpath(COMPOSER_JSON['path']) ? COMPOSER_JSON['path'] : COMPOSER_JSON['path'] /*NULL*/ ; ?>">&#9650;
+                style="background-color: #6B4329; <?= defined('COMPOSER_JSON') && realpath(COMPOSER_JSON) ? 'color: #F0E0C6; text-decoration: underline; ' : 'color:red; text-decoration: underline; text-decoration: line-through;' ?> cursor: pointer; font-weight: bold;"
+                title="<?= defined('COMPOSER_JSON') && realpath(COMPOSER_JSON) ? COMPOSER_JSON : '' /*NULL*/ ; ?>">&#9650;
                 <code>COMPOSER_PATH/composer.json</code></label>
               <div class="text-xs"
                 style="display: <?= (!is_file(APP_PATH . 'composer.lock') ? 'none' : 'inline-block') ?>; padding-top: 5px; padding-right: 10px; float: right;">
@@ -544,7 +553,7 @@ php composer.phar -v
           </div>
           <div id="appComposerJsonForm"
             style="position: relative; display: inline-block; overflow-x: hidden; overflow-y: auto; height: auto; padding: 10px; background-color: rgb(235,216,186,.80); border: 1px dashed #0078D7;">
-            <?php if (defined('COMPOSER_JSON') && realpath(COMPOSER_JSON['path'])) { ?>
+            <?php if (defined('COMPOSER_JSON') && realpath(COMPOSER_JSON)) { ?>
               <div style="display: inline-block; width: 100%; margin-bottom: 10px;">
                 <div class="text-xs" style="display: inline-block; float: left; background-color: #0078D7; color: white;">
                   Last Update: <span <?= defined('COMPOSER') && isset(COMPOSER['json']->time) && COMPOSER['json']->time === '' ? 'style="background-color: white; color: red;"' : 'style="background-color: white; color: #0078D7;"' ?>><?= defined('COMPOSER') && isset(COMPOSER['json']->time) && COMPOSER['json']->time !== '' ? COMPOSER['json']->{'time'} : date('Y-m-d H:i:s') ?></span>
@@ -580,11 +589,30 @@ php composer.phar -v
             </div>
 
             <!-- version -->
-            <div style="display: inline-block; width: 100%;"><label for="composer-version" <?= defined('COMPOSER') && isset(COMPOSER['json']->{'version'}) && preg_match(COMPOSER_EXPR_VER, COMPOSER['json']->{'version'}) ? '' : 'style="background-color: #fff; color: red; cursor: pointer;" title="Version must follow this format: ' . COMPOSER_EXPR_VER . '"' ?>>Version:</label>
-              <div style="float: right;">
+            <?php
+            $version = defined('COMPOSER') && isset(COMPOSER['json']->version)
+              ? (string) COMPOSER['json']->version
+              : '';
+
+            $regex = defined('COMPOSER_EXPR_VER')
+              ? COMPOSER_EXPR_VER
+              : '/^\d+\.\d+(?:\.\d+)?$/'; // fallback: 1.2 or 1.2.3
+            
+            $isValid = ($version !== '') && preg_match($regex, $version);
+
+            // For the HTML pattern attribute (no delimiters/anchors):
+            $htmlPattern = defined('COMPOSER_EXPR_VER')
+              ? '(?:v?\d+(?:\.\d+){0,3}|dev-[A-Za-z0-9._\-\/]+)'
+              : '\d+\.\d+(?:\.\d+)?';
+
+            $labelStyle = $isValid ? '' : 'style="background-color:#fff;color:red;cursor:pointer;"';
+            $labelTitle = $isValid ? '' : 'title="Version must follow: ' . htmlspecialchars(trim($htmlPattern, '/'), ENT_QUOTES) . '"'; ?>
+            <div style="display:inline-block;width:100%;">
+              <label for="composer-version" <?= $labelStyle ?> <?= $labelTitle ?>>Version:</label>
+              <div style="float:right;">
                 <input id="composer-version" type="text" name="composer[config][version]" size="10"
-                  placeholder="(Version) 1.2.3" style="text-align: right;" pattern="(\d+\.\d+(?:\.\d+)?)"
-                  value="<?= defined('COMPOSER') && isset(COMPOSER['json']->version) ? COMPOSER['json']->version : ''; ?>">
+                  placeholder="(Version) 1.2.3" style="text-align:right;" pattern="<?= $htmlPattern ?>"
+                  value="<?= htmlspecialchars($version, ENT_QUOTES) ?>">
               </div>
             </div>
             <!-- type -->
@@ -812,7 +840,7 @@ php composer.phar -v
           </div>
           <div
             style="position: relative; display: inline-block; background-color: rgb(225,196,151,.25); width: 100%; z-index: 1;">
-            <?php //if (defined('COMPOSER_JSON')) $composer = json_decode(COMPOSER_JSON['json']); ?>
+            <?php //if (defined('COMPOSER_JSON')) $composer = json_decode(COMPOSER_JSON); ?>
             <div class="text-sm" style="display: inline;">
               <!-- <input id="composerJson" type="checkbox" style="cursor: pointer;" name="" value="true" checked=""> -->
 
@@ -1510,7 +1538,7 @@ ob_start(); ?>
 
   <?php
   // (check_http_status('https://cdn.tailwindcss.com') ? 'https://cdn.tailwindcss.com' : APP_URL . 'resources/js/tailwindcss-3.3.5.js')?
-  is_dir($path = APP_PATH . APP_BASE['resources'] . 'js/') or mkdir($path, 0755, true);
+  is_dir($path = APP_BASE['resources'] . 'js/') or mkdir($path, 0755, true);
   if (is_file("{$path}tailwindcss-3.3.5.js")) {
     if (ceil(abs((strtotime(date('Y-m-d')) - strtotime(date('Y-m-d', strtotime('+5 days', filemtime("{$path}tailwindcss-3.3.5.js"))))) / 86400)) <= 0) {
       $url = 'https://cdn.tailwindcss.com';
@@ -1564,3 +1592,5 @@ if (__FILE__ == get_required_files()[0] || in_array(__FILE__, get_required_files
 } else {
   return $UI_APP; // = ['style' => '', 'body' => $UI_APP['body'], 'script' => ''];
 }
+
+

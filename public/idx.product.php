@@ -1132,7 +1132,7 @@ echo $app_style;
   <!-- You need to include jQueryUI for the extended easing options. -->
   <!-- script src="//code.jquery.com/jquery-1.12.4.js"></script -->
   <?php
-  if (!is_file($path = APP_PATH . APP_BASE['resources'] . 'js/jquery-ui/' . 'jquery-ui-1.12.1.js') || ceil(abs((strtotime(date('Y-m-d')) - strtotime(date('Y-m-d', strtotime('+5 days', filemtime($path))))) / 86400)) <= 0) {
+  if (!is_file($path = APP_BASE['resources'] . 'js/jquery-ui/' . 'jquery-ui-1.12.1.js') || ceil(abs((strtotime(date('Y-m-d')) - strtotime(date('Y-m-d', strtotime('+5 days', filemtime($path))))) / 86400)) <= 0) {
     if (!realpath($pathdir = dirname($path)))
       if (!mkdir($pathdir, 0755, true))
         $errors['DOCS'] = "$pathdir does not exist";
@@ -1169,10 +1169,10 @@ $(document).ready(function() {
   <?php
 
   // APP_IS_ONLINE && check_http_status('https://cdn.tailwindcss.com' ? 'https://cdn.tailwindcss.com' : APP_URL . 'resources/js/tailwindcss.js')?
-//!is_dir($path = APP_PATH . APP_BASE['resources'] . 'js/') or mkdir($path, 0755, true);
+//!is_dir($path = APP_BASE['resources'] . 'js/') or mkdir($path, 0755, true);
   
-  if (!is_file($path = APP_PATH . APP_BASE['resources'] . 'js/requirejs/require.js') || ceil(abs((strtotime(date('Y-m-d')) - strtotime(date('Y-m-d', strtotime('+5 days', filemtime($path))))) / 86400)) <= 0) {
-    !is_dir($path = APP_PATH . APP_BASE['resources'] . 'js/requirejs') or @mkdir($path, 0755, true);
+  if (!is_file($path = APP_BASE['resources'] . 'js/requirejs/require.js') || ceil(abs((strtotime(date('Y-m-d')) - strtotime(date('Y-m-d', strtotime('+5 days', filemtime($path))))) / 86400)) <= 0) {
+    !is_dir($path = APP_BASE['resources'] . 'js/requirejs') or @mkdir($path, 0755, true);
     !is_dir($path) and $errors['JS-REQUIREJS'] = "JS-REQUIREJS - Failed to create directory: $path";
     $url = 'https://requirejs.org/docs/release/2.3.6/minified/require.js';
     $handle = curl_init($url);
@@ -1183,7 +1183,6 @@ $(document).ready(function() {
   }
 
   if (!is_file($path)) { ?>
-
     <script src="<?= APP_BASE['resources']; ?>js/requirejs/require.js" type="text/javascript" charset="utf-8"></script>
 
     <script>
@@ -1260,7 +1259,7 @@ $(document).ready(function() {
       });
     </script>
     <?php
-  } elseif (is_dir($path = APP_PATH . APP_BASE['resources'] . 'js/ace')) { ?>
+  } elseif (is_dir($path = APP_BASE['resources'] . 'js/ace')) { ?>
 
     <script src="resources/js/ace/src/ace.js" type="text/javascript" charset="utf-8"></script>
     <script src="resources/js/ace/src/ext-language_tools.js" type="text/javascript" charset="utf-8"></script>
@@ -1364,8 +1363,8 @@ $(document).ready(function() {
     <?php
   }
   unset($path);
-  if (!is_file($path = APP_PATH . APP_BASE['resources'] . 'js/jquery-ui-touch-punch/jquery.ui.touch-punch.min.js') || ceil(abs((strtotime(date('Y-m-d')) - strtotime(date('Y-m-d', strtotime('+5 days', filemtime($path))))) / 86400)) <= 0) {
-    !is_dir($path = APP_PATH . APP_BASE['resources'] . 'js/jquery-ui-touch-punch') or @mkdir($path, 0755, true); ?>
+  if (!is_file($path = APP_BASE['resources'] . 'js/jquery-ui-touch-punch/jquery.ui.touch-punch.min.js') || ceil(abs((strtotime(date('Y-m-d')) - strtotime(date('Y-m-d', strtotime('+5 days', filemtime($path))))) / 86400)) <= 0) {
+    !is_dir($path = APP_BASE['resources'] . 'js/jquery-ui-touch-punch') or @mkdir($path, 0755, true); ?>
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jqueryui-touch-punch/0.2.3/jquery.ui.touch-punch.min.js"></script>
 

@@ -1,21 +1,43 @@
+# -----------------------------
+# Secrets & environment
+# -----------------------------
 /.ssh
-/applications
-/bin
-/clientele
-!/config
-/dist
-/data
+/.composer              # anchor: only root-level .composer
+.env*                   # any .env files anywhere
+/.htaccess              # anchor: root .htaccess only
+/config/composer.auth.json
+/auth.json              # consider anchoring to root if you only keep one: /auth.json
+
+# -----------------------------
+# Dependencies / package managers
+# -----------------------------
+/vendor
 /node_modules
-!/public
-/public/example.php
-/public/example*.php
-/project?/*
-!/project?/index.php
+# Composer installers & phars (optional to anchor)
+/composer.phar
+/composer-setup.php
+
+# Lockfiles (decide policy)
+# - Keep ignored for flexible installs, OR
+# - REMOVE this line to commit composer.lock for reproducible builds
+composer.lock
+
+# Node lockfile is commonly ignored
+package-lock.json
+
+# -----------------------------
+# Build / generated artefacts
+# -----------------------------
+/dist
+# If these are build outputs (not source), keep ignored:
 /resources/js
 /resources/reels
 /resources/project
-/tests
-/vendor
+
+# -----------------------------
+# App data / runtime caches
+# -----------------------------
+/data
 /var/*.html
 /var/*.php
 /var/*.json
@@ -26,21 +48,43 @@
 !/var/packages/psr-log.php
 /var/weekly-timesheet-????-??.json
 !/var/weekly-timesheet-sample.json
+
+# -----------------------------
+# Logs & PIDs
+# -----------------------------
+/error_log
+/server.log
+/server.pid
+
+# -----------------------------
+# Project scaffolding / examples
+# -----------------------------
+/public/example.php
+/public/example*.php
+# Project slots like project0/, project1/
+# Keep only their index.php tracked
+/project?/*
+!/project?/index.php
+
+# -----------------------------
+# Big trees you don’t want in Git
+# -----------------------------
+/applications
+/bin
+/clients
+
+# -----------------------------
+# Tests (opt-in)
+# If you want tests versioned, remove the next line
+# -----------------------------
+/tests
+
+# -----------------------------
+# Misc
+# -----------------------------
 /tasks.txt
-.composer
-.env*
-.htaccess
-*.old
-auth.json
-composer.lock
-composer.phar
-composer-setup.php
-error_log
-main.js
+/main.js               # anchor if you mean only the root one
 notes*.txt
-package-lock.json
-server.log
-server.pid
-!server.php
-settings.json
+*.old
+settings.json          # ignore if personal/runtime; remove if it should be versioned
 *.config.js

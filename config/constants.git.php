@@ -237,15 +237,15 @@ if (is_file($file = APP_PATH . APP_ROOT . '.env') && date('Y-m-d', filemtime($fi
 }
 
 // file has to exists first
-is_dir(APP_PATH . APP_BASE['var']) or mkdir(APP_PATH . APP_BASE['var'], 0755);
-if (is_file(APP_PATH . APP_BASE['var'] . 'git-scm.com.html')) {
-    if (ceil(abs((strtotime(date('Y-m-d')) - strtotime(date('Y-m-d', strtotime('+5 days', filemtime(APP_PATH . APP_BASE['var'] . 'git-scm.com.html'))))) / 86400)) <= 0) {
+is_dir(APP_BASE['var']) or mkdir(APP_BASE['var'], 0755);
+if (is_file(APP_BASE['var'] . 'git-scm.com.html')) {
+    if (ceil(abs((strtotime(date('Y-m-d')) - strtotime(date('Y-m-d', strtotime('+5 days', filemtime(APP_BASE['var'] . 'git-scm.com.html'))))) / 86400)) <= 0) {
         $url = 'https://git-scm.com/downloads';
         $handle = curl_init($url);
         curl_setopt($handle, CURLOPT_RETURNTRANSFER, true);
 
         if (!empty($html = curl_exec($handle))) {
-            file_put_contents(APP_PATH . APP_BASE['var'] . 'git-scm.com.html', $html) or $errors['GIT_LATEST'] = "$url returned empty.";
+            file_put_contents(APP_BASE['var'] . 'git-scm.com.html', $html) or $errors['GIT_LATEST'] = "$url returned empty.";
         }
     }
 } else {
@@ -254,13 +254,13 @@ if (is_file(APP_PATH . APP_BASE['var'] . 'git-scm.com.html')) {
     curl_setopt($handle, CURLOPT_RETURNTRANSFER, true);
 
     if (!empty($html = curl_exec($handle))) {
-        file_put_contents(APP_PATH . APP_BASE['var'] . 'git-scm.com.html', $html) or $errors['GIT_LATEST'] = "$url returned empty.";
+        file_put_contents(APP_BASE['var'] . 'git-scm.com.html', $html) or $errors['GIT_LATEST'] = "$url returned empty.";
     }
 }
 
 libxml_use_internal_errors(true); // Prevent HTML errors from displaying
 $doc = new DOMDocument(1.0, 'utf-8');
-$doc->loadHTML(file_get_contents(APP_PATH . APP_BASE['var'] . 'git-scm.com.html'));
+$doc->loadHTML(file_get_contents(APP_BASE['var'] . 'git-scm.com.html'));
 
 $content_node = $doc->getElementById("main");
 

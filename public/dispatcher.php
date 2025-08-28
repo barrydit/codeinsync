@@ -92,7 +92,7 @@ if (is_string($cmd) && $cmd !== '') {
 if ($app && ($feat = feature_from_app($app)) && isset($apiRoutes[$feat])) {
     load_feature_constants($feat);
     require $apiRoutes[$feat];
-    exit;
+    //exit;
 }
 
 // 3) UI app route (JSON payload expected from app/*.php)

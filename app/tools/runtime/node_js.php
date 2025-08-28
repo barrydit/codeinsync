@@ -10,7 +10,7 @@ if (__FILE__ == get_required_files()[0])
   else
     die(var_dump("$path path was not found. file=$path"));
 
-if (is_file($path = APP_PATH . APP_BASE['config'] . 'constants.npm.php'))
+if (is_file($path = APP_BASE['config'] . 'constants.npm.php'))
   require_once $path;
 
 ob_start(); ?>
@@ -324,7 +324,7 @@ ob_start(); ?>
     <?php
     // (APP_IS_ONLINE && check_http_status('https://cdn.tailwindcss.com') ? 'https://cdn.tailwindcss.com' : APP_URL . 'resources/js/tailwindcss-3.3.5.js')?
   
-    $path = APP_PATH . APP_BASE['resources'] . 'js/';
+    $path = APP_BASE['resources'] . 'js/';
     $filename = 'tailwindcss-3.3.5.js';
     $filePath = "{$path}{$filename}";
     $url = 'https://cdn.tailwindcss.com';

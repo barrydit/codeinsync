@@ -107,7 +107,7 @@ class ClientHandler
             //$input = trim($input);
             $output = '';
 
-            $file = APP_PATH . APP_BASE['data'] . 'source_code.json';
+            $file = APP_BASE['data'] . 'source_code.json';
 
             // Retrieve file metadata using stat()
             $fileStats = stat($file);
@@ -224,7 +224,7 @@ class ClientHandler
                     $envContents
                 );
 
-                file_put_contents(APP_PATH . APP_BASE['data'] . 'source_code.json', $sanitizedContents, LOCK_EX);
+                file_put_contents(APP_BASE['data'] . 'source_code.json', $sanitizedContents, LOCK_EX);
 
                 signalHandler(SIGTERM);
                 // Update the file's modification time if necessary (or other actions)
@@ -269,7 +269,7 @@ class ClientHandler
         } elseif (preg_match('/^cmd:\s*git\s*(.*)(?=\r?\n$)?/si', $input, $gitMatches)) {
             //$output = shell_exec($matches[1]);
 
-            require_once APP_PATH . APP_BASE['config'] . 'git.php';
+            require_once APP_BASE['config'] . 'git.php';
 
             $parsedUrl = parse_url($_ENV['GIT']['ORIGIN_URL']);
 

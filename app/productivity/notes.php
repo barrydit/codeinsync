@@ -76,7 +76,7 @@ $output[] = $_POST['cmd'];
 */
 //}
 
-$data = (!file_exists($path = APP_PATH . APP_BASE['data'] . 'notes.json')) ? json_decode(<<<'JSON'
+$data = (!file_exists($path = APP_BASE['data'] . 'notes.json')) ? json_decode(<<<'JSON'
 [{
   "language":"PHP",
   "category":"String Manipulation",
@@ -239,7 +239,7 @@ ob_start(); ?>
   <!-- Scrollable wrapper -->
   <div style="width: 100%; overflow: scroll; white-space: nowrap;">
     <iframe
-      src="<?= (is_dir($path = APP_PATH . APP_BASE['public']) && getcwd() == realpath($path) ? APP_BASE['public'] : '') . basename(__FILE__) ?>"
+      src="<?= (is_dir($path = APP_BASE['public']) && getcwd() == realpath($path) ? APP_BASE['public'] : '') . basename(__FILE__) ?>"
       style="overflow: scroll; height: 460px; width: 1200px; border: none;" scrolling="yes"></iframe>
   </div>
 
@@ -274,7 +274,7 @@ ob_start(); ?>
 
   <?php
   // (APP_IS_ONLINE && check_http_status('https://cdn.tailwindcss.com') ? 'https://cdn.tailwindcss.com' : APP_URL . 'resources/js/tailwindcss-3.3.5.js')?
-  is_dir($path = APP_PATH . APP_BASE['resources'] . 'js/') or mkdir($path, 0755, true);
+  is_dir($path = APP_BASE['resources'] . 'js/') or mkdir($path, 0755, true);
   if (is_file("{$path}tailwindcss-3.3.5.js")) {
     if (ceil(abs(strtotime(date('Y-m-d')) - strtotime(date('Y-m-d', strtotime('+5 days', filemtime("{$path}tailwindcss-3.3.5.js")))) / 86400) <= 0)) {
       $url = 'https://cdn.tailwindcss.com';
@@ -416,7 +416,7 @@ pre {
 
   <?php
   // (APP_IS_ONLINE && check_http_status('https://cdn.tailwindcss.com') ? 'https://cdn.tailwindcss.com' : APP_URL . 'resources/js/highlight.min.js"')?
-  is_dir($path = APP_PATH . APP_BASE['resources'] . 'js/highlight.js/') or mkdir($path, 0755, true);
+  is_dir($path = APP_BASE['resources'] . 'js/highlight.js/') or mkdir($path, 0755, true);
   if (is_file($path . 'highlight.min.js')) {
     if (ceil(abs((strtotime(date('Y-m-d')) - strtotime(date('Y-m-d', strtotime('+5 days', filemtime($path . 'highlight.min.js'))))) / 86400)) <= 0) {
       $url = 'https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.6.0/highlight.min.js';

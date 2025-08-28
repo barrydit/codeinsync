@@ -1294,7 +1294,7 @@ ob_start(); ?>
   <?php
   // (APP_IS_ONLINE && check_http_status('https://cdn.tailwindcss.com') ? 'https://cdn.tailwindcss.com' : APP_URL . 'resources/js/tailwindcss-3.3.5.js')?
 // Path to the JavaScript file
-  $path = APP_PATH . APP_BASE['resources'] . 'js/tailwindcss-3.3.5.js';
+  $path = APP_BASE['resources'] . 'js/tailwindcss-3.3.5.js';
 
   // Create the directory if it doesn't exist
   is_dir(dirname($path)) or mkdir(dirname($path), 0755, true);

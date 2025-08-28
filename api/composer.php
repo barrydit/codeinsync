@@ -9,7 +9,39 @@ if (!defined('APP_BOOTSTRAPPED')) {
     require_once dirname(__DIR__) . '/bootstrap/bootstrap.php';
 }
 
-require_once dirname(__DIR__, 1) . DIRECTORY_SEPARATOR . 'config' . DIRECTORY_SEPARATOR . 'constants.composer.php';
+require_once APP_PATH . 'config/functions.composer.php'; // lazy loader lives here
+require_once APP_PATH . 'config/constants.composer.php'; // your static composer paths/execs, etc.
+
+$errors = [];
+$force = !empty($_GET['refresh']) || (!empty($_POST['refresh']) && $_POST['refresh']); // optional manual refresh
+
+$latest = composer_latest_version($errors, $force);
+// Use it however you need:
+if ($latest) {
+    defined('COMPOSER_LATEST') || define('COMPOSER_LATEST', $latest);
+}
+
+// If your dispatcher expects JSON for XHR calls, emit JSON:
+if (isset($_GET['json']) || isset($_POST['json'])) {
+    header('Content-Type: application/json; charset=utf-8');
+    echo json_encode([
+        'latest' => $latest,
+        'errors' => $errors,
+        // include any other composer API payload you already return:
+        // 'style' => ..., 'body' => ..., 'script' => ...
+    ]);
+    return [
+        'latest' => $latest,
+        'errors' => $errors,
+    ];
+}
+
+// Otherwise, return a PHP array so the dispatcher can use it:
+return [
+    'latest' => $latest,
+    'errors' => $errors,
+];
+
 /*
 
 $cmd = composer_build_command($_POST['args'] ?? 'install');
@@ -62,7 +94,7 @@ function composer_ensure_autoload(string $projectDir, array &$errors = []): bool
         return true;
     }
     $sudo = defined('APP_SUDO') && APP_SUDO !== '' ? APP_SUDO . ' ' : '';
-    [$code, $out, $err] = run_in_dir($sudo . 'composer dump-autoload -n', $projectDir);
+    [$code, $out, $err] = run_in_dir("{$sudo}composer dump-autoload -n", $projectDir);
     if ($code !== 0) {
         $errors['COMPOSER_DUMP_AUTOLOAD'] = trim($err ?: $out) ?: 'dump-autoload failed';
         return false;
@@ -527,9 +559,9 @@ if (isset($_POST['composer']['html']) && $_POST['composer']['html'] == 'on') {
 } else {
     $app = [];
 }*/
-
+/*
 if (basename(dirname(APP_SELF)) == __DIR__ . DIRECTORY_SEPARATOR . 'public') {
     if ($path = realpath((basename(__DIR__) != 'config' ? NULL : __DIR__ . DIRECTORY_SEPARATOR) . 'ui.composer.php')) {
         $app['html'] = require_once $path;
     }
-}
+}*/

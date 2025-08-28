@@ -7,8 +7,8 @@
  * @version 1.0
  */
 $packagistUrl = 'https://packagist.org/';
-$cacheFile = APP_PATH . APP_BASE['var'] . 'packagist.org.html';
-$cacheDir = APP_PATH . APP_BASE['var'];
+$cacheFile = APP_BASE['var'] . 'packagist.org.html';
+$cacheDir = APP_BASE['var'];
 
 // Ensure cache directory exists
 if (!is_dir($cacheDir)) {
@@ -229,7 +229,7 @@ ob_end_clean();
 
 /*
 $dom = new DOMDocument(1.0, 'utf-8');
-$dom->loadHTML(file_get_contents(APP_PATH . APP_BASE['var'] . 'packagist.org.html'));
+$dom->loadHTML(file_get_contents(APP_BASE['var'] . 'packagist.org.html'));
 
 $divs = $dom->getElementsByTagName('head');
 
