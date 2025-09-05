@@ -86,11 +86,11 @@ if (isset($_GET['app']) && $_GET['app'] == 'visual/nodes' && isset($_GET['json']
     $requiredFiles = [
       //'server.php' => 'server.php',
       'public/index.php' => 'public/index.php',
-      'autoload.php' => 'autoload.php',
+      //'autoload.php' => 'autoload.php',
       //'config/php.php' => 'config/runtime/php.php',
       //'api/composer.php' => 'api' . DIRECTORY_SEPARATOR . 'composer.php',
       //'config/git.php' => 'config/git.php',
-      'public/idx.product.php' => 'public/idx.product.php',
+      //'public/idx.product.php' => 'public/idx.product.php',
     ];
     //dd($requiredFiles);
     // Prepare JSON data
@@ -399,7 +399,7 @@ ob_start(); ?>
 
     const simulation = d3.forceSimulation(nodes)
       .force("link", d3.forceLink(links).id(d => d.index).distance(100))
-      .force("charge", d3.forceManyBody().strength(-300))
+      .force("charge", d3.forceManyBody().strength(-50))
       .force("center", d3.forceCenter(width / 2, height / 2));
 
     const link = svg.append("g")

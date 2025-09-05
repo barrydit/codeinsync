@@ -42,14 +42,12 @@ $COMPOSER = json_decode($COMPOSER_JSON, true);
 define("COMPOSER_JSON_RAW", $COMPOSER_JSON);
 !defined('COMPOSER') && define("COMPOSER", ['json' => $composer_obj]); // ← This is what’s missing!
 
-//dd(get_required_files());
+// dd(get_required_files());
 /*
 <?php ob_start(); ?>
 <HTML ...>
 <?php $UI_APP['css'] = ob_get_contents(); ?>
 */
-
-// dd(get_required_files());
 
 ob_start(); ?>
 <?= $selector ?> {
@@ -225,15 +223,15 @@ ob_start(); ?>
         <select name="exec" onchange="this.form.submit();">
 
   <?php if (defined('COMPOSER_BIN')): ?>
-                  <option <?= COMPOSER_EXEC_CMD === COMPOSER_BIN ? 'selected' : '' ?>
-                      value="bin"><?= COMPOSER_BIN ?></option>
+                            <option <?= COMPOSER_EXEC_CMD === COMPOSER_BIN ? 'selected' : '' ?>
+                                value="bin"><?= COMPOSER_BIN ?></option>
     <?php endif; ?>
   
     <?php if (defined('COMPOSER_PHAR')): ?>
-                  <option <?= COMPOSER_EXEC_CMD === COMPOSER_PHAR['exec'] ? 'selected' : '' ?>
-                    value="phar">
-                    <?= COMPOSER_PHAR['exec'] ?>
-                  </option>
+                            <option <?= COMPOSER_EXEC_CMD === COMPOSER_PHAR['exec'] ? 'selected' : '' ?>
+                              value="phar">
+                              <?= COMPOSER_PHAR['exec'] ?>
+                            </option>
   <?php endif; ?>
 
         </select>

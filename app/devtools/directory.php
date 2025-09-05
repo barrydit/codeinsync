@@ -45,10 +45,10 @@ ob_start(); ?>
   #app_directory-container {
     position: absolute;
     height: auto;
-    /* width: auto; */
-    display: none;
-    left: 832px;
-    top: 96px;
+    width: 95%;
+    /* display: none; */
+    left: 15px;
+    top: 15px;
     /* z-index: 99; */
   }
 
@@ -76,7 +76,7 @@ ob_start(); ?>
     height: auto;
   }
 
-  <?php $app['style'] = ob_get_contents();
+  <?php $UI_APP['style'] = ob_get_contents();
   ob_end_clean();
   if (false) { ?>
   </style><?php }
@@ -1337,13 +1337,14 @@ left: calc(50% - 265px); /* 1207 / 2 */ /*transform: translate(-50%, -50%);*/ bo
 </div>
 <div id="app_directory-container" style="
     position: absolute;
-    display: <?= isset($_GET['debug']) || isset($_GET['project']) || isset($_GET['path']) ? 'block' : 'none'; ?>;
+    display: <?= isset($_GET['debug']) || isset($_GET['project']) || isset($_GET['path']) ? 'block' : 'block'; ?>;
     top: 10px;
     left: 0;
     right: 0;
     margin: 0 auto;
     background-color: rgba(255, 255, 255, 0.1);
     /*height: auto;*/
+    width: 100%;
     max-height: 80vh;
     overflow-y: auto;
     overflow-x: hidden;
@@ -1351,7 +1352,7 @@ left: calc(50% - 265px); /* 1207 / 2 */ /*transform: translate(-50%, -50%);*/ bo
   ">
   <?= $tableGen(); /*'';*/ ?>
 </div>
-<?php $app['body'] = ob_get_contents();
+<?php $UI_APP['body'] = ob_get_contents();
 ob_end_clean();
 
 ob_start(); ?>
@@ -1434,7 +1435,7 @@ if (e.key === 'ArrowRight' && idx < crumbs.length - 1) { crumbs[idx + 1].focus()
   });
   });
   <?php
-  $app['script'] = ob_get_contents();
+  $UI_APP['script'] = ob_get_contents();
   ob_end_clean();
 
   ob_start(); ?>
@@ -1477,26 +1478,26 @@ if (e.key === 'ArrowRight' && idx < crumbs.length - 1) { crumbs[idx + 1].focus()
       src="<?= defined('APP_IS_ONLINE') && APP_IS_ONLINE && check_http_status($url) ? substr($url, strpos($url, parse_url($url)['host']) + strlen(parse_url($url)['host'])) : substr($path, strpos($path, dirname(APP_BASE['resources'] . 'js'))) ?>"></script>
 
     <style type="text/tailwindcss">
-      <?= $app['style']; ?>
+      <?= $UI_APP['style']; ?>
   </style>
   </head>
 
   <body>
-    <?= $app['body']; ?>
+    <?= $UI_APP['body']; ?>
 
     <!-- https://cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.min.js -->
     <script src="//code.jquery.com/jquery-1.12.4.js"></script>
     <script src="//code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
     <!-- <script src="resources/js/jquery/jquery.min.js"></script> -->
     <script>
-      <?= $app['script']; ?>
+      <?= $UI_APP['script']; ?>
     </script>
   </body>
 
   </html>
-  <?php $app['html'] = ob_get_contents();
+  <?php $UI_APP['html'] = ob_get_contents();
   ob_end_clean();
 
   //check if file is included or accessed directly
   if (defined('APP_RUNNING') && isset($_GET['app']) && $_GET['app'] == 'directory' && APP_DEBUG)
-    exit($app['html']);
+    exit($UI_APP['html']);

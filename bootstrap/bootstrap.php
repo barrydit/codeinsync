@@ -167,7 +167,7 @@ file_exists(CONFIG_PATH . 'functions.php') && require_once CONFIG_PATH . 'functi
 
 function isShallowDispatcherCall(): bool
 {
-    return $_SERVER['SCRIPT_NAME'] === '/dispatcher.php'
+    return $_SERVER['SCRIPT_NAME'] === '/index.php'
         && $_SERVER['REQUEST_METHOD'] !== 'POST'
         && !isset($_GET['app'], $_POST['app'], $_POST['cmd']);
 }
