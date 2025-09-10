@@ -19,6 +19,7 @@ if ($handled === true)
 
 //dd($_GET);
 // dd(get_required_files());
+
 /*
 $trace = debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS, 1)[0];
 
@@ -216,12 +217,12 @@ unset($_SESSION['mode']); ?>
     }
 
     .app-container {
-      display: none;
+      /* display: none; */
       position: fixed;
-      width: 500px;
+      /* width: 500px;
       height: 400px;
       top: 100px;
-      left: 100px;
+      left: 100px; */
       z-index: 100;
       /* padding: 10px; 
       background: #fff;
@@ -375,7 +376,7 @@ unset($_SESSION['mode']); ?>
     </div>
   </div>
 
-  <div class="container">
+  <div id="container" class="container">
     <div class="developer-group" id="devGroup">
       <div class="sidebar" id="sidebar" style="border-right: 2px solid #999;">
         <p style="color: white; background-color: #0078D7;">Github: <a href="https://github.com/barrydit/codeinsync"
@@ -477,7 +478,7 @@ unset($_SESSION['mode']); ?>
     </div>
     <div class="bottom-panel" id="bottom-panel">Bottom Panel</div>
     <div class="free-space" id="free-space">
-      <div id="app_directory-container" class="app-container app-fixed" data-app="directory" data-draggable="false">
+      <div id="app_devtools_directory-container" class="app-fixed" data-draggable="false" data-app="devtools/directory">
       </div>
     </div>
     <div id="app_tools-container"
@@ -615,11 +616,12 @@ unset($_SESSION['mode']); ?>
         </div>
       </div>
     </div>
-    <div id="app_git-container" class="app-container">
+    <div id="app_tools_code_git-container" class="app-container" data-draggable="true" data-app="tools/code/git">
     </div>
-    <div id="app_nodes-container" class="app-container">
+    <div id="app_visual_nodes-container" class="app-container" data-drag-handle="true" data-app="visual/nodes">
     </div>
-    <div id="app_composer-container" class="app-container">
+    <div id="app_tools_registry_composer-container" class="app-container" data-draggable="true"
+      data-app="tools/registry/composer">
     </div>
   </div>
   <div class="client-view" id="clientView">
@@ -635,13 +637,13 @@ unset($_SESSION['mode']); ?>
 
 
   <script
-    src="<?= APP_IS_ONLINE && check_http_status('https://code.jquery.com/jquery-3.7.1.min.js') ? 'https://code.jquery.com/jquery-3.7.1.min.js' : APP_BASE_REL['resources'] . 'js/jquery/' . 'jquery-3.7.1.min.js' ?>"></script>
+    src="<?= APP_IS_ONLINE && check_http_status('https://code.jquery.com/jquery-3.7.1.min.js') ? 'https://code.jquery.com/jquery-3.7.1.min.js' : app_base('resources', null, 'rel') . 'js/jquery/' . 'jquery-3.7.1.min.js' ?>"></script>
 
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-easing/1.4.1/jquery.easing.min.js"></script>
   <!-- You need to include jQueryUI for the extended easing options. -->
   <!-- script src="//code.jquery.com/jquery-1.12.4.js"></script -->
   <?php
-  if (!is_file($path = APP_BASE_REL['resources'] . 'js/jquery-ui/' . 'jquery-ui-1.12.1.js') || ceil(abs((strtotime(date('Y-m-d')) - strtotime(date('Y-m-d', strtotime('+5 days', filemtime($path))))) / 86400)) <= 0) {
+  if (!is_file($path = app_base('resources', null, 'rel') . 'js/jquery-ui/' . 'jquery-ui-1.12.1.js') || ceil(abs((strtotime(date('Y-m-d')) - strtotime(date('Y-m-d', strtotime('+5 days', filemtime($path))))) / 86400)) <= 0) {
     if (!realpath($pathdir = dirname($path)))
       if (!mkdir($pathdir, 0755, true))
         $errors['DOCS'] = "$pathdir does not exist";
@@ -655,54 +657,168 @@ unset($_SESSION['mode']); ?>
   } ?>
 
   <script
-    src="<?= APP_IS_ONLINE && check_http_status('https://code.jquery.com/ui/1.12.1/jquery-ui.min.js') ? 'https://code.jquery.com/ui/1.12.1/jquery-ui.min.js' : APP_BASE_REL['resources'] . 'js/jquery-ui/' . 'jquery-ui-1.12.1.js' ?>"></script>
+    src="<?= APP_IS_ONLINE && check_http_status('https://code.jquery.com/ui/1.12.1/jquery-ui.min.js') ? 'https://code.jquery.com/ui/1.12.1/jquery-ui.min.js' : app_base('resources', null, 'rel') . 'js/jquery-ui/' . 'jquery-ui-1.12.1.js' ?>"></script>
 
 
   <script>
-    let isDragging = false, activeWindow = null;
+    /*
+      document.querySelectorAll('[data-draggable]').forEach(el => {
+        const id = el.id;
+        const hasHandle = !!el.querySelector('[data-drag-handle]');
+        makeDraggable(id, { handle: hasHandle ? '[data-drag-handle]' : undefined });
+      });*/
+    // Global drag state
+    //const Drag = { zTop: 1000, active: null };
 
-    function makeDraggable(windowId) {
-      const windowElement = document.getElementById(windowId);
-      if (!windowElement) {
-        console.warn("Window not found:", windowId);
-        return;
-      }
-
-      const headerElement = windowElement.querySelector(".ui-widget-header") || windowElement;
-      if (!headerElement) {
-        console.warn("Header not found inside:", windowId);
-        return;
-      }
-
-      console.log("Draggable initialized for", windowId, "using", headerElement);
-
-      let offsetX, offsetY;
-
-      headerElement.addEventListener("mousedown", (event) => {
-        document.body.appendChild(windowElement); // bring to front
-        offsetX = event.clientX - windowElement.getBoundingClientRect().left;
-        offsetY = event.clientY - windowElement.getBoundingClientRect().top;
-        isDragging = true;
-        activeWindow = windowElement;
-      });
-
-      document.addEventListener("mousemove", (event) => {
-        if (isDragging && activeWindow === windowElement) {
-          const left = event.clientX - offsetX;
-          const top = event.clientY - offsetY;
-
-          windowElement.style.position = "absolute";
-          windowElement.style.left = `${left}px`;
-          windowElement.style.top = `${top}px`;
-        }
-      });
-
-      document.addEventListener("mouseup", () => {
-        isDragging = false;
-        activeWindow = null;
-      });
+    function handleClick(event, path) {
+      return null;
     }
 
+    const Stack = { zTop: null, active: null };
+
+    function initZTop() {
+      if (Stack.zTop != null) return;
+      // Start above anything else on the page
+      const zs = Array.from(document.querySelectorAll('.app-container'))
+        .map(el => parseInt(getComputedStyle(el).zIndex || '0', 10) || 0);
+      Stack.zTop = Math.max(1000, ...zs);
+    }
+
+    function bringToFront(winEl) {
+      initZTop();
+      if (Stack.active && Stack.active !== winEl) {
+        Stack.active.classList.remove('is-active');
+      }
+      winEl.style.zIndex = ++Stack.zTop;
+      winEl.classList.add('is-active');
+      Stack.active = winEl;
+    }
+
+    function destroyDraggable(windowId) {
+      const el = document.getElementById(windowId);
+      if (!el || !el._drag) return;
+
+      const { handle, onDown, onMove, onUp } = el._drag;
+
+      handle.removeEventListener('pointerdown', onDown);
+      document.removeEventListener('pointermove', onMove);
+      document.removeEventListener('pointerup', onUp);
+      document.removeEventListener('pointercancel', onUp);
+
+      // Clean flags
+      handle.style.touchAction = '';
+      handle.style.cursor = '';
+      el._drag = null;
+    }
+
+    function makeDraggable(windowId, opts = {}) {
+      const el = document.getElementById(windowId);
+      if (!el) return console.warn('makeDraggable: not found', windowId);
+
+      // Re-init safe: remove previous listeners if any
+      if (el._drag) destroyDraggable(windowId);
+
+      const selector = opts.handle || '[data-drag-handle], .window-header';
+      const handle = el.matches(selector) ? el : el.querySelector(selector) || el;
+
+      // Visual/UX hints on the handle
+      handle.style.touchAction = 'none';   // prevent touch scrolling while dragging
+      handle.style.cursor = 'move';
+
+      // Ensure positioned
+      const style = getComputedStyle(el);
+      if (style.position === 'static') el.style.position = 'absolute';
+
+      // Track drag offsets
+      let dragging = false, offsetX = 0, offsetY = 0;
+
+      // Constrain helper (viewport or parent)
+      function clampPosition(left, top) {
+        if (opts.constrain === 'parent') {
+          const p = el.parentElement.getBoundingClientRect();
+          const r = el.getBoundingClientRect();
+          left = Math.min(Math.max(left, p.left), p.right - r.width);
+          top = Math.min(Math.max(top, p.top), p.bottom - r.height);
+        } else if (opts.constrain === 'viewport') {
+          const r = el.getBoundingClientRect();
+          left = Math.min(Math.max(left, 0), window.innerWidth - r.width);
+          top = Math.min(Math.max(top, 0), window.innerHeight - r.height);
+        }
+        return { left, top };
+      }
+
+      const onMove = (e) => {
+        if (!dragging) return;
+        const { clientX, clientY } = e;
+        let left = clientX - offsetX;
+        let top = clientY - offsetY;
+        ({ left, top } = clampPosition(left, top));
+        el.style.left = `${left}px`;
+        el.style.top = `${top}px`;
+      };
+
+      const onUp = () => {
+        dragging = false;
+        // Optional: drop active state here if you prefer
+        // el.classList.remove('is-active');
+        document.body.style.userSelect = '';
+      };
+
+      const onDown = (e) => {
+        // Bring to front + focus
+        bringToFront(el);
+
+        const rect = el.getBoundingClientRect();
+        offsetX = e.clientX - rect.left;
+        offsetY = e.clientY - rect.top;
+
+        dragging = true;
+        document.body.style.userSelect = 'none';
+
+        // Capture pointer so we keep receiving move/up even if it leaves the handle
+        if (handle.setPointerCapture) {
+          try { handle.setPointerCapture(e.pointerId); } catch { }
+        }
+
+        // Initialize position if not yet set
+        if (!el.style.left) el.style.left = rect.left + 'px';
+        if (!el.style.top) el.style.top = rect.top + 'px';
+      };
+
+      // Attach listeners
+      handle.addEventListener('pointerdown', onDown);
+      document.addEventListener('pointermove', onMove);
+      document.addEventListener('pointerup', onUp);
+      document.addEventListener('pointercancel', onUp);
+
+      // stash handlers for clean destroy/reinit
+      el._drag = { handle, onDown, onMove, onUp };
+
+      // Optional: start with a sane z-index and clickable focus
+      el.addEventListener('mousedown', () => bringToFront(el));
+    }
+
+    function installWindowFocus(rootSelector = '#container') {
+      const root = document.querySelector(rootSelector);
+      if (!root || root._focusInstalled) return;
+      root._focusInstalled = true;
+
+      root.addEventListener('pointerdown', (e) => {
+        // Click on a drag handle OR header OR the window itself
+        const handle = e.target.closest('[data-drag-handle], .window-header, .app-container');
+        if (!handle) return;
+
+        // Find the owning window/container
+        const win = handle.closest('.app-container, [data-app-window]');
+        if (!win) return;
+
+        bringToFront(win);
+      }, { capture: true }); // capture makes it run before inner handlers
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+      installWindowFocus('#container');
+    });
 
     function makeDraggable2(el) {
       const header = el.querySelector('.window-header');
@@ -734,7 +850,7 @@ unset($_SESSION['mode']); ?>
     const devGroup = document.getElementById('devGroup');
     const clientView = document.getElementById('clientView');
     const appGit = document.getElementById('app_git-container');
-    const appNodes = document.getElementById('app_nodes-container');
+    const appNodes = document.getElementById('app_visual_nodes-container');
 
     const sessionIsDev = <?php echo ($isDev === 'developer') ? 'true' : 'false'; ?>;
 
@@ -789,123 +905,174 @@ unset($_SESSION['mode']); ?>
       freeSpace.classList.remove('exit-free');
     }
 
-    function openApp(appPath) {
-      // Extract slug (last segment of path, safe for DOM IDs)
-      const slug = appPath.split('/').pop();
+    const APP_ROOT_SELECTOR = '#container';               // parent for app windows
+    const NON_DRAGGABLE = new Set(['app_directory']);     // add any slugs you want non-draggable
 
-      console.log(`Opening app: ${appPath} with slug: ${slug}`);
-
-      fetch("?app=" + encodeURIComponent(appPath))
-        .then(r => r.json())
-        .then(data => {
-          if (data.error) {
-            console.error(`Failed to load app ${slug}:`, data.error);
-            return;
-          }
-
-          // Inject CSS once
-          if (data.style && !document.querySelector(`[data-app-style="${appPath}"]`)) {
-            const styleEl = document.createElement("style");
-            styleEl.id = `style-${slug}`;
-            styleEl.type = "text/css";
-            styleEl.dataset.appStyle = appPath;
-            styleEl.textContent = data.style;
-            document.head.appendChild(styleEl);
-          }
-
-          // Insert body into app container
-          const targetId = `app_${slug}-container`;
-          let target = document.getElementById(targetId);
-
-          if (!target) {
-            target = document.createElement("div");
-            target.id = targetId;
-            target.className = "app-container";
-            document.getElementById("container").appendChild(target);
-          }
-
-          // Always make visible when opened
-          target.style.display = "block";
-
-          if (data.body) {
-            target.innerHTML = data.body;
-          }
-
-          // Inject script once
-          if (data.script && !document.querySelector(`[data-app-script="${appPath}"]`)) {
-            const scriptEl = document.createElement("script");
-            scriptEl.id = `script-${slug}`;
-            scriptEl.type = "module";
-            scriptEl.dataset.appScript = appPath;
-            scriptEl.textContent = data.script;
-            document.body.appendChild(scriptEl);
-          }
-
-          // Generic draggable support
-          makeDraggable(targetId);
-
-          function loadScript(src) {
-            return new Promise((resolve, reject) => {
-              const script = document.createElement('script');
-              script.src = src;
-              script.onload = resolve;
-              script.onerror = reject;
-              document.head.appendChild(script);
-            });
-          }
-
-          if (slug === "nodes") {
-            Promise.all([
-              loadScript("?app=visual/nodes&script"), // load script first
-              fetch("?app=visual/nodes&json").then(r => r.json()) // then fetch data
-            ])
-              .then(([_, data]) => {
-                if (typeof createVisualization === 'function') {
-                  createVisualization(data);
-                } else {
-                  console.error("createVisualization is not defined");
-                }
-              })
-              .catch(err => console.error("Visualization load failed:", err));
-          }
-          /*
-                    // App-specific hooks
-                    if (slug === "nodes") {
-                      fetch("dispatcher.php?app=visual/nodes&json")
-                        .then(response => response.json())
-                        .then(data => createVisualization(data))
-                        .catch(err => console.error("Visualization load failed:", err));
-                    }
-          */
-          console.log(`App ${slug} loaded successfully.`);
-        })
-        .catch(err => {
-          console.error("Dispatcher fetch error:", err);
-          const errorTarget = document.getElementById(`app_${slug}-container`);
-          if (errorTarget) {
-            errorTarget.style.display = "block";
-            errorTarget.textContent = "Error loading app.";
-          }
-        });
-
+    function sanitizeSlug(appPath) {
+      return appPath.replace(/[^\w-]+/g, '_');            // tools/registry/composer -> tools_registry_composer
     }
 
-    function closeApp(appPath) {
-      const slug = appPath.split('/').pop();
+    function shouldBeDraggable(appPath) {
+      const slug = sanitizeSlug(appPath);
+      return !NON_DRAGGABLE.has(slug);
+    }
 
-      document.getElementById(`style-${slug}`)?.remove();
-      document.getElementById(`script-${slug}`)?.remove();
-
-      const container = document.getElementById(`app_${slug}-container`);
-      if (container) {
-        container.innerHTML = "";
-        container.style.display = "none";
+    function ensureContainer(id, unhide = false, rootSelector = APP_ROOT_SELECTOR) {
+      const root = document.querySelector(rootSelector);
+      if (!root) throw new Error(`Root not found: ${rootSelector}`);
+      let el = document.getElementById(id);
+      if (!el) {
+        el = document.createElement('div');
+        el.id = id;
+        el.className = 'app-container';
+        // optional: persistent header/handle so drag survives body refreshes
+        el.innerHTML = `<div class="window-header" data-drag-handle>
+                      <span class="title"></span>
+                      <button class="close" type="button" aria-label="Close">×</button>
+                    </div>
+                    <div class="window-body"></div>`;
+        root.appendChild(el);
+        el.querySelector('.close')?.addEventListener('click', () => closeApp(el.dataset.appPath || ''));
       }
+      if (unhide) {
+        el.style.removeProperty('display');
+        el.removeAttribute('hidden');
+        el.removeAttribute('aria-hidden');
+      }
+      return el;
+    }
+
+    function applyUIChrome(el) {
+      if (!window.jQuery) return; // skip if jQuery UI isn't in play
+      const $el = jQuery(el);
+      $el.addClass('ui-widget ui-widget-content');
+      $el.find('[data-drag-handle]')
+        .addClass('ui-widget-header ui-draggable-handle');
+    }
+
+    function reinitDraggable(containerId, enable = true) {
+      const el = document.getElementById(containerId);
+      if (!el) return;
+
+      if (window.jQuery) {
+        const $el = jQuery(el);
+        if ($el.data('uiDraggable')) {
+          try { $el.draggable('destroy'); } catch { }
+        }
+        if (enable) {
+          applyUIChrome(el); // add ui-* classes alongside your window-*
+          try {
+            $el.draggable({
+              handle: '[data-drag-handle]',
+              containment: 'body'
+            });
+          } catch { }
+        }
+      } else {
+        // your non-jQuery fallback
+        try {
+          if (el.dataset.draggableInit === '1' && typeof window.destroyDraggable === 'function') {
+            window.destroyDraggable(containerId);
+          }
+          if (enable) {
+            makeDraggable(containerId);
+            el.dataset.draggableInit = '1';
+          }
+        } catch { }
+      }
+    }
+
+    function removeAppAssets(appPath) {
+      document.querySelector(`[data-app-style="${appPath}"]`)?.remove();
+      document.querySelector(`[data-app-script="${appPath}"]`)?.remove();
+    }
+
+    function closeApp(appPath, { fullReset = false } = {}) {
+      const slug = sanitizeSlug(appPath);
+      const id = `app_${slug}-container`;
+      const el = document.getElementById(id);
+
+      if (!el) return;
+
+      // Either hide (fast) or remove (forces full rebuild next open)
+      if (fullReset) {
+        reinitDraggable(id, false);  // destroy
+        el.remove();
+        removeAppAssets(appPath);    // so style/script re-inject fresh next time
+      } else {
+        el.hidden = true;
+        el.setAttribute('aria-hidden', 'true');
+      }
+    }
+
+    function openApp(appPath) {
+      const slug = sanitizeSlug(appPath);
+      const containerId = `app_${slug}-container`;
+      const styleId = `style-${slug}`;
+      const scriptId = `script-${slug}`;
+
+      // Always fetch fresh JSON (no caching)
+      fetch(`?app=${encodeURIComponent(appPath)}`, {
+        headers: { Accept: 'application/json' },
+        cache: 'no-store'
+      })
+        .then(r => {
+          const ct = r.headers.get('content-type') || '';
+          if (!r.ok) throw new Error(`HTTP ${r.status}`);
+          if (!ct.includes('application/json')) throw new Error('Dispatcher did not return JSON');
+          return r.json();
+        })
+        .then(data => {
+          if (data?.error) throw new Error(data.error);
+
+          // Ensure container & metadata
+          const target = ensureContainer(containerId, true);
+          target.dataset.appPath = appPath;
+          target.querySelector('.title')?.replaceChildren(document.createTextNode(slug));
+
+          // Style: update if changed, or create once
+          if (data.style) {
+            let styleEl = document.querySelector(`[data-app-style="${appPath}"]`);
+            if (!styleEl) {
+              styleEl = document.createElement('style');
+              styleEl.id = styleId;
+              styleEl.type = 'text/css';
+              styleEl.dataset.appStyle = appPath;
+              document.head.appendChild(styleEl);
+            }
+            if (styleEl.textContent !== data.style) styleEl.textContent = data.style;
+          }
+
+          // Body: only replace the body region so header/handle persists
+          const body = target.querySelector('.window-body') || target;
+          body.replaceChildren();
+          if (data.body) body.insertAdjacentHTML('afterbegin', data.body);
+
+          // Script: remove previous then inject new (ensures re-exec each open)
+          document.querySelector(`[data-app-script="${appPath}"]`)?.remove();
+          if (data.script) {
+            const inlineModule = document.createElement('script');
+            inlineModule.id = scriptId;
+            inlineModule.type = 'module';
+            inlineModule.dataset.appScript = appPath;
+            inlineModule.textContent = data.script;
+            document.body.appendChild(inlineModule);
+          }
+
+          // Draggable: destroy+re-init every time (unless disallowed)
+          reinitDraggable(containerId, shouldBeDraggable(appPath));
+        })
+        .catch(err => {
+          console.error('openApp error:', err);
+          const target = ensureContainer(containerId, true);
+          (target.querySelector('.window-body') || target).textContent = 'Error loading app.';
+          reinitDraggable(containerId, shouldBeDraggable(appPath));
+        });
     }
 
     document.addEventListener("DOMContentLoaded", () => {
       //makeDraggable('app_git-container');
-      //makeDraggable('app_nodes-container');
+      //makeDraggable('app_visual_nodes-container');
       //makeDraggable('app_composer-container');
 
       <?php
@@ -916,6 +1083,7 @@ unset($_SESSION['mode']); ?>
       <?php else: ?>
         // No app specified
         openApp('visual/nodes');
+        console.log('No app specified in URL, opened default "visual/nodes".');
       <?php endif; ?>
 
       openApp('devtools/directory');

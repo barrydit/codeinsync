@@ -14,7 +14,7 @@ function composer_latest_version(?array &$errors = null, bool $forceRefresh = fa
     $errors ??= [];
 
     // 1) Ensure var/ exists
-    $varDir = APP_BASE['var'] ?? 'var/';
+    $varDir = app_base('var', null, 'rel') ?? 'var/';
     if (!is_dir($varDir) && !@mkdir($varDir, 0755, true)) {
         $errors['COMPOSER_LATEST'][] = "Failed to create var directory: {$varDir}";
         return null;

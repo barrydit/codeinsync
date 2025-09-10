@@ -96,7 +96,7 @@ foreach ($executables as $bin) {
 }
 
 // Ensure var directory exists
-$varDir = APP_BASE['var'];
+$varDir = app_base('var');
 
 if (!is_dir($varDir)) {
     mkdir($varDir, 0755, true);

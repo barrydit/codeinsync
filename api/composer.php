@@ -37,10 +37,10 @@ if (isset($_GET['json']) || isset($_POST['json'])) {
 }
 
 // Otherwise, return a PHP array so the dispatcher can use it:
-return [
-    'latest' => $latest,
-    'errors' => $errors,
-];
+//return [
+//    'latest' => $latest,
+//    'errors' => $errors,
+//];
 
 /*
 
@@ -219,13 +219,14 @@ if (($_SERVER['REQUEST_METHOD'] ?? '') === 'POST') {
 
     // 1) Toggle autoload (kept as-is, with safer redirect)
     if (isset($_POST['composer']['autoload'])) {
-        $_ENV['COMPOSER']['AUTOLOAD'] = ($_POST['composer']['autoload'] === 'on');
+        $_ENV['COMPOSER']['AUTOLOAD'] = $_POST['composer']['autoload'] === 'on';
+
         if (class_exists('Shutdown')) {
             Shutdown::setEnabled(false)
-                ->setShutdownMessage(fn() => header('Location: ' . (APP_URL_BASE ?? (APP_URL ?? '/')) . strtok($_SERVER['REQUEST_URI'] ?? '', '?')))
+                ->setShutdownMessage(fn() => header('Location: ' . (APP_URL ?? '/') . '?' . http_build_query(['app' => 'tools/registry/composer']))) // strtok($_SERVER['REQUEST_URI'] ?? '', '?')
                 ->shutdown();
         } else {
-            header('Location: ' . (APP_URL_BASE ?? (APP_URL ?? '/')));
+            header('Location: ' . (APP_URL ?? '/')); // APP_URL_BASE === Array[]
             exit;
         }
     }

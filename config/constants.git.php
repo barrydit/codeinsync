@@ -136,7 +136,7 @@ function git_origin_sha_update()
         if (!empty($_GET['client']) || !empty($_GET['domain'])) {
             $latest_remote_commit_url = 'https://api.github.com/repos/' . $_ENV['GITHUB']['USERNAME'] . '/' . ($_GET['domain'] ?? $_ENV['DEFAULT_DOMAIN']) . '/git/refs/heads/main'; // commits/main
         } elseif (!empty($_GET['project'])) {
-            $path = APP_BASE['projects'] . $_GET['project'] . DIRECTORY_SEPARATOR;
+            $path = app_base('projects', null, 'rel') . $_GET['project'] . DIRECTORY_SEPARATOR;
             if (is_dir(APP_PATH . $path)) {
                 //define('APP_PROJECT', new clientOrProj($path));
                 $latest_remote_commit_url = 'https://api.github.com/repos/' . $_ENV['GITHUB']['USERNAME'] . '/' . $_GET['project'] . '/git/refs/heads/main';
@@ -237,15 +237,15 @@ if (is_file($file = APP_PATH . APP_ROOT . '.env') && date('Y-m-d', filemtime($fi
 }
 
 // file has to exists first
-is_dir(APP_BASE['var']) or mkdir(APP_BASE['var'], 0755);
-if (is_file(APP_BASE['var'] . 'git-scm.com.html')) {
-    if (ceil(abs((strtotime(date('Y-m-d')) - strtotime(date('Y-m-d', strtotime('+5 days', filemtime(APP_BASE['var'] . 'git-scm.com.html'))))) / 86400)) <= 0) {
+is_dir($path = app_base('var', null, 'abs') ) or mkdir($path, 0755);
+if (is_file($path . 'git-scm.com.html')) {
+    if (ceil(abs((strtotime(date('Y-m-d')) - strtotime(date('Y-m-d', strtotime('+5 days', filemtime($path . 'git-scm.com.html'))))) / 86400)) <= 0) {
         $url = 'https://git-scm.com/downloads';
         $handle = curl_init($url);
         curl_setopt($handle, CURLOPT_RETURNTRANSFER, true);
 
         if (!empty($html = curl_exec($handle))) {
-            file_put_contents(APP_BASE['var'] . 'git-scm.com.html', $html) or $errors['GIT_LATEST'] = "$url returned empty.";
+            file_put_contents($path . 'git-scm.com.html', $html) or $errors['GIT_LATEST'] = "$url returned empty.";
         }
     }
 } else {
@@ -254,13 +254,13 @@ if (is_file(APP_BASE['var'] . 'git-scm.com.html')) {
     curl_setopt($handle, CURLOPT_RETURNTRANSFER, true);
 
     if (!empty($html = curl_exec($handle))) {
-        file_put_contents(APP_BASE['var'] . 'git-scm.com.html', $html) or $errors['GIT_LATEST'] = "$url returned empty.";
+        file_put_contents($path . 'git-scm.com.html', $html) or $errors['GIT_LATEST'] = "$url returned empty.";
     }
 }
 
 libxml_use_internal_errors(true); // Prevent HTML errors from displaying
 $doc = new DOMDocument(1.0, 'utf-8');
-$doc->loadHTML(file_get_contents(APP_BASE['var'] . 'git-scm.com.html'));
+$doc->loadHTML(file_get_contents($path . 'git-scm.com.html'));
 
 $content_node = $doc->getElementById("main");
 

@@ -6,7 +6,7 @@ defined('APP_BASE') or
 global $errors;
 
 defined('APP_ROOT') or
-  define('APP_ROOT', APP_BASE['root'] ?? '');
+  define('APP_ROOT', '');
 
 if (__FILE__ == get_required_files()[0] && __FILE__ == realpath($_SERVER["SCRIPT_FILENAME"]))
   if ($path = basename(dirname(get_required_files()[0])) == 'public') { // (basename(getcwd())
@@ -45,7 +45,7 @@ ob_start(); ?>
   #app_directory-container {
     position: absolute;
     height: auto;
-    width: 95%;
+    width: 100%;
     /* display: none; */
     left: 15px;
     top: 15px;
@@ -159,7 +159,7 @@ left: calc(50% - 265px); /* 1207 / 2 */ /*transform: translate(-50%, -50%);*/ bo
   $segments = [];
 
   // Segment 1: APP_PATH (always shown)
-  $segments[] = '[ <a href="' . /* basename(__FILE__) .*/ '?path=" onclick="handleClick(event, \'./\')">' . $base . '/</a> ]';
+  $segments[] = '&nbsp; [ <a href="' . /* basename(__FILE__) .*/ '?path=" onclick="handleClick(event, \'./\')">' . $base . '/</a> ]';
 
   // Segment 2: if APP_ROOT is defined
   if ($root) {
@@ -216,7 +216,7 @@ left: calc(50% - 265px); /* 1207 / 2 */ /*transform: translate(-50%, -50%);*/ bo
   //dd(APP_CLIENT, false);
 
   if (isset($_GET['path']) && preg_match('/^project\/?/', $_GET['path']) || isset($_GET['project']) && empty($_GET['project'])) {
-    if (isset($_SERVER['HOME']) && readlinkToEnd($_SERVER['HOME'] . DIRECTORY_SEPARATOR . APP_BASE['projects'] . DIRECTORY_SEPARATOR) == '/mnt/c/www/' . APP_BASE['projects'] || realpath(APP_BASE['projects'])) { ?>
+    if (isset($_SERVER['HOME']) && readlinkToEnd($_SERVER['HOME'] . DIRECTORY_SEPARATOR . app_base('projects', null, 'rel') . DIRECTORY_SEPARATOR) == '/mnt/c/www/' . app_base('projects', null, 'rel') || realpath(app_base('projects', null, 'rel'))) { ?>
       <div style="text-align: center; border: none;" class="text-xs">
         <a class="pkg_dir" href="#" onclick="document.getElementById('app_project-container').style.display='block';">
           <img src="resources/images/project-icon.png" width="50" height="32" style="" /></a><br /><a
@@ -224,7 +224,7 @@ left: calc(50% - 265px); /* 1207 / 2 */ /*transform: translate(-50%, -50%);*/ bo
       </div>
       <table width="" style="border: none;">
         <tr style=" border: none;">
-          <?php $links = array_filter(glob(APP_PATH . /*'../../'.*/ APP_BASE['projects'] . '*'), 'is_dir');
+          <?php $links = array_filter(glob(APP_PATH . /*'../../'.*/ app_base('projects', null, 'rel') . '*'), 'is_dir');
 
           $count = 1;
 
@@ -255,14 +255,14 @@ left: calc(50% - 265px); /* 1207 / 2 */ /*transform: translate(-50%, -50%);*/ bo
     </table>
     <!--
       <li>
-      <?php if (isset($_SERVER['HOME']) && readlinkToEnd($_SERVER['HOME'] . DIRECTORY_SEPARATOR . APP_BASE['projects'] . DIRECTORY_SEPARATOR) == '/mnt/c/www/' . APP_BASE['projects'] || realpath(APP_BASE['projects'])) { ?>
+      <?php if (isset($_SERVER['HOME']) && readlinkToEnd($_SERVER['HOME'] . DIRECTORY_SEPARATOR . app_base('projects', null, 'rel') . DIRECTORY_SEPARATOR) == '/mnt/c/www/' . app_base('projects', null, 'rel') || realpath(app_base('projects', null, 'abs'))) { ?>
       <a href="projects/">project/</a>
         <ul style="padding-left: 10px;">
           <form action method="GET">
             <select id="sproject" name="project" style="color: #000;">
       <?php while ($link = array_shift($links)) {
         $link = basename($link); // Get the directory name from the full path
-        if (is_dir(APP_PATH . /*'../../'.*/ APP_BASE['projects'] . $link))
+        if (is_dir(APP_PATH . /*'../../'.*/ app_base('projects', null, 'rel') . $link))
           echo '  <option value="' . $link . '" ' . (current($_GET) == $link ? 'selected' : '') . '>' . $link . '</option>' . "\n";
       } ?>
             </select>
@@ -409,7 +409,7 @@ left: calc(50% - 265px); /* 1207 / 2 */ /*transform: translate(-50%, -50%);*/ bo
         if ($key != 0)
           echo "</table>\n\n\n";
 
-        $links = array_filter(glob(APP_PATH . /*'../../'.*/ APP_BASE['clients'] . $status . '*'), 'is_dir');
+        $links = array_filter(glob(APP_PATH . /*'../../'.*/ app_base('clients', null, 'rel') . $status . '*'), 'is_dir');
         $statusCode = $status;
         $status = ($status == 000) ? "On-call" :
           (($status == 100) ? "Working" :
@@ -474,12 +474,12 @@ left: calc(50% - 265px); /* 1207 / 2 */ /*transform: translate(-50%, -50%);*/ bo
     } elseif (APP_ROOT === '') {
       // Handle client-specific path
       if (isset($_GET['client'])) {
-        $path .= APP_BASE['clients'] . $_GET['client'] . DIRECTORY_SEPARATOR;
+        $path .= app_base('clients', null, 'rel') . $_GET['client'] . DIRECTORY_SEPARATOR;
       }
 
       // Add domain to the path if applicable
       if (isset($_GET['domain'])) {
-        $path .= APP_BASE['clients'] . $_GET['domain'] . DIRECTORY_SEPARATOR;
+        $path .= app_base('clients', null, 'rel') . $_GET['domain'] . DIRECTORY_SEPARATOR;
       } elseif (!isset($_GET['client']) && isset($_GET['path']) && $_GET['path'] == 'vendor') {
         // Default to vendor path if no domain or client is set
         $path .= 'vendor' . DIRECTORY_SEPARATOR;
@@ -517,7 +517,7 @@ left: calc(50% - 265px); /* 1207 / 2 */ /*transform: translate(-50%, -50%);*/ bo
         <!-- iframe src="composer_pkg.php" style="height: 500px; width: 700px;"></iframe -->
         <div style="width: 700px; ">
           <div style="display: inline-block; width: 350px;"><a href="#!"
-              onclick="handleClick(event, 'vendor/'); document.getElementById('app_composer-container').style.display='block';">Composers</a>
+              onclick="handleClick(event, 'vendor/'); openApp(\'tools/registry/composer\');">Composers</a>
             Vendor Packages [Installed] List</div>
           <div style="display: inline-block; text-align: right; width: 300px;">
             <form
@@ -654,9 +654,9 @@ left: calc(50% - 265px); /* 1207 / 2 */ /*transform: translate(-50%, -50%);*/ bo
               switch (basename($path)) {
                 case '.git':
                   echo '<div style="position: relative; border: 4px dashed #F05033;">'
-                    . '<a href="#!" onclick="document.getElementById(\'app_git-container\').style.display=\'block\';">' // "?path=' . basename($path) . '" 
+                    . '<a href="#!" onclick="openApp(\'tools/code/git\');">' // "?path=' . basename($path) . '" 
                     . '<img src="resources/images/directory-git.png" width="50" height="32" /></a>'
-                    . '<a href="' . /* basename(__FILE__) .*/ '?' . $url . '" onclick="handleClick(event, \'' . $relativePath . '\'); document.getElementById(\'app_git-container\').style.display=\'block\';">' . basename($path) . '/</a></div>' . "\n";
+                    . '<a href="' . /* basename(__FILE__) .*/ '?' . $url . '" onclick="handleClick(event, \'' . $relativePath . '\'); openApp(\'tools/code/git\');">' . basename($path) . '/</a></div>' . "\n";
                   break;
                 case 'applications':
                   echo '<div style="position: relative;">'
@@ -696,7 +696,7 @@ left: calc(50% - 265px); /* 1207 / 2 */ /*transform: translate(-50%, -50%);*/ bo
                   break;
                 case 'vendor':
                   echo '<div style="position: relative; border: 4px dashed #6B4329;">'
-                    . '<a href="#!" onclick="handleClick(event, \'' . $relativePath . '\');document.getElementById(\'app_composer-container\').style.display=\'block\';">' . '<img src="resources/images/directory-composer.png" width="50" height="32" /></a>'
+                    . '<a href="#!" onclick="handleClick(event, \'' . $relativePath . '\'); openApp(\'tools/registry/composer\');">' . '<img src="resources/images/directory-composer.png" width="50" height="32" /></a>'
                     . '<a href="' . /* basename(__FILE__) .*/ '?' . $url . '" onclick="handleClick(event, \'' . $relativePath . '\');" >' . basename($path)  // "?path=' . basename($path) . '"         
                     . '/</a></div>' . "\n";
                   break;
@@ -1014,7 +1014,7 @@ left: calc(50% - 265px); /* 1207 / 2 */ /*transform: translate(-50%, -50%);*/ bo
                 }
 
               } elseif (preg_match('/^composer(?:-setup)?\.(json|lock|php|phar)/', basename($path))) {
-                echo '<div style="position: relative;"><div style="position: relative; border: 4px dashed #6B4329;"><a href="' . /*basename(__FILE__) .*/ '?' . (!isset($_GET['client']) ? (!isset($_GET['project']) ? '' : 'project=' . $_GET['project'] . '&') : 'client=' . $_GET['client'] . '&') . (!isset($_GET['path']) ? '' : 'path=' . $_GET['path'] . '&') . 'app=ace_editor&' . /*'path=' . (basename(dirname($path)) == basename(parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH) ? 'failed' : basename(dirname($path)))) .*/ 'file=' . basename($path) . '" onclick="handleClick(event, \'' . basename($relativePath) . '\'); document.getElementById(\'app_composer-container\').style.display=\'block\';">';
+                echo '<div style="position: relative;"><div style="position: relative; border: 4px dashed #6B4329;"><a href="' . /*basename(__FILE__) .*/ '?' . (!isset($_GET['client']) ? (!isset($_GET['project']) ? '' : 'project=' . $_GET['project'] . '&') : 'client=' . $_GET['client'] . '&') . (!isset($_GET['path']) ? '' : 'path=' . $_GET['path'] . '&') . 'app=ace_editor&' . /*'path=' . (basename(dirname($path)) == basename(parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH) ? 'failed' : basename(dirname($path)))) .*/ 'file=' . basename($path) . '" onclick="handleClick(event, \'' . basename($relativePath) . '\'); openApp(\'tools/registry/composer\');">';
 
                 switch (basename($path)) {
                   case 'composer.json':
@@ -1223,17 +1223,17 @@ left: calc(50% - 265px); /* 1207 / 2 */ /*transform: translate(-50%, -50%);*/ bo
 
           // Determine the root filter based on client and domain
           if (!empty($_GET['client'])) {
-            $rootFilter = APP_BASE['clients'] . $_GET['client'] . DIRECTORY_SEPARATOR;
+            $rootFilter = app_base('clients', null, 'rel') . $_GET['client'] . DIRECTORY_SEPARATOR;
             if (isset($_GET['domain'])) {
               $rootFilter .= $_GET['domain'] . DIRECTORY_SEPARATOR;
             }
           } elseif (isset($_GET['domain'])) {
-            $rootFilter = APP_BASE['clients'] . $_GET['domain'] . DIRECTORY_SEPARATOR;
+            $rootFilter = app_base('clients', null, 'rel') . $_GET['domain'] . DIRECTORY_SEPARATOR;
           }
 
           // Add project-specific root filter if applicable
           if (isset($_GET['project'])) {
-            $rootFilter = APP_BASE['projects'] . $_GET['project'] . DIRECTORY_SEPARATOR;
+            $rootFilter = app_base('projects', null, 'rel') . $_GET['project'] . DIRECTORY_SEPARATOR;
           }
 
           // Add path to the file path
@@ -1451,7 +1451,7 @@ if (e.key === 'ArrowRight' && idx < crumbs.length - 1) { crumbs[idx + 1].focus()
     <?php
     // (APP_IS_ONLINE && check_http_status('https://cdn.tailwindcss.com') ? 'https://cdn.tailwindcss.com' : APP_URL . 'resources/js/tailwindcss-3.3.5.js')?
 // Path to the JavaScript file
-    $path = APP_BASE['resources'] . 'js/tailwindcss-3.3.5.js';
+    $path = app_base('resources', null, 'rel') . 'js/tailwindcss-3.3.5.js';
 
     // Create the directory if it doesn't exist
     is_dir(dirname($path)) or mkdir(dirname($path), 0755, true);
@@ -1475,7 +1475,7 @@ if (e.key === 'ArrowRight' && idx < crumbs.length - 1) { crumbs[idx + 1].focus()
       } ?>
 
     <script
-      src="<?= defined('APP_IS_ONLINE') && APP_IS_ONLINE && check_http_status($url) ? substr($url, strpos($url, parse_url($url)['host']) + strlen(parse_url($url)['host'])) : substr($path, strpos($path, dirname(APP_BASE['resources'] . 'js'))) ?>"></script>
+      src="<?= defined('APP_IS_ONLINE') && APP_IS_ONLINE && check_http_status($url) ? substr($url, strpos($url, parse_url($url)['host']) + strlen(parse_url($url)['host'])) : substr($path, strpos($path, dirname(app_base('resources', null, 'rel') . 'js'))) ?>"></script>
 
     <style type="text/tailwindcss">
       <?= $UI_APP['style']; ?>

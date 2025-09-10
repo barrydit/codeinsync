@@ -1,6 +1,5 @@
 <?php
 
-
 class Shutdown
 {
     private static $instance = false;
@@ -12,7 +11,7 @@ class Shutdown
     {
         error_log("Shutdown constructor called.");
         defined('APP_END') or define('APP_END', microtime(true));
-        $this->initializeEnv();
+        $this->initializeEnv(); // defines ENV_CHECKSUM inside
     }
 
     public static function instance(): self
@@ -50,6 +49,8 @@ class Shutdown
 
     public function shutdown(bool $die = true): void
     {
+        if (!empty($_ENV))
+            self::saveEnvToFile();
         if (!self::$enabled) {
             foreach (self::$functions as $function) {
                 $function(self::$shutdownMessage);
@@ -84,9 +85,11 @@ class Shutdown
         // Start with the global root keys
         $mergedEnv = $globalRoot;
 
-        // Merge sections
+        // Merge sections (client overrides keys inside sections)
         foreach ($clientSections as $section => $values) {
-            $mergedEnv[$section] = isset($globalSections[$section]) ? array_replace($globalSections[$section], $values) : $values; // array_merge
+            $mergedEnv[$section] = isset($globalSections[$section])
+                ? array_replace($globalSections[$section], $values)
+                : $values;
         }
 
         // Add remaining global sections that are not in the client
@@ -97,59 +100,55 @@ class Shutdown
         }
 
         // Merge client root keys (client root keys overwrite global)
-        $mergedEnv = array_merge($mergedEnv, $clientRoot);
+        $mergedEnv = array_replace($mergedEnv, $clientRoot);
 
         return $mergedEnv;
     }
 
-    /*
-      public static function loadEnvFiles(string $globalPath, string $clientPath): array
-      {
-        $globalEnv = self::parseIniFileWithSections($globalPath);
-        $clientEnv = self::parseIniFileWithSections($clientPath);
-
-        $globalRoot = array_filter($globalEnv, 'is_scalar');
-        $clientRoot = array_filter($clientEnv, 'is_scalar');
-        $globalSections = array_filter($globalEnv, 'is_array');
-        $clientSections = array_filter($clientEnv, 'is_array');
-
-        $mergedEnv = $globalRoot;
-
-        foreach ($clientSections as $section => $values) {
-          $mergedEnv[$section] = $globalSections[$section] ?? $values;
-        }
-
-        foreach ($globalSections as $section => $values) {
-          if (!isset($clientSections[$section])) {
-            $mergedEnv[$section] = $values;
-          }
-        }
-
-        return $mergedEnv;
-      }
-    */
     private function initializeEnv(): void
     {
-        defined('APP_ROOT') or define('APP_ROOT', ''); // Define APP_ROOT if not already defined
+        defined('APP_ROOT') or define('APP_ROOT', ''); // Ensure APP_ROOT exists
 
         $globalPath = APP_PATH . '.env';
         $clientPath = APP_PATH . APP_ROOT . '.env';
 
+        // ── NEW: define ENV_CHECKSUM (for APP_PATH . '.env') on construct ─────────
+        if (!defined('ENV_CHECKSUM')) {
+            $cs = self::checksumFile($globalPath);
+            if ($cs !== null) {
+                define('ENV_CHECKSUM', $cs);
+            }
+        }
+        // (Optional) If you also want a client checksum available:
+        // if (!defined('ENV_CHECKSUM_CLIENT')) {
+        //     $csc = self::checksumFile($clientPath);
+        //     if ($csc !== null) define('ENV_CHECKSUM_CLIENT', $csc);
+        // }
+
         $mergedEnv = self::loadEnvFiles($globalPath, $clientPath);
 
-        if ($mergedEnv === false || empty($mergedEnv))
-            dd($mergedEnv); //$errors['malformed'] = 'Malformed .env file.';
+        if ($mergedEnv === false || empty($mergedEnv)) {
+            die(var_dump($mergedEnv)); // Malformed or empty .env
+        }
 
-        $_ENV = array_replace($mergedEnv, $_ENV); // array_merge
+        $_ENV = array_replace($mergedEnv, $_ENV);
 
         if (self::isNonEmptyFile($globalPath)) {
             self::backupEnvFile($globalPath);
         }
     }
 
+    // ── NEW: small checksum helper ────────────────────────────────────────────────
+    private static function checksumFile(string $filePath): ?string
+    {
+        return is_file($filePath) ? hash_file('sha256', $filePath) : null;
+    }
+
     public static function parseIniFileWithSections(string $filePath): array
     {
-        return file_exists($filePath) ? (parse_ini_file($filePath, true, INI_SCANNER_TYPED) ?: []) : []; // INI_SCANNER_RAW 
+        return file_exists($filePath)
+            ? (parse_ini_file($filePath, true, INI_SCANNER_TYPED) ?: [])
+            : [];
     }
 
     private static function isNonEmptyFile(string $filePath): bool
@@ -159,7 +158,6 @@ class Shutdown
 
     private static function backupEnvFile(string $filePath): void
     {
-        $envContent = file_get_contents($filePath);
         $parsedEnv = self::parseIniFileWithSections($filePath);
 
         foreach ($parsedEnv as $section => $values) {
@@ -192,64 +190,57 @@ class Shutdown
 
     private static function convertValue($value): string
     {
-        if (is_bool($value)) {
+        if (is_bool($value))
             return $value ? 'true' : 'false';
-        }
-        if (is_null($value)) {
+        if (is_null($value))
             return 'null';
-        }
         return (string) $value;
     }
 
-    /**
-     * Summary of handleError
-     * @param mixed $errno
-     * @param mixed $errstr
-     * @param mixed $errfile
-     * @param mixed $errline
-     * @return bool
-     */
     public static function handleError($errno, $errstr, $errfile, $errline)
     {
-        //echo 'Does this work? handleError()';
         if (error_reporting() === 0) {
-            // Silenced with @ — let PHP ignore it
-            return false;
+            return false; // silenced with @
         }
         self::triggerShutdown("Error: [$errno] $errstr - $errfile:$errline");
-        return true; // To prevent PHP's internal error handler from running
+        return true;
     }
 
-    /**
-     * Summary of handleException
-     * @param mixed $exception
-     * @return void
-     */
     public static function handleException($exception)
     {
-        //echo "Does this work? handleException()";
-        $message = "Exception: " . $exception->getMessage() . " in " . $exception->getFile() . " on line " . $exception->getLine();
+        $message = "(Custom) Exception: " . $exception->getMessage()
+            . " in " . $exception->getFile()
+            . " on line " . $exception->getLine();
         self::triggerShutdown($message);
     }
-
-    /**
-     * Summary of handleParseError
-     * @return void
-     */
 
     public static function handleParseError()
     {
         $error = error_get_last();
-        //echo 'Does this work? handleParseError()';
         if ($error !== null) {
-            $message = "Fatal error: {$error['message']} in {$error['file']} on line {$error['line']}";
+            $message = "(Custom) Fatal error: {$error['message']} in {$error['file']} on line {$error['line']}";
             self::triggerShutdown($message);
         }
-
     }
-    public static function hasEnvChanged(): bool
+
+    /**
+     * NOTE: This now compares file checksums. If you still want to compare
+     * $_ENV snapshots, keep your original method under a different name.
+     */
+    public static function hasEnvChanged(string $filePath = null): bool
     {
-        return hash('sha256', json_encode($_ENV, JSON_UNESCAPED_SLASHES)) !== ENV_CHECKSUM;
+        $filePath = $filePath ?: (APP_PATH . '.env'); // default: global .env
+        $original = ($filePath === APP_PATH . '.env' && defined('ENV_CHECKSUM'))
+            ? ENV_CHECKSUM
+            : self::checksumFile($filePath);
+
+        $current = self::checksumFile($filePath);
+
+        // If either is null (no file), treat as no change detectable
+        if ($original === null || $current === null) {
+            return false;
+        }
+        return $current !== $original;
     }
 
     public static function env_checksum(): ?string
@@ -257,58 +248,98 @@ class Shutdown
         return defined('ENV_CHECKSUM') ? ENV_CHECKSUM : null;
     }
 
-    /**
-     * Saves the current state of $_ENV to a .env file.
-     *
-     * Note: This is a simple implementation. If your .env file includes comments,
-     * blank lines, or complex variable formats, you may need a more robust solution.
-     */
     public static function saveEnvToFile()
     {
-        //if ($hash = !self::hasEnvChanged()) {
-        //  return; // No changes, skip saving
-        //}
-        if (!defined('ENV_CHECKSUM')) {
-            // Optionally log, ignore, or set a fallback
-            return;
-        }
-
-        $hash = hash('sha256', json_encode($_ENV, JSON_UNESCAPED_SLASHES));
-
-        if ($hash === self::env_checksum()) {
-            return; // No changes, skip saving
-        }
-
-        //dd(ENV_CHECKSUM . ' (ENV_CHECKSUM) == ' . $hash . ' (hash)', false);
-
         $envFilePath = APP_PATH . APP_ROOT . '.env';
+
         $sections = [];
         $lines = [];
 
+        // --- helper: list-array detection (PHP 7.4 compatible) ---
+        $isListArray = static function ($a): bool {
+            if (!is_array($a))
+                return false;
+            $i = 0;
+            foreach ($a as $k => $_) {
+                if ($k !== $i++)
+                    return false;
+            }
+            return true;
+        };
+
+        // 1) Root scope: scalars and list-arrays (e.g., APP_BASE[])
         foreach ($_ENV as $key => $value) {
             if (is_array($value)) {
-                $sections[$key] = $value;
+                if ($isListArray($value)) {
+                    // e.g., APP_BASE[]="/mnt/c/www/app"
+                    $lines[] = "";
+                    $lines[] = "; Prefer INI array syntax for paths (replaces custom {[...]})";
+
+                    //die(var_dump(preg_quote(APP_PATH)));
+                    foreach ($value as $item) {
+                        // IMPORTANT: still run through formatValue() to quote paths, etc.
+                        $lines[] = "{$key}[]=" . self::formatValue(preg_replace('/^' . preg_quote(APP_PATH, '/') . '/', '', $item)); // substr($item, strlen(APP_PATH)
+                    }
+                } else {
+                    // associative arrays become [SECTION] later
+                    $sections[$key] = $value;
+                }
             } else {
-                $lines[] = "$key=" . self::formatValue($value);
+                // scalars at root
+
+                if ($key == 'APP_UNAME')
+                    $lines[] = "";
+
+                if ($key == 'DEFAULT_UPDATE_NOTICE')
+                    $lines[] = "";
+
+                $lines[] = "{$key}=" . self::formatValue($value);
+
+                if ($key == 'APP_PWORD')
+                    $lines[] = "";
+
+                //if ($key == 'APP_PUBLIC') $lines[] = "";
+
             }
         }
 
+        // Add a blank line between root keys and sections if both exist
+        if (!empty($lines) && !empty($sections)) {
+            $lines[] = '';
+        }
+
+        // 2) Sections: support scalars and list-arrays within sections
         foreach ($sections as $section => $values) {
-            $lines[] = "[$section]";
-            foreach ($values as $key => $value) {
-                $lines[] = "$key=" . self::formatValue($value);
+            $lines[] = "[{$section}]";
+            foreach ($values as $k => $v) {
+                if (is_array($v) && $isListArray($v)) {
+                    foreach ($v as $item) {
+                        $lines[] = "{$k}[]=" . self::formatValue($item);
+                    }
+                } else {
+                    $lines[] = "{$k}=" . self::formatValue($v);
+                }
             }
+            // optional visual spacer between sections
+            $lines[] = '';
         }
 
-        $contents = implode(PHP_EOL, $lines) . PHP_EOL;
+        // Trim the very last blank line only (do NOT trim other spaces)
+        if (end($lines) === '') {
+            array_pop($lines);
+        }
 
-        //dd($_ENV);
+        $newContents = implode(PHP_EOL, $lines) . PHP_EOL;
 
-        if (file_put_contents($envFilePath, $contents) === false) {
+        $existing = is_file($envFilePath) ? file_get_contents($envFilePath) : null;
+        if ($existing !== null && hash('sha256', $existing) === hash('sha256', $newContents)) {
+            return; // no material change
+        }
+
+        if (file_put_contents($envFilePath, $newContents) === false) {
             error_log("Failed to write the current environment to $envFilePath");
         }
     }
-
 
     public static function unlinkEnvjson(): void
     {
@@ -323,98 +354,54 @@ class Shutdown
         }
     }
 
-    /**
-     * Formats values:
-     * - Wraps directory paths in double quotes
-     * - Wraps JSON strings in double quotes
-     * - Leaves numbers untouched
-     *
-     * @param mixed $value
-     * @return string
-     */
-
-
     private static function formatValue($value): string
     {
-        // Handle empty values explicitly
-        if ($value === '' || $value === null) {
+        if ($value === '' || $value === null)
             return '';
-        }
-
-        // Handle booleans explicitly (true/false should remain unquoted)
-        if (is_bool($value)) {
+        if (is_bool($value))
             return $value ? 'true' : 'false';
-        }
-
-        // Keep numbers unquoted
-        if (is_numeric($value)) {
+        if (is_numeric($value))
             return $value;
-        }
 
         if (preg_match('/^\/.*\/[a-z]*$/i', $value) && !preg_match('/^(\/|[A-Za-z]:\\\\).*$/', $value)) {
-            return "'$value'"; // Use single quotes for regex
+            return "'$value'"; // regex
         }
-
-        // Ensure regex patterns are correctly wrapped in single quotes, but not paths
         if (preg_match('/^(?!\/[A-Za-z0-9]).*\/[a-z]*$/i', $value)) {
-            return "'$value'"; // Use single quotes for regex
+            return "'$value'"; // regex
         }
-
         if (preg_match('/^\/.*\/[a-z]*$|^\/.*[^\/]$/i', $value)) {
-            return "'$value'"; // Use single quotes for regex
+            return "'$value'"; // regex-ish
         }
-
-        // Keep paths quoted (Linux `/path/to/dir` or Windows `C:\path\to\dir`)
         if (preg_match('/^(\/|[A-Za-z]:\\\\).*$/', $value)) {
-            return "\"$value\""; // Always use double quotes for paths
+            return "\"$value\""; // paths
         }
-
-        // Handle strings with spaces
-        if (preg_match('/ /i', $value)) {
-            return "\"$value\""; // Use double quotes for strings with spaces
+        if (preg_match('/ /', $value)) {
+            return "\"$value\""; // spaces
         }
-
-        // Special handling for array-like strings (e.g., APP_BASE)
         if (preg_match('/^\[.*\]$/', $value)) {
             $decoded = json_decode($value, true);
             if (is_array($decoded)) {
                 return "{['" . implode("','", $decoded) . "']}";
             }
         }
-
-        // Return unquoted strings as is
-        return $value; // Return as-is for all other values
+        return $value;
     }
 
-    /**
-     * Determines if a string is valid JSON (excluding numbers)
-     *
-     * @param string $value
-     * @return bool
-     */
     private static function isJson($value): bool
     {
-        if (!is_string($value) || is_numeric($value)) {
-            return false; // Ignore numbers
-        }
+        if (!is_string($value) || is_numeric($value))
+            return false;
 
         $trimmed = trim($value);
-
-        // Ensure it's enclosed in {} or []
         if (
             (str_starts_with($trimmed, '{') && str_ends_with($trimmed, '}')) ||
             (str_starts_with($trimmed, '[') && str_ends_with($trimmed, ']'))
         ) {
-
-            // Ensure proper double quotes for JSON keys and values
             $tempValue = preg_replace("/'([^']+)'/", '\'$1\'', $trimmed);
-
             $tempValue = "\"$tempValue\"";
-
             json_decode($tempValue);
             return json_last_error() === JSON_ERROR_NONE;
         }
-
         return false;
     }
 }

@@ -182,7 +182,7 @@ $cmd = $_POST['cmd'] ?? null;
 
 // [6] App Route Dispatch (Unchanged)
 $routes = [
-    
+
     'composer' => APP_PATH . 'api/composer.php',
     'git' => APP_PATH . 'api/git.php',
     'npm' => APP_PATH . 'api/npm.php',

@@ -1,191 +1,204 @@
 <?php
 // config/constants.paths.php
-/**
- * Resolve a root directory that may be relative to APP_PATH today,
- * but could be absolute in the future.
- *
- * Returns [absolutePathWithTrailingSlash, displayRelativeRoot, isInsideApp]
- *   - absolutePath:      for filesystem ops (glob, is_file, etc.)
- *   - displayRelativeRoot: "projects" or "clients" (stable label for UI)
- *   - isInsideApp:       bool flag if it's under APP_PATH
- */
-function resolve_root(string $hint, string $appPath): array
-{
-    $appPath = rtrim($appPath, "/\\") . DIRECTORY_SEPARATOR;
-    $parent = rtrim(realpath($appPath . '..') ?: $appPath . '..', "/\\") . DIRECTORY_SEPARATOR;
-    $norm = str_replace('\\', '/', trim($hint));
 
-    $isAbsolute = (bool) preg_match('#^/|^[A-Za-z]:/#', $norm);
-    if ($norm === '') {
-        // fallback to app root
-        return [$appPath, '', true];
-    }
-
-    if ($isAbsolute) {
-        $abs = rtrim(realpath($norm) ?: $norm, "/\\") . DIRECTORY_SEPARATOR;
-        // label = last segment (e.g., ".../projects" => "projects")
-        $label = basename(rtrim($abs, "/\\"));
-        $inside = str_starts_with($abs, $appPath);
-        return [$abs, $label, $inside];
-    }
-
-    // Relative to app (today's scenario)
-    $abs = rtrim(realpath($appPath . $norm) ?: ($appPath . $norm), "/\\") . DIRECTORY_SEPARATOR;
-    $label = trim($norm, '/'); // e.g., "projects"
-    $inside = str_starts_with($abs, $appPath);
-    return [$abs, $label, $inside];
-}
+defined('APP_PATH') or die('APP_PATH must be defined before constants.paths.php');
 
 /**
- * config/constants.paths.php
- * Base directory resolution + helpers.
- * Requires APP_PATH to be defined earlier OR will define it here.
+ * Normalize a filesystem path:
+ *  - If relative, make it relative to APP_PATH
+ *  - Collapse .. and .
+ *  - Ensure trailing DIRECTORY_SEPARATOR for directories
  */
+$norm = static function (string $p, bool $ensureDir = true): string {
+    // Expand relative to APP_PATH if needed
+    if (!preg_match('~^([/\\\\]|[A-Za-z]:[/\\\\])~', $p)) {
+        $p = rtrim(APP_PATH, "/\\") . DIRECTORY_SEPARATOR . $p;
+    }
+    $rp = realpath($p);
+    if ($rp === false) {
+        // Keep original if not existing yet; still normalize separators
+        $rp = preg_replace('~[/\\\\]+~', DIRECTORY_SEPARATOR, $p);
+    }
+    if ($ensureDir && substr($rp, -1) !== DIRECTORY_SEPARATOR) {
+        $rp .= DIRECTORY_SEPARATOR;
+    }
+    return $rp;
+};
 
-// ---- helpers ---------------------------------------------------------------
+/**
+ * Return the first existing match of $candidate under any $roots.
+ * If none exist, return null.
+ */
+$firstExisting = static function (array $roots, string $candidate) use ($norm): ?string {
+    foreach ($roots as $root) {
+        $path = $norm($root, true) . $candidate;
+        $path = $norm($path, true);
+        if (is_dir($path)) {
+            return $path;
+        }
+    }
+    return null;
+};
 
-if (!function_exists('normalize_dir')) {
-    function normalize_dir(string $path): string
-    {
-        if ($path === '')
-            return '';
-        $sep = DIRECTORY_SEPARATOR;
-        $path = str_replace(['\\', '/'], $sep, $path);
-        $path = rtrim($path, $sep) . $sep;
-        return preg_replace('#' . preg_quote($sep, '#') . '+#', $sep, $path);
+/**
+ * Given a spec with default dir + fallbacks, search roots for the first that exists.
+ */
+$resolveDir = static function (array $allRoots, array $spec) use ($firstExisting): ?string {
+    $rootsToUse = $allRoots;
+    if (($spec['anchor'] ?? null) === 'app_root') {
+        $rootsToUse = [APP_PATH]; // force search under app root only
+    }
+
+    $candidates = [];
+    if (!empty($spec['default']))
+        $candidates[] = rtrim($spec['default'], "/\\") . DIRECTORY_SEPARATOR;
+    foreach ($spec['fallbacks'] ?? [] as $fb) {
+        $candidates[] = rtrim($fb, "/\\") . DIRECTORY_SEPARATOR;
+    }
+
+    foreach ($candidates as $c) {
+        if ($found = $firstExisting($rootsToUse, $c)) {
+            return $found;
+        }
+    }
+    return null;
+};
+
+// 1) Build the roots list from ENV + add your built-in roots
+// 1) Build the roots list from ENV + add built-ins
+$envRoots = [];
+if (!empty($_ENV['APP_BASE']) && is_array($_ENV['APP_BASE'])) {
+    foreach ($_ENV['APP_BASE'] as $r) {
+        if (is_string($r) && $r !== '')
+            $envRoots[] = $r;
     }
 }
 
-if (!function_exists('join_path')) {
-    function join_path(string ...$parts): string
-    {
-        $sep = DIRECTORY_SEPARATOR;
-        $path = implode($sep, array_filter($parts, fn($p) => $p !== '' && $p !== $sep));
-        $path = str_replace(['\\', '/'], $sep, $path);
-        return preg_replace('#' . preg_quote($sep, '#') . '+#', $sep, $path);
-    }
-}
-
-if (!function_exists('resolve_abs_path')) {
-    /** Resolve absolute path from base + spec (absolute or relative). */
-    function resolve_abs_path(string $base, string $spec): string
-    {
-        $sep = DIRECTORY_SEPARATOR;
-        $spec = str_replace(['\\', '/'], $sep, $spec);
-
-        $isAbs = str_starts_with($spec, $sep) || preg_match('#^[A-Za-z]:\\\\#', $spec);
-        $candidate = $isAbs ? $spec : join_path($base, $spec);
-
-        $real = @realpath($candidate);
-        return $real !== false ? $real : $candidate;
-    }
-}
-
-// ---- APP_PATH --------------------------------------------------------------
-
-defined('APP_PATH') || define('APP_PATH', normalize_dir(realpath(dirname(__DIR__, 1))));
-
-// ---- path spec with fallbacks ---------------------------------------------
-
-$PATH_SPEC = [
-    'app' => ['default' => 'app', 'fallbacks' => [], 'required' => true],
-    'config' => ['default' => 'config', 'fallbacks' => [], 'required' => true],
-    'data' => ['default' => 'data', 'fallbacks' => [], 'required' => false],
-    'public' => ['default' => 'public', 'fallbacks' => [], 'required' => true],
-    'resources' => ['default' => 'resources', 'fallbacks' => [], 'required' => false],
-    'src' => ['default' => 'src', 'fallbacks' => [], 'required' => false],
-    'var' => ['default' => 'var', 'fallbacks' => [], 'required' => false],
-    'vendor' => ['default' => 'vendor', 'fallbacks' => [], 'required' => false],
-    'node_modules' => ['default' => 'node_modules', 'fallbacks' => [], 'required' => false],
-
-    // external-first, then internal fallback
-    'projects' => ['default' => 'projects', 'fallbacks' => ['../projects'], 'required' => false],
-    'clients' => ['default' => 'clients', 'fallbacks' => ['../clients'], 'required' => false],
+// Built-in roots
+$builtinRoots = [
+    APP_PATH . 'projects/clients',
+    APP_PATH . 'projects/internal',
+    APP_PATH . 'projects',
 ];
 
-// ---- env overrides (optional) ---------------------------------------------
+// IMPORTANT: APP_PATH must be first
+$roots = [];
+$seen = [];
 
-foreach ($PATH_SPEC as $key => &$spec) {
-    $envKey = 'APP_PATH_' . strtoupper($key);
-    $override = getenv($envKey);
-    if (is_string($override) && $override !== '') {
-        $spec['default'] = $override;
+// Prepend APP_PATH explicitly
+foreach (array_merge([APP_PATH], $envRoots, $builtinRoots) as $r) {
+    $key = rtrim(strtolower($r), "/\\");
+    if (!isset($seen[$key])) {
+        $seen[$key] = true;
+        $roots[] = $r;
     }
 }
-unset($spec);
 
-// ---- resolve + validate ----------------------------------------------------
+// 2) Define your directory spec (logical keys -> default+fallback relative names)
+$PATH_SPEC = [
+    'app' => ['default' => 'app', 'fallbacks' => [], 'anchor' => 'app_root'],
+    'config' => ['default' => 'config', 'fallbacks' => [], 'anchor' => 'app_root'],
+    'data' => ['default' => 'data', 'fallbacks' => [], 'anchor' => 'app_root'],
+    'public' => ['default' => 'public', 'fallbacks' => ['htdocs', 'www'], 'anchor' => 'app_root'],
+    'resources' => ['default' => 'resources', 'fallbacks' => [], 'anchor' => 'app_root'],
+    'src' => ['default' => 'src', 'fallbacks' => [], 'anchor' => 'app_root'],
+    'var' => ['default' => 'var', 'fallbacks' => [], 'anchor' => 'app_root'],
+    'vendor' => ['default' => 'vendor', 'fallbacks' => [], 'anchor' => 'app_root'],
+    'node' => ['default' => 'node_modules', 'fallbacks' => [], 'anchor' => 'app_root'],
 
-$errors ??= [];
+    // Projects:
+    'clients' => ['default' => '../clients', 'fallbacks' => ['clients']],
+    'projects' => ['default' => 'projects', 'fallbacks' => []],
+];
+
+// 3) Resolve each logical directory across the roots
 $APP_BASE = [];
-$APP_BASE_REL = [];
-$APP_BASE_SRC = [];
-
 foreach ($PATH_SPEC as $key => $spec) {
-    $candidates = array_merge([$spec['default']], $spec['fallbacks']);
-
-    $matches = [];
-    foreach ($candidates as $i => $cand) {
-        $abs = resolve_abs_path(APP_PATH, $cand);
-        if (is_dir($abs)) {
-            $matches[] = [
-                'abs' => normalize_dir($abs),
-                'rel' => normalize_dir(str_replace(['\\', '/'], DIRECTORY_SEPARATOR, $cand)),
-                'src' => $i === 0 ? 'default' : ("fallback:$i"),
-                'inside' => str_starts_with(realpath($abs) ?: $abs, rtrim(APP_PATH, "/\\") . DIRECTORY_SEPARATOR),
-            ];
-        }
+    $found = $resolveDir($roots, $spec);
+    if ($found !== null) {
+        $APP_BASE[$key] = $found; // absolute path with trailing slash
     }
+}
 
-    if ($matches) {
-        // Prefer inside-APP_PATH first; if tie, keep original order (default before fallbacks)
-        usort($matches, function ($a, $b) {
-            return ($b['inside'] <=> $a['inside']); // true (1) before false (0)
-        });
-        $pickedAbs = $matches[0]['abs'];
-        $pickedRel = $matches[0]['rel'];
-        $pickedSrc = $matches[0]['src'];
+// 4) Define PATH_* convenience constants where available
+foreach ($APP_BASE as $key => $abs) {
+    $const = 'PATH_' . strtoupper($key);
+    if (!defined($const)) {
+        define($const, $abs);
+    }
+}
+
+// 5) Optionally expose the resolved map (if you prefer using constants, skip this)
+// 5) Expose resolved maps (absolute + relative) and value-only lists
+$APP_PATH_NORM = rtrim(str_replace('\\', '/', APP_PATH), '/') . '/';
+$APP_BASE_REL = [];
+
+foreach ($APP_BASE as $k => $abs) {
+    $absNorm = str_replace('\\', '/', $abs);
+    if (stripos($absNorm, $APP_PATH_NORM) === 0) {
+        $APP_BASE_REL[$k] = substr($absNorm, strlen($APP_PATH_NORM)); // keep trailing slash
     } else {
-        // unresolved fallback
-        $abs = resolve_abs_path(APP_PATH, $spec['default']);
-        $pickedAbs = normalize_dir($abs);
-        $pickedRel = normalize_dir($spec['default']);
-        $pickedSrc = 'unresolved';
-        if (!empty($spec['required'])) {
-            $errors['INVALID_PATHS'][] = "Missing required path: [$key] → {$spec['default']}";
-        }
+        $APP_BASE_REL[$k] = $abs; // or set null if you want only-rel
     }
-
-    $APP_BASE[$key] = $pickedAbs;
-    $APP_BASE_REL[$key] = $pickedRel;
-    $APP_BASE_SRC[$key] = $pickedSrc;
 }
 
-defined('APP_BASE') || define('APP_BASE', $APP_BASE);
-defined('APP_BASE_REL') || define('APP_BASE_REL', $APP_BASE_REL);
-defined('APP_BASE_SRC') || define('APP_BASE_SRC', $APP_BASE_SRC);
+defined('APP_BASE_MAP_ABS') || define('APP_BASE_MAP_ABS', json_encode($APP_BASE, JSON_UNESCAPED_SLASHES));
+defined('APP_BASE_MAP_REL') || define('APP_BASE_MAP_REL', json_encode($APP_BASE_REL, JSON_UNESCAPED_SLASHES));
 
-const APP_PATH_PROJECTS = '../projects'; // (or an absolute like /mnt/c/projects)
-const APP_PATH_CLIENTS = '../clients';
+$OUTPUT_ORDER = ['app', 'config', 'data', 'public', 'resources', 'src', 'var', 'vendor', 'node', 'clients', 'projects'];
 
-// var_dump('default', $PATH_SPEC['projects']['default'], 'picked', $APP_BASE['projects'], 'src', $APP_BASE_SRC['projects']);
+$dirsOrdered = [];
+foreach ($OUTPUT_ORDER as $k) {
+    if (isset($APP_BASE[$k]))
+        $dirsOrdered[] = $APP_BASE[$k];
+}
 
-// ---- ergonomic accessor ----------------------------------------------------
+defined('APP_DIRS_ABS') || define('APP_DIRS_ABS', json_encode($dirsOrdered, JSON_UNESCAPED_SLASHES));
+defined('APP_DIRS_REL') || define('APP_DIRS_REL', json_encode(array_values($APP_BASE_REL), JSON_UNESCAPED_SLASHES));
 
-if (!function_exists('base_path')) {
+// 6) (Optional) Add select dirs to include_path for legacy require() code
+$includePaths = [];
+foreach (['app', 'config', 'src', 'vendor'] as $k) {
+    if (isset($APP_BASE[$k]))
+        $includePaths[] = rtrim($APP_BASE[$k], "/\\");
+}
+if ($includePaths) {
+    set_include_path(get_include_path() . PATH_SEPARATOR . implode(PATH_SEPARATOR, $includePaths));
+}
+
+// 7) If you want a helper to fetch later:
+if (!function_exists('app_base')) {
     /**
-     * base_path('clients', true, 'acme') → ".../clients/acme/"
+     * @param 'abs'|'rel' $mode
      */
-    function base_path(string $key, bool $trail = false, string ...$segments): string
+    function app_base(string $key, ?string $suffix = null, string $mode = 'abs'): ?string
     {
-        if (!defined('APP_BASE') || empty(APP_BASE[$key])) {
-            throw new RuntimeException("Unknown base path key: $key");
-        }
-        $abs = APP_BASE[$key];
-        $full = $segments ? join_path($abs, ...$segments) : rtrim($abs, DIRECTORY_SEPARATOR);
-        return $trail ? normalize_dir($full) : rtrim($full, DIRECTORY_SEPARATOR);
+        static $maps = ['abs' => null, 'rel' => null];
+
+        if ($maps['abs'] === null)
+            $maps['abs'] = json_decode(APP_BASE_MAP_ABS ?? '[]', true) ?: [];
+        if ($maps['rel'] === null)
+            $maps['rel'] = json_decode(APP_BASE_MAP_REL ?? '[]', true) ?: [];
+
+        $map = $maps[$mode] ?? $maps['abs'];
+        if (!isset($map[$key]) || $map[$key] === null)
+            return null;
+
+        return $suffix ? rtrim($map[$key], "/\\") . '/' . ltrim($suffix, "/\\") : $map[$key];
     }
 }
 
-
-// if (!empty($errors)) {} // dd($errors); or handle appropriately
+if (!function_exists('app_dirs')) {
+    /**
+     * Get the list of directories (values only).
+     * @param 'abs'|'rel' $mode
+     * @return array<int,string>
+     */
+    function app_dirs(string $mode = 'abs'): array
+    {
+        if ($mode === 'rel') {
+            return json_decode(APP_DIRS_REL ?? '[]', true) ?: [];
+        }
+        return json_decode(APP_DIRS_ABS ?? '[]', true) ?: [];
+    }
+}

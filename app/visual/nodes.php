@@ -1,142 +1,154 @@
 <?php
 
-file_exists(APP_PATH . 'config/constants.paths.php') && require_once APP_PATH . 'config/constants.paths.php';
-
-$app_id = 'visual/nodes';
-$container_id = str_replace(['/', '-'], '_', $app_id) . '-container';
-$selector = '#app_' . ($container_id ?? 'nodes') . '-container';
-
-
-if (isset($_GET['app']) && $_GET['app'] == 'visual/nodes' && isset($_GET['json'])) {
-  defined('APP_PATH') or define('APP_PATH', realpath(__DIR__ . '/../') . '/');
-  defined('APP_ROOT') or define('APP_ROOT', '');
-  header('Content-Type: application/json');
-  /*
-    //$_GET['client'] = '000-Hardy,Darrell';
-    if (is_file('..' . DIRECTORY_SEPARATOR . 'bootstrap' . DIRECTORY_SEPARATOR . 'bootstrap.php'))
-      require_once '..' . DIRECTORY_SEPARATOR . 'bootstrap' . DIRECTORY_SEPARATOR . 'bootstrap.php';
-    else
-      require_once 'bootstrap' . DIRECTORY_SEPARATOR . 'bootstrap.php';
-  */
-  /**
-   * Get required files from a script and return their paths
-   *
-   * @param string $script
-   * @return array
-   */
-  function getRequiredFilesFromScript(string $script): array
-  {
-    ob_start(); // /mnt/c/www
-    chdir(APP_PATH);
-    require_once $script; //eval('require_once \'' . $script . '\';'); 
-    ob_end_clean();
-    //return get_required_files();
-
-
-    //$execute = function () use ($script, &$requiredFiles) {
-    //    ob_start();
-    //    require $script;
-    //    ob_end_clean();
-    //    $requiredFiles = get_required_files();
-    //};
-
-    //$output = shell_exec('php -r "require \'' . $script . '\'; return get_required_files();"');
-
-    return get_required_files();
-    //$execute();
-
-    //$command = escapeshellcmd("php $script");
-    //$output = shell_exec($command); // Capture output if needed
-  }
-
-  /**
-   * Normalize file paths by removing the base directory prefix
-   *
-   * @param array $files
-   * @param string $baseDir
-   * @return array
-   */
-  function normalizeFilePaths(array $files, string $baseDir): array
-  {
-    return array_map(
-      fn($file) => str_replace($baseDir, '', $file),
-      $files
-    );
-  }
-
-  if (defined('APP_ROOT') && APP_ROOT != '') {
-    $baseDir = APP_PATH . APP_ROOT;
-    $requiredFiles = [
-      //'server.php' => 'server.php',
-      'public/index.php' => APP_ROOT . 'public/index.php',
-      //'config/runtime/php.php' => 'config/runtime/php.php',
-      'api/composer.php' => APP_ROOT . 'api' . DIRECTORY_SEPARATOR . 'composer.php',
-      //'config/git.php' => 'config/git.php',
-      //'public/idx.product.php' => 'public/idx.product.php',
-    ];
-    $jsonData = [];
-    foreach ($requiredFiles as $key => $scriptPath) {
-      $jsonData[$key] = normalizeFilePaths(getRequiredFilesFromScript($scriptPath), $baseDir);
-    }
-
-  } else {
-    $baseDir = APP_PATH;
-    //die(getcwd());
-    // Define scripts to process
-    $requiredFiles = [
-      //'server.php' => 'server.php',
-      'public/index.php' => 'public/index.php',
-      //'autoload.php' => 'autoload.php',
-      //'config/php.php' => 'config/runtime/php.php',
-      //'api/composer.php' => 'api' . DIRECTORY_SEPARATOR . 'composer.php',
-      //'config/git.php' => 'config/git.php',
-      //'public/idx.product.php' => 'public/idx.product.php',
-    ];
-    //dd($requiredFiles);
-    // Prepare JSON data
-    $jsonData = [];
-    foreach ($requiredFiles as $key => $scriptPath) {
-      $jsonData[$key] = normalizeFilePaths(getRequiredFilesFromScript($scriptPath), $baseDir);
-    }
-
-  }
-
-  // Ensure vendor packages are only under composer.php
-  if (isset($jsonData['api/composer.php'], $jsonData['public/index.php'])) {
-    $vendorPackages = array_filter(
-      $jsonData['public/index.php'],
-      fn($file) => str_contains($file, 'vendor/')
-    );
-    /*
-        $jsonData['config/php.php'] = array_merge(
-          $jsonData['config/php.php'],
-          $vendorPackages
-        );
-
-        $jsonData['config/git.php'] = array_merge(
-          $jsonData['config/git.php'],
-          $vendorPackages
-        );
-    */
-    $jsonData['api/composer.php'] = array_merge(
-      $jsonData['api/composer.php'],
-      $vendorPackages
-    );
-
-    $jsonData['public/index.php'] = array_values(array_diff(
-      $jsonData['public/index.php'],
-      $vendorPackages
-    ));
-
-    //$jsonData['public/idx.product.php'] = array_values(array_diff(
-    //  $jsonData['public/idx.product.php'],
-    //  $vendorPackages
-    //));
-  }
-  echo json_encode($jsonData);
-  exit;
+if (!defined('APP_PATH')) {
+  define('APP_PATH', rtrim(realpath(__DIR__ . '/../'), '/\\') . DIRECTORY_SEPARATOR);
+}
+if (!defined('APP_ROOT')) {
+  define('APP_ROOT', '');
 }
 
+$pathsFile = APP_PATH . 'config/constants.paths.php';
+if (is_file($pathsFile))
+  require_once $pathsFile;
+
+
+$app_id = 'visual/nodes';           // full path-style id
+
+// Always normalize slashes first
+$app_norm = str_replace('\\', '/', $app_id);
+
+// Last segment only (for titles, labels, etc.)
+$slug = basename($app_norm);                    // "composer"
+
+// Sanitized full path for DOM ids (underscores only from non [A-Za-z0-9_ -])
+$key = preg_replace('/[^\w-]+/', '_', $app_norm);  // "tools_registry_composer"
+
+// If you prefer strictly underscores (no hyphens), do: '/[^\w]+/'
+
+// Core DOM ids/selectors
+$container_id = "app_{$key}-container";         // "app_tools_registry_composer-container"
+$selector = "#{$container_id}";
+
+// Useful companion ids
+$style_id = "style-{$key}";                    // "style-tools_registry_composer"
+$script_id = "script-{$key}";                   // "script-tools_registry_composer"
+
+// Optional: data attributes you can stamp on the container for easy introspection
+$data_attrs = sprintf(
+  'data-app-path="%s" data-app-key="%s" data-app-slug="%s"',
+  htmlspecialchars($app_norm, ENT_QUOTES),
+  htmlspecialchars($key, ENT_QUOTES),
+  htmlspecialchars($slug, ENT_QUOTES),
+);
+
+//$hash = substr(sha1($app_norm), 0, 6);
+//$key = preg_replace('/[^\w-]+/', '_', $app_norm) . "_{$hash}";
+if (isset($_GET['app'], $_GET['graph']) && $_GET['app'] === 'visual/nodes') {
+  // Ensure APP_PATH/APP_ROOT exist (safe defaults)
+  if (!defined('APP_PATH'))
+    define('APP_PATH', rtrim(realpath(__DIR__ . '/../'), '/\\') . DIRECTORY_SEPARATOR);
+  if (!defined('APP_ROOT'))
+    define('APP_ROOT', '');
+
+  header('Content-Type: application/json');
+
+  // --- sandboxed include collector (subprocess) ---
+  function getRequiredFilesFromScript(string $script): array
+  {
+    $php = PHP_BINARY ?: 'php';
+    $cwd = escapeshellarg(APP_PATH);
+    $file = escapeshellarg($script);
+    $code = 'chdir(' . $cwd . '); require ' . $file . '; echo json_encode(get_included_files(), JSON_UNESCAPED_SLASHES);';
+    $cmd = $php . ' -d detect_unicode=0 -r ' . escapeshellarg($code);
+    $out = shell_exec($cmd);
+    if (!is_string($out) || $out === '')
+      return [];
+    $arr = json_decode($out, true);
+    return is_array($arr) ? $arr : [];
+  }
+
+  // Normalize to base-relative and keep only files within base
+  function normalizeFilePaths(array $files, string $baseDir): array
+  {
+    $base = rtrim(str_replace('\\', '/', $baseDir), '/') . '/';
+    $out = [];
+    foreach ($files as $f) {
+      $n = str_replace('\\', '/', $f);
+      if (stripos($n, $base) === 0) {
+        $out[] = substr($n, strlen($base));
+      }
+    }
+    $out = array_values(array_unique($out));
+    sort($out, SORT_STRING);
+    return $out;
+  }
+
+  // Determine base dir
+  $baseDir = APP_PATH . (APP_ROOT ?: '');
+
+  // Entry scripts to analyze (make these relative to base)
+  $entries = [
+    'public/index.php' => (APP_ROOT ? APP_ROOT : '') . 'public/index.php',
+    'api/composer.php' => (APP_ROOT ? APP_ROOT : '') . 'api/composer.php', // add back when desired
+  ];
+
+  // Collect per-entry required files
+  $jsonData = [];
+  foreach ($entries as $label => $scriptPath) {
+    $filesAbs = getRequiredFilesFromScript($scriptPath);
+    $jsonData[$label] = normalizeFilePaths($filesAbs, $baseDir);
+  }
+
+  // OPTIONAL: keep vendor packages only under composer
+  if (isset($jsonData['api/composer.php'], $jsonData['public/index.php'])) {
+    $vendor = array_filter($jsonData['public/index.php'], fn($f) => strpos($f, 'vendor/') === 0);
+    $jsonData['api/composer.php'] = array_values(array_unique(array_merge($jsonData['api/composer.php'], $vendor)));
+    $jsonData['public/index.php'] = array_values(array_diff($jsonData['public/index.php'], $vendor));
+    sort($jsonData['api/composer.php'], SORT_STRING);
+    sort($jsonData['public/index.php'], SORT_STRING);
+  }
+
+  // OPTIONAL: emit a D3-ready graph (nodes/links)
+  if (isset($_GET['graph'])) {
+    $index = [];
+    $nodes = [];
+    $links = [];
+
+    // Create nodes from all unique files
+    $allFiles = [];
+    foreach ($jsonData as $list)
+      $allFiles = array_merge($allFiles, $list);
+    $allFiles = array_values(array_unique($allFiles));
+    sort($allFiles, SORT_STRING);
+
+    foreach ($allFiles as $i => $file) {
+      $index[$file] = $i;
+      $nodes[] = ['id' => $i, 'name' => $file];
+    }
+
+    // Links: from entry → each required file (or build transitive links if you want)
+    foreach ($jsonData as $entry => $list) {
+      // ensure the entry itself is a node
+      if (!isset($index[$entry])) {
+        $index[$entry] = count($nodes);
+        $nodes[] = ['id' => $index[$entry], 'name' => $entry];
+      }
+      $src = $index[$entry];
+      foreach ($list as $to) {
+        if (!isset($index[$to]))
+          continue;
+        $links[] = ['source' => $src, 'target' => $index[$to]];
+      }
+    }
+
+    echo json_encode(['nodes' => $nodes, 'links' => $links], JSON_UNESCAPED_SLASHES);
+    exit;
+  }
+
+  // Default: return your original map structure
+  echo json_encode($jsonData, JSON_UNESCAPED_SLASHES);
+  exit;
+}
 
 if (__FILE__ == get_required_files()[0] && __FILE__ == realpath($_SERVER["SCRIPT_FILENAME"]))
   if ($path = basename(dirname(get_required_files()[0])) == 'public') { // (basename(getcwd())
@@ -149,7 +161,7 @@ if (__FILE__ == get_required_files()[0] && __FILE__ == realpath($_SERVER["SCRIPT
 //  if (isset($_GET['app']) && $_GET['app'] == 'nodes')
 
 if (defined('GIT_EXEC'))
-  if (is_dir($path = APP_BASE['resources'] . 'js/ace') && empty(glob($path)))
+  if (is_dir($path = app_base('resources', null, 'rel') . 'js/ace') && empty(glob($path)))
     exec((stripos(PHP_OS, 'WIN') === 0 ? '' : APP_SUDO) . GIT_EXEC . ' clone https://github.com/ajaxorg/ace-builds.git resources/js/ace', $output, $returnCode) or $errors['GIT-CLONE-ACE'] = $output;
   elseif (!is_dir($path)) {
     if (!mkdir($path, 0755, true))
@@ -159,8 +171,8 @@ if (defined('GIT_EXEC'))
 
 ob_start(); ?>
 <?= $selector ?? '' ?> {
-/*width: 550px;
-height: 450px;*/
+width: 500px;
+height: 380px;
 /* border: 1px solid black; */
 position: absolute;
 top: 60px;
@@ -229,8 +241,9 @@ ob_end_clean();
 */
 
 ob_start(); ?>
-<div class="ui-widget-header"
-  style="position: relative; display: inline-block; width: 100%; cursor: move; border-bottom: 1px solid #000;background-color: #FFF;">
+<div class="window-header"
+  style="position: relative; display: inline-block; width: 100%; cursor: move; border-bottom: 1px solid #000;background-color: #FFF;"
+  data-drag-handle>
   <label class="nodes-home" style="cursor: pointer;">
     <div class="" style="position: relative; display: inline-block; top: 0; left: 0;">
       <img src="resources/images/d3_icon.png" width="32" height="32" />
@@ -244,14 +257,14 @@ ob_start(); ?>
   </div>
 
   <div style="display: inline; float: right; margin-top: 10px; text-align: center; color: blue; z-index: -1;"><code
-      style="background-color: white; color: #0078D7;"><a style="cursor: pointer; font-size: 13px;" onclick="document.getElementById('app_nodes-container').style.display='none';">[X]</a></code>
+      style="background-color: white; color: #0078D7;"><a style="cursor: pointer; font-size: 13px;" onclick="closeApp('visual/nodes', {fullReset:true})">[X]</a></code>
   </div>
 </div>
 
 <div id=""
   style="position: relative; width: 100%; height: 100%; border: 3px dashed #F5834A; background-color: #D0684D;">
 
-  <div class="ui-widget-content"
+  <div class="window-body"
     style="position: relative; display: block; margin: 0 auto; width: calc(100% - 2px); height: 50px; background-color: rgba(251,247,241);">
     <div style="display: inline-block; text-align: left; width: 125px;">
       <div class="npm-menu text-sm"
@@ -358,47 +371,65 @@ if (false) { ?>
   <script type="text/javascript">
   <?php }
 ob_start(); ?>
+  function toGraph(data) {
+    // If already in {nodes,links} form, just normalize and return
+    if (data && Array.isArray(data.nodes) && Array.isArray(data.links)) {
+      const nodes = data.nodes.map((n, i) => ({
+        id: n.id ?? i,
+        name: n.name ?? n.file ?? String(n)
+      }));
+      const links = data.links.map(l => ({
+        // accept {source: id|obj, target: id|obj}
+        source: (typeof l.source === 'object') ? (l.source.id ?? l.source) : l.source,
+        target: (typeof l.target === 'object') ? (l.target.id ?? l.target) : l.target,
+        color: l.color || ''
+      }));
+      return { nodes, links };
+    }
 
-  function createVisualization(data) {
-    const width = 490, height = 180;
-
+    // Otherwise, convert from { entryFile: [dep1, dep2, ...], ... }
+    const fileIndex = new Map();
     const nodes = [];
     const links = [];
-    const fileIndex = {};
 
-    let index = 0;
-
-    function addNode(name, group) {
-      if (!fileIndex[name]) {
-        nodes.push({ name, group, index });
-        fileIndex[name] = index++;
+    function ensureNode(name) {
+      if (!fileIndex.has(name)) {
+        fileIndex.set(name, nodes.length);
+        nodes.push({ id: nodes.length, name });
       }
+      return fileIndex.get(name);
     }
 
-    function addLink(source, target, color) {
-      links.push({ source: fileIndex[source], target: fileIndex[target], color });
-    }
-
-    Object.keys(data).forEach((file, i) => {
-      addNode(file, i + 1);
-      data[file].forEach(childFile => addNode(childFile, i + 1));
-    });
-
-    Object.keys(data).forEach(file => {
-      data[file].forEach(childFile => {
-        const color = (/*data['server.php'].includes(childFile) &&*/ data['public/index.php'].includes(childFile)) ? 'green' : '';
-        addLink(file, childFile, color);
+    Object.keys(data).forEach((file) => {
+      const src = ensureNode(file);
+      data[file].forEach((child) => {
+        const dst = ensureNode(child);
+        links.push({ source: src, target: dst, color: '' });
       });
     });
+
+    // Color links from public/index.php as green
+    const publicIdxId = fileIndex.get('public/index.php');
+    if (publicIdxId !== undefined) {
+      links.forEach(l => { if (l.source === publicIdxId) l.color = 'green'; });
+    }
+
+    return { nodes, links };
+  }
+
+  function createVisualization(raw) {
+    const { nodes, links } = toGraph(raw);
+
+    const width = 490, height = 180;
 
     const svg = d3.select("#visualization")
       .append("svg")
       .attr("width", width)
       .attr("height", 325)
-      .attr("style", "margin-top: 0; background-color: white;");
+      .attr("style", "margin-top:0; background-color:white;");
 
     const simulation = d3.forceSimulation(nodes)
-      .force("link", d3.forceLink(links).id(d => d.index).distance(100))
+      .force("link", d3.forceLink(links).id(d => d.id).distance(100))
       .force("charge", d3.forceManyBody().strength(-50))
       .force("center", d3.forceCenter(width / 2, height / 2));
 
@@ -407,7 +438,7 @@ ob_start(); ?>
       .selectAll("line")
       .data(links)
       .enter().append("line")
-      .attr("class", d => `link ${d.color}`);
+      .attr("class", d => `link ${d.color || ''}`);
 
     const node = svg.append("g")
       .attr("class", "nodes")
@@ -415,20 +446,15 @@ ob_start(); ?>
       .data(nodes)
       .enter().append("g");
 
-    node.append("circle")
-      .attr("r", 10);
+    node.append("circle").attr("r", 10);
 
     node.append("text")
       .text(d => d.name)
       .attr("x", 12)
       .attr("y", 3);
 
-    simulation
-      .nodes(nodes)
-      .on("tick", ticked);
-
-    simulation.force("link")
-      .links(links);
+    simulation.nodes(nodes).on("tick", ticked);
+    simulation.force("link").links(links);
 
     function ticked() {
       link
@@ -437,16 +463,15 @@ ob_start(); ?>
         .attr("x2", d => d.target.x)
         .attr("y2", d => d.target.y);
 
-      node
-        .attr("transform", d => `translate(${d.x},${d.y})`);
+      node.attr("transform", d => `translate(${d.x},${d.y})`);
     }
   }
 
-  fetch('<?= /*basename(__FILE__)*/ '?app=visual/nodes&' ?>json')
-    .then(response => response.json())
+  fetch('/?app=visual/nodes&graph=1')
+    .then(r => r.json())
     .then(data => createVisualization(data));
 
-  $("#app_nodes-container").resizable({ // , #ui_ace_editor
+  $("#app_nodes-container").resizable({
     alsoResize: "#visualization"
   });
 
@@ -469,7 +494,7 @@ ob_start(); ?>
   <!-- link rel="stylesheet" href="//code.jquery.com/ui/1.12.1/themes/smoothness/jquery-ui.css" / -->
 
   <?php
-  is_dir($path = APP_BASE['resources'] . 'js/') or mkdir($path, 0755, true);
+  is_dir($path = app_base('resources', null, 'rel') . 'js/') or mkdir($path, 0755, true);
   if (is_file($path . 'tailwindcss-3.3.5.js')) {
     if (ceil(abs((strtotime(date('Y-m-d')) - strtotime(date('Y-m-d', strtotime('+5 days', filemtime($path . 'tailwindcss-3.3.5.js'))))) / 86400)) <= 0) {
       $url = 'https://cdn.tailwindcss.com';
@@ -501,9 +526,9 @@ ob_start(); ?>
   <?= $UI_APP['body']; ?>
 
   <script
-    src="<?= APP_IS_ONLINE && check_http_status('https://code.jquery.com/jquery-3.7.1.min.js') ? 'https://code.jquery.com/jquery-3.7.1.min.js' : APP_BASE['resources'] . 'js/jquery/' . 'jquery-3.7.1.min.js' ?>"></script>
+    src="<?= APP_IS_ONLINE && check_http_status('https://code.jquery.com/jquery-3.7.1.min.js') ? 'https://code.jquery.com/jquery-3.7.1.min.js' : app_base('resources', null, 'rel') . 'js/jquery/' . 'jquery-3.7.1.min.js' ?>"></script>
   <?php
-  if (!is_file($path = APP_BASE['resources'] . 'js/jquery-ui/' . 'jquery-ui-1.12.1.js') || ceil(abs((strtotime(date('Y-m-d')) - strtotime(date('Y-m-d', strtotime('+5 days', filemtime($path))))) / 86400)) <= 0) {
+  if (!is_file($path = app_base('resources', null, 'rel') . 'js/jquery-ui/' . 'jquery-ui-1.12.1.js') || ceil(abs((strtotime(date('Y-m-d')) - strtotime(date('Y-m-d', strtotime('+5 days', filemtime($path))))) / 86400)) <= 0) {
 
     if (!realpath($pathdir = dirname($path)))
       if (!mkdir($pathdir, 0755, true))
@@ -518,7 +543,7 @@ ob_start(); ?>
   } ?>
 
   <script
-    src="<?= APP_IS_ONLINE && check_http_status('https://code.jquery.com/ui/1.12.1/jquery-ui.min.js') ? 'https://code.jquery.com/ui/1.12.1/jquery-ui.min.js' : APP_BASE['resources'] . 'js/jquery-ui/' . 'jquery-ui-1.12.1.js' ?>"></script>
+    src="<?= APP_IS_ONLINE && check_http_status('https://code.jquery.com/ui/1.12.1/jquery-ui.min.js') ? 'https://code.jquery.com/ui/1.12.1/jquery-ui.min.js' : app_base('resources', null, 'rel') . 'js/jquery-ui/' . 'jquery-ui-1.12.1.js' ?>"></script>
 
   <script src="https://d3js.org/d3.v4.min.js"></script>
 

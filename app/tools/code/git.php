@@ -8,9 +8,38 @@ if (!defined('APP_BOOTSTRAPPED')) { // defined('APP_PATH') || require_once (...)
 
 global $errors;
 
-$app_id = 'tools/code/git';
-$container_id = str_replace(['/', '-'], '_', $app_id) . '-container';
-$selector = '#app_' . ($container_id ?? 'git-container');
+$app_id = 'tools/code/git';           // full path-style id
+
+// Always normalize slashes first
+$app_norm = str_replace('\\', '/', $app_id);
+
+// Last segment only (for titles, labels, etc.)
+$slug = basename($app_norm);                    // "composer"
+
+// Sanitized full path for DOM ids (underscores only from non [A-Za-z0-9_ -])
+$key = preg_replace('/[^\w-]+/', '_', $app_norm);  // "tools_registry_composer"
+
+// If you prefer strictly underscores (no hyphens), do: '/[^\w]+/'
+
+// Core DOM ids/selectors
+$container_id = "app_{$key}-container";         // "app_tools_registry_composer-container"
+$selector = "#{$container_id}";
+
+// Useful companion ids
+$style_id = "style-{$key}";                    // "style-tools_registry_composer"
+$script_id = "script-{$key}";                   // "script-tools_registry_composer"
+
+// Optional: data attributes you can stamp on the container for easy introspection
+$data_attrs = sprintf(
+  'data-app-path="%s" data-app-key="%s" data-app-slug="%s"',
+  htmlspecialchars($app_norm, ENT_QUOTES),
+  htmlspecialchars($key, ENT_QUOTES),
+  htmlspecialchars($slug, ENT_QUOTES),
+);
+
+//$hash = substr(sha1($app_norm), 0, 6);
+//$key = preg_replace('/[^\w-]+/', '_', $app_norm) . "_{$hash}";
+
 
 switch (__FILE__) {
   case get_required_files()[0]:
@@ -24,7 +53,7 @@ switch (__FILE__) {
     file_exists(APP_PATH . 'config/constants.paths.php') && require_once APP_PATH . 'config/constants.paths.php';
 }
 
-if ($path = realpath(APP_BASE['config'] . 'constants.git.php')) {
+if ($path = realpath(app_base('config', null, 'abs') . 'constants.git.php')) {
   require_once $path;
 } else
   die(var_dump("constants.git.php path was not found. file=" . basename($path)));
@@ -48,7 +77,7 @@ ob_start(); ?>
 position : fixed; /* absolute */
 display : block;
 top : 20%;
-left : 40%; /* right: 50%; */
+left : 25%; /* right: 50%; */
 margin-left: -[212px]; /* margin-right: -[212px]; */
 margin-top: -[153px];
 /* transform: translate(-50%, -50%); */
@@ -127,13 +156,11 @@ ob_start();
 defined('GIT_VERSION') or define('GIT_VERSION', '1.0.0');
 defined('GIT_LATEST') or define('GIT_LATEST', GIT_VERSION);
 
-/*
- */
 ?>
 
-
-<div class="absolute ui-widget-header"
-  style="position: fixed; display: inline-block; width: 450px; height: 0; cursor: move; margin: -50px 0 0 0; padding: 24px 0; border-bottom: 1px solid #000; z-index: 3;">
+<div class="absolute window-header"
+  style="position: fixed; display: inline-block; width: 450px; height: 0; cursor: move; margin: -50px 0 0 0; padding: 24px 0; border-bottom: 1px solid #000; z-index: 3;"
+  data-drag-handle>
   <label class="git-home" style="cursor: pointer;">
     <div class="" style="position: relative; float: left; display: inline-block; top: 0; left: 0; margin-top: -5px;">
       <img src="resources/images/git_icon.fw.png" width="32" height="32" />
@@ -147,11 +174,11 @@ defined('GIT_LATEST') or define('GIT_LATEST', GIT_VERSION);
   </div>
 
   <div style="display: inline; float: right; text-align: center; color: blue;"><code
-      style="background-color: white; color: #0078D7;"><a style="cursor: pointer; font-size: 13px;" onclick="closeApp('tools/code/git')">[X]</a></code>
+      style="background-color: white; color: #0078D7;"><a style="cursor: pointer; font-size: 13px;" onclick="closeApp('tools/code/git', {fullReset:true})">[X]</a></code>
     <!-- document.getElementById('<?= $container_id ?>').style.display='none'; -->
   </div>
 </div>
-<div id="<?= $container_id ?>"
+<div id="" class="window-body"
   class="<?= __FILE__ == get_required_files()[0] || isset($_GET['app']) && $_GET['app'] == 'git' || isset($errors['GIT_UPDATE']) ? 'selected' : (version_compare(GIT_LATEST, GIT_VERSION, '>') != 0 ? (isset($_GET['app']) && $_GET['app'] != 'git' ? '' : '') : '') ?>"
   style="position: fixed; z-index: 3; width: 424px; background-color: rgba(255,255,255,0.8); padding: 10px;">
 
@@ -431,7 +458,6 @@ defined('GIT_LATEST') or define('GIT_LATEST', GIT_VERSION);
               </div>
             </div>
           </div>
-
         </form>
       </div>
 
@@ -479,8 +505,6 @@ defined('GIT_LATEST') or define('GIT_LATEST', GIT_VERSION);
           </div>
         </form>
       </div>
-
-
     </div>
   </div>
 </div>
@@ -768,7 +792,7 @@ ob_start(); ?>
 
   <?php
   // (APP_IS_ONLINE && check_http_status('https://cdn.tailwindcss.com') ? 'https://cdn.tailwindcss.com' : APP_URL . 'resources/js/tailwindcss-3.3.5.js')?
-  is_dir($path = APP_BASE['resources'] . 'js/') or mkdir($path, 0755, true);
+  is_dir($path = app_base('resources', null, 'rel') . 'js/') or mkdir($path, 0755, true);
   if (is_file("{$path}tailwindcss-3.3.5.js")) {
     if (ceil(abs((strtotime(date('Y-m-d')) - strtotime(date('Y-m-d', strtotime('+5 days', filemtime("{$path}tailwindcss-3.3.5.js"))))) / 86400)) <= 0) {
       $url = 'https://cdn.tailwindcss.com';

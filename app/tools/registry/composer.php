@@ -12,11 +12,38 @@ if (!defined('APP_BOOTSTRAPPED')) { // defined('APP_PATH') || require_once (...)
   }
 }
 
-$app_id = 'tools/registry/composer'; // full path-style ID
-$slug = basename($app_id);         // composer
+$app_id = 'tools/registry/composer';           // full path-style id
 
-$container_id = "{$slug}-container"; // str_replace(['/', '-'], '_', $app_id) // composer-container
-$selector = "#app_{$container_id}"; // #app_composer-container
+// Always normalize slashes first
+$app_norm = str_replace('\\', '/', $app_id);
+
+// Last segment only (for titles, labels, etc.)
+$slug = basename($app_norm);                    // "composer"
+
+// Sanitized full path for DOM ids (underscores only from non [A-Za-z0-9_ -])
+$key = preg_replace('/[^\w-]+/', '_', $app_norm);  // "tools_registry_composer"
+
+// If you prefer strictly underscores (no hyphens), do: '/[^\w]+/'
+
+// Core DOM ids/selectors
+$container_id = "app_{$key}-container";         // "app_tools_registry_composer-container"
+$selector = "#{$container_id}";
+
+// Useful companion ids
+$style_id = "style-{$key}";                    // "style-tools_registry_composer"
+$script_id = "script-{$key}";                   // "script-tools_registry_composer"
+
+// Optional: data attributes you can stamp on the container for easy introspection
+$data_attrs = sprintf(
+  'data-app-path="%s" data-app-key="%s" data-app-slug="%s"',
+  htmlspecialchars($app_norm, ENT_QUOTES),
+  htmlspecialchars($key, ENT_QUOTES),
+  htmlspecialchars($slug, ENT_QUOTES),
+);
+
+//$hash = substr(sha1($app_norm), 0, 6);
+//$key = preg_replace('/[^\w-]+/', '_', $app_norm) . "_{$hash}";
+
 
 switch (__FILE__) {
   case get_required_files()[0]:
@@ -52,9 +79,9 @@ define("COMPOSER_JSON_RAW", $COMPOSER_JSON);
 ob_start(); ?>
 <?= $selector ?> {
 position : absolute;
-display : none;
-left : 832px;
-top : 96px;
+display : block;
+left : 250px;
+top : 125px;
 resize : both; /* Make the div resizable */
 margin : 0 auto;
 /* z-index : 1; */
@@ -198,8 +225,9 @@ function highlightVersionDiff($installed, $latest)
 
 ob_start(); ?>
 
-<div class="fixed ui-widget-header" id=""
-  style="position: fixed; display: inline-block; width: 445px; height: 25px; cursor: move; margin: -45px 0 25px 0; padding: 10px 0 10px 0; border-bottom: 1px solid #000; z-index: 3;">
+<div id="" class="fixed window-header"
+  style="position: fixed; display: inline-block; width: 445px; height: 25px; cursor: move; margin: -45px 0 25px 0; padding: 10px 0 10px 0; border-bottom: 1px solid #000; z-index: 3;"
+  data-drag-handle>
   <label class="composer-home" style="cursor: pointer;">
     <div class="absolute"
       style="position: relative; float: left; display: inline-block; top: 0; left: 0; margin-top: -5px;">
@@ -223,15 +251,15 @@ ob_start(); ?>
         <select name="exec" onchange="this.form.submit();">
 
   <?php if (defined('COMPOSER_BIN')): ?>
-                            <option <?= COMPOSER_EXEC_CMD === COMPOSER_BIN ? 'selected' : '' ?>
-                                value="bin"><?= COMPOSER_BIN ?></option>
+                                                  <option <?= COMPOSER_EXEC_CMD === COMPOSER_BIN ? 'selected' : '' ?>
+                                                      value="bin"><?= COMPOSER_BIN ?></option>
     <?php endif; ?>
   
     <?php if (defined('COMPOSER_PHAR')): ?>
-                            <option <?= COMPOSER_EXEC_CMD === COMPOSER_PHAR['exec'] ? 'selected' : '' ?>
-                              value="phar">
-                              <?= COMPOSER_PHAR['exec'] ?>
-                            </option>
+                                                  <option <?= COMPOSER_EXEC_CMD === COMPOSER_PHAR['exec'] ? 'selected' : '' ?>
+                                                    value="phar">
+                                                    <?= COMPOSER_PHAR['exec'] ?>
+                                                  </option>
   <?php endif; ?>
 
         </select>
@@ -240,11 +268,11 @@ ob_start(); ?>
 
   </div>
   <div style="display: inline; float: right; margin-top: 10px; text-align: center; "><code
-      style=" background-color: white; color: #0078D7;"><a style="cursor: pointer; font-size: 13px;" onclick="closeApp('tools/registry/composer'); document.getElementById('app_composer-container').style.display='none';">[X]</a></code>
+      style=" background-color: white; color: #0078D7;"><a style="cursor: pointer; font-size: 13px;" onclick="closeApp('tools/registry/composer', {fullReset:true});">[X]</a></code>
   </div>
 </div>
 
-<div id="<?= $container_id ?? '' ?>"
+<div class="window-body"
   class="<?= defined('COMPOSER_VERSION') and __FILE__ == get_required_files()[0] || (isset($_GET['app']) && $_GET['app'] == 'composer') || (defined('COMPOSER') && !is_object(COMPOSER['json']) && count((array) COMPOSER) === 0) || version_compare(COMPOSER_LATEST, COMPOSER_VERSION, '>') != 0 && defined('APP_DEBUG') && APP_DEBUG ? 'selected' : '' ?>"
   style="width: 424px; background-color: rgba(255, 255, 255, 0.8); padding: 10px; display: block; left: 612px; top: 104px;">
 
@@ -263,15 +291,16 @@ ob_start(); ?>
           $query = http_build_query(APP_QUERY, '', '&', PHP_QUERY_RFC3986);
 
           // Replace `=` appended to empty keys
-          $query = preg_replace('/=(&|$)/', '$1', $query);
+          $query = ''; // preg_replace('/=(&|$)/', '$1', $query);
           ?>
           <a class="text-sm" id="app_composer-frameMenuPrev"
-            href="<?= (!empty(APP_QUERY) ? "?$query" : '') . (defined('APP_ENV') && APP_ENV == 'development' ? '#!' : '#') ?>">
+            href="<?= /*(!empty(APP_QUERY) ? "?$query" : '') . */ defined('APP_ENV') && APP_ENV == 'development' ? '#!' : '#' ?>">
             &lt; Menu</a> | <a class="text-sm" id="app_composer-frameMenuNext"
-            href="<?= (!empty(APP_QUERY) ? "?$query" : '') . (defined('APP_ENV') && APP_ENV == 'development' ? '#!' : '#') ?>">Init
+            href="<?= /*(!empty(APP_QUERY) ? "?$query" : '') . */ defined('APP_ENV') && APP_ENV == 'development' ? '#!' : '#' ?>">Init
             &gt;</a>
         </div>
-        <form style="display: inline-block;" action="<?= '?app=composer' ?? basename(__FILE__); ?>" method="POST">
+        <form style="display: inline-block;" action="<?= '/?app=composer' ?? basename(__FILE__); ?>"
+          method="POST">
           <div class="text-sm" style="font-size: small;">
             <input type="hidden" name="composer[autoload]" value="off">
             <!-- Checkbox input that overrides the hidden input if checked -->
@@ -303,7 +332,7 @@ ob_start(); ?>
     </div>
     <div class="absolute"
       style="position: absolute; bottom: 60px; right: 0; margin: 0 auto; width: 225px; text-align: right;">
-      <form action="?" method="POST" class="text-sm">
+      <form action="/?app=composer" method="POST" class="text-sm">
         <input type="hidden" name="update" value="" />composer.lock requires an <button type="submit"
           style="border: 1px solid #000; z-index: 3;">Update</button>
       </form>
@@ -321,7 +350,7 @@ ob_start(); ?>
 
     <div class="absolute"
       style="position: absolute; bottom: 40px; left: 0; right: 0; width: 100%; text-align: center; z-index: 1; ">
-      <form action="#!" method="POST">
+      <form action="/?app=composer" method="POST">
         <input type="hidden" name="composer[create-project]" value="" />
         <span style="pdding-left: 125px"></span>
         <select name="composer[package]" onchange="this.form.submit();">
@@ -354,7 +383,7 @@ ob_start(); ?>
         foreach (COMPOSER['json']->require as $key => $require) {
           if (preg_match('/.*\/.*:.*/', $key . ':' . $require))
             if (preg_match('/(.*)\/.*/', $key, $match))
-              if (!empty($match) && !is_dir(APP_BASE['vendor'] . $match[1] . '/'))
+              if (!empty($match) && !is_dir(app_base('vendor', null, 'rel') . $match[1] . '/'))
                 $count++;
         }
       ?>
@@ -401,7 +430,7 @@ ob_start(); ?>
       <div id="app_composer-frameUpdate" class="app_composer-frame-container absolute"
         style="overflow: scroll; background-color: rgb(225,196,151,.75);">
         <form autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"
-          action="<?= APP_URL . '?' . http_build_query(APP_QUERY + ['app' => 'composer']) . (defined('APP_ENV') && APP_ENV == 'development' ? '#!' : '') /* $c_or_p . '=' . (empty($_GET[$c_or_p]) ? '' : $$c_or_p->name) . '&amp;app=composer' */ ?>"
+          action="<?= APP_URL . '/?' . http_build_query(APP_QUERY + ['app' => 'composer']) . (defined('APP_ENV') && APP_ENV == 'development' ? '#!' : '') /* $c_or_p . '=' . (empty($_GET[$c_or_p]) ? '' : $$c_or_p->name) . '&amp;app=composer' */ ?>"
           method="POST">
           <input type="hidden" name="composer[update]" value="" />
           <div style="position: absolute; right: 0; float: right; text-align: center;">
@@ -445,7 +474,7 @@ php composer.phar -v
         style="overflow: hidden; height: 270px;">
         <?php if (!defined('CONSOLE') && CONSOLE != true) { ?>
           <form autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"
-            action="<?= APP_URL_BASE . '?' . http_build_query(APP_QUERY + ['app' => 'composer']) . (defined('APP_ENV') && APP_ENV == 'development' ? '#!' : '') /* $c_or_p . '=' . (empty($_GET[$c_or_p]) ? '' : $$c_or_p->name) . '&amp;app=composer' */ ?>"
+            action="<?= APP_URL_BASE . '/?' . http_build_query(APP_QUERY + ['app' => 'composer']) . (defined('APP_ENV') && APP_ENV == 'development' ? '#!' : '') /* $c_or_p . '=' . (empty($_GET[$c_or_p]) ? '' : $$c_or_p->name) . '&amp;app=composer' */ ?>"
             method="POST">
           <?php } ?>
           <div style="position: absolute; right: 0; float: right; text-align: center;">
@@ -1113,7 +1142,7 @@ php composer.phar -v
         foreach (COMPOSER['json']->require as $key => $require)
           if (preg_match('/.*\/.*:.*/', "$key:$require"))
             if (preg_match('/(.*\/.*)/', $key, $match))
-              if (!empty($match) && !is_dir(APP_BASE['vendor'] . $match[1] . '/'))
+              if (!empty($match) && !is_dir(app_base('vendor', null, 'rel') . $match[1] . '/'))
                 $count++;
 
       ?>
@@ -1149,7 +1178,7 @@ php composer.phar -v
                   foreach (COMPOSER['json']->require as $key => $require) {
                     if (preg_match('/.*\/.*:.*/', "$key:$require"))
                       if (preg_match('/(.*\/.*)/', $key, $match))
-                        if (!empty($match) && !is_dir(APP_BASE['vendor'] . $match[1] . '/'))
+                        if (!empty($match) && !is_dir(app_base('vendor', null, 'rel') . $match[1] . '/'))
                           echo '<li style="color: red;"><code class="text-sm">' . $match[1] . ':' . '<span style="float: right">' . $require . '</span>' . "</code></li>\n";
                   }
                   ?>
@@ -1536,7 +1565,7 @@ ob_start(); ?>
 
   <?php
   // (check_http_status('https://cdn.tailwindcss.com') ? 'https://cdn.tailwindcss.com' : APP_URL . 'resources/js/tailwindcss-3.3.5.js')?
-  is_dir($path = APP_BASE['resources'] . 'js/') or mkdir($path, 0755, true);
+  is_dir($path = app_base('resources', null, 'rel')  . 'js/') or mkdir($path, 0755, true);
   if (is_file("{$path}tailwindcss-3.3.5.js")) {
     if (ceil(abs((strtotime(date('Y-m-d')) - strtotime(date('Y-m-d', strtotime('+5 days', filemtime("{$path}tailwindcss-3.3.5.js"))))) / 86400)) <= 0) {
       $url = 'https://cdn.tailwindcss.com';

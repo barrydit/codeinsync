@@ -62,8 +62,8 @@ function auth_get_creds(): array
 
 function auth_verify(string $u, string $p): bool
 {
-    $EU = getenv('APP_BASIC_USER') ?: 'admin';
-    $EP = getenv('APP_BASIC_PASS') ?: 'password';
+    $EU = getenv('APP_BASIC_USER') ?: $_ENV['APP_UNAME'];
+    $EP = getenv('APP_BASIC_PASS') ?: $_ENV['APP_PWORD'];
     return hash_equals($EU, $u) && hash_equals($EP, $p);
 }
 

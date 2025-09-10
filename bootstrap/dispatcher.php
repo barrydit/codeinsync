@@ -15,6 +15,9 @@ return (function (): bool{
             return true;
         $accept = $_SERVER['HTTP_ACCEPT'] ?? '';
         return stripos($accept, 'application/json') !== false;
+
+        // $ct = $_SERVER['CONTENT_TYPE'] ?? $_SERVER['HTTP_CONTENT_TYPE'] ?? '';
+        // return stripos($ct, 'application/json') !== false;
     };
 
     $json_out = function (array $payload, int $code = 200): bool{
@@ -148,6 +151,13 @@ return (function (): bool{
 
     // Only attempt UI app JSON flow if the client wants JSON or explicitly asked `?json`
     if ($app !== null && !isset($apiRoutes[$app])) {
+        $isScript = isset($_GET['script']);
+
+        $mustResolve = $acceptsJson() || $isScript || $wantsHtmlView || PHP_SAPI === 'cli';
+        if (!$mustResolve) {
+            // keep current behavior
+            return false; // no JSON requested -> fall back to page render
+        }
 
         if ($wantsHtmlView) {
             // render an HTML shell using $UI_APP['style'], ['body'], ['script']
@@ -221,6 +231,13 @@ return (function (): bool{
 
         if (!is_array($UI_APP)) {
             return $json_error('UI app did not produce a valid payload', 500, ['app' => $app]);
+        }
+
+        if ($isScript) {
+            if (!headers_sent())
+                header('Content-Type: application/javascript; charset=utf-8');
+            echo (string) ($UI_APP['script'] ?? '');
+            return true;
         }
 
         return $json_out($UI_APP);

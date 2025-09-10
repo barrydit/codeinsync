@@ -189,8 +189,8 @@ set_exception_handler([Shutdown::class, 'handleException']);
 register_shutdown_function(function () {
   //Shutdown::triggerShutdown('');  //
 
-  if (!empty($_ENV))
-    Shutdown::saveEnvToFile();
+  //if (!empty($_ENV))
+  //  Shutdown::saveEnvToFile();
   Shutdown::unlinkEnvjson();
   if ($error = error_get_last()) {
     $message = sprintf(
