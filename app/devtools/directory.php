@@ -1451,7 +1451,7 @@ if (e.key === 'ArrowRight' && idx < crumbs.length - 1) { crumbs[idx + 1].focus()
     <?php
     // (APP_IS_ONLINE && check_http_status('https://cdn.tailwindcss.com') ? 'https://cdn.tailwindcss.com' : APP_URL . 'resources/js/tailwindcss-3.3.5.js')?
 // Path to the JavaScript file
-    $path = app_base('resources', null, 'rel') . 'js/tailwindcss-3.3.5.js';
+    $path = app_base('resources', null, 'rel') . 'js_test/tailwindcss-3.3.5.js';
 
     // Create the directory if it doesn't exist
     is_dir(dirname($path)) or mkdir(dirname($path), 0755, true);

@@ -642,7 +642,7 @@ unset($_SESSION['mode']); ?>
   <!-- You need to include jQueryUI for the extended easing options. -->
   <!-- script src="//code.jquery.com/jquery-1.12.4.js"></script -->
   <?php
-  if (!is_file($path = app_base('resources', null, 'rel') . 'js/jquery-ui/' . 'jquery-ui-1.12.1.js') || ceil(abs((strtotime(date('Y-m-d')) - strtotime(date('Y-m-d', strtotime('+5 days', filemtime($path))))) / 86400)) <= 0) {
+  if (!is_file($path = app_base('resources', null, 'abs') . 'js/jquery-ui/' . 'jquery-ui-1.12.1.js') || ceil(abs((strtotime(date('Y-m-d')) - strtotime(date('Y-m-d', strtotime('+5 days', filemtime($path))))) / 86400)) <= 0) {
     if (!realpath($pathdir = dirname($path)))
       if (!mkdir($pathdir, 0755, true))
         $errors['DOCS'] = "$pathdir does not exist";
