@@ -1,252 +1,257 @@
 <?php
+/**
+ * bootstrap/dispatcher.php
+ *
+ * Contract:
+ *  - Return TRUE  -> response fully emitted (echo/headers done)
+ *  - Return ARRAY -> structured payload; caller may JSON-emit
+ *  - Return FALSE/NULL -> not handled; caller continues normal boot
+ */
+
 declare(strict_types=1);
 
-// /bootstrap/dispatcher.php — unified dispatcher (public + bootstrap)
+// ─────────────────────────────────────────────────────────────────────────────
+// 0) Minimal guards so this file can run standalone (e.g., /public/dispatcher.php)
+//    If bootstrap already ran, these are no-ops.
+// ─────────────────────────────────────────────────────────────────────────────
+if (!defined('BOOTSTRAP_PATH')) {
+    define('BOOTSTRAP_PATH', rtrim(str_replace('\\', '/', __DIR__), '/') . '/');
+}
+if (!defined('APP_PATH')) {
+    $root = realpath(BOOTSTRAP_PATH . '..') ?: dirname(BOOTSTRAP_PATH);
+    define('APP_PATH', rtrim(str_replace('\\', '/', $root), '/') . '/');
+}
+if (!defined('CONFIG_PATH')) {
+    define('CONFIG_PATH', APP_PATH . 'config/');
+}
+if (!function_exists('app_context') || !function_exists('app_base')) {
+    $fn = CONFIG_PATH . 'functions.php';
+    if (is_file($fn)) {
+        require_once $fn;   // defines app_context(), app_base(), etc.
+    }
+}
 
-// Hint bootstrap to do a minimal/core load (no heavy/full boot)
-defined('APP_MODE') || define('APP_MODE', 'dispatcher');
-require_once __DIR__ . '/bootstrap.php';
+// Optional: single autoloader (cheap if already loaded)
+$autoload = APP_PATH . 'autoload.php';
+if (is_file($autoload) && !class_exists('Composer\Autoload\ClassLoader', false)) {
+    require_once $autoload;
+}
 
-return (function (): bool{
-    /* ───────────────────────────── Helpers ───────────────────────────── */
-
-    $acceptsJson = function (): bool{
-        if (isset($_GET['json']))
+// ─────────────────────────────────────────────────────────────────────────────
+// 1) Small utilities
+// ─────────────────────────────────────────────────────────────────────────────
+// Put this once (e.g., in bootstrap.php after functions are loaded)
+if (!function_exists('wants_json_request')) {
+    function wants_json_request(): bool
+    {
+        if (isset($_GET['json']) && $_GET['json'] !== '0')
             return true;
-        $accept = $_SERVER['HTTP_ACCEPT'] ?? '';
-        return stripos($accept, 'application/json') !== false;
+        $accept = strtolower($_SERVER['HTTP_ACCEPT'] ?? '');
+        if ($accept === '')
+            return false;
 
-        // $ct = $_SERVER['CONTENT_TYPE'] ?? $_SERVER['HTTP_CONTENT_TYPE'] ?? '';
-        // return stripos($ct, 'application/json') !== false;
-    };
-
-    $json_out = function (array $payload, int $code = 200): bool{
-        if (!headers_sent()) {
-            http_response_code($code);
-            header('Content-Type: application/json; charset=utf-8');
-            header('Cache-Control: no-store, no-cache, must-revalidate, max-age=0');
+        // Only prefer JSON when it beats HTML via q-values
+        $scores = [];
+        foreach (explode(',', $accept) as $p) {
+            $p = trim($p);
+            if ($p === '')
+                continue;
+            $mime = $p;
+            $q = 1.0;
+            if (strpos($p, ';') !== false) {
+                [$mime, $params] = array_map('trim', explode(';', $p, 2));
+                if (preg_match('/(?:^|;) *q=([0-9.]+)/', $params, $m))
+                    $q = (float) $m[1];
+            }
+            $scores[$mime] = $q;
         }
-        echo json_encode($payload, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE);
-        return true; // handled
-    };
+        $qJson = max($scores['application/json'] ?? 0, $scores['application/*'] ?? 0);
+        $qHtml = max($scores['text/html'] ?? 0, $scores['application/xhtml+xml'] ?? 0, $scores['text/*'] ?? 0);
+        $qAny = $scores['*/*'] ?? 0;
+        return $qJson > $qHtml && $qJson >= $qAny && $qJson > 0;
+    }
+}
 
-    $json_error = function (string $message, int $code = 400, array $extra = []) use ($json_out): bool{
-        return $json_out(array_merge(['error' => $message], $extra), $code);
-    };
+// Use it in bootstrap/dispatcher.php instead of the old closure:
+$wantsJson = wants_json_request();
 
-    $bail = function (string $message, int $code = 500) {
-        if (!headers_sent()) {
-            http_response_code($code);
-            header('Content-Type: text/plain; charset=utf-8');
+$emitJson = static function ($data): void {
+    if (!headers_sent()) {
+        header('Content-Type: application/json; charset=utf-8');
+    }
+    echo json_encode($data, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE);
+};
+
+$safeJoin = static function (string $base, string $rel): string {
+    // Normalize and prevent path traversal
+    $base = rtrim(str_replace('\\', '/', $base), '/') . '/';
+    $rel = ltrim(str_replace('\\', '/', $rel), '/');
+    $full = $base . $rel;
+    $realBase = realpath($base) ?: $base;
+    $realFull = realpath($full) ?: $full; // allow non-existing until .php suffix added
+    $realBase = rtrim(str_replace('\\', '/', $realBase), '/') . '/';
+    $realFull = str_replace('\\', '/', $realFull);
+    return (strpos($realFull, $realBase) === 0) ? $full : $base; // fallback to base if unsafe
+};
+
+$includeAndReturn = static function (string $file) {
+    // Standardize contract: include file and interpret result
+    $result = require $file;
+
+    // If the included file printed its own response and signals TRUE, we’re done.
+    if ($result === true) {
+        return true;
+    }
+
+    // If it returned a string and didn't echo, treat as body we need to print.
+    if (is_string($result)) {
+        echo $result;
+        return true;
+    }
+
+    // If it returned array/object, hand back to caller (bootstrap may JSON-emit).
+    if (is_array($result) || is_object($result)) {
+        return $result;
+    }
+
+    // Otherwise, consider it handled if it produced output.
+    if (function_exists('headers_sent')) {
+        // We can't easily detect prior echo; just fall through as not-fully-handled.
+    }
+    return null;
+};
+
+// ─────────────────────────────────────────────────────────────────────────────
+// 2) Inputs
+// ─────────────────────────────────────────────────────────────────────────────
+$app = $_POST['app'] ?? $_GET['app'] ?? null;
+$cmd = $_POST['cmd'] ?? null;
+$method = $_SERVER['REQUEST_METHOD'] ?? 'GET';
+
+// ─────────────────────────────────────────────────────────────────────────────
+// 3) Predefined API routes (explicit whitelist)
+// ─────────────────────────────────────────────────────────────────────────────
+$routes = [
+    // /?app=composer -> /api/composer.php
+    'composer' => APP_PATH . 'api/composer.php',
+    'git' => APP_PATH . 'api/git.php',
+    'npm' => APP_PATH . 'api/npm.php',
+];
+
+// If alias route requested, dispatch it
+if ($app && isset($routes[$app]) && is_file($routes[$app])) {
+    $res = $includeAndReturn($routes[$app]);
+    if ($res === true) {
+        return true;
+    }
+    if (is_array($res) || is_object($res)) {
+        // If called directly (not via bootstrap), JSON-emit.
+        if (!defined('APP_MODE') && $GLOBALS['__DISPATCHER_STANDALONE__'] = true) {
+            if ($wantsJson()) {
+                $emitJson($res);
+                return true;
+            }
         }
-        echo $message;
-        exit;
-    };
+        return $res;
+    }
+    // Fall through otherwise.
+}
 
-    // On-demand constants loading for specific features
-    $ensure_constants_for = function (string $key): void{
-        $need = function (string $file): void{
-            if (is_file($file))
-                require_once $file;
-            // else: silently skip or log; your call
-        };
+// ─────────────────────────────────────────────────────────────────────────────
+// 4) Dynamic app resolver (safe under APP_PATH . 'app/')
+//    Supports /?app=tools/registry/composer  -> /app/tools/registry/composer.php
+// ─────────────────────────────────────────────────────────────────────────────
+if ($app && is_string($app)) {
+    $app = trim($app, "/ \t\n\r\0\x0B");
 
-        switch ($key) {
-            case 'composer':
-                $need(APP_PATH . 'config/constants.composer.php');
-                $need(APP_PATH . 'config/functions.composer.php');
-
-                $errors = [];
-                $force = !empty($_GET['refresh']) || (!empty($_POST['refresh']) && $_POST['refresh']); // optional manual refresh
-
-                $latest = composer_latest_version($errors, $force);
-                // Use it however you need:
-                if ($latest) {
-                    defined('COMPOSER_LATEST') || define('COMPOSER_LATEST', $latest);
-                }
-
-                break;
-
-            case 'git':
-                $need(APP_PATH . 'config/constants.git.php');
-                // $need(APP_PATH . 'config/functions.git.php');
-                break;
-
-            case 'npm':
-                $need(APP_PATH . 'config/constants.npm.php');
-                // $need(APP_PATH . 'config/functions.npm.php');
-                break;
-        }
-
-
-        // Map feature keys to constants files; extend as needed
-/*        $map = [
-            'composer' => APP_PATH . 'config/constants.composer.php',
-            'git' => APP_PATH . 'config/constants.git.php',
-            'npm' => APP_PATH . 'config/constants.npm.php',
-            // 'nodes'  => APP_PATH . 'config/constants.nodes.php',
-        ];
-        if (isset($map[$key]) && is_file($map[$key])) {
-            require_once $map[$key];
-        }
-*/
-    };
-
-    // Safe include runner
-    $run = function (string $file): bool{
-        require $file;
-        return true; // handled
-    };
-
-    /* ───────────────────────────── Inputs ───────────────────────────── */
-
-    $app = $_POST['app'] ?? $_GET['app'] ?? null;   // route slug
-    $cmd = $_POST['cmd'] ?? null;                   // command string
-
-    /* ─────────────────────── API / Command Routing ───────────────────── */
-
-    // Whitelisted API app routes (server-side actions)
-    $apiRoutes = [
-        'composer' => APP_PATH . 'api/composer.php',
-        'git' => APP_PATH . 'api/git.php',
-        'npm' => APP_PATH . 'api/npm.php',
-        // add more whitelisted slugs here
+    $allowedRoots = [
+        APP_PATH . 'app/',
+        APP_PATH . 'app/tools/',
+        APP_PATH . 'app/tools/registry/',
+        APP_PATH . 'app/devtools/',
     ];
 
-    // Command pattern routes for POST cmd="git ...", "composer ...", "npm ..."
+    $candidate = preg_match('/\.php$/i', $app) ? $app : ($app . '.php');
+    $full = $safeJoin(APP_PATH . 'app/', $candidate);
+
+    $isAllowed = false;
+    $realFull = realpath($full);
+    if ($realFull !== false) {
+        $realFull = str_replace('\\', '/', $realFull);
+        foreach ($allowedRoots as $root) {
+            $realRoot = realpath($root);
+            if ($realRoot !== false) {
+                $realRoot = rtrim(str_replace('\\', '/', $realRoot), '/') . '/';
+                if (strpos($realFull, $realRoot) === 0) {
+                    $isAllowed = true;
+                    break;
+                }
+            }
+        }
+    }
+
+    if ($isAllowed && is_file($full)) {
+        // 🔹 Lazy-load Composer constants when hitting the Composer app
+        $realFullNorm = $realFull ?: $full;
+        if (preg_match('#/app/tools/registry/composer\.php$#i', $realFullNorm)) {
+            $paths = CONFIG_PATH . 'constants.paths.php';
+            $composer = CONFIG_PATH . 'constants.composer.php';
+            if (is_file($paths))
+                require_once $paths;
+            if (is_file($composer))
+                require_once $composer;
+        }
+
+        $res = $includeAndReturn($full);
+        if ($res === true)
+            return true;
+        if (is_array($res) || is_object($res)) {
+            if (!defined('APP_MODE') && $wantsJson()) {
+                $emitJson($res);
+                return true;
+            }
+            return $res;
+        }
+        return true;
+    }
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// 5) Command routes (POST only): composer | git | npm (extensible)
+// ─────────────────────────────────────────────────────────────────────────────
+if (strtoupper($method) === 'POST' && is_string($cmd) && $cmd !== '') {
     $commandRoutes = [
-        '/^git\s+/i' => ['file' => APP_PATH . 'api/git.php', 'key' => 'git'],
-        '/^composer\s+/i' => ['file' => APP_PATH . 'api/composer.php', 'key' => 'composer'],
-        '/^npm\s+/i' => ['file' => APP_PATH . 'api/npm.php', 'key' => 'npm'],
+        '/^composer\b/i' => APP_PATH . 'api/composer.php',
+        '/^git\b/i' => APP_PATH . 'api/git.php',
+        '/^npm\b/i' => APP_PATH . 'api/npm.php',
+        // Extra examples you had before:
+        // '/^(chdir|cd)\s+/i' => APP_PATH . 'app/devtools/directory.php',
+        // '/^ls\s+/i'         => APP_PATH . 'app/list.php',
+        // '/^php\s+/i'        => CONFIG_PATH . 'runtime/php.php',
     ];
 
-    // 1) Command route takes priority if present
-    if ($cmd) {
-        foreach ($commandRoutes as $pattern => $target) {
-            if (preg_match($pattern, $cmd)) {
-                $ensure_constants_for($target['key']);
-                return $run($target['file']); // handled by the API script
+    foreach ($commandRoutes as $pattern => $handlerFile) {
+        if (preg_match($pattern, $cmd) && is_file($handlerFile)) {
+            $res = $includeAndReturn($handlerFile);
+            if ($res === true) {
+                return true;
             }
-        }
-        // Unknown command
-        return $acceptsJson()
-            ? $json_error('Unsupported command', 400, ['cmd' => $cmd])
-            : false;
-    }
-
-    // 2) API app routes (?app=composer|git|npm)
-    if ($app !== null && isset($apiRoutes[$app])) {
-        $ensure_constants_for($app);
-        return $run($apiRoutes[$app]); // handled
-    }
-
-    /* ────────────────────────── UI App Routing ─────────────────────────
-       If you request something like ?app=visual/nodes&json, we’ll resolve
-       a file under APP_PATH/app/... and expect it to set $UI_APP = [
-         'style' => '...', 'body' => '...', 'script' => '...'
-       ] which we will return as JSON when JSON is requested.
-    -------------------------------------------------------------------- */
-
-    $wantsHtmlView = isset($_GET['view']) && $_GET['view'] === 'html';
-
-    // Only attempt UI app JSON flow if the client wants JSON or explicitly asked `?json`
-    if ($app !== null && !isset($apiRoutes[$app])) {
-        $isScript = isset($_GET['script']);
-
-        $mustResolve = $acceptsJson() || $isScript || $wantsHtmlView || PHP_SAPI === 'cli';
-        if (!$mustResolve) {
-            // keep current behavior
-            return false; // no JSON requested -> fall back to page render
-        }
-
-        if ($wantsHtmlView) {
-            // render an HTML shell using $UI_APP['style'], ['body'], ['script']
-            // (or return false to let index.php render)
-            // return false; 
-        }
-
-        // Hard guard against traversal
-        if (strpos($app, '..') !== false) {
-            return $json_error('Invalid app slug', 400, ['app' => $app]);
-        }
-
-        // Optional whitelist of allowed UI roots
-        $uiRoots = [
-            APP_PATH . 'app/',
-            APP_PATH . 'app/tools/',
-            APP_PATH . 'app/visual/',
-        ];
-
-        // Resolve to a PHP file under the allowed roots
-        $relative = trim($app, "/ \t\n\r\0\x0B");
-        $candidates = [
-            APP_PATH . 'app/' . $relative . '.php',
-            APP_PATH . 'app/' . $relative . '/index.php',
-            APP_PATH . 'app/tools/' . $relative . '.php',
-            APP_PATH . 'app/tools/' . $relative . '/index.php',
-            APP_PATH . 'app/visual/' . $relative . '.php',
-            APP_PATH . 'app/visual/' . $relative . '/index.php',
-        ];
-
-        $resolved = null;
-        foreach ($candidates as $file) {
-            // Ensure it sits inside an allowed root
-            foreach ($uiRoots as $root) {
-                if (str_starts_with(realpath($file) ?: '', realpath($root) ?: '') && is_file($file)) {
-                    $resolved = $file;
-                    break 2;
+            if (is_array($res) || is_object($res)) {
+                if (!defined('APP_MODE') && $wantsJson()) {
+                    $emitJson($res);
+                    return true;
                 }
+                return $res;
             }
-        }
-
-        if (!$resolved) {
-            return $json_error('Unknown UI app route', 404, ['app' => $app]);
-        }
-
-        // Include constants on-demand by slug hint (customize as needed)
-        if (stripos($relative, 'composer') !== false)
-            $ensure_constants_for('composer');
-        if (stripos($relative, 'git') !== false)
-            $ensure_constants_for('git');
-        if (stripos($relative, 'npm') !== false)
-            $ensure_constants_for('npm');
-
-        // Prepare a default envelope (in case the UI app partially fills it)
-        $UI_APP = ['style' => '', 'body' => '', 'script' => ''];
-
-        // Catch accidental echoes from the UI app
-        ob_start();
-
-        // Load the UI app — it should set/update $UI_APP
-        require $resolved;
-        $leak = ob_get_clean();
-
-        if ($leak !== '') {
-            // If any UI app echoed output, that would corrupt JSON — fail loudly.
-            return $json_error('UI app produced unexpected output', 500, [
-                'app' => $app,
-                'leaked_output' => $leak,
-            ]);
-        }
-
-        if (!is_array($UI_APP)) {
-            return $json_error('UI app did not produce a valid payload', 500, ['app' => $app]);
-        }
-
-        if ($isScript) {
-            if (!headers_sent())
-                header('Content-Type: application/javascript; charset=utf-8');
-            echo (string) ($UI_APP['script'] ?? '');
             return true;
         }
-
-        return $json_out($UI_APP);
     }
+}
 
-    /* ───────────────────────── Not handled ───────────────────────── */
-    // No command, no API match, and either no ?app or not asking for JSON => let index.php render HTML
-    return false;
-})();
+// ─────────────────────────────────────────────────────────────────────────────
+// 6) Not handled
+// ─────────────────────────────────────────────────────────────────────────────
+return false;
 
 /*
 return (function () {

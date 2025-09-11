@@ -4,20 +4,19 @@
 
 const IS_CLIENT = true;
 
-// Fast-path: if routing params present, hint minimal boot
-if (!defined('APP_MODE') && (isset($_GET['app']) || isset($_POST['cmd']))) {
-  define('APP_MODE', 'dispatcher');
-}
 
-require_once dirname(__DIR__, 1) . '/bootstrap/bootstrap.php'; // require_once (...);
+// Ensure BOOTSTRAP_PATH points at /bootstrap/
+defined('BOOTSTRAP_PATH') || define('BOOTSTRAP_PATH', __DIR__ . '/../bootstrap/');
+
+require_once BOOTSTRAP_PATH . 'bootstrap.php'; // require_once (...);
+
+// Fast-path: if routing params present, hint minimal boot
+if (!defined('APP_MODE')) {
+  define('APP_MODE', 'web');
+}
 
 // file_exists(dirname(__DIR__, 1) . '/bootstrap/bootstrap.php') && require_once dirname(__DIR__, 1) . '/bootstrap/bootstrap.php';
 
-$handled = require BOOTSTRAP_PATH . 'dispatcher.php';
-if ($handled === true)
-  exit;
-
-//dd($_GET);
 // dd(get_required_files());
 
 /*
@@ -1012,7 +1011,7 @@ unset($_SESSION['mode']); ?>
       const scriptId = `script-${slug}`;
 
       // Always fetch fresh JSON (no caching)
-      fetch(`?app=${encodeURIComponent(appPath)}`, {
+      fetch(`/?app=${encodeURIComponent(appPath)}`, {
         headers: { Accept: 'application/json' },
         cache: 'no-store'
       })

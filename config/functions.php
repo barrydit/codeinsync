@@ -1,8 +1,43 @@
 <?php
 
+require_once __DIR__ . DIRECTORY_SEPARATOR . '../classes/class.shutdown.php';
+
 function app_context(): string
 {
   return defined('APP_CONTEXT') ? APP_CONTEXT : (PHP_SAPI === 'cli' ? 'cli' : 'web');
+}
+
+function highlightVersionDiff($installed, $latest)
+{
+  $installedParts = explode('.', $installed);
+  $latestParts = explode('.', $latest);
+  $result = '';
+
+  $diffFound = false;
+  for ($i = 0; $i < max(count($installedParts), count($latestParts)); $i++) {
+    $installedPart = $installedParts[$i] ?? '';
+    $latestPart = $latestParts[$i] ?? '';
+
+    if (!$diffFound && $installedPart === $latestPart) {
+      $result .= $latestPart;
+    } else {
+      if (!$diffFound) {
+        $diffFound = true;
+        $result .= '<span class="update" style="color: green; cursor: pointer;">';
+      }
+      $result .= $latestPart;
+    }
+
+    if ($i < max(count($installedParts), count($latestParts)) - 1) {
+      $result .= '.';
+    }
+  }
+
+  if ($diffFound) {
+    $result .= '</span>';
+  }
+
+  return $result;
 }
 
 function downloadFile(string $url, string $path, string $filename, array &$errors): void

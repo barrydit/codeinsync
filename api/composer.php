@@ -1,25 +1,20 @@
 <?php
 declare(strict_types=1);
-// api/composer.php (or app/tools/registry/composer.helpers.php)
 
 global $errors;
 
-// Ensure bootstrap has run (so constants like APP_PATH, APP_URL are defined)
 if (!defined('APP_BOOTSTRAPPED')) {
     require_once dirname(__DIR__) . '/bootstrap/bootstrap.php';
 }
 
-require_once APP_PATH . 'config/functions.composer.php'; // lazy loader lives here
-require_once APP_PATH . 'config/constants.composer.php'; // your static composer paths/execs, etc.
+require_once APP_PATH . 'config/functions.composer.php';
+require_once APP_PATH . 'config/constants.composer.php';
 
 $errors = [];
-$force = !empty($_GET['refresh']) || (!empty($_POST['refresh']) && $_POST['refresh']); // optional manual refresh
 
-$latest = composer_latest_version($errors, $force);
-// Use it however you need:
-if ($latest) {
-    defined('COMPOSER_LATEST') || define('COMPOSER_LATEST', $latest);
-}
+// Now COMPOSER_LATEST is already defined by constants.composer.php
+// You can just use it here:
+$latest = defined('COMPOSER_LATEST') ? COMPOSER_LATEST : null;
 
 // If your dispatcher expects JSON for XHR calls, emit JSON:
 if (isset($_GET['json']) || isset($_POST['json'])) {

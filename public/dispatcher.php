@@ -1,17 +1,28 @@
 <?php
-// Return JSON from this endpoint
-header('Content-Type: application/json'); // NOT Accept: application/json
+declare(strict_types=1);
 
-// For browser testing: force JSON mode for any ?app=...
-if (isset($_GET['app']) && !isset($_GET['json'])) {
-    $_GET['json'] = 1;
-}
-
-// Ensure we’re in dispatcher mode early
+// Force dispatcher mode if this endpoint is hit directly
 if (!defined('APP_MODE') && (isset($_GET['app']) || isset($_POST['cmd']))) {
     define('APP_MODE', 'dispatcher');
 }
 
+// If you want to force JSON for any ?app=... request:
+if (isset($_GET['app']) && !isset($_GET['json'])) {
+    $_GET['json'] = 1;
+}
+
+// Call the bootstrap dispatcher and handle its contract:
+// - true   => already emitted a response
+// - array/object => we JSON-emit here
+// - string => we echo as-is (HTML/text)
+// - false/null/other => 404-ish
+$handled = require __DIR__ . '/../bootstrap/dispatcher.php';
+
+if ($handled === true) {
+    exit; // fully handled (output already sent)
+}
+
+/*
 // IMPORTANT: if bootstrap/dispatcher.php returns a callable, INVOKE it.
 function capture(callable $fn): string
 {
@@ -34,6 +45,30 @@ $contents = capture(function () {
     }
 });
 
-// dd(get_required_files());
+dd(get_required_files());
 
 echo $contents;
+*/
+
+if (is_array($handled) || is_object($handled)) {
+    if (!headers_sent()) {
+        header('Content-Type: application/json; charset=utf-8');
+    }
+    echo json_encode($handled, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE);
+    exit;
+}
+
+if (is_string($handled)) {
+    if (!headers_sent()) {
+        header('Content-Type: text/html; charset=utf-8');
+    }
+    echo $handled;
+    exit;
+}
+
+// Not handled
+http_response_code(404);
+if (!headers_sent()) {
+    header('Content-Type: application/json; charset=utf-8');
+}
+echo json_encode(['error' => 'Not handled'], JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE);

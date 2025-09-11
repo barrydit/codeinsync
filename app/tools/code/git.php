@@ -4,6 +4,9 @@ if (!defined('APP_BOOTSTRAPPED')) { // defined('APP_PATH') || require_once (...)
   require_once dirname(__DIR__, 3) . '/bootstrap/bootstrap.php';
 }
 
+defined('APP_ROOT') or
+  define('APP_ROOT', ''); // '' or 'public/' etc.
+
 //defined('APP_URL') || require_once dirname(__DIR__, 3) . '/config/constants.url.php'; // require_once (...);
 
 global $errors;
@@ -522,7 +525,7 @@ ob_start(); ?>
   })(); */
 
   // Select the element
-  const element = document.getElementById('app_git-container');
+  const element = document.getElementById('app_tools_code_git-container');
 
   // Create a MutationObserver instance
   const mutation_observer = new MutationObserver((mutationsList, observer) => {
@@ -580,7 +583,7 @@ ob_start(); ?>
       event.preventDefault(); /* For example, you can show an alert to indicate that the form
     submission is disabled */ alert('Pull request was made.'); document.getElementById('requestInput').value = 'git pull'
         ; /* Get the element with the ID "requestSubmit" */ var requestSubmit = document.getElementById('requestSubmit');
-      document.getElementById('app_git-container').style.display = 'block'; /* Create a new click event */ var
+      document.getElementById('app_tools_code_git-container').style.display = 'block'; /* Create a new click event */ var
         clickEvent = new MouseEvent('click', { bubbles: true, cancelable: true, view: window }); /* Dispatch the click event
     on the element */ requestSubmit.dispatchEvent(clickEvent); /* $("#requestSubmit").click(); */
     });
@@ -850,8 +853,10 @@ if (__FILE__ == get_required_files()[0] || in_array(__FILE__, get_required_files
   header("Pragma: no-cache");
 
   return $UI_APP['html'];
+} else {
+  return $UI_APP;
 }
 //dd($UI_APP);
 
 //str_replace(["\r", "\n"], "", $UI_APP['style']); preg_match('#\n|\r#', $UI_APP['style'], $matches) or $UI_APP['style'] = str_replace($matches[0], '', $UI_APP['style']);
-$UI_APP = ['style' => $UI_APP['style'], 'body' => $UI_APP['body'], 'script' => $UI_APP['script']];
+//$UI_APP = ['style' => $UI_APP['style'], 'body' => $UI_APP['body'], 'script' => $UI_APP['script']];

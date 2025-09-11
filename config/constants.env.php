@@ -1,7 +1,5 @@
 <?php
 
-require_once __DIR__ . DIRECTORY_SEPARATOR . '../classes/class.shutdown.php';
-
 $envPath = APP_PATH . '.env';
 
 if (!file_exists($envPath)) {

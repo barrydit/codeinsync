@@ -202,7 +202,7 @@ class Shutdown
         if (error_reporting() === 0) {
             return false; // silenced with @
         }
-        self::triggerShutdown("Error: [$errno] $errstr - $errfile:$errline");
+        self::triggerShutdown("(Custom) Error: [$errno] $errstr - $errfile:$errline");
         return true;
     }
 

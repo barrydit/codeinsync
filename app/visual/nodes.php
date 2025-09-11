@@ -471,7 +471,7 @@ ob_start(); ?>
     .then(r => r.json())
     .then(data => createVisualization(data));
 
-  $("#app_nodes-container").resizable({
+  $("#app_visual_nodes-container").resizable({
     alsoResize: "#visualization"
   });
 
@@ -613,8 +613,7 @@ else {
     //echo json_encode($UI_APP, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE);
 
   }
-  //return $UI_APP['script'] ?? $UI_APP;
-
+  return $UI_APP;
 }
 //
 

@@ -1501,3 +1501,5 @@ if (e.key === 'ArrowRight' && idx < crumbs.length - 1) { crumbs[idx + 1].focus()
   //check if file is included or accessed directly
   if (defined('APP_RUNNING') && isset($_GET['app']) && $_GET['app'] == 'directory' && APP_DEBUG)
     exit($UI_APP['html']);
+  else
+    return $UI_APP;
