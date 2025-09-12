@@ -204,8 +204,16 @@ function normalize_regex(?string $expr): ?string
 }
 
 /* ============================ POST handler ============================= */
+if (($_SERVER['REQUEST_METHOD'] ?? '') === 'GET') {
+
+    dd($_GET);
+
+}
 
 if (($_SERVER['REQUEST_METHOD'] ?? '') === 'POST') {
+
+    dd($_POST);
+
     // Project dir (where composer.json lives)
     $projectDir = rtrim(APP_PATH . (defined('APP_ROOT') ? APP_ROOT : ''), '/\\');
 
@@ -392,7 +400,7 @@ if (($_SERVER['REQUEST_METHOD'] ?? '') === 'POST') {
         */
         // Write composer.json (atomic)
         $jsonPath = $projectDir . DIRECTORY_SEPARATOR . 'composer.json';
-        $tmp = $jsonPath . '.tmp';
+        $tmp = "$jsonPath.tmp";
         file_put_contents($tmp, json_encode($composer, JSON_UNESCAPED_SLASHES | JSON_PRETTY_PRINT) . PHP_EOL);
         @rename($tmp, $jsonPath);
 
@@ -533,11 +541,10 @@ if (
     }
 
     // If you rely on Shutdown, keep it; otherwise just exit.
-    if (class_exists('Shutdown')) {
+    if (class_exists('Shutdown'))
         Shutdown::setEnabled(true)->setShutdownMessage(function () { })->shutdown();
-    } else {
+    else
         exit;
-    }
 }
 
 /*

@@ -193,6 +193,7 @@ if ($app && is_string($app)) {
     if ($isAllowed && is_file($full)) {
         // 🔹 Lazy-load Composer constants when hitting the Composer app
         $realFullNorm = $realFull ?: $full;
+
         if (preg_match('#/app/tools/registry/composer\.php$#i', $realFullNorm)) {
             $paths = CONFIG_PATH . 'constants.paths.php';
             $composer = CONFIG_PATH . 'constants.composer.php';

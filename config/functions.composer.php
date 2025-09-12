@@ -141,3 +141,49 @@ function fetch_getcomposer_home(?string &$err = null): ?string
     }
     return $html;
 }
+
+if (!function_exists('composer_json')) {
+    /**
+     * Get composer.json as array (default) or stdClass, with per-request cache.
+     * @param bool $assoc true=array, false=object
+     * @return array|object|null
+     */
+    function composer_json(bool $assoc = true) {
+        static $cacheArr = null, $cacheObj = null;
+
+        // Already cached?
+        if ($assoc && $cacheArr !== null) return $cacheArr;
+        if (!$assoc && $cacheObj !== null) return $cacheObj;
+
+        // Source: prefer COMPOSER_JSON_RAW if defined, else read file
+        $raw = defined('COMPOSER_JSON_RAW') ? COMPOSER_JSON_RAW : null;
+        if ($raw === null && defined('COMPOSER_JSON') && is_file(COMPOSER_JSON)) {
+            $raw = @file_get_contents(COMPOSER_JSON);
+        }
+        if (!is_string($raw) || $raw === '') return null;
+
+        $decoded = json_decode($raw, $assoc);
+        if (json_last_error() !== JSON_ERROR_NONE) return null;
+
+        if ($assoc)  $cacheArr = $decoded;
+        else         $cacheObj = $decoded;
+
+        return $decoded;
+    }
+}
+
+if (!function_exists('composer_json_get')) {
+    /**
+     * Dot-path getter, e.g. composer_json_get('require.symfony/console', '*')
+     */
+    function composer_json_get(string $path, $default = null) {
+        $data = composer_json(true);
+        if (!is_array($data)) return $default;
+        $cur = $data;
+        foreach (explode('.', $path) as $seg) {
+            if (!is_array($cur) || !array_key_exists($seg, $cur)) return $default;
+            $cur = $cur[$seg];
+        }
+        return $cur;
+    }
+}

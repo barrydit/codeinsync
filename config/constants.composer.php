@@ -234,3 +234,5 @@ if (!function_exists('run_composer')) {
         return ['code' => (int) $code, 'out' => (string) $out, 'err' => (string) $err];
     }
 }
+
+// dd(get_defined_constants(true)['user']);

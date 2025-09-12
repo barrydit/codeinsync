@@ -17,7 +17,7 @@ if (!defined('APP_MODE')) {
 
 // file_exists(dirname(__DIR__, 1) . '/bootstrap/bootstrap.php') && require_once dirname(__DIR__, 1) . '/bootstrap/bootstrap.php';
 
-// dd(get_required_files());
+//dd(get_required_files());
 
 /*
 $trace = debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS, 1)[0];
@@ -668,6 +668,12 @@ unset($_SESSION['mode']); ?>
       });*/
     // Global drag state
     //const Drag = { zTop: 1000, active: null };
+
+    /* When the user clicks on the button,
+toggle between hiding and showing the dropdown content */
+    function myFunction() {
+      document.getElementById("myDropdown").classList.toggle("show");
+    }
 
     function handleClick(event, path) {
       return null;

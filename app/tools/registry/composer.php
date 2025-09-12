@@ -14,6 +14,14 @@ $composerConsts = CONFIG_PATH . 'constants.composer.php';
 if (is_file($composerConsts)) {
   require_once $composerConsts;
 }
+$composerFuncs = CONFIG_PATH . 'functions.composer.php';
+if (is_file($composerFuncs)) {
+  require_once $composerFuncs;
+}
+
+//dd($cfg = composer_json(true));               // array
+//$pkg = composer_json_get('name', '(none)');
+//$req = composer_json_get('require', []);  // array of requires
 
 // Ensure a usable $latest value (no fatal if constant absent)
 if (!defined('COMPOSER_LATEST')) {
@@ -85,9 +93,9 @@ $COMPOSER_JSON = json_encode($composer_obj); // @file_get_contents("composer.jso
 $COMPOSER = json_decode($COMPOSER_JSON, true);
 // dd(get_required_files());
 // define("COMPOSER_JSON_RAW", $COMPOSER_JSON);
-!defined('COMPOSER') && define("COMPOSER", ['json' => $composer_obj]); // ← This is what’s missing!
+//!defined('COMPOSER') && define("COMPOSER", ['json' => $composer_obj]); // ← This is what’s missing!
 
-// dd(get_required_files());
+//dd(get_required_files());
 /*
 <?php ob_start(); ?>
 <HTML ...>
@@ -237,15 +245,15 @@ ob_start(); ?>
         <select name="exec" onchange="this.form.submit();">
 
   <?php if (defined('COMPOSER_BIN')): ?>
-                                                                      <option <?= COMPOSER_EXEC_CMD === COMPOSER_BIN ? 'selected' : '' ?>
-                                                                          value="bin"><?= COMPOSER_BIN ?></option>
+                                                                                                                                  <option <?= COMPOSER_EXEC_CMD === COMPOSER_BIN ? 'selected' : '' ?>
+                                                                                                                                      value="bin"><?= COMPOSER_BIN ?></option>
     <?php endif; ?>
   
     <?php if (defined('COMPOSER_PHAR')): ?>
-                                                                      <option <?= COMPOSER_EXEC_CMD === COMPOSER_PHAR['exec'] ? 'selected' : '' ?>
-                                                                        value="phar">
-                                                                        <?= COMPOSER_PHAR['exec'] ?>
-                                                                      </option>
+                                                                                                                                  <option <?= COMPOSER_EXEC_CMD === COMPOSER_PHAR['exec'] ? 'selected' : '' ?>
+                                                                                                                                    value="phar">
+                                                                                                                                    <?= COMPOSER_PHAR['exec'] ?>
+                                                                                                                                  </option>
   <?php endif; ?>
 
         </select>
@@ -258,8 +266,7 @@ ob_start(); ?>
   </div>
 </div>
 
-<div class="window-body"
-  class="<?= defined('COMPOSER_VERSION') and __FILE__ == get_required_files()[0] || (isset($_GET['app']) && $_GET['app'] == 'composer') || (defined('COMPOSER') && !is_object(COMPOSER['json']) && count((array) COMPOSER) === 0) || version_compare(COMPOSER_LATEST, COMPOSER_VERSION, '>') != 0 && defined('APP_DEBUG') && APP_DEBUG ? 'selected' : '' ?>"
+<div class="window-body" class=""
   style="width: 424px; background-color: rgba(255, 255, 255, 0.8); padding: 10px; display: block; left: 612px; top: 104px;">
 
   <div
@@ -364,11 +371,11 @@ ob_start(); ?>
       <?php
 
       $count = 0;
-      if (defined('COMPOSER') && isset(COMPOSER['json']->require))
-        foreach (COMPOSER['json']->require as $key => $require) {
-          if (preg_match('/.*\/.*:.*/', $key . ':' . $require))
+      if (count(composer_json()) !== 0)
+        foreach (composer_json_get('require', []) as $key => $require) {
+          if (preg_match('/.*\/.*:.*/', "$key:$require"))
             if (preg_match('/(.*)\/.*/', $key, $match))
-              if (!empty($match) && !is_dir(app_base('vendor', null, 'rel') . $match[1] . '/'))
+              if (!empty($match) && !is_dir(app_base('vendor', null, 'abs') . $match[1] . '/'))
                 $count++;
         }
       ?>
@@ -438,7 +445,7 @@ ob_start(); ?>
             style="display: inline-block; padding: 5px; background-color: rgba(0,0,0,.03); border: 1px dashed #0078D7;">
             <div>
               <span class="text-xs"
-                style="background-color: #0078D7; color: white;"><code>Version: (Installed) <?= defined('COMPOSER_VERSION') and COMPOSER_VERSION ?> -> (Latest) <?= COMPOSER_LATEST ?></code></span>
+                style="background-color: #0078D7; color: white;"><code>Version: (Installed) <?= !defined('COMPOSER_VERSION') ? '' : COMPOSER_VERSION ?> -> (Latest) <?= COMPOSER_LATEST ?></code></span>
             </div>
             <label>Composer Command</label>
             <textarea style="width: 100%" cols="40" rows="5" name="composer[cmd]">php -r "copy('https://getcomposer.org/installer', 'composer-setup.php');"
@@ -455,13 +462,13 @@ php composer.phar -v
       <?= defined('COMPOSER_LATEST') && defined('COMPOSER_VERSION') ? (version_compare(COMPOSER_LATEST, COMPOSER_VERSION, '>') == 0 ? NULL : $frameUpdateContents) : ''; ?>
 
       <div id="app_composer-frameInit"
-        class="app_composer-frame-container absolute <?= is_file(COMPOSER_PROJECT_ROOT) ? '' : (defined('COMPOSER') && is_object(COMPOSER) && count((array) COMPOSER) !== 0 ? '' : 'selected'); ?>"
+        class="app_composer-frame-container absolute <?= is_file(COMPOSER_PROJECT_ROOT) ? '' : (count((array) composer_json(true)) !== 0 ? '' : 'selected'); ?>"
         style="overflow: hidden; height: 270px;">
-        <?php if (!defined('CONSOLE') && CONSOLE != true) { ?>
-          <form autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"
-            action="<?= APP_URL_BASE . '/?' . http_build_query(/*APP_QUERY +*/ ['app' => 'composer']) . (defined('APP_ENV') && APP_ENV == 'development' ? '#!' : '') /* $c_or_p . '=' . (empty($_GET[$c_or_p]) ? '' : $$c_or_p->name) . '&amp;app=composer' */ ?>"
-            method="POST">
-          <?php } ?>
+        <?php if (!defined('CONSOLE') && CONSOLE != true) { ?><?php } ?>
+        <form autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"
+          action="<?= APP_URL . '?' . http_build_query(/*APP_QUERY +*/ ['app' => 'composer']) . (defined('APP_ENV') && APP_ENV == 'development' ? '#!' : '') /* $c_or_p . '=' . (empty($_GET[$c_or_p]) ? '' : $$c_or_p->name) . '&amp;app=composer' */ ?>"
+          method="POST">
+
           <div style="position: absolute; right: 0; float: right; text-align: center;">
             <button id="app_composer-init-submit" class="btn" type="submit" value>Init/Run</button>
           </div>
@@ -478,13 +485,13 @@ php composer.phar -v
               autocomplete="off" autocorrect="off" autocapitalize="off"
               spellcheck="false"><?= implode(' ', COMPOSER_DEFAULT_ARGS); /*preg_replace('/\n\s*--/', "--", COMPOSER_DEFAULT_ARGS);*/ ?></textarea>
           </div>
-          <?php if (!defined('CONSOLE') && CONSOLE != true) { ?>
-          </form>
-        <?php } ?>
+          <?php if (!defined('CONSOLE') && CONSOLE != true) { ?> <?php } ?>
+        </form>
+
       </div>
 
       <div id="app_composer-frameConf"
-        class="app_composer-frame-container absolute <?= !defined('COMPOSER') && is_file(APP_PATH . 'composer.json') ? 'selected' : ''; ?>"
+        class="app_composer-frame-container absolute <?= is_file(APP_PATH . 'composer.json') ? 'selected' : ''; ?>"
         style="overflow-x: hidden; overflow-y: auto; height: 230px;">
         <form autocomplete="off" spellcheck="false"
           action="<?= APP_URL . '?' . http_build_query(['app' => 'composer'], ''/*, '&amp;'*/) . (defined('APP_ENV') && APP_ENV == 'development' ? '#!' : '') ?>"
@@ -557,7 +564,7 @@ php composer.phar -v
                 title="<?= defined('COMPOSER_JSON') && realpath(COMPOSER_JSON) ? COMPOSER_JSON : '' /*NULL*/ ; ?>">&#9650;
                 <code>COMPOSER_PATH/composer.json</code></label>
               <div class="text-xs"
-                style="display: <?= (!is_file(APP_PATH . 'composer.lock') ? 'none' : 'inline-block') ?>; padding-top: 5px; padding-right: 10px; float: right;">
+                style="display: <?= !is_file(APP_PATH . 'composer.lock') ? 'none' : 'inline-block' ?>; padding-top: 5px; padding-right: 10px; float: right;">
                 <input type="checkbox" name="composer[lock]" value="" /> <span
                   style="background-color: white; color: red; text-decoration: line-through;">composer.lock</span>
               </div>
@@ -568,7 +575,7 @@ php composer.phar -v
             <?php if (defined('COMPOSER_JSON') && realpath(COMPOSER_JSON)) { ?>
               <div style="display: inline-block; width: 100%; margin-bottom: 10px;">
                 <div class="text-xs" style="display: inline-block; float: left; background-color: #0078D7; color: white;">
-                  Last Update: <span <?= defined('COMPOSER') && isset(COMPOSER['json']->time) && COMPOSER['json']->time === '' ? 'style="background-color: white; color: red;"' : 'style="background-color: white; color: #0078D7;"' ?>><?= defined('COMPOSER') && isset(COMPOSER['json']->time) && COMPOSER['json']->time !== '' ? COMPOSER['json']->{'time'} : date('Y-m-d H:i:s') ?></span>
+                  Last Update: <span <?= !is_file(COMPOSER_JSON) ? 'style="background-color: white; color: red;"' : 'style="background-color: white; color: #0078D7;"' ?>><?= is_file(COMPOSER_JSON) ? date('Y-m-d H:i:s', filemtime(COMPOSER_JSON)) : date('Y-m-d H:i:s') ?></span>
                 </div>
 
 
@@ -580,31 +587,28 @@ php composer.phar -v
                 </div>
               </div>
             <?php } ?>
-            <div style="display: inline-block; width: 100%;"><span <?= defined('COMPOSER') && isset(COMPOSER['json']->{'name'}) && COMPOSER['json']->{'name'} !== '' ? '' : 'style="background-color: #fff; color: red;" title="Either Vendor or Package is missing"' ?>>Name:</span>
+            <div style="display: inline-block; width: 100%;"><span <?= !empty(composer_json_get('name', '')) ? '' : 'style="background-color: #fff; color: red;" title="Either Vendor or Package is missing"' ?>>Name:</span>
               <div style="position: relative; float: right;">
                 <div class="absolute font-bold"
                   style="position: absolute; top: -8px; left: 5px; font-size: 10px; z-index: 1;">Vendor</div>
                 <input type="text" id="tst" name="composer[config][name][vendor]" placeholder="vendor"
-                  value="<?= defined('COMPOSER') && isset(COMPOSER['json']->name) ? explode('/', COMPOSER['json']->name)[0] : ''; ?>"
-                  size="13"> / <div class="absolute font-bold"
+                  value="<?= explode('/', composer_json_get('name', ''))[0]; ?>" size="13"> / <div
+                  class="absolute font-bold"
                   style="position: absolute; top: -8px; right: 82px; font-size: 10px; z-index: 1;">Package</div> <input
                   type="text" id="tst" name="composer[config][name][package]" placeholder="package"
-                  value="<?= defined('COMPOSER') && isset(COMPOSER['json']->name) ? explode('/', COMPOSER['json']->name)[1] : ''; ?>"
-                  size="13" />
+                  value="<?= explode('/', composer_json_get('name', ''))[1]; ?>" size="13" />
               </div>
             </div>
-            <div style="display: inline-block; width: 100%;"><label for="composer-description" <?= defined('COMPOSER') && isset(COMPOSER['json']->{'description'}) && COMPOSER['json']->{'description'} !== '' ? '' : 'style="background-color: #fff; color: red; cursor: pointer;" title="Description is missing"' ?>>Description:</label>
+            <div style="display: inline-block; width: 100%;"><label for="composer-description">Description:</label>
               <div style="float: right;">
                 <input id="composer-description" type="text" name="composer[config][description]" placeholder="Details"
-                  value="<?= defined('COMPOSER') && isset(COMPOSER['json']->description) ? COMPOSER['json']->description : ''; ?>">
+                  value="<?= composer_json_get('description', 'Description is missing'); ?>">
               </div>
             </div>
 
             <!-- version -->
             <?php
-            $version = defined('COMPOSER') && isset(COMPOSER['json']->version)
-              ? (string) COMPOSER['json']->version
-              : '';
+            $version = composer_json_get('version', '');
 
             $regex = defined('COMPOSER_EXPR_VER')
               ? COMPOSER_EXPR_VER
@@ -622,8 +626,8 @@ php composer.phar -v
             <div style="display:inline-block;width:100%;">
               <label for="composer-version" <?= $labelStyle ?> <?= $labelTitle ?>>Version:</label>
               <div style="float:right;">
-                <input id="composer-version" type="text" name="composer[config][version]" size="10"
-                  placeholder="(Version) 1.2.3" style="text-align:right;" pattern="<?= $htmlPattern ?>"
+                <input id="composer-version" type="text" name="composer[config][version]" size="10" placeholder="1.2.3"
+                  style="text-align:right;" pattern="<?= $htmlPattern ?>"
                   value="<?= htmlspecialchars($version, ENT_QUOTES) ?>">
               </div>
             </div>
@@ -631,11 +635,9 @@ php composer.phar -v
             <div style="display: inline-block; width: 100%;">Type:
               <div style="float: right;">
                 <select name="composer[config][type]">
-                  <option label="" <?= defined('COMPOSER') && isset(COMPOSER['json']->license) ? '' : 'selected=""'; ?>>
-                  </option>
                   <?php foreach (['library', 'project', 'metapackage', 'composer-plugin'] as $type) { ?>
-                    <option>
-                      <?= defined('COMPOSER') && isset(COMPOSER['json']->type) && COMPOSER['json']->type == $type ? ' selected=""' : ''; ?>><?= $type; ?>
+                    <option <?= composer_json_get('type', '') == $type ? ' selected=""' : ''; ?>>
+                      <?= $type; ?>
                     </option>
                   <?php } ?>
                 </select>
@@ -647,14 +649,14 @@ php composer.phar -v
               </div>
               <div class="clearfix"></div>
               <div id="composerAppendKeyword"
-                style="padding: 10px 0 10px 0; display: <?= defined('COMPOSER') && isset(COMPOSER['json']->keywords) && !empty(COMPOSER['json']->keywords) ? 'block' : 'none' ?>; width: 100%;">
-                <?php if (defined('COMPOSER') && isset(COMPOSER['json']->keywords))
-                  foreach (COMPOSER['json']->keywords as $key => $keyword) { ?>
-                    <label for="keyword_<?= $key; ?>"><sup
-                        onclick="rm_keyword(\'keyword_<?= $key; ?>\');">[x]</sup><?= $keyword; ?></label><input
-                      type="hidden" id="keyword_<?= $key; ?>" name="composer[config][keywords][]"
-                      value="<?= $keyword; ?>" />&nbsp;
-                  <?php } ?>
+                style="padding: 10px 0 10px 0; display: <?= !empty(composer_json_get('keywords', '')) ? 'block' : 'none' ?>; width: 100%;">
+                <?php
+                foreach (composer_json_get('keywords', []) as $key => $keyword) { ?>
+                  <label for="keyword_<?= $key; ?>"><sup
+                      onclick="rm_keyword(\'keyword_<?= $key; ?>\');">[x]</sup><?= $keyword; ?></label><input
+                    type="hidden" id="keyword_<?= $key; ?>" name="composer[config][keywords][]"
+                    value="<?= $keyword; ?>" />&nbsp;
+                <?php } ?>
               </div>
             </div>
             <!-- homepage -->
@@ -664,10 +666,11 @@ php composer.phar -v
             <div style="display: inline-block; width: 100%;">License:
               <div style="float: right;">
                 <select name="composer[config][license]">
-                  <option label="" <?= defined('COMPOSER') && isset(COMPOSER['json']->license) ? '' : ' selected=""'; ?>>
+                  <option label="" <?= $license = composer_json_get('license', '') ? '' : ' selected=""'; ?>>
                   </option>
                   <?php foreach (['WTFPL', 'GPL-3.0', 'MIT'] as $license) { ?>
-                    <option <?= defined('COMPOSER') && isset(COMPOSER['json']->license) && COMPOSER['json']->license == $license ? ' selected=""' : ''; ?>><?= $license; ?></option>
+                    <option <?= composer_json_get('license', '') == $license ? ' selected=""' : ''; ?>><?= $license; ?>
+                    </option>
                   <?php } ?>
                 </select>
               </div>
@@ -675,17 +678,17 @@ php composer.phar -v
             <!-- authors -->
             <div style="display: inline-block; width: 100%;">Authors:<br />
 
-              <?php if (defined('COMPOSER') && isset(COMPOSER['json']->authors))
-                foreach (COMPOSER['json']->authors as $key => $author) { ?>
+              <?php if (!empty(composer_json_get('authors', []))) {
+                foreach (composer_json_get('authors', []) as $key => $author) { ?>
                   <div style="position: relative; float: left;">
                     <div class="absolute font-bold" style="position: absolute; top: -8px; left: 10px; font-size: 10px;">Name
                     </div>
                     <input type="text" id="tst" name="composer[config][authors][<?= $key ?>][name]" placeholder="name"
-                      value="<?= $author->{'name'} ?>" size="10"> /
+                      value="<?= $author['name'] ?>" size="10"> /
                     <div class="absolute font-bold" style="position: absolute; top: -8px; right: 134px; font-size: 10px;">
                       Email</div>
                     <input type="text" id="tst" name="composer[config][authors][<?= $key ?>][email]" placeholder="email"
-                      value="<?= $author->{'email'} ?>" size="18" />
+                      value="<?= $author['email'] ?>" size="18" />
                   </div>
                   <div class="dropdown">
                     <div id="myDropdown" class="dropdown-content">
@@ -693,13 +696,14 @@ php composer.phar -v
                         <a href="#!"><img style="float: left;" width="30" height="33"
                             src="resources/images/role<?= $key2 ?>.fw.png"><?= $role; ?> <input type="radio" id="<?= $key2 ?>"
                             style="float: right; cursor: pointer;" name="composer[config][authors][<?= $key ?>][role]"
-                            value="<?= $role; ?>" <?= (isset($author->{'role'}) && $author->{'role'} == $role ? ' checked=""' : '') ?> /></a>
+                            value="<?= $role; ?>" <?= isset($author['role']) && $author['role'] == $role ? ' checked=""' : '' ?> /></a>
                       <?php } ?>
                     </div>
                     <button type="button" onclick="myFunction()" class="dropbtn">Role &#9660;</button>
                   </div>
 
-                <?php } else { ?>
+                <?php }
+              } else { ?>
 
                 <div style="position: relative; float: left;">
                   <div class="absolute font-bold" style="position: absolute; top: -8px; left: 10px; font-size: 10px;">Name
@@ -727,7 +731,7 @@ php composer.phar -v
                 <!--
     <select name="composerAuthorRole">
 <?php foreach (['Backend', 'Designer', 'Developer', 'Programmer'] as $role) { ?>
-      <option<?= (defined('COMPOSER') && isset(COMPOSER['json']->authors) && COMPOSER['json']->authors->role ? 'value="' . $role . '"' : '') && (defined('COMPOSER') && isset(COMPOSER['json']->authors) && COMPOSER['json']->authors->role == $role ? ' selected=""' : ''); ?>><?= $role; ?></option>
+      <option<?= (composer_json_get('authors', [])['role'] ?? null ? "value=\"$role\"" : '') && (composer_json_get('authors', [])['role'] == $role ? ' selected=""' : ''); ?>><?= $role; ?></option>
 <?php } ?>
     </select>
 -->
@@ -767,13 +771,13 @@ php composer.phar -v
                 </datalist>
               </div>
               <div id="composerAppendRequire"
-                style="padding: 10px; display: <?= defined('COMPOSER') && !isset(COMPOSER['json']->{'require'}) ? 'none' : 'block' ?>;">
+                style="padding: 10px; display: <?= empty(composer_json_get('require', [])) ? 'none' : 'block' ?>;">
                 <datalist id="composerReqVersResults">
                   <option value=""></option>
                 </datalist>
                 <?php $i = 0;
-                if (defined('COMPOSER') && isset(COMPOSER['json']->{'require'})) {
-                  if (!isset(COMPOSER['json']->{'require'}->{'php'})) { ?>
+                if (!empty(composer_json_get('require', []))) {
+                  if (composer_json_get('require', [])['php'] == null) { ?>
                     <input type="checkbox" checked=""
                       onchange="this.indeterminate = !this.checked; document.getElementById('pkg_<?= $i; ?>').disabled = !this.checked">
                     <input type="text" id="pkg_<?= $i; ?>" name="composer[config][require][]"
@@ -782,7 +786,7 @@ php composer.phar -v
                     <label for="pkg_<?= $i; ?>"></label><br />
                     <?php $i++;
                   }
-                  foreach (COMPOSER['json']->{'require'} as $key => $require) { ?>
+                  foreach (composer_json_get('require', []) as $key => $require) { ?>
                     <input type="checkbox" checked=""
                       onchange="this.indeterminate = !this.checked; document.getElementById('pkg_<?= $i; ?>').disabled = !this.checked">
                     <input type="text" id="pkg_<?= $i; ?>" name="composer[config][require][]"
@@ -810,13 +814,13 @@ php composer.phar -v
                 </datalist>
               </div>
               <div id="composerAppendRequire-dev"
-                style="padding: 10px; display: <?= (defined('COMPOSER') && !isset(COMPOSER['json']->{'require-dev'}) ? 'none' : 'block') ?>;">
+                style="padding: 10px; display: <?= empty(composer_json_get('require', []) ? 'none' : 'block') ?>;">
                 <datalist id="composerReq-devVersResults">
                   <option value=""></option>
                 </datalist>
                 <?php $i = 0;
-                if (defined('COMPOSER') && isset(COMPOSER['json']->{'require-dev'}))
-                  foreach (COMPOSER['json']->{'require-dev'} as $key => $require) { ?>
+                if (!empty(composer_json_get('require-dev', [])))
+                  foreach (composer_json_get('require-dev', []) as $key => $require) { ?>
                     <input type="checkbox" checked=""
                       onchange="this.indeterminate = !this.checked; document.getElementById('pkg-dev_<?= $i; ?>').disabled = !this.checked">
                     <input type="text" id="pkg-dev_<?= $i; ?>" name="composer[config][require-dev][]"
@@ -842,10 +846,10 @@ php composer.phar -v
             <div style="display: inline-block; width: 100%;">Minimum-Stability:
               <div style="float: right;">
                 <select name="composer[config][minimum-stability]">
-                  <?php if (defined('COMPOSER'))
-                    foreach (['stable', 'rc', 'beta', 'alpha', 'dev'] as $ms) { ?>
-                      <option value="<?= $ms ?>" <?= isset(COMPOSER['json']->{'minimum-stability'}) && COMPOSER['json']->{'minimum-stability'} == $ms ? ' selected=""' : '' ?>><?= $ms ?></option>
-                    <?php } ?>
+                  <?php
+                  foreach (['stable', 'rc', 'beta', 'alpha', 'dev'] as $ms) { ?>
+                    <option value="<?= $ms ?>" <?= composer_json_get('minimum-stability', 'dev') == $ms ? ' selected=""' : '' ?>><?= $ms ?></option>
+                  <?php } ?>
                 </select>
               </div>
             </div>
@@ -876,7 +880,6 @@ php composer.phar -v
                   <div class="text-xs" style="display: inline-block; float: left; background-color: #0078D7; color: white;">
                     Last Update: <span <?= isset(VENDOR->time) && VENDOR->time === '' ? 'style="background-color: white; color: red;"' : 'style="background-color: white; color: #0078D7;"' ?>><?= isset(VENDOR->time) && VENDOR->time !== '' ? VENDOR->{'time'} : date('Y-m-d H:i:s') ?></span>
                   </div>
-
                 </div>
               <?php } ?>
 
@@ -885,9 +888,9 @@ php composer.phar -v
                 <div style="position: relative; float: right;">
                   <?php
 
-                  $keys = array_keys(get_object_vars(COMPOSER['json']->{'require'}));
-                  if (defined('COMPOSER') && isset(COMPOSER['json']->{'require-dev'}) && !empty(get_object_vars(COMPOSER['json']->{'require-dev'})))
-                    $keys = array_merge($keys, array_keys(get_object_vars(COMPOSER['json']->{'require-dev'})));
+                  $keys = array_keys(composer_json_get('require', []));
+                  if (count(composer_json_get('require-dev', [])) > 0)
+                    $keys = array_merge($keys, array_keys(composer_json_get('require-dev', [])));
 
                   ?>
                   <select onselect="selectPackage()">
@@ -1011,7 +1014,7 @@ php composer.phar -v
                   <!--
     <select name="">
 <?php foreach (['Backend', 'Designer', 'Developer', 'Programmer'] as $role) { ?>
-      <option<?= (defined('COMPOSER') && isset(COMPOSER->{'authors'}) && COMPOSER->{'authors'}->role ? "value=\"$role\"" : '') && (defined('COMPOSER') && isset(COMPOSER->authors) /* */ && COMPOSER->authors->role == $role ? ' selected=""' : ''); ?>><?= $role; ?></option>
+      <option <?= (composer_json_get('authors', []) ? "value=\"$role\"" : '') == $role ? ' selected=""' : ''; ?>><?= $role; ?></option>
 <?php } ?>
     </select>
 -->
@@ -1123,11 +1126,11 @@ php composer.phar -v
 
       <?php
       $count = 0;
-      if (defined('COMPOSER') && isset(COMPOSER['json']->require))
-        foreach (COMPOSER['json']->require as $key => $require)
+      if (count(composer_json_get('require', [])) > 0)
+        foreach (composer_json_get('require', []) as $key => $require)
           if (preg_match('/.*\/.*:.*/', "$key:$require"))
             if (preg_match('/(.*\/.*)/', $key, $match))
-              if (!empty($match) && !is_dir(app_base('vendor', null, 'rel') . $match[1] . '/'))
+              if (!empty($match) && !is_dir(app_base('vendor', null, 'abs') . $match[1] . '/'))
                 $count++;
 
       ?>
@@ -1160,7 +1163,7 @@ php composer.phar -v
               <span>
                 <ul style="padding-left: 10px;">
                   <?php
-                  foreach (COMPOSER['json']->require as $key => $require) {
+                  foreach (composer_json_get('require', []) as $key => $require) {
                     if (preg_match('/.*\/.*:.*/', "$key:$require"))
                       if (preg_match('/(.*\/.*)/', $key, $match))
                         if (!empty($match) && !is_dir(app_base('vendor', null, 'rel') . $match[1] . '/'))
