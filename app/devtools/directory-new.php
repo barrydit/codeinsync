@@ -1,7 +1,7 @@
 <?php
 defined('APP_BASE') or
     require_once APP_PATH . 'config/constants.paths.php';
-
+    
 global $errors;
 
 defined('APP_ROOT') or

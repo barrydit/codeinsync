@@ -1,19 +1,22 @@
 <?php
-
+declare(strict_types=1);
+// config/constants.app.php
 // Application configuration
 
-const APP_NAME = 'CodeInSync'; // define('APP_NAME', 'Dashboard');
+!defined('APP_NAME') and define('APP_NAME', 'CodeInSync'); // const APP_NAME = 'CodeInSync';
 !is_string(APP_NAME)
   and $errors['APP_NAME'] = 'APP_NAME is not a string => ' . var_export(APP_NAME, true); // print('Name: ' . APP_NAME  . ' v' . APP_VERSION . "\n");
 
-const APP_AUTHOR = 'Barry Dick'; // define('APP_AUTHOR', 'Barry Dick');
+!defined('APP_AUTHOR') and define('APP_AUTHOR', 'Barry Dick');  // const APP_AUTHOR = 'Barry Dick';
 
-const APP_VERSION = '1.0.0'; // define('APP_VERSION', '1.0.0');
-
+!defined('APP_VERSION') and define('APP_VERSION', '1.0.0'); // const APP_VERSION = '1.0.0';
 !is_string(APP_VERSION) and $errors['APP_VERSION'] = 'APP_VERSION is not a valid string value.';
 
 (version_compare(APP_VERSION, '1.0.0', '>=') == 0)
   and $errors['APP_VERSION'] = 'APP_VERSION is not a valid version (' . APP_VERSION . ').';
+
+//defined('APP_MODE') or define('APP_MODE', 'dispatcher');
+//defined('APP_CONTEXT') or define('APP_CONTEXT', 'www');
 
 //!defined('APP_DEBUG') and define('APP_DEBUG', false);
 //!defined('APP_ERROR') and define('APP_ERROR', false); // $hasErrors = true;

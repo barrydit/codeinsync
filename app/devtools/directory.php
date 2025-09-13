@@ -10,6 +10,7 @@ defined('APP_ROOT') or
 
 if (__FILE__ == get_required_files()[0] && __FILE__ == realpath($_SERVER["SCRIPT_FILENAME"]))
   if ($path = basename(dirname(get_required_files()[0])) == 'public') { // (basename(getcwd())
+
     chdir('../');
     if ($path = realpath(/*'config' . DIRECTORY_SEPARATOR . */ 'bootstrap' . DIRECTORY_SEPARATOR . 'bootstrap.php')) // is_file('bootstrap.php')
       require_once $path;
@@ -23,8 +24,6 @@ defined('APP_URL_BASE') or
   require_once APP_PATH . 'config/constants.url.php';
 
 require_once APP_PATH . 'config' . DIRECTORY_SEPARATOR . 'config.php';
-
-
 
 //require_once APP_PATH . APP_ROOT . APP_BASE['vendor'] . 'autoload.php';
 //require_once APP_PATH . APP_ROOT . 'app' . DIRECTORY_SEPARATOR . 'composer.php';
@@ -159,7 +158,7 @@ left: calc(50% - 265px); /* 1207 / 2 */ /*transform: translate(-50%, -50%);*/ bo
   $segments = [];
 
   // Segment 1: APP_PATH (always shown)
-  $segments[] = '&nbsp; [ <a href="' . /* basename(__FILE__) .*/ '?path=" onclick="handleClick(event, \'./\')">' . $base . '/</a> ]';
+  $segments[] = "&nbsp; [ <a href=\"?path=\" onclick=\"handleClick(event, './')\">$base/</a> ]";
 
   // Segment 2: if APP_ROOT is defined
   if ($root) {
@@ -467,6 +466,7 @@ left: calc(50% - 265px); /* 1207 / 2 */ /*transform: translate(-50%, -50%);*/ bo
     // >>>
 
     //    $path = defined('APP_ROOT') && APP_ROOT ? APP_PATH . APP_ROOT : (APP_ROOT == '' ? APP_PATH . (isset($_GET['client']) ? APP_BASE['clients'] . $_GET['client'] . DIRECTORY_SEPARATOR : '') . (isset($_GET['client']) || isset($_GET['domain']) ? (isset($_GET['domain']) ? $_GET['domain'] . DIRECTORY_SEPARATOR : '') : (isset($_GET['path']) ? '' : 'vendor' . DIRECTORY_SEPARATOR . (isset($_GET['client']) ? $_GET['client'] . DIRECTORY_SEPARATOR : ''))) : APP_PATH . APP_ROOT);
+
     $path = APP_PATH;
 
     if (defined('APP_ROOT') && APP_ROOT) {
@@ -492,7 +492,6 @@ left: calc(50% - 265px); /* 1207 / 2 */ /*transform: translate(-50%, -50%);*/ bo
     }
 
 
-
     //
 
 
@@ -503,9 +502,11 @@ left: calc(50% - 265px); /* 1207 / 2 */ /*transform: translate(-50%, -50%);*/ bo
 
     // <<<
 
-    if (!realpath($path . ($_GET['path'] ?? ''))) { ?>
+    if (!realpath($path . ($_GET['path'] ?? ''))) {
 
-      <?= "<br /><br />Missing directory $path"; ?>
+      ?>
+
+      <?= "<br /><br />Missing directory 1 $path"; ?>
 
     <?php } else { // 
 
@@ -697,7 +698,7 @@ left: calc(50% - 265px); /* 1207 / 2 */ /*transform: translate(-50%, -50%);*/ bo
                 case 'vendor':
                   echo '<div style="position: relative; border: 4px dashed #6B4329;">'
                     . '<a href="#!" onclick="handleClick(event, \'' . $relativePath . '\'); openApp(\'tools/registry/composer\');">' . '<img src="resources/images/directory-composer.png" width="50" height="32" /></a>'
-                    . '<a href="' . /* basename(__FILE__) .*/ '?' . $url . '" onclick="handleClick(event, \'' . $relativePath . '\');" >' . basename($path)  // "?path=' . basename($path) . '"         
+                    . '<a href="' . /* basename(__FILE__) .*/ '#!' /* . $url */ . '" onclick="window.mod?.handleClick?.(event, \'' . $relativePath . '\');">' . basename($path)  // "?path=' . basename($path) . '"         
                     . '/</a></div>' . "\n";
                   break;
                 default:
@@ -1355,151 +1356,130 @@ left: calc(50% - 265px); /* 1207 / 2 */ /*transform: translate(-50%, -50%);*/ bo
 <?php $UI_APP['body'] = ob_get_contents();
 ob_end_clean();
 
+
+if (false) { ?>
+  <script>
+  <?php }
 ob_start(); ?>
 
-let DirQueryParams = '';
 
-function handleClick(event, path) {
-// Prevent the default hyperlink action
-event.preventDefault();
+  let DirQueryParams = '';
 
-// Check for APP_DEBUG or any other condition
-if (typeof APP_DEBUG !== 'undefined' && APP_DEBUG === true) {
-// Allow the hyperlink to work as usual
-window.location.href = event.currentTarget.href;
-} else {
-document.getElementById('app_directory-container').style.display = 'block';
-
-if (matches = path.match(/^.*\/$/gm)) {
-
-// Use jQuery to update the request input and submit
-$('#requestInput').val('chdir ' + path);
-DirQueryParams = event.currentTarget.href;
-$('#requestSubmit').click();
-
-} else {
-DirQueryParams = event.currentTarget.href;
-
-// Update the hidden ace_path input with the file path
-$('input[name="ace_path"]').val(path); // path.substring(0, path.lastIndexOf('/'))
-
-$('input[name="restore_backup"]').val(path); // path.substring(0, path.lastIndexOf('/'))
-
-$('form[name="ace_form"]').attr('action', DirQueryParams);
-
-document.getElementsByClassName('ace_text-input')[0].name = 'ace_contents';
-
-// Use jQuery to update the request input and submit
-$('#requestInput').val('edit ' + path);
-
-$('#requestSubmit').href = event.currentTarget.href;
-$('#requestSubmit').click();
-
-
-//document.getElementsByClassName('ace_text-input')[0].value = 'hello world';
-}
-
-//if (!isFixed) isFixed = false;
-//show_console();
-
-// Optionally, you could update the div directly if needed
-// $('#app_directory-container').html('Loading ' + folder + '...');
-}
-}
-
-document.addEventListener('DOMContentLoaded', () => {
-// Support clicking
-document.querySelectorAll('.breadcrumb').forEach(link => {
-link.addEventListener('click', e => {
-e.preventDefault();
-const path = e.target.dataset.path;
-handleClick(e, path); // your custom function
-});
-link.setAttribute('tabindex', '0'); // make it keyboard focusable
-link.addEventListener('keydown', e => {
-if (e.key === 'Enter') {
-const path = e.target.dataset.path;
-handleClick(e, path);
-}
-});
-});
-
-// Optional: Left/Right arrow navigation
-let crumbs = Array.from(document.querySelectorAll('.breadcrumb'));
-crumbs.forEach((el, idx) => {
-el.addEventListener('keydown', e => {
-if (e.key === 'ArrowRight' && idx < crumbs.length - 1) { crumbs[idx + 1].focus(); } if (e.key==='ArrowLeft' && idx> 0) {
-  crumbs[idx - 1].focus();
+  // module code (what your fetch returns in data.script)
+  function init(ctx) {
+    console.log('devtools/directory init', ctx);
   }
+  function handleClick(event, path) {
+    event?.preventDefault?.();
+    console.log('Clicked path: (devtools/directory)', path);
+  }
+
+  document.addEventListener('DOMContentLoaded', () => {
+    // Support clicking
+    document.querySelectorAll('.breadcrumb').forEach(link => {
+      link.addEventListener('click', e => {
+        e.preventDefault();
+        const path = e.target.dataset.path;
+        handleClick(e, path); // your custom function
+      });
+      link.setAttribute('tabindex', '0'); // make it keyboard focusable
+      link.addEventListener('keydown', e => {
+        if (e.key === 'Enter') {
+          const path = e.target.dataset.path;
+          handleClick(e, path);
+        }
+      });
+    });
+
+    // Optional: Left/Right arrow navigation
+    let crumbs = Array.from(document.querySelectorAll('.breadcrumb'));
+    crumbs.forEach((el, idx) => {
+      el.addEventListener('keydown', e => {
+        if (e.key === 'ArrowRight' && idx < crumbs.length - 1) { crumbs[idx + 1].focus(); } if (e.key === 'ArrowLeft' && idx > 0) {
+          crumbs[idx - 1].focus();
+        }
+      });
+    });
   });
-  });
-  });
+
+  // register on a global so index.php can find it
+  //window.AppModules ??= {};
+  //window.AppModules['devtools/directory'] = { init, handleClick };
+
+  // tell the host page we’re ready
+  window.__registerAppModule('devtools/directory', { init, handleClick });
+
+
   <?php
   $UI_APP['script'] = ob_get_contents();
   ob_end_clean();
 
+  if (false) { ?>
+  </script>
+<?php }
+
   ob_start(); ?>
-  <!DOCTYPE html>
-  <html>
+<!DOCTYPE html>
+<html>
 
-  <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-    <link rel="stylesheet" href="//code.jquery.com/ui/1.12.1/themes/smoothness/jquery-ui.css" />
+  <link rel="stylesheet" href="//code.jquery.com/ui/1.12.1/themes/smoothness/jquery-ui.css" />
 
-    <?php
-    // (APP_IS_ONLINE && check_http_status('https://cdn.tailwindcss.com') ? 'https://cdn.tailwindcss.com' : APP_URL . 'resources/js/tailwindcss-3.3.5.js')?
+  <?php
+  // (APP_IS_ONLINE && check_http_status('https://cdn.tailwindcss.com') ? 'https://cdn.tailwindcss.com' : APP_URL . 'resources/js/tailwindcss-3.3.5.js')?
 // Path to the JavaScript file
-    $path = app_base('resources', null, 'abs') . 'js/tailwindcss-3.3.5.js';
+  $path = app_base('resources', null, 'abs') . 'js/tailwindcss-3.3.5.js';
 
-    // Create the directory if it doesn't exist
-    is_dir(dirname($path)) or mkdir(dirname($path), 0755, true);
+  // Create the directory if it doesn't exist
+  is_dir(dirname($path)) or mkdir(dirname($path), 0755, true);
 
-    // URL for the CDN
-    $url = 'https://cdn.tailwindcss.com';
+  // URL for the CDN
+  $url = 'https://cdn.tailwindcss.com';
 
-    // Check if the file exists and if it needs to be updated
-    if (defined('APP_IS_ONLINE') && APP_IS_ONLINE)
-      if (!is_file($path) || (time() - filemtime($path)) > 5 * 24 * 60 * 60) { // ceil(abs((strtotime(date('Y-m-d')) - strtotime(date('Y-m-d',strtotime('+5 days',filemtime($path . 'tailwindcss-3.3.5.js'))))) / 86400)) <= 0 
-        // Download the file from the CDN
-        $handle = curl_init($url);
-        curl_setopt($handle, CURLOPT_RETURNTRANSFER, true);
-        $js = curl_exec($handle);
+  // Check if the file exists and if it needs to be updated
+  if (defined('APP_IS_ONLINE') && APP_IS_ONLINE)
+    if (!is_file($path) || (time() - filemtime($path)) > 5 * 24 * 60 * 60) { // ceil(abs((strtotime(date('Y-m-d')) - strtotime(date('Y-m-d',strtotime('+5 days',filemtime($path . 'tailwindcss-3.3.5.js'))))) / 86400)) <= 0 
+      // Download the file from the CDN
+      $handle = curl_init($url);
+      curl_setopt($handle, CURLOPT_RETURNTRANSFER, true);
+      $js = curl_exec($handle);
 
-        // Check if the download was successful
-        if (!empty($js)) {
-          // Save the file
-          file_put_contents($path, $js) or $errors['JS-TAILWIND'] = $url . ' returned empty.';
-        }
-      } ?>
+      // Check if the download was successful
+      if (!empty($js)) {
+        // Save the file
+        file_put_contents($path, $js) or $errors['JS-TAILWIND'] = $url . ' returned empty.';
+      }
+    } ?>
 
-    <script
-      src="<?= defined('APP_IS_ONLINE') && APP_IS_ONLINE && check_http_status($url) ? substr($url, strpos($url, parse_url($url)['host']) + strlen(parse_url($url)['host'])) : substr($path, strpos($path, dirname(app_base('resources', null, 'rel') . 'js'))) ?>"></script>
+  <script
+    src="<?= defined('APP_IS_ONLINE') && APP_IS_ONLINE && check_http_status($url) ? substr($url, strpos($url, parse_url($url)['host']) + strlen(parse_url($url)['host'])) : substr($path, strpos($path, dirname(app_base('resources', null, 'rel') . 'js'))) ?>"></script>
 
-    <style type="text/tailwindcss">
-      <?= $UI_APP['style']; ?>
+  <style type="text/tailwindcss">
+    <?= $UI_APP['style']; ?>
   </style>
-  </head>
+</head>
 
-  <body>
-    <?= $UI_APP['body']; ?>
+<body>
+  <?= $UI_APP['body']; ?>
 
-    <!-- https://cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.min.js -->
-    <script src="//code.jquery.com/jquery-1.12.4.js"></script>
-    <script src="//code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
-    <!-- <script src="resources/js/jquery/jquery.min.js"></script> -->
-    <script>
-      <?= $UI_APP['script']; ?>
-    </script>
-  </body>
+  <!-- https://cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.min.js -->
+  <script src="//code.jquery.com/jquery-1.12.4.js"></script>
+  <script src="//code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
+  <!-- <script src="resources/js/jquery/jquery.min.js"></script> -->
+  <script>
+    <?= $UI_APP['script']; ?>
+  </script>
+</body>
 
-  </html>
-  <?php $UI_APP['html'] = ob_get_contents();
-  ob_end_clean();
+</html>
+<?php $UI_APP['html'] = ob_get_contents();
+ob_end_clean();
 
-  //check if file is included or accessed directly
-  if (defined('APP_RUNNING') && isset($_GET['app']) && $_GET['app'] == 'directory' && APP_DEBUG)
-    exit($UI_APP['html']);
-  else
-    return $UI_APP;
+//check if file is included or accessed directly
+if (defined('APP_RUNNING') && isset($_GET['app']) && $_GET['app'] == 'directory' && APP_DEBUG)
+  exit($UI_APP['html']);
+else
+  return $UI_APP;

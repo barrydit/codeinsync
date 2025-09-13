@@ -7,7 +7,6 @@
  *  - Return ARRAY -> structured payload; caller may JSON-emit
  *  - Return FALSE/NULL -> not handled; caller continues normal boot
  */
-
 declare(strict_types=1);
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -30,12 +29,13 @@ if (!function_exists('app_context') || !function_exists('app_base')) {
         require_once $fn;   // defines app_context(), app_base(), etc.
     }
 }
-
+//die(var_dump($_ENV['COMPOSER']['AUTOLOAD']));
 // Optional: single autoloader (cheap if already loaded)
-$autoload = APP_PATH . 'autoload.php';
-if (is_file($autoload) && !class_exists('Composer\Autoload\ClassLoader', false)) {
+$autoload = APP_PATH . 'vendor/autoload.php';
+if (is_file($autoload) && isset($_ENV['COMPOSER']['AUTOLOAD']) && $_ENV['COMPOSER']['AUTOLOAD'] === TRUE)
+    //if (!class_exists('Composer\Autoload\ClassLoader', false))
     require_once $autoload;
-}
+
 
 // ─────────────────────────────────────────────────────────────────────────────
 // 1) Small utilities
@@ -147,7 +147,7 @@ if ($app && isset($routes[$app]) && is_file($routes[$app])) {
     if (is_array($res) || is_object($res)) {
         // If called directly (not via bootstrap), JSON-emit.
         if (!defined('APP_MODE') && $GLOBALS['__DISPATCHER_STANDALONE__'] = true) {
-            if ($wantsJson()) {
+            if ($wantsJson) {
                 $emitJson($res);
                 return true;
             }
@@ -157,102 +157,53 @@ if ($app && isset($routes[$app]) && is_file($routes[$app])) {
     // Fall through otherwise.
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
-// 4) Dynamic app resolver (safe under APP_PATH . 'app/')
-//    Supports /?app=tools/registry/composer  -> /app/tools/registry/composer.php
-// ─────────────────────────────────────────────────────────────────────────────
-if ($app && is_string($app)) {
-    $app = trim($app, "/ \t\n\r\0\x0B");
+// ===================== BEGIN ROUTER (drop-in) =====================
+$app = $_GET['app'] ?? $_POST['app'] ?? null;
+$cmd = $_POST['cmd'] ?? null;
 
-    $allowedRoots = [
-        APP_PATH . 'app/',
-        APP_PATH . 'app/tools/',
-        APP_PATH . 'app/tools/registry/',
-        APP_PATH . 'app/devtools/',
-    ];
-
-    $candidate = preg_match('/\.php$/i', $app) ? $app : ($app . '.php');
-    $full = $safeJoin(APP_PATH . 'app/', $candidate);
-
-    $isAllowed = false;
-    $realFull = realpath($full);
-    if ($realFull !== false) {
-        $realFull = str_replace('\\', '/', $realFull);
-        foreach ($allowedRoots as $root) {
-            $realRoot = realpath($root);
-            if ($realRoot !== false) {
-                $realRoot = rtrim(str_replace('\\', '/', $realRoot), '/') . '/';
-                if (strpos($realFull, $realRoot) === 0) {
-                    $isAllowed = true;
-                    break;
-                }
-            }
-        }
+// Helper as a scoped closure (cannot be redeclared)
+$load_ui_app = static function (string $app): array {
+    $rel = ltrim($app, '/');
+    $file = APP_PATH . 'app/' . $rel . '.php';
+    if (!is_file($file)) {
+        return ['error' => 'App not found', 'app' => $app, 'file' => $file];
     }
+    $UI_APP = null;
+    $result = require $file;
+    if (is_array($result))
+        return $result;
+    if (isset($UI_APP) && is_array($UI_APP))
+        return $UI_APP;
+    return ['error' => 'App file did not return a UI payload', 'app' => $app, 'file' => $file];
+};
 
-    if ($isAllowed && is_file($full)) {
-        // 🔹 Lazy-load Composer constants when hitting the Composer app
-        $realFullNorm = $realFull ?: $full;
-
-        if (preg_match('#/app/tools/registry/composer\.php$#i', $realFullNorm)) {
-            $paths = CONFIG_PATH . 'constants.paths.php';
-            $composer = CONFIG_PATH . 'constants.composer.php';
-            if (is_file($paths))
-                require_once $paths;
-            if (is_file($composer))
-                require_once $composer;
-        }
-
-        $res = $includeAndReturn($full);
-        if ($res === true)
-            return true;
-        if (is_array($res) || is_object($res)) {
-            if (!defined('APP_MODE') && $wantsJson()) {
-                $emitJson($res);
-                return true;
-            }
-            return $res;
-        }
-        return true;
-    }
+// 1) App route (?app=devtools/directory, tools/registry/composer, etc.)
+if (is_string($app) && $app !== '') {
+    $payload = $load_ui_app($app);
+    return $payload; // [ 'ok' => empty($payload['error']), 'app' => $app, 'data' => $payload, 'meta' => ['loaded_at' => gmdate('c')], ];
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
-// 5) Command routes (POST only): composer | git | npm (extensible)
-// ─────────────────────────────────────────────────────────────────────────────
-if (strtoupper($method) === 'POST' && is_string($cmd) && $cmd !== '') {
-    $commandRoutes = [
+// 2) Command routes (POST cmd)
+if (is_string($cmd) && $cmd !== '') {
+    $routes = [
         '/^composer\b/i' => APP_PATH . 'api/composer.php',
         '/^git\b/i' => APP_PATH . 'api/git.php',
         '/^npm\b/i' => APP_PATH . 'api/npm.php',
-        // Extra examples you had before:
-        // '/^(chdir|cd)\s+/i' => APP_PATH . 'app/devtools/directory.php',
-        // '/^ls\s+/i'         => APP_PATH . 'app/list.php',
-        // '/^php\s+/i'        => CONFIG_PATH . 'runtime/php.php',
     ];
-
-    foreach ($commandRoutes as $pattern => $handlerFile) {
-        if (preg_match($pattern, $cmd) && is_file($handlerFile)) {
-            $res = $includeAndReturn($handlerFile);
-            if ($res === true) {
-                return true;
-            }
-            if (is_array($res) || is_object($res)) {
-                if (!defined('APP_MODE') && $wantsJson()) {
-                    $emitJson($res);
-                    return true;
-                }
-                return $res;
-            }
-            return true;
+    foreach ($routes as $rx => $file) {
+        if (preg_match($rx, $cmd)) {
+            $res = require $file;
+            return is_array($res) ? $res : ['ok' => true, 'output' => (string) $res];
         }
     }
+    return ['ok' => false, 'error' => 'Unknown command', 'cmd' => $cmd];
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
-// 6) Not handled
+// 6) Not handled; let bootstrap continue
 // ─────────────────────────────────────────────────────────────────────────────
-return false;
+return null;
+// ====================== END ROUTER (drop-in) ======================
 
 /*
 return (function () {

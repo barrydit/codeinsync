@@ -1,6 +1,59 @@
 <?php
+declare(strict_types=1);
 
-require_once __DIR__ . DIRECTORY_SEPARATOR . '../classes/class.shutdown.php';
+// minimal web entry
+if (is_file(dirname(__DIR__, 1) . DIRECTORY_SEPARATOR . '../classes/class.shutdown.php'))
+  require_once __DIR__ . DIRECTORY_SEPARATOR . '../classes/class.shutdown.php';
+
+if (!function_exists('load_if_file')) {
+  function load_if_file(string $path): void
+  {
+    if (is_file($path))
+      require_once $path;
+  }
+}
+
+if (!function_exists('app_error_handler')) {
+  // Custom error handler
+  /**
+   * Summary of app_error_handler
+   * @param mixed $errno
+   * @param mixed $errstr
+   * @param mixed $errfile
+   * @param mixed $errline
+   * @return bool
+   */
+  function app_error_handler(int $errno, string $errstr, ?string $errfile = null, ?int $errline = null): bool
+  {
+/*
+    global $errors;
+    !defined('APP_ERROR') and define('APP_ERROR', true); // $hasErrors = true;
+    !defined('APP_DEBUG') and define('APP_DEBUG', APP_ERROR);
+    $errors['FUNCTIONS'] = 'functions.php failed to load. Therefore function dd() does not exist (yet).';
+
+    foreach ([E_ERROR => 'Error', E_WARNING => 'Warning', E_PARSE => 'Parse Error', E_NOTICE => 'Notice', E_CORE_ERROR => 'Core Error', E_CORE_WARNING => 'Core Warning', E_COMPILE_ERROR => 'Compile Error', E_COMPILE_WARNING => 'Compile Warning', E_USER_ERROR => 'User Error', E_USER_WARNING => 'User Warning', E_USER_NOTICE => 'User Notice', E_STRICT => 'Strict Notice', E_RECOVERABLE_ERROR => 'Recoverable Error', E_DEPRECATED => 'Deprecated', E_USER_DEPRECATED => 'User Deprecated',] as $key => $value) {
+      if ($errno == $key) {
+        $errors[$key] = "$key => $value\n";
+        $errors[] = "$value: $errstr in $errfile on line $errline\n";
+        break;
+      }
+    }
+    var_dump($errors);
+    return false;
+*/
+
+    if (!(error_reporting() & $errno))
+      return false;
+    $msg = sprintf('[%s] %s in %s:%d', $errno, $errstr, $errfile ?? '?', $errline ?? 0);
+    if (defined('APP_DEBUG') && APP_DEBUG) {
+      if (PHP_SAPI === 'cli')
+        fwrite(STDERR, $msg . PHP_EOL);
+      else
+        echo '<pre style="color:#f66">' . $msg . '</pre>';
+    }
+    return true; // handled
+  }
+}
 
 function app_context(): string
 {
@@ -218,27 +271,6 @@ function parse_ini_file_multi($file): array
  * Summary of Shutdown
  */
 
-// Register custom error and exception handlers
-set_error_handler([Shutdown::class, 'handleError']);
-set_exception_handler([Shutdown::class, 'handleException']);
-register_shutdown_function(function () {
-  //Shutdown::triggerShutdown('');  //
-
-  //if (!empty($_ENV))
-  //  Shutdown::saveEnvToFile();
-  Shutdown::unlinkEnvjson();
-  if ($error = error_get_last()) {
-    $message = sprintf(
-      "Fatal error: %s in %s on line %d",
-      $error['message'],
-      $error['file'],
-      $error['line']
-    );
-    file_put_contents('/mnt/c/www/error_log', date('c') . " | " . $message . PHP_EOL, FILE_APPEND);
-    error_log($message);
-  }
-  //Shutdown::handleParseError();
-});
 
 
 /**
@@ -340,6 +372,23 @@ function dd(mixed $param = null, bool $die = true, bool $debug = true): void
     }
   }
 }
+
+if (!function_exists('dd')) {
+  function dd(...$vars): never
+  {
+    foreach ($vars as $v) {
+      if (PHP_SAPI === 'cli') {
+        fwrite(STDERR, print_r($v, true) . PHP_EOL);
+      } else {
+        echo '<pre style="padding:8px;background:#111;color:#eee;border-radius:8px;">'
+          . htmlspecialchars(var_export($v, true))
+          . '</pre>';
+      }
+    }
+    exit(1);
+  }
+}
+
 
 /*
         $curl = curl_init($url);
@@ -629,7 +678,7 @@ function check_http_status($url = 'http://8.8.8.8', $expectedStatus = [0 => 200]
     $url = "http://$url";
   }
 
-  $headers = @get_headers($url, 1); // 1 = associative array for headers
+  $headers = @get_headers($url, true); // 1 = associative array for headers
   if ($headers === false || !isset($headers[0])) {
     return false; // No response or DNS failure
   }

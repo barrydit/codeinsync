@@ -1,11 +1,6 @@
 <?php
 declare(strict_types=1);
 
-// Force dispatcher mode if this endpoint is hit directly
-if (!defined('APP_MODE') && (isset($_GET['app']) || isset($_POST['cmd']))) {
-    define('APP_MODE', 'dispatcher');
-}
-
 // If you want to force JSON for any ?app=... request:
 if (isset($_GET['app']) && !isset($_GET['json'])) {
     $_GET['json'] = 1;

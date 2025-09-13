@@ -1,7 +1,19 @@
 <?php
+declare(strict_types=1);
+
 // config/constants.paths.php
 
+//defined('APP_PATH') or define('APP_PATH', dirname(__DIR__) . DIRECTORY_SEPARATOR);
+//define('CONFIG_PATH', APP_PATH . 'config' . DIRECTORY_SEPARATOR);
+//define('BOOTSTRAP_PATH', APP_PATH . 'bootstrap' . DIRECTORY_SEPARATOR);
+//define('PATH_PUBLIC', APP_PATH . 'public' . DIRECTORY_SEPARATOR);
+
 defined('APP_PATH') or die('APP_PATH must be defined before constants.paths.php');
+
+defined('PATH_PUBLIC') || define(
+    'PATH_PUBLIC',
+    APP_PATH . 'public' . DIRECTORY_SEPARATOR
+);
 
 /**
  * Normalize a filesystem path:

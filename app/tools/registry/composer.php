@@ -518,7 +518,39 @@ php composer.phar -v
             <a class="text-sm" style="color: blue; text-decoration: underline;"
               href="https://github.com/settings/tokens?page=1">GitHub OAuth Token</a>:
             <span class="text-sm"
-              style="float: right;"><?= is_file(COMPOSER_AUTH) ? ceil(abs((strtotime(date('Y-m-d')) - strtotime(date('Y-m-d', strtotime('+30 days', filemtime(COMPOSER_AUTH))))) / 86400)) : '' ?>
+              style="float: right;">
+<?php
+// Countdown days until token “rotation”, using COMPOSER_AUTH mtime + 30 days
+/* Example function you can use elsewhere
+function composer_token_days_left(int $windowDays = 30): ?int
+{
+  if (!defined('COMPOSER_AUTH') || !is_file(COMPOSER_AUTH))
+    return null;
+
+  $tz = new DateTimeZone(date_default_timezone_get());
+  $rotAt = (new DateTimeImmutable('@' . filemtime(COMPOSER_AUTH)))
+    ->setTimezone($tz)
+    ->modify("+{$windowDays} days");
+  $today = new DateTimeImmutable('today', $tz);
+
+  $days = $today->diff($rotAt)->days;
+  // sign: negative if overdue
+  if ($rotAt < $today)
+    $days = -$days;
+  return $days;
+}
+
+// Example output: clamp to 0 if you only want a countdown
+$daysLeft = composer_token_days_left(30);
+echo $daysLeft === null ? '' : max(0, $daysLeft);
+*/
+?>
+              
+              <?= (is_file(COMPOSER_AUTH)
+                ? max(0, (new DateTimeImmutable('today'))
+                  ->diff((new DateTimeImmutable('@' . filemtime(COMPOSER_AUTH)))
+                    ->modify('+30 days'))->days)
+                : '') ?>
               (Days left)</span>
             <div style="float: right;">
               <input type="text" size="40" name="auth[github_oauth]" value="<?= COMPOSER_GITHUB_OAUTH_TOKEN ?? '' ?>" />

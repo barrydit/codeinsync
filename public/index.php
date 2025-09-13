@@ -3,29 +3,18 @@
 !defined('APP_START') and define('APP_START', $_SERVER['REQUEST_TIME_FLOAT'] ?? microtime(true));
 
 const IS_CLIENT = true;
+const IS_DEVELOPER = false;
 
-
-// Ensure BOOTSTRAP_PATH points at /bootstrap/
-defined('BOOTSTRAP_PATH') || define('BOOTSTRAP_PATH', __DIR__ . '/../bootstrap/');
-
-require_once BOOTSTRAP_PATH . 'bootstrap.php'; // require_once (...);
+// minimal web entry
+if (is_file(dirname(__DIR__, 1) . '/bootstrap/bootstrap.php'))
+  require_once __DIR__ . '/../bootstrap/bootstrap.php';
 
 // Fast-path: if routing params present, hint minimal boot
 if (!defined('APP_MODE')) {
   define('APP_MODE', 'web');
 }
 
-// file_exists(dirname(__DIR__, 1) . '/bootstrap/bootstrap.php') && require_once dirname(__DIR__, 1) . '/bootstrap/bootstrap.php';
-
 //dd(get_required_files());
-
-/*
-$trace = debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS, 1)[0];
-
-$file = $trace['file'];
-$line = $trace['line'];
-
-dd("Executing in: $file @ line $line\n");*/
 
 /**
  * File Analysis Summary for PHP Project
@@ -68,7 +57,6 @@ foreach (glob("{$baseDir}*.php") as $file) {
   }
 }
 
-
 // Step 3: Scan project directories recursively
 scanDirectories($directoriesToScan, $baseDir, $trackedFiles);
 
@@ -85,14 +73,12 @@ $total_lines = 0;
 foreach ($sortedFiles as $index => $path) {
   $fullPath = str_starts_with($path, DIRECTORY_SEPARATOR)
     ? $path  // Already absolute, don't prepend
-    : $baseDir . $path;
+    : "$baseDir$path";
 
   $fileSize = filesize($fullPath);
 
-  if (file($fullPath) === false) {
-    // Handle the error
+  if (file($fullPath) === false) // Handle the error
     throw new Exception("Failed to read the file: $fullPath");
-  }
 
   $lineCount = count(file($fullPath));
 
@@ -118,6 +104,7 @@ unset($_SESSION['mode']); ?>
 
 <head>
   <meta charset="UTF-8">
+  <link rel="icon" href="<?= APP_URL ?>/favicon.ico">
   <title>CodeInSync - Skeleton</title>
   <style>
     html,
@@ -385,6 +372,8 @@ unset($_SESSION['mode']); ?>
           <span>Logout: <a href="/?authprobe" rel="nofollow">Logout</a></span><br />
           <span>Loading Time: <?= round(microtime(true) - APP_START, 3); ?>s</span><br />
           <span>OS: <?= PHP_OS; ?></span><br />
+          <span>PHP: <?= PHP_VERSION; ?></span><br />
+          <span>Debug: <?= APP_DEBUG ? 'true' : 'false'; ?></span><br />
           <span>Context: <?= APP_CONTEXT ?? ''; ?></span><br />
           <span>Mode: <?= APP_MODE ?? ''; ?></span><br />
           <span>Domain: <?= APP_DOMAIN ?? ''; ?></span><br />
@@ -660,6 +649,32 @@ unset($_SESSION['mode']); ?>
 
 
   <script>
+
+    // where modules attach their API
+    window.AppModules = window.AppModules || Object.create(null);
+
+    // waiters per app path
+    const __waiters = Object.create(null);
+
+    // called by modules when they are ready
+    window.__registerAppModule = function (path, api) {
+      window.AppModules[path] = api;
+      if (__waiters[path]) {
+        __waiters[path].forEach(res => res(api));
+        delete __waiters[path];
+      }
+    };
+
+    // used by openApp() to wait for the module to be ready
+    function waitForModule(path, timeout = 2000) {
+      if (window.AppModules[path]) return Promise.resolve(window.AppModules[path]);
+      return new Promise((resolve, reject) => {
+        (__waiters[path] ||= []).push(resolve);
+        setTimeout(() => reject(new Error(`Module timeout: ${path}`)), timeout);
+      });
+    }
+
+
     /*
       document.querySelectorAll('[data-draggable]').forEach(el => {
         const id = el.id;
@@ -675,11 +690,16 @@ toggle between hiding and showing the dropdown content */
       document.getElementById("myDropdown").classList.toggle("show");
     }
 
-    function handleClick(event, path) {
-      return null;
-    }
+    //function handleClick(event, path) {
+    //console.log('Clicked element:', event.target);
+    //console.log('Path:', path);
+    //  return null;
+    //}
 
     const Stack = { zTop: null, active: null };
+
+    //window.AppModules ??= {};
+    //window.mod = undefined; // temp for quick testing
 
     function initZTop() {
       if (Stack.zTop != null) return;
@@ -1010,76 +1030,113 @@ toggle between hiding and showing the dropdown content */
       }
     }
 
-    function openApp(appPath) {
+    // Minimal helpers assumed to exist in your codebase:
+    // - sanitizeSlug(appPath)
+    // - ensureContainer(id, withChrome)
+    // - reinitDraggable(id, enabled)
+    // - shouldBeDraggable(appPath)
+
+    // Wait for an inline module to register itself on window.AppModules[appPath],
+    // or fire a CustomEvent("app:registered", { detail: { path, module } }).
+    function waitForModule(appPath, { timeout = 4000, interval = 40 } = {}) {
+      return new Promise((resolve, reject) => {
+        const start = performance.now();
+        const check = () => {
+          const mod = (window.AppModules && window.AppModules[appPath]) || null;
+          if (mod) return resolve(mod);
+          if (performance.now() - start >= timeout) {
+            return reject(new Error(`Module "${appPath}" not registered in time`));
+          }
+          setTimeout(check, interval);
+        };
+        // Also listen for the explicit event if your modules emit it
+        const onRegistered = (ev) => {
+          if (ev?.detail?.path === appPath && ev.detail.module) {
+            cleanup();
+            resolve(ev.detail.module);
+          }
+        };
+        const cleanup = () => {
+          window.removeEventListener('app:registered', onRegistered);
+        };
+        window.addEventListener('app:registered', onRegistered);
+        check();
+      });
+    }
+
+    // ✅ Refactored: async/await all the way
+    async function openApp(appPath, ctx = {}) {
       const slug = sanitizeSlug(appPath);
       const containerId = `app_${slug}-container`;
       const styleId = `style-${slug}`;
       const scriptId = `script-${slug}`;
 
-      // Always fetch fresh JSON (no caching)
-      fetch(`/?app=${encodeURIComponent(appPath)}`, {
-        headers: { Accept: 'application/json' },
-        cache: 'no-store'
-      })
-        .then(r => {
-          const ct = r.headers.get('content-type') || '';
-          if (!r.ok) throw new Error(`HTTP ${r.status}`);
-          if (!ct.includes('application/json')) throw new Error('Dispatcher did not return JSON');
-          return r.json();
-        })
-        .then(data => {
-          if (data?.error) throw new Error(data.error);
-
-          // Ensure container & metadata
-          const target = ensureContainer(containerId, true);
-          target.dataset.appPath = appPath;
-          target.querySelector('.title')?.replaceChildren(document.createTextNode(slug));
-
-          // Style: update if changed, or create once
-          if (data.style) {
-            let styleEl = document.querySelector(`[data-app-style="${appPath}"]`);
-            if (!styleEl) {
-              styleEl = document.createElement('style');
-              styleEl.id = styleId;
-              styleEl.type = 'text/css';
-              styleEl.dataset.appStyle = appPath;
-              document.head.appendChild(styleEl);
-            }
-            if (styleEl.textContent !== data.style) styleEl.textContent = data.style;
-          }
-
-          // Body: only replace the body region so header/handle persists
-          const body = target.querySelector('.window-body') || target;
-          body.replaceChildren();
-          if (data.body) body.insertAdjacentHTML('afterbegin', data.body);
-
-          // Script: remove previous then inject new (ensures re-exec each open)
-          document.querySelector(`[data-app-script="${appPath}"]`)?.remove();
-          if (data.script) {
-            const inlineModule = document.createElement('script');
-            inlineModule.id = scriptId;
-            inlineModule.type = 'module';
-            inlineModule.dataset.appScript = appPath;
-            inlineModule.textContent = data.script;
-            document.body.appendChild(inlineModule);
-          }
-
-          // Draggable: destroy+re-init every time (unless disallowed)
-          reinitDraggable(containerId, shouldBeDraggable(appPath));
-        })
-        .catch(err => {
-          console.error('openApp error:', err);
-          const target = ensureContainer(containerId, true);
-          (target.querySelector('.window-body') || target).textContent = 'Error loading app.';
-          reinitDraggable(containerId, shouldBeDraggable(appPath));
+      try {
+        // Always fetch fresh JSON
+        const r = await fetch(`/?app=${encodeURIComponent(appPath)}`, {
+          headers: { Accept: 'application/json' },
+          cache: 'no-store'
         });
+
+        const ct = r.headers.get('content-type') || '';
+        if (!r.ok) throw new Error(`HTTP ${r.status}`);
+        if (!ct.includes('application/json')) throw new Error('Dispatcher did not return JSON');
+
+        const data = await r.json();
+        if (data?.error) throw new Error(data.error);
+
+        // Ensure container & metadata
+        const target = ensureContainer(containerId, true);
+        target.dataset.appPath = appPath;
+        target.querySelector('.title')?.replaceChildren(document.createTextNode(slug));
+
+        // Style: update if changed, or create once
+        if (data.style) {
+          let styleEl = document.querySelector(`[data-app-style="${appPath}"]`);
+          if (!styleEl) {
+            styleEl = document.createElement('style');
+            styleEl.id = styleId;
+            styleEl.type = 'text/css';
+            styleEl.dataset.appStyle = appPath;
+            document.head.appendChild(styleEl);
+          }
+          if (styleEl.textContent !== data.style) styleEl.textContent = data.style;
+        }
+
+        // Body: only replace the body region so header/handle persists
+        const body = target.querySelector('.window-body') || target;
+        body.replaceChildren();
+        if (data.body) body.insertAdjacentHTML('afterbegin', data.body);
+
+        // Script: remove previous then inject new (ensures re-exec each open)
+        document.querySelector(`[data-app-script="${appPath}"]`)?.remove();
+        if (data.script) {
+          const inlineModule = document.createElement('script');
+          inlineModule.id = scriptId;
+          inlineModule.type = 'module';
+          inlineModule.dataset.appScript = appPath;
+          inlineModule.textContent = data.script;
+          document.body.appendChild(inlineModule);
+        }
+
+        // Draggable: destroy+re-init every time (unless disallowed)
+        reinitDraggable(containerId, shouldBeDraggable(appPath));
+
+        // 🔒 Wait for module registration before calling init
+        const mod = await waitForModule(appPath);
+        mod.init?.({ from: 'openApp', path: appPath, ...ctx });
+
+        // Optional: expose for quick inline tests
+        window.mod = mod;
+      } catch (err) {
+        console.error('openApp error:', err);
+        const target = ensureContainer(containerId, true);
+        (target.querySelector('.window-body') || target).textContent = 'Error loading app.';
+        reinitDraggable(containerId, shouldBeDraggable(appPath));
+      }
     }
 
     document.addEventListener("DOMContentLoaded", () => {
-      //makeDraggable('app_git-container');
-      //makeDraggable('app_visual_nodes-container');
-      //makeDraggable('app_composer-container');
-
       <?php
       if (!empty($_GET['app'])):
         $safeApp = htmlspecialchars(addslashes($_GET['app']), ENT_QUOTES);
@@ -1087,12 +1144,17 @@ toggle between hiding and showing the dropdown content */
         openApp('<?= $safeApp ?>');
       <?php else: ?>
         // No app specified
-        openApp('visual/nodes');
+        //openApp('visual/nodes');
         console.log('No app specified in URL, opened default "visual/nodes".');
       <?php endif; ?>
 
-      openApp('devtools/directory');
+      //openApp('devtools/directory', { from: 'window.load' });
+    });
 
+
+    // on load, open devtools/directory
+    window.addEventListener('load', () => {
+      openApp('devtools/directory', { from: 'window.load' });
     });
   </script>
 

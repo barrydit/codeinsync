@@ -1,142 +1,164 @@
 <?php
 declare(strict_types=1);
 
-// bootstrap/bootstrap.php
-
 use App\Core\Registry;
 
-/**
- * Bootstrap header (clean + idempotent)
- * - No output, header-safe
- * - Symlink-safe path resolution
- * - Defines: BOOTSTRAP_PATH, APP_PATH, CONFIG_PATH, BASE_PATH (legacy), APP_BOOTSTRAPPED
- * - Loads: config/functions.php, minimal constants set
- */
+if (defined('APP_BOOTSTRAPPED')) // Already fully bootstrapped in this request
+    return;
 
-// ---- tiny helper to define-once -------------------------------------------
-if (!function_exists('__def')) {
-    function __def(string $name, $value): void
-    {
-        if (!defined($name)) {
-            define($name, $value);
-        }
-    }
-}
+// ------------------------------------------------------
+// Minimal Environment Setup
+// ------------------------------------------------------
 
-// ---- core paths ------------------------------------------------------------
-__def('BOOTSTRAP_PATH', rtrim(str_replace('\\', '/', __DIR__), '/') . '/'); // /bootstrap/
-$parent = realpath(BOOTSTRAP_PATH . '..') ?: dirname(BOOTSTRAP_PATH);       // project root
-__def('APP_PATH', rtrim(str_replace('\\', '/', $parent), '/') . '/');   // project root + /
-__def('CONFIG_PATH', APP_PATH . 'config/');
+// --- Path resolution (symlink-safe)
+$__file = __FILE__;
+$__boot = rtrim(str_replace('\\', '/', dirname($__file)), '/') . '/';
+$__bootReal = @realpath($__boot) ?: $__boot;
+defined('BOOTSTRAP_PATH') || define('BOOTSTRAP_PATH', $__bootReal);
+$__app = rtrim(dirname(BOOTSTRAP_PATH), '/') . '/';
+$__appReal = @realpath($__app) ?: $__app;
+defined('APP_PATH') || define('APP_PATH', $__appReal . DIRECTORY_SEPARATOR);
+defined('CONFIG_PATH') || define('CONFIG_PATH', APP_PATH . 'config' . DIRECTORY_SEPARATOR);
+// optional legacy: 
+// defined('BASE_PATH') || define('BASE_PATH', BOOTSTRAP_PATH);
 
-// Legacy alias (if older code still uses BASE_PATH)
-__def('BASE_PATH', BOOTSTRAP_PATH);
+if (defined('BASE_PATH') && BASE_PATH !== BOOTSTRAP_PATH)
+    trigger_error('BASE_PATH differs from BOOTSTRAP_PATH; confirm intended semantics.', E_USER_NOTICE);
 
-// Run-once guard
-__def('APP_BOOTSTRAPPED', true);
+// --- Minimal env/debug/timezone
+if (!defined('APP_DEBUG'))
+    define('APP_DEBUG', false);
+if (!ini_get('date.timezone'))
+    date_default_timezone_set('America/Vancouver'); // 'UTC'
+error_reporting(APP_DEBUG ? E_ALL : E_ALL & ~E_NOTICE & ~E_STRICT);
+ini_set('display_errors', APP_DEBUG ? '1' : '0');
+ini_set('log_errors', '1');
 
 // ---- helpers first (defines app_context(), app_base(), etc.) ---------------
 require_once CONFIG_PATH . 'functions.php';
 
 // ---- minimal constants needed early (env + paths + url + app) -------------
+// --- Canonical constants order
 require_once CONFIG_PATH . 'constants.env.php';
 require_once CONFIG_PATH . 'constants.paths.php';
+require_once CONFIG_PATH . 'constants.runtime.php';
 require_once CONFIG_PATH . 'constants.url.php';
 require_once CONFIG_PATH . 'constants.app.php';
 
-// 1) (optional) early/fast dispatcher detection...
-
-function wants_json_request(): bool
-{
-    // explicit override wins
-    if (isset($_GET['json']) && $_GET['json'] !== '0')
-        return true;
-
-    $accept = strtolower($_SERVER['HTTP_ACCEPT'] ?? '');
-    if ($accept === '')
-        return false;
-
-    // parse Accept into [mime => q]
-    $qs = [];
-    foreach (explode(',', $accept) as $part) {
-        $part = trim($part);
-        if ($part === '')
-            continue;
-        $mime = $part;
-        $q = 1.0;
-        if (strpos($part, ';') !== false) {
-            [$mime, $params] = array_map('trim', explode(';', $part, 2));
-            if (preg_match('/(?:^|;) *q=([0-9.]+)/', $params, $m)) {
-                $q = (float) $m[1];
-            }
-        }
-        $qs[$mime] = $q;
-    }
-
-    // gather q-values for families
-    $qJson = max(
-        $qs['application/json'] ?? 0.0,
-        $qs['application/*'] ?? 0.0
-    );
-    $qHtml = max(
-        $qs['text/html'] ?? 0.0,
-        $qs['application/xhtml+xml'] ?? 0.0,
-        $qs['text/*'] ?? 0.0
-    );
-    $qAny = $qs['*/*'] ?? 0.0;
-
-    // Only prefer JSON if it beats HTML and the wildcard
-    return $qJson > $qHtml && $qJson >= $qAny && $qJson > 0.0;
-}
-
-
-$wantsDispatcher = (PHP_SAPI !== 'cli') && (
-    (isset($_GET['app']) && $_GET['app'] !== '') ||
-    (isset($_POST['cmd']) && is_string($_POST['cmd']) && preg_match('/^(composer|git|npm)\b/i', $_POST['cmd']))
-);
-
-// 2) (optional) detect if JSON is wanted (Accept header + ?json=1)
+// --- Fast dispatcher path (avoid loading heavy constants) --------------------
+// --- Early dispatcher fast-path (API only) --------------------------------
+$isCli = (PHP_SAPI === 'cli');
+$appParam = isset($_GET['app']) ? (string) $_GET['app'] : null;
+$hasCmd = isset($_POST['cmd']) && is_string($_POST['cmd']) && $_POST['cmd'] !== '';
 $accept = strtolower($_SERVER['HTTP_ACCEPT'] ?? '');
 
-// Only JSON if explicitly requested via ?json=1
-// OR if Accept includes application/json and does NOT include text/html.
-$wantsJson = stripos($_SERVER['HTTP_ACCEPT'] ?? '', 'application/json') !== false;
+$wantsJson = !$isCli && (
+    (isset($_GET['json']) && $_GET['json'] !== '0') ||
+    strpos($accept, 'application/json') !== false ||
+    strpos($accept, 'text/json') !== false
+);
 
-if ($wantsDispatcher && !defined('APP_MODE'))
-    define('APP_MODE', 'dispatcher');
+// API iff: command OR (app AND explicitly wants JSON)
+$wantsDispatcher = !$isCli && ($hasCmd || ($appParam && $wantsJson));
 
-if (defined('APP_MODE') && APP_MODE === 'dispatcher') {
-    $handled = require BOOTSTRAP_PATH . 'dispatcher.php';
+if ($wantsDispatcher) {
+    $obLevel = ob_get_level();
 
-    if ($handled === true)
-        exit;
-
-    if ((is_array($handled) || is_object($handled)) && $wantsJson) {
-        if (!headers_sent())
-            header('Content-Type: application/json; charset=utf-8');
-        echo json_encode($handled, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE);
-        exit;
+    if (!headers_sent()) {
+        header('Content-Type: application/json; charset=utf-8');
+        header('X-Content-Type-Options: nosniff');
+        header('Cache-Control: no-store, no-cache, must-revalidate');
+        header('Pragma: no-cache');
+        header('Vary: Accept');
     }
 
-    // IMPORTANT: also suppress string output unless JSON is explicitly wanted
-    if (is_string($handled) && $wantsJson) {
-        if (!headers_sent())
-            header('Content-Type: application/json; charset=utf-8');
-        echo $handled;
-        exit;
+    ob_start();
+    try {
+        $res = require APP_PATH . 'bootstrap/dispatcher.php';
+        $buffer = ob_get_clean();
+
+    } catch (\Throwable $e) {
+        while (ob_get_level() > $obLevel)
+            ob_end_clean();
+        throw $e;
     }
 
-    // Otherwise fall through to normal HTML rendering
+    //dd(get_required_files());
+    $payload = ($res !== null && $res !== '') ? $res : $buffer;
+    echo is_string($payload) ? $payload : json_encode($payload, JSON_UNESCAPED_SLASHES);
+    exit; // API path only
 }
+// --- end fast-path ---------------------------------------------------------
 
-require_once CONFIG_PATH . 'constants.runtime.php';
+require_once CONFIG_PATH . 'auth.php';
+
+//defined('APP_RUNTIME_READY') || define('APP_RUNTIME_READY', 1);
+
 require_once CONFIG_PATH . 'constants.exec.php';
+//defined('APP_EXEC_READY') || define('APP_EXEC_READY', 1);
 
 // [Optional] normalize CWD once (only if your code depends on it)
-if (!@chdir(APP_PATH)) {
+if (!@chdir(APP_PATH))
     throw new RuntimeException("Failed to chdir() to APP_PATH: " . APP_PATH);
-}
+
 defined('APP_CWD') || define('APP_CWD', getcwd());
 
 // Single autoloader include (custom or Composer)
-require_once APP_PATH . 'autoload.php'; // or 'vendor/autoload.php'
+if (is_file(APP_PATH . 'vendor/autoload.php') && $_ENV['COMPOSER']['AUTOLOAD'] !== false)
+    require_once APP_PATH . 'vendor/autoload.php';
+
+require_once APP_PATH . 'bootstrap/php-ini.php';
+
+require_once APP_PATH . 'bootstrap/kernel.php';
+/*
+//require_once APP_PATH . 'bootstrap/events.php';
+//require_once APP_PATH . 'bootstrap/middleware.php';
+require_once APP_PATH . 'bootstrap/services.php';
+require_once APP_PATH . 'bootstrap/session.php';
+require_once APP_PATH . 'bootstrap/user.php';
+require_once APP_PATH . 'bootstrap/csrf.php';
+require_once APP_PATH . 'bootstrap/flash.php';
+require_once APP_PATH . 'bootstrap/routes.php';
+require_once APP_PATH . 'bootstrap/template.php';
+require_once APP_PATH . 'bootstrap/locale.php';
+require_once APP_PATH . 'bootstrap/notifications.php';
+require_once APP_PATH . 'bootstrap/recaptcha.php';
+require_once APP_PATH . 'bootstrap/validation.php';
+require_once APP_PATH . 'bootstrap/markdown.php';
+require_once APP_PATH . 'bootstrap/updates.php';
+require_once APP_PATH . 'bootstrap/plugins.php';
+require_once APP_PATH . 'bootstrap/shortcuts.php';
+require_once APP_PATH . 'bootstrap/registry.php';
+//require_once APP_PATH . 'bootstrap/commands.php';
+//require_once APP_PATH . 'bootstrap/cli.php';
+//require_once APP_PATH . 'bootstrap/sockets.php';
+//require_once APP_PATH . 'bootstrap/web.php';
+//require_once APP_PATH . 'bootstrap/api.php';
+//require_once APP_PATH . 'bootstrap/admin.php';
+require_once APP_PATH . 'bootstrap/debug.php';
+//require_once APP_PATH . 'bootstrap/logging.php';
+require_once APP_PATH . 'bootstrap/shutdown.php';
+Registry::set('app.start_time', microtime(true));
+// ---------------------------------------------------------
+// [2] More Path and Context Constants
+// ---------------------------------------------------------
+require_once CONFIG_PATH . 'constants.paths2.php';
+//defined('APP_PATHS_READY') || define('APP_PATHS_READY', 1);
+*/
+// ---------------------------------------------------------
+// [3] Sanitize Input (basic)
+// ---------------------------------------------------------
+// Example: sanitize ?path= for directory traversal
+// (your app may require more advanced input validation/sanitation)
+if (isset($_GET['path'])) {
+    $path = trim((string) $_GET['path']);
+    $path = trim($path, "\\/");           // drop leading/trailing slashes
+    $real = realpath(APP_PATH . ($path ? $path . DIRECTORY_SEPARATOR : ''));
+    if ($real && str_starts_with($real, APP_PATH)) {
+        $_GET['path'] = substr($real, strlen(APP_PATH));
+    } else {
+        unset($_GET['path']); // invalid
+    }
+}
+
+defined('APP_BOOTSTRAPPED') || define('APP_BOOTSTRAPPED', 1);

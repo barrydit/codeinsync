@@ -341,8 +341,14 @@ class Shutdown
         }
     }
 
+    public static function getEnvJsonPath(): string
+    {
+        return APP_PATH . '.env.json';
+    }
+
     public static function unlinkEnvjson(): void
     {
+        die(var_dump(get_required_files()));
         require_once dirname(__DIR__, 1) . DIRECTORY_SEPARATOR . 'config' . DIRECTORY_SEPARATOR . 'config.php';
         $envJsonPath = APP_PATH . APP_ROOT . '.env.json';
         if (file_exists($envJsonPath)) {

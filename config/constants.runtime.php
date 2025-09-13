@@ -1,11 +1,29 @@
 <?php
-
+declare(strict_types=1);
 /**
  * constants.runtime.php
  *
  * Runtime and environment state detection.
  * Assumes APP_PATH and APP_BASE are defined.
  */
+
+// Timezone (env wins; default your local)
+$tz = $_ENV['APP_TZ'] ?? 'America/Vancouver';
+@date_default_timezone_set(is_string($tz) && $tz ? $tz : 'America/Vancouver');
+
+// Debug toggle
+$debug = filter_var($_ENV['APP_DEBUG'] ?? false, FILTER_VALIDATE_BOOL);
+defined('APP_DEBUG') or define('APP_DEBUG', $debug);
+
+// Sensible defaults
+ini_set('assert.exception', '1');
+if ($debug) {
+    error_reporting(E_ALL);
+    ini_set('display_errors', '1');
+} else {
+    error_reporting(E_ALL & ~E_NOTICE & ~E_STRICT & ~E_DEPRECATED);
+    ini_set('display_errors', '0');
+}
 
 // ---------------------------------------------------------
 // [1] Request Context Detection
@@ -64,6 +82,29 @@
             : false;
     })()
 );
+
+if (!defined('APP_SELF')) {
+    if (PHP_SAPI === 'cli') {
+        $first = get_included_files()[0] ?? __FILE__;
+        define('APP_SELF', realpath($first) ?: $first);
+    } else {
+        $sf = $_SERVER['SCRIPT_FILENAME'] ?? (get_included_files()[0] ?? __FILE__);
+        define('APP_SELF', realpath($sf) ?: $sf);
+    }
+}
+
+!defined('APP_MODE') and define('APP_MODE', 'web');
+
+// ------------------------------------------------------
+// Context Detection (cli, socket, or www)
+// ------------------------------------------------------
+
+// APP_CONTEXT: tells runtime *what kind of environment* we're in
+defined('APP_CONTEXT') || define('APP_CONTEXT', match (true) {
+    APP_MODE === 'socket' || (PHP_SAPI === 'cli' && isset($argv[1]) && str_starts_with($argv[1], 'socket')) => 'socket',
+    APP_MODE === 'cli' || PHP_SAPI === 'cli' => 'cli',
+    default => 'www', // most likely browser
+});
 
 // ---------------------------------------------------------
 // [3] Dashboard / Versioning

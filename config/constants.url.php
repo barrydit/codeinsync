@@ -1,7 +1,116 @@
 <?php
 
-//var_dump(APP_PATH . basename(dirname(__DIR__, 2)) . '/' . basename(dirname(__DIR__, 1)));
+declare(strict_types=1);
+
+
+$server = $_SERVER ?? [];
+$host = $server['HTTP_X_FORWARDED_HOST'] ?? $server['HTTP_HOST'] ?? $server['SERVER_NAME'] ?? 'localhost';
+$host = strtolower(trim(preg_replace('/:\d+$/', '', $host))); // strip port
+$host = preg_replace('/[^a-z0-9\.\-]/', '', $host); // sanitize
+
+$https = (
+    (!empty($server['HTTPS']) && $server['HTTPS'] !== 'off') ||
+    (isset($server['SERVER_PORT']) && (int) $server['SERVER_PORT'] === 443) ||
+    (isset($server['HTTP_X_FORWARDED_PROTO']) && strtolower($server['HTTP_X_FORWARDED_PROTO']) === 'https')
+);
+
+$requestUri = $server['REQUEST_URI'] ?? ($server['PHP_SELF'] ?? '/');
+$requestUri = rtrim($requestUri, '/');
+$parsedUrl = parse_url($requestUri);
+$parsedUrl['path'] ??= '/';
+$parsedUrl['query'] ??= '';
+$parsedUrl['scheme'] ??= 'http';
+$parsedUrl['host'] ??= $host;
+$parsedUrl['port'] ??= ($server['SERVER_PORT'] ?? 80);
+$parsedUrl['user'] ??= '';
+$parsedUrl['pass'] ??= '';
+$parsedUrl['fragment'] ??= parse_url($requestUri, PHP_URL_FRAGMENT) ?: '';
+
+// ---------------------------------------------------------
+// [2] URL and Domain Constants
+// ---------------------------------------------------------
+// Assumes APP_PATH and APP_BASE are defined.
+// Note: APP_BASE may be '/' or '/subdir/' or '' (no trailing slash
+// if app is in web root).
+$errors ??= [];
+
 // 1. Determine request URI consistently
+// Normalize request URI depending on SAPI
+
+if (PHP_SAPI === 'cli') {
+    $scriptName = $server['PHP_SELF'] ?? '';
+    $uri = $server['REQUEST_URI'] ?? '';
+    $requestUri = preg_replace('/' . preg_quote($scriptName, '/') . '$/', '/', $uri);
+} else {
+    $uri = $server['REQUEST_URI'] ?? ($server['PHP_SELF'] ?? '');
+    $query = $server['QUERY_STRING'] ?? '';
+    $requestUri = $uri . ($query !== '' ? "?$query" : ''); // Bug: Appends query string even if empty
+}
+
+// Ensure consistent trailing slash handling
+//$requestUri = $_SERVER['REQUEST_URI'] ?? ($_SERVER['PHP_SELF'] ?? '');
+//$requestUri = rtrim($uri, '/');
+
+defined('APP_HOST')    or define('APP_HOST', $host);
+defined('APP_IS_HTTPS') or define('APP_IS_HTTPS', $https);
+defined('APP_SCHEME')  or define('APP_SCHEME', $https ? 'https' : 'http');
+defined('APP_DOMAIN')  or define('APP_DOMAIN', preg_replace('/^www\./', '', $host));
+
+// A careful domain regex (basic hostname; adjust if needed)
+defined('DOMAIN_EXPR') or define('DOMAIN_EXPR', $_ENV['SHELL']['EXPR_DOMAIN'] ?? '/(?:[a-z]+\:\/\/)?(?:[a-z0-9\-]+\.)+[a-z]{2,6}(?:\/\S*)?/i') and is_string(DOMAIN_EXPR) ? '' : $errors['DOMAIN_EXPR'] = 'DOMAIN_EXPR is not a valid string value.'; // /(?:\.(?:([-a-z0-9]+){1,}?)?)?\.[a-z]{2,6}$/';
+    // const DOMAIN_EXPR = 'string only/non-block/ternary'; 
+
+// Define APP_QUERY if not already defined
+if (!defined('APP_QUERY')) {
+    $queryString = parse_url($requestUri, PHP_URL_QUERY);
+    $parsedQuery = [];
+
+    if ($queryString) {
+        parse_str($queryString, $parsedQuery);
+    }
+
+    define('APP_QUERY', $parsedQuery);
+}
+
+// 3. Define APP_URL
+if (!defined('APP_URL')) {
+    if (PHP_SAPI === 'cli' || defined('STDIN')) {
+        // CLI fallback
+        define('APP_URL', 'http://localhost/');
+    } else {
+        $isHttps = (
+            (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') ||
+            ($_SERVER['SERVER_PORT'] ?? '') === '443'
+        );
+
+        $scheme = $isHttps ? 'https' : 'http';
+        $host = $_SERVER['HTTP_HOST'] ?? $_SERVER['SERVER_NAME'] ?? 'localhost';
+        $path = parse_url($_SERVER['REQUEST_URI'] ?? '/', PHP_URL_PATH);
+
+        define('APP_URL', "$scheme://$host$path");
+    }
+}
+
+// Define the application URL
+//const APP_ENV = 'development'; // define('APP_ENV', 'production') ? 'production' : 'development'; // APP_DEV |  APP_PROD
+
+//const APP_ENV = getenv('APP_ENV') ?: 'production';
+//define('APP_ENV', getenv('APP_ENV') ?: 'production');
+//; // ? 'production' : 'development'; // APP_DEV |  APP_PROD
+// Define the application environment
+// Check if APP_ENV is defined and is a string
+
+// Now safely parse APP_DOMAIN
+$parsed = parse_url(APP_URL);
+!defined('APP_DOMAIN') and define('APP_DOMAIN', array_key_exists('host', $parsed) ? $parsed['host'] : getenv('APP_DOMAIN') ?? 'localhost');
+!is_string(APP_DOMAIN) and $errors['APP_DOMAIN'] = 'APP_DOMAIN is not valid. (' . APP_DOMAIN . ')' . "\n";
+
+if (defined('APP_DOMAIN') && !in_array(APP_DOMAIN, [/*'localhost',*/ '127.0.0.1', '::1'])) {
+    /* if (!is_file($file = APP_PATH . '.env') && @touch($file)) file_put_contents($file, "DB_UNAME=\nDB_PWORD="); */
+    //  defined('APP_ENV') or define('APP_ENV', 'production');
+} else {
+}
+    /* if (!is_file($file = APP_PATH . '.env') && @touch($file)) file_put_contents($file, "DB_UNAME=\nDB_PWORD="); */
 $requestUri = '';
 
 // Normalize request URI depending on SAPI
