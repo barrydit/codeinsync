@@ -29,6 +29,7 @@ if (!function_exists('app_context') || !function_exists('app_base')) {
         require_once $fn;   // defines app_context(), app_base(), etc.
     }
 }
+
 //die(var_dump($_ENV['COMPOSER']['AUTOLOAD']));
 // Optional: single autoloader (cheap if already loaded)
 $autoload = APP_PATH . 'vendor/autoload.php';
@@ -86,7 +87,7 @@ $safeJoin = static function (string $base, string $rel): string {
     // Normalize and prevent path traversal
     $base = rtrim(str_replace('\\', '/', $base), '/') . '/';
     $rel = ltrim(str_replace('\\', '/', $rel), '/');
-    $full = $base . $rel;
+    $full = "$base$rel";
     $realBase = realpath($base) ?: $base;
     $realFull = realpath($full) ?: $full; // allow non-existing until .php suffix added
     $realBase = rtrim(str_replace('\\', '/', $realBase), '/') . '/';

@@ -57,6 +57,7 @@ if (is_string($handled)) {
     if (!headers_sent()) {
         header('Content-Type: text/html; charset=utf-8');
     }
+
     echo $handled;
     exit;
 }

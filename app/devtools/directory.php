@@ -96,7 +96,7 @@ left: calc(50% - 265px); /* 1207 / 2 */ /*transform: translate(-50%, -50%);*/ bo
       style="position: absolute; display: block; background-color: #FFFFFF; z-index: 1; right: 0px; margin-top: -20px;">
       [<a href="#" onclick="document.getElementById('info').style.display = 'none';">x</a>]</div>
     <form method="post" action="/?path" enctype="multipart/form-data">
-      <div class="directory-grid">
+      <div class="directory-grid" data-app-path="devtools/directory">
         <div class="directory-entry">
           <div style="position: relative;">
             <a href="#!" onclick="handleClick(event, '../');">
@@ -158,7 +158,7 @@ left: calc(50% - 265px); /* 1207 / 2 */ /*transform: translate(-50%, -50%);*/ bo
   $segments = [];
 
   // Segment 1: APP_PATH (always shown)
-  $segments[] = "&nbsp; [ <a href=\"?path=\" onclick=\"handleClick(event, './')\">$base/</a> ]";
+  $segments[] = "&nbsp; [ <a href=\"#!\" onclick=\"return App['devtools/directory'].handleClick('/')\">$base/</a> ]";
 
   // Segment 2: if APP_ROOT is defined
   if ($root) {
@@ -541,7 +541,7 @@ left: calc(50% - 265px); /* 1207 / 2 */ /*transform: translate(-50%, -50%);*/ bo
       <?php }
       /* var_dump(COMPOSER_VENDORS); null; */ //dd($_GET, false); 
       ?>
-      <div class="directory-grid">
+      <div class="directory-grid" data-app-path="devtools/directory">
         <?php
 
         if (isset($_REQUEST['path']) && $_REQUEST['path'] !== '') {
@@ -697,8 +697,8 @@ left: calc(50% - 265px); /* 1207 / 2 */ /*transform: translate(-50%, -50%);*/ bo
                   break;
                 case 'vendor':
                   echo '<div style="position: relative; border: 4px dashed #6B4329;">'
-                    . '<a href="#!" onclick="handleClick(event, \'' . $relativePath . '\'); openApp(\'tools/registry/composer\');">' . '<img src="resources/images/directory-composer.png" width="50" height="32" /></a>'
-                    . '<a href="' . /* basename(__FILE__) .*/ '#!' /* . $url */ . '" onclick="window.mod?.handleClick?.(event, \'' . $relativePath . '\');">' . basename($path)  // "?path=' . basename($path) . '"         
+                    . '<a href="#!" onclick="return handleClick(event, \'' . $relativePath . '\'); openApp(\'tools/registry/composer\');">' . '<img src="resources/images/directory-composer.png" width="50" height="32" /></a>'
+                    . '<a href="' . /* basename(__FILE__) .*/ '#!' /* . $url */ . '" data-path="vendor/" onclick="return App[\'devtools/directory\'].handleClick(\'' . $relativePath . '\')">' . basename($path)  // "?path=' . basename($path) . '"         
                     . '/</a></div>' . "\n";
                   break;
                 default:
@@ -1336,79 +1336,110 @@ left: calc(50% - 265px); /* 1207 / 2 */ /*transform: translate(-50%, -50%);*/ bo
 
   </div>
 </div>
-<div id="app_directory-container" style="
-    position: absolute;
-    display: <?= isset($_GET['debug']) || isset($_GET['project']) || isset($_GET['path']) ? 'block' : 'block'; ?>;
-    top: 10px;
-    left: 0;
-    right: 0;
-    margin: 0 auto;
-    background-color: rgba(255, 255, 255, 0.1);
-    /*height: auto;*/
-    width: 100%;
-    max-height: 80vh;
-    overflow-y: auto;
-    overflow-x: hidden;
-    resize: vertical;
-  ">
-  <?= $tableGen(); /*'';*/ ?>
-</div>
+<?php /* <div id="app_directory-container" style="
+position: absolute;
+display: <?= isset($_GET['debug']) || isset($_GET['project']) || isset($_GET['path']) ? 'block' : 'block'; ?>;
+top: 10px;
+left: 0;
+right: 0;
+margin: 0 auto;
+background-color: rgba(255, 255, 255, 0.1);
+// height: auto;
+width: 100%;
+max-height: 80vh;
+overflow-y: auto;
+overflow-x: hidden;
+resize: vertical;
+">...</div>*/ ?>
+<?= $tableGen(); /*'';*/ ?>
 <?php $UI_APP['body'] = ob_get_contents();
 ob_end_clean();
-
 
 if (false) { ?>
   <script>
   <?php }
 ob_start(); ?>
+    // devtools/directory module script
+    (() => {
+      const APP_ID = 'devtools/directory';
+      const container = document.getElementById('app_devtools_directory-container');
+      if (!container) return;
 
+      // avoid double-binding if this app reloads
+      if (container.dataset.bound === '1') return;
+      container.dataset.bound = '1';
 
-  let DirQueryParams = '';
-
-  // module code (what your fetch returns in data.script)
-  function init(ctx) {
-    console.log('devtools/directory init', ctx);
-  }
-  function handleClick(event, path) {
-    event?.preventDefault?.();
-    console.log('Clicked path: (devtools/directory)', path);
-  }
-
-  document.addEventListener('DOMContentLoaded', () => {
-    // Support clicking
-    document.querySelectorAll('.breadcrumb').forEach(link => {
-      link.addEventListener('click', e => {
-        e.preventDefault();
-        const path = e.target.dataset.path;
-        handleClick(e, path); // your custom function
+      // ensure globals exist (keeps inline onclick(...) working if present)
+      window.AppMods = window.AppMods || {};
+      window.App = window.App || new Proxy({}, {
+        get(_t, k) { return window.AppMods[k]; },
+        has(_t, k) { return k in window.AppMods; }
       });
-      link.setAttribute('tabindex', '0'); // make it keyboard focusable
-      link.addEventListener('keydown', e => {
-        if (e.key === 'Enter') {
-          const path = e.target.dataset.path;
-          handleClick(e, path);
+
+      function handleClick(path) {
+        // keep URL in sync: ?app=devtools/directory&path=...
+        const qs = new URLSearchParams(location.search);
+        qs.set('app', APP_ID);
+        if (path) qs.set('path', path); else qs.delete('path');
+        const newUrl = `${location.pathname}?${qs.toString()}${location.hash || ''}`;
+        history.pushState({ app: APP_ID, path: path || '' }, '', newUrl);
+
+        // reload this app with the new path
+        if (typeof window.openApp === 'function') {
+          window.openApp(APP_ID, { params: path ? { path } : {}, from: 'dir-click' });
+        }
+        return false;
+      }
+
+      // Register API under both registries
+      const api = { init() { }, handleClick };
+      window.AppMods[APP_ID] = Object.assign(window.AppMods[APP_ID] || {}, api);
+      window.App[APP_ID] = window.AppMods[APP_ID];
+
+      // Delegated clicks (no inline JS needed)
+      container.addEventListener('click', (e) => {
+        const openEl = e.target.closest('[data-open-app]');
+        if (openEl) {
+          e.preventDefault();
+          const app = openEl.getAttribute('data-open-app');
+          if (app && typeof window.openApp === 'function') {
+            window.openApp(app, { from: 'dir-tile' });
+          }
+          return;
+        }
+        const dirEl = e.target.closest('[data-dir]');
+        if (dirEl) {
+          e.preventDefault();
+          handleClick(dirEl.getAttribute('data-dir') || '');
         }
       });
-    });
 
-    // Optional: Left/Right arrow navigation
-    let crumbs = Array.from(document.querySelectorAll('.breadcrumb'));
-    crumbs.forEach((el, idx) => {
-      el.addEventListener('keydown', e => {
-        if (e.key === 'ArrowRight' && idx < crumbs.length - 1) { crumbs[idx + 1].focus(); } if (e.key === 'ArrowLeft' && idx > 0) {
-          crumbs[idx - 1].focus();
+      // Back/forward support for path changes
+      window.addEventListener('popstate', (ev) => {
+        const s = ev.state;
+        if (s?.app === APP_ID) {
+          if (typeof window.openApp === 'function') {
+            window.openApp(APP_ID, { params: s.path ? { path: s.path } : {}, from: 'popstate' });
+          }
         }
       });
-    });
-  });
+
+      // Respect ?path=… on initial load (optional normalize)
+      const urlPath = new URLSearchParams(location.search).get('path');
+      if (urlPath) {
+        // If you want to normalize UI immediately, uncomment:
+        // handleClick(urlPath);
+      }
+    })();
 
   // register on a global so index.php can find it
   //window.AppModules ??= {};
   //window.AppModules['devtools/directory'] = { init, handleClick };
 
   // tell the host page we’re ready
-  window.__registerAppModule('devtools/directory', { init, handleClick });
+  //window.__registerAppModule('devtools/directory', { init, handleClick });
 
+  // example returned by dispatcher when Accept: text/javascript
 
   <?php
   $UI_APP['script'] = ob_get_contents();

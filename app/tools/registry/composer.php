@@ -19,6 +19,7 @@ if (is_file($composerFuncs)) {
   require_once $composerFuncs;
 }
 
+
 //dd($cfg = composer_json(true));               // array
 //$pkg = composer_json_get('name', '(none)');
 //$req = composer_json_get('require', []);  // array of requires
@@ -221,7 +222,7 @@ ob_start(); ?>
 
 <div id="" class="fixed window-header"
   style="position: fixed; display: inline-block; width: 445px; height: 25px; cursor: move; margin: -45px 0 25px 0; padding: 10px 0 10px 0; border-bottom: 1px solid #000; z-index: 3;"
-  data-drag-handle>
+  data-drag-handle="true">
   <label class="composer-home" style="cursor: pointer;">
     <div class="absolute"
       style="position: relative; float: left; display: inline-block; top: 0; left: 0; margin-top: -5px;">
@@ -245,15 +246,15 @@ ob_start(); ?>
         <select name="exec" onchange="this.form.submit();">
 
   <?php if (defined('COMPOSER_BIN')): ?>
-                                                                                                                                  <option <?= COMPOSER_EXEC_CMD === COMPOSER_BIN ? 'selected' : '' ?>
-                                                                                                                                      value="bin"><?= COMPOSER_BIN ?></option>
+                                                                                                                                    <option <?= COMPOSER_EXEC_CMD === COMPOSER_BIN ? 'selected' : '' ?>
+                                                                                                                                        value="bin"><?= COMPOSER_BIN ?></option>
     <?php endif; ?>
   
     <?php if (defined('COMPOSER_PHAR')): ?>
-                                                                                                                                  <option <?= COMPOSER_EXEC_CMD === COMPOSER_PHAR['exec'] ? 'selected' : '' ?>
-                                                                                                                                    value="phar">
-                                                                                                                                    <?= COMPOSER_PHAR['exec'] ?>
-                                                                                                                                  </option>
+                                                                                                                                    <option <?= COMPOSER_EXEC_CMD === COMPOSER_PHAR['exec'] ? 'selected' : '' ?>
+                                                                                                                                      value="phar">
+                                                                                                                                      <?= COMPOSER_PHAR['exec'] ?>
+                                                                                                                                    </option>
   <?php endif; ?>
 
         </select>
@@ -517,10 +518,9 @@ php composer.phar -v
             style="display: none; padding: 10px; background-color: rgb(235,216,186,.80); border: 1px dashed #0078D7;">
             <a class="text-sm" style="color: blue; text-decoration: underline;"
               href="https://github.com/settings/tokens?page=1">GitHub OAuth Token</a>:
-            <span class="text-sm"
-              style="float: right;">
-<?php
-// Countdown days until token “rotation”, using COMPOSER_AUTH mtime + 30 days
+            <span class="text-sm" style="float: right;">
+              <?php
+              // Countdown days until token “rotation”, using COMPOSER_AUTH mtime + 30 days
 /* Example function you can use elsewhere
 function composer_token_days_left(int $windowDays = 30): ?int
 {
@@ -544,14 +544,15 @@ function composer_token_days_left(int $windowDays = 30): ?int
 $daysLeft = composer_token_days_left(30);
 echo $daysLeft === null ? '' : max(0, $daysLeft);
 */
-?>
-              
+              ?>
+
               <?= (is_file(COMPOSER_AUTH)
                 ? max(0, (new DateTimeImmutable('today'))
                   ->diff((new DateTimeImmutable('@' . filemtime(COMPOSER_AUTH)))
                     ->modify('+30 days'))->days)
                 : '') ?>
-              (Days left)</span>
+              (Days left)
+            </span>
             <div style="float: right;">
               <input type="text" size="40" name="auth[github_oauth]" value="<?= COMPOSER_GITHUB_OAUTH_TOKEN ?? '' ?>" />
             </div>

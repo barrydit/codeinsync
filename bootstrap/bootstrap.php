@@ -52,14 +52,22 @@ $appParam = isset($_GET['app']) ? (string) $_GET['app'] : null;
 $hasCmd = isset($_POST['cmd']) && is_string($_POST['cmd']) && $_POST['cmd'] !== '';
 $accept = strtolower($_SERVER['HTTP_ACCEPT'] ?? '');
 
+// explicit JSON?
 $wantsJson = !$isCli && (
     (isset($_GET['json']) && $_GET['json'] !== '0') ||
     strpos($accept, 'application/json') !== false ||
     strpos($accept, 'text/json') !== false
 );
 
-// API iff: command OR (app AND explicitly wants JSON)
-$wantsDispatcher = !$isCli && ($hasCmd || ($appParam && $wantsJson));
+// explicit JS? (also allow ?part=script as a convenience)
+$wantsJs = !$isCli && (
+    strpos($accept, 'text/javascript') !== false ||
+    strpos($accept, 'application/javascript') !== false ||
+    (isset($_GET['part']) && $_GET['part'] === 'script')
+);
+
+// API iff: command (always) OR app request that asks for JSON or JS
+$wantsDispatcher = !$isCli && ($hasCmd || ($appParam && ($wantsJson || $wantsJs)));
 
 if ($wantsDispatcher) {
     $obLevel = ob_get_level();
@@ -76,17 +84,59 @@ if ($wantsDispatcher) {
     try {
         $res = require APP_PATH . 'bootstrap/dispatcher.php';
         $buffer = ob_get_clean();
-
     } catch (\Throwable $e) {
         while (ob_get_level() > $obLevel)
             ob_end_clean();
         throw $e;
     }
 
-    //dd(get_required_files());
-    $payload = ($res !== null && $res !== '') ? $res : $buffer;
-    echo is_string($payload) ? $payload : json_encode($payload, JSON_UNESCAPED_SLASHES);
+    // ===================== SELECTIVE EMIT (drop-in) =====================
+
+    // Commands: always JSON straight through
+    if ($hasCmd) {
+        if (!headers_sent()) {
+            header('Content-Type: application/json; charset=utf-8');
+            header('X-Content-Type-Options: nosniff');
+            header('Cache-Control: no-store, no-cache, must-revalidate');
+            header('Pragma: no-cache');
+            header('Vary: Accept');
+        }
+        $payload = ($res !== null && $res !== '') ? $res : ($buffer !== '' ? $buffer : []);
+        echo is_string($payload) ? $payload : json_encode($payload, JSON_UNESCAPED_SLASHES);
+        exit;
+    }
+
+    // App route: dispatcher returns full UI payload array
+    $ui = is_array($res) ? $res : [];
+    $style = isset($ui['style']) ? (string) $ui['style'] : '';
+    $body = isset($ui['body']) ? (string) $ui['body'] : '';
+    $script = isset($ui['script']) ? (string) $ui['script'] : '';
+
+    // If JS requested, emit ONLY the script as JavaScript
+    if ($wantsJs) {
+        if (!headers_sent()) {
+            header('Content-Type: text/javascript; charset=utf-8');
+            header('X-Content-Type-Options: nosniff');
+            header('Cache-Control: no-store, no-cache, must-revalidate');
+            header('Pragma: no-cache');
+            header('Vary: Accept');
+        }
+        echo $script;
+        exit;
+    }
+
+    // Otherwise (JSON), emit ONLY style & body (omit script)
+    if (!headers_sent()) {
+        header('Content-Type: application/json; charset=utf-8');
+        header('X-Content-Type-Options: nosniff');
+        header('Cache-Control: no-store, no-cache, must-revalidate');
+        header('Pragma: no-cache');
+        header('Vary: Accept');
+    }
+    echo json_encode(['style' => $style, 'body' => $body, 'script' => $script], JSON_UNESCAPED_SLASHES);
     exit; // API path only
+
+    // =================== END SELECTIVE EMIT (drop-in) ===================
 }
 // --- end fast-path ---------------------------------------------------------
 
