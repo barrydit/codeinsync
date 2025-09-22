@@ -2,7 +2,7 @@
 declare(strict_types=1);
 
 // minimal web entry
-if (is_file(dirname(__DIR__, 1) . DIRECTORY_SEPARATOR . '../classes/class.shutdown.php'))
+if (is_file(dirname(__DIR__, 1) . DIRECTORY_SEPARATOR . 'classes/class.shutdown.php'))
   require_once __DIR__ . DIRECTORY_SEPARATOR . '../classes/class.shutdown.php';
 
 if (!function_exists('load_if_file')) {
@@ -25,22 +25,22 @@ if (!function_exists('app_error_handler')) {
    */
   function app_error_handler(int $errno, string $errstr, ?string $errfile = null, ?int $errline = null): bool
   {
-/*
-    global $errors;
-    !defined('APP_ERROR') and define('APP_ERROR', true); // $hasErrors = true;
-    !defined('APP_DEBUG') and define('APP_DEBUG', APP_ERROR);
-    $errors['FUNCTIONS'] = 'functions.php failed to load. Therefore function dd() does not exist (yet).';
+    /*
+        global $errors;
+        !defined('APP_ERROR') and define('APP_ERROR', true); // $hasErrors = true;
+        !defined('APP_DEBUG') and define('APP_DEBUG', APP_ERROR);
+        $errors['FUNCTIONS'] = 'functions.php failed to load. Therefore function dd() does not exist (yet).';
 
-    foreach ([E_ERROR => 'Error', E_WARNING => 'Warning', E_PARSE => 'Parse Error', E_NOTICE => 'Notice', E_CORE_ERROR => 'Core Error', E_CORE_WARNING => 'Core Warning', E_COMPILE_ERROR => 'Compile Error', E_COMPILE_WARNING => 'Compile Warning', E_USER_ERROR => 'User Error', E_USER_WARNING => 'User Warning', E_USER_NOTICE => 'User Notice', E_STRICT => 'Strict Notice', E_RECOVERABLE_ERROR => 'Recoverable Error', E_DEPRECATED => 'Deprecated', E_USER_DEPRECATED => 'User Deprecated',] as $key => $value) {
-      if ($errno == $key) {
-        $errors[$key] = "$key => $value\n";
-        $errors[] = "$value: $errstr in $errfile on line $errline\n";
-        break;
-      }
-    }
-    var_dump($errors);
-    return false;
-*/
+        foreach ([E_ERROR => 'Error', E_WARNING => 'Warning', E_PARSE => 'Parse Error', E_NOTICE => 'Notice', E_CORE_ERROR => 'Core Error', E_CORE_WARNING => 'Core Warning', E_COMPILE_ERROR => 'Compile Error', E_COMPILE_WARNING => 'Compile Warning', E_USER_ERROR => 'User Error', E_USER_WARNING => 'User Warning', E_USER_NOTICE => 'User Notice', E_STRICT => 'Strict Notice', E_RECOVERABLE_ERROR => 'Recoverable Error', E_DEPRECATED => 'Deprecated', E_USER_DEPRECATED => 'User Deprecated',] as $key => $value) {
+          if ($errno == $key) {
+            $errors[$key] = "$key => $value\n";
+            $errors[] = "$value: $errstr in $errfile on line $errline\n";
+            break;
+          }
+        }
+        var_dump($errors);
+        return false;
+    */
 
     if (!(error_reporting() & $errno))
       return false;
@@ -1129,21 +1129,6 @@ function FileSizeConvert($bytes)
     }
   }
   return $result;
-}
-
-function getElementsByClass(&$parentNode, $tagName, $className)
-{
-  $nodes = [];
-
-  $childNodeList = $parentNode->getElementsByTagName($tagName);
-  for ($i = 0; $i < $childNodeList->length; $i++) {
-    $temp = $childNodeList->item($i);
-    if (stripos($temp->getAttribute('class'), $className) !== false) {
-      $nodes[] = $temp;
-    }
-  }
-
-  return $nodes;
 }
 
 function run_code(?string $runtime, string $code, array $options = []): string

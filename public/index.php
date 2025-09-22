@@ -10,11 +10,10 @@ if (is_file(dirname(__DIR__, 1) . '/bootstrap/bootstrap.php'))
   require_once __DIR__ . '/../bootstrap/bootstrap.php';
 
 // Fast-path: if routing params present, hint minimal boot
-if (!defined('APP_MODE')) {
+if (!defined('APP_MODE'))
   define('APP_MODE', 'web');
-}
 
-//dd(get_required_files());
+// dd(get_required_files());
 
 /**
  * File Analysis Summary for PHP Project
@@ -396,13 +395,15 @@ unset($_SESSION['mode']); ?>
           <a href="#"><img src="resources/images/phpclasses_icon.png" alt="Logo"
               style="width: 31px; height: auto; margin: 0 5px;"
               onclick="document.getElementById('app_phpclasses-container').style.display='block'; return false;"></a>
-          <a href="#"><img src="resources/images/composer_icon.png" alt="Logo"
-              style="width: 31px; height: auto; margin: 0 5px;" onclick="openApp('tools/registry/composer');"></a>
+          <a href="#" data-open-app="tools/registry/composer" aria-label="Open Composer" title="Composer"><img
+              src="resources/images/composer_icon.png" alt="Logo" style="width: 31px; height: auto; margin: 0 5px;"
+              onclick="/*openApp('tools/registry/composer');*/"></a>
           <a href="#"><img src="resources/images/packagist_icon.png" alt="Logo"
               style="width: 31px; height: auto; margin: 0 5px;"
               onclick="document.getElementById('app_packagist-container').style.display='block'; return false;"></a>
-          <a href="#"><img src="resources/images/git_icon.fw.png" width="32" height="32"
-              onclick="openApp('tools/code/git');"></a>
+          <a href="#" data-open-app="tools/code/git" aria-label="Open Git" title="Git"><img
+              src="resources/images/git_icon.fw.png" width="32" height="32"
+              onclick="/*openApp('tools/code/git');*/"></a>
           <a href="#"><img src="resources/images/node_js.gif" alt="Logo"
               style="width: 83px; height: auto; margin: 0 5px;"
               onclick="document.getElementById('app_node_js-container').style.display='block'; return false;"></a>
@@ -606,7 +607,7 @@ unset($_SESSION['mode']); ?>
     </div>
     <div id="app_tools_code_git-container" class="app-container" data-draggable="true" data-app="tools/code/git">
     </div>
-    <div id="app_visual_nodes-container" class="app-container" data-drag-handle="true" data-app="visual/nodes">
+    <div id="app_visual_nodes-container" class="app-container" data-draggable="true" data-app="visual/nodes">
     </div>
     <div id="app_tools_registry_composer-container" class="app-container" data-draggable="true"
       data-app="tools/registry/composer">
@@ -692,6 +693,10 @@ unset($_SESSION['mode']); ?>
         handle.style.cursor = '';
         el._drag = null;
       }
+
+      // Helpers
+      const truthyAttr = (el, name) => (el.getAttribute(name) || '').toLowerCase() === 'true';
+
 
       function makeDraggable(windowId, opts = {}) {
         const el = document.getElementById(windowId);
@@ -955,7 +960,7 @@ unset($_SESSION['mode']); ?>
             console.error('[openApp] Expected JS, got full HTML page:', app, t.slice(0, 200));
             return;
           }
-          
+
           if (code && code.trim()) {
             const looksLikeHtml = /^\s*<(!doctype|html|head|body)\b/i.test(code);
             if (looksLikeHtml) {
@@ -1066,7 +1071,7 @@ unset($_SESSION['mode']); ?>
       const devGroup = document.getElementById('devGroup');
       const clientView = document.getElementById('clientView');
       // Optional app windows you referenced; not used directly here but kept for parity
-      const appGit = document.getElementById('app_git-container');
+      const appGit = document.getElementById('app_tools_code_git-container');
       const appNodes = document.getElementById('app_visual_nodes-container');
 
       const sessionIsDev =
@@ -1134,6 +1139,31 @@ unset($_SESSION['mode']); ?>
         viewToggle.addEventListener('change', toggleMode);
       }
 
+      document.addEventListener('click', function (ev) {
+        const a = ev.target.closest('a[data-open-app]');
+        if (!a) return;
+
+        ev.preventDefault(); // stop "#" from scrolling to top
+        const appPath = a.dataset.openApp;
+
+        // Optional: support per-button mount/params via data-attrs
+        const mount = a.dataset.mount || '#container';
+        const params = a.dataset.params ? JSON.parse(a.dataset.params) : {};
+
+        // Call your loader
+        try {
+          if (typeof openApp === 'function') {
+            openApp(appPath, { mount, params });
+          } else if (window.App && typeof window.App.openApp === 'function') {
+            window.App.openApp(appPath, { mount, params });
+          } else {
+            console.error('openApp() not found. Make it global or import before this script.');
+          }
+        } catch (e) {
+          console.error('Failed to open app', appPath, e);
+        }
+      }, { passive: false });
+
       // Initial boot state
       document.addEventListener('DOMContentLoaded', () => {
         if (sessionIsDev) {
@@ -1142,6 +1172,10 @@ unset($_SESSION['mode']); ?>
         } else {
           activateClientMode();
           if (viewToggle) viewToggle.checked = false;
+        }
+        // run on page load
+        if (typeof window.openApp === 'function') {
+          window.openApp('devtools/directory', { from: 'boot', mount: '#free-space' });
         }
       });
 

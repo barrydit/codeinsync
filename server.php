@@ -1,46 +1,66 @@
 #!/usr/bin/env php
 <?php
-declare(/*strict_types=1,*/ ticks=1); // First Line Only!
+// declare(/*strict_types=1*/); // no ticks
+/**
+ * server.php
+ *
+ * Simple TCP server with start/stop/restart/status commands.
+ * Usage: php server.php [start|stop|restart|status|run] [--verbose]
+ *
+ * - 'start'    : Start the server as a background daemon.
+ * - 'stop'     : Stop the running server.
+ * - 'restart'  : Restart the server.
+ * - 'status'   : Check if the server is running.
+ * - 'run'      : Run the server in the foreground (for debugging).
+ *
+ * The server listens for incoming TCP connections and can handle basic commands.
+ * It uses a PID file to track the running process.
+ *
+ * Note: This script requires PHP 7.4 or higher and the sockets extension enabled.
+ */
 
-defined('APP_PATH') ||
-    define('APP_PATH', rtrim(realpath(__DIR__), '/\\') . DIRECTORY_SEPARATOR);
+// server.php (top)
+defined('APP_PATH') || define('APP_PATH', rtrim(realpath(__DIR__), '/\\') . DIRECTORY_SEPARATOR);
 
 define('PID_FILE', APP_PATH . 'server.pid');
 define('SERVER_SCRIPT', __FILE__);
+//defined('SERVER_HOST')  or define('SERVER_HOST', '127.0.0.1');
+//defined('SERVER_PORT')  or define('SERVER_PORT', 9000);
 
-defined('SERVER_HOST') or define('SERVER_HOST', '127.0.0.1');
-defined('SERVER_PORT') or define('SERVER_PORT', 9000);
+defined('SERVER_APP_HOST') or define('SERVER_APP_HOST', '127.0.0.1'); // web app traffic
+defined('SERVER_APP_PORT') or define('SERVER_APP_PORT', 9000);
+
+defined('SERVER_CMD_HOST') or define('SERVER_CMD_HOST', '127.0.0.1'); // admin commands
+defined('SERVER_CMD_PORT') or define('SERVER_CMD_PORT', 9001);
+
+defined('SERVER_CMD_ENABLED') or define('SERVER_CMD_ENABLED', false); // turn admin port off
 
 defined('SERVER_DEBUG') or define('SERVER_DEBUG', false);
+//defined('SERVER_LOG')   or define('SERVER_LOG', APP_PATH . 'server.log');
 
-// Minimal includes (no bootstrap.php for CLI)
-//require_once APP_PATH . 'classes' . DIRECTORY_SEPARATOR . 'class.logger.php';
-//require_once APP_PATH . 'classes' . DIRECTORY_SEPARATOR . 'class.socketserver.php';
-//require_once APP_PATH . 'classes' . DIRECTORY_SEPARATOR . 'class.serverdaemon.php';
-//require_once APP_PATH . 'classes' . DIRECTORY_SEPARATOR . 'class.clienthandler.php';
-require_once APP_PATH . 'autoload.php';
+// 1) INI early
 require_once APP_PATH . 'bootstrap' . DIRECTORY_SEPARATOR . 'bootstrap.cli.php';
+
+// 2) Constants & config (single source of truth)
 require_once APP_PATH . 'config' . DIRECTORY_SEPARATOR . 'config.php';
 
-// Parse CLI arguments
-$argv = $_SERVER['argv'] ?? [];
+// 3) Classes
+require_once APP_PATH . 'classes' . DIRECTORY_SEPARATOR . 'class.logger.php';
+require_once APP_PATH . 'classes' . DIRECTORY_SEPARATOR . 'class.socketserver.php';
+require_once APP_PATH . 'classes' . DIRECTORY_SEPARATOR . 'class.serverdaemon.php';
+
+// CLI args
+$argv    = $_SERVER['argv'] ?? [];
 $command = $argv[1] ?? 'run';
-$verbose = in_array('--verbose', $argv);
+$verbose = in_array('--verbose', $argv, true);
 
-$logger = new Logger($verbose);
+$logger  = new Logger($verbose);
+$daemon  = new ServerDaemon(SERVER_SCRIPT, PID_FILE, $logger);
 
-// Set up Linux signal handling and process title
-ServerDaemon::initializeSignalHandlers();
-ServerDaemon::setProcessTitle('php-socket-server');
-
-// Daemon instance
-$daemon = new ServerDaemon(SERVER_SCRIPT, PID_FILE, $logger);
-
-// Main command switch
 switch ($command) {
     case 'start':
         $logger->info('Booting up...');
-        $daemon->start();
+        $daemon->start();   // background daemon
         break;
 
     case 'stop':
@@ -56,18 +76,26 @@ switch ($command) {
         break;
 
     case 'run':
-        $logger->info('Starting SocketServer...');
-        $server = new SocketServer(SERVER_HOST, SERVER_PORT, PID_FILE, $logger);
-        $server->start(); // Blocks here � main loop
-
-        dd(get_required_files());
+        $logger->info('Starting in foreground...');
+        $logger->info('Press Ctrl-C to exit.');
+        // $logger->info(dd(get_required_files(), false) ?? '');
+        $daemon->run();     // foreground (debug)
         break;
-
+/*
+    case 'cmd': 
+        $msg = implode(' ', array_slice($argv, 2)) ?: 'status';
+        $sock = @stream_socket_client(sprintf('tcp://%s:%d', SERVER_CMD_HOST, SERVER_CMD_PORT), $errno, $errstr, 2);
+        if (!$sock) { fwrite(STDERR, "connect failed: $errstr\n"); exit(1); }
+        fwrite($sock, $msg . "\n");
+        $resp = fgets($sock);
+        if ($resp !== false) echo rtrim($resp), PHP_EOL;
+        fclose($sock);
+        break;
+*/
     default:
         echo "Usage: php server.php [start|stop|restart|status|run] [--verbose]\n";
         exit(1);
 }
-
 /*
 try {
     $server = new SocketServer(SERVER_HOST, SERVER_PORT, PID_FILE, $logger);

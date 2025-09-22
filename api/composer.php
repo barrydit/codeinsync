@@ -200,19 +200,18 @@ function normalize_regex(?string $expr): ?string
     // if already like /.../i
     if (preg_match('~^/.+/[a-z]*$~i', $expr))
         return $expr;
-    return '~' . $expr . '~i';
+    return "~$expr~i";
+}
+
+if (($_SERVER['REQUEST_METHOD'] ?? '') === 'GET') {
+
+
 }
 
 /* ============================ POST handler ============================= */
-if (($_SERVER['REQUEST_METHOD'] ?? '') === 'GET') {
-
-    // dd($_GET);
-
-}
-
 if (($_SERVER['REQUEST_METHOD'] ?? '') === 'POST') {
 
-    dd($_POST);
+    //dd($_POST);
 
     // Project dir (where composer.json lives)
     $projectDir = rtrim(APP_PATH . (defined('APP_ROOT') ? APP_ROOT : ''), '/\\');

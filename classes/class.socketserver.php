@@ -1,156 +1,170 @@
 <?php
+// classes/class.socketserver.php
+
 class SocketServer
 {
+    /** @var resource|null */
+    private $serverSock = null;
+    /** @var array<int, resource> */
+    private array $clients = [];
     private string $host;
     private int $port;
     private string $pidFile;
-    private $socket;
-    private bool $running = true;
-    protected Logger $logger;
+    private ?Logger $logger;
 
-
-    public function __construct(string $host, int $port, string $pidFile, Logger $logger)
+    // Adjust your constructor to match this shape if needed:
+    public function __construct(string $host, int $port, string $pidFile, ?Logger $logger = null)
     {
         $this->host = $host;
         $this->port = $port;
         $this->pidFile = $pidFile;
         $this->logger = $logger;
 
-        $this->ensureRequirements();
-        $this->registerSignalHandlers();
-        $this->setProcessTitle("socket-server:{$port}");
+        $addr = sprintf('tcp://%s:%d', $host, $port);
+        $errno = $errstr = null;
+
+        $this->serverSock = @stream_socket_server(
+            $addr,
+            $errno,
+            $errstr,
+            STREAM_SERVER_BIND | STREAM_SERVER_LISTEN
+        );
+
+        if (!$this->serverSock) {
+            $this->log('error', "Bind failed on $addr: [$errno] $errstr");
+            throw new \RuntimeException("Socket bind failed: $errstr", $errno ?: 1);
+        }
+
+        stream_set_blocking($this->serverSock, false);
+        $this->log('info', "Listening on $addr");
     }
 
-    private function ensureRequirements(): void
+    /* ------------------- NEW: expose the listening socket ------------------- */
+    /** @return resource|null */
+    public function getServerSocket()
     {
-        if (PHP_SAPI !== 'cli') return;
+        return $this->serverSock;
+    }
 
-        if (stripos(PHP_OS, 'LIN') === 0) {
-            foreach (['pcntl', 'posix', 'sockets'] as $ext) {
-                if (!extension_loaded($ext)) {
-                    die("Extension `$ext` is required. Exiting.\n");
+    /* --------------- OPTIONAL: expose client sockets to the daemon ---------- */
+    /** @return array<int, resource> */
+    public function getClientSockets(): array
+    {
+        return $this->clients;
+    }
+
+    /* ------------------- NEW: non-blocking accept + tick -------------------- */
+    public function accept(): void
+    {
+        if (!$this->serverSock)
+            return;
+        $c = @stream_socket_accept($this->serverSock, 0);
+        if ($c) {
+            stream_set_blocking($c, false);
+            $this->clients[] = $c;
+        }
+    }
+
+    /** Do one non-blocking IO pass over clients */
+    public function tick(): void
+    {
+        if (!$this->clients)
+            return;
+
+        $read = $this->clients;
+        $write = $except = null;
+
+        // Short timeout so we don’t block the daemon
+        @stream_select($read, $write, $except, 0, 0);
+
+        foreach ($read as $sock) {
+            $line = @fgets($sock);
+            if ($line === '' || $line === false) {
+                $this->closeClient($sock);
+                continue;
+            }
+
+            $resp = $this->dispatchCommand(trim($line));
+            @fwrite($sock, $resp . "\n");
+        }
+    }
+
+    /* ------------------- NEW: blocking loop version (fallback) -------------- */
+    public function run(): void
+    {
+        // Simple blocking loop for standalone use
+        while (true) {
+            $read = $this->clients;
+            if ($this->serverSock)
+                $read[] = $this->serverSock;
+            $write = $except = null;
+
+            @stream_select($read, $write, $except, 1, 0);
+
+            foreach ($read as $sock) {
+                if ($sock === $this->serverSock) {
+                    $this->accept();
+                    continue;
                 }
+                $line = @fgets($sock);
+                if ($line === '' || $line === false) {
+                    $this->closeClient($sock);
+                    continue;
+                }
+                $resp = $this->dispatchCommand(trim($line));
+                @fwrite($sock, $resp . "\n");
             }
         }
     }
 
-    private function setProcessTitle(string $title): void
-    {
-        if (function_exists('cli_set_process_title')) {
-            @cli_set_process_title($title);
-        } elseif (is_writable("/proc/" . getmypid() . "/comm")) {
-            file_put_contents("/proc/" . getmypid() . "/comm", $title);
-        } else {
-            $this->logger->debug("Could not set process title (insufficient permission?)");
-        }
-    }
-
-    private function registerSignalHandlers(): void
-    {
-        if (PHP_SAPI !== 'cli' || stripos(PHP_OS, 'LIN') !== 0) return;
-
-        pcntl_async_signals(true);
-        pcntl_signal(SIGCHLD, [$this, 'signalHandler']);
-        pcntl_signal(SIGTERM, [$this, 'signalHandler']);
-        pcntl_signal(SIGINT, [$this, 'signalHandler']);
-        pcntl_signal(SIGHUP, [$this, 'signalHandler']);
-    }
-
-    public function signalHandler(int $signal): void
-    {
-        switch ($signal) {
-            case SIGCHLD:
-                while (pcntl_waitpid(-1, $status, WNOHANG) > 0) {
-                    // Reap zombie processes
-                }
-                break;
-
-            case SIGHUP:
-                $this->logger->info("Received SIGHUP – restarting...");
-                $this->shutdown();
-                $this->start(); // optional restart
-                break;
-
-            case SIGTERM:
-            case SIGINT:
-                $this->logger->info("Received signal $signal – shutting down gracefully...");
-                $this->shutdown();
-                break;
-        }
-    }
-
-    public function start(): void
-    {
-        $this->checkForRunningInstance();
-        $this->bindSocket();
-        $this->writePidFile();
-
-        $this->logger->info("Starting server at {$this->host}:{$this->port}");
-
-        while ($this->running && ($conn = @stream_socket_accept($this->socket))) {
-            $message = trim(fgets($conn));
-            $this->logger->debug("Received: $message");
-
-            $response = $this->handleCommand($message);
-            fwrite($conn, $response . PHP_EOL);
-            fclose($conn);
-        }
-
-        $this->shutdown(); // fallback
-    }
-
-    private function handleCommand(string $cmd): string
-    {
-        return match ($cmd) {
-            'ping' => 'pong',
-            'time' => date('Y-m-d H:i:s'),
-            'exit', 'quit' => $this->shutdownReturn("Server shutting down."),
-            default => "Unknown command: $cmd",
-        };
-    }
-
-    private function shutdownReturn(string $msg): string
-    {
-        $this->running = false;
-        return $msg;
-    }
-
-    private function checkForRunningInstance(): void
-    {
-        if (file_exists($this->pidFile)) {
-            $pid = (int) file_get_contents($this->pidFile);
-            if ($pid && function_exists('posix_kill') && posix_kill($pid, 0)) {
-                $this->logger->info("Server already running with PID $pid");
-                exit(0);
-            }
-            unlink($this->pidFile); // stale
-        }
-    }
-
-    private function bindSocket(): void
-    {
-        $this->socket = @stream_socket_server("tcp://{$this->host}:{$this->port}", $errno, $errstr);
-        if (!$this->socket) {
-            throw new RuntimeException("Socket Error [$errno]: $errstr");
-        }
-    }
-
-    private function writePidFile(): void
-    {
-        file_put_contents($this->pidFile, getmypid());
-    }
-
+    /* ------------------- NEW: graceful shutdown ----------------------------- */
     public function shutdown(): void
     {
-        if (is_resource($this->socket)) {
-            fclose($this->socket);
+        foreach ($this->clients as $c) {
+            @fwrite($c, "server: closing\n");
+            @fclose($c);
         }
-        if (file_exists($this->pidFile)) {
-            unlink($this->pidFile);
+        $this->clients = [];
+        if (is_resource($this->serverSock)) {
+            @fclose($this->serverSock);
+            $this->serverSock = null;
         }
+        // PID file is managed by the daemon; don’t unlink here unless you own it.
+    }
 
-        $this->logger->info("Server shut down cleanly.");
-        
-        $this->running = false;
+    /* ------------------- Command dispatcher (customize) --------------------- */
+    private function dispatchCommand(string $line): string
+    {
+        $parts = preg_split('/\s+/', $line);
+        $cmd = strtolower($parts[0] ?? '');
+        $args = array_slice($parts, 1);
+
+        switch ($cmd) {
+            case 'ping':
+                return 'pong';
+            case 'status':
+                return 'ok app-socket alive';
+            // Add your app protocol here:
+            // case 'composer': return $this->handleComposer($args);
+            default:
+                return 'error unknown_command';
+        }
+    }
+
+    /* ------------------- Helpers ------------------------------------------- */
+    private function closeClient($sock): void
+    {
+        $i = array_search($sock, $this->clients, true);
+        if ($i !== false) {
+            @fclose($this->clients[$i]);
+            array_splice($this->clients, $i, 1);
+        }
+    }
+
+    private function log(string $level, string $msg): void
+    {
+        if ($this->logger && method_exists($this->logger, $level)) {
+            $this->logger->{$level}($msg);
+        }
     }
 }

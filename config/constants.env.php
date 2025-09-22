@@ -123,14 +123,3 @@ if (!defined('APP_HOST')) {
 if (!defined('APP_DOMAIN')) {
     define('APP_DOMAIN', parse_url('http://' . APP_HOST, PHP_URL_HOST));
 }
-
-if (!function_exists('check_internet_connection')) {
-    require_once __DIR__ . DIRECTORY_SEPARATOR . 'functions.php';
-}
-
-// 4. Define online/offline constants
-if (!defined('APP_IS_ONLINE')) {
-    $online = check_internet_connection();
-    define('APP_IS_ONLINE', $online);
-    define('APP_NO_INTERNET_CONNECTION', !$online);
-}

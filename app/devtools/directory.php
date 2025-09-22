@@ -158,7 +158,7 @@ left: calc(50% - 265px); /* 1207 / 2 */ /*transform: translate(-50%, -50%);*/ bo
   $segments = [];
 
   // Segment 1: APP_PATH (always shown)
-  $segments[] = "&nbsp; [ <a href=\"#!\" onclick=\"return App['devtools/directory'].handleClick('/')\">$base/</a> ]";
+  $segments[] = "&nbsp; [ <a href=\"#!\" onclick=\"return App['devtools/directory'].handleClick('" /*. '/'*/ . "')\">$base/</a> ]";
 
   // Segment 2: if APP_ROOT is defined
   if ($root) {
@@ -344,9 +344,7 @@ left: calc(50% - 265px); /* 1207 / 2 */ /*transform: translate(-50%, -50%);*/ bo
         $old_link = $link;
         $link = basename($link);
         echo '<tr style=" border: none;">' . "\n";
-
         echo '<td style="text-align: center; border: none;" class="text-xs">' . "\n";
-
         echo '<a class="pkg_dir" href="?application=' . $link . '">'
           . '<img src="resources/images/directory.png" width="50" height="32" style="" /><br />' . $link . '</a><br />'
           . '</td>' . "\n";
@@ -653,53 +651,156 @@ left: calc(50% - 265px); /* 1207 / 2 */ /*transform: translate(-50%, -50%);*/ bo
               //}
   
               switch (basename($path)) {
+                case '.composer':
+                  echo '<div style="position: relative; border: 4px dashed #6B4329;">'
+                    . '<a href="#!" data-open-app="tools/registry/composer"><img src="resources/images/directory-composer.png" width="50" height="32" alt=""></a>'
+                    . '<a href="#!" data-dir="' . $relativePath . '"
+   data-open-app="tools/registry/composer"
+   data-open-after-dir="1">' . basename($path) . '/</a>'
+
+                    //. '<a href="#!" onclick="return handleClick(event, \'' . $relativePath . '\'); openApp(\'tools/registry/composer\');">' . '<img src="resources/images/directory-composer.png" width="50" height="32" /></a>'
+                    //. '<a href="' . /* basename(__FILE__) .*/ '#!' /* . $url */ . '" data-path="vendor/" onclick="return App[\'devtools/directory\'].handleClick(\'' . $relativePath . '\')">' . basename($path) . '/</a>  // "?path=' . basename($path) . '"   
+                    . '</div>' . "\n";
+                  break;
                 case '.git':
                   echo '<div style="position: relative; border: 4px dashed #F05033;">'
-                    . '<a href="#!" onclick="openApp(\'tools/code/git\');">' // "?path=' . basename($path) . '" 
-                    . '<img src="resources/images/directory-git.png" width="50" height="32" /></a>'
-                    . '<a href="' . /* basename(__FILE__) .*/ '?' . $url . '" onclick="handleClick(event, \'' . $relativePath . '\'); openApp(\'tools/code/git\');">' . basename($path) . '/</a></div>' . "\n";
+                    . '<a href="#!"
+   data-open-app="tools/code/git"><img src="resources/images/directory-git.png" width="50" height="32" alt=""></a>'
+                    . '<a href="#!" data-dir="' . $relativePath . '"
+   data-open-app="tools/code/git"
+   data-open-after-dir="1">' . basename($path) . '/</a>'
+                    //. '<a href="#!" onclick="openApp(\'tools/code/git\');">' // "?path=' . basename($path) . '" 
+                    //. '<img src="resources/images/directory-git.png" width="50" height="32" /></a>'
+                    //. '<a href="' . /* basename(__FILE__) .*/ '?' . $url . '" onclick="handleClick(event, \'' . $relativePath . '\'); openApp(\'tools/code/git\');">' . basename($path) . '/</a>' .
+                    . '</div>' . "\n";
+                  break;
+                case '.github':
+                  echo '<div style="position: relative;">'
+                    . '<a href="#!"
+   data-dir="' . $relativePath . '">
+  <img src="resources/images/directory-github.png" width="50" height="32" alt=""></a>'
+                    . '<a href="#!" data-dir="' . $relativePath . '">' . basename($path) . '/</a>'
+                    . '</div>' . "\n";
                   break;
                 case 'applications':
                   echo '<div style="position: relative;">'
-                    . '<a href="?application" onclick="document.getElementById(\'app_application-container\').style.display=\'block\';"><img src="resources/images/directory-application.gif" width="50" height="32" /></a>'
-                    . '<a href="' . /* basename(__FILE__) .*/ '?' . $url . '" onclick="handleClick(event, \'' . $relativePath . '\');">' . basename($path)  // "?path=' . basename($path) . '"
-                    . '/</a></div>' . "\n";
+                    . '<a href="#!"
+   data-dir="' . $relativePath . '">
+  <img src="resources/images/directory-application.gif" width="50" height="32" alt=""></a>'
+                    . '<a href="#!" data-dir="' . $relativePath . '">' . basename($path) . '/</a>'
+                    //. '<a href="?application" onclick="document.getElementById(\'app_application-container\').style.display=\'block\';"><img src="resources/images/directory-application.gif" width="50" height="32" /></a>'
+                    //. '<a href="' . /* basename(__FILE__) .*/ '?' . $url . '" onclick="handleClick(event, \'' . $relativePath . '\');">' . basename($path) . '/</a>' // "?path=' . basename($path) . '"
+                    . '</div>' . "\n";
+                  break;
+                case 'bootstrap':
+                  echo '<div style="position: relative; border: 4px dashed #897AE3;">'
+                    . '<a href="#!"
+   data-dir="' . $relativePath . '">
+  <img src="resources/images/directory-bootstrap.png" width="50" height="32" alt=""></a>'
+                    . '<a href="#!" data-dir="' . $relativePath . '">' . basename($path) . '/</a>'
+                    . '</div>' . "\n";
+                  break;
+                case 'classes':
+                  echo '<div style="position: relative; border: 4px dashed #7584C0;">'
+                    . '<a href="#!"
+   data-dir="' . $relativePath . '">
+  <img src="resources/images/directory-php_classes.png" width="50" height="32" alt=""></a>'
+                    . '<a href="#!" data-dir="' . $relativePath . '">' . basename($path) . '/</a>'
+                    . '</div>' . "\n";
                   break;
                 case 'clients': //case 'clientele':
                   echo '<div style="position: relative; border: 4px dashed orange;">'
-                    . '<a href="' . /* basename(__FILE__) .*/ '?' . $url /*. (!defined('APP_ROOT') || empty(APP_ROOT) ? '' : (array_key_first($_GET) == 'client' ? 'client=' . $_GET['client'] . '&' . (isset($_GET['domain']) ? 'domain=' . ($_GET['domain'] != '' ? $_GET['domain'] . '&' : '') : '') : (array_key_first($_GET) == 'project' ? 'project=' . $_GET['project'] . '&' : ''))) . 'path=' . $relativePath*/ . '" onclick="handleClick(event, \'' . $relativePath . '\')">'
+                    . '<a href="#!"
+   data-dir="' . $relativePath . '">
+  <img src="resources/images/directory-clients.png" width="50" height="32" alt=""></a>'
+                    . '<a href="#!" data-dir="' . $relativePath . '">' . basename($path) . '/</a>'
+
+                    //. '<a href="' . /* basename(__FILE__) .*/ '?' . $url /*. (!defined('APP_ROOT') || empty(APP_ROOT) ? '' : (array_key_first($_GET) == 'client' ? 'client=' . $_GET['client'] . '&' . (isset($_GET['domain']) ? 'domain=' . ($_GET['domain'] != '' ? $_GET['domain'] . '&' : '') : '') : (array_key_first($_GET) == 'project' ? 'project=' . $_GET['project'] . '&' : ''))) . 'path=' . $relativePath*/ . '" onclick="handleClick(event, \'' . $relativePath . '\')">'
                     // (!isset($_GET['path']) ? '' : $_GET['path'] . ($_GET['path'] == '' ? '' : '/' )) . basename($path)
-                    . '<img src="resources/images/directory.png" width="50" height="32" />' . basename($path) . '/</a></div>' . "\n";
-                  break;
-                case 'node_modules':
-                  echo '<div style="position: relative; border: 4px dashed #E14747;">'
-                    . '<a href="#!" onclick="handleClick(event, \'' . $relativePath . '\');document.getElementById(\'app_npmjs-container\').style.display=\'block\';"><img src="resources/images/directory-npm.gif" width="50" height="32" /></a>'
-                    . '<a href="' . /* basename(__FILE__) .*/ '?' . $url . '" onclick="handleClick(event, \'' . $relativePath . '\')">' . basename($path)  // "?path=' . basename($path) . '"         
-                    . '/</a></div>' . "\n";
+                    //. '<img src="resources/images/directory.png" width="50" height="32" />' . basename($path) . '/</a>'
+                    . '</div>' . "\n";
                   break;
                 case 'data': // case 'database'
                   echo '<div style="position: relative; border: 4px dashed #2C88DA;">'
-                    . '<a href="' . /* basename(__FILE__) .*/ '?' . $url . '" onclick="handleClick(event, \'' . $relativePath . '\')">'
+                    . '<a href="#!"
+   data-dir="' . $relativePath . '">
+  <img src="resources/images/directory.png" width="50" height="32" alt=""></a>'
+                    . '<a href="#!" data-dir="' . $relativePath . '">' . basename($path) . '/</a>'
+
+                    //. '<a href="' . /* basename(__FILE__) .*/ '?' . $url . '" onclick="handleClick(event, \'' . $relativePath . '\')">'
                     // (!isset($_GET['path']) ? '' : $_GET['path'] . ($_GET['path'] == '' ? '' : '/' )) . basename($path)
-                    . '<img src="resources/images/directory.png" width="50" height="32" />' . basename($path) . '/</a></div>' . "\n";
+                    //. '<img src="resources/images/directory.png" width="50" height="32" />' . basename($path) . '/</a>'
+  
+                    . '</div>' . "\n";
                   break;
+                case '.ssh':
+                  echo '<div style="position: relative;">'
+                    . '<a href="#!"
+   data-dir="' . $relativePath . '">
+  <img src="resources/images/directory-ssh.png" width="50" height="32" alt=""></a>'
+                    . '<a href="#!" data-dir="' . $relativePath . '">' . basename($path) . '/</a>'
+                    . '</div>' . "\n";
+                  break;
+                case 'node_modules':
+                  echo '<div style="position: relative; border: 4px dashed #E14747;">'
+                    . '<a href="#!"
+   data-dir="' . $relativePath . '">
+  <img src="resources/images/directory-npm.gif" width="50" height="32" alt=""></a>'
+                    . '<a href="#!" data-dir="' . $relativePath . '">' . basename($path) . '/</a>'
+                    //. '<a href="#!" onclick="handleClick(event, \'' . $relativePath . '\');document.getElementById(\'app_npmjs-container\').style.display=\'block\';"><img src="resources/images/directory-npm.gif" width="50" height="32" /></a>'
+                    //. '<a href="' . /* basename(__FILE__) .*/ '?' . $url . '" onclick="handleClick(event, \'' . $relativePath . '\')">' . basename($path) . '/</a>' // "?path=' . basename($path)
+                    . '</div>' . "\n";
+                  break;
+                case 'third_party_licenses':
+                  echo '<div style="position: relative;">'
+                    . '<a href="#!"
+   data-dir="' . $relativePath . '">
+  <img src="resources/images/directory.png" width="50" height="32" alt=""></a>'
+                    . '<a href="#!" data-dir="' . $relativePath . '" style="white-space: pre-line">' . $labelWithBreak = preg_replace(
+                      '/^((?:[^_]*_){2})(.+)$/',
+                      "$1\n$2",
+                      basename($path)
+                    ) . '/</a>'
+                    . '</div>' . "\n";
+                  break;
+
                 case 'projects':
                   echo '<div style="position: relative; border: 4px dashed #2C88DA;">'
-                    . '<a href="#!" onclick="document.getElementById(\'app_project-container\').style.display=\'block\';"><img src="resources/images/directory-project.gif" width="50" height="32" /></a>'
-                    . '<a href="' . /* basename(__FILE__) .*/ '?' . $url . '" onclick="handleClick(event, \'' . $relativePath . '\')">' . basename($path)  // "?path=' . basename($path) . '"
-                    . '/</a></div>' . "\n";
+                    . '<a href="#!"
+   data-dir="' . $relativePath . '">
+  <img src="resources/images/directory-project.gif" width="50" height="32" alt=""></a>'
+                    . '<a href="#!" data-dir="' . $relativePath . '">' . basename($path) . '/</a>'
+
+                    //. '<a href="#!" onclick="document.getElementById(\'app_project-container\').style.display=\'block\';"><img src="resources/images/directory-project.gif" width="50" height="32" /></a>'
+                    //. '<a href="' . /* basename(__FILE__) .*/ '?' . $url . '" onclick="handleClick(event, \'' . $relativePath . '\')">' . basename($path)  // "?path=' . basename($path) . '"
+                    //. '/</a>'
+                    . '</div>' . "\n";
                   break;
                 case 'public':
                   echo '<div style="position: relative; border: 4px dashed #CC9900;">'
-                    . '<a href="' . /* basename(__FILE__) .*/ '?' . (!defined('APP_ROOT') || empty(APP_ROOT) ? '' : '') . $url . '" onclick="handleClick(event, \'' . $relativePath . '\')">'
+                    . '<a href="#!"
+   data-dir="' . $relativePath . '">
+  <img src="resources/images/directory.png" width="50" height="32" alt=""></a>'
+                    . '<a href="#!" data-dir="' . $relativePath . '">' . basename($path) . '/</a>'
+
+                    //. '<a href="' . /* basename(__FILE__) .*/ '?' . (!defined('APP_ROOT') || empty(APP_ROOT) ? '' : '') . $url . '" onclick="handleClick(event, \'' . $relativePath . '\')">'
                     // (!isset($_GET['path']) ? '' : $_GET['path'] . ($_GET['path'] == '' ? '' : '/' )) . basename($path)
-                    . '<img src="resources/images/directory.png" width="50" height="32" />' . basename($path) . '/</a></div>' . "\n";
+                    //. '<img src="resources/images/directory.png" width="50" height="32" />' . basename($path) . '/</a>'
+  
+
+                    . '</div>' . "\n";
                   break;
                 case 'vendor':
                   echo '<div style="position: relative; border: 4px dashed #6B4329;">'
-                    . '<a href="#!" onclick="return handleClick(event, \'' . $relativePath . '\'); openApp(\'tools/registry/composer\');">' . '<img src="resources/images/directory-composer.png" width="50" height="32" /></a>'
-                    . '<a href="' . /* basename(__FILE__) .*/ '#!' /* . $url */ . '" data-path="vendor/" onclick="return App[\'devtools/directory\'].handleClick(\'' . $relativePath . '\')">' . basename($path)  // "?path=' . basename($path) . '"         
-                    . '/</a></div>' . "\n";
+                    . '<a href="#!" data-open-app="tools/registry/composer"><img src="resources/images/directory-packagist.png" width="50" height="32" alt=""></a>'
+                    . '<a href="#!"
+                    data-dir="' . $relativePath . '"
+   data-open-app="tools/registry/composer"
+   data-open-after-dir="1">' . basename($path) . '/</a>'
+
+                    //. '<a href="#!" onclick="return handleClick(event, \'' . $relativePath . '\'); openApp(\'tools/registry/composer\');">' . '<img src="resources/images/directory-composer.png" width="50" height="32" /></a>'
+                    //. '<a href="' . /* basename(__FILE__) .*/ '#!' /* . $url */ . '" data-path="vendor/" onclick="return App[\'devtools/directory\'].handleClick(\'' . $relativePath . '\')">' . basename($path) . '/</a>  // "?path=' . basename($path) . '"   
+                    . '</div>' . "\n";
                   break;
                 default:
                   // Ensure the path excludes the domain if present in the folder structure
@@ -828,9 +929,15 @@ left: calc(50% - 265px); /* 1207 / 2 */ /*transform: translate(-50%, -50%);*/ bo
                   $onclickAttribute = " onclick=\"handleClick(event, '" . htmlspecialchars($onclickPath, ENT_QUOTES) . "')\"";
 
                   // Render the folder link
-                  echo '<a href="' . htmlspecialchars($href, ENT_QUOTES) . '"' . $onclickAttribute . '>
-    <img src="resources/images/directory.png" width="50" height="32">' . htmlspecialchars(basename($path), ENT_QUOTES) . '/ 
-</a>';
+  
+                  echo '<a href="#!"
+   data-dir="' . $relativePath . '">
+  <img src="resources/images/directory.png" width="50" height="32" alt=""></a>'
+                    . '<a href="#!" data-dir="' . $relativePath . '">' . basename($path) . '/</a>';
+
+                  //echo '<a href="' . htmlspecialchars($href, ENT_QUOTES) . '"' . $onclickAttribute . '>
+                  //<img src="resources/images/directory.png" width="50" height="32">' . htmlspecialchars(basename($path), ENT_QUOTES) . '/ 
+//</a>';
                   // Render the link
                   //echo '<a href="' . htmlspecialchars($url) . '"' . $onclickAttribute . '><br />' . basename($path) . '/</a>';
   
@@ -1379,9 +1486,10 @@ ob_start(); ?>
       function handleClick(path) {
         // keep URL in sync: ?app=devtools/directory&path=...
         const qs = new URLSearchParams(location.search);
-        qs.set('app', APP_ID);
+        /*qs.set('app', APP_ID);*/
         if (path) qs.set('path', path); else qs.delete('path');
-        const newUrl = `${location.pathname}?${qs.toString()}${location.hash || ''}`;
+        if (path) qs.set('app', path); qs.delete('app');
+        const newUrl = `${location.pathname}<?= count($_GET) <= 0 ? '' : '?' ?>${qs.toString()}${location.hash || ''}`;
         history.pushState({ app: APP_ID, path: path || '' }, '', newUrl);
 
         // reload this app with the new path
@@ -1397,21 +1505,40 @@ ob_start(); ?>
       window.App[APP_ID] = window.AppMods[APP_ID];
 
       // Delegated clicks (no inline JS needed)
+      /*
+            container.addEventListener('click', (e) => {
+              const openEl = e.target.closest('[data-open-app]');
+              if (openEl) {
+                e.preventDefault();
+                const app = openEl.getAttribute('data-open-app');
+                if (app && typeof window.openApp === 'function') {
+                  window.openApp(app, { from: 'dir-tile' });
+                }
+                return;
+              }
+              const dirEl = e.target.closest('[data-dir]');
+              if (dirEl) {
+                e.preventDefault();
+                handleClick(dirEl.getAttribute('data-dir') || '');
+              }
+            });
+      */
+
       container.addEventListener('click', (e) => {
-        const openEl = e.target.closest('[data-open-app]');
-        if (openEl) {
+        const el = e.target.closest('[data-dir],[data-path],[data-open-app]');
+        if (!el) return;
+
+        const path = el.getAttribute('data-dir') ?? el.getAttribute('data-path');
+        const app = el.getAttribute('data-open-app');
+
+        if (path && app && el.hasAttribute('data-open-after-dir')) {
           e.preventDefault();
-          const app = openEl.getAttribute('data-open-app');
-          if (app && typeof window.openApp === 'function') {
-            window.openApp(app, { from: 'dir-tile' });
-          }
+          handleClick(path);
+          window.openApp?.(app, { params: { path }, from: 'tile' });
           return;
         }
-        const dirEl = e.target.closest('[data-dir]');
-        if (dirEl) {
-          e.preventDefault();
-          handleClick(dirEl.getAttribute('data-dir') || '');
-        }
+        if (path) { e.preventDefault(); handleClick(path); }
+        if (app) { e.preventDefault(); window.openApp?.(app, { from: 'tile' }); }
       });
 
       // Back/forward support for path changes

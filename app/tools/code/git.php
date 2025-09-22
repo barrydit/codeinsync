@@ -63,7 +63,6 @@ if ($path = realpath(app_base('config', null, 'abs') . 'constants.git.php')) {
 
 /* https://stackoverflow.com/questions/73026623/how-to-ignore-or-permanently-block-the-files-which-contain-date-or-datetime-in */
 
-
 /*
 if ($path = realpath((!is_dir(dirname(__DIR__, 1)) . DIRECTORY_SEPARATOR . 'config' ? dirname(__DIR__, 1) . DIRECTORY_SEPARATOR . 'config' : (!is_dir(__DIR__ . DIRECTORY_SEPARATOR . 'config') ? (basename(__DIR__) != 'config' ? NULL : '.') : __DIR__ . DIRECTORY_SEPARATOR . 'config'))  . DIRECTORY_SEPARATOR . 'git.php')) // realpath() | is_file('config/git.php')) 
   require_once($path);
@@ -75,9 +74,10 @@ else die(var_dump($path . ' path was not found. file=git.php')); */
 <HTML ...>
 <?php $UI_APP['css'] = ob_get_contents();
 ob_end_clean(); ?> */
+
 ob_start(); ?>
 <?= $selector ?> {
-position : fixed; /* absolute */
+position : absolute; /* fixed */
 display : block;
 top : 20%;
 left : 25%; /* right: 50%; */
@@ -161,7 +161,7 @@ defined('GIT_LATEST') or define('GIT_LATEST', GIT_VERSION);
 
 ?>
 
-<div class="absolute window-header"
+<div class="fixed window-header"
   style="position: fixed; display: inline-block; width: 450px; height: 0; cursor: move; margin: -50px 0 0 0; padding: 24px 0; border-bottom: 1px solid #000; z-index: 3;"
   data-drag-handle>
   <label class="git-home" style="cursor: pointer;">

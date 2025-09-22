@@ -14,7 +14,7 @@ if (defined('APP_BOOTSTRAPPED')) // Already fully bootstrapped in this request
 $__file = __FILE__;
 $__boot = rtrim(str_replace('\\', '/', dirname($__file)), '/') . '/';
 $__bootReal = @realpath($__boot) ?: $__boot;
-defined('BOOTSTRAP_PATH') || define('BOOTSTRAP_PATH', $__bootReal);
+defined('BOOTSTRAP_PATH') || define('BOOTSTRAP_PATH', $__bootReal . DIRECTORY_SEPARATOR);
 $__app = rtrim(dirname(BOOTSTRAP_PATH), '/') . '/';
 $__appReal = @realpath($__app) ?: $__app;
 defined('APP_PATH') || define('APP_PATH', $__appReal . DIRECTORY_SEPARATOR);
@@ -70,6 +70,7 @@ $wantsJs = !$isCli && (
 $wantsDispatcher = !$isCli && ($hasCmd || ($appParam && ($wantsJson || $wantsJs)));
 
 if ($wantsDispatcher) {
+
     $obLevel = ob_get_level();
 
     if (!headers_sent()) {
@@ -137,7 +138,12 @@ if ($wantsDispatcher) {
     exit; // API path only
 
     // =================== END SELECTIVE EMIT (drop-in) ===================
-}
+} elseif (defined(APP_MODE) && APP_MODE !== 'web')
+    require BOOTSTRAP_PATH . 'dispatcher.php';
+
+// Full app bootstrap path
+// (web request, or CLI)
+
 // --- end fast-path ---------------------------------------------------------
 
 require_once CONFIG_PATH . 'auth.php';
@@ -153,13 +159,12 @@ if (!@chdir(APP_PATH))
 
 defined('APP_CWD') || define('APP_CWD', getcwd());
 
+require_once APP_PATH . 'bootstrap/php-ini.php';
 // Single autoloader include (custom or Composer)
 if (is_file(APP_PATH . 'vendor/autoload.php') && $_ENV['COMPOSER']['AUTOLOAD'] !== false)
     require_once APP_PATH . 'vendor/autoload.php';
-
-require_once APP_PATH . 'bootstrap/php-ini.php';
-
 require_once APP_PATH . 'bootstrap/kernel.php';
+
 /*
 //require_once APP_PATH . 'bootstrap/events.php';
 //require_once APP_PATH . 'bootstrap/middleware.php';

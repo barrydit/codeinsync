@@ -167,6 +167,20 @@ if ($needsUpdate) {
 }
 
 // Parse the cached HTML
+
+if (!function_exists('getElementsByClass')) {
+    function getElementsByClass($node, $tagName, $className)
+    {
+        $elements = [];
+        foreach ($node->getElementsByTagName($tagName) as $el) {
+            if (in_array($className, explode(' ', $el->getAttribute('class')))) {
+                $elements[] = $el;
+            }
+        }
+        return $elements;
+    }
+}
+
 if (is_file($cacheFile)) {
     libxml_use_internal_errors(true);
     $doc = new DOMDocument('1.0', 'utf-8');
@@ -186,6 +200,7 @@ if (is_file($cacheFile)) {
 }
 
 // 3. Load connection checker if not available
+/*
 if (!function_exists('check_internet_connection')) {
     require_once __DIR__ . DIRECTORY_SEPARATOR . 'functions.php';
 }
@@ -196,4 +211,4 @@ if (!defined('APP_IS_ONLINE')) {
         : true; // or a cheap fallback
     define('APP_IS_ONLINE', $online);
     define('APP_NO_INTERNET_CONNECTION', !$online);
-}
+}*/

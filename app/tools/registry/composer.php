@@ -246,15 +246,15 @@ ob_start(); ?>
         <select name="exec" onchange="this.form.submit();">
 
   <?php if (defined('COMPOSER_BIN')): ?>
-                                                                                                                                    <option <?= COMPOSER_EXEC_CMD === COMPOSER_BIN ? 'selected' : '' ?>
-                                                                                                                                        value="bin"><?= COMPOSER_BIN ?></option>
+                                                                                                                                              <option <?= COMPOSER_EXEC_CMD === COMPOSER_BIN ? 'selected' : '' ?>
+                                                                                                                                                  value="bin"><?= COMPOSER_BIN ?></option>
     <?php endif; ?>
   
     <?php if (defined('COMPOSER_PHAR')): ?>
-                                                                                                                                    <option <?= COMPOSER_EXEC_CMD === COMPOSER_PHAR['exec'] ? 'selected' : '' ?>
-                                                                                                                                      value="phar">
-                                                                                                                                      <?= COMPOSER_PHAR['exec'] ?>
-                                                                                                                                    </option>
+                                                                                                                                              <option <?= COMPOSER_EXEC_CMD === COMPOSER_PHAR['exec'] ? 'selected' : '' ?>
+                                                                                                                                                value="phar">
+                                                                                                                                                <?= COMPOSER_PHAR['exec'] ?>
+                                                                                                                                              </option>
   <?php endif; ?>
 
         </select>
@@ -798,7 +798,9 @@ echo $daysLeft === null ? '' : max(0, $daysLeft);
               <hr />Require:
               <div style="float: right;">
                 <input id="composerReqPkg" type="text" title="Enter Text and onSelect" list="composerReqPkgs"
-                  placeholder="" value="" onselect="get_package(this);">
+                  placeholder="" value="" oninput="App['tools/registry/composer'].get_package(this);"
+                  onselect="App['tools/registry/composer'].get_package(this);">
+                <!-- onselect="get_package(this);" -->
                 <datalist id="composerReqPkgs">
                   <option value=""></option>
                 </datalist>
@@ -1247,163 +1249,208 @@ ob_end_clean();
 if (false) { ?>
   <script type="text/javascript"><?php }
 ob_start(); ?>
-  var keyword_i = 0;
+    (() => {
+      const APP_ID = 'tools/registry/composer';
+      const root = document.getElementById('app_tools_registry_composer-container');
+      if (!root) return;
 
-  /* When the user clicks on the button,
-  toggle between hiding and showing the dropdown content */
-  function myFunction() {
-    document.getElementById("myDropdown").classList.toggle("show");
-  }
+      // avoid double-binding if this app reloads
+      if (root.dataset.bound === '1') return;
+      root.dataset.bound = '1';
 
-  // Close the dropdown if the user clicks outside of it
-  window.onclick = function (event) {
-    if (!event.target.matches('.dropbtn')) {
-      var dropdowns = document.getElementsByClassName("dropdown-content");
-      var i;
-      for (i = 0; i < dropdowns.length; i++) {
-        var openDropdown = dropdowns[i]; if (openDropdown.classList.contains('show')) {
-          openDropdown.classList.remove('show');
-        }
+      // ensure globals exist (keeps inline onclick(...) working if present)
+      window.AppMods = window.AppMods || {};
+      window.App = window.App || new Proxy({}, {
+        get(_t, k) { return window.AppMods[k]; },
+        has(_t, k) { return k in window.AppMods; }
+      });
+
+      let keywordIndex = 0;
+
+      // ───────── Dropdown helpers ─────────
+      function toggleDropdown() {
+        const dd = document.getElementById('myDropdown');
+        if (dd) dd.classList.toggle('show');
       }
-    }
-  };
 
-  function rm_keyword(argv_id) {
-    var el = document.querySelector('label[for=' + argv_id + ' ]');
-    var input = document.getElementById(argv_id);
-    if (el) el.remove();
-    if (input) input.remove();
-    //console.log(document.getElementById('composerAppendKeyword').childNodes.length); 
-    if (document.getElementById('composerAppendKeyword').childNodes.length == 4)
-      document.getElementById('composerAppendKeyword').style.display = "none";
-  }
+      // Close dropdown if clicking outside .dropbtn
+      const closeDropdownOnDocClick = (ev) => {
+        if (!(ev.target instanceof Element)) return;
+        if (ev.target.matches('.dropbtn')) return;
+        document.querySelectorAll('.dropdown-content.show')
+          .forEach(el => el.classList.remove('show'));
+      };
+      document.addEventListener('click', closeDropdownOnDocClick);
 
-  function add_keyword() {
-    if (event.target.value == '') return;
-    var filledInputs = $('#composerAppendKeyword').find(':input[type=text]').filter(function () { return !!this.value; }).length;
-    document.getElementById('composerAppendKeyword').style.display = "inline-block";
-    keywordOption = '<label class="text-sm" for="keyword_' + keyword_i + '" ><sup onclick="rm_keyword(\' keyword_' + keyword_i + '\' );">[x]</sup>' + event.target.value + '</label><input type="hidden" id="keyword_' + keyword_i + '" name = "composer[config][keywords][]" value = "' + event.target.value + '" />& nbsp; ';
-    keyword_i++;
-    document.getElementById('composerAppendKeyword').insertAdjacentHTML('beforeend', keywordOption); // innerHTML += keywordOption
-    document.getElementById('composerKeywordAdd').value = '';
-  }
+      // ───────── Keyword helpers ─────────
+      function rm_keyword(id) {
+        const safeId = CSS && CSS.escape ? CSS.escape(id) : id.replace(/"/g, '\\"');
+        const label = root.querySelector(`label[for="${safeId}"]`) || document.querySelector(`label[for="${safeId}"]`);
+        const input = document.getElementById(id);
+        if (label) label.remove();
+        if (input) input.remove();
 
-  //document.getElementById("composerAppendKeyword").childElementCount
-  //var x = $('#composerAppendKeyword').find(':input[type=hidden]').filter(function() {return !!this.value;}).length;
-  //alert(x);
+        const wrap = document.getElementById('composerAppendKeyword');
+        if (!wrap) return;
+        const hiddenCount = wrap.querySelectorAll('input[type="hidden"]').length;
+        if (hiddenCount === 0) wrap.style.display = 'none';
+      }
 
+      function add_keyword(ev) {
+        const e = ev || window.event;
+        const v = e?.target?.value?.trim();
+        if (!v) return;
 
-  document.getElementById("composerReqPkg").addEventListener("input", function (event) {
-    if (event.inputType == "insertReplacementText" || event.inputType == null) {
-      var filledInputs = $('#composerAppendRequire').find(':input[type=text]').filter(function () {
-        return !!this.value;
-      }).length;
-      document.getElementById('composerAppendRequire').style.display = "inline-block";
-      packageOption = '<input type="checkbox" checked onchange = "this.indeterminate = !this.checked; document.getElementById(\'pkg_' + filledInputs + '\').disabled = !this.checked" /><input type="text" id="pkg_' + filledInputs + '" name="composer[config][require][]" value="' + event.target.value + '"    list="composerReqVersResults" size="30" onSelect="get_version(\'pkg_' + filledInputs + '\')" /><label for="pkg_' + filledInputs + '"></label><br />';
-      document.getElementById('composerAppendRequire').insertAdjacentHTML('beforeend', packageOption); // innerHTML += packageOption
-      event.target.value = "";
-    }
-  });
+        const wrap = document.getElementById('composerAppendKeyword');
+        if (!wrap) return;
+        wrap.style.display = 'inline-block';
 
+        const id = `keyword_${keywordIndex++}`;
+        const html = `
+      <label class="text-sm" for="${id}">
+        <sup onclick="App['${APP_ID}'].rm_keyword('${id}')">[x]</sup>${v}
+      </label>
+      <input type="hidden" id="${id}" name="composer[config][keywords][]" value="${v}" />
+      &nbsp;`;
+        wrap.insertAdjacentHTML('beforeend', html);
 
-  function selectPackage() {
+        const addInput = document.getElementById('composerKeywordAdd');
+        if (addInput) addInput.value = '';
+      }
 
-  }
+      // ───────── Require (prod) ─────────
+      const reqPkgInput = document.getElementById('composerReqPkg');
+      if (reqPkgInput) {
+        reqPkgInput.addEventListener('input', (ev) => {
+          if (ev.inputType !== 'insertReplacementText' && ev.inputType != null) return;
 
-  function get_package(element) { // onSelect="get_package()"
-    var val = element.value; // document.getElementById("composerReqPkg")
-    console.log(element.id + 's');
-    var url, packagesOption;
-    url = 'https://packagist.org/search.json?q=' + val;
-    document.getElementById(element.id + 's').innerHTML = '';
-    $.getJSON(url, function (data) {
-      //populate the packages datalist
-      $(data.results).each(function () {
-        packagesOption = '<option value = "' + this.name + '" />';
-        $('#' + element.id + 's').append(packagesOption);
-        //console.log(this.favers);
-      });
-    });
-  }
+          const wrap = document.getElementById('composerAppendRequire');
+          if (!wrap) return;
+          wrap.style.display = 'inline-block';
 
-  function get_version(argv_id) { // onSelect="get_version()"
-    var val = document.getElementById(argv_id).value;
-    var url, packagesOption;
-    //var vendorPkg = val.split("/");
+          const idx = wrap.querySelectorAll('input[type="text"]').length;
+          const id = `pkg_${idx}`;
+          const html = `
+        <input type="checkbox" checked
+               onchange="this.indeterminate=!this.checked;document.getElementById('${id}').disabled=!this.checked" />
+        <input type="text" id="${id}" name="composer[config][require][]" value="${ev.target.value}"
+               list="composerReqVersResults" size="30"
+               onSelect="App['${APP_ID}'].get_version('${id}')" />
+        <label for="${id}"></label><br />`;
+          wrap.insertAdjacentHTML('beforeend', html);
+          ev.target.value = '';
+        });
+      }
 
-    url = 'https://repo.packagist.org/p2/' + val + '.json';
-    document.getElementById('composerReqVersResults').innerHTML = '';
+      function get_package(element) { // onSelect="App['tools/registry/composer'].get_package(this)"
+        const el = typeof element === 'string' ? document.getElementById(element) : element;
+        if (!el) return;
+        const val = el.value.trim();
+        const list = document.getElementById(`${el.id}s`);
+        if (!val || !list) return;
 
-    url = 'http://localhost/proxy.php?url=' + url;
-    $.getJSON(url, function (data) {
-      //populate the packages datalist
-      packagesOption = '<option value = "' + val + ':dev-master" /> ';
-      $('#composerReqVersResults').append(packagesOption);
-      var vers = $(data.packages[val])[0].version.split(/(\d+\.\d+(?:\.\d+)?)/);
-      packagesOption = '<option value = "' + val + ':^' + vers[1] + '" /> ';
-      $('#composerReqVersResults').append(packagesOption);
-      /*
-      $(data.packages[val]).each(function() {
-      packagesOption = '
-      <option value="' + val + ':^' + this.version + '" />';
-      $('#composerReqVersResults').append(packagesOption);
-      //console.log(this.version);
-      });
-      */
-    });
-  }
+        list.innerHTML = '';
+        const url = `https://packagist.org/search.json?q=${encodeURIComponent(val)}`;
+        $.getJSON(url, (data) => {
+          (data?.results || []).forEach(r => {
+            list.insertAdjacentHTML('beforeend', `<option value="${r.name}"></option>`);
+          });
+        });
+      }
 
-  document.getElementById("composerRequireDevPkg").addEventListener("input", function (event) {
-    if (event.inputType == "insertReplacementText" || event.inputType == null) {
-      var filledInputs = $('#composerAppendRequire-dev').find(':input[type=text]').filter(function () {
-        return
-        !!this.value;
-      }).length;
-      document.getElementById('composerAppendRequire-dev').style.display = "inline-block";
-      packageOption = '<input type="checkbox" checked onchange = "this.indeterminate = !this.checked; document.getElementById(\'pkg-dev_' + filledInputs + '\').disabled = !this.checked" /><input type="text" id="pkg-dev_' + filledInputs + '" name="composerRequireDevPkgs[]" value="' + event.target.value + '" list="composerReq-devVersResults" size="30" onSelect="get_dev_version(\'pkg-dev_' + filledInputs + '\')" /><label for="pkg-dev_' + filledInputs + '"></label><br />';
-      document.getElementById('composerAppendRequire-dev').insertAdjacentHTML('beforeend', packageOption); // innerHTML += packageOption
-      event.target.value = "";
-    }
-  });
+      function get_version(id) { // onSelect="App['tools/registry/composer'].get_version('pkg_0')"
+        const input = document.getElementById(id);
+        if (!input) return;
+        const val = input.value.trim();
+        const list = document.getElementById('composerReqVersResults');
+        if (!val || !list) return;
 
-  function get_dev_package() { // onSelect="get_dev_package()"
-    var val = document.getElementById("composerRequireDevPkg").value;
-    var url, packagesOption;
-    url = 'https://packagist.org/search.json?q=' + val;
-    document.getElementById('composerReqDevPackages').innerHTML = '';
-    $.getJSON(url, function (data) {
-      //populate the packages datalist
-      $(data.results).each(function () {
-        packagesOption = "<option value =\"" + this.name + "\" />";
-        $('#composerReqDevPackages').append(packagesOption);
-        //console.log(this.favers);
-      });
-    });
-  }
+        list.innerHTML = '';
+        const upstream = `https://repo.packagist.org/p2/${encodeURIComponent(val)}.json`;
+        const proxied = `proxy.php?url=${encodeURIComponent(upstream)}`; // avoid hardcoding host
+        $.getJSON(proxied, (data) => {
+          list.insertAdjacentHTML('beforeend', `<option value="${val}:dev-master"></option>`);
+          const first = (data?.packages?.[val] || [])[0];
+          const m = first?.version?.match(/(\d+\.\d+(?:\.\d+)?)/);
+          if (m && m[1]) {
+            list.insertAdjacentHTML('beforeend', `<option value="${val}:^${m[1]}"></option>`);
+          }
+        });
+      }
 
-  function get_dev_version(argv_id) { // onSelect="get_version()"
-    var val = document.getElementById(argv_id).value;
-    var url, packagesOption;
-    //var vendorPkg = val.split("/");
-    url = 'https://repo.packagist.org/p2/' + val + '.json';
-    document.getElementById('composerReq-devVersResults').innerHTML = '';
-    $.getJSON(url, function (data) {
-      //populate the packages datalist
-      packagesOption = '<option value = "' + val + ':dev-master" />';
-      $('#composerReq-devVersResults').append(packagesOption);
-      var vers = $(data.packages[val])[0].version.split(/(\d+\.\d+(?:\.\d+)?)/);
-      packagesOption = '<option value = "' + val + ':^' + vers[1] + '" /> ';
-      $('#composerReq-devVersResults').append(packagesOption);
-      /*
-      $(data.packages[val]).each(function() {
-      packagesOption = '
-      <option value="' + val + ':^' + this.version + '" />';
-      $('#composerReq-devVersResults').append(packagesOption);
-      //console.log(this.version);
-      });
-      */
-    });
-  }
+      // ───────── Require (dev) ─────────
+      const devReqInput = document.getElementById('composerRequireDevPkg');
+      if (devReqInput) {
+        devReqInput.addEventListener('input', (ev) => {
+          if (ev.inputType !== 'insertReplacementText' && ev.inputType != null) return;
+
+          const wrap = document.getElementById('composerAppendRequire-dev');
+          if (!wrap) return;
+          wrap.style.display = 'inline-block';
+
+          const idx = wrap.querySelectorAll('input[type="text"]').length;
+          const id = `pkg-dev_${idx}`;
+          const html = `
+        <input type="checkbox" checked
+               onchange="this.indeterminate=!this.checked;document.getElementById('${id}').disabled=!this.checked" />
+        <input type="text" id="${id}" name="composerRequireDevPkgs[]" value="${ev.target.value}"
+               list="composerReq-devVersResults" size="30"
+               onSelect="App['${APP_ID}'].get_dev_version('${id}')" />
+        <label for="${id}"></label><br />`;
+          wrap.insertAdjacentHTML('beforeend', html);
+          ev.target.value = '';
+        });
+      }
+
+      function get_dev_package() { // onSelect="App['tools/registry/composer'].get_dev_package()"
+        const el = document.getElementById('composerRequireDevPkg');
+        if (!el) return;
+        const val = el.value.trim();
+        const list = document.getElementById('composerReqDevPackages');
+        if (!val || !list) return;
+
+        list.innerHTML = '';
+        const url = `https://packagist.org/search.json?q=${encodeURIComponent(val)}`;
+        $.getJSON(url, (data) => {
+          (data?.results || []).forEach(r => {
+            list.insertAdjacentHTML('beforeend', `<option value="${r.name}"></option>`);
+          });
+        });
+      }
+
+      function get_dev_version(id) { // onSelect="App['tools/registry/composer'].get_dev_version('pkg-dev_0')"
+        const input = document.getElementById(id);
+        if (!input) return;
+        const val = input.value.trim();
+        const list = document.getElementById('composerReq-devVersResults');
+        if (!val || !list) return;
+
+        list.innerHTML = '';
+        const url = `https://repo.packagist.org/p2/${encodeURIComponent(val)}.json`;
+        $.getJSON(url, (data) => {
+          list.insertAdjacentHTML('beforeend', `<option value="${val}:dev-master"></option>`);
+          const first = (data?.packages?.[val] || [])[0];
+          const m = first?.version?.match(/(\d+\.\d+(?:\.\d+)?)/);
+          if (m && m[1]) {
+            list.insertAdjacentHTML('beforeend', `<option value="${val}:^${m[1]}"></option>`);
+          }
+        });
+      }
+
+      // Register API under both registries (keeps inline calls working)
+      const api = {
+        init() { },
+        toggleDropdown,
+        rm_keyword,
+        add_keyword,
+        get_package,
+        get_version,
+        get_dev_package,
+        get_dev_version
+      };
+      window.AppMods[APP_ID] = Object.assign(window.AppMods[APP_ID] || {}, api);
+      window.App[APP_ID] = window.AppMods[APP_ID];
+    })();
 
   //document.getElementById("bottom").style.zIndex = "1";
 
@@ -1427,8 +1474,6 @@ ob_start(); ?>
         });
       }
     });
-
-
 
     $("#appComposerVendorJsonLabel").click(function () {
       if ($('#appComposerVendorJsonForm').css('display') == 'none') {
@@ -1567,12 +1612,10 @@ ob_start(); ?>
   });
 
   <?php
-
   $UI_APP['script'] = ob_get_contents();
   ob_end_clean();
 
   if (false) { ?></script><?php }
-
 
   ob_start(); ?>
 <!DOCTYPE html>
