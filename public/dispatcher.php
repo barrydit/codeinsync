@@ -11,6 +11,7 @@ if (isset($_GET['app']) && !isset($_GET['json'])) {
 // - array/object => we JSON-emit here
 // - string => we echo as-is (HTML/text)
 // - false/null/other => 404-ish
+define('APP_MODE', 'dispatcher'); // anything !== 'web' triggers the gate
 $handled = require __DIR__ . '/../bootstrap/dispatcher.php';
 
 if ($handled === true) {
@@ -43,7 +44,6 @@ $contents = capture(function () {
 dd(get_required_files());
 
 echo $contents;
-*/
 
 if (is_array($handled) || is_object($handled)) {
     if (!headers_sent()) {
@@ -61,10 +61,11 @@ if (is_string($handled)) {
     echo $handled;
     exit;
 }
+*/
 
 // Not handled
 http_response_code(404);
 if (!headers_sent()) {
     header('Content-Type: application/json; charset=utf-8');
 }
-echo json_encode(['error' => 'Not handled'], JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE);
+// echo json_encode(['error' => 'Not handled'], JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE);

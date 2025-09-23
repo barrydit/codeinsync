@@ -5,6 +5,11 @@
 const IS_CLIENT = true;
 const IS_DEVELOPER = false;
 
+require_once __DIR__ . '/../config/functions.php';
+require_once __DIR__ . '/../config/constants.env.php';
+require_once __DIR__ . '/../config/constants.paths.php';
+require_once __DIR__ . '/../bootstrap/php-ini.php';
+
 // minimal web entry
 if (is_file(dirname(__DIR__, 1) . '/bootstrap/bootstrap.php'))
   require_once __DIR__ . '/../bootstrap/bootstrap.php';
@@ -660,7 +665,12 @@ unset($_SESSION['mode']); ?>
     /* ────────────────────────────────────────────────────────────────────────────
        Window stack + focus + draggable (jQuery UI or vanilla fallback)
     ──────────────────────────────────────────────────────────────────────────── */
-    (function () {
+    (() => {
+      'use strict';
+      // IIFE #1: app loader
+      if (window.__openAppBooted) return;
+      window.__openAppBooted = true;
+      // Window stack
       const Stack = { zTop: null, active: null };
 
       function initZTop() {
@@ -793,7 +803,15 @@ unset($_SESSION['mode']); ?>
     /* ────────────────────────────────────────────────────────────────────────────
        App containers + error UI + asset cleanup + robust fetch guards
     ──────────────────────────────────────────────────────────────────────────── */
-    (function () {
+    (() => {
+      'use strict';
+      // IIFE #2: mode toggle
+      if (window.__modeBooted) return;
+      window.__modeBooted = true;
+
+      // Keep this near the top of the IIFE
+      const CASCADE = { x: 24, y: 24, cur: 0 };
+
       // Default mount points per app
       const APP_MOUNTS = {
         'devtools/directory': '#free-space',
@@ -815,25 +833,44 @@ unset($_SESSION['mode']); ?>
         return !NON_DRAGGABLE.has(id);
       }
 
+      function nextCascadePosition() {
+        const n = CASCADE.cur++;
+        return { left: 40 + (n * CASCADE.x) % 240, top: 40 + (n * CASCADE.y) % 180 };
+      }
+
       function ensureAppContainer(containerId, mountSelector) {
         const mount = document.querySelector(mountSelector)
           || document.querySelector('#container')
           || document.body;
 
         let el = document.getElementById(containerId);
+        const isNew = !el;
+
         if (!el) {
           el = document.createElement('div');
           el.id = containerId;
           el.className = 'app-container';
           el.innerHTML = `
-        <div class="window-header" data-drag-handle>
-          <span class="title"></span>
-          <button class="close" type="button" aria-label="Close">×</button>
-        </div>
-        <div class="window-body"></div>`;
+      <div class="window-header" data-drag-handle>
+        <span class="title"></span>
+        <button class="close" type="button" aria-label="Close">×</button>
+      </div>
+      <div class="window-body"></div>`;
           mount.appendChild(el);
+
+          // Optional: prevent overlap
+          el.style.position = 'absolute';
+          const pos = nextCascadePosition();
+          el.style.left = pos.left + 'px';
+          el.style.top = pos.top + 'px';
+
           el.querySelector('.close')?.addEventListener('click', () => closeApp(el.dataset.appPath || ''));
         }
+
+        // Ensure visible on reuse
+        el.hidden = false;
+        el.removeAttribute('aria-hidden');
+
         return el;
       }
 
@@ -866,18 +903,33 @@ unset($_SESSION['mode']); ?>
         const el = ensureAppContainer(containerId, mountSelector);
         el.dataset.appPath = app;
 
-        // Focus stack
-        window.AppWindows?.bringToFront(el);
+        // 1) Guard: if a load is already running, just focus
+        if (el.dataset.loading === '1') {
+          el.hidden = false;
+          el.removeAttribute('aria-hidden');
+          window.AppWindows?.bringToFront(el);
+          return;
+        }
 
-        // ----- 1) style + body (JSON) -----
-        let data;
+        // 2) Fast path: already loaded and NOT forcing reload → unhide + focus
+        if (el.dataset.loaded === '1' && !opts.forceReload) {
+          el.hidden = false;
+          el.removeAttribute('aria-hidden');
+          window.AppWindows?.bringToFront(el);
+          return;
+        }
+
+        // 3) Mark as loading (so rapid clicks don’t re-enter)
+        el.dataset.loading = '1';
+
         try {
+          // ------- FETCH + PARSE (style/body JSON) -------
+          let data;
           const r1 = await fetch(`?app=${encodeURIComponent(app)}&${params.toString()}`, {
             headers: { Accept: 'application/json' },
             cache: 'no-store',
             credentials: 'same-origin'
           });
-
           const raw = await r1.text();
 
           if (!r1.ok) {
@@ -885,47 +937,35 @@ unset($_SESSION['mode']); ?>
             console.error('[openApp] HTTP error:', app, r1.status, raw.slice(0, 200));
             return;
           }
-
-          // Parse FIRST. JSON may contain HTML snippets in strings.
           try {
             data = JSON.parse(raw);
           } catch (e) {
-            // Only now do a tight "full HTML page" check
             const looksLikeFullHTML = /^\s*</.test(raw) && /<(?:!doctype|html|head|body)\b/i.test(raw);
-            if (looksLikeFullHTML) {
-              showAppError(
-                el,
-                'Unexpected HTML',
-                `Expected JSON for "${app}" but received a full HTML page (routing missing "?app="?).`,
-                raw.slice(0, 1000)
-              );
-            } else {
-              showAppError(el, 'Invalid JSON', `Could not parse JSON for "${app}".`, raw.slice(0, 1000));
-            }
+            showAppError(
+              el,
+              looksLikeFullHTML ? 'Unexpected HTML' : 'Invalid JSON',
+              looksLikeFullHTML
+                ? `Expected JSON for "${app}" but received a full HTML page (routing missing "?app="?).`
+                : `Could not parse JSON for "${app}".`,
+              raw.slice(0, 1000)
+            );
             console.error('[openApp] JSON parse error:', app, e, raw.slice(0, 200));
             return;
           }
-        } catch (e) {
-          showAppError(el, 'Network error', `Failed to fetch JSON for "${app}".`, String(e));
-          console.error('[openApp] Network error:', app, e);
-          return;
-        }
 
-        // Inject CSS once
-        if (data.style && !document.querySelector(`[data-app-style="${app}"]`)) {
-          const styleEl = document.createElement('style');
-          styleEl.dataset.appStyle = app;
-          styleEl.textContent = data.style;
-          document.head.appendChild(styleEl);
-        }
+          // ------- STYLE (insert once) -------
+          if (data.style && !document.querySelector(`[data-app-style="${app}"]`)) {
+            const styleEl = document.createElement('style');
+            styleEl.dataset.appStyle = app;
+            styleEl.textContent = data.style;
+            document.head.appendChild(styleEl);
+          }
 
-        // Mount body
-        const body = el.querySelector('.window-body') || el;
-        body.innerHTML = data.body || '';
+          // ------- BODY MOUNT -------
+          const body = el.querySelector('.window-body') || el;
+          body.innerHTML = data.body || '';
 
-        // ===== STEP 4: script (module) fetch with tight "full HTML page" sniff =====
-        try {
-          // remove any previous inline module for this app
+          // ------- SCRIPT (module) -------
           document.querySelector(`script[data-app-script="${app}"]`)?.remove();
 
           const scriptParams = new URLSearchParams(opts.params || {});
@@ -936,7 +976,6 @@ unset($_SESSION['mode']); ?>
             cache: 'no-store',
             credentials: 'same-origin'
           });
-
           const code = await r2.text();
 
           if (!r2.ok) {
@@ -945,11 +984,9 @@ unset($_SESSION['mode']); ?>
             return;
           }
 
-          // Only consider it "HTML page" if it *starts* like one
           const t = code.trimStart();
           const looksLikeFullHTML = t.startsWith('<') && /^(?:<!doctype|<html\b|<head\b|<body\b)/i.test(t);
-          const ctLooksJS = contentTypeIncludes?.(r2, 'javascript') || contentTypeIncludes?.(r2, 'ecmascript');
-
+          const ctLooksJS = contentTypeIncludes(r2, 'javascript') || contentTypeIncludes(r2, 'ecmascript');
           if (!ctLooksJS && looksLikeFullHTML) {
             showAppError(
               el,
@@ -962,57 +999,46 @@ unset($_SESSION['mode']); ?>
           }
 
           if (code && code.trim()) {
-            const looksLikeHtml = /^\s*<(!doctype|html|head|body)\b/i.test(code);
-            if (looksLikeHtml) {
-              console.warn('Loaded HTML instead of JS for', app, code.slice(0, 200));
-            }
-
             const mod = document.createElement('script');
             mod.type = 'module';
             mod.dataset.appScript = app;
             mod.textContent = `${code}\n//# sourceURL=/${app}.module.js`;
             document.body.appendChild(mod);
-
-            console.log('Injected module', { app, bytes: code.length, preview: code.slice(0, 200) });
           }
 
-        } catch (e) {
-          showAppError(el, 'Script fetch error', `Failed to fetch script for "${app}".`, String(e));
-          console.error('[openApp] Script network/error:', app, e);
-          return;
-        }
-
-        // ----- 5) (Re)enable dragging for the container -----
-        try {
-          if (window.jQuery) {
-            const $el = jQuery(el);
-            if ($el.data('uiDraggable')) {
-              try { $el.draggable('destroy'); } catch { }
+          // ------- DRAGGABLE INIT -------
+          try {
+            if (window.jQuery) {
+              const $el = jQuery(el);
+              if ($el.data('uiDraggable')) { try { $el.draggable('destroy'); } catch { } }
+              if (shouldBeDraggable(containerId)) {
+                $el.addClass('ui-widget ui-widget-content');
+                $el.find('[data-drag-handle]').addClass('ui-widget-header ui-draggable-handle');
+                try { $el.draggable({ handle: '[data-drag-handle]', containment: 'body' }); } catch { }
+              }
+            } else {
+              if (el.dataset.draggableInit === '1' && typeof window.AppWindows?.destroyDraggable === 'function') {
+                window.AppWindows.destroyDraggable(containerId);
+              }
+              if (shouldBeDraggable(containerId)) {
+                window.AppWindows?.makeDraggable(containerId);
+                el.dataset.draggableInit = '1';
+              }
             }
-            if (shouldBeDraggable(containerId)) {
-              $el.addClass('ui-widget ui-widget-content');
-              $el.find('[data-drag-handle]').addClass('ui-widget-header ui-draggable-handle');
-              try {
-                $el.draggable({
-                  handle: '[data-drag-handle]',
-                  containment: 'body'
-                });
-              } catch { }
-            }
-          } else {
-            if (el.dataset.draggableInit === '1' && typeof window.AppWindows?.destroyDraggable === 'function') {
-              window.AppWindows.destroyDraggable(containerId);
-            }
-            if (shouldBeDraggable(containerId)) {
-              window.AppWindows?.makeDraggable(containerId);
-              el.dataset.draggableInit = '1';
-            }
+          } catch (e) {
+            console.warn('[openApp] draggable init warning:', e);
           }
-        } catch (e) {
-          console.warn('[openApp] draggable init warning:', e);
-        }
 
-        console.log('openApp mounted', { app, containerId, mountSelector });
+          // Success: mark loaded, unhide, focus
+          el.dataset.loaded = '1';
+          el.hidden = false;
+          el.removeAttribute('aria-hidden');
+          window.AppWindows?.bringToFront(el);
+
+        } finally {
+          // ALWAYS clear loading flag, success or fail
+          delete el.dataset.loading;
+        }
       }
 
       /* If you don't already have this helper somewhere, add it once: */
@@ -1053,6 +1079,28 @@ unset($_SESSION['mode']); ?>
         window.AppWindows?.installWindowFocus('#container');
       });
     })();
+
+    // Global click delegate (bind once, even if this file is injected twice)
+    if (!window.__openAppClickBound) {
+      document.addEventListener('click', function (ev) {
+        const a = ev.target.closest('a[data-open-app]');
+        if (!a) return;
+
+        ev.preventDefault();
+
+        const appPath = a.dataset.openApp;
+        const mount = a.dataset.mount || '#container';
+        const params = a.dataset.params ? JSON.parse(a.dataset.params) : {};
+
+        if (typeof window.openApp === 'function') {
+          window.openApp(appPath, { mount, params });
+        } else {
+          console.error('openApp() not found yet.');
+        }
+      }, { passive: false });
+
+      window.__openAppClickBound = true;
+    }
 
     /* ────────────────────────────────────────────────────────────────────────────
        Developer / Client Mode — toggle + initial boot
@@ -1184,6 +1232,55 @@ unset($_SESSION['mode']); ?>
       window.toggleMode = toggleMode;
       window.activateDeveloperMode = activateDeveloperMode;
       window.activateClientMode = activateClientMode;
+    })();
+
+    (function () {
+      'use strict';
+      // IIFE #3 — Implementation Notes / Cheat Sheet (no-op)
+      // This block does nothing at runtime; it’s just a living doc.
+
+      // FILE STRUCTURE (order matters)
+      // 1) IIFE #1 → App Loader (openApp/closeApp, draggable, ensureAppContainer, etc.)
+      // 2) IIFE #2 → Mode Toggle (window.chooseMode / window.toggleMode)
+      // 3) Global Click Delegate (bind once) AFTER both IIFEs:
+      //    if (!window.__openAppClickBound) { document.addEventListener(...); window.__openAppClickBound = true; }
+
+      // DOUBLE-BIND & RE-ENTRY GUARDS
+      // IIFE guards:
+      //   if (window.__openAppBooted) return;  window.__openAppBooted = true;
+      //   if (window.__modeBooted)     return;  window.__modeBooted = true;
+      // Click delegate guard:
+      //   if (!window.__openAppClickBound) { document.addEventListener(...); window.__openAppClickBound = true; }
+
+      // OPENING APPS (dataset guard pattern)
+      // Prevent duplicate loads:
+      //   if (el.dataset.loading === '1') { el.hidden = false; el.removeAttribute('aria-hidden'); window.AppWindows?.bringToFront(el); return; }
+      //   el.dataset.loading = '1';
+      //   try {
+      //     // fetch → parse JSON → mount body → inject script → init draggable
+      //   } finally {
+      //     delete el.dataset.loading; // ALWAYS clear
+      //   }
+      // Fast reopen without refetch:
+      //   if (el.dataset.loaded === '1' && !opts.forceReload) {
+      //     el.hidden = false; el.removeAttribute('aria-hidden'); window.AppWindows?.bringToFront(el); return;
+      //   }
+      // On success:
+      //   el.dataset.loaded = '1';
+
+      // WINDOW PLACEMENT (avoid overlap)
+      //   el.style.position = 'absolute';
+      //   // Use a cascade helper to stagger windows:
+      //   // const CASCADE = { x:24, y:24, cur:0 };
+      //   // function nextCascadePosition(){ const n=CASCADE.cur++; return { left:40+(n*24)%240, top:40+(n*24)%180 }; }
+      //   // const pos = nextCascadePosition(); el.style.left = pos.left+'px'; el.style.top = pos.top+'px';
+
+      // CLICK DELEGATE (outside both IIFEs)
+      //   Matches: a[data-open-app], button[data-open-app]
+      //   Prevent default, read dataset, call window.openApp(appPath, { mount, params });
+
+      // NOTE ON COMMENTS
+      // Avoid putting "/* ... */" inside another "/* ... */" block; use "//" lines like these instead.
     })();
   </script>
   <script src="https://d3js.org/d3.v4.min.js"></script>

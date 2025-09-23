@@ -205,13 +205,14 @@ function normalize_regex(?string $expr): ?string
 
 if (($_SERVER['REQUEST_METHOD'] ?? '') === 'GET') {
 
+    dd($_GET);
 
 }
 
 /* ============================ POST handler ============================= */
 if (($_SERVER['REQUEST_METHOD'] ?? '') === 'POST') {
 
-    //dd($_POST);
+    dd($_POST);
 
     // Project dir (where composer.json lives)
     $projectDir = rtrim(APP_PATH . (defined('APP_ROOT') ? APP_ROOT : ''), '/\\');

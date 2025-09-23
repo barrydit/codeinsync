@@ -5,12 +5,19 @@ use App\Core\Registry;
 
 if (defined('APP_BOOTSTRAPPED')) // Already fully bootstrapped in this request
     return;
+else
+    define('APP_BOOTSTRAPPED', true);
 
 // ------------------------------------------------------
 // Minimal Environment Setup
 // ------------------------------------------------------
 
 // --- Path resolution (symlink-safe)
+
+// ─────────────────────────────────────────────────────────────────────────────
+// 1) Minimal environment / path setup (keep your own logic here as needed)
+// ─────────────────────────────────────────────────────────────────────────────
+
 $__file = __FILE__;
 $__boot = rtrim(str_replace('\\', '/', dirname($__file)), '/') . '/';
 $__bootReal = @realpath($__boot) ?: $__boot;
@@ -22,6 +29,15 @@ defined('CONFIG_PATH') || define('CONFIG_PATH', APP_PATH . 'config' . DIRECTORY_
 // optional legacy: 
 // defined('BASE_PATH') || define('BASE_PATH', BOOTSTRAP_PATH);
 
+// ─────────────────────────────────────────────────────────────────────────────
+// 0) One-time guard
+// ─────────────────────────────────────────────────────────────────────────────
+
+// Define WWW_PATH (public web root) if not already defined
+if (!defined('WWW_PATH'))
+    // Adjust to your project layout
+    define('WWW_PATH', APP_PATH . 'public/');
+
 if (defined('BASE_PATH') && BASE_PATH !== BOOTSTRAP_PATH)
     trigger_error('BASE_PATH differs from BOOTSTRAP_PATH; confirm intended semantics.', E_USER_NOTICE);
 
@@ -30,6 +46,7 @@ if (!defined('APP_DEBUG'))
     define('APP_DEBUG', false);
 if (!ini_get('date.timezone'))
     date_default_timezone_set('America/Vancouver'); // 'UTC'
+// Error reporting (adjust as needed)
 error_reporting(APP_DEBUG ? E_ALL : E_ALL & ~E_NOTICE & ~E_STRICT);
 ini_set('display_errors', APP_DEBUG ? '1' : '0');
 ini_set('log_errors', '1');
@@ -39,107 +56,64 @@ require_once CONFIG_PATH . 'functions.php';
 
 // ---- minimal constants needed early (env + paths + url + app) -------------
 // --- Canonical constants order
-require_once CONFIG_PATH . 'constants.env.php';
-require_once CONFIG_PATH . 'constants.paths.php';
+require_once CONFIG_PATH . 'constants.env.php';   // vendor-free
+require_once CONFIG_PATH . 'constants.paths.php'; // defines APP_PATH, CONFIG_PATH, VENDOR_PATH, etc.
+
+require_once APP_PATH . 'bootstrap/php-ini.php';  // error_reporting, timezone, mb_internal_encoding, etc.
+
+// ---- Single autoloader include (custom or Composer) ------------------------
+$composerAutoload = APP_PATH . 'vendor/autoload.php';
+$autoloadFlag = ($_ENV['COMPOSER']['AUTOLOAD'] ?? true) !== false; // default true if unset
+if ($autoloadFlag && is_file($composerAutoload)) {
+    require_once $composerAutoload;
+}
+
 require_once CONFIG_PATH . 'constants.runtime.php';
 require_once CONFIG_PATH . 'constants.url.php';
 require_once CONFIG_PATH . 'constants.app.php';
 
-// --- Fast dispatcher path (avoid loading heavy constants) --------------------
-// --- Early dispatcher fast-path (API only) --------------------------------
+require_once CONFIG_PATH . 'config.php';
+
+// (Optional) composer autoload, config, constants, etc.
+// require APP_PATH . 'vendor/autoload.php';
+// require APP_PATH . 'config/constants.php';
+
+// ─────────────────────────────────────────────────────────────────────────────
+// 2) Route-or-Shell gate (decide: hand off to dispatcher vs render page shell)
+// ─────────────────────────────────────────────────────────────────────────────
 $isCli = (PHP_SAPI === 'cli');
-$appParam = isset($_GET['app']) ? (string) $_GET['app'] : null;
-$hasCmd = isset($_POST['cmd']) && is_string($_POST['cmd']) && $_POST['cmd'] !== '';
+$method = $_SERVER['REQUEST_METHOD'] ?? 'GET';
+$uri = $_SERVER['REQUEST_URI'] ?? '/';
 $accept = strtolower($_SERVER['HTTP_ACCEPT'] ?? '');
 
-// explicit JSON?
-$wantsJson = !$isCli && (
-    (isset($_GET['json']) && $_GET['json'] !== '0') ||
-    strpos($accept, 'application/json') !== false ||
-    strpos($accept, 'text/json') !== false
+$appParam = isset($_GET['app']) && is_string($_GET['app']) ? trim($_GET['app']) : null;
+$partParam = isset($_GET['part']) ? strtolower((string) $_GET['part']) : null;
+$hasCmd = isset($_POST['cmd']) && is_string($_POST['cmd']) && $_POST['cmd'] !== '';
+
+$isApiLikePath = !$isCli && (
+    (function ($u) {
+        return function_exists('str_starts_with') ? str_starts_with($u, '/api/') : substr($u, 0, 5) === '/api/'; })($uri)
+    || isset($_GET['api'])
 );
 
-// explicit JS? (also allow ?part=script as a convenience)
-$wantsJs = !$isCli && (
-    strpos($accept, 'text/javascript') !== false ||
-    strpos($accept, 'application/javascript') !== false ||
-    (isset($_GET['part']) && $_GET['part'] === 'script')
-);
+// Want dispatcher if: POST cmd, or any app route, or API-ish path
+$wantsDispatcher = !$isCli && ($hasCmd || $appParam !== null || $isApiLikePath);
 
-// API iff: command (always) OR app request that asks for JSON or JS
-$wantsDispatcher = !$isCli && ($hasCmd || ($appParam && ($wantsJson || $wantsJs)));
+// Non-web modes force dispatcher too (optional, keep if you use APP_MODE)
+if (defined('APP_MODE') && APP_MODE !== 'web') {
+    $wantsDispatcher = true;
+}
 
 if ($wantsDispatcher) {
+    // Hand off to the self-contained dispatcher (emits and exits)
+    require APP_PATH . 'bootstrap/dispatcher.php';
+    return;
+}
 
-    $obLevel = ob_get_level();
+// ─────────────────────────────────────────────────────────────────────────────
+// 3) Normal page shell (only when nothing routed to dispatcher)
+// ─────────────────────────────────────────────────────────────────────────────
 
-    if (!headers_sent()) {
-        header('Content-Type: application/json; charset=utf-8');
-        header('X-Content-Type-Options: nosniff');
-        header('Cache-Control: no-store, no-cache, must-revalidate');
-        header('Pragma: no-cache');
-        header('Vary: Accept');
-    }
-
-    ob_start();
-    try {
-        $res = require APP_PATH . 'bootstrap/dispatcher.php';
-        $buffer = ob_get_clean();
-    } catch (\Throwable $e) {
-        while (ob_get_level() > $obLevel)
-            ob_end_clean();
-        throw $e;
-    }
-
-    // ===================== SELECTIVE EMIT (drop-in) =====================
-
-    // Commands: always JSON straight through
-    if ($hasCmd) {
-        if (!headers_sent()) {
-            header('Content-Type: application/json; charset=utf-8');
-            header('X-Content-Type-Options: nosniff');
-            header('Cache-Control: no-store, no-cache, must-revalidate');
-            header('Pragma: no-cache');
-            header('Vary: Accept');
-        }
-        $payload = ($res !== null && $res !== '') ? $res : ($buffer !== '' ? $buffer : []);
-        echo is_string($payload) ? $payload : json_encode($payload, JSON_UNESCAPED_SLASHES);
-        exit;
-    }
-
-    // App route: dispatcher returns full UI payload array
-    $ui = is_array($res) ? $res : [];
-    $style = isset($ui['style']) ? (string) $ui['style'] : '';
-    $body = isset($ui['body']) ? (string) $ui['body'] : '';
-    $script = isset($ui['script']) ? (string) $ui['script'] : '';
-
-    // If JS requested, emit ONLY the script as JavaScript
-    if ($wantsJs) {
-        if (!headers_sent()) {
-            header('Content-Type: text/javascript; charset=utf-8');
-            header('X-Content-Type-Options: nosniff');
-            header('Cache-Control: no-store, no-cache, must-revalidate');
-            header('Pragma: no-cache');
-            header('Vary: Accept');
-        }
-        echo $script;
-        exit;
-    }
-
-    // Otherwise (JSON), emit ONLY style & body (omit script)
-    if (!headers_sent()) {
-        header('Content-Type: application/json; charset=utf-8');
-        header('X-Content-Type-Options: nosniff');
-        header('Cache-Control: no-store, no-cache, must-revalidate');
-        header('Pragma: no-cache');
-        header('Vary: Accept');
-    }
-    echo json_encode(['style' => $style, 'body' => $body, 'script' => $script], JSON_UNESCAPED_SLASHES);
-    exit; // API path only
-
-    // =================== END SELECTIVE EMIT (drop-in) ===================
-} elseif (defined(APP_MODE) && APP_MODE !== 'web')
-    require BOOTSTRAP_PATH . 'dispatcher.php';
 
 // Full app bootstrap path
 // (web request, or CLI)
@@ -159,10 +133,6 @@ if (!@chdir(APP_PATH))
 
 defined('APP_CWD') || define('APP_CWD', getcwd());
 
-require_once APP_PATH . 'bootstrap/php-ini.php';
-// Single autoloader include (custom or Composer)
-if (is_file(APP_PATH . 'vendor/autoload.php') && $_ENV['COMPOSER']['AUTOLOAD'] !== false)
-    require_once APP_PATH . 'vendor/autoload.php';
 require_once APP_PATH . 'bootstrap/kernel.php';
 
 /*

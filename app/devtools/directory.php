@@ -23,7 +23,7 @@ if (__FILE__ == get_required_files()[0] && __FILE__ == realpath($_SERVER["SCRIPT
 defined('APP_URL_BASE') or
   require_once APP_PATH . 'config/constants.url.php';
 
-require_once APP_PATH . 'config' . DIRECTORY_SEPARATOR . 'config.php';
+// require_once APP_PATH . 'config' . DIRECTORY_SEPARATOR . 'config.php';
 
 //require_once APP_PATH . APP_ROOT . APP_BASE['vendor'] . 'autoload.php';
 //require_once APP_PATH . APP_ROOT . 'app' . DIRECTORY_SEPARATOR . 'composer.php';
@@ -1462,6 +1462,7 @@ resize: vertical;
 <?php $UI_APP['body'] = ob_get_contents();
 ob_end_clean();
 
+
 if (false) { ?>
   <script>
   <?php }
@@ -1469,94 +1470,96 @@ ob_start(); ?>
     // devtools/directory module script
     (() => {
       const APP_ID = 'devtools/directory';
-      const container = document.getElementById('app_devtools_directory-container');
+      const CONTAINER_ID = 'app_devtools_directory-container';
+
+      const container = document.getElementById(CONTAINER_ID);
       if (!container) return;
 
       // avoid double-binding if this app reloads
       if (container.dataset.bound === '1') return;
       container.dataset.bound = '1';
 
-      // ensure globals exist (keeps inline onclick(...) working if present)
+      // ensure registries exist (keeps inline access patterns working)
       window.AppMods = window.AppMods || {};
       window.App = window.App || new Proxy({}, {
         get(_t, k) { return window.AppMods[k]; },
         has(_t, k) { return k in window.AppMods; }
       });
 
-      function handleClick(path) {
-        // keep URL in sync: ?app=devtools/directory&path=...
-        const qs = new URLSearchParams(location.search);
-        /*qs.set('app', APP_ID);*/
-        if (path) qs.set('path', path); else qs.delete('path');
-        if (path) qs.set('app', path); qs.delete('app');
-        const newUrl = `${location.pathname}<?= count($_GET) <= 0 ? '' : '?' ?>${qs.toString()}${location.hash || ''}`;
-        history.pushState({ app: APP_ID, path: path || '' }, '', newUrl);
+      // --- URL + reload helper (fixed app param) ---
+      async function handleClick(path) {
+        const url = new URL(location.href);
 
-        // reload this app with the new path
-        if (typeof window.openApp === 'function') {
-          window.openApp(APP_ID, { params: path ? { path } : {}, from: 'dir-click' });
-        }
+        if (path) url.searchParams.set('path', path);
+        else url.searchParams.delete('path');
+
+        // ensure ?app is never shown in the URL
+        url.searchParams.delete('app');
+
+        history.pushState({ path: path || '' }, '', url.toString());
+
+        await window.openApp?.('devtools/directory', {
+          params: path ? { path } : {},
+          forceReload: true,
+          from: 'dir-click'
+        });
         return false;
       }
 
-      // Register API under both registries
+      // Public API (kept for other modules / inline)
       const api = { init() { }, handleClick };
       window.AppMods[APP_ID] = Object.assign(window.AppMods[APP_ID] || {}, api);
       window.App[APP_ID] = window.AppMods[APP_ID];
 
-      // Delegated clicks (no inline JS needed)
-      /*
-            container.addEventListener('click', (e) => {
-              const openEl = e.target.closest('[data-open-app]');
-              if (openEl) {
-                e.preventDefault();
-                const app = openEl.getAttribute('data-open-app');
-                if (app && typeof window.openApp === 'function') {
-                  window.openApp(app, { from: 'dir-tile' });
-                }
-                return;
-              }
-              const dirEl = e.target.closest('[data-dir]');
-              if (dirEl) {
-                e.preventDefault();
-                handleClick(dirEl.getAttribute('data-dir') || '');
-              }
-            });
-      */
-
-      container.addEventListener('click', (e) => {
+      // --- Delegated clicks inside the directory container ---
+      container.addEventListener('click', async (e) => {
         const el = e.target.closest('[data-dir],[data-path],[data-open-app]');
         if (!el) return;
 
         const path = el.getAttribute('data-dir') ?? el.getAttribute('data-path');
         const app = el.getAttribute('data-open-app');
+        const openAfter = el.getAttribute('data-open-after-dir') === '1';
 
-        if (path && app && el.hasAttribute('data-open-after-dir')) {
+        // Case 1: directory click (we own this; prevent bubbling to global delegate)
+        if (path) {
           e.preventDefault();
-          handleClick(path);
-          window.openApp?.(app, { params: { path }, from: 'tile' });
+          e.stopPropagation();
+
+          // If also flagged to open an app afterwards, do it in sequence
+          if (openAfter && app) {
+            await handleClick(path);
+            // pass path along if your other app uses it; otherwise call without params
+            window.openApp?.(app, { params: { path }, from: 'dir-tile' });
+            return;
+          }
+
+          // Just a plain directory change
+          await handleClick(path);
           return;
         }
-        if (path) { e.preventDefault(); handleClick(path); }
-        if (app) { e.preventDefault(); window.openApp?.(app, { from: 'tile' }); }
+
+        // Case 2: pure app tile (no path) — let the global document delegate handle it
+        // (Do NOT call preventDefault/stopPropagation here.)
       });
 
-      // Back/forward support for path changes
+      // --- Back/forward support for path changes ---
       window.addEventListener('popstate', (ev) => {
-        const s = ev.state;
-        if (s?.app === APP_ID) {
-          if (typeof window.openApp === 'function') {
-            window.openApp(APP_ID, { params: s.path ? { path: s.path } : {}, from: 'popstate' });
-          }
-        }
+        // Only react if this module is currently present
+        if (!document.getElementById('app_devtools_directory-container')) return;
+
+        const sp = new URLSearchParams(location.search);
+        const path = (ev.state && 'path' in ev.state) ? ev.state.path : (sp.get('path') || '');
+
+        window.openApp?.('devtools/directory', {
+          params: path ? { path } : {},
+          forceReload: true,
+          from: 'popstate'
+        });
       });
 
-      // Respect ?path=… on initial load (optional normalize)
-      const urlPath = new URLSearchParams(location.search).get('path');
-      if (urlPath) {
-        // If you want to normalize UI immediately, uncomment:
-        // handleClick(urlPath);
-      }
+      // Respect ?path=… on initial load (optional: trigger a reload if you want)
+      // const urlPath = new URLSearchParams(location.search).get('path');
+      // if (urlPath) { handleClick(urlPath); }
     })();
 
   // register on a global so index.php can find it
