@@ -1,4 +1,7 @@
-# RewriteEngine On
+#RewriteEngine On
 
 # Redirect resource calls from /assets/ to /resources/
-# RewriteRule ^resources/(.*)$ ../resources/$1 [L]
+#RewriteRule ^resources/(.*)$ ../resources/$1 [L]
+
+# Redirect resource calls from /clients/ to ../../clients/
+#RewriteRule ^clients/(.*)$ ../../clients/$1 [L]

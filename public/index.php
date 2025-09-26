@@ -18,7 +18,7 @@ if (is_file(dirname(__DIR__, 1) . '/bootstrap/bootstrap.php'))
 if (!defined('APP_MODE'))
   define('APP_MODE', 'web');
 
-// dd(get_required_files());
+//dd(get_required_files());
 
 /**
  * File Analysis Summary for PHP Project
@@ -422,7 +422,7 @@ unset($_SESSION['mode']); ?>
           <a href="#" style="margin: 5px 0 0 0;"
             onclick="document.getElementById('app_tools-container').style.display='block';">
             <img src="resources/images/apps_icon.gif" style="margin: -5px 0 0 0;" width="20" height="20"> <span
-              style="margin-top: -5px;">Tools</a></span>
+              style="margin-top: -5px;">Tools</span></a>
         </div>
         <div style="position: absolute; top: 5px; right: 270px;">
           <img src="resources/images/php_icon.png" alt="Logo" style="width: 31px; height: auto; margin: 0 0;"
@@ -896,7 +896,22 @@ unset($_SESSION['mode']); ?>
 
       async function openApp(app, opts = {}) {
         const params = new URLSearchParams(opts.params || {});
-        params.set('json', '1'); // force JSON branch on your endpoint
+        const locQS = new URL(location.href).searchParams;
+
+        // forward these keys from the URL if present (even if empty)
+        for (const k of ['client', 'domain', 'project', 'path']) {
+          if (params.has(k)) continue;                      // opts.params wins
+          if (locQS.has(k)) params.set(k, locQS.get(k) ?? ''); // preserve empties
+        }
+
+        params.set('json', '1'); // force JSON branch
+
+        const url = `?app=${encodeURIComponent(app)}&${params.toString()}`;
+        const r = await fetch(url, {
+          headers: { Accept: 'application/json' },
+          cache: 'no-store',
+          credentials: 'same-origin'
+        });
 
         const containerId = appPathToContainerId(app);
         const mountSelector = opts.mount || APP_MOUNTS[app] || '#container';

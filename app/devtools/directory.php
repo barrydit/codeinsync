@@ -1,16 +1,12 @@
 <?php
-
-defined('APP_BASE') or
-  require_once APP_PATH . 'config/constants.paths.php';
+// /app/devtools/directory.php
+// A simple directory listing and navigation tool for development environments.
+// Usage: http://localhost/?path=clients/123-domain.com
 
 global $errors;
 
-defined('APP_ROOT') or
-  define('APP_ROOT', '');
-
 if (__FILE__ == get_required_files()[0] && __FILE__ == realpath($_SERVER["SCRIPT_FILENAME"]))
   if ($path = basename(dirname(get_required_files()[0])) == 'public') { // (basename(getcwd())
-
     chdir('../');
     if ($path = realpath(/*'config' . DIRECTORY_SEPARATOR . */ 'bootstrap' . DIRECTORY_SEPARATOR . 'bootstrap.php')) // is_file('bootstrap.php')
       require_once $path;
@@ -18,10 +14,40 @@ if (__FILE__ == get_required_files()[0] && __FILE__ == realpath($_SERVER["SCRIPT
     //die(var_dump(APP_PATH));
   } else
     die(var_dump("Path was not found. file=$path"));
-//else {}
 
-defined('APP_URL_BASE') or
-  require_once APP_PATH . 'config/constants.url.php';
+// ---- helpers --------------------------------------------------------------
+
+function parentPath(string $path, string $floor = ''): string
+{
+  $p = trim($path, '/');  // 'app/tools' -> 'app/tools'
+  if ($p === '')
+    return $floor;          // already at root
+  $parent = trim(dirname("/$p"), '/'); // '/app/tools' -> 'app'
+  if ($parent === '' && $floor !== '')
+    return $floor; // don’t go above floor
+  return $parent;                         // 'app'
+}
+
+function base_val(string $key): string
+{
+  $v = APP_BASE[$key] ?? '';
+  return rtrim($v, '/') . '/';
+}
+
+function norm_path(string $p): string
+{
+  // collapse duplicate slashes; keep leading / if present
+  $p = preg_replace('#/+#', '/', $p);
+  return $p;
+}
+
+function get_str(string $k): ?string
+{
+  return isset($_GET[$k]) ? trim((string) $_GET[$k]) : null;
+}
+
+// defined('APP_BASE') or require_once APP_PATH . 'config/constants.paths.php';
+// defined('APP_URL_BASE') or require_once APP_PATH . 'config/constants.url.php';
 
 // require_once APP_PATH . 'config' . DIRECTORY_SEPARATOR . 'config.php';
 
@@ -37,6 +63,7 @@ if (preg_match('/^([\w\-.]+)\.php$/', basename(__FILE__), $matches))
 
 //dd($directory, true);
 
+// $style = file_get_contents(__DIR__ . '/devtools.directory.css'); // put your CSS here
 if (false) { ?>
   <style>
   <?php }
@@ -80,6 +107,7 @@ ob_start(); ?>
   if (false) { ?>
   </style><?php }
 
+  // $style = preg_replace('~^\s*<style[^>]*>|</style>\s*$~i', '', ob_get_clean());
   /**
    * Generates a table.
    *
@@ -87,6 +115,248 @@ ob_start(); ?>
    */
   $group_type = $_POST['group_type'] ?? null;
   $tableGen = function () use ($group_type): string {
+    // ---- read inputs ----------------------------------------------------------
+  
+    // Read raw
+    $clientRaw = get_str('client');
+    $domainRaw = get_str('domain');
+    $projectRaw = get_str('project');
+    $pathRaw = get_str('path');
+
+    // Per-field sanitizers:
+// - client: allow letters/digits, dot, underscore, hyphen, space, and COMMA (NO slash)
+// - domain: allow domain chars only (no comma, no spaces)
+// - project: typical slug: letters/digits, dot, underscore, hyphen
+// - path: allow safe path chars + slash (but NOT ".." traversal)
+    $cleanClient = fn($s) => preg_replace('~[^a-z0-9._,\- ]~i', '', (string) $s);
+    $cleanDomain = fn($s) => preg_replace('~[^a-z0-9.\-]~i', '', (string) $s);
+    $cleanProject = fn($s) => preg_replace('~[^a-z0-9._\-]~i', '', (string) $s);
+    $cleanPath = fn($s) => preg_replace('~[^a-z0-9._\-\/]~i', '', (string) $s);
+
+    // Apply
+    $client = $cleanClient($clientRaw);     // ex: 000-clientname
+    $domain = $cleanDomain($domainRaw);     // ex: example.com
+    $project = $cleanProject($projectRaw);    // ex: 123project
+    $path = $cleanPath($pathRaw);       // ex: sub-directory/ (may be '')
+  
+    // Optional: hard-block traversal in path
+    if (strpos($path, '..') !== false) {
+      $path = '';
+    }
+
+
+    // Prefer APP_PATH constant; fallback to $_ENV
+    $APP_PATH = defined('APP_PATH') ? APP_PATH : ($_ENV['APP_PATH'] ?? '/');
+    // Normalized copy used ONLY for APP_ROOT stripping
+    $APP_PATH_N = rtrim($APP_PATH, '/\\') . '/';
+
+    // ---- Precompute bases -----------------------------------------------------
+    $BASE_CLIENTS = base_val('clients');
+    $BASE_PROJECTS = base_val('projects');
+
+    $absDir = null;
+    $context = null;
+
+    // $nullish = fn($v) => $v === null || $v === '';
+  
+    $populated = [
+      'client' => ($client !== null && $client !== ''),
+      'domain' => ($domain !== null && $domain !== ''),
+      'project' => ($project !== null && $project !== ''),
+      'path' => ($path !== null && $path !== ''),
+    ];
+
+    $hasClient = array_key_exists('client', $_GET);
+    $hasDomain = array_key_exists('domain', $_GET);
+    $hasProject = array_key_exists('project', $_GET);
+    $hasPath = array_key_exists('path', $_GET);
+
+    // Consider empty path as not present for the 3a base-cases:
+    $hasNonEmptyPath = $hasPath && $path !== '';
+
+    // 3a) ONLY empty client/project → base
+  
+    // 3a) ONLY empty base listings (presence-aware)
+// no params -> app
+    if (!$hasClient && !$hasDomain && !$hasProject && !$hasNonEmptyPath) {
+      $absDir = $APP_PATH;
+      $context = 'app';
+
+    } elseif ($hasClient && $client === '' && $hasDomain && $domain === '' && !$hasProject && !$hasNonEmptyPath) {
+      $absDir = $APP_PATH . $BASE_CLIENTS;
+      $context = 'clients-base';
+
+    } elseif ($hasProject && $project === '' && !$hasClient && !$hasDomain && !$hasNonEmptyPath) {
+      $absDir = $APP_PATH . $BASE_PROJECTS;
+      $context = 'projects-base';
+
+    } elseif ($hasClient && $client === '' && !$hasProject && !$hasDomain && !$hasNonEmptyPath) {
+      $absDir = $APP_PATH . $BASE_CLIENTS;
+      $context = 'clients-base';
+
+    } elseif ($hasDomain && $domain === '' && !$hasClient && !$hasProject && !$hasNonEmptyPath) {
+      $absDir = $APP_PATH . $BASE_CLIENTS;
+      $context = 'clients-base';
+    }
+
+    // 3b) ONLY path → redirect (run only if still undecided)
+    if ($absDir === null && $populated['path'] && !$populated['client'] && !$populated['domain'] && !$populated['project']) {
+      $accept = $_SERVER['HTTP_ACCEPT'] ?? '';
+      $isJson = isset($_GET['json']) || stripos($accept, 'application/json') !== false;
+
+      if (!$isJson) {
+        $target = ($_SERVER['SCRIPT_NAME'] ?? '/') . '?' . http_build_query([
+          'app' => 'devtools/directory',
+          'path' => $path,
+        ]);
+
+        $curPath = $_SERVER['SCRIPT_NAME'] ?? '/';
+        parse_str($_SERVER['QUERY_STRING'] ?? '', $curQS);
+        ksort($curQS);
+        $current = $curPath . (empty($curQS) ? '' : '?' . http_build_query($curQS));
+
+        if ($current !== $target && !headers_sent()) {
+          header("Location: $target", true, 302);
+          exit;
+        }
+      }
+    }
+
+    /*
+    if (($populated['path'] ?? false) && count($populated) === 1) {
+      $redir = '/?app=' . urlencode('devtools/directory') . '&path=' . urlencode($path);
+      if (($_SERVER['REQUEST_URI'] ?? '') !== $redir) {
+        header('Location: ' . $redir, true, 302);
+        exit;
+      }
+    }*/
+
+    // ---- Decide the effective directory (only if not decided yet) ------------
+// 3c) Main decision tree (only if still undecided)
+    if ($absDir === null) {
+      // ---- decide the effective directory --------------------------------------
+//
+// Priority by your rules:
+//
+// 1) client + domain + optional path:
+//    APP_PATH . APP_BASE['clients'] . client . '/' . domain . '/' . path
+// 2) domain + path (no client):
+//    APP_PATH . APP_BASE['clients'] . domain . '/' . path
+// 3) project + path:
+//    APP_PATH . APP_BASE['projects'] . project . '/' . path
+// 4) only path:
+//    APP_PATH . path
+//
+// Empty fallbacks you specified:
+// - client=='' OR domain=='' OR path=='clients/'  => show base clients dir: APP_PATH . APP_BASE['clients']
+// - project==''                                    => show base projects dir: APP_PATH . APP_BASE['projects']
+//
+      if ($hasClient && $client !== '' && $hasDomain && $domain !== '') {
+        // client + domain (+ optional path)
+        $absDir = $APP_PATH . $BASE_CLIENTS . $client . '/' . $domain . '/';
+        if ($hasPath && $path !== '')
+          $absDir .= rtrim($path, '/') . '/';
+        $context = 'clients';
+
+      } elseif (
+        $hasClient && $client !== ''
+        && (!$hasDomain || ($hasDomain && $domain === ''))
+        && $hasPath && $path !== ''
+      ) {
+        // client + path (no domain)
+        $absDir = $APP_PATH . $BASE_CLIENTS . $client . '/' . rtrim($path, '/') . '/';
+        $context = 'clients';
+
+      } elseif (
+        $hasClient && $client !== ''
+        && (!$hasDomain || ($hasDomain && $domain === ''))
+        && (!$hasPath || ($hasPath && $path === ''))
+      ) {
+        // client only (no domain, no path)
+        $absDir = $APP_PATH . $BASE_CLIENTS . $client . '/';
+        $context = 'clients';
+
+      } elseif ($hasDomain && $domain !== '') {
+        // domain (+ optional path)
+        $absDir = $APP_PATH . $BASE_CLIENTS . $domain . '/';
+        if ($hasPath && $path !== '')
+          $absDir .= rtrim($path, '/') . '/';
+        $context = 'clients';
+
+      } elseif ($hasProject && $project !== '') {
+        // project (+ optional path)
+        $absDir = $APP_PATH . $BASE_PROJECTS . $project . '/';
+        if ($hasPath && $path !== '')
+          $absDir .= rtrim($path, '/') . '/';
+        $context = 'projects';
+
+      } elseif (
+        ($hasClient && $client === '') ||
+        ($hasDomain && $domain === '') ||
+        ($hasPath && $path !== '' && preg_match('~^clients(?:/|$)~', $path))
+      ) {
+        // clients fallbacks
+        $absDir = $APP_PATH . $BASE_CLIENTS;
+        $context = 'clients-base';
+
+      } elseif ($hasPath && $path !== '') {
+        // only path → app
+        $absDir = $APP_PATH . rtrim($path, '/') . '/';
+        $context = 'app';
+
+      } else {
+        // default: app root
+        $absDir = $APP_PATH;
+        $context = 'app';
+      }
+    }
+
+    // ---- APP_ROOT + normalize + existence ------------------------------------
+    $absDir = rtrim($absDir, '/\\') . '/';
+    $APP_ROOT = preg_replace('#^' . preg_quote($APP_PATH_N, '#') . '#', '', $absDir);
+
+    if (!defined('APP_ROOT'))
+      define('APP_ROOT', $APP_ROOT);
+
+    $absDir = norm_path($absDir);
+
+    // ---- existence check ------------------------------------------------------
+    $exists = (bool) realpath($absDir);
+
+    // Optional label for display:
+    $label = ($context === 'clients-base')
+      ? 'clients'
+      : (($context === 'projects-base') ? 'projects' : $context);
+    // ---- render UI -------------------------------------------------------------
+/*
+
+if (false) { ?>
+
+  <body>
+  <?php }
+ob_start();
+
+// If missing, you can show your "Missing directory" notice as before:
+if (!$exists) {
+  echo '<br><br>Missing directory: ' . htmlspecialchars($absDir);
+} else
+  echo $context . ' : ' . htmlspecialchars(APP_PATH . APP_ROOT) . '<br><br>';
+//  var_dump([
+//    'has' => compact('hasClient', 'hasDomain', 'hasProject', 'hasPath', 'hasNonEmptyPath'),
+//    'vals' => compact('client', 'domain', 'project', 'path')
+//  ]);
+
+//dd($_GET, false); // { "app": "devtools\/directory", "json": "1" } 
+
+$UI_APP['body'] = ob_get_contents();
+ob_end_clean();
+if (false) { ?>
+  </body><?php }
+// From here, use $absDir to render your directory grid.
+// You can also branch on $context to decide which “listing” (clients, projects, etc.) UI to show.
+
+return $UI_APP; */
+
     ob_start(); ?>
 
   <div id="info"
@@ -158,7 +428,7 @@ left: calc(50% - 265px); /* 1207 / 2 */ /*transform: translate(-50%, -50%);*/ bo
   $segments = [];
 
   // Segment 1: APP_PATH (always shown)
-  $segments[] = "&nbsp; [ <a href=\"#!\" onclick=\"return App['devtools/directory'].handleClick('" /*. '/'*/ . "')\">$base/</a> ]";
+  $segments[] = "&nbsp; [ <a href=\"#!\" data-dir=\"\" onclick=\"return App['devtools/directory'].handleClick('')\">$base/</a> ]"; // ('/') here is the path
 
   // Segment 2: if APP_ROOT is defined
   if ($root) {
@@ -166,31 +436,63 @@ left: calc(50% - 265px); /* 1207 / 2 */ /*transform: translate(-50%, -50%);*/ bo
     $parts = explode('/', $root);
 
     // Static prefix (projects/clients)
-    $static = implode('/', array_slice($parts, 0, 2));
+    $static = implode('/', array_slice($parts, 0, 3));
     $staticPath = "$base/$static";
 
     $segments[] = '[ <a href="' . /* basename(__FILE__) .*/ '?client=" onclick="handleClick(event, \'' . basename($static) . '/\')">' . '(projects/)' . basename($static) . '</a> ]';
 
     // Dynamic client/domain part
     $dynamic = implode('/', array_slice($parts, 2));
-    $finalPath = "$staticPath/$dynamic";
+    $finalPath = "$staticPath/$dynamic/$path";
 
     $segments[] = '[ <a href="#" class="breadcrumb" data-path="' . $finalPath . '">' . $dynamic . '/</a> ]';
 
   } elseif ($client || $domain) {
     // Only show static "projects/clients/" if APP_ROOT is not defined
-    $clientBase = 'projects/clients';
+    $clientBase = APP_BASE['clients'];
     $clientPath = "$base/$clientBase";
-    $segments[] = '[ <a href="' . /* basename(__FILE__) .*/ '?client=" onclick="handleClick(event, \'' . $clientBase . '/\')">' . $clientBase . '/</a> ]';
+    $segments[] = '[ <a href="' . /* basename(__FILE__) .*/ '?client=" onclick="handleClick(event, \'' . $clientBase . '/\')">' . $clientBase . '</a> ]';
   }
 
   // Optional fallback: If path is set and APP_ROOT not defined
   if (!$root && $path) {
-    $segments[] = '[ <a href="' . /* basename(__FILE__) .*/ '?path=' . urlencode($path) . '" onclick="handleClick(event, \'' . addslashes($path) . '\')">' . rtrim($path, '/') . '/</a> ]';
+    $segments[] = '[ <a href="' . /* '?path=' . urlencode(parentPath($path)) || basename(__FILE__) .*/ '#" onclick="return App[\'devtools/directory\'].handleClick(\'' . addslashes(parentPath($path)) . '\')">' . rtrim($path, '/') . '/</a> ]';
   }
 
   echo '<div id="breadcrumb" style="height: 25px; display: inline;"><br /><br />' . implode('', $segments) . '</div>';
 
+  // ---- existence check ------------------------------------------------------
+  $exists = (bool) realpath($absDir);
+
+  if (!$exists) {
+    echo 'Missing directory: ' . htmlspecialchars($absDir);
+    //return;
+  }
+
+  switch ($context) {
+    case 'clients-base':
+      // Your original “list clients root & staged codes (000/100/...)” UI here,
+      // using base path: $APP_PATH . $BASE_CLIENTS
+      // render_clients_base($APP_PATH . $BASE_CLIENTS);
+      dd("$context : $absDir", false);
+      break;
+
+    case 'projects-base':
+      // Your original “list projects root” UI here,
+      // using base path: $APP_PATH . $BASE_PROJECTS
+      //render_projects_base($APP_PATH . $BASE_PROJECTS);
+      dd("$context : $absDir", false);
+      break;
+
+    case 'clients':
+    case 'projects':
+    case 'app':
+    default:
+      // Your generic directory grid for $absDir
+      //render_directory_grid($absDir);
+      dd("$context : $absDir", false);
+      break;
+  }
 
   /*
     $basePath = rtrim(APP_PATH, DIRECTORY_SEPARATOR);
@@ -215,7 +517,7 @@ left: calc(50% - 265px); /* 1207 / 2 */ /*transform: translate(-50%, -50%);*/ bo
   //dd(APP_CLIENT, false);
 
   if (isset($_GET['path']) && preg_match('/^project\/?/', $_GET['path']) || isset($_GET['project']) && empty($_GET['project'])) {
-    if (isset($_SERVER['HOME']) && readlinkToEnd($_SERVER['HOME'] . DIRECTORY_SEPARATOR . app_base('projects', null, 'rel') . DIRECTORY_SEPARATOR) == '/mnt/c/www/' . app_base('projects', null, 'rel') || realpath(app_base('projects', null, 'rel'))) { ?>
+    if (isset($_SERVER['HOME']) && readlinkToEnd($_SERVER['HOME'] . DIRECTORY_SEPARATOR . APP_BASE['projects'] . DIRECTORY_SEPARATOR) == '/mnt/c/www/' . APP_BASE['projects'] || realpath(APP_BASE['projects'])) { ?>
       <div style="text-align: center; border: none;" class="text-xs">
         <a class="pkg_dir" href="#" onclick="document.getElementById('app_project-container').style.display='block';">
           <img src="resources/images/project-icon.png" width="50" height="32" style="" /></a><br /><a
@@ -254,15 +556,17 @@ left: calc(50% - 265px); /* 1207 / 2 */ /*transform: translate(-50%, -50%);*/ bo
     </table>
     <!--
       <li>
-      <?php if (isset($_SERVER['HOME']) && readlinkToEnd($_SERVER['HOME'] . DIRECTORY_SEPARATOR . app_base('projects', null, 'rel') . DIRECTORY_SEPARATOR) == '/mnt/c/www/' . app_base('projects', null, 'rel') || realpath(app_base('projects', null, 'abs'))) { ?>
+      <?php if (isset($_SERVER['HOME']) && readlinkToEnd($_SERVER['HOME'] . DIRECTORY_SEPARATOR . APP_BASE['projects'] . DIRECTORY_SEPARATOR) == '/mnt/c/www/' . APP_BASE['projects'] || realpath(app_base('projects', null, 'abs'))) { ?>
       <a href="projects/">project/</a>
         <ul style="padding-left: 10px;">
           <form action method="GET">
             <select id="sproject" name="project" style="color: #000;">
-      <?php while ($link = array_shift($links)) {
-        $link = basename($link); // Get the directory name from the full path
-        if (is_dir(APP_PATH . /*'../../'.*/ app_base('projects', null, 'rel') . $link))
-          echo '  <option value="' . $link . '" ' . (current($_GET) == $link ? 'selected' : '') . '>' . $link . '</option>' . "\n";
+      <?php if (is_array($links)) {
+        while ($link = array_shift($links)) {
+          $link = basename($link); // Get the directory name from the full path
+          if (is_dir(APP_PATH . /*'../../'.*/ APP_BASE['projects'] . $link))
+            echo '  <option value="' . $link . '" ' . (current($_GET) == $link ? 'selected' : '') . '>' . $link . '</option>' . "\n";
+        }
       } ?>
             </select>
           </form>
@@ -363,7 +667,7 @@ left: calc(50% - 265px); /* 1207 / 2 */ /*transform: translate(-50%, -50%);*/ bo
       ?>
     </table>
   <?php } elseif (isset($_GET['path']) && preg_match('/^client(?:s|ele)?\/?/', $_GET['path']) || isset($_GET['client']) && empty($_GET['client'])) { ?>
-    <?php if (isset($_SERVER['HOME']) && readlinkToEnd($_SERVER['HOME'] . DIRECTORY_SEPARATOR . 'clients' . DIRECTORY_SEPARATOR) == '/mnt/c/www/clients' || realpath(APP_PATH . 'clients')) { ?>
+    <?php if (isset($_SERVER['HOME']) && readlinkToEnd($_SERVER['HOME'] . DIRECTORY_SEPARATOR . 'clients' . DIRECTORY_SEPARATOR) == '/mnt/c/www/' . APP_BASE['clients'] || realpath(APP_PATH . APP_BASE['clients'])) { ?>
       <h3>&#9660; Domains: </h3>
       <table width="" style="border: none;">
         <tr style="border: none;">
@@ -374,7 +678,7 @@ left: calc(50% - 265px); /* 1207 / 2 */ /*transform: translate(-50%, -50%);*/ bo
           //  echo '<option value="" selected>---</option>' . "\n"; // label="     "
           //} else  //dd($links);
     
-          $links = array_filter(glob(APP_PATH . 'clients' . DIRECTORY_SEPARATOR . '*', GLOB_ONLYDIR), function ($link) {
+          $links = array_filter(glob(APP_PATH . APP_BASE['clients'] /*. DIRECTORY_SEPARATOR*/ . '*', GLOB_ONLYDIR), function ($link) {
             // Apply regex to the basename (last part of the path)
             return preg_match('/^(?!\d{3}-)[a-z0-9\-]+\.[a-z]{2,6}$/i', basename($link));
           });
@@ -406,7 +710,7 @@ left: calc(50% - 265px); /* 1207 / 2 */ /*transform: translate(-50%, -50%);*/ bo
         if ($key != 0)
           echo "</table>\n\n\n";
 
-        $links = array_filter(glob(APP_PATH . /*'../../'.*/ app_base('clients', null, 'rel') . $status . '*'), 'is_dir');
+        $links = array_filter(glob(APP_PATH . /*'../../'. app_base('clients', null, 'rel')*/ APP_BASE['clients'] . $status . '*'), 'is_dir');
         $statusCode = $status;
         $status = ($status == 000) ? "On-call" :
           (($status == 100) ? "Working" :
@@ -419,9 +723,6 @@ left: calc(50% - 265px); /* 1207 / 2 */ /*transform: translate(-50%, -50%);*/ bo
             <?php
             $count = 1;
 
-            //if (empty($links)) {
-            //  echo '<option value="" selected>---</option>' . "\n"; // label="     "
-            //} else  //dd($links);
             $old_links = $links;
             while ($link = array_shift($links)) {
               $old_link = $link;
@@ -454,17 +755,6 @@ left: calc(50% - 265px); /* 1207 / 2 */ /*transform: translate(-50%, -50%);*/ bo
     <?php }
   } else {
 
-    //if(isset($_GET['client']) && !empty($_GET['client']))
-    //  $path = APP_BASE['clients'] . $_GET['client'] . '/' . (isset($_GET['domain']) && !empty($_GET['domain']) ? $_GET['domain'] . '/' : '');
-
-    //elseif(isset($_GET['project']) && !empty($_GET['project']))
-    //  $path = APP_BASE['projects'] . $_GET['project'] . '/';
-
-
-    // >>>
-
-    //    $path = defined('APP_ROOT') && APP_ROOT ? APP_PATH . APP_ROOT : (APP_ROOT == '' ? APP_PATH . (isset($_GET['client']) ? APP_BASE['clients'] . $_GET['client'] . DIRECTORY_SEPARATOR : '') . (isset($_GET['client']) || isset($_GET['domain']) ? (isset($_GET['domain']) ? $_GET['domain'] . DIRECTORY_SEPARATOR : '') : (isset($_GET['path']) ? '' : 'vendor' . DIRECTORY_SEPARATOR . (isset($_GET['client']) ? $_GET['client'] . DIRECTORY_SEPARATOR : ''))) : APP_PATH . APP_ROOT);
-
     $path = APP_PATH;
 
     if (defined('APP_ROOT') && APP_ROOT) {
@@ -472,12 +762,12 @@ left: calc(50% - 265px); /* 1207 / 2 */ /*transform: translate(-50%, -50%);*/ bo
     } elseif (APP_ROOT === '') {
       // Handle client-specific path
       if (isset($_GET['client'])) {
-        $path .= app_base('clients', null, 'rel') . $_GET['client'] . DIRECTORY_SEPARATOR;
+        $path = APP_BASE['clients'] . $_GET['client'] . DIRECTORY_SEPARATOR;
       }
 
       // Add domain to the path if applicable
       if (isset($_GET['domain'])) {
-        $path .= app_base('clients', null, 'rel') . $_GET['domain'] . DIRECTORY_SEPARATOR;
+        $path = APP_PATH . APP_BASE['clients'] . $_GET['domain'] . DIRECTORY_SEPARATOR;
       } elseif (!isset($_GET['client']) && isset($_GET['path']) && $_GET['path'] == 'vendor') {
         // Default to vendor path if no domain or client is set
         $path .= 'vendor' . DIRECTORY_SEPARATOR;
@@ -489,22 +779,12 @@ left: calc(50% - 265px); /* 1207 / 2 */ /*transform: translate(-50%, -50%);*/ bo
       $path .= APP_ROOT;
     }
 
-
-    //
-
-
-    //$path = dirname(APP_PATH . APP_ROOT) . DIRECTORY_SEPARATOR . ($_GET['path'] ?? '');
-
-    //$path = APP_PATH . APP_ROOT . ($_GET['path'] ?? '');
-//dd($path);
-
-    // <<<
-
-    if (!realpath($path . ($_GET['path'] ?? ''))) {
+    if (!realpath($path /* . ($_GET['path'] ?? '')*/)) {
 
       ?>
 
-      <?= "<br /><br />Missing directory 1 $path"; ?>
+      <?= "<br /><br />Missing directory 1 " . $path;
+      dd(APP_ROOT, false); ?>
 
     <?php } else { // 
 

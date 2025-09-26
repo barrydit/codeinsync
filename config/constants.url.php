@@ -51,14 +51,14 @@ if (PHP_SAPI === 'cli') {
 //$requestUri = $_SERVER['REQUEST_URI'] ?? ($_SERVER['PHP_SELF'] ?? '');
 //$requestUri = rtrim($uri, '/');
 
-defined('APP_HOST')    or define('APP_HOST', $host);
+defined('APP_HOST') or define('APP_HOST', $host);
 defined('APP_IS_HTTPS') or define('APP_IS_HTTPS', $https);
-defined('APP_SCHEME')  or define('APP_SCHEME', $https ? 'https' : 'http');
-defined('APP_DOMAIN')  or define('APP_DOMAIN', preg_replace('/^www\./', '', $host));
+defined('APP_SCHEME') or define('APP_SCHEME', $https ? 'https' : 'http');
+defined('APP_DOMAIN') or define('APP_DOMAIN', preg_replace('/^www\./', '', $host));
 
 // A careful domain regex (basic hostname; adjust if needed)
 defined('DOMAIN_EXPR') or define('DOMAIN_EXPR', $_ENV['SHELL']['EXPR_DOMAIN'] ?? '/(?:[a-z]+\:\/\/)?(?:[a-z0-9\-]+\.)+[a-z]{2,6}(?:\/\S*)?/i') and is_string(DOMAIN_EXPR) ? '' : $errors['DOMAIN_EXPR'] = 'DOMAIN_EXPR is not a valid string value.'; // /(?:\.(?:([-a-z0-9]+){1,}?)?)?\.[a-z]{2,6}$/';
-    // const DOMAIN_EXPR = 'string only/non-block/ternary'; 
+// const DOMAIN_EXPR = 'string only/non-block/ternary'; 
 
 // Define APP_QUERY if not already defined
 if (!defined('APP_QUERY')) {
@@ -110,7 +110,7 @@ if (defined('APP_DOMAIN') && !in_array(APP_DOMAIN, [/*'localhost',*/ '127.0.0.1'
     //  defined('APP_ENV') or define('APP_ENV', 'production');
 } else {
 }
-    /* if (!is_file($file = APP_PATH . '.env') && @touch($file)) file_put_contents($file, "DB_UNAME=\nDB_PWORD="); */
+/* if (!is_file($file = APP_PATH . '.env') && @touch($file)) file_put_contents($file, "DB_UNAME=\nDB_PWORD="); */
 $requestUri = '';
 
 // Normalize request URI depending on SAPI
@@ -189,14 +189,14 @@ if (defined('APP_DOMAIN') && !in_array(APP_DOMAIN, [/*'localhost',*/ '127.0.0.1'
 !defined('APP_PORT') and define('APP_PORT', '80'); // const APP_PORT
 !is_int((int) APP_PORT) and $errors['APP_PORT'] = 'APP_PORT is not valid. (' . APP_PORT . ')' . "\n";
 
-defined('SERVER_PORT') or 
-define('SERVER_PORT', '9000'); // 8080
+defined('SERVER_PORT') or
+    define('SERVER_PORT', '9000'); // 8080
 !is_int((int) SERVER_PORT) and $errors['SERVER_PORT'] = 'SERVER_PORT is not valid. (' . SERVER_PORT . ')' . "\n";
 
 // Use APP_HOST directly for SERVER_HOST
 
-defined('SERVER_HOST') or 
-define('SERVER_HOST', APP_HOST ?? '0.0.0.0');
+defined('SERVER_HOST') or
+    define('SERVER_HOST', APP_HOST ?? '0.0.0.0');
 !is_string(SERVER_HOST) and $errors['SERVER_HOST'] = 'SERVER_HOST is not valid. (' . SERVER_HOST . ')' . "\n";
 
 if (defined('APP_BASE') && !is_array(APP_BASE)) {
@@ -216,13 +216,14 @@ if (defined('APP_BASE') && !is_array(APP_BASE)) {
     ];
 }
 
-define('APP_URL_BASE', $appUrl ?? [
-    'scheme' => 'http' . (!defined('APP_HTTPS') || !APP_HTTPS ? '' : 's'),
-    'host' => 'localhost',
-    'port' => 80,
-    'path' => '/',
-    'query' => 'client=000-Doe%2CJohn&domain=johndoe.ca',
-]);
+defined('APP_URL_BASE') or
+    define('APP_URL_BASE', $appUrl ?? [
+        'scheme' => 'http' . (!defined('APP_HTTPS') || !APP_HTTPS ? '' : 's'),
+        'host' => 'localhost',
+        'port' => 80,
+        'path' => '/',
+        'query' => 'client=000-Doe%2CJohn&domain=johndoe.ca',
+    ]);
 
 // define('APP_URL_PATH', APP_URL_BASE['path'] ?? '/');
 //define('APP_URL_PATH', is_array(APP_URL) ? APP_URL['path'] : APP_URL_BASE['path']); // substr($_SERVER['REQUEST_URI'], 0, strrpos($_SERVER['REQUEST_URI'], '/') + 1)
