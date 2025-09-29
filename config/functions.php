@@ -337,6 +337,7 @@ if (!function_exists('dd')) {
 
 function dd(mixed $param = null, bool $die = true, bool $debug = true): void
 {
+  require_once __DIR__ . DIRECTORY_SEPARATOR . '../config/constants.env.php';
   // Define start time if not defined
   !defined('APP_START') and define('APP_START', $_SERVER['REQUEST_TIME_FLOAT'] ?? microtime(true));
 
@@ -367,7 +368,7 @@ function dd(mixed $param = null, bool $die = true, bool $debug = true): void
     } else {
     // Immediate output
     echo $formattedOutput;
-    if ($debug) {
+    if (($_ENV['APP_DEBUG'] ?? true) && $debug) {
       error_log($formattedOutput);
     }
   }

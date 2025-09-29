@@ -4,6 +4,8 @@
 defined('APP_PATH') || define('APP_PATH', dirname(__DIR__, 3) . '/');
 defined('CONFIG_PATH') || define('CONFIG_PATH', APP_PATH . 'config/');
 
+const APP_ROOT = '123';
+
 // Ensure bootstrap has run (defines env/paths/url/app and helpers)
 if (!defined('APP_BOOTSTRAPPED')) {
   require_once APP_PATH . 'bootstrap/bootstrap.php';
@@ -277,7 +279,7 @@ ob_start(); ?>
       style="position: relative; display: block; width: 398px; background-color: rgba(251,247,241); z-index: 2;">
       <div style="display: inline-block; text-align: left; width: 225px;">
         <div class="composer-menu text-sm" style="cursor: pointer; font-weight: bold; padding-left: 40px;">
-          <div style=" border: 1px solid #000; width: 150px;">Main Menu</div>
+          <div style=" border: 1px solid #000; width: 150px;">Main Menu <a href="#" title="<?= APP_ROOT ?>">Test</a></div>
         </div>
         <div class="text-xs" style="display: inline-block; border: 1px solid #000;">
           <?php

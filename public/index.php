@@ -201,6 +201,7 @@ unset($_SESSION['mode']); ?>
       bottom: 100px;
       left: 200px;
       width: calc(100% - 200px);
+      padding: 10px;
       background: #f5f5f5;
       overflow: auto;
       z-index: 1;
