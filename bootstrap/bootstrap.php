@@ -41,11 +41,7 @@ if (!defined('WWW_PATH'))
 if (defined('BASE_PATH') && BASE_PATH !== BOOTSTRAP_PATH)
     trigger_error('BASE_PATH differs from BOOTSTRAP_PATH; confirm intended semantics.', E_USER_NOTICE);
 
-// --- Minimal env/debug/timezone
-if (!defined('APP_DEBUG'))
-    define('APP_DEBUG', false);
-if (!ini_get('date.timezone'))
-    date_default_timezone_set('America/Vancouver'); // 'UTC'
+// --- Minimal env/
 // Error reporting (adjust as needed)
 error_reporting(APP_DEBUG ? E_ALL : E_ALL & ~E_NOTICE & ~E_STRICT);
 ini_set('display_errors', APP_DEBUG ? '1' : '0');
@@ -79,33 +75,53 @@ require_once CONFIG_PATH . 'config.php';
 // require APP_PATH . 'config/constants.php';
 
 // ─────────────────────────────────────────────────────────────────────────────
-// 2) Route-or-Shell gate (decide: hand off to dispatcher vs render page shell)
+// 2) Route-or-Shell gate (decide: dispatcher vs render shell)
 // ─────────────────────────────────────────────────────────────────────────────
 $isCli = (PHP_SAPI === 'cli');
 $method = $_SERVER['REQUEST_METHOD'] ?? 'GET';
 $uri = $_SERVER['REQUEST_URI'] ?? '/';
 $accept = strtolower($_SERVER['HTTP_ACCEPT'] ?? '');
 
-$appParam = isset($_GET['app']) && is_string($_GET['app']) ? trim($_GET['app']) : null;
-$partParam = isset($_GET['part']) ? strtolower((string) $_GET['part']) : null;
+$appParam = (isset($_GET['app']) && is_string($_GET['app'])) ? trim($_GET['app']) : null;
+$partParam = (isset($_GET['part'])) ? strtolower((string) $_GET['part']) : null;
 $hasCmd = isset($_POST['cmd']) && is_string($_POST['cmd']) && $_POST['cmd'] !== '';
 
-$isApiLikePath = !$isCli && (
-    (function ($u) {
-        return function_exists('str_starts_with') ? str_starts_with($u, '/api/') : substr($u, 0, 5) === '/api/'; })($uri)
-    || isset($_GET['api'])
+$startsWith = static fn(string $h, string $n) =>
+    function_exists('str_starts_with') ? str_starts_with($h, $n) : substr($h, 0, strlen($n)) === $n;
+
+$isApiLikePath = !$isCli && ($startsWith($uri, '/api/') || isset($_GET['api']));
+
+// Heuristics that *want* JSON/dispatcher mode
+$wantsDispatcher = !$isCli && (
+    $hasCmd
+    || $appParam !== null
+    || $isApiLikePath
+    || isset($_GET['json'])
+    || strpos($accept, 'application/json') !== false
+    || in_array($partParam, ['style', 'body', 'script'], true) // partial asset fetch
 );
 
-// Want dispatcher if: POST cmd, or any app route, or API-ish path
-$wantsDispatcher = !$isCli && ($hasCmd || $appParam !== null || $isApiLikePath);
+// ---- Single source of truth for APP_MODE ------------------------------------
+// Priority: (already defined) > ?mode=… > $_ENV['APP_MODE'] > heuristics
+$modeOverride =
+    defined('APP_MODE') ? APP_MODE :
+    (isset($_GET['mode']) ? strtolower((string) $_GET['mode']) :
+        (isset($_ENV['APP_MODE']) ? strtolower((string) $_ENV['APP_MODE']) : null));
 
-// Non-web modes force dispatcher too (optional, keep if you use APP_MODE)
-if (defined('APP_MODE') && APP_MODE !== 'web') {
-    $wantsDispatcher = true;
+if (!defined('APP_MODE')) {
+    if ($modeOverride === 'dispatcher' || $modeOverride === 'web') {
+        define('APP_MODE', $modeOverride);
+    } else {
+        // default from heuristics (CLI can also force dispatcher if you prefer)
+        define('APP_MODE', $wantsDispatcher ? 'dispatcher' : 'web');
+    }
 }
 
-if ($wantsDispatcher) {
-    // Hand off to the self-contained dispatcher (emits and exits)
+// Debug safely (won’t explode if moved): 
+// dd(defined('APP_MODE') ? APP_MODE : '(undef)');
+
+// ---- Gate --------------------------------------------------------------------
+if (APP_MODE === 'dispatcher') {
     require APP_PATH . 'bootstrap/dispatcher.php';
     return;
 }

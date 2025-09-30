@@ -28,7 +28,6 @@ if (!function_exists('app_error_handler')) {
     /*
         global $errors;
         !defined('APP_ERROR') and define('APP_ERROR', true); // $hasErrors = true;
-        !defined('APP_DEBUG') and define('APP_DEBUG', APP_ERROR);
         $errors['FUNCTIONS'] = 'functions.php failed to load. Therefore function dd() does not exist (yet).';
 
         foreach ([E_ERROR => 'Error', E_WARNING => 'Warning', E_PARSE => 'Parse Error', E_NOTICE => 'Notice', E_CORE_ERROR => 'Core Error', E_CORE_WARNING => 'Core Warning', E_COMPILE_ERROR => 'Compile Error', E_COMPILE_WARNING => 'Compile Warning', E_USER_ERROR => 'User Error', E_USER_WARNING => 'User Warning', E_USER_NOTICE => 'User Notice', E_STRICT => 'Strict Notice', E_RECOVERABLE_ERROR => 'Recoverable Error', E_DEPRECATED => 'Deprecated', E_USER_DEPRECATED => 'User Deprecated',] as $key => $value) {

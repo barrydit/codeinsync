@@ -18,7 +18,6 @@ declare(strict_types=1);
 //defined('APP_MODE') or define('APP_MODE', 'dispatcher');
 //defined('APP_CONTEXT') or define('APP_CONTEXT', 'www');
 
-//!defined('APP_DEBUG') and define('APP_DEBUG', false);
 //!defined('APP_ERROR') and define('APP_ERROR', false); // $hasErrors = true;
 
 !defined('APP_DASHBOARD') and define('APP_DASHBOARD', "\n" . sprintf(<<<EOL

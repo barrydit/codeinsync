@@ -15,7 +15,7 @@ error_reporting(E_ALL);
 @ini_set('memory_limit', '512M');
 @set_time_limit(0);
 @ignore_user_abort(true);
-date_default_timezone_set($_ENV['TIMEZONE'] ?? 'UTC');
+
 if (function_exists('mb_internal_encoding'))
     @mb_internal_encoding('UTF-8');
 

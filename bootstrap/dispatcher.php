@@ -43,9 +43,8 @@ if (!defined('APP_CANONICAL_PRELUDE')) {
     // Composer autoload (guarded by env)
     $autoloadFlag = (($_ENV['COMPOSER']['AUTOLOAD'] ?? true) !== false);
     $autoloadFile = VENDOR_PATH . 'autoload.php';
-    if ($autoloadFlag && is_file($autoloadFile)) {
+    if ($autoloadFlag && is_file($autoloadFile))
         require_once $autoloadFile;
-    }
 
     // Remaining constants (may use vendor)
     require_once CONFIG_PATH . 'constants.runtime.php';
@@ -122,9 +121,9 @@ $isApiLikePath = !$isCli && (
 
 // Decide if dispatcher should handle this request (standalone safe)
 $wantsDispatcher = !$isCli && ($hasCmd || $appParam !== null || $isApiLikePath);
-if (defined('APP_MODE') && APP_MODE !== 'web') {
+if (defined('APP_MODE') && APP_MODE !== 'web')
     $wantsDispatcher = true;
-}
+
 if (!$wantsDispatcher) {
     http_response_code(404);
     header('Content-Type: text/plain; charset=UTF-8');
@@ -222,7 +221,7 @@ try {
     // ====================== END ROUTER (inlined) =======================
 
     $buffer = ob_get_clean();
-
+    //dd(APP_MODE);
     //dd(get_required_files());
 } catch (\Throwable $e) {
     while (ob_get_level() > $obLevel)

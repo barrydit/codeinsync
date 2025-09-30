@@ -5,8 +5,14 @@ if (PHP_SAPI !== 'cli' && PHP_SAPI !== 'phpdbg') {
     load_if_file(APP_PATH . 'bootstrap' . DIRECTORY_SEPARATOR . 'bootstrap.php'); // constants.php
 }
 
+// Timezone (env wins; default your local)
+$tz = $_ENV['APP_TIMEZONE'] ?? 'America/Vancouver';
+if (ini_get('date.timezone') !== $tz ?? false)
+    @date_default_timezone_set(is_string($tz) && $tz ? $tz : 'UTC');
+
 // Enable debugging and error handling based on APP_DEBUG and APP_ERROR constants
 !defined('APP_ERROR') and define('APP_ERROR', false);
+
 !defined('APP_DEBUG') and define('APP_DEBUG', isset($_GET['debug']) ? TRUE : FALSE);
 
 if (APP_DEBUG || APP_ERROR) {

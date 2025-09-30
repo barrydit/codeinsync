@@ -9,7 +9,9 @@ class Shutdown
 
     private function __construct()
     {
-        error_log("Shutdown constructor called.");
+        if (($_ENV['APP_DEBUG'] ?? true))
+            error_log("Shutdown constructor called.");
+
         defined('APP_END') or define('APP_END', microtime(true));
         $this->initializeEnv(); // defines ENV_CHECKSUM inside
     }

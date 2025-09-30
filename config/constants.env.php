@@ -2,6 +2,8 @@
 
 declare(strict_types=1);
 
+
+
 defined('APP_PATH') or define('APP_PATH', dirname(__DIR__, 1) . DIRECTORY_SEPARATOR);
 
 if (!defined('APP_ROOT'))
@@ -78,6 +80,7 @@ class EnvReader
     }
 }
 
+
 // load order: global then scoped (scoped overrides)
 $env = [];
 $env = array_replace($env, EnvReader::read($ENV_FILE_GLOBAL));
@@ -89,10 +92,16 @@ $_ENV = array_replace($_ENV, $env);
 // Optionally export UPPER_SNAKE to constants
 foreach ($env as $k => $v) {
     if (is_string($k) && preg_match('/^[A-Z][A-Z0-9_]*$/', $k) && !defined($k)) {
-        define($k, $v);
+        if (!defined($k))
+            if ($k === 'APP_DEBUG' && !is_string($v)) {
+                define($k, isset($_GET['debug']) ?? $v ?? false);
+            } else
+                define($k, $v);
+
     }
 }
 
+// Validate essential PHP settings
 $order = ini_get("variables_order");   // e.g. "EGPCS"
 
 // Required letters
@@ -112,9 +121,6 @@ if (!defined('APP_ENV')) {
 } elseif (!is_string(APP_ENV)) {
     $errors['APP_ENV'] = 'App Env must be a string: ' . var_export(APP_ENV, true);
 }
-
-// 2. Define debug mode
-defined('APP_DEBUG') || define('APP_DEBUG', APP_ENV !== 'production');
 
 // Fallback detection for host and domain
 if (!defined('APP_HOST')) {

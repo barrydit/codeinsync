@@ -378,9 +378,11 @@ unset($_SESSION['mode']); ?>
           <span>Loading Time: <?= round(microtime(true) - APP_START, 3); ?>s</span><br />
           <span>OS: <?= PHP_OS; ?></span><br />
           <span>PHP: <?= PHP_VERSION; ?></span><br />
-          <span>Debug: <?= APP_DEBUG ? 'true' : 'false'; ?></span><br />
+          <span>Debug: <?= APP_DEBUG ? '<a href="/?">true</a>' : '<a href="?debug">false</a>'; ?></span><br />
           <span>Context: <?= APP_CONTEXT ?? ''; ?></span><br />
           <span>Mode: <?= APP_MODE ?? ''; ?></span><br />
+          <span>Env: <?= APP_ENV ?? ''; ?></span><br />
+          <span>Tz: <?= date_default_timezone_get() ?? ''; ?></span><br />
           <span>Domain: <?= APP_DOMAIN ?? ''; ?></span><br />
           <span>IP Address: <?= $_SERVER['REMOTE_ADDR'] ?? ''; ?></span><br />
           <span>App Path: <?= APP_PATH; ?></span><br />

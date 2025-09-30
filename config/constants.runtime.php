@@ -7,17 +7,9 @@ declare(strict_types=1);
  * Assumes APP_PATH and APP_BASE are defined.
  */
 
-// Timezone (env wins; default your local)
-$tz = $_ENV['APP_TZ'] ?? 'America/Vancouver';
-@date_default_timezone_set(is_string($tz) && $tz ? $tz : 'America/Vancouver');
-
-// Debug toggle
-$debug = filter_var($_ENV['APP_DEBUG'] ?? false, FILTER_VALIDATE_BOOL);
-defined('APP_DEBUG') or define('APP_DEBUG', $debug);
-
 // Sensible defaults
 ini_set('assert.exception', '1');
-if ($debug) {
+if (!APP_DEBUG) {
     error_reporting(E_ALL);
     ini_set('display_errors', '1');
 } else {
@@ -93,7 +85,7 @@ if (!defined('APP_SELF')) {
     }
 }
 
-!defined('APP_MODE') and define('APP_MODE', 'web');
+// !defined('APP_MODE') and define('APP_MODE', 'web');
 
 // ------------------------------------------------------
 // Context Detection (cli, socket, or www)
@@ -101,8 +93,8 @@ if (!defined('APP_SELF')) {
 
 // APP_CONTEXT: tells runtime *what kind of environment* we're in
 defined('APP_CONTEXT') || define('APP_CONTEXT', match (true) {
-    APP_MODE === 'socket' || (PHP_SAPI === 'cli' && isset($argv[1]) && str_starts_with($argv[1], 'socket')) => 'socket',
-    APP_MODE === 'cli' || PHP_SAPI === 'cli' => 'cli',
+    (defined('APP_MODE') && APP_MODE === 'socket') || (PHP_SAPI === 'cli' && isset($argv[1]) && str_starts_with($argv[1], 'socket')) => 'socket',
+    (defined('APP_MODE') && APP_MODE === 'cli') || PHP_SAPI === 'cli' => 'cli',
     default => 'www', // most likely browser
 });
 
