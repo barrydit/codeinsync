@@ -248,15 +248,15 @@ ob_start(); ?>
         <select name="exec" onchange="this.form.submit();">
 
   <?php if (defined('COMPOSER_BIN')): ?>
-                                                                                                                                              <option <?= COMPOSER_EXEC_CMD === COMPOSER_BIN ? 'selected' : '' ?>
-                                                                                                                                                  value="bin"><?= COMPOSER_BIN ?></option>
+  <option <?= COMPOSER_EXEC_CMD === COMPOSER_BIN ? 'selected' : '' ?>
+  value="bin"><?= COMPOSER_BIN ?></option>
     <?php endif; ?>
   
     <?php if (defined('COMPOSER_PHAR')): ?>
-                                                                                                                                              <option <?= COMPOSER_EXEC_CMD === COMPOSER_PHAR['exec'] ? 'selected' : '' ?>
-                                                                                                                                                value="phar">
-                                                                                                                                                <?= COMPOSER_PHAR['exec'] ?>
-                                                                                                                                              </option>
+  <option <?= COMPOSER_EXEC_CMD === COMPOSER_PHAR['exec'] ? 'selected' : '' ?>
+  value="phar">
+  <?= COMPOSER_PHAR['exec'] ?>
+  </option>
   <?php endif; ?>
 
         </select>
@@ -279,7 +279,8 @@ ob_start(); ?>
       style="position: relative; display: block; width: 398px; background-color: rgba(251,247,241); z-index: 2;">
       <div style="display: inline-block; text-align: left; width: 225px;">
         <div class="composer-menu text-sm" style="cursor: pointer; font-weight: bold; padding-left: 40px;">
-          <div style=" border: 1px solid #000; width: 150px;">Main Menu <a href="#" title="<?= APP_ROOT ?>">Test</a></div>
+          <div style=" border: 1px solid #000; width: 150px;">Main Menu <a href="#" title="<?= APP_ROOT ?>">Test</a>
+          </div>
         </div>
         <div class="text-xs" style="display: inline-block; border: 1px solid #000;">
           <?php
@@ -1248,8 +1249,7 @@ echo $daysLeft === null ? '' : max(0, $daysLeft);
 <?php $UI_APP['body'] = ob_get_contents();
 ob_end_clean();
 
-if (false) { ?>
-  <script type="text/javascript"><?php }
+if (false) { ?><script type="text/javascript"><?php }
 ob_start(); ?>
     (() => {
       const APP_ID = 'tools/registry/composer';
@@ -1619,71 +1619,138 @@ ob_start(); ?>
 
   if (false) { ?></script><?php }
 
-  ob_start(); ?>
-<!DOCTYPE html>
-<html>
 
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  /**
+   * Expect $UI_APP = ['style' => '...', 'body' => '...', 'script' => '...'];
+   * This file will:
+   *   - If included: return $UI_APP as-is (no HTML rendering, no $UI_APP['html'])
+   *   - If accessed directly: bootstrap (if needed), render and echo a full HTML page, then exit
+   */
 
-  <!-- link rel="stylesheet" href="//code.jquery.com/ui/1.12.1/themes/smoothness/jquery-ui.css" /-->
-
-  <?php
-  // (check_http_status('https://cdn.tailwindcss.com') ? 'https://cdn.tailwindcss.com' : APP_URL . 'resources/js/tailwindcss-3.3.5.js')?
-  is_dir($path = app_base('resources', null, 'rel') . 'js/') or mkdir($path, 0755, true);
-  if (is_file("{$path}tailwindcss-3.3.5.js")) {
-    if (ceil(abs((strtotime(date('Y-m-d')) - strtotime(date('Y-m-d', strtotime('+5 days', filemtime("{$path}tailwindcss-3.3.5.js"))))) / 86400)) <= 0) {
-      $url = 'https://cdn.tailwindcss.com';
-      $handle = curl_init($url);
-      curl_setopt($handle, CURLOPT_RETURNTRANSFER, true);
-
-      if (!empty($js = curl_exec($handle)))
-        file_put_contents("{$path}tailwindcss-3.3.5.js", $js) or $errors['JS-TAILWIND'] = "$url returned empty.";
-    }
-  } else {
-    $url = 'https://cdn.tailwindcss.com';
-    $handle = curl_init($url);
-    curl_setopt($handle, CURLOPT_RETURNTRANSFER, true);
-
-    if (!empty($js = curl_exec($handle)))
-      file_put_contents("{$path}tailwindcss-3.3.5.js", $js) or $errors['JS-TAILWIND'] = "$url returned empty.";
+  if (!isset($UI_APP) || !is_array($UI_APP)) {
+    $UI_APP = ['style' => '', 'body' => '', 'script' => ''];
   }
-  ?>
 
-  <script src="<?= 'resources/js/tailwindcss-3.3.5.js' ?? $url ?>"></script>
+  /* ───────────────────────────── Helpers ───────────────────────────── */
 
-  <style type="text/tailwindcss">
-    <?= $UI_APP['style']; ?>
-  </style>
-</head>
+  $__isDirect = (realpath($_SERVER['SCRIPT_FILENAME'] ?? '') === __FILE__);
+  $__hasApp = defined('APP_RUNNING');
 
-<body>
-  <?= $UI_APP['body']; ?>
+  /**
+   * Resolve and include bootstrap if we’re executed from /public or APP isn’t running yet.
+   */
+  $__maybeBootstrap = function (): void {
+    if (defined('APP_RUNNING'))
+      return;
 
-  <script
-    src="<?= APP_IS_ONLINE && check_http_status('https://code.jquery.com/jquery-3.7.1.min.js') ? 'https://code.jquery.com/jquery-3.7.1.min.js' : "{$path}jquery-3.7.1.min.js" ?>"></script>
-  <!-- You need to include jQueryUI for the extended easing options. -->
-  <?php /* https://stackoverflow.com/questions/12592279/typeerror-p-easingthis-easing-is-not-a-function */ ?>
-  <!-- script src="//code.jquery.com/jquery-1.12.4.js"></script -->
-  <script src="//code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
-  <!-- Uncaught ReferenceError: jQuery is not defined -->
+    // If launched from /public, move to project root
+    $scriptDirBase = basename(dirname(realpath($_SERVER['SCRIPT_FILENAME'] ?? __FILE__)));
+    if ($scriptDirBase === 'public') {
+      @chdir(dirname(__DIR__)); // go up from /public to project root
+    }
 
-  <script>
-    <?= $UI_APP['script']; ?>
-  </script>
-</body>
+    $bootstrap = __DIR__ . '/../bootstrap/bootstrap.php';
+    if (is_file($bootstrap)) {
+      require_once $bootstrap;
+    }
+  };
 
-</html>
-<?php
-$UI_APP['html'] = ob_get_contents();
-ob_end_clean();
+  /**
+   * Get Tailwind script src (CDN if online and reachable; fallback to cached local copy).
+   * Will refresh local cache every 5 days when APP_IS_ONLINE is true.
+   */
+  $__tailwindSrc = function (string $version = '3.3.5'): string {
+    // You have app_base() and check_http_status() in your project.
+    $cdnUrl = 'https://cdn.tailwindcss.com';
+    $localPath = rtrim(app_base('resources', null, 'abs'), DIRECTORY_SEPARATOR) . '/js/tailwindcss-' . $version . '.js';
+    $localRelDir = rtrim(app_base('resources', null, 'rel'), '/'); // e.g. 'resources/'
+    $localRel = $localRelDir . 'js/tailwindcss-' . $version . '.js';
 
-//check if file is included or accessed directly
-if (__FILE__ == get_required_files()[0] || in_array(__FILE__, get_required_files()) && isset($_GET['app']) && $_GET['app'] == 'composer' && APP_DEBUG) {
-  return $UI_APP['html'];
-} else {
-  return $UI_APP; // = ['style' => '', 'body' => $UI_APP['body'], 'script' => ''];
-}
+    // Ensure local dir
+    is_dir(dirname($localPath)) || @mkdir(dirname($localPath), 0755, true);
 
+    // Online + stale or missing → refresh cache (every 5 days)
+    if (defined('APP_IS_ONLINE') && APP_IS_ONLINE) {
+      $stale = !is_file($localPath) || (time() - @filemtime($localPath) > 5 * 24 * 60 * 60);
+      if ($stale) {
+        $ch = curl_init($cdnUrl);
+        curl_setopt_array($ch, [
+          CURLOPT_RETURNTRANSFER => true,
+          CURLOPT_FOLLOWLOCATION => true,
+          CURLOPT_TIMEOUT => 10,
+        ]);
+        $js = curl_exec($ch);
+        curl_close($ch);
+        if ($js) {
+          @file_put_contents($localPath, $js);
+        }
+      }
+    }
 
+    // Prefer CDN when reachable, else local relative path
+    if (defined('APP_IS_ONLINE') && APP_IS_ONLINE && function_exists('check_http_status') && check_http_status($cdnUrl)) {
+      // Use protocol-relative to match your original pattern
+      $host = parse_url($cdnUrl, PHP_URL_HOST);
+      $pos = strpos($cdnUrl, $host);
+      return substr($cdnUrl, $pos + strlen($host)); // e.g. "//cdn.tailwindcss.com"
+    }
+
+    return $localRel; // e.g. "resources/js/tailwindcss-3.3.5.js"
+  };
+
+  /**
+   * Render full page.
+   */
+  $__renderPage = function (array $UI_APP) use ($__tailwindSrc): void {
+    $tailwindSrc = $__tailwindSrc();
+    ?>
+  <!DOCTYPE html>
+  <html>
+
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <link rel="stylesheet" href="//code.jquery.com/ui/1.12.1/themes/smoothness/jquery-ui.css" />
+    <script src="<?= htmlspecialchars($tailwindSrc, ENT_QUOTES) ?>"></script>
+
+    <style type="text/tailwindcss">
+      <?= $UI_APP['style'] ?? '' ?>
+
+      </style>
+  </head>
+
+  <body>
+    <?= $UI_APP['body'] ?? '' ?>
+
+    <!-- jQuery + jQuery UI -->
+    <script src="//code.jquery.com/jquery-1.12.4.js"></script>
+    <script src="//code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
+
+    <script>
+      <?= $UI_APP['script'] ?? '' ?>
+
+    </script>
+  </body>
+
+  </html>
+  <?php
+  };
+
+  /* ───────────────────────────── Flow ───────────────────────────── */
+
+  if ($__isDirect) {
+    // bootstrap (if not already)
+    $__maybeBootstrap();
+
+    // If bootstrap failed to set the project root and we’re not where we expect, error out
+    // (Optional strictness — keep or remove as you like)
+    // if (!defined('APP_RUNNING')) { die('Bootstrap failed.'); }
+  
+    // Render and exit — DO NOT populate $UI_APP['html']
+    $__renderPage($UI_APP);
+    exit;
+  }
+
+  // If included: return data (no HTML string added)
+  return $UI_APP;

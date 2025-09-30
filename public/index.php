@@ -10,13 +10,14 @@ require_once __DIR__ . '/../config/constants.env.php';
 require_once __DIR__ . '/../config/constants.paths.php';
 require_once __DIR__ . '/../bootstrap/php-ini.php';
 
+// Fast-path: if routing params present, hint minimal boot
+!defined('APP_MODE') and define('APP_MODE', 'web');
+
 // minimal web entry
 if (is_file(dirname(__DIR__, 1) . '/bootstrap/bootstrap.php'))
   require_once __DIR__ . '/../bootstrap/bootstrap.php';
 
-// Fast-path: if routing params present, hint minimal boot
-if (!defined('APP_MODE'))
-  define('APP_MODE', 'web');
+require_once APP_PATH . 'bootstrap/kernel.php';
 
 //dd(get_required_files());
 

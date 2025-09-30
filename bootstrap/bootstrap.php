@@ -48,27 +48,28 @@ ini_set('display_errors', APP_DEBUG ? '1' : '0');
 ini_set('log_errors', '1');
 
 // ---- helpers first (defines app_context(), app_base(), etc.) ---------------
-require_once CONFIG_PATH . 'functions.php';
+require_once __DIR__ . '/../config/functions.php';
 
 // ---- minimal constants needed early (env + paths + url + app) -------------
 // --- Canonical constants order
-require_once CONFIG_PATH . 'constants.env.php';   // vendor-free
-require_once CONFIG_PATH . 'constants.paths.php'; // defines APP_PATH, CONFIG_PATH, VENDOR_PATH, etc.
+require_once __DIR__ . '/../config/constants.env.php';   // vendor-free
+require_once __DIR__ . '/../config/constants.paths.php'; // defines APP_PATH, CONFIG_PATH, VENDOR_PATH, etc.
 
-require_once APP_PATH . 'bootstrap/php-ini.php';  // error_reporting, timezone, mb_internal_encoding, etc.
+require_once __DIR__ . '/php-ini.php';  // error_reporting, timezone, mb_internal_encoding, etc.
 
 // ---- Single autoloader include (custom or Composer) ------------------------
-$composerAutoload = APP_PATH . 'vendor/autoload.php';
+$composerAutoload = __DIR__ . '/../vendor/autoload.php';
 $autoloadFlag = ($_ENV['COMPOSER']['AUTOLOAD'] ?? true) !== false; // default true if unset
 if ($autoloadFlag && is_file($composerAutoload)) {
     require_once $composerAutoload;
 }
 
-require_once CONFIG_PATH . 'constants.runtime.php';
-require_once CONFIG_PATH . 'constants.url.php';
-require_once CONFIG_PATH . 'constants.app.php';
+require_once __DIR__ . '/../config/constants.runtime.php';
+require_once __DIR__ . '/../config/constants.url.php';
+require_once __DIR__ . '/../config/constants.app.php';
 
-require_once CONFIG_PATH . 'config.php';
+// Mark the app as ready/running exactly once
+defined('APP_RUNNING') || define('APP_RUNNING', true);
 
 // (Optional) composer autoload, config, constants, etc.
 // require APP_PATH . 'vendor/autoload.php';
@@ -136,20 +137,11 @@ if (APP_MODE === 'dispatcher') {
 
 // --- end fast-path ---------------------------------------------------------
 
-require_once CONFIG_PATH . 'auth.php';
-
-//defined('APP_RUNTIME_READY') || define('APP_RUNTIME_READY', 1);
-
-require_once CONFIG_PATH . 'constants.exec.php';
-//defined('APP_EXEC_READY') || define('APP_EXEC_READY', 1);
-
 // [Optional] normalize CWD once (only if your code depends on it)
 if (!@chdir(APP_PATH))
     throw new RuntimeException("Failed to chdir() to APP_PATH: " . APP_PATH);
 
 defined('APP_CWD') || define('APP_CWD', getcwd());
-
-require_once APP_PATH . 'bootstrap/kernel.php';
 
 /*
 //require_once APP_PATH . 'bootstrap/events.php';

@@ -9,6 +9,13 @@
  */
 declare(strict_types=1);
 
+defined('APP_MODE') || define('APP_MODE', 'dispatcher');
+require_once __DIR__ . '/bootstrap.php';
+// Ensure bootstrap completed
+if (!defined('APP_RUNNING')) {
+    throw new RuntimeException('Bootstrap did not complete.');
+}
+
 // ───────────────────────── Canonical prelude (standalone-safe) ─────────────────────────
 // Ensures constants & ini are loaded BEFORE any app file, even when /public/dispatcher.php is hit directly.
 if (!defined('APP_CANONICAL_PRELUDE')) {
@@ -31,27 +38,26 @@ if (!defined('APP_CANONICAL_PRELUDE')) {
         define('VENDOR_PATH', APP_PATH . 'vendor/');
 
     // Helpers first — MUST be vendor-free
-    require_once CONFIG_PATH . 'functions.php';
+    require_once __DIR__ . '/../config/functions.php';
 
     // Minimal constants (vendor-free)
-    require_once CONFIG_PATH . 'constants.env.php';
-    require_once CONFIG_PATH . 'constants.paths.php';
+    require_once __DIR__ . '/../config/constants.env.php';
+    require_once __DIR__ . '/../config/constants.paths.php';
 
     // php.ini tweaks BEFORE vendor/autoload
-    require_once APP_PATH . 'bootstrap/php-ini.php';
+    require_once __DIR__ . '/php-ini.php';
 
     // Composer autoload (guarded by env)
     $autoloadFlag = (($_ENV['COMPOSER']['AUTOLOAD'] ?? true) !== false);
-    $autoloadFile = VENDOR_PATH . 'autoload.php';
+    $autoloadFile = __DIR__ . '/../vendor/autoload.php';
     if ($autoloadFlag && is_file($autoloadFile))
         require_once $autoloadFile;
 
     // Remaining constants (may use vendor)
-    require_once CONFIG_PATH . 'constants.runtime.php';
-    require_once CONFIG_PATH . 'constants.url.php';
-    require_once CONFIG_PATH . 'constants.app.php';
+    require_once __DIR__ . '/../config/constants.runtime.php';
+    require_once __DIR__ . '/../config/constants.url.php';
+    require_once __DIR__ . '/../config/constants.app.php';
 
-    require_once CONFIG_PATH . 'config.php';
 }
 // ─────────────────────── End canonical prelude ───────────────────────
 
@@ -79,7 +85,7 @@ if (!function_exists('app_context') || !function_exists('app_base')) {
 
 //die(var_dump($_ENV['COMPOSER']['AUTOLOAD']));
 // Optional: single autoloader (cheap if already loaded)
-$autoload = APP_PATH . 'vendor/autoload.php';
+$autoload = __DIR__ . '/../vendor/autoload.php';
 if (is_file($autoload) && isset($_ENV['COMPOSER']['AUTOLOAD']) && $_ENV['COMPOSER']['AUTOLOAD'] === TRUE)
     //if (!class_exists('Composer\Autoload\ClassLoader', false))
     require_once $autoload;

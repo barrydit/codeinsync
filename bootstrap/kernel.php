@@ -49,6 +49,19 @@ if (!defined('APP_IS_WEB'))
 
 // Register error/exception handlers (opt-in via env)
 
+// bootstrap/kernel.php (web-only)
+if (!defined('APP_RUNNING') || APP_MODE !== 'web') {
+    throw new LogicException('kernel.php requires APP_MODE=web after bootstrap.');
+}
+
+require_once __DIR__ . '/../config/config.php';
+
+require_once __DIR__ . '/../config/auth.php';
+
+//defined('APP_RUNTIME_READY') || define('APP_RUNTIME_READY', 1);
+
+require_once __DIR__ . '/../config/constants.exec.php';
+//defined('APP_EXEC_READY') || define('APP_EXEC_READY', 1);
 
 // Register custom error and exception handlers
 if (function_exists('app_error_handler'))

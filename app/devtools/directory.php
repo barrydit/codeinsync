@@ -1313,7 +1313,7 @@ switch ($context) {
               case is_top_marker_at($path, ['.composer'], $BROWSE_ROOT):
                 echo '<div style="position: relative; border: 4px dashed #6B4329;">'
                   . '<a href="#!" data-open-app="tools/registry/composer"><img src="resources/images/directory-composer.png" width="50" height="32" alt=""></a>'
-                  . '<a href="#!" data-dir="' . $relativePath . '"
+                  . '<a href="#!" data-dir="' . basename($path) . '"
    data-open-app="tools/registry/composer"
    data-open-after-dir="1">' . basename($path) . '/</a>'
 
@@ -1327,7 +1327,7 @@ switch ($context) {
                 echo '<div style="position: relative; border: 4px dashed #F05033;">'
                   . '<a href="#!"
    data-open-app="tools/code/git"><img src="resources/images/directory-git.png" width="50" height="32" alt=""></a>'
-                  . '<a href="#!" data-dir="' . $relativePath . '"
+                  . '<a href="#!" data-dir="' . basename($path) . '"
    data-open-app="tools/code/git"
    data-open-after-dir="1">' . basename($path) . '/</a>'
                   //. '<a href="#!" onclick="openApp(\'tools/code/git\');">' // "?path=' . basename($path) . '" 
@@ -1792,83 +1792,139 @@ ob_start(); ?>
   $UI_APP['script'] = ob_get_contents();
   ob_end_clean();
 
-  if (false) { ?>
-  </script>
-<?php }
+  if (false) { ?></script><?php }
 
-  ob_start(); ?>
-<!DOCTYPE html>
-<html>
+  /**
+   * Expect $UI_APP = ['style' => '...', 'body' => '...', 'script' => '...'];
+   * This file will:
+   *   - If included: return $UI_APP as-is (no HTML rendering, no $UI_APP['html'])
+   *   - If accessed directly: bootstrap (if needed), render and echo a full HTML page, then exit
+   */
 
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  if (!isset($UI_APP) || !is_array($UI_APP)) {
+    $UI_APP = ['style' => '', 'body' => '', 'script' => ''];
+  }
 
-  <link rel="stylesheet" href="//code.jquery.com/ui/1.12.1/themes/smoothness/jquery-ui.css" />
+  /* ───────────────────────────── Helpers ───────────────────────────── */
 
-  <?php
-  // (APP_IS_ONLINE && check_http_status('https://cdn.tailwindcss.com') ? 'https://cdn.tailwindcss.com' : APP_URL . 'resources/js/tailwindcss-3.3.5.js')?
-// Path to the JavaScript file
-  $path = app_base('resources', null, 'abs') . 'js/tailwindcss-3.3.5.js';
+  $__isDirect = (realpath($_SERVER['SCRIPT_FILENAME'] ?? '') === __FILE__);
+  $__hasApp = defined('APP_RUNNING');
 
-  // Create the directory if it doesn't exist
-  is_dir(dirname($path)) or mkdir(dirname($path), 0755, true);
+  /**
+   * Resolve and include bootstrap if we’re executed from /public or APP isn’t running yet.
+   */
+  $__maybeBootstrap = function (): void {
+    if (defined('APP_RUNNING'))
+      return;
 
-  // URL for the CDN
-  $url = 'https://cdn.tailwindcss.com';
+    // If launched from /public, move to project root
+    $scriptDirBase = basename(dirname(realpath($_SERVER['SCRIPT_FILENAME'] ?? __FILE__)));
+    if ($scriptDirBase === 'public') {
+      @chdir(dirname(__DIR__)); // go up from /public to project root
+    }
 
-  // Check if the file exists and if it needs to be updated
-  if (defined('APP_IS_ONLINE') && APP_IS_ONLINE)
-    if (!is_file($path) || (time() - filemtime($path)) > 5 * 24 * 60 * 60) { // ceil(abs((strtotime(date('Y-m-d')) - strtotime(date('Y-m-d',strtotime('+5 days',filemtime($path . 'tailwindcss-3.3.5.js'))))) / 86400)) <= 0 
-      // Download the file from the CDN
-      $handle = curl_init($url);
-      curl_setopt($handle, CURLOPT_RETURNTRANSFER, true);
-      $js = curl_exec($handle);
+    $bootstrap = __DIR__ . '/../bootstrap/bootstrap.php';
+    if (is_file($bootstrap)) {
+      require_once $bootstrap;
+    }
+  };
 
-      // Check if the download was successful
-      if (!empty($js)) {
-        // Save the file
-        file_put_contents($path, $js) or $errors['JS-TAILWIND'] = $url . ' returned empty.';
+  /**
+   * Get Tailwind script src (CDN if online and reachable; fallback to cached local copy).
+   * Will refresh local cache every 5 days when APP_IS_ONLINE is true.
+   */
+  $__tailwindSrc = function (string $version = '3.3.5'): string {
+    // You have app_base() and check_http_status() in your project.
+    $cdnUrl = 'https://cdn.tailwindcss.com';
+    $localPath = rtrim(app_base('resources', null, 'abs'), DIRECTORY_SEPARATOR) . '/js/tailwindcss-' . $version . '.js';
+    $localRelDir = rtrim(app_base('resources', null, 'rel'), '/'); // e.g. 'resources/'
+    $localRel = $localRelDir . 'js/tailwindcss-' . $version . '.js';
+
+    // Ensure local dir
+    is_dir(dirname($localPath)) || @mkdir(dirname($localPath), 0755, true);
+
+    // Online + stale or missing → refresh cache (every 5 days)
+    if (defined('APP_IS_ONLINE') && APP_IS_ONLINE) {
+      $stale = !is_file($localPath) || (time() - @filemtime($localPath) > 5 * 24 * 60 * 60);
+      if ($stale) {
+        $ch = curl_init($cdnUrl);
+        curl_setopt_array($ch, [
+          CURLOPT_RETURNTRANSFER => true,
+          CURLOPT_FOLLOWLOCATION => true,
+          CURLOPT_TIMEOUT => 10,
+        ]);
+        $js = curl_exec($ch);
+        curl_close($ch);
+        if ($js) {
+          @file_put_contents($localPath, $js);
+        }
       }
-    } ?>
+    }
 
-  <script
-    src="<?= defined('APP_IS_ONLINE') && APP_IS_ONLINE && check_http_status($url) ? substr($url, strpos($url, parse_url($url)['host']) + strlen(parse_url($url)['host'])) : substr($path, strpos($path, dirname(app_base('resources', null, 'rel') . 'js'))) ?>"></script>
+    // Prefer CDN when reachable, else local relative path
+    if (defined('APP_IS_ONLINE') && APP_IS_ONLINE && function_exists('check_http_status') && check_http_status($cdnUrl)) {
+      // Use protocol-relative to match your original pattern
+      $host = parse_url($cdnUrl, PHP_URL_HOST);
+      $pos = strpos($cdnUrl, $host);
+      return substr($cdnUrl, $pos + strlen($host)); // e.g. "//cdn.tailwindcss.com"
+    }
 
-  <style type="text/tailwindcss">
-    <?= $UI_APP['style']; ?>
-  </style>
-</head>
+    return $localRel; // e.g. "resources/js/tailwindcss-3.3.5.js"
+  };
 
-<body>
-  <?= $UI_APP['body']; ?>
+  /**
+   * Render full page.
+   */
+  $__renderPage = function (array $UI_APP) use ($__tailwindSrc): void {
+    $tailwindSrc = $__tailwindSrc();
+    ?>
+  <!DOCTYPE html>
+  <html>
 
-  <!-- https://cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.min.js -->
-  <script src="//code.jquery.com/jquery-1.12.4.js"></script>
-  <script src="//code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
-  <!-- <script src="resources/js/jquery/jquery.min.js"></script> -->
-  <script>
-    <?= $UI_APP['script']; ?>
-  </script>
-</body>
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-</html>
-<?php $UI_APP['html'] = ob_get_contents();
-ob_end_clean();
+    <link rel="stylesheet" href="//code.jquery.com/ui/1.12.1/themes/smoothness/jquery-ui.css" />
+    <script src="<?= htmlspecialchars($tailwindSrc, ENT_QUOTES) ?>"></script>
 
-// bootstrap if directly accessed
-if (__FILE__ == get_required_files()[0] && __FILE__ == realpath($_SERVER["SCRIPT_FILENAME"]))
-  if ($path = basename(dirname(get_required_files()[0])) == 'public') { // (basename(getcwd())
-    chdir('../');
-    if ($path = realpath(/*'config' . DIRECTORY_SEPARATOR . */ 'bootstrap' . DIRECTORY_SEPARATOR . 'bootstrap.php')) // is_file('bootstrap.php')
-      require_once $path;
+    <style type="text/tailwindcss">
+      <?= $UI_APP['style'] ?? '' ?>
 
-    //die(var_dump(APP_PATH));
-  } else
-    die(var_dump("Path was not found. file=$path"));
+      </style>
+  </head>
 
-//check if file is included or accessed directly
-if (defined('APP_RUNNING') && isset($_GET['app']) && $_GET['app'] == 'directory' && APP_DEBUG)
-  exit($UI_APP['html']);
-else
+  <body>
+    <?= $UI_APP['body'] ?? '' ?>
+
+    <!-- jQuery + jQuery UI -->
+    <script src="//code.jquery.com/jquery-1.12.4.js"></script>
+    <script src="//code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
+
+    <script>
+      <?= $UI_APP['script'] ?? '' ?>
+
+    </script>
+  </body>
+
+  </html>
+  <?php
+  };
+
+  /* ───────────────────────────── Flow ───────────────────────────── */
+
+  if ($__isDirect) {
+    // bootstrap (if not already)
+    $__maybeBootstrap();
+
+    // If bootstrap failed to set the project root and we’re not where we expect, error out
+    // (Optional strictness — keep or remove as you like)
+    // if (!defined('APP_RUNNING')) { die('Bootstrap failed.'); }
+  
+    // Render and exit — DO NOT populate $UI_APP['html']
+    $__renderPage($UI_APP);
+    exit;
+  }
+
+  // If included: return data (no HTML string added)
   return $UI_APP;
