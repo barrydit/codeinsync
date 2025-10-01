@@ -10,155 +10,27 @@ global $errors;
 /**
  * Small utility class for path normalization / query building.
  */
-final class PathUtils
-{
-  public static function norm(?string $p): string
-  {
-    $p = $p ?? '';
-    $p = str_replace('\\', '/', $p);
-    $p = preg_replace('#/+#', '/', $p);       // collapse multiple slashes
-    $p = preg_replace('#(^|/)\./#', '$1', $p); // remove "./"
-    return trim($p, '/');
-  }
 
-  /** Get parent path, with trailing slash (or empty string if no parent) */
-  public static function parentPath(?string $p): string
-  {
-    $p = self::norm($p);
-    if ($p === '')
-      return '';
-    // dirname trick with leading slash so dirname() behaves
-    $d = dirname('/' . $p);
-    return $d === '/' ? '' : ltrim($d, '/') . '/';
-  }
 
-  /** Extract best-guess [client, domain] from APP_ROOT like "projects/clients/000-Doe,John/example.com" */
-  public static function clientDomainFromRoot(string $root): array
+// --- helpers (soft fallbacks if you already have them elsewhere)
+if (!function_exists('get_str')) {
+  function get_str(string $k, $default = null)
   {
-    $parts = array_values(array_filter(explode('/', self::norm($root)), 'strlen'));
-    // Heuristic: find "clients" or "projects" and take next two as client/domain
-    $idx = array_search('clients', $parts, true);
-    if ($idx === false)
-      $idx = array_search('projects', $parts, true);
-    $client = $parts[$idx + 1] ?? '';
-    $domain = $parts[$idx + 2] ?? '';
-    return [$client, $domain];
+    return isset($_GET[$k]) ? (string) $_GET[$k] : $default;
   }
-
-  public static function stripLeading(string $p, string $prefix): string
+}
+if (!function_exists('base_val')) {
+  // expects APP_BASE[...] available (env/constants). Fallback to defaults.
+  function base_val(string $key): string
   {
-    $p = self::norm($p);
-    $prefix = self::norm($prefix);
-    if ($prefix !== '' && strpos($p . '/', $prefix . '/') === 0) {
-      return ltrim(substr($p, strlen($prefix)), '/');
-    }
-    return $p;
-  }
-
-  public static function onlyOneScope(array $GET): array
-  {
-    if (!empty($GET['project'])) {
-      return ['project' => $GET['project']];
-    }
-    if (!empty($GET['client'])) {
-      return ['client' => $GET['client'], 'domain' => '']; // drop domain
-    }
-    if (!empty($GET['domain'])) {
-      return ['domain' => $GET['domain']];
-    }
-    return [];
-  }
-
-  public static function buildChildPath(string $base, string $child): string
-  {
-    $base = self::norm($base);
-    $child = self::norm($child);
-    return ($base === '' ? $child : $base . '/' . $child) . '/';
+    $base = defined('APP_BASE') ? APP_BASE : ($_ENV['APP_BASE'] ?? []);
+    $v = $base[$key] ?? ($key === 'clients' ? 'clients/' : ($key === 'projects' ? 'projects/' : ''));
+    // ensure trailing slash once, allow "../clients/"
+    $v = rtrim(str_replace('\\', '/', $v), '/') . '/';
+    return $v;
   }
 }
 
-/* ---------- URL query builder that honors your scenarios ---------- */
-final class QueryUrl
-{
-  /**
-   * Build href by preserving current scope from $_GET:
-   * - If project is present => only project (exclusive)
-   * - Else keep client (if present) and domain (if present)
-   * - Always set path to $nextPath (can be '' to mean context root)
-   */
-  public static function build(array $GET, string $nextPath): string
-  {
-    $q = self::scope($GET);
-
-    // If you'd like to retain additional harmless params, whitelist here:
-    // foreach (['view','mode'] as $k) if (isset($GET[$k])) $q[$k] = $GET[$k];
-
-    $q['path'] = $nextPath;
-
-    // Optional: avoid redundant path when it equals the scope string
-    foreach (['project', 'domain'] as $k) {
-      if (!empty($q[$k]) && rtrim($q[$k], '/') === rtrim($nextPath, '/')) {
-        // keep explicit path anyway? If not, uncomment next line to drop it.
-        // unset($q['path']);
-      }
-    }
-
-    // Filter out empties and build
-    $q = array_filter($q, static fn($v) => $v !== '' && $v !== null);
-    return '?' . http_build_query($q);
-  }
-
-  /** Scope rules: project is exclusive; client & domain may co-exist. */
-  private static function scope(array $GET): array
-  {
-    $out = [];
-    if (!empty($GET['project'])) {
-      $out['project'] = $GET['project'];
-      return $out; // exclusive
-    }
-    if (!empty($GET['client']))
-      $out['client'] = $GET['client'];
-    if (!empty($GET['domain']))
-      $out['domain'] = $GET['domain'];
-    return $out;
-  }
-}
-
-function is_top_marker_at(string $absPath, array $names, string $rootDir): bool
-{
-  $root = rtrim(str_replace('\\', '/', $rootDir), '/');
-  $rp = str_replace('\\', '/', @realpath($absPath) ?: $absPath);
-
-  // must be inside the browse root
-  $prefix = $root . '/';
-  if ($rp !== $root && strncmp($rp, $prefix, strlen($prefix)) !== 0)
-    return false;
-
-  // relative path from root must be a single segment
-  $rel = ltrim(substr($rp, strlen($root)), '/');
-  if ($rel === '' || strpos($rel, '/') !== false)
-    return false;
-
-  return in_array($rel, $names, true);
-}
-
-function base_val(string $key): string
-{
-  $v = APP_BASE[$key] ?? '';
-  return rtrim($v, '/') . '/';
-}
-
-function norm_path(string $p): string
-{
-  // collapse duplicate slashes; keep leading / if present
-  $p = preg_replace('#/+#', '/', $p);
-  return $p;
-}
-
-function get_str(string $k): ?string
-{
-  return isset($_GET[$k]) ? trim((string) $_GET[$k]) : null;
-}
 
 // defined('APP_BASE') or require_once APP_PATH . 'config/constants.paths.php';
 // defined('APP_URL_BASE') or require_once APP_PATH . 'config/constants.url.php';
@@ -175,273 +47,9 @@ function get_str(string $k): ?string
 if (preg_match('/^([\w\-.]+)\.php$/', basename(__FILE__), $matches))
   ${$matches[1]} = $matches[1];
 
-// ---- read inputs ----------------------------------------------------------
 
-// Read raw
-$clientRaw = get_str('client');
-$domainRaw = get_str('domain');
-$projectRaw = get_str('project');
-$pathRaw = get_str('path');
 
-// Per-field sanitizers:
-// - client: allow letters/digits, dot, underscore, hyphen, space, and COMMA (NO slash)
-// - domain: allow domain chars only (no comma, no spaces)
-// - project: typical slug: letters/digits, dot, underscore, hyphen
-// - path: allow safe path chars + slash (but NOT ".." traversal)
-$cleanClient = fn($s) => preg_replace('~[^a-z0-9._,\- ]~i', '', (string) $s);
-$cleanDomain = fn($s) => preg_replace('~[^a-z0-9.\-]~i', '', (string) $s);
-$cleanProject = fn($s) => preg_replace('~[^a-z0-9._\-]~i', '', (string) $s);
-$cleanPath = fn($s) => preg_replace('~[^a-z0-9._\-\/]~i', '', (string) $s);
 
-// Apply
-$client = $cleanClient($clientRaw);     // ex: 000-clientname
-$domain = $cleanDomain($domainRaw);     // ex: example.com
-$project = $cleanProject($projectRaw);    // ex: 123project
-$path = $cleanPath($pathRaw);       // ex: sub-directory/ (may be '')
-
-// Optional: hard-block traversal in path
-if (strpos($path, '..') !== false)
-  $path = '';
-
-// Prefer APP_PATH constant; fallback to $_ENV
-$APP_PATH = defined('APP_PATH') ? APP_PATH : ($_ENV['APP_PATH'] ?? '/');
-// Normalized copy used ONLY for APP_ROOT stripping
-$APP_PATH_N = rtrim($APP_PATH, '/\\') . '/';
-
-// ---- Precompute bases -----------------------------------------------------
-$BASE_CLIENTS = base_val('clients');
-$BASE_PROJECTS = base_val('projects');
-
-$absDir = null;
-$ctxRoot = null;    // NEW: context root (for APP_ROOT)
-$context = null;
-
-// $nullish = fn($v) => $v === null || $v === '';
-
-$populated = [
-  'client' => ($client !== null && $client !== ''),
-  'domain' => ($domain !== null && $domain !== ''),
-  'project' => ($project !== null && $project !== ''),
-  'path' => ($path !== null && $path !== ''),
-];
-
-$hasClient = array_key_exists('client', $_GET);
-$hasDomain = array_key_exists('domain', $_GET);
-$hasProject = array_key_exists('project', $_GET);
-$hasPath = array_key_exists('path', $_GET);
-
-// Consider empty path as not present for the 3a base-cases:
-$hasNonEmptyPath = $hasPath && $path !== '';
-
-// 3a) ONLY empty client/project → base
-
-// 3a) ONLY empty base listings (presence-aware)
-// no params -> app
-if (!$hasClient && !$hasDomain && !$hasProject && !$hasNonEmptyPath) {
-  $ctxRoot = $APP_PATH_N;
-  $absDir = $APP_PATH;
-  $context = 'app';
-} elseif ($hasClient && $client === '' && $hasDomain && $domain === '' && !$hasProject && !$hasNonEmptyPath) {
-  $ctxRoot = $APP_PATH_N . $BASE_CLIENTS;
-  $absDir = $ctxRoot;
-  $context = 'clients-base';
-} elseif ($hasProject && $project === '' && !$hasClient && !$hasDomain && !$hasNonEmptyPath) {
-  $ctxRoot = $APP_PATH_N . $BASE_PROJECTS;
-  $absDir = $ctxRoot;
-  $context = 'projects-base';
-} elseif ($hasClient && $client === '' && !$hasProject && !$hasDomain && !$hasNonEmptyPath) {
-  $ctxRoot = $APP_PATH_N . $BASE_CLIENTS;
-  $absDir = $ctxRoot;
-  $context = 'clients-base';
-} elseif ($hasDomain && $domain === '' && !$hasClient && !$hasProject && !$hasNonEmptyPath) {
-  $ctxRoot = $APP_PATH_N . $BASE_CLIENTS;
-  $absDir = $ctxRoot;
-  $context = 'clients-base';
-}
-
-// 3b) ONLY path → redirect (run only if still undecided)
-if ($absDir === null && $populated['path'] && !$populated['client'] && !$populated['domain'] && !$populated['project']) {
-  $accept = $_SERVER['HTTP_ACCEPT'] ?? '';
-  $isJson = isset($_GET['json']) || stripos($accept, 'application/json') !== false;
-
-  if (!$isJson) {
-    $target = ($_SERVER['SCRIPT_NAME'] ?? '/') . '?' . http_build_query([
-      'app' => 'devtools/directory',
-      'path' => $path,
-    ]);
-
-    $curPath = $_SERVER['SCRIPT_NAME'] ?? '/';
-    parse_str($_SERVER['QUERY_STRING'] ?? '', $curQS);
-    ksort($curQS);
-    $current = $curPath . (empty($curQS) ? '' : '?' . http_build_query($curQS));
-
-    if ($current !== $target && !headers_sent()) {
-      header("Location: $target", true, 302);
-      exit;
-    }
-  }
-}
-
-/*
-if (($populated['path'] ?? false) && count($populated) === 1) {
-  $redir = '/?app=' . urlencode('devtools/directory') . '&path=' . urlencode($path);
-  if (($_SERVER['REQUEST_URI'] ?? '') !== $redir) {
-    header('Location: ' . $redir, true, 302);
-    exit;
-  }
-}*/
-
-// ---- Decide the effective directory (only if not decided yet) ------------
-// 3c) Main decision tree (only if still undecided)
-if ($absDir === null) {
-  // ---- decide the effective directory --------------------------------------
-//
-// Priority by your rules:
-//
-// 1) client + domain + optional path:
-//    APP_PATH . APP_BASE['clients'] . client . '/' . domain . '/' . path
-// 2) domain + path (no client):
-//    APP_PATH . APP_BASE['clients'] . domain . '/' . path
-// 3) project + path:
-//    APP_PATH . APP_BASE['projects'] . project . '/' . path
-// 4) only path:
-//    APP_PATH . path
-//
-// Empty fallbacks you specified:
-// - client=='' OR domain=='' OR path=='clients/'  => show base clients dir: APP_PATH . APP_BASE['clients']
-// - project==''                                    => show base projects dir: APP_PATH . APP_BASE['projects']
-//
-  if ($hasClient && $client !== '' && $hasDomain && $domain !== '') {
-    // client + domain (+ optional path)
-    $ctxRoot = $APP_PATH_N . $BASE_CLIENTS . $client . '/' . $domain . '/';
-    $absDir = $ctxRoot . ($hasPath && $path !== '' ? rtrim($path, '/') . '/' : '');
-    $context = 'clients';
-
-  } elseif (
-    $hasClient && $client !== ''
-    && (!$hasDomain || ($hasDomain && $domain === ''))
-    && $hasPath && $path !== ''
-  ) {
-    // client + path (no domain)
-    $ctxRoot = $APP_PATH_N . $BASE_CLIENTS . $client . '/';
-    $absDir = $ctxRoot . rtrim($path, '/') . '/';
-    $context = 'clients';
-
-  } elseif (
-    $hasClient && $client !== ''
-    && (!$hasDomain || ($hasDomain && $domain === ''))
-    && (!$hasPath || ($hasPath && $path === ''))
-  ) {
-    // client only (no domain, no path)
-    $ctxRoot = $APP_PATH_N . $BASE_CLIENTS . $client . '/';
-    $absDir = $ctxRoot;
-    $context = 'clients';
-
-  } elseif ($hasDomain && $domain !== '') {
-    // domain (+ optional path)
-    $ctxRoot = $APP_PATH_N . $BASE_CLIENTS . $domain . '/';
-    $absDir = $ctxRoot . ($hasPath && $path !== '' ? rtrim($path, '/') . '/' : '');
-    $context = 'clients';
-
-  } elseif ($hasProject && $project !== '') {
-    // project (+ optional path)
-    $ctxRoot = $APP_PATH_N . $BASE_PROJECTS . $project . '/';
-    $absDir = $ctxRoot . ($hasPath && $path !== '' ? rtrim($path, '/') . '/' : '');
-    $context = 'projects';
-
-  } elseif (
-    ($hasClient && $client === '') ||
-    ($hasDomain && $domain === '') ||
-    ($hasPath && $path !== '' && preg_match('~^clients(?:/|$)~', $path))
-  ) {
-    // clients fallbacks
-    $ctxRoot = $APP_PATH_N . $BASE_CLIENTS;
-    $absDir = $ctxRoot;
-    $context = 'clients-base';
-
-  } elseif ($hasPath && $path !== '') {
-    // only path → app
-    $ctxRoot = $APP_PATH_N; // app root context
-    $absDir = $APP_PATH_N . rtrim($path, '/') . '/';
-    $context = 'app';
-
-  } else {
-    // default: app root
-    $ctxRoot = $APP_PATH_N;
-    $absDir = $APP_PATH_N;
-    $context = 'app';
-  }
-}
-/*
-    // ---- APP_ROOT + normalize + existence ------------------------------------
-    $ctxRoot = rtrim($ctxRoot, '/\\') . '/';
-    $absDir = rtrim($absDir, '/\\') . '/'; // norm_path($absDir);
-
-    // ---- APP_ROOT from CONTEXT ROOT ONLY (no path)
-    $APP_ROOT_REL = preg_replace('#^' . preg_quote($APP_PATH_N, '#') . '#', '', $ctxRoot);
-    $APP_ROOT_REL = rtrim($APP_ROOT_REL, '/'); // '' | 'clients/Client/Domain' | 'projects/Proj'
-
-    if (!defined('APP_ROOT')) {
-      define('APP_ROOT', $APP_ROOT_REL);
-    }
-
-    if (!defined('APP_ROOT_DIR')) {
-      define('APP_ROOT_DIR', $ctxRoot);
-    }
-    // ---- existence check ------------------------------------------------------
-    $absDir = rtrim($absDir ?? '', '/\\') . '/';
-*/
-
-// helpers
-$norm = static fn($s) => trim(str_replace('\\', '/', $s ?? ''), '/');
-$trail = static fn($s) => $s === '' ? '' : rtrim($s, '/\\') . '/';
-
-// Labels from APP_BASE (handles "../clients/")
-$clientsLabel = basename($norm(APP_BASE['clients'] ?? 'clients/'));   // "clients"
-$projectsLabel = basename($norm(APP_BASE['projects'] ?? 'projects/'));  // "projects"
-
-// Sanitized subpath from URL
-$PATH_SUB = $norm($_GET['path'] ?? '');
-
-// De-dup leading base when context is already that base
-if ($context === 'clients-base') {
-  if ($PATH_SUB === $clientsLabel)
-    $PATH_SUB = '';
-  elseif (strpos($PATH_SUB, $clientsLabel . '/') === 0)
-    $PATH_SUB = substr($PATH_SUB, strlen($clientsLabel . '/'));
-}
-if ($context === 'projects-base') {
-  if ($PATH_SUB === $projectsLabel)
-    $PATH_SUB = '';
-  elseif (strpos($PATH_SUB, $projectsLabel . '/') === 0)
-    $PATH_SUB = substr($PATH_SUB, strlen($projectsLabel . '/'));
-}
-
-// ---- browse subpath (already de-duped earlier) ----
-$PATH_SUB_BROWSE = $trail($PATH_SUB);                 // '' or 'example.com/' etc.
-$BROWSE_ROOT = $trail($ctxRoot);                  // context root from 3c
-$absDir = $trail($BROWSE_ROOT . $PATH_SUB_BROWSE);
-$exists = is_dir($absDir);
-
-// ---- APP_ROOT: install context relative to APP_PATH ----
-// '' | '../clients/client1/domain.com/' | '../clients/domain.com/' | 'projects/proj_1/'
-$APP_ROOT_REL = ($APP_ROOT_REL === '') ? '' : $trail($APP_ROOT_REL);
-
-// ---- APP_ROOT_DIR: install subpath INSIDE context (raw from query, no dedupe) ----
-$INSTALL_SUB = isset($_GET['path']) ? (string) $_GET['path'] : '';
-$INSTALL_SUB = preg_replace('~[^a-z0-9._\-/]~i', '', $INSTALL_SUB); // allow a–z 0–9 . _ - /
-if (strpos($INSTALL_SUB, '..') !== false)
-  $INSTALL_SUB = '';        // block traversal
-$INSTALL_SUB = ($INSTALL_SUB === '') ? '' : $trail($INSTALL_SUB);
-
-// ---- define constants once ----
-if (!defined('APP_ROOT'))
-  define('APP_ROOT', $APP_ROOT_REL);
-if (!defined('APP_ROOT_DIR'))
-  define('APP_ROOT_DIR', $INSTALL_SUB);
-
-// (optional) full install target
-$COMPLETE_PATH = rtrim(APP_PATH, '/\\') . '/' . APP_ROOT . APP_ROOT_DIR;
 
 /*
 // ── Browsing roots (UI listing) ───────────────────────────────────────────────
@@ -995,10 +603,10 @@ if (!$exists) {
   echo 'Missing directory: ' . htmlspecialchars($absDir ?? '');
 }
 
-// dd("APP_PATH = " . APP_PATH . '  APP_ROOT = ' . APP_ROOT . '  APP_ROOT_DIR = ' . APP_ROOT_DIR, false);
+dd("APP_PATH = " . APP_PATH . '  APP_ROOT = ' . APP_ROOT . '  APP_ROOT_DIR = ' . APP_ROOT_DIR, false);
 
 // ---- existence check ------------------------------------------------------
-switch ($context) {
+switch (ctx('context')) {
   case 'clients-base':
     // dd("$context : $absDir | APP_ROOT=" . APP_ROOT, false);
     ?>
@@ -1109,7 +717,7 @@ switch ($context) {
 
     // dd(APP_ROOT, false);
 
-    $path = rtrim($absDir, '/\\') . '/';
+    $path = rtrim(ctx('absDir'), '/\\') . '/';
     /*
           if (defined('APP_ROOT') && APP_ROOT) {
             $path .= APP_ROOT;
@@ -1310,31 +918,7 @@ switch ($context) {
             $dataDir = htmlspecialchars($nextPath, ENT_QUOTES);
             /* ---------- end usage ---------- */
             switch (true) {
-              case is_top_marker_at($path, ['.composer'], $BROWSE_ROOT):
-                echo '<div style="position: relative; border: 4px dashed #6B4329;">'
-                  . '<a href="#!" data-open-app="tools/registry/composer"><img src="resources/images/directory-composer.png" width="50" height="32" alt=""></a>'
-                  . '<a href="#!" data-dir="' . basename($path) . '"
-   data-open-app="tools/registry/composer"
-   data-open-after-dir="1">' . basename($path) . '/</a>'
 
-                  //. '<a href="#!" onclick="return handleClick(event, \'' . $relativePath . '\'); openApp(\'tools/registry/composer\');">' . '<img src="resources/images/directory-composer.png" width="50" height="32" /></a>'
-                  //. '<a href="' . /* basename(__FILE__) .*/ '#!' /* . $url */ . '" data-path="vendor/" onclick="return App[\'devtools/directory\'].handleClick(\'' . $relativePath . '\')">' . basename($path) . '/</a>  // "?path=' . basename($path) . '"   
-                  . '</div>' . "\n";
-                break;
-
-              // add others if you like
-              case is_top_marker_at($path, ['.git', '.github', 'bootstrap'], $BROWSE_ROOT):
-                echo '<div style="position: relative; border: 4px dashed #F05033;">'
-                  . '<a href="#!"
-   data-open-app="tools/code/git"><img src="resources/images/directory-git.png" width="50" height="32" alt=""></a>'
-                  . '<a href="#!" data-dir="' . basename($path) . '"
-   data-open-app="tools/code/git"
-   data-open-after-dir="1">' . basename($path) . '/</a>'
-                  //. '<a href="#!" onclick="openApp(\'tools/code/git\');">' // "?path=' . basename($path) . '" 
-                  //. '<img src="resources/images/directory-git.png" width="50" height="32" /></a>'
-                  //. '<a href="' . /* basename(__FILE__) .*/ '?' . $url . '" onclick="handleClick(event, \'' . $relativePath . '\'); openApp(\'tools/code/git\');">' . basename($path) . '/</a>' .
-                  . '</div>' . "\n";
-                break;
 
               default:
                 // Render the folder link
@@ -1891,7 +1475,7 @@ ob_start(); ?>
     <style type="text/tailwindcss">
       <?= $UI_APP['style'] ?? '' ?>
 
-      </style>
+                        </style>
   </head>
 
   <body>

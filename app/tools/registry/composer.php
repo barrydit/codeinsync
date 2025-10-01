@@ -4,7 +4,7 @@
 defined('APP_PATH') || define('APP_PATH', dirname(__DIR__, 3) . '/');
 defined('CONFIG_PATH') || define('CONFIG_PATH', APP_PATH . 'config/');
 
-const APP_ROOT = '123';
+// const APP_ROOT = '123';
 
 // Ensure bootstrap has run (defines env/paths/url/app and helpers)
 if (!defined('APP_BOOTSTRAPPED')) {

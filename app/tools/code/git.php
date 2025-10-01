@@ -192,7 +192,7 @@ defined('GIT_LATEST') or define('GIT_LATEST', GIT_VERSION);
       style="position: relative; display: block; width: 398px; background-color: rgba(251,247,241); z-index: 2;">
       <div style="display: inline-block; text-align: left; width: 125px;">
         <div class="git-menu text-sm"
-          style="cursor: pointer; font-weight: bold; padding-left: 25px; border: 1px solid #000;">Main Menu</div>
+          style="cursor: pointer; font-weight: bold; padding-left: 25px; border: 1px solid #000; width: 150px;">Main Menu <a href="#" title="<?= APP_ROOT ?>">Test</a></div>
         <div class="text-xs" style="display: inline-block; border: 1px solid #000;">
           <a class="text-sm" id="app_git-frameMenuPrev"
             href="<?= /*(!empty(APP_QUERY) ? '?' . http_build_query(APP_QUERY) : '') . */ (defined('APP_ENV') && APP_ENV == 'development' ? '#!' : '#') ?>">
