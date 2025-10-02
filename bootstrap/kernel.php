@@ -129,6 +129,8 @@ spl_autoload_register('autoload_class');
 // Shutdown Hook (for fatal error logging & profiling)
 // ------------------------------------------------------
 
+require_once __DIR__ . '/coverage-report.php';
+
 register_shutdown_function(function () {
     //Shutdown::triggerShutdown('');  //
 
@@ -152,6 +154,21 @@ register_shutdown_function(function () {
     $execTime = round((defined('APP_END') ? APP_END : microtime(true)) - APP_START, 3);
 
     error_log("APP_CONTEXT: " . APP_CONTEXT);
+
+    // Stop drivers cleanly
+    if (defined('APP_COVERAGE_DRIVER')) {
+        if (APP_COVERAGE_DRIVER === 'xdebug' && function_exists('xdebug_stop_code_coverage')) {
+            // Fetch before stop if you prefer; we fetch inside generate()
+            // xdebug_stop_code_coverage(); // optional; generate() calls get_coverage directly
+        } elseif (APP_COVERAGE_DRIVER === 'pcov' && function_exists('pcov\stop')) {
+            \pcov\stop();
+        }
+    }
+
+    // Generate and print coverage report
+    //$report = CoverageReport::generate($files = array_filter(get_required_files(), fn($f) => str_starts_with($f, APP_PATH)));
+    //CoverageReport::print($report);
+
     // error_log("Execution time: {$execTime}s | CWD: " . getcwd());
 
     // check_internet_connection();

@@ -41,8 +41,8 @@ $COMPOSER_PROJECT_ROOT = $COMPOSER_PROJECT_ROOT ?? normalize_dir(
     function_exists('app_base') ? (app_base('project') ?: APP_PATH) : APP_PATH
 );
 $COMPOSER_VENDOR_DIR = $COMPOSER_VENDOR_DIR ?? normalize_dir($COMPOSER_PROJECT_ROOT . 'vendor');
-$COMPOSER_JSON = $COMPOSER_JSON ?? ($COMPOSER_PROJECT_ROOT . 'composer.json');
-$COMPOSER_LOCK = $COMPOSER_LOCK ?? ($COMPOSER_PROJECT_ROOT . 'composer.lock');
+$COMPOSER_JSON = $COMPOSER_JSON ?? APP_PATH . (defined('APP_ROOT') ? APP_ROOT : '') . 'composer.json' ?? ($COMPOSER_PROJECT_ROOT . 'composer.json');
+$COMPOSER_LOCK = $COMPOSER_LOCK ?? (defined('APP_ROOT') ? APP_ROOT : '') . 'composer.lock' ?? ($COMPOSER_PROJECT_ROOT . 'composer.lock');
 $COMPOSER_CONFIG_JSON = $COMPOSER_CONFIG_JSON ?? ($COMPOSER_HOME . 'config.json');
 $COMPOSER_AUTH_JSON = $COMPOSER_AUTH_JSON ?? ($COMPOSER_HOME . 'auth.json');
 $COMPOSER_CACHE_DIR = $COMPOSER_CACHE_DIR ?? normalize_dir($COMPOSER_HOME . 'cache');

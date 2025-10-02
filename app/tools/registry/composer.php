@@ -495,7 +495,7 @@ php composer.phar -v
       </div>
 
       <div id="app_composer-frameConf"
-        class="app_composer-frame-container absolute <?= is_file(APP_PATH . 'composer.json') ? 'selected' : ''; ?>"
+        class="app_composer-frame-container absolute <?= is_file(APP_PATH . (defined('APP_ROOT') ? APP_ROOT : '') . 'composer.json') ? 'selected' : ''; ?>"
         style="overflow-x: hidden; overflow-y: auto; height: 230px;">
         <form autocomplete="off" spellcheck="false"
           action="<?= APP_URL . '?' . http_build_query(['app' => 'composer'], ''/*, '&amp;'*/) . (defined('APP_ENV') && APP_ENV == 'development' ? '#!' : '') ?>"

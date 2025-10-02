@@ -55,7 +55,7 @@ foreach ($data['data'] as $model) {
     }
 }
 
-
+/*
   "gpt_alerts": {
     "last_checked": "2025-04-10T14:33:00Z",
     "latest_model": "gpt-4-turbo",
@@ -67,3 +67,4 @@ foreach ($data['data'] as $model) {
       "gpt-5"
     ]
   }
+    */

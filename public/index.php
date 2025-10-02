@@ -5,6 +5,8 @@
 const IS_CLIENT = true;
 const IS_DEVELOPER = false;
 
+require_once __DIR__ . '/../bootstrap/coverage-bootstrap.php';
+
 require_once __DIR__ . '/../config/functions.php';
 require_once __DIR__ . '/../config/constants.env.php';
 require_once __DIR__ . '/../config/constants.paths.php';
@@ -26,6 +28,7 @@ require_once __DIR__ . '/../bootstrap/kernel.php';
  * Counts PHP files, lines of code, and included files excluding vendor/.
  */
 
+/*
 $baseDir = APP_PATH;
 $includedFiles = get_required_files();
 $trackedFiles = [];
@@ -100,6 +103,7 @@ foreach ($sortedFiles as $index => $path) {
   $total_filesize += $fileSize;
   $total_lines += $lineCount;
 }
+*/
 
 session_start();
 $isDev = $_SESSION['mode'] ?? 'unset';
@@ -390,11 +394,14 @@ unset($_SESSION['mode']); ?>
           <span>Memory: <em><b
                 style="color: green;"><?= formatSizeUnits(memory_get_usage()) . '</b> @ <b>' . formatSizeUnits(convertToBytes(ini_get('memory_limit'))); ?></b></em></span><br />
           <span>Source (code): <em
-              style="font-size: 13px;"><?= '[<b>' . formatSizeUnits($total_filesize) . '</b>] <b style="color: red;">' . $total_filesize - 1000000 . '</b>' ?>
+              style="font-size: 13px;"><?= /*'[<b>' . formatSizeUnits($total_filesize) . '</b>] <b style="color: red;">' . $total_filesize - 1000000 . '</b>]'*/ ''; ?>
             </em></span>
           <div style="position: relative; display: block;">
             <div style="position: absolute; display: block; width: 165px; text-align: right;">
-              <?= ' [(<a style="font-weight: bolder; color: green;" href="#" onclick="openApp(\'visual/nodes\');">' . $total_include_files . ' loaded</a>) <b>' . $total_files . '</b> files] <br /> [<b style="color: green;">' . $total_include_lines . '</b> @ <b>' . $total_lines . '</b> lines]'; ?>
+              <?php
+              $report = CoverageReport::generate($files = array_filter(get_required_files(), fn($f) => str_starts_with($f, APP_PATH)));
+              echo ' [(<a style="font-weight: bolder; color: green;" href="#" onclick="openApp(\'visual/nodes\');">' . $report['totals']['files'] . ' loaded</a>)' . /* <b>' . $total_files . '</b> */ ' files] <br />';
+              echo '[<b style="color: green;">' . /*$total_include_lines .*/ $report['totals']['logical_loc'] . '</b> @ <b>' . /*$total_lines .*/ $report['totals']['physical_loc'] . '</b> lines]'; ?>
             </div>
           </div><br /><br />
         </div>
@@ -476,8 +483,18 @@ unset($_SESSION['mode']); ?>
     </div>
     <div class="bottom-panel" id="bottom-panel">Bottom Panel</div>
     <div class="free-space" id="free-space">
-      <div id="app_devtools_directory-container" class="app-fixed" data-draggable="false" data-app="devtools/directory">
-      </div>
+
+      <?php if (APP_DEBUG) {
+        echo '<pre>';
+        $report = CoverageReport::generate($files = array_filter(get_required_files(), fn($f) => str_starts_with($f, APP_PATH)));
+        dd($report, false);
+        //dd($includedFiles, false);
+        echo '</pre>'; ?>
+        Testing
+      <?php } else { ?>
+        <div id="app_devtools_directory-container" class="app-fixed" data-draggable="false" data-app="devtools/directory">
+        </div>
+      <?php } ?>
     </div>
     <div id="app_tools-container"
       style="position: absolute; top: 5%; left: 50%; transform: translate(-50%, -50%); width: 800px; height: 500px; background-color: rgba(255, 255, 255, 0.9); margin-top: 350px; z-index: 5; display: none;">
@@ -623,7 +640,20 @@ unset($_SESSION['mode']); ?>
     </div>
   </div>
   <div class="client-view" id="clientView">
-    <iframe src="test.php"></iframe>
+    <iframe src="<?php
+    if (!defined('APP_ROOT')) {
+      echo 'test.php';
+    } else {
+      if (is_dir(APP_PATH . APP_ROOT . 'public'))
+        if (isset($_GET['project']) && preg_match('/^[a-zA-Z0-9_\-]+$/', $_GET['project']) && is_dir(APP_PATH . APP_ROOT . 'projects/' . $_GET['project'] . '/public'))
+          echo '/projects/' . $_GET['project'] . '/public/';
+        elseif (isset($_GET['client']) && preg_match('/^[a-zA-Z0-9_\-]+$/', $_GET['client']) && is_dir(APP_PATH . APP_ROOT . 'clients/' . $_GET['client'] . '/public'))
+          echo '/clients/' . $_GET['client'] . $_GET['domain'] . '/public/';
+        elseif (isset($_GET['domain']) && preg_match('/^[a-zA-Z0-9_\-\.]+$/', $_GET['domain']) && is_dir(APP_PATH . APP_ROOT . 'domains/' . $_GET['domain'] . '/public'))
+          echo '/clients/' . $_GET['domain'] . '/public/';
+      echo 'test.php';
+    }
+    ?>"></iframe>
   </div>
   <div class="toggle-switch">
     <label>
@@ -1242,7 +1272,13 @@ unset($_SESSION['mode']); ?>
         }
         // run on page load
         if (typeof window.openApp === 'function') {
-          window.openApp('devtools/directory', { from: 'boot', mount: '#free-space' });
+
+          const el = document.getElementById('app_devtools_directory-container');
+
+          if (el) {
+            window.openApp('devtools/directory', { from: 'boot', mount: '#free-space' });
+          }
+
         }
       });
 

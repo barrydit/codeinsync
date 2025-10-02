@@ -31,6 +31,36 @@ if (!function_exists('base_val')) {
   }
 }
 
+function isDomainName(string $name): bool
+{
+  // Trim whitespace and trailing dot
+  $name = trim($name, " \t\n\r\0\x0B.");
+
+  // Reject client folders like "000-Whatever"
+  if (preg_match('/^\d{3}-/', $name))
+    return false;
+
+  // RFC-ish domain (allows subdomains and punycode, TLD up to 63)
+  return (bool) preg_match(
+    '/^(?=.{1,253}$)(?:xn--)?[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?' .
+    '(?:\.(?:xn--)?[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?)+$/i',
+    $name
+  );
+}
+
+/**
+ * Build a query string by cloning $_GET, unsetting some keys, and setting others.
+ */
+function build_query_href(array $GET, array $set, array $unset = []): string
+{
+  $q = $GET;
+  foreach ($unset as $k)
+    unset($q[$k]);
+  foreach ($set as $k => $v)
+    $q[$k] = $v;
+  return '?' . http_build_query($q, '', '&', PHP_QUERY_RFC3986);
+}
+
 
 // defined('APP_BASE') or require_once APP_PATH . 'config/constants.paths.php';
 // defined('APP_URL_BASE') or require_once APP_PATH . 'config/constants.url.php';
@@ -495,16 +525,16 @@ $segments = [];
 $parent = PathUtils::parentPath($visiblePath);
 
 /* ---------- segment: APP_PATH (always) ---------- */
-$segments[] = (APP_ROOT === '') ? sprintf(
-  '[ ' . ($visiblePath !== '' ? '<a href="#!" onclick="return App[\'devtools/directory\'].handleClick(\'\')">%s/</a><a href="#!" onclick="return App[\'devtools/directory\'].handleClick(\'%s\')">%s/</a>'
+$segments[] = (APP_ROOT !== '') ? sprintf(
+  '[ ' . ($visiblePath !== '' ? '<a href="#!" onclick="return App[\'devtools/directory\'].handleClick(\'\')">%s/</a>'
     : '<a href="/">%s/</a>') . ' ]',
-  htmlspecialchars($base),
-  htmlspecialchars($parent, ENT_QUOTES),
-  htmlspecialchars(rtrim($visiblePath, '/'))
+  htmlspecialchars($base)
 )
   : sprintf(
-    '[ <a href="/">%s/</a> ]',
-    htmlspecialchars($base)
+    '[ <a href="/">%s</a>' . ($visiblePath !== '' ? '/' . (!in_array(['client', 'domain', 'project'], $_GET) ? '<a href="#!" onclick="return App[\'devtools/directory\'].handleClick(\'%s\')">%s</a>' : '') : '/') . ' ]',
+    htmlspecialchars($base),
+    htmlspecialchars($parent, ENT_QUOTES),
+    htmlspecialchars(rtrim($visiblePath, '/') . '/')
   );
 
 /* ---------- segment: Context (APP_ROOT or explicit client/project/domain) ---------- */
@@ -524,67 +554,67 @@ if ($root !== '') {
     htmlspecialchars($parent, ENT_QUOTES),
     htmlspecialchars(rtrim($visiblePath, '/'))
   );
-} else {
-  if ($project) {
-    $segments[] = sprintf(
-      ' [ <a href="#!" onclick="return App[\'devtools/directory\'].handleClick(\'\')">%s/</a>' . ($visiblePath !== '' ? '<a href="#!" onclick="return App[\'devtools/directory\'].handleClick(\'%s\')">%s/</a>' : '') . ' ]',
-      htmlspecialchars(rtrim((string) (APP_BASE['projects'] ?? 'projects/'), '/')),
-      htmlspecialchars($parent, ENT_QUOTES),
-      htmlspecialchars(rtrim($visiblePath, '/'))
-    );
-  } elseif ($client || $domain) {
-    /* $segments[] = sprintf(
-      ' [ ' . ($domain && !$client ? '<a href="?domain">Domain:</a> ' : '<a href="?client">Client:</a> <a href="?client=%s" onclick="return App[\'devtools/directory\'].handleClick(\'\')">%s</a>' . (!$domain ? '' : ' Domain: ')) . '<a href="#!" onclick="return App[\'devtools/directory\'].handleClick(\'\')">%s</a>' . ($visiblePath !== '' ? '/<a href="#!" onclick="return App[\'devtools/directory\'].handleClick(\'%s\')">%s/</a>' : '') . ' ]',
-      $domain && !$client ? htmlspecialchars($domain) : htmlspecialchars($client),
-      $domain && !$client ? htmlspecialchars($domain) : htmlspecialchars($client), //APP_BASE['clients'] ?? 'clients/'
-      htmlspecialchars($visiblePath),
-      htmlspecialchars($parent, ENT_QUOTES),
-      htmlspecialchars(rtrim($visiblePath, '/'))
-    ); */
+} //else {
+if ($project && !$client && !$domain) {
+  $segments[] = sprintf(
+    ' [ <a href="/?project" style="font-weight:bold">Project:</a> <a href="#!" onclick="return App[\'devtools/directory\'].handleClick(\'\')">%s/</a>' . ($visiblePath !== '' ? '<a href="#!" onclick="return App[\'devtools/directory\'].handleClick(\'%s\')">%s/</a>' : '') . ' ]',
+    //htmlspecialchars(rtrim((string) (APP_BASE['projects'] ?? 'projects/'), '/')),
+    htmlspecialchars(rtrim($project, '/')),
+    htmlspecialchars($parent, ENT_QUOTES),
+    htmlspecialchars(rtrim($visiblePath, '/'))
+  );
+} elseif ($client || $domain) {
+  /* $segments[] = sprintf(
+    ' [ ' . ($domain && !$client ? '<a href="?domain">Domain:</a> ' : '<a href="?client">Client:</a> <a href="?client=%s" onclick="return App[\'devtools/directory\'].handleClick(\'\')">%s</a>' . (!$domain ? '' : ' Domain: ')) . '<a href="#!" onclick="return App[\'devtools/directory\'].handleClick(\'\')">%s</a>' . ($visiblePath !== '' ? '/<a href="#!" onclick="return App[\'devtools/directory\'].handleClick(\'%s\')">%s/</a>' : '') . ' ]',
+    $domain && !$client ? htmlspecialchars($domain) : htmlspecialchars($client),
+    $domain && !$client ? htmlspecialchars($domain) : htmlspecialchars($client), //APP_BASE['clients'] ?? 'clients/'
+    htmlspecialchars($visiblePath),
+    htmlspecialchars($parent, ENT_QUOTES),
+    htmlspecialchars(rtrim($visiblePath, '/'))
+  ); */
 
-    $fmtParts = [];
-    $args = [];
+  $fmtParts = [];
+  $args = [];
 
-    $fmtParts[] = ' [ ';
+  $fmtParts[] = ' [ ';
 
-    /* Left chunk: "Domain:" OR "Client:" (+ optional Domain:) */
-    if ($domain !== '' && $client === '') {
-      // Domain-only
-      $fmtParts[] = '<a href="?domain">Domain:</a> ';
-      $fmtParts[] = '<a href="?domain=%s" onclick="return App[\'devtools/directory\'].handleClick(\'\')">%s</a>';
-      $args[] = rawurlencode($domain);                 // query value
-      $args[] = htmlspecialchars(rtrim($domain, '/'));             // link label
+  /* Left chunk: "Domain:" OR "Client:" (+ optional Domain:) */
+  if ($domain !== '' && $client === '') {
+    // Domain-only
+    $fmtParts[] = '<a href="?domain" style="font-weight:bold">Domain:</a> ';
+    $fmtParts[] = '<a href="?domain=%s" onclick="return App[\'devtools/directory\'].handleClick(\'\')">%s</a>';
+    $args[] = rawurlencode($domain);                 // query value
+    $args[] = htmlspecialchars(rtrim($domain, '/'));             // link label
 
-    } else {
-      // Client first (if present)
-      $fmtParts[] = '<a href="?client">Client:</a> ';
-      if ($client !== '') {
-        $fmtParts[] = '<a href="?client=%s" onclick="return App[\'devtools/directory\'].handleClick(\'\')">%s</a>';
-        $args[] = rawurlencode($client);
-        $args[] = htmlspecialchars(rtrim($client, '/'));
-      }
-
-      // Optional Domain after client
-      if ($domain !== '') {
-        $fmtParts[] = ' <a href="?domain">Domain:</a> ';
-        $fmtParts[] = '<a href="?domain=%s" onclick="return App[\'devtools/directory\'].handleClick(\'\')">%s</a>';
-        $args[] = rawurlencode($domain);
-        $args[] = htmlspecialchars(rtrim($domain, '/'));
-      }
+  } else {
+    // Client first (if present)
+    $fmtParts[] = '<a href="?client" style="font-weight:bold">Client:</a> ';
+    if ($client !== '') {
+      $fmtParts[] = '<a href="?client=%s" onclick="return App[\'devtools/directory\'].handleClick(\'\')">%s</a>';
+      $args[] = rawurlencode($client);
+      $args[] = htmlspecialchars(rtrim($client, '/'));
     }
 
-    /* Tail: current path + up (only if visiblePath set) */
-    if ($visiblePath !== '') {
-      $fmtParts[] = '/<a href="#!" onclick="return App[\'devtools/directory\'].handleClick(\'%s\')">%s/</a>';
-      $args[] = htmlspecialchars($parent, ENT_QUOTES);               // onclick('…')
-      $args[] = htmlspecialchars(rtrim($visiblePath, '/'));          // label
+    // Optional Domain after client
+    if ($domain !== '') {
+      $fmtParts[] = ' <a href="?' . ($client === '' ? '' : "client=$client&") . 'domain" style="font-weight:bold">Domain:</a> ';
+      $fmtParts[] = '<a href="?' . ($client === '' ? 'domain' : "client=$client&" . 'domain=' . rawurlencode($domain)) . '" onclick="return App[\'devtools/directory\'].handleClick(\'\')">%s</a>';
+      $args[] = htmlspecialchars(rtrim($domain, '/'));
     }
-
-    $fmtParts[] = ' ]';
-
-    $segments[] = vsprintf(implode('', $fmtParts), $args);
   }
+
+  /* Tail: current path + up (only if visiblePath set) */
+  if ($visiblePath !== '') {
+    $fmtParts[] = '/<a href="#!" onclick="return App[\'devtools/directory\'].handleClick(\'%s\')">%s/</a>';
+    $args[] = htmlspecialchars($parent, ENT_QUOTES);               // onclick('…')
+    $args[] = htmlspecialchars(rtrim($visiblePath, '/'));          // label
+  }
+
+  $fmtParts[] = ' ]';
+
+  $segments[] = vsprintf(implode('', $fmtParts), $args);
 }
+//}
 
 /* ---------- segment: current path with quick "up" ---------- */
 if ($visiblePath !== '') {
@@ -603,7 +633,7 @@ if (!$exists) {
   echo 'Missing directory: ' . htmlspecialchars($absDir ?? '');
 }
 
-dd("APP_PATH = " . APP_PATH . '  APP_ROOT = ' . APP_ROOT . '  APP_ROOT_DIR = ' . APP_ROOT_DIR, false);
+// dd("APP_PATH = " . APP_PATH . '  APP_ROOT = ' . APP_ROOT . '  APP_ROOT_DIR = ' . APP_ROOT_DIR, false);
 
 // ---- existence check ------------------------------------------------------
 switch (ctx('context')) {
@@ -858,9 +888,36 @@ switch (ctx('context')) {
 
       $count = 1;
       $lastKey = array_key_last($paths);
-
+      /*
+          <table style="border:none;">
+            <tr style="border:none;">
+              <?php
+              $count = 1;
+              $links = array_filter(
+                glob(APP_PATH . APP_BASE['clients'] . '*', GLOB_ONLYDIR),
+                fn($link) => preg_match('/^(?!\d{3}-)[a-z0-9\-]+\.[a-z]{2,6}$/i', basename($link))
+              );
+              $old_links = $links;
+              while ($link = array_shift($links)) {
+                $old_link = $link;
+                $link = basename($link);
+                echo "<td style=\"text-align:center;border:none;\" class=\"text-xs\">
+                        <a class=\"pkg_dir\" href=\"?" . (isset($_ENV['DEFAULT_CLIENT']) && $_ENV['DEFAULT_CLIENT'] == $link ? '' : "domain=$link") . "\">
+                        <img src=\"resources/images/directory.png\" width=\"50\" height=\"32\" />
+                        <br />$link/</a><br />
+                      </td>";
+                if ($count >= 6)
+                  echo '</tr><tr>';
+                elseif ($old_link == end($old_links))
+                  echo '</tr>';
+                $count = ($count >= 6) ? 1 : $count + 1;
+              }
+              ?>
+          </table>      
+      */
       if (!empty($paths))
         foreach ($paths as $key => $path) {
+
           // Adjust the path to be relative to the current directory
           $relativePath = str_replace(APP_PATH . APP_ROOT, '', rtrim($path, DIRECTORY_SEPARATOR));
 
@@ -913,9 +970,20 @@ switch (ctx('context')) {
             $childName = basename(rtrim((string) $path, "/\\"));
             $nextPath = PathUtils::buildChildPath($visibleBase, $childName);
 
-            $href = QueryUrl::build($GET, $nextPath);
-            $onclickAttr = " onclick=\"return App['devtools/directory'].handleClick('" . htmlspecialchars($nextPath, ENT_QUOTES) . "')\"";
-            $dataDir = htmlspecialchars($nextPath, ENT_QUOTES);
+
+            if (isDomainName($childName)) {
+              // Domain: use ?domain=... and remove path
+              $href = build_query_href([], ['client' => $_GET['client'] ?? '', 'domain' => $childName] ?? '', ['path']);
+              $dataDir = ''; // htmlspecialchars($childName, ENT_QUOTES);
+            } else {
+              // Folder/file: use ?path=... and remove domain (keep them mutually exclusive)
+              $href = build_query_href([], [/*'path' => $nextPath*/], ['domain']);
+              $dataDir = htmlspecialchars($nextPath, ENT_QUOTES);
+            }
+
+            //$href = QueryUrl::build($GET, $nextPath);
+            //$onclickAttr = " onclick=\"return App['devtools/directory'].handleClick('" . htmlspecialchars($nextPath, ENT_QUOTES) . "')\"";
+            //$dataDir = htmlspecialchars($nextPath, ENT_QUOTES);
             /* ---------- end usage ---------- */
             switch (true) {
 
@@ -923,9 +991,9 @@ switch (ctx('context')) {
               default:
                 // Render the folder link
   
-                echo '<a href="' . $href . '"' . $onclickAttr . ' data-dir="' . $dataDir . '">
+                echo '<a href="' . $href . '"' . /* $onclickAttr .*/ ' data-dir="' . $dataDir . '">
   <img src="resources/images/directory.png" width="50" height="32" alt=""></a>'
-                  . '<a href="' . $href . '"' . $onclickAttr . ' data-dir="' . $dataDir . '">'
+                  . '<a href="' . $href . '"' . /* $onclickAttr .*/ ' data-dir="' . $dataDir . '">'
                   . htmlspecialchars($childName) . '/</a>';
                 break;
             }
@@ -1265,8 +1333,7 @@ ob_end_clean();
 
 
 if (false) { ?>
-  <script>
-  <?php }
+  <script><?php }
 ob_start(); ?>
     // devtools/directory module script
     (() => {
@@ -1475,7 +1542,7 @@ ob_start(); ?>
     <style type="text/tailwindcss">
       <?= $UI_APP['style'] ?? '' ?>
 
-                        </style>
+                                                                                  </style>
   </head>
 
   <body>

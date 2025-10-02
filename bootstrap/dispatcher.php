@@ -11,6 +11,7 @@ declare(strict_types=1);
 
 defined('APP_MODE') || define('APP_MODE', 'dispatcher');
 require_once __DIR__ . '/bootstrap.php';
+
 // Ensure bootstrap completed
 if (!defined('APP_RUNNING')) {
     throw new RuntimeException('Bootstrap did not complete.');
