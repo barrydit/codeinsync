@@ -525,17 +525,46 @@ $segments = [];
 $parent = PathUtils::parentPath($visiblePath);
 
 /* ---------- segment: APP_PATH (always) ---------- */
-$segments[] = (APP_ROOT !== '') ? sprintf(
-  '[ ' . ($visiblePath !== '' ? '<a href="#!" onclick="return App[\'devtools/directory\'].handleClick(\'\')">%s/</a>'
-    : '<a href="/">%s/</a>') . ' ]',
-  htmlspecialchars($base)
-)
-  : sprintf(
-    '[ <a href="/">%s</a>' . ($visiblePath !== '' ? '/' . (!in_array(['client', 'domain', 'project'], $_GET) ? '<a href="#!" onclick="return App[\'devtools/directory\'].handleClick(\'%s\')">%s</a>' : '') : '/') . ' ]',
-    htmlspecialchars($base),
-    htmlspecialchars($parent, ENT_QUOTES),
-    htmlspecialchars(rtrim($visiblePath, '/') . '/')
+if (APP_ROOT !== '')
+  $segments[] = sprintf(
+    '[ ' . ($visiblePath !== '' ? '<a href="#!" onclick="return App[\'devtools/directory\'].handleClick(\'\')">%s/</a>'
+      : '<a href="/">%s/</a>') . ' ]',
+    htmlspecialchars($base)
   );
+else {
+  $fmt = '[ <a href="/">%s</a>';
+  $args = [htmlspecialchars($base, ENT_QUOTES, 'UTF-8')];
+
+  if ($visiblePath !== '') {
+    $fmt .= '/';
+
+    // Was: in_array(['client','domain','project'], $_GET)  ← not correct.
+    $hasAny = isset($_GET['client']) || isset($_GET['domain']) || isset($_GET['project']);
+
+    if (!$hasAny) {
+      // Use json_encode() for JS string literal, then escape for HTML attribute.
+      $jsArg = htmlspecialchars(json_encode($parent, JSON_UNESCAPED_SLASHES), ENT_QUOTES, 'UTF-8');
+      $label = htmlspecialchars(rtrim((string) $visiblePath, '/') . '/', ENT_QUOTES, 'UTF-8');
+
+      $fmt .= '<a href="#!" onclick="return App[\'devtools/directory\'].handleClick(%s)">%s</a>';
+      $args[] = $jsArg;   // goes into %s (JS arg)
+      $args[] = $label;   // goes into %s (link label)
+    }
+  } else {
+    $fmt .= '/';
+  }
+
+  $fmt .= ' ]';
+
+  $segments[] = vsprintf($fmt, $args);
+}
+/* sprintf(
+  '[ <a href="/">%s</a>' . ($visiblePath !== '' ? '/' . (!in_array(['client', 'domain', 'project'], $_GET) ? '<a href="#!" onclick="return App[\'devtools/directory\'].handleClick(\'%s\')">%s</a>' : '') : '/') . ' ]',
+  htmlspecialchars($base),
+  htmlspecialchars($parent, ENT_QUOTES),
+  htmlspecialchars(rtrim($visiblePath, '/') . '/')
+)*/
+;
 
 /* ---------- segment: Context (APP_ROOT or explicit client/project/domain) ---------- */
 if ($root !== '') {
@@ -1542,7 +1571,7 @@ ob_start(); ?>
     <style type="text/tailwindcss">
       <?= $UI_APP['style'] ?? '' ?>
 
-                                                                                  </style>
+                                                                                              </style>
   </head>
 
   <body>

@@ -640,6 +640,7 @@ unset($_SESSION['mode']); ?>
     </div>
   </div>
   <div class="client-view" id="clientView">
+<?= dd(APP_PATH . APP_ROOT . APP_ROOT_DIR, false); ?>
     <iframe src="<?php
     if (!defined('APP_ROOT')) {
       echo 'test.php';

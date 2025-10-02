@@ -5,6 +5,55 @@ declare(strict_types=1);
 if (is_file(dirname(__DIR__, 1) . DIRECTORY_SEPARATOR . 'classes/class.shutdown.php'))
   require_once __DIR__ . DIRECTORY_SEPARATOR . '../classes/class.shutdown.php';
 
+// Helpers first — MUST be vendor-free 
+require_once __DIR__ . '/../classes/class.pathutils.php';
+require_once __DIR__ . '/../classes/class.queryurl.php';
+
+/**/
+function get_str(string $k): ?string
+{
+  return isset($_GET[$k]) ? trim((string) $_GET[$k]) : null;
+}
+
+function base_val(string $key): string
+{
+  $v = APP_BASE[$key] ?? '';
+  return rtrim($v, '/') . '/';
+}
+
+function norm_path(string $p): string
+{
+  // collapse duplicate slashes; keep leading / if present
+  $p = preg_replace('#/+#', '/', $p);
+  return $p;
+}
+
+
+// Sanitizers you use:
+function clean_client($s)
+{
+  return preg_replace('~[^a-z0-9._,\- ]~i', '', (string) $s);
+}
+function clean_domain($s)
+{
+  return preg_replace('~[^a-z0-9.\- ]~i', '', (string) $s);
+}
+function clean_project($s)
+{
+  return preg_replace('~[^a-z0-9._\- ]~i', '', (string) $s);
+}
+function clean_path($s)
+{
+  return preg_replace('~[^a-z0-9._\- \/]~i', '', (string) $s);
+}
+
+if (!function_exists('ctx')) {
+  function ctx(string $k, $default = null)
+  {
+    return $GLOBALS['__ctx'][$k] ?? $default;
+  }
+}
+
 if (!function_exists('load_if_file')) {
   function load_if_file(string $path): void
   {

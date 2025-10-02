@@ -12,11 +12,10 @@ if (isset($_GET['app']) && !isset($_GET['json'])) {
 // - string => we echo as-is (HTML/text)
 // - false/null/other => 404-ish
 define('APP_MODE', 'dispatcher'); // anything !== 'web' triggers the gate
-$handled = require __DIR__ . '/../bootstrap/dispatcher.php';
+$handled = require __DIR__ . '/../bootstrap/bootstrap.php';
 
-if ($handled === true) {
+if ($handled === true)
     exit; // fully handled (output already sent)
-}
 
 /*
 // IMPORTANT: if bootstrap/dispatcher.php returns a callable, INVOKE it.

@@ -123,7 +123,7 @@ if (!defined('APP_MODE')) {
 
 // ---- Gate --------------------------------------------------------------------
 if (APP_MODE === 'dispatcher') {
-    require APP_PATH . 'bootstrap/dispatcher.php';
+    require __DIR__ . '/dispatcher.php';
     return;
 }
 

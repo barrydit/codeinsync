@@ -91,120 +91,6 @@ if (is_file($autoload) && isset($_ENV['COMPOSER']['AUTOLOAD']) && $_ENV['COMPOSE
     //if (!class_exists('Composer\Autoload\ClassLoader', false))
     require_once $autoload;
 
-final class PathUtils
-{
-    public static function norm(?string $p): string
-    {
-        $p = $p ?? '';
-        $p = str_replace('\\', '/', $p);
-        $p = preg_replace('#/+#', '/', $p);       // collapse multiple slashes
-        $p = preg_replace('#(^|/)\./#', '$1', $p); // remove "./"
-        return trim($p, '/');
-    }
-
-    /** Get parent path, with trailing slash (or empty string if no parent) */
-    public static function parentPath(?string $p): string
-    {
-        $p = self::norm($p);
-        if ($p === '')
-            return '';
-        // dirname trick with leading slash so dirname() behaves
-        $d = dirname('/' . $p);
-        return $d === '/' ? '' : ltrim($d, '/') . '/';
-    }
-
-    /** Extract best-guess [client, domain] from APP_ROOT like "projects/clients/000-Doe,John/example.com" */
-    public static function clientDomainFromRoot(string $root): array
-    {
-        $parts = array_values(array_filter(explode('/', self::norm($root)), 'strlen'));
-        // Heuristic: find "clients" or "projects" and take next two as client/domain
-        $idx = array_search('clients', $parts, true);
-        if ($idx === false)
-            $idx = array_search('projects', $parts, true);
-        $client = $parts[$idx + 1] ?? '';
-        $domain = $parts[$idx + 2] ?? '';
-        return [$client, $domain];
-    }
-
-    public static function stripLeading(string $p, string $prefix): string
-    {
-        $p = self::norm($p);
-        $prefix = self::norm($prefix);
-        if ($prefix !== '' && strpos($p . '/', $prefix . '/') === 0) {
-            return ltrim(substr($p, strlen($prefix)), '/');
-        }
-        return $p;
-    }
-
-    public static function onlyOneScope(array $GET): array
-    {
-        if (!empty($GET['project'])) {
-            return ['project' => $GET['project']];
-        }
-        if (!empty($GET['client'])) {
-            return ['client' => $GET['client'], 'domain' => '']; // drop domain
-        }
-        if (!empty($GET['domain'])) {
-            return ['domain' => $GET['domain']];
-        }
-        return [];
-    }
-
-    public static function buildChildPath(string $base, string $child): string
-    {
-        $base = self::norm($base);
-        $child = self::norm($child);
-        return ($base === '' ? $child : $base . '/' . $child) . '/';
-    }
-}
-
-/* ---------- URL query builder that honors your scenarios ---------- */
-final class QueryUrl
-{
-    /**
-     * Build href by preserving current scope from $_GET:
-     * - If project is present => only project (exclusive)
-     * - Else keep client (if present) and domain (if present)
-     * - Always set path to $nextPath (can be '' to mean context root)
-     */
-    public static function build(array $GET, string $nextPath): string
-    {
-        $q = self::scope($GET);
-
-        // If you'd like to retain additional harmless params, whitelist here:
-        // foreach (['view','mode'] as $k) if (isset($GET[$k])) $q[$k] = $GET[$k];
-
-        $q['path'] = $nextPath;
-
-        // Optional: avoid redundant path when it equals the scope string
-        foreach (['project', 'domain'] as $k) {
-            if (!empty($q[$k]) && rtrim($q[$k], '/') === rtrim($nextPath, '/')) {
-                // keep explicit path anyway? If not, uncomment next line to drop it.
-                // unset($q['path']);
-            }
-        }
-
-        // Filter out empties and build
-        $q = array_filter($q, static fn($v) => $v !== '' && $v !== null);
-        return '?' . http_build_query($q);
-    }
-
-    /** Scope rules: project is exclusive; client & domain may co-exist. */
-    private static function scope(array $GET): array
-    {
-        $out = [];
-        if (!empty($GET['project'])) {
-            $out['project'] = $GET['project'];
-            return $out; // exclusive
-        }
-        if (!empty($GET['client']))
-            $out['client'] = $GET['client'];
-        if (!empty($GET['domain']))
-            $out['domain'] = $GET['domain'];
-        return $out;
-    }
-}
-
 function is_top_marker_at(string $absPath, array $names, string $rootDir): bool
 {
     $root = rtrim(str_replace('\\', '/', $rootDir), '/');
@@ -222,61 +108,6 @@ function is_top_marker_at(string $absPath, array $names, string $rootDir): bool
 
     return in_array($rel, $names, true);
 }
-/**/
-function get_str(string $k): ?string
-{
-    return isset($_GET[$k]) ? trim((string) $_GET[$k]) : null;
-}
-
-function base_val(string $key): string
-{
-    $v = APP_BASE[$key] ?? '';
-    return rtrim($v, '/') . '/';
-}
-
-function norm_path(string $p): string
-{
-    // collapse duplicate slashes; keep leading / if present
-    $p = preg_replace('#/+#', '/', $p);
-    return $p;
-}
-
-
-if (!function_exists('ctx')) {
-    function ctx(string $k, $default = null)
-    {
-        return $GLOBALS['__ctx'][$k] ?? $default;
-    }
-}
-
-
-// ---- read inputs ----------------------------------------------------------
-
-// Read raw
-$clientRaw = get_str('client');
-$domainRaw = get_str('domain');
-$projectRaw = get_str('project');
-$pathRaw = get_str('path');
-
-// Per-field sanitizers:
-// - client: allow letters/digits, dot, underscore, hyphen, space, and COMMA (NO slash)
-// - domain: allow domain chars only (no comma, no spaces)
-// - project: typical slug: letters/digits, dot, underscore, hyphen
-// - path: allow safe path chars + slash (but NOT ".." traversal)
-$cleanClient = fn($s) => preg_replace('~[^a-z0-9._,\- ]~i', '', (string) $s);
-$cleanDomain = fn($s) => preg_replace('~[^a-z0-9.\-]~i', '', (string) $s);
-$cleanProject = fn($s) => preg_replace('~[^a-z0-9._\-]~i', '', (string) $s);
-$cleanPath = fn($s) => preg_replace('~[^a-z0-9._\-\/]~i', '', (string) $s);
-
-// Apply
-$client = $cleanClient($clientRaw);     // ex: 000-clientname
-$domain = $cleanDomain($domainRaw);     // ex: example.com
-$project = $cleanProject($projectRaw);    // ex: 123project
-$path = $cleanPath($pathRaw);       // ex: sub-directory/ (may be '')
-
-// Optional: hard-block traversal in path
-if (strpos($path, '..') !== false)
-    $path = '';
 
 // Prefer APP_PATH constant; fallback to $_ENV
 $APP_PATH = defined('APP_PATH') ? APP_PATH : ($_ENV['APP_PATH'] ?? '/');
@@ -488,6 +319,7 @@ $trail = static fn($s) => ($s === '' ? '' : rtrim(str_replace('\\', '/', (string
 $ctxRoot = $trail($ctxRoot ?? '');
 $absDir = $trail($absDir ?? '');
 
+/*
 // --------------------------------------------------------------------------
 // APP_ROOT: compute from INSTALL RULES ONLY
 // (client= alone or client=empty MUST NOT set an install root)
@@ -549,7 +381,7 @@ if (APP_ROOT !== '') {
     $COMPLETE_PATH .= APP_ROOT_DIR;
 }
 $COMPLETE_PATH = $trail($COMPLETE_PATH);
-
+*/
 // ---- (optional) existence check for browsing UIs --------------------------
 $exists = is_dir($absDir);
 
@@ -560,7 +392,7 @@ $GLOBALS['__ctx'] = [
     'APP_PATH' => $APP_PATH_N,    // normalized APP_PATH
     'APP_ROOT' => APP_ROOT,       // install root (relative to APP_PATH)
     'APP_ROOT_DIR' => APP_ROOT_DIR,   // subpath inside install root
-    'COMPLETE_PATH' => $COMPLETE_PATH, // absolute target for composer/npm/git
+    'COMPLETE_PATH' => rtrim(APP_PATH, '/') . '/' . APP_ROOT . APP_ROOT_DIR, // absolute target for composer/npm/git
 ];
 
 

@@ -128,6 +128,60 @@ foreach ($executables as $bin) {
     }
 }
 
+// ---- read inputs ----------------------------------------------------------
+
+// Apply
+$client = clean_client(get_str('client'));     // ex: 000-clientname
+$domain = clean_domain(get_str('domain'));     // ex: example.com
+$project = clean_project(get_str('project'));    // ex: 123project
+$path = clean_path(get_str('path'));       // ex: sub-directory/ (may be '')
+
+// Optional: hard-block traversal in path
+if (strpos($path, '..') !== false)
+    $path = '';
+
+$APP_PATH_N = rtrim(str_replace('\\', '/', APP_PATH), '/') . '/';
+$BASE_CLIENTS = base_val('clients');
+$BASE_PROJECTS = base_val('projects');
+
+$hasClient = array_key_exists('client', $_GET);
+$hasDomain = array_key_exists('domain', $_GET);
+$hasProject = array_key_exists('project', $_GET);
+$hasPath = array_key_exists('path', $_GET);
+
+// ---- Install root (APP_ROOT) — per your rules
+$installRoot = '';
+if ($hasClient && $client !== '' && $hasDomain && $domain !== '') {
+    $installRoot = $BASE_CLIENTS . $client . '/' . $domain . '/';
+} elseif (!$hasClient && $hasDomain && $domain !== '') {
+    $installRoot = $BASE_CLIENTS . $domain . '/';
+} elseif ($hasProject && $project !== '') {
+    $installRoot = $BASE_PROJECTS . $project . '/';
+}
+// client-only (even empty) → no install root
+
+// ---- Subpath (APP_ROOT_DIR) — from ?path (with your “clients/ label → base” quirk)
+$norm = static fn($s) => trim(str_replace('\\', '/', $s), '/');
+$trail = static fn($s) => $s === '' ? '' : rtrim(str_replace('\\', '/', $s), '/') . '/';
+
+$installSub = isset($_GET['path']) ? (string) $_GET['path'] : '';
+$installSub = preg_replace('~[^a-z0-9._\-/]~i', '', $installSub);
+if (strpos($installSub, '..') !== false)
+    $installSub = '';
+
+$clientsLabel = basename(rtrim($BASE_CLIENTS, '/'));    // "clients"
+$projectsLabel = basename(rtrim($BASE_PROJECTS, '/'));   // "projects"
+$installSubNorm = $norm($installSub);
+
+// map label to configured base (handles '../clients/')
+if ($installSubNorm === $clientsLabel)
+    $installSub = $BASE_CLIENTS;
+if ($installSubNorm === $projectsLabel)
+    $installSub = $BASE_PROJECTS;
+
+define('APP_ROOT', $trail($installRoot));  // '' | '../clients/.../' | 'projects/.../'
+define('APP_ROOT_DIR', $trail($installSub));   // '' | 'public/' | '../clients/' etc.
+
 // Ensure var directory exists
 $varDir = app_base('var');
 
