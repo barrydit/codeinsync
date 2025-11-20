@@ -1,18 +1,35 @@
 <?php
-
 declare(strict_types=1);
+// config/constants.env.php
 
-
+// use CodeInSync\Shared\Filesystem\PathUtils;
+if (!class_exists(\CodeInSync\Shared\Filesystem\PathUtils::class)) {
+    require APP_PATH . 'src/Shared/Filesystem/PathUtils.php';
+    @class_alias(\CodeInSync\Shared\Filesystem\PathUtils::class, 'PathUtils');
+}
 
 defined('APP_PATH') or define('APP_PATH', dirname(__DIR__, 1) . DIRECTORY_SEPARATOR);
 
-if (!defined('APP_ROOT'))
-    if (array_key_first($_GET) != 'path') {
+if (!defined('APP_ROOT')) {
+    if (isset($_SERVER['REQUEST_METHOD']) && $_SERVER['REQUEST_METHOD'] === 'POST') {
+        $referer = $_SERVER['HTTP_REFERER'] ?? '';
+        if ($referer !== '') {
+            $query = parse_url($referer, PHP_URL_QUERY);
+            if ($query) {
+                // Parse query string and merge into $_GET
+                parse_str($query, $refParams);
+                if (is_array($refParams)) {
+                    $_GET = array_merge($_GET, $refParams);
+                }
+            }
+        }
+    }
 
+    if (array_key_first($_GET) != 'path') {
         // Determine base paths for client, domain, or project
         $clientPath = isset($_GET['client'])
-            ? 'clients' . DIRECTORY_SEPARATOR . $_GET['client'] . DIRECTORY_SEPARATOR
-            : (!empty($_ENV['DEFAULT_CLIENT']) && isset($_GET['client']) ? 'clients' . DIRECTORY_SEPARATOR . $_ENV['DEFAULT_CLIENT'] . DIRECTORY_SEPARATOR : '');
+            ? PathUtils::rel(APP_PATH, PATH_CLIENTS) . DIRECTORY_SEPARATOR . $_GET['client'] . DIRECTORY_SEPARATOR
+            : (!empty($_ENV['DEFAULT_CLIENT']) && isset($_GET['client']) ? PathUtils::rel(APP_PATH, PATH_CLIENTS) . DIRECTORY_SEPARATOR . $_ENV['DEFAULT_CLIENT'] . DIRECTORY_SEPARATOR : '');
 
         $domainPath = isset($_GET['domain']) && $_GET['domain'] !== ''
             ? (isset($_GET['client'])
@@ -23,23 +40,47 @@ if (!defined('APP_ROOT'))
         $projectPath = isset($_GET['project'])
             ? 'projects' . DIRECTORY_SEPARATOR . $_GET['project'] . DIRECTORY_SEPARATOR
             : '';
-
         // Final path prioritizing client/domain and falling back to project if present
         $path = $domainPath ?: $clientPath ?: $projectPath;
+
         //
         //die($path);
         // Validate path and define APP_ROOT if valid
         if ($path && is_dir(APP_PATH . $path)) {
-            if (realpath($resolvedPath = rtrim($path, DIRECTORY_SEPARATOR)) !== false) {
-                define('APP_ROOT', $resolvedPath ? $resolvedPath . DIRECTORY_SEPARATOR : '');
-            }
+            // no realpath() – keep it relative
+            define('APP_ROOT', rtrim($path, DIRECTORY_SEPARATOR) . DIRECTORY_SEPARATOR);
         }
 
+        //if ($path) {
+        //    $abs = realpath(APP_PATH . $path); // resolve relative against APP_PATH
+        //    if ($abs !== false && is_dir($abs)) {
+        //        error_log('Determining APP_ROOT from $path : ' . $path);
+        //        define('APP_ROOT', rtrim($abs, "/\\") . DIRECTORY_SEPARATOR);
+        //    }
+        //}
+
+
+        //if ($path && is_dir(APP_PATH . $path)) {
+        //    error_log('Determining APP_ROOT from $path : ' . $path);
+        //    if (realpath($resolvedPath = rtrim($path, DIRECTORY_SEPARATOR)) !== false) {
+        // define('APP_ROOT', $resolvedPath ? $resolvedPath . DIRECTORY_SEPARATOR : '');
+        //    }
+        //}
+    } elseif (array_key_first($_GET) == 'path') {
+        $path = isset($_GET['path'])
+            ? $_GET['path'] . DIRECTORY_SEPARATOR
+            : '';
+        if ($path && is_dir($path)) {
+            if (realpath($resolvedPath = rtrim($path, DIRECTORY_SEPARATOR)) !== false) {
+                define('APP_ROOT_DIR', $resolvedPath ? $resolvedPath . DIRECTORY_SEPARATOR : '');
+            }
+        }
     } else {
+        //define('APP_ROOT_DIR', $_GET['path']);
         define('APP_ROOT', '');
         $errors['APP_ROOT'] = 'APP_ROOT was NOT defined.';
     }
-
+}
 
 $ENV_FILE_GLOBAL = APP_PATH . '.env';
 $ENV_FILE_SCOPED = defined('APP_ROOT') ? APP_PATH . APP_ROOT . '.env' : null;
@@ -80,12 +121,11 @@ class EnvReader
     }
 }
 
-
 // load order: global then scoped (scoped overrides)
 $env = [];
 $env = array_replace($env, EnvReader::read($ENV_FILE_GLOBAL));
-if ($ENV_FILE_SCOPED)
-    $env = array_replace($env, EnvReader::read($ENV_FILE_SCOPED));
+//if ($ENV_FILE_SCOPED)
+//    $env = array_replace($env, EnvReader::read($ENV_FILE_SCOPED));
 
 $_ENV = array_replace($_ENV, $env);
 

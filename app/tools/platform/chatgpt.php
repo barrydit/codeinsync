@@ -5,7 +5,7 @@ if (ini_get('allow_url_fopen') !== '1' || !function_exists('file_get_contents'))
         echo "❌ Neither cURL nor allow_url_fopen are available.\n";
         return;
     }
-    // file_put_contents('error_log', "Model found: {$model['id']}\n", FILE_APPEND);
+    // file_put_contents(APP_PATH . 'var/log/php_error.log', "Model found: {$model['id']}\n", FILE_APPEND);
     //echo "allow_url_fopen is disabled. Please enable it in your php.ini file.\n";
     $apiKey = 'your-openai-api-key';
     $ch = curl_init();

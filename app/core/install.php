@@ -16,7 +16,7 @@ ob_end_clean();
 ob_start(); ?>
 <div style="position: relative; margin: 0 auto; border: 1px solid #000;">
   <div
-    style="position: absolute; top: 0; left: 50%; transform: translate(-50%, 10%); text-align: center; width: 570px; height: 600px; background-position: center; background-size: cover; background-repeat: no-repeat; background-image: url('/resources/images/install-scenario-small.gif'); opacity: 0.8; z-index: 1; border: 1px solid #000;">
+    style="position: absolute; top: 0; left: 50%; transform: translate(-50%, 10%); text-align: center; width: 570px; height: 600px; background-position: center; background-size: cover; background-repeat: no-repeat; background-image: url('/assets/images/install-scenario-small.gif'); opacity: 0.8; z-index: 1; border: 1px solid #000;">
 
     <div style="position: absolute; top: 225px; left: 129px; width: 230px; height: 200px; border: 1px dashed #000;">
       <form>

@@ -4,6 +4,16 @@
 
 //dd( dirname(__DIR__) . DIRECTORY_SEPARATOR . 'config' . DIRECTORY_SEPARATOR . 'config.php');
 
+require_once dirname(__DIR__, 2) . DIRECTORY_SEPARATOR . 'bootstrap' . DIRECTORY_SEPARATOR . 'bootstrap.php';
+
+global $asset;
+
+/*
+require_once __DIR__ . '/core/debug/trace.php';
+trace_execution_block();
+*/
+
+/*
 if (__FILE__ == get_required_files()[0]) { //die(getcwd());
   if (
     $path = (basename(getcwd()) == 'public')
@@ -18,8 +28,6 @@ if (__FILE__ == get_required_files()[0]) { //die(getcwd());
 if (!empty($_SERVER['REQUEST_URI']))
   $path = $_SERVER['DOCUMENT_ROOT'] . parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH);
 
-
-/*
 require_once realpath('index.php');
 */
 //dd( realpath($path) == realpath(APP_PATH) );
@@ -32,7 +40,7 @@ if (defined('APP_ENV'))
     NULL;
 //elseif (APP_ENV == 'development' && APP_DEBUG == false)
 //require_once APP_PATH . 'public' . DIRECTORY_SEPARATOR . 'idx.develop.php';
-//  die(header('Location: ' . (!defined('APP_URL_BASE') and 'http://' . APP_DOMAIN . APP_URL_PATH) . '?debug'));
+//  die(header('Location: ' . $baseHref . '?debug'));
 // is_array($ob_content)
 //$report_errors = true; 
 
@@ -72,8 +80,7 @@ ob_start(); ?>
 ob_end_clean();
 
 if (false) { ?>
-  <script type="text/javascript">
-  <?php }
+  <script type="text/javascript"><?php }
 ob_start(); ?>
   // Javascript comment
   <?php $app[$debug]['script'] = ob_get_contents();
@@ -304,22 +311,20 @@ HTML;
     */
     ?>
   <!DOCTYPE html>
-  <html lang="en">
+  <html lang="<?= htmlspecialchars($appLocale, ENT_QUOTES, 'UTF-8') ?>">
 
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     <title>Patient Clinic Files -- Debug Window</title>
 
-    <base href="<?= !is_array(APP_URL) ? APP_URL : APP_URL_BASE ?>">
+    <base href="<?= htmlspecialchars($baseHref, ENT_QUOTES, 'UTF-8') ?>" />
 
-    <link rel="shortcut icon" href="<?= !defined('APP_URL_BASE') and '//' . APP_DOMAIN . APP_URL_PATH ?>favicon.ico" />
+    <link rel="shortcut icon" href="assets/images/favicon.ico" />
 
     <!-- BOOTSTRAP STYLES-->
-    <link rel="stylesheet" type="text/css"
-      href="<?= !defined('APP_URL_BASE') and '//' . APP_DOMAIN . APP_URL_PATH ?>assets/css/bootstrap/bootstrap.min.css" />
+    <link rel="stylesheet" type="text/css" href="assets/css/bootstrap/bootstrap.min.css" />
 
-    <link rel="stylesheet" type="text/css"
-      href="<?= !defined('APP_URL_BASE') and '//' . APP_DOMAIN . APP_URL_PATH ?>assets/css/styles.css" />
+    <link rel="stylesheet" type="text/css" href="assets/css/styles.css" />
 
     <style></style>
 
@@ -479,8 +484,7 @@ HTML;
     </div>
 
     <!-- JQUERY SCRIPTS -->
-    <script
-      src="<?= !defined('APP_URL_BASE') and '//' . APP_DOMAIN . APP_URL_PATH . APP_BASE['resources'] ?>js/jquery/jquery-3.5.1.min.js"></script>
+    <script src="<?= htmlspecialchars($asset('assets/js/jquery/jquery-3.5.1.min.js'), ENT_QUOTES, 'UTF-8') ?>?>"></script>
   </body>
 
   </html>

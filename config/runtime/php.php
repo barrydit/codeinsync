@@ -201,7 +201,7 @@ $paths = array_filter(glob(APP_PATH . 'classes' . DIRECTORY_SEPARATOR . '*.php')
 
 // Define the filenames to be excluded
 $excludedFiles = [
-    'class.socketserver.php',
+    //'class.socketserver.php',
     'class.websocketserver.php'
 ];
 

@@ -2,15 +2,14 @@
 // CLI bootstrap: constants, INI, helpers — no Composer here.
 
 defined('APP_PATH') || define('APP_PATH', dirname(__DIR__) . DIRECTORY_SEPARATOR);
-if (!defined('PID_FILE'))
-    define('PID_FILE', APP_PATH . 'server.pid');
+// if (!defined('PID_FILE')) define('PID_FILE', APP_PATH . 'server.pid');
 
 const APP_CLI = true; // marker for CLI-only checks
 
 // ---- INI (CLI-safe defaults) ----
 @ini_set('display_errors', '1');           // or '0' in prod
 @ini_set('log_errors', '1');
-@ini_set('error_log', APP_PATH . 'var/php-cli-error.log'); // ensure writable
+@ini_set('error_log', APP_PATH . 'var' . DIRECTORY_SEPARATOR .'log' . DIRECTORY_SEPARATOR . 'php-cli-error.log'); // ensure writable
 error_reporting(E_ALL);
 @ini_set('memory_limit', '512M');
 @set_time_limit(0);
@@ -21,18 +20,26 @@ if (function_exists('mb_internal_encoding'))
 
 // ---- Constants & helpers (always same order) ----
 $C = APP_PATH . 'config' . DIRECTORY_SEPARATOR;
-require_once "{$C}constants.env.php";
-require_once "{$C}constants.paths.php";
-require_once "{$C}constants.runtime.php";
-require_once "{$C}constants.url.php";
-require_once "{$C}constants.app.php";
-require_once "{$C}functions.php";
 
+$required = [
+    "{$C}functions.php",
+    "{$C}constants.env.php",
+    "{$C}constants.paths.php",
+    "{$C}constants.runtime.php",
+    "{$C}constants.url.php",
+    "{$C}constants.app.php"
+];
+
+foreach ($required as $file) {
+    echo basename(dirname($file)) . '/' . basename($file) . "... \n";
+    require_once $file;
+}
+echo " ...loaded successfully!\n";
 // ---- Safe environment lookups (avoid $_SERVER in CLI) ----
 $envShell = (isset($_ENV['SHELL']) && is_array($_ENV['SHELL'])) ? $_ENV['SHELL'] : [];
 
 $domain = $_ENV['DOMAIN'] ?? (defined('APP_DOMAIN') ? APP_DOMAIN : 'localhost');
-$user = $envShell['DEFAULT_USER']
+$user = $envShell['USER']
     ?? getenv('USER')
     ?? getenv('USERNAME')
     ?? 'www-data';

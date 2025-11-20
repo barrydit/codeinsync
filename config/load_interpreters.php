@@ -1,6 +1,10 @@
 <?php
 
-use App\Core\Registry;
+// use CodeInSync\Core\Registry;
+if (!class_exists(\CodeInSync\Core\Registry::class)) {
+    require APP_PATH . 'src/Core/Registry.php';
+    @class_alias(\CodeInSync\Core\Registry::class, 'Registry');
+}
 
 $names = ['php', 'python3', 'perl', 'ruby', 'node'];
 $isWindows = strtoupper(substr(PHP_OS, 0, 3)) === 'WIN';

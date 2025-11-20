@@ -54,7 +54,7 @@ ob_start(); ?>
       <label class="npm-home" style="cursor: pointer;">
         <div class=""
           style="position: relative; float: left; display: inline-block; top: 0; left: 0; background-color: rgba(255,255,255,0.8); margin-top: -5px;">
-          <img src="resources/images/node_js.gif" width="83" height="32" />
+          <img src="assets/images/node_js.gif" width="83" height="32" />
         </div>
       </label>
       <div style="display: inline; float: left;">
@@ -87,7 +87,7 @@ ob_start(); ?>
         style="position: absolute; display: inline-block; top: 4px; text-align: right; width: 272px; ">
         <div class="text-xs" style="display: inline-block;">
           + 3357 <a href="https://github.com/nodejs/node/graphs/contributors">contributors</a>
-          <br /><a href="https://github.com/nodejs"><img src="resources/images/node.js.png"
+          <br /><a href="https://github.com/nodejs"><img src="assets/images/node.js.png"
               title="https://github.com/nodejs" width="18" height="18" /></a>
           <a style="color: blue; text-decoration-line: underline; text-decoration-style: solid;"
             href="https://nodejs.org/" title="https://nodejs.org/">https://nodejs.org/</a>
@@ -98,7 +98,7 @@ ob_start(); ?>
 
     <div class=""
       style="position: absolute; top: 0; left: 0; right: 0; margin: 10px auto; opacity: 1.0; text-align: center; cursor: pointer; /*z-index: 1;*/">
-      <img class="npm-menu" src="resources/images/node_npm.fw.png" style="margin-top: 45px;" width="150" height="198" />
+      <img class="npm-menu" src="assets/images/node_npm.fw.png" style="margin-top: 45px;" width="150" height="198" />
     </div>
 
 
@@ -322,9 +322,9 @@ ob_start(); ?>
     <!-- link rel="stylesheet" href="//code.jquery.com/ui/1.12.1/themes/smoothness/jquery-ui.css" /-->
 
     <?php
-    // (APP_IS_ONLINE && check_http_status('https://cdn.tailwindcss.com') ? 'https://cdn.tailwindcss.com' : APP_URL . 'resources/js/tailwindcss-3.3.5.js')?
+    // (APP_IS_ONLINE && check_http_status('https://cdn.tailwindcss.com') ? 'https://cdn.tailwindcss.com' : APP_URL . 'assets/js/tailwindcss-3.3.5.js')?
   
-    $path = APP_BASE['resources'] . 'js/';
+    $path = APP_BASE['public'] . 'assets/js/';
     $filename = 'tailwindcss-3.3.5.js';
     $filePath = "{$path}{$filename}";
     $url = 'https://cdn.tailwindcss.com';
@@ -340,7 +340,7 @@ ob_start(); ?>
       downloadFile($url, $path, $filename, $errors);
     } ?>
 
-    <script src="<?= APP_BASE['resources'] . "js/{$filename}" ?? $url ?>"></script>
+    <script src="<?= APP_BASE['public'] . "assets/js/{$filename}" ?? $url ?>"></script>
 
     <style type="text/tailwindcss">
       <?= $app['style']; ?>

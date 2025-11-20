@@ -91,38 +91,39 @@ set_exception_handler(function (Throwable $e) { // [Shutdown::class, 'handleExce
 
 function autoload_class(string $class): void
 {
-    $prefix = 'App\\';
-    $baseDir = APP_PATH . 'classes/';
+    $prefix = 'CodeInSync\\';
+    $srcDir = APP_PATH . 'src/';      // NEW primary PSR-4 base
+    $legacyPSR = APP_PATH . 'classes/'; // Old PSR-4-ish base
 
-    // PSR-4-style loading
     if (str_starts_with($class, $prefix)) {
-        $relativeClass = substr($class, strlen($prefix));
-        $file = $baseDir . str_replace('\\', '/', $relativeClass) . '.php';
+        $relative = substr($class, strlen($prefix));
+        $candidate = $srcDir . str_replace('\\', '/', $relative) . '.php';
+        if (is_file($candidate)) {
+            require_once $candidate;
+            return;
+        }
 
-        if (is_file($file)) {
-            require_once $file;
+        $legacyCandidate = $legacyPSR . str_replace('\\', '/', $relative) . '.php';
+        if (is_file($legacyCandidate)) {
+            require_once $legacyCandidate;
             return;
         }
     }
 
-    // Legacy fallback support
-    $lowerClass = strtolower($class);
-    $fallbackPaths = [
-        APP_PATH . "classes/class.$lowerClass.php",
+    // Legacy flat fallbacks: class.foo.php and interfaces/*.php
+    $lower = strtolower($class);
+    foreach ([
+        APP_PATH . "classes/class.$lower.php",
         APP_PATH . "interfaces/$class.php",
-        APP_PATH . "commands/$class.php",
-    ];
-
-    foreach ($fallbackPaths as $file) {
-        if (is_file($file)) {
-            require_once $file;
+    ] as $f) {
+        if (is_file($f)) {
+            require_once $f;
             return;
         }
     }
 
     error_log("Autoloader could not find class: $class");
 }
-
 spl_autoload_register('autoload_class');
 
 // ------------------------------------------------------
@@ -132,6 +133,7 @@ spl_autoload_register('autoload_class');
 require_once __DIR__ . '/coverage-report.php';
 
 register_shutdown_function(function () {
+    require_once __DIR__ . '/../config/functions.php';
     //Shutdown::triggerShutdown('');  //
 
     //if (!empty($_ENV))
@@ -145,15 +147,14 @@ register_shutdown_function(function () {
             $error['line']
         );
 
-        file_put_contents(APP_PATH . 'error_log', date('c') . " | " . $message . PHP_EOL, FILE_APPEND);
-        error_log(date('c') . " | " . $message);
+        error_log(date('c') . " | " . $message); // file_put_contents(APP_PATH . 'var/log/php_error.log', date('c') . " | " . $message . PHP_EOL, FILE_APPEND);
         return;
     }
 
     !defined('APP_START') and define('APP_START', $_SERVER['REQUEST_TIME_FLOAT'] ?? microtime(true));
     $execTime = round((defined('APP_END') ? APP_END : microtime(true)) - APP_START, 3);
 
-    error_log("APP_CONTEXT: " . APP_CONTEXT);
+    // error_log("APP_CONTEXT: " . APP_CONTEXT);
 
     // Stop drivers cleanly
     if (defined('APP_COVERAGE_DRIVER')) {

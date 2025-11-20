@@ -3,10 +3,20 @@
 //require_once __DIR__ . '/../../config/constants.paths.php';
 //require_once APP_PATH . 'classes/class.composer.php';
 
-use App\Core\Registry;
-//use App\Handlers\COMPOSER;
-//use App\Handlers\ComposerHandler;
-//use App\Handlers\ComposerHandlerInterface;
+// use CodeInSync\Core\Registry;
+if (!class_exists(\CodeInSync\Core\Registry::class)) {
+    require APP_PATH . 'src/Core/Registry.php';
+    @class_alias(\CodeInSync\Core\Registry::class, 'Registry');
+}
+
+//use CodeInSync\Handlers\COMPOSER;
+//use CodeInSync\Handlers\ComposerHandler;
+//use CodeInSync\Handlers\ComposerHandlerInterface;
+
+if (!class_exists(\CodeInSync\Infrastructure\Composer\ComposerService::class)) {
+    require APP_PATH . 'src/Infrastructure/Composer/ComposerService.php';
+    @class_alias(\CodeInSync\Infrastructure\Composer\ComposerService::class, 'ComposerService');
+}
 
 function execute_composer_command(string $cmd): void
 {
@@ -29,7 +39,7 @@ function execute_composer_command(string $cmd): void
     }
 }
 
-$composer = new COMPOSER();
+$composer = new ComposerService();
 
 $action = $_POST['action'] ?? '';
 
@@ -56,8 +66,6 @@ switch ($action) {
         //cho json_encode(['error' => 'Unknown action']);
         break;
 }
-
-
 
 function handle_composer_api(): void
 {

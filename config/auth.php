@@ -1,7 +1,12 @@
 <?php
-// ==== Config ===============================================================
-const AUTH_REALM_BASE = 'Dashboard';   // base realm name
-const AUTH_LOGOUT_LANDING = '/logout.php'; // PUBLIC page (see #2 below)
+// config/auth.php
+// ==== Congig ===============================================================
+
+const AUTH_REALM_BASE = 'CodeInSync';   // base realm name
+define('AUTH_LOGOUT_LANDING', (string) $baseHref); // PUBLIC page (see #2 below)
+
+// NEW: cookie to track whether we've already shown the welcome page
+const AUTH_WELCOME_COOKIE = 'AUTH_WELCOME_SHOWN';
 
 // ==== Helpers ==============================================================
 function auth_no_cache(): void
@@ -22,18 +27,23 @@ function auth_rotate_realm(): void
 }
 function auth_prompt(): void
 {
+    global $_GET;
     auth_no_cache();
     header('WWW-Authenticate: Basic realm="' . auth_realm() . '", charset="UTF-8"');
     header('HTTP/1.0 401 Unauthorized');
-    exit('<div style="margin:2rem auto;max-width:360px;padding:1rem;border:1px solid #ffb;">Authentication Required</div>');
+    if (isset($_GET['authprobe'])) {
+        $_GET['logout'] = '1';
+        return;
+    }
+    exit('<div style="margin:2rem auto;max-width:360px;padding:1rem;border:1px solid #ffb;">Authentication Required 1</div>');
 }
 
 function auth_send_prompt(): void
 {
     auth_no_cache();
-    header('WWW-Authenticate: Basic realm="Dashboard", charset="UTF-8"');
+    header('WWW-Authenticate: Basic realm="' . auth_realm() . '", charset="UTF-8"');
     header('HTTP/1.0 401 Unauthorized');
-    exit('<div style="margin:2rem auto;max-width:360px;padding:1rem;border:1px solid #ffb;">Authentication Required</div>');
+    exit('<div style="margin:2rem auto;max-width:360px;padding:1rem;border:1px solid #ffb;">Authentication Required 2</div>');
 }
 
 function auth_get_header(): ?string
@@ -100,9 +110,11 @@ function auth_require(): void
 if (isset($_GET['authprobe'])) {
     auth_no_cache();
     $realm = isset($_GET['r']) ? (string) $_GET['r'] : auth_realm();
-    header('WWW-Authenticate: Basic realm="' . $realm . '", charset="UTF-8"');
+    auth_prompt();
+    header("WWW-Authenticate: Basic realm=\"$realm\", charset=\"UTF-8\"");
     header('HTTP/1.0 401 Unauthorized');
-    exit;
+    //header("Location: " . AUTH_LOGOUT_LANDING);
+    exit('<div style="margin:2rem auto;max-width:360px;padding:1rem;border:1px solid #ffb;">Authentication Required 3 <a href="' . AUTH_LOGOUT_LANDING . '">Continue</a></div>');
 }
 
 $logout = array_key_exists('logout', $_GET);     // true for ?logout or ?logout=1/true/…
@@ -113,8 +125,23 @@ if ($logout && $_SERVER['REQUEST_METHOD'] === 'GET') {
     auth_no_cache();
     $oldRealm = auth_realm();
     auth_rotate_realm();
+
+    // NEW: clear the welcome cookie so next login shows Hello World again
+    if (isset($_COOKIE[AUTH_WELCOME_COOKIE])) {
+        setcookie(AUTH_WELCOME_COOKIE, '', time() - 3600, '/', '', false, true);
+        unset($_COOKIE[AUTH_WELCOME_COOKIE]);
+    }
+
+    //setcookie('REAUTH_REQUIRED', '1', 0, '/', '', false, true);
+
     unset($_SERVER['HTTP_AUTHORIZATION'], $_SERVER['PHP_AUTH_USER'], $_SERVER['PHP_AUTH_PW']);
+
+    // Make sure nothing is cached
+    header('Cache-Control: no-store, no-cache, must-revalidate, max-age=0');
+    header('Pragma: no-cache');
+    header('Expires: Sat, 26 Jul 1997 05:00:00 GMT');
     header('Content-Type: text/html; charset=UTF-8');
+
     ?>
     <!doctype html>
     <html lang="en">
@@ -136,20 +163,21 @@ if ($logout && $_SERVER['REQUEST_METHOD'] === 'GET') {
         <script>
             (async () => {
                 try {
-                    await fetch('<?= htmlspecialchars($_SERVER['PHP_SELF']) ?>?authprobe=1&r=<?= rawurlencode($oldRealm) ?>', {
+                    await fetch('<?= htmlspecialchars($baseHref) ?>?authprobe=1&r=<?= rawurlencode($oldRealm) ?>', {
                         headers: { Authorization: 'Basic ' + btoa('x:x') },
                         cache: 'no-store',
                         credentials: 'omit'
                     });
                 } catch (e) { /* ignore */ }
                 // Redirect to your PUBLIC landing page (must not include auth.php)
-                location.replace('<?= AUTH_LOGOUT_LANDING ?>');
+                location.replace('<?= AUTH_LOGOUT_LANDING ?>?authprobe=1&r=<?= rawurlencode($oldRealm) ?>');
             })();
         </script>
 
         <noscript>
-            <meta http-equiv="refresh" content="1;url=<?= AUTH_LOGOUT_LANDING ?>">
-            <p><a href="<?= AUTH_LOGOUT_LANDING ?>">Continue</a></p>
+            <meta http-equiv="refresh"
+                content="1;url=<?= AUTH_LOGOUT_LANDING; ?>?authprobe=1&r=<?= rawurlencode($oldRealm); ?>">
+            <p><a href="<?= AUTH_LOGOUT_LANDING; ?>?authprobe=1&r=<?= rawurlencode($oldRealm); ?>">Continue</a></p>
         </noscript>
     </body>
 
@@ -164,5 +192,137 @@ if (!in_array(PHP_SAPI, ['cli', 'phpdbg'], true) && !$logout && !$authprobe) {
     if ($u === '' || !auth_verify($u, $p)) {
         auth_prompt();   // sends 401 with your (dynamic) realm and exits
     }
+
     auth_no_cache();     // avoid back/forward cached “logged-in” views
+
+    // NEW: Hello World page on first successful login in this browser session
+    if (empty($_COOKIE[AUTH_WELCOME_COOKIE])) {
+        // Mark that we've shown the welcome page
+        setcookie(AUTH_WELCOME_COOKIE, '1', 0, '/', '', false, true);
+
+        header('Content-Type: text/html; charset=UTF-8');
+        ?>
+        <!doctype html>
+        <html lang="en">
+
+        <head>
+            <meta charset="utf-8">
+            <title>CodeInSync – Hello World</title>
+            <meta name="viewport" content="width=device-width, initial-scale=1">
+            <meta http-equiv="Cache-Control" content="no-store, no-cache, must-revalidate, max-age=0">
+            <meta http-equiv="Pragma" content="no-cache">
+            <meta http-equiv="Expires" content="0">
+            <style>
+                body {
+                    margin: 0;
+                    font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+                    background: #0f172a;
+                    color: #e5e7eb;
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    min-height: 100vh;
+                }
+
+                .card {
+                    background: #020617;
+                    border: 1px solid #1e293b;
+                    border-radius: 0.75rem;
+                    padding: 1.75rem 2rem;
+                    max-width: 540px;
+                    width: 100%;
+                    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.45);
+                }
+
+                h1 {
+                    margin: 0 0 0.5rem;
+                    font-size: 1.5rem;
+                }
+
+                .sub {
+                    margin: 0 0 1.25rem;
+                    color: #9ca3af;
+                    font-size: 0.9rem;
+                }
+
+                code.console {
+                    display: block;
+                    background: #020617;
+                    border-radius: 0.5rem;
+                    padding: 0.75rem 0.85rem;
+                    font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+                    font-size: 0.82rem;
+                    border: 1px solid #1e293b;
+                    white-space: pre;
+                    overflow-x: auto;
+                }
+
+                .actions {
+                    margin-top: 1.25rem;
+                    display: flex;
+                    gap: 0.75rem;
+                    flex-wrap: wrap;
+                }
+
+                .btn {
+                    border-radius: 999px;
+                    padding: 0.45rem 0.95rem;
+                    font-size: 0.85rem;
+                    border: 1px solid #22c55e;
+                    color: #22c55e;
+                    background: transparent;
+                    cursor: pointer;
+                }
+
+                .btn-secondary {
+                    border-color: #4b5563;
+                    color: #9ca3af;
+                }
+
+                .btn:active {
+                    transform: translateY(1px);
+                }
+            </style>
+        </head>
+
+        <body>
+            <div class="card">
+                <h1>CodeInSync – Hello world 👋</h1>
+                <p class="sub">
+                    You are successfully authenticated via HTTP Basic for this realm:<br>
+                    <strong><?= htmlspecialchars(auth_realm(), ENT_QUOTES, 'UTF-8') ?></strong>
+                </p>
+
+                <code class="console" id="console-log"><?php
+                echo <<<EOT
+\$ whoami
+  $u
+\$ echo "Ready for console integration…"
+  ✅ Console stub is ready. Next step: wire commands + client-side refresh.
+EOT; ?></code>
+                <div class="actions">
+                    <button class="btn" type="button" id="btn-refresh">Simulate window refresh</button>
+                    <a class="btn btn-secondary" href="?logout=1">Logout</a>
+                </div>
+            </div>
+
+            <script>
+                // Stub for your future console + refresh behavior
+                document.getElementById('btn-refresh')?.addEventListener('click', () => {
+                    const el = document.getElementById('console-log');
+                    if (!el) return;
+                    const stamp = new Date().toISOString();
+                    el.textContent += "\n$ refresh\n  ↻ Client-side refresh triggered @ " + stamp;
+                    // Later: window.location.reload();
+                });
+            </script>
+        </body>
+
+        </html>
+        <?php
+        exit;
+    }
+
+    // If the welcome cookie is already set:
+    // do nothing more here; index.php continues exactly as before.
 }

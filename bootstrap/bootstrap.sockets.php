@@ -1,6 +1,16 @@
 <?php
 
-use App\Core\Registry;
+// use CodeInSync\Core\Registry;
+if (!class_exists(\CodeInSync\Core\Registry::class)) {
+    require APP_PATH . 'src/Core/Registry.php';
+    @class_alias(\CodeInSync\Core\Registry::class, 'Registry');
+}
+
+// use CodeInSync\Infrastructure\Socket\Sockets;
+if (!class_exists(\CodeInSync\Infrastructure\Socket\Sockets::class)) {
+    require APP_PATH . 'src/Infrastructure/Socket/Sockets.php';
+    @class_alias(\CodeInSync\Infrastructure\Socket\Sockets::class, 'Sockets');
+}
 
 if (PHP_SAPI !== 'cli' || (defined('FORCE_SOCKET') && FORCE_SOCKET)) {
     require_once __DIR__ . '/../bootstrap/bootstrap.cli.php';

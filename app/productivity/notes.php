@@ -76,7 +76,8 @@ $output[] = $_POST['cmd'];
 */
 //}
 
-$data = (!file_exists($path = APP_BASE['data'] . 'notes.json')) ? json_decode(<<<'JSON'
+
+$data = (!file_exists($path = APP_PATH . 'app/productivity/notes.json')) ? json_decode(<<<'JSON'
 [{
   "language":"PHP",
   "category":"String Manipulation",
@@ -93,6 +94,7 @@ JSON
   ,
   true
 ) : json_decode(file_get_contents($path), true);
+
 
 $categories = ['String Manipulation', 'Array Manipulation', 'Regular Expressions', 'Error Handling', 'File Handling', 'Database Operations', 'Form Handling', 'Date and Time', 'Image Manipulation', 'Email Handling', 'Encryption and Security', 'API Integration', 'Performance Optimization', 'Session Management', 'Authentication and Authorization', 'File Upload and Download', 'Templating', 'Caching', 'Logging and Debugging', 'Web Scraping', 'PDF Generation', 'XML and JSON Manipulation', '(CLI) Applications', 'Web Services and RESTful APIs', 'Internationalization and Localization', 'Error Reporting and Logging', 'HTML and Markup Generation', 'Server-Side Rendering', 'Image Processing and Manipulation', 'Data Validation and Sanitization', 'Networking and HTTP Requests', 'Templating Engines', 'Testing and Test Frameworks'];
 
@@ -215,9 +217,6 @@ padding : 10px;
 z-index : 1;
 }
 
-
-
-
 <?php $app['style'] = ob_get_contents();
 ob_end_clean();
 
@@ -273,8 +272,8 @@ ob_start(); ?>
   <link rel="stylesheet" href="//code.jquery.com/ui/1.12.1/themes/smoothness/jquery-ui.css" />
 
   <?php
-  // (APP_IS_ONLINE && check_http_status('https://cdn.tailwindcss.com') ? 'https://cdn.tailwindcss.com' : APP_URL . 'resources/js/tailwindcss-3.3.5.js')?
-  is_dir($path = APP_BASE['resources'] . 'js/') or mkdir($path, 0755, true);
+  // (APP_IS_ONLINE && check_http_status('https://cdn.tailwindcss.com') ? 'https://cdn.tailwindcss.com' : APP_URL . 'assets/js/tailwindcss-3.3.5.js')?
+  (getcwd() === rtrim($path = APP_PATH . APP_BASE['public'], '/') && is_dir($path .= 'assets/js')) or mkdir($path, 0755, true);
   if (is_file("{$path}tailwindcss-3.3.5.js")) {
     if (ceil(abs(strtotime(date('Y-m-d')) - strtotime(date('Y-m-d', strtotime('+5 days', filemtime("{$path}tailwindcss-3.3.5.js")))) / 86400) <= 0)) {
       $url = 'https://cdn.tailwindcss.com';
@@ -294,7 +293,7 @@ ob_start(); ?>
   }
   ?>
 
-  <script src="<?= 'resources/js/tailwindcss-3.3.5.js' ?? $url ?>"></script>
+  <script src="<?= 'assets/js/tailwindcss-3.3.5.js' ?? $url ?>"></script>
   <!-- <style type="text/tailwindcss"> -->
 
   <style type="text/tailwindcss">
@@ -387,7 +386,7 @@ pre {
       <a
         href="<?= $snippet['stackoverflow']['url']; ?>"><?= !empty($snippet['stackoverflow']['title']) ? $snippet['stackoverflow']['title'] : 'Stackoverflow Question/Answer' ?></a>
       <form action method="POST">
-        <img class="open_edit" src="resources/images/notes-edit.png"
+        <img class="open_edit" src="assets/images/notes-edit.png"
           style="display: inline-block;margin-left: 4px; padding-top: 5px; cursor: pointer; " height="25" width="21"
           onclick="document.getElementById('id').value = '<?= $key1 . '-' . $key2; ?>';" />
         <input type="hidden" name="id" value="<?= $key1 . '-' . $key2; ?>" />
@@ -400,8 +399,8 @@ pre {
         </div>
         <pre
           style="margin: 0px;"><code class="language-<?= $sample['language']; ?>"><?= $snippet['code']; ?></code>
-                                                                                                                                    <?= $snippet['description']; ?>
-                                                                                                                                      </pre>
+                                                                                                                                                                            <?= $snippet['description']; ?>
+                                                                                                                                                                              </pre>
       </form>
       <div style=" margin-left: 15px;">
 
@@ -412,11 +411,12 @@ pre {
 
   <script src="//code.jquery.com/jquery-1.12.4.js"></script>
   <script src="//code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
-  <!-- <script src="../resources/js/jquery/jquery.min.js"></script> -->
+  <!-- <script src="assets/js/jquery/jquery.min.js"></script> -->
 
   <?php
-  // (APP_IS_ONLINE && check_http_status('https://cdn.tailwindcss.com') ? 'https://cdn.tailwindcss.com' : APP_URL . 'resources/js/highlight.min.js"')?
-  is_dir($path = APP_BASE['resources'] . 'js/highlight.js/') or mkdir($path, 0755, true);
+  // (APP_IS_ONLINE && check_http_status('https://cdn.tailwindcss.com') ? 'https://cdn.tailwindcss.com' : APP_URL . 'assets/js/highlight.min.js"')?
+
+  (getcwd() === rtrim($path = APP_PATH . APP_BASE['public'], '/') && is_dir($path .= 'assets/js/highlight.js')) or mkdir($path, 0755, true);
   if (is_file($path . 'highlight.min.js')) {
     if (ceil(abs((strtotime(date('Y-m-d')) - strtotime(date('Y-m-d', strtotime('+5 days', filemtime($path . 'highlight.min.js'))))) / 86400)) <= 0) {
       $url = 'https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.6.0/highlight.min.js';
@@ -436,7 +436,7 @@ pre {
   }
   ?>
 
-  <script src="<?= 'resources/js/highlight.js/highlight.min.js' ?? $url ?>"></script>
+  <script src="<?= 'assets/js/highlight.js/highlight.min.js' ?? $url ?>"></script>
 
   <script>
 <?= /* $appWhiteboard['script']; */ NULL; ?>
@@ -498,6 +498,6 @@ pre {
 ob_end_clean();
 
 //check if file is included or accessed directly
-if (__FILE__ == get_required_files()[0] || in_array(__FILE__, get_required_files()) && isset($_GET['app']) && $_GET['app'] == 'php' && APP_DEBUG)
-  die($app['html']);
+//if (__FILE__ == get_required_files()[0] || in_array(__FILE__, get_required_files()) && isset($_GET['app']) && $_GET['app'] == 'php' && APP_DEBUG)
+die($app['html']);
 

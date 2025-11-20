@@ -49,33 +49,33 @@ if (!headers_sent()) {
   <base
     href="<?= (!is_array(APP_URL) ? APP_URL : APP_URL_BASE) . (preg_match('/^\/(?!\?)$/', $_SERVER['REQUEST_URI'] ?? '') ? '?' : '') . (!defined('APP_DEBUG') ? '#' : '?' . (APP_URL_BASE['query'] != '' ? APP_URL_BASE['query'] : '')) . (defined('APP_ENV') && APP_ENV == 'development' ? '#!' : ''); ?>">
 
-  <link rel="icon" href="resources/images/favicon.ico" type="image/x-icon">
-  <link rel="shortcut icon" href="resources/images/favicon.ico" type="image/x-icon">
-  <!-- link rel="apple-touch-icon" href="resources/images/favicon.ico" type="image/x-icon">
-  <link rel="apple-touch-icon" sizes="57x57" href="resources/images/favicon.ico" type="image/x-icon">
-<link rel="stylesheet" href="resources/css/style.css">
-  <link rel="stylesheet" href="resources/css/bootstrap.min.css">
-  <link rel="stylesheet" href="resources/css/bootstrap.css">
-  <link rel="stylesheet" href="resources/css/bootstrap-grid.min.css">
-  <link rel="stylesheet" href="resources/css/bootstrap-grid.css">
-  <link rel="stylesheet" href="resources/css/bootstrap-reboot.min.css">
-  <link rel="stylesheet" href="resources/css/bootstrap-reboot.css">
-    <link rel="stylesheet" href="resources/css/font-awesome.min.css">
-  <link rel="stylesheet" href="resources/css/font-awesome.css">
-<link rel="stylesheet" href="resources/css/normalize.css" -->
-  <!-- link rel="stylesheet" href="resources/css/tailwind.min.css">
-  <link rel="stylesheet" href="resources/css/tailwind.css">
-  <link rel="stylesheet" href="resources/css/tailwind-utilities.min.css">
-  <link rel="stylesheet" href="resources/css/tailwind-utilities.css">
-  <link rel="stylesheet" href="resources/css/tailwind-components.min.css">
-  <link rel="stylesheet" href="resources/css/tailwind-components.css" -->
+  <link rel="icon" href="assets/images/favicon.ico" type="image/x-icon">
+  <link rel="shortcut icon" href="assets/images/favicon.ico" type="image/x-icon">
+  <!-- link rel="apple-touch-icon" href="assets/images/favicon.ico" type="image/x-icon">
+  <link rel="apple-touch-icon" sizes="57x57" href="assets/images/favicon.ico" type="image/x-icon">
+<link rel="stylesheet" href="assets/css/style.css">
+  <link rel="stylesheet" href="assets/css/bootstrap.min.css">
+  <link rel="stylesheet" href="assets/css/bootstrap.css">
+  <link rel="stylesheet" href="assets/css/bootstrap-grid.min.css">
+  <link rel="stylesheet" href="assets/css/bootstrap-grid.css">
+  <link rel="stylesheet" href="assets/css/bootstrap-reboot.min.css">
+  <link rel="stylesheet" href="assets/css/bootstrap-reboot.css">
+    <link rel="stylesheet" href="assets/css/font-awesome.min.css">
+  <link rel="stylesheet" href="assets/css/font-awesome.css">
+<link rel="stylesheet" href="assets/css/normalize.css" -->
+  <!-- link rel="stylesheet" href="assets/css/tailwind.min.css">
+  <link rel="stylesheet" href="assets/css/tailwind.css">
+  <link rel="stylesheet" href="assets/css/tailwind-utilities.min.css">
+  <link rel="stylesheet" href="assets/css/tailwind-utilities.css">
+  <link rel="stylesheet" href="assets/css/tailwind-components.min.css">
+  <link rel="stylesheet" href="assets/css/tailwind-components.css" -->
   <base
     href="<?= (!is_array(APP_URL) ? APP_URL : APP_URL_BASE) . (preg_match('/^\/(?!\?)$/', $_SERVER['REQUEST_URI'] ?? '') ? '?' : '') . (!defined('APP_DEBUG') ? '#' : '?' . (APP_URL_BASE['query'] != '' ? APP_URL_BASE['query'] : '')) . (defined('APP_ENV') && APP_ENV == 'development' ? '#!' : ''); ?>">
 
   <?php
-  // (check_http_status('https://cdn.tailwindcss.com') ? 'https://cdn.tailwindcss.com' : APP_URL . 'resources/js/tailwindcss-3.3.5.js')?
+  // (check_http_status('https://cdn.tailwindcss.com') ? 'https://cdn.tailwindcss.com' : APP_URL . 'assets/js/tailwindcss-3.3.5.js')?
 // <link rel="stylesheet" href="https://code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css">
-// <link rel="stylesheet" href="resources/css/output.css">
+// <link rel="stylesheet" href="assets/css/output.css">
   
   //
 //
@@ -885,44 +885,44 @@ echo $app_style;
         </div>
         <div style="position: relative; top: -5px; display: inline-block; width: auto; ">
           <img id="ts-status-light" style="padding-bottom: 10px; cursor: pointer;"
-            src="resources/images/timesheet-light-Y.gif" width="80" height="30">
+            src="assets/images/timesheet-light-Y.gif" width="80" height="30">
         </div>
 
       </div>
     <div class="top-panel">
       <div style="position: relative;">
-        <a href="#"><img src="resources/images/phpclasses_icon.png" alt="Logo"
+        <a href="#"><img src="assets/images/phpclasses_icon.png" alt="Logo"
             style="width: 31px; height: auto; margin: 0 5px;"
             onclick="document.getElementById('app_phpclasses-container').style.display='block'; return false;"></a>
-        <a href="#"><img src="resources/images/composer_icon.png" alt="Logo"
+        <a href="#"><img src="assets/images/composer_icon.png" alt="Logo"
             style="width: 31px; height: auto; margin: 0 5px;"
             onclick="document.getElementById('app_composer-container').style.display='block'; return false;"></a>
-        <a href="#"><img src="resources/images/packagist_icon.png" alt="Logo"
+        <a href="#"><img src="assets/images/packagist_icon.png" alt="Logo"
             style="width: 31px; height: auto; margin: 0 5px;"
             onclick="document.getElementById('app_packagist-container').style.display='block'; return false;"></a>
-        <a href="#"><img src="resources/images/git_icon.fw.png" width="32" height="32"
+        <a href="#"><img src="assets/images/git_icon.fw.png" width="32" height="32"
             onclick="document.getElementById('app_git-container').style.display='block'; return false;"></a>
-        <a href="#"><img src="resources/images/node_js.gif" alt="Logo" style="width: 83px; height: auto; margin: 0 5px;"
+        <a href="#"><img src="assets/images/node_js.gif" alt="Logo" style="width: 83px; height: auto; margin: 0 5px;"
             onclick="document.getElementById('app_node_js-container').style.display='block'; return false;"></a>
-        <a href="#"><img src="resources/images/npm_icon.png" alt="Logo"
+        <a href="#"><img src="assets/images/npm_icon.png" alt="Logo"
             style="width: 31px; height: auto; margin: 10px 5px;"
             onclick="document.getElementById('app_npmjs-container').style.display='block'; return false;"></a>
-        <a href="#"><img src="resources/images/console_icon.png" alt="Logo"
+        <a href="#"><img src="assets/images/console_icon.png" alt="Logo"
             style="width: 31px; height: auto; margin: 0 5px;"
             onclick="isFixed = true; show_console(); return false;"></a>
 
         <a href="#" style="margin: -10px 5px;" onclick="document.getElementById('app_tools-container').style.display='block';">
-          <img src="resources/images/apps_icon.gif" width="20" height="20"> Tools</a>
+          <img src="assets/images/apps_icon.gif" width="20" height="20"> Tools</a>
       </div>
 
       <div style="position: absolute; top: 5px; right: 270px;">
-        <img src="resources/images/php_icon.png" alt="Logo" style="width: 31px; height: auto; margin: 0 0;"
+        <img src="assets/images/php_icon.png" alt="Logo" style="width: 31px; height: auto; margin: 0 0;"
           onclick="document.getElementById('app_php-container').style.display='block'; return false;"> PHP
         <button style="border: 1px solid black; border-radius: 5px;">Clock-In</button>&nbsp;
         <button style="border: 1px solid black; border-radius: 5px;">Github</button>&nbsp;
         <input type="submit" value="Test" style="border: 1px solid black; border-radius: 5px;">
         <div class="" style="position: relative; display: inline-block; top: 0; right: 2px;">
-          <img src="resources/images/calendar_icon.png" width="41" height="41"
+          <img src="assets/images/calendar_icon.png" width="41" height="41"
             onclick="document.getElementById('app_calendar-container').style.display='block'; return false;"
             style="cursor: pointer; margin: -6px 5px;">
         </div>
@@ -943,13 +943,13 @@ echo $app_style;
 
       <div style="position: absolute; left: 15px; top: 0; text-align: center;" class="text-sm"><a href="#!"
           onclick="document.getElementById('app_notes-container').style.display='block'; return false;"><img
-            style="text-align: center;" src="resources/images/notes.png"></a><br><a
+            style="text-align: center;" src="assets/images/notes.png"></a><br><a
           href="?app=ace_editor&amp;path=&amp;file=app.notes.php"
           style="text-align: center; background-color: #0078D7;">Notes</a></div>
 
       <div style="position: absolute; left: 100px; top: 0; text-align: center;" class="text-sm"><a href="#!"
           onclick="document.getElementById('app_ace_editor-container').style.display='block'; return false;"><img
-            style="text-align: center;" src="resources/images/ace_editor.png"></a><br>
+            style="text-align: center;" src="assets/images/ace_editor.png"></a><br>
         <a href="?app=ace_editor&amp;path=&amp;file=app.notes.php"
           style="text-align: center; background-color: #0078D7;">Ace Editor</a>
       </div>
@@ -977,12 +977,12 @@ echo $app_style;
           <div style="position: fixed; margin: -5px 45px; text-align: center; z-index: 5;" class="text-sm"><a href="#!"
               onclick="document.getElementById('app_tools-container').style.display='none'; return false;"><img
                 style="text-align: center; position: fixed;" height="25" width="25"
-                src="<?= APP_BASE['resources'] . 'images/close-red.png' ?>" /></a><br /></div>
+                src="<?= 'assets/images/close-red.png' ?>" /></a><br /></div>
   <div
     style="position: absolute; overflow-x: scroll; overflow-y: hidden; height: 100%; width: 100%; padding-top: 25px; border: 1px solid #000; ">
     <div style="position: absolute; margin: 10px 75px; text-align: center;" class="text-sm"><a href="#!"
         onclick="isFixed = true; show_console(); return false;"><img style="text-align: center;"
-          src="<?= APP_BASE['resources'] . 'images/cli.png' ?>" /></a><br /><a
+          src="<?= 'assets/images/cli.png' ?>" /></a><br /><a
         href="?app=ace_editor&path=&file=app.console.php" style="text-align: center;">(CLI)</a></div>
     <!-- 
                     <a href="javascript:window.open('print.html', 'newwindow', 'width=300,height=250')">Print</a>
@@ -992,37 +992,37 @@ echo $app_style;
                      -->
     <div style="position: absolute; margin: 10px 165px; text-align: center;" class="text-sm"><a href="#" target="_blank"
         onclick="toggleIframeUrl('app.whiteboard.php'); return false;"><img style="text-align: center;"
-          src="<?= APP_BASE['resources'] . 'images/whiteboard.png' ?>" /></a><br /><a
+          src="<?= 'assets/images/whiteboard.png' ?>" /></a><br /><a
         href="?app=ace_editor&path=&file=app.whiteboard.php" style="text-align: center;">Whiteboard</a></div>
     <div style="position: absolute; margin: 10px 260px; text-align: center;" class="text-sm"><a href="#!"
         onclick="document.getElementById('app_notes-container').style.display='block'; return false;"><img
-          style="text-align: center;" src="<?= APP_BASE['resources'] . 'images/notes.png' ?>" /></a><br /><a
+          style="text-align: center;" src="<?= 'assets/images/notes.png' ?>" /></a><br /><a
         href="?app=ace_editor&path=&file=app.notes.php" style="text-align: center;">Notes</a></div>
     <div style="position: absolute; margin: 10px 350px; text-align: center;" class="text-sm">
       <a href="#!"
         onclick="document.getElementById('app_project-container').style.display='block'; document.getElementById('toggle-debug').checked = false; toggleSwitch(document.getElementById('toggle-debug')); return false;">
-        <img style="text-align: center;" src="<?= APP_BASE['resources'] . 'images/project.png' ?>" /></a><br /><a
+        <img style="text-align: center;" src="<?= 'assets/images/project.png' ?>" /></a><br /><a
         href="?app=ace_editor&path=&file=app.project.php"><span style="text-align: center;">Project</span></a>
     </div>
     <div style="position: absolute; margin: 10px 0 0 450px ; text-align: center;" class="text-sm"><a href="#!"
         onclick="document.getElementById('app_errors-container').style.display='block'; return false;"><img
-          style="text-align: center;" src="<?= APP_BASE['resources'] . 'images/debug.png' ?>" /><br /><span
+          style="text-align: center;" src="<?= 'assets/images/debug.png' ?>" /><br /><span
           style="text-align: center;">Debug</span></a></div>
     <div style="position: absolute; margin: 10px 0 0 540px; text-align: center;" class="text-sm"><a href="#!"
         onclick="document.getElementById('app_profile-container').style.display='block'; return false;"><img
-          style="text-align: center;" src="<?= APP_BASE['resources'] . 'images/user.png' ?>" /><br /><span
+          style="text-align: center;" src="<?= 'assets/images/user.png' ?>" /><br /><span
           style="text-align: center;">Profile</span></a></div>
     <div style="position: absolute; margin: 10px 0 0 630px; text-align: center;" class="text-sm"><a href="#!"
         onclick="toggleIframeUrl('app.browser.php'); return false;"><img style="text-align: center;"
-          src="<?= APP_BASE['resources'] . 'images/browser.png' ?>" /><br /><span
+          src="<?= 'assets/images/browser.png' ?>" /><br /><span
           style="text-align: center;">Browser</span></a></div>
     <div style="position: absolute; margin: 110px 75px; text-align: center;" class="text-sm"><a href="#!"
         onclick="document.getElementById('app_tools-container').style.display='block'; return false;"><img
-          style="text-align: center;" src="<?= APP_BASE['resources'] . 'images/apps.png' ?>" /><br /><span
+          style="text-align: center;" src="<?= 'assets/images/apps.png' ?>" /><br /><span
           style="text-align: center;">Apps.</span></a></div>
     <div style="position: absolute; margin: 110px 170px; text-align: center;" class="text-sm"><a href="#!"
         onclick="document.getElementById('app_calendar-container').style.display='block'; return false;"><img
-          style="text-align: center;" src="<?= APP_BASE['resources'] . 'images/calendar.png' ?>" /><br /><span
+          style="text-align: center;" src="<?= 'assets/images/calendar.png' ?>" /><br /><span
           style="text-align: center;">Calendar</span></a></div>
     <div style="position: absolute; margin: 118px 240px; padding: 20px 40px;">
       <form action="#!" method="GET">
@@ -1043,44 +1043,44 @@ echo $app_style;
     </div>
     <div style=" position: absolute; margin: 110px 0 0 540px; text-align: center;" class="text-sm"><a href="#!"
         onclick="toggleIframeUrl('pong.php'); return false;"><img style="text-align: center;"
-          src="<?= APP_BASE['resources'] . 'images/pong.png' ?>" /><br /><span
+          src="<?= 'assets/images/pong.png' ?>" /><br /><span
           style="text-align: center;">Pong</span></a>
     </div>
     <div style="position: absolute; margin: 110px 0 0 630px; text-align: center;" class="text-sm"><a href="#!"
         onclick="document.getElementById('app_browser-container').style.display='block'; return false;"><img
-          style="text-align: center;" src="<?= APP_BASE['resources'] . 'images/regexp.png' ?>" /><br /><span
+          style="text-align: center;" src="<?= 'assets/images/regexp.png' ?>" /><br /><span
           style="text-align: center;">RegExp</span></a></div>
     <div style="position: absolute; margin: 210px 75px; text-align: center;" class="text-sm"><a href="#!"
         onclick="document.getElementById('app_browser-container').style.display='block'; return false;"><img
-          style="text-align: center;" src="<?= APP_BASE['resources'] . 'images/chatgpt.png' ?>" /><br /><span
+          style="text-align: center;" src="<?= 'assets/images/chatgpt.png' ?>" /><br /><span
           style="text-align: center;">ChatGPT</span></a></div>
     <div style="position: absolute; margin: 210px 160px; text-align: center;" class="text-sm"><a href="#!"
         onclick="document.getElementById('app_browser-container').style.display='block'; return false;"><img
-          style="text-align: center;" src="<?= APP_BASE['resources'] . 'images/stackoverflow.png' ?>" /><br /><span
+          style="text-align: center;" src="<?= 'assets/images/stackoverflow.png' ?>" /><br /><span
           style="text-align: center;">Stackoverflow</span></a></div>
     <div style="position: absolute; margin: 210px 260px; text-align: center;" class="text-sm"><a href="#!"
         onclick="document.getElementById('app_browser-container').style.display='block'; return false;"><img
-          style="text-align: center;" src="<?= APP_BASE['resources'] . 'images/validatejs.png' ?>" /><br /><span
+          style="text-align: center;" src="<?= 'assets/images/validatejs.png' ?>" /><br /><span
           style="text-align: center;">ValidateJS</span></a></div>
     <!-- https://validator.w3.org/#validate_by_input // -->
     <div style="position: absolute; margin: 210px 340px; text-align: center;" class="text-sm"><a href="#!"
         onclick="document.getElementById('app_browser-container').style.display='block'; return false;"><img
-          style="text-align: center;" src="<?= APP_BASE['resources'] . 'images/w3c.png' ?>" /><br /><span
+          style="text-align: center;" src="<?= 'assets/images/w3c.png' ?>" /><br /><span
           style="text-align: center;">W3C Validator</span></a></div>
     <!-- https://tailwindcss.com/docs/ // -->
     <div style="position: absolute; margin: 210px 0 0 445px; text-align: center;" class="text-sm"><a href="#!"
         onclick="document.getElementById('app_browser-container').style.display='block'; return false;"><img
-          style="text-align: center;" src="<?= APP_BASE['resources'] . 'images/tailwindcss.png' ?>" /><br /><span
+          style="text-align: center;" src="<?= 'assets/images/tailwindcss.png' ?>" /><br /><span
           style="text-align: center;">TailwindCSS<br />Docs</span></a></div>
     <!-- https://www.php.net/docs.php // -->
     <div style="position: absolute; margin: 210px 0 0 540px; text-align: center;" class="text-sm"><a href="#!"
         onclick="document.getElementById('app_browser-container').style.display='block'; return false;"><img
-          style="text-align: center;" src="<?= APP_BASE['resources'] . 'images/php.png' ?>" /><br /><span
+          style="text-align: center;" src="<?= 'assets/images/php.png' ?>" /><br /><span
           style="text-align: center;">PHP Docs</span></a></div>
     <!-- https://dev.mysql.com/doc/ // -->
     <div style="position: absolute; margin: 210px 0 0 625px; text-align: center;" class="text-sm"><a href="#!"
         onclick="document.getElementById('app_browser-container').style.display='block'; return false;"><img
-          style="text-align: center;" src="<?= APP_BASE['resources'] . 'images/mysql.png' ?>" /><br /><span
+          style="text-align: center;" src="<?= 'assets/images/mysql.png' ?>" /><br /><span
           style="text-align: center;">MySQL Docs</span></a></div>
     <div
       style="position: absolute; top: 340px; left: 65px; width: 80%; margin: 0 auto; height: 15px; border-bottom: 1px solid black; text-align: center; z-index: 0;">
@@ -1090,12 +1090,12 @@ echo $app_style;
     <div style="position: absolute; margin: 360px 75px; text-align: center;" class="text-sm"><a href="#!"
         onclick="document.getElementById('app_install-container').style.display='block'; return false;"><span
           style="text-align: center;">New App.</span><br /><img style="text-align: center;"
-          src="<?= APP_BASE['resources'] . 'images/install.png' ?>" /></a></div>
+          src="<?= 'assets/images/install.png' ?>" /></a></div>
     <div style="position: absolute; margin: 360px 170px; text-align: center;" class="text-sm">
       <a href="?app=ace_editor&path=&file=app.user-app.php"><span style="text-align: center;">App
           #1</span></a><br />
       <a href="#!" onclick="document.getElementById('app_browser-container').style.display='block'; return false;"><img
-          style="text-align: center;" src="<?= APP_BASE['resources'] . 'images/php-app.png' ?>" /></a>
+          style="text-align: center;" src="<?= 'assets/images/php-app.png' ?>" /></a>
       <div style="height: 75px;"></div>
     </div>
   </div>
@@ -1126,13 +1126,13 @@ echo $app_style;
 
 
   <script
-    src="<?= APP_IS_ONLINE && check_http_status('https://code.jquery.com/jquery-3.7.1.min.js') ? 'https://code.jquery.com/jquery-3.7.1.min.js' : APP_BASE['resources'] . 'js/jquery/' . 'jquery-3.7.1.min.js' ?>"></script>
+    src="<?= APP_IS_ONLINE && check_http_status('https://code.jquery.com/jquery-3.7.1.min.js') ? 'https://code.jquery.com/jquery-3.7.1.min.js' : 'assets/js/jquery/' . 'jquery-3.7.1.min.js' ?>"></script>
 
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-easing/1.4.1/jquery.easing.min.js"></script>
   <!-- You need to include jQueryUI for the extended easing options. -->
   <!-- script src="//code.jquery.com/jquery-1.12.4.js"></script -->
   <?php
-  if (!is_file($path = APP_BASE['resources'] . 'js/jquery-ui/' . 'jquery-ui-1.12.1.js') || ceil(abs((strtotime(date('Y-m-d')) - strtotime(date('Y-m-d', strtotime('+5 days', filemtime($path))))) / 86400)) <= 0) {
+  if (!is_file($path = APP_BASE['public'] . 'assets/js/jquery-ui/' . 'jquery-ui-1.12.1.js') || ceil(abs((strtotime(date('Y-m-d')) - strtotime(date('Y-m-d', strtotime('+5 days', filemtime($path))))) / 86400)) <= 0) {
     if (!realpath($pathdir = dirname($path)))
       if (!mkdir($pathdir, 0755, true))
         $errors['DOCS'] = "$pathdir does not exist";
@@ -1146,13 +1146,13 @@ echo $app_style;
   } ?>
 
   <script
-    src="<?= APP_IS_ONLINE && check_http_status('https://code.jquery.com/ui/1.12.1/jquery-ui.min.js') ? 'https://code.jquery.com/ui/1.12.1/jquery-ui.min.js' : APP_BASE['resources'] . 'js/jquery-ui/' . 'jquery-ui-1.12.1.js' ?>"></script>
+    src="<?= APP_IS_ONLINE && check_http_status('https://code.jquery.com/ui/1.12.1/jquery-ui.min.js') ? 'https://code.jquery.com/ui/1.12.1/jquery-ui.min.js' : 'assetsjs/jquery-ui/' . 'jquery-ui-1.12.1.js' ?>"></script>
 
 
   <!-- Uncaught ReferenceError: jQuery is not defined -->
 
-  <!-- <script src="resources/js/ace/src/ace.js" type="text/javascript" charset="utf-8"></script> 
-    <script src="resources/js/ace/src/ext-language_tools.js" type="text/javascript" charset="utf-8"></script> -->
+  <!-- <script src="assets/js/ace/src/ace.js" type="text/javascript" charset="utf-8"></script> 
+    <script src="assets/js/ace/src/ext-language_tools.js" type="text/javascript" charset="utf-8"></script> -->
   <!-- For Text / Ace Editor -->
   <!-- <script src="https://unpkg.com/@popperjs/core@2" type="text/javascript" charset="utf-8"></script> -->
 
@@ -1168,11 +1168,11 @@ $(document).ready(function() {
 -->
   <?php
 
-  // APP_IS_ONLINE && check_http_status('https://cdn.tailwindcss.com' ? 'https://cdn.tailwindcss.com' : APP_URL . 'resources/js/tailwindcss.js')?
-//!is_dir($path = APP_BASE['resources'] . 'js/') or mkdir($path, 0755, true);
+  // APP_IS_ONLINE && check_http_status('https://cdn.tailwindcss.com' ? 'https://cdn.tailwindcss.com' : APP_URL . 'assets/js/tailwindcss.js')?
+//!is_dir($path = APP_BASE['public'] . 'assets/js/') or mkdir($path, 0755, true);
   
-  if (!is_file($path = APP_BASE['resources'] . 'js/requirejs/require.js') || ceil(abs((strtotime(date('Y-m-d')) - strtotime(date('Y-m-d', strtotime('+5 days', filemtime($path))))) / 86400)) <= 0) {
-    !is_dir($path = APP_BASE['resources'] . 'js/requirejs') or @mkdir($path, 0755, true);
+  if (!is_file($path = APP_BASE['public'] . 'assets/js/requirejs/require.js') || ceil(abs((strtotime(date('Y-m-d')) - strtotime(date('Y-m-d', strtotime('+5 days', filemtime($path))))) / 86400)) <= 0) {
+    !is_dir($path = APP_BASE['public'] . 'assets/js/requirejs') or @mkdir($path, 0755, true);
     !is_dir($path) and $errors['JS-REQUIREJS'] = "JS-REQUIREJS - Failed to create directory: $path";
     $url = 'https://requirejs.org/docs/release/2.3.6/minified/require.js';
     $handle = curl_init($url);
@@ -1183,24 +1183,24 @@ $(document).ready(function() {
   }
 
   if (!is_file($path)) { ?>
-    <script src="<?= APP_BASE['resources']; ?>js/requirejs/require.js" type="text/javascript" charset="utf-8"></script>
+    <script src="assets/js/requirejs/require.js" type="text/javascript" charset="utf-8"></script>
 
     <script>
       var globalEditor;
       require.config({
         baseUrl: window.location.protocol + "//" + window.location.host + window.location.pathname.split("/").slice(0, -1).join("/"),
         paths: {
-          jquery: 'resources/js/jquery/jquery-3.7.1.min',
-          'jquery-ui': 'resources/js/jquery-ui/jquery-ui-1.12.1',
-          //domReady: 'resources/js/domReady',
-          //bootstrap: 'resources/js/bootstrap/dist/js/bootstrap',
-          ace: 'resources/js/ace/src/ace',
-          'ace/ext-language_tools': 'resources/js/ace/src/ext-language_tools',
-          'ace/mode/javascript': 'resources/js/ace/src/mode-javascript',
-          'ace/mode/html': 'resources/js/ace/src/mode-html',
-          'ace/mode/php': 'resources/js/ace/src/mode-php',
-          'ace/theme/monokai': 'resources/js/ace/src/theme-monokai',
-          'ace/theme/github': 'resources/js/ace/src/theme-github'
+          jquery: 'assets/js/jquery/jquery-3.7.1.min',
+          'jquery-ui': 'assets/js/jquery-ui/jquery-ui-1.12.1',
+          //domReady: 'assets/js/domReady',
+          //bootstrap: 'assets/js/bootstrap/dist/js/bootstrap',
+          ace: 'assets/js/ace/src/ace',
+          'ace/ext-language_tools': 'assets/js/ace/src/ext-language_tools',
+          'ace/mode/javascript': 'assets/js/ace/src/mode-javascript',
+          'ace/mode/html': 'assets/js/ace/src/mode-html',
+          'ace/mode/php': 'assets/js/ace/src/mode-php',
+          'ace/theme/monokai': 'assets/js/ace/src/theme-monokai',
+          'ace/theme/github': 'assets/js/ace/src/theme-github'
         },
         shim: {
           'ace': {
@@ -1259,10 +1259,10 @@ $(document).ready(function() {
       });
     </script>
     <?php
-  } elseif (is_dir($path = APP_BASE['resources'] . 'js/ace')) { ?>
+  } elseif (is_dir($path = APP_BASE['public'] . 'assets/js/ace')) { ?>
 
-    <script src="resources/js/ace/src/ace.js" type="text/javascript" charset="utf-8"></script>
-    <script src="resources/js/ace/src/ext-language_tools.js" type="text/javascript" charset="utf-8"></script>
+    <script src="assets/js/ace/src/ace.js" type="text/javascript" charset="utf-8"></script>
+    <script src="assets/js/ace/src/ext-language_tools.js" type="text/javascript" charset="utf-8"></script>
 
     <script>
       var editors = {}; // relative path => [ace instances]
@@ -1363,8 +1363,8 @@ $(document).ready(function() {
     <?php
   }
   unset($path);
-  if (!is_file($path = APP_BASE['resources'] . 'js/jquery-ui-touch-punch/jquery.ui.touch-punch.min.js') || ceil(abs((strtotime(date('Y-m-d')) - strtotime(date('Y-m-d', strtotime('+5 days', filemtime($path))))) / 86400)) <= 0) {
-    !is_dir($path = APP_BASE['resources'] . 'js/jquery-ui-touch-punch') or @mkdir($path, 0755, true); ?>
+  if (!is_file($path = APP_BASE['public'] . 'assets/js/jquery-ui-touch-punch/jquery.ui.touch-punch.min.js') || ceil(abs((strtotime(date('Y-m-d')) - strtotime(date('Y-m-d', strtotime('+5 days', filemtime($path))))) / 86400)) <= 0) {
+    !is_dir($path = APP_BASE['public'] . 'assets/js/jquery-ui-touch-punch') or @mkdir($path, 0755, true); ?>
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jqueryui-touch-punch/0.2.3/jquery.ui.touch-punch.min.js"></script>
 

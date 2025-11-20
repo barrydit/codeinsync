@@ -2,13 +2,14 @@
   "name": "www",
   "version": "1.0.0",
   "description": "![Made with PHP](https://img.shields.io/badge/Made_with-PHP(Vanilla)-blue) ![Supports GIT(hub)](https://img.shields.io/badge/Supports-GIT(hub)-red) ![Supports Composer](https://img.shields.io/badge/Supports-Composer-brown) ![Dynamic JSON Badge](https://img.shields.io/badge/dynamic-json-green)",
-  "main": "main.js",
+  "main": "rosources/js/main.js",
   "directories": {
     "doc": "docs",
     "test": "tests"
   },
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "dev": "tailwind -i ./resources/css/tailwind.css -o ./public/assets/tailwind.css --watch",
+    "build": "tailwind -i ./resources/css/tailwind.css -o ./public/assets/tailwind.css --minify"
   },
   "repository": {
     "type": "git",

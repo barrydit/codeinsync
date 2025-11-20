@@ -1,7 +1,7 @@
 <?php
 
 if (!in_array($path = dirname(__DIR__) . '/config/config.php', get_required_files()))
-    require_once($path);
+    require_once $path;
 
 if (isset($_GET['CLIENT']) || isset($_GET['DOMAIN']) && !defined('APP_ROOT')) {
 
@@ -34,8 +34,8 @@ if (isset($_GET['CLIENT']) || isset($_GET['DOMAIN']) && !defined('APP_ROOT')) {
 
     <title>Multiple Ace Editor Instances</title>
     <?php
-    // (check_http_200('https://cdn.tailwindcss.com') ? 'https://cdn.tailwindcss.com' : APP_WWW . 'resources/js/tailwindcss-3.3.5.js')?
-    is_dir($path = APP_PATH . APP_BASE['resources'] . 'js/') or mkdir($path, 0755, true);
+    // (check_http_200('https://cdn.tailwindcss.com') ? 'https://cdn.tailwindcss.com' : APP_WWW . 'assets/js/tailwindcss-3.3.5.js')?
+    is_dir($path = APP_PATH . APP_BASE['public'] . 'assets/js/') or mkdir($path, 0755, true);
     if (is_file($path . 'tailwindcss-3.3.5.js')) {
         if (ceil(abs((strtotime(date('Y-m-d')) - strtotime(date('Y-m-d', strtotime('+5 days', filemtime($path . 'tailwindcss-3.3.5.js'))))) / 86400)) <= 0) {
             $url = 'https://cdn.tailwindcss.com';
@@ -55,7 +55,7 @@ if (isset($_GET['CLIENT']) || isset($_GET['DOMAIN']) && !defined('APP_ROOT')) {
     }
     unset($path);
     ?>
-    <script src="<?= APP_BASE['resources'] . 'js/tailwindcss-3.3.5.js' ?? $url ?>"></script>
+    <script src="<?= 'assets/js/tailwindcss-3.3.5.js' ?? $url ?>"></script>
 
     <style>
         .editor {
@@ -70,31 +70,30 @@ if (isset($_GET['CLIENT']) || isset($_GET['DOMAIN']) && !defined('APP_ROOT')) {
     <div id="ui_ace_editor" class="editor">This is the first editor.</div>
     <div id="app_project_editor" class="editor">This is the second editor.</div>
 
-
-    <script src="resources/js/jquery/jquery-3.7.1.min.js"></script>
+    <script src="assets/js/jquery/jquery-3.7.1.min.js"></script>
     <!-- You need to include jQueryUI for the extended easing options. -->
     <!-- script src="//code.jquery.com/jquery-1.12.4.js"></script -->
 
-    <script src="resources/js/jquery-ui/jquery-ui-1.12.1.js"></script>
+    <script src="assets/js/jquery-ui/jquery-ui-1.12.1.js"></script>
     <!-- Uncaught ReferenceError: jQuery is not defined -->
 
+    <script src="assets/js/requirejs/require.js" type="text/javascript" charset="utf-8"></script>
 
-    <script src="<?= APP_BASE['resources']; ?>js/requirejs/require.js" type="text/javascript" charset="utf-8"></script>
-
-    <script>    require.config({
+    <script>
+    require.config({
             baseUrl: window.location.protocol + "//" + window.location.host + window.location.pathname.split("/").slice(0, -1).join("/"),
             paths: {
-                jquery: 'resources/js/jquery/jquery-3.7.1.min',
-                'jquery-ui': 'resources/js/jquery-ui/jquery-ui-1.12.1',
-                //domReady: 'resources/js/domReady',
-                //bootstrap: 'resources/js/bootstrap/dist/js/bootstrap',
-                ace: 'resources/js/ace/src/ace',
-                'ace/ext-language_tools': 'resources/js/ace/src/ext-language_tools',
-                'ace/mode/javascript': 'resources/js/ace/src/mode-javascript',
-                'ace/mode/html': 'resources/js/ace/src/mode-html',
-                'ace/mode/php': 'resources/js/ace/src/mode-php',
-                'ace/theme/monokai': 'resources/js/ace/src/theme-monokai',
-                'ace/theme/github': 'resources/js/ace/src/theme-github'
+                jquery: 'assets/js/jquery/jquery-3.7.1.min',
+                'jquery-ui': 'assets/js/jquery-ui/jquery-ui-1.12.1',
+                //domReady: 'assets/js/domReady',
+                //bootstrap: 'assets/js/bootstrap/dist/js/bootstrap',
+                ace: 'assets/js/ace/src/ace',
+                'ace/ext-language_tools': 'assets/js/ace/src/ext-language_tools',
+                'ace/mode/javascript': 'assets/js/ace/src/mode-javascript',
+                'ace/mode/html': 'assets/js/ace/src/mode-html',
+                'ace/mode/php': 'assets/js/ace/src/mode-php',
+                'ace/theme/monokai': 'assets/js/ace/src/theme-monokai',
+                'ace/theme/github': 'assets/js/ace/src/theme-github'
             },
             shim: {
                 'ace': {

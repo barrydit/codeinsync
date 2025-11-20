@@ -123,13 +123,18 @@ $ctxRoot = null;    // NEW: context root (for APP_ROOT)
 $context = null;
 
 // $nullish = fn($v) => $v === null || $v === '';
-
+/*
 $populated = [
-    'client' => ($client !== null && $client !== ''),
-    'domain' => ($domain !== null && $domain !== ''),
-    'project' => ($project !== null && $project !== ''),
-    'path' => ($path !== null && $path !== ''),
-];
+    'client' => ($client !== null && $client),
+    'domain' => ($domain !== null && $domain),
+    'project' => ($project !== null && $project),
+    'path' => ($path !== null && $path),
+];*/
+
+$client = clean_client(get_str('client'));     // ex: 000-clientname
+$domain = clean_domain(get_str('domain'));     // ex: example.com
+$project = clean_project(get_str('project'));    // ex: 123project
+$path = clean_path(get_str('path'));       // ex: sub-directory/ (may be '')
 
 $hasClient = array_key_exists('client', $_GET);
 $hasDomain = array_key_exists('domain', $_GET);
@@ -137,7 +142,7 @@ $hasProject = array_key_exists('project', $_GET);
 $hasPath = array_key_exists('path', $_GET);
 
 // Consider empty path as not present for the 3a base-cases:
-$hasNonEmptyPath = $hasPath && $path !== '';
+$hasNonEmptyPath = $hasPath && $path;
 
 // 3a) ONLY empty client/project → base
 
@@ -147,30 +152,34 @@ if (!$hasClient && !$hasDomain && !$hasProject && !$hasNonEmptyPath) {
     $ctxRoot = $APP_PATH_N;
     $absDir = $APP_PATH_N;
     $context = 'app';
-} elseif ($hasClient && $client === '' && $hasDomain && $domain === '' && !$hasProject && !$hasNonEmptyPath) {
+} elseif ($hasClient && !$client && $hasDomain && $domain && !$hasProject && !$hasNonEmptyPath) {
     $ctxRoot = $APP_PATH_N . $BASE_CLIENTS;
     $absDir = $ctxRoot;
     $context = 'clients-base';
-} elseif ($hasProject && $project === '' && !$hasClient && !$hasDomain && !$hasNonEmptyPath) {
+} elseif ($hasProject && !$project && !$hasClient && !$hasDomain && !$hasNonEmptyPath) {
     $ctxRoot = $APP_PATH_N . $BASE_PROJECTS;
     $absDir = $ctxRoot;
     $context = 'projects-base';
-} elseif ($hasClient && $client === '' && !$hasProject && !$hasDomain && !$hasNonEmptyPath) {
+} elseif ($hasClient && !$client && !$hasProject && !$hasDomain && !$hasNonEmptyPath) {
     $ctxRoot = $APP_PATH_N . $BASE_CLIENTS;
     $absDir = $ctxRoot;
     $context = 'clients-base';
-} elseif ($hasDomain && $domain === '' && !$hasClient && !$hasProject && !$hasNonEmptyPath) {
+} elseif ($hasDomain && !$domain && !$hasClient && !$hasProject && !$hasNonEmptyPath) {
     $ctxRoot = $APP_PATH_N . $BASE_CLIENTS;
     $absDir = $ctxRoot;
     $context = 'clients-base';
 }
 
-// 3b) ONLY path → redirect (run only if still undecided)
-if ($absDir === null && $populated['path'] && !$populated['client'] && !$populated['domain'] && !$populated['project']) {
-    $accept = $_SERVER['HTTP_ACCEPT'] ?? '';
-    $isJson = isset($_GET['json']) || stripos($accept, 'application/json') !== false;
+$accept = strtolower($_SERVER['HTTP_ACCEPT'] ?? '');
+$part = $_GET['part'] ?? '';
+$isJson = isset($_GET['json']) || str_contains($accept, 'application/json');
+$isJs = ($part === 'script') || preg_match('/\b(?:javascript|ecmascript|application\/x-javascript)\b/', $accept);
 
-    if (!$isJson) {
+
+// 3b) ONLY path → redirect (run only if still undecided)
+if ($absDir === null && $path && !$client && !$domain && !$project) {
+    // ⛔ Redirect only if it's NOT JSON and NOT JS (script branch)
+    if (!($isJson || $isJs)) {
         $target = ($_SERVER['SCRIPT_NAME'] ?? '/') . '?' . http_build_query([
             'app' => 'devtools/directory',
             'path' => $path,
@@ -217,45 +226,45 @@ if ($absDir === null) {
 // - client=='' OR domain=='' OR path=='clients/'  => show base clients dir: APP_PATH . APP_BASE['clients']
 // - project==''                                    => show base projects dir: APP_PATH . APP_BASE['projects']
 //
-    if ($hasClient && $client !== '' && $hasDomain && $domain !== '') {
+    if ($hasClient && $client && $hasDomain && $domain) {
         // client + domain (+ optional path)
         $ctxRoot = $APP_PATH_N . $BASE_CLIENTS . $client . '/' . $domain . '/';
-        $absDir = $ctxRoot . ($hasPath && $path !== '' ? rtrim($path, '/') . '/' : '');
+        $absDir = $ctxRoot . ($hasPath && $path ? rtrim($path, '/') . '/' : '');
         $context = 'clients';
 
-    } elseif ($hasClient && $client !== '' && (!$hasDomain || $domain === '') && $hasPath && $path !== '') {
+    } elseif ($hasClient && $client && (!$hasDomain || $domain) && $hasPath && $path) {
         // client + path (no domain)
         $ctxRoot = $APP_PATH_N . $BASE_CLIENTS . $client . '/';
         $absDir = $ctxRoot . rtrim($path, '/') . '/';
         $context = 'clients';
 
-    } elseif ($hasClient && $client !== '' && (!$hasDomain || $domain === '') && (!$hasPath || $path === '')) {
+    } elseif ($hasClient && $client && (!$hasDomain || $domain) && (!$hasPath || $path)) {
         // client only
         $ctxRoot = $APP_PATH_N . $BASE_CLIENTS . $client . '/';
         $absDir = $ctxRoot;
         $context = 'clients';
 
-    } elseif ($hasDomain && $domain !== '') {
+    } elseif ($hasDomain && $domain) {
         // domain only (+ optional path)
         $ctxRoot = $APP_PATH_N . $BASE_CLIENTS . $domain . '/';
-        $absDir = $ctxRoot . ($hasPath && $path !== '' ? rtrim($path, '/') . '/' : '');
+        $absDir = $ctxRoot . ($hasPath && $path ? rtrim($path, '/') . '/' : '');
         $context = 'clients';
 
-    } elseif ($hasProject && $project !== '') {
+    } elseif ($hasProject && $project) {
         // project (+ optional path)
         $ctxRoot = $APP_PATH_N . $BASE_PROJECTS . $project . '/';
-        $absDir = $ctxRoot . ($hasPath && $path !== '' ? rtrim($path, '/') . '/' : '');
+        $absDir = $ctxRoot . ($hasPath && $path ? rtrim($path, '/') . '/' : '');
         $context = 'projects';
 
     } elseif (
-        ($hasClient && $client === '') ||
-        ($hasDomain && $domain === '')
+        ($hasClient && $client) ||
+        ($hasDomain && $domain)
     ) {
         // clients fallbacks
-        $ctxRoot = $APP_PATH_N . $BASE_CLIENTS;
+        $ctxRoot = $APP_PATH_N . $BASE_CLIENTS . ($client ?? $domain) . '/';
         $absDir = $ctxRoot;
-        $context = 'clients-base';
-    } elseif ($hasPath && $path !== '') {
+        $context = 'clients';
+    } elseif ($hasPath && $path) {
         // Map virtual labels to configured bases
         $p = trim((string) $path, '/');
 
@@ -319,69 +328,6 @@ $trail = static fn($s) => ($s === '' ? '' : rtrim(str_replace('\\', '/', (string
 $ctxRoot = $trail($ctxRoot ?? '');
 $absDir = $trail($absDir ?? '');
 
-/*
-// --------------------------------------------------------------------------
-// APP_ROOT: compute from INSTALL RULES ONLY
-// (client= alone or client=empty MUST NOT set an install root)
-// --------------------------------------------------------------------------
-$installRoot = '';
-if ($hasClient && $client !== '' && $hasDomain && $domain !== '') {
-    // client + domain
-    $installRoot = $BASE_CLIENTS . $client . '/' . $domain . '/';
-} elseif (!$hasClient && $hasDomain && $domain !== '') {
-    // domain only
-    $installRoot = $BASE_CLIENTS . $domain . '/';
-} elseif ($hasProject && $project !== '') {
-    // project
-    $installRoot = $BASE_PROJECTS . $project . '/';
-}
-// NOTE: no branch for ($hasClient && $client === '') → leave '' as requested
-
-$APP_ROOT_REL = $trail($installRoot);  // '' | '../clients/.../' | 'projects/.../'
-
-// --------------------------------------------------------------------------
-// APP_ROOT_DIR: subpath inside context (from ?path)
-// Special-case: if user typed the label (e.g. "clients/"), map to APP_BASE['clients']
-// --------------------------------------------------------------------------
-$INSTALL_SUB = isset($_GET['path']) ? (string) $_GET['path'] : '';
-$INSTALL_SUB = preg_replace('~[^a-z0-9._\-/]~i', '', $INSTALL_SUB);
-if (strpos($INSTALL_SUB, '..') !== false)
-    $INSTALL_SUB = '';
-$INSTALL_SUB_N = $norm($INSTALL_SUB);
-
-$clientsLabel = $norm($BASE_CLIENTS);    // '../clients/' -> 'clients'
-$clientsBasename = basename($clientsLabel); // 'clients'
-if ($INSTALL_SUB_N === $clientsLabel || $INSTALL_SUB_N === $clientsBasename) {
-    // (keeps your “?path=clients/” behaving as your configured base, not literally 'clients/')
-    $INSTALL_SUB = $BASE_CLIENTS;
-}
-
-$INSTALL_SUB = $trail($INSTALL_SUB);         // '' | 'public/' | '../clients/' etc.
-
-// ---- define constants (once) ----------------------------------------------
-if (!defined('APP_ROOT'))
-    define('APP_ROOT', $APP_ROOT_REL);
-if (!defined('APP_ROOT_DIR'))
-    define('APP_ROOT_DIR', $INSTALL_SUB);
-
-// --------------------------------------------------------------------------
-// COMPLETE_PATH: absolute target used by composer/npm/git
-// Default: APP_PATH + APP_ROOT + APP_ROOT_DIR
-// Special-case: client-only + path → point into that client's folder
-// --------------------------------------------------------------------------
-$COMPLETE_PATH = rtrim($APP_PATH_N, '/') . '/';
-if (APP_ROOT !== '') {
-    // install root established (domain or project present)
-    $COMPLETE_PATH .= APP_ROOT . APP_ROOT_DIR;
-} elseif ($hasClient && $client !== '' && $INSTALL_SUB !== '') {
-    // client-only + path (no domain) → /../clients/<client>/<path>
-    $COMPLETE_PATH .= $BASE_CLIENTS . $client . '/' . $INSTALL_SUB;
-} else {
-    // path-only or nothing → app-root + subpath (if any)
-    $COMPLETE_PATH .= APP_ROOT_DIR;
-}
-$COMPLETE_PATH = $trail($COMPLETE_PATH);
-*/
 // ---- (optional) existence check for browsing UIs --------------------------
 $exists = is_dir($absDir);
 
@@ -395,7 +341,7 @@ $GLOBALS['__ctx'] = [
     'COMPLETE_PATH' => rtrim(APP_PATH, '/') . '/' . APP_ROOT . APP_ROOT_DIR, // absolute target for composer/npm/git
 ];
 
-
+//dd($GLOBALS['__ctx']);
 
 // ─────────────────────────────────────────────────────────────────────────────
 // 0) Env & Request
@@ -483,30 +429,229 @@ try {
     // ===================== BEGIN ROUTER (inlined) ======================
     $app = $_GET['app'] ?? $_POST['app'] ?? null;
     $cmd = $_POST['cmd'] ?? null;
-
-    // Helper as a scoped closure (cannot be redeclared)
+    // --- helpers ---
     $load_ui_app = static function (string $app): array {
         $rel = ltrim($app, '/');
         $file = APP_PATH . 'app/' . $rel . '.php';
         if (!is_file($file)) {
             return ['error' => 'App not found', 'app' => $app, 'file' => $file];
         }
+        // Capture ANY stray output (CSS, HTML, warnings)
+        ob_start();
         $UI_APP = null;
-        $result = require $file;
-        if (is_array($result))
-            return $result;
-        if (isset($UI_APP) && is_array($UI_APP))
-            return $UI_APP;
-        return ['error' => 'App file did not return a UI payload', 'app' => $app, 'file' => $file];
+        $result = require $file; // may set $UI_APP or return an array 
+        $echoed = ob_get_clean();
+        // Normalize payload
+        if (is_array($result)) {
+            $payload = $result;
+        } elseif (isset($UI_APP) && is_array($UI_APP)) {
+            $payload = $UI_APP;
+        } else {
+            $payload = ['style' => '', 'body' => '', 'script' => ''];
+        }
+        // If the app echoed CSS/HTML, fold it into 'style' (or 'body' if you prefer) 
+        if ($echoed !== '') {
+            if (isset($payload['style'])) {
+                $payload['style'] = $echoed . $payload['style'];
+            } else {
+                $payload['body'] = $echoed . ($payload['body'] ?? '');
+            }
+        }
+        return $payload;
     };
 
-    // 1) App route (?app=devtools/directory, tools/registry/composer, etc.)
-    if (is_string($app) && $app !== '') {
-        $payload = $load_ui_app($app);
-        $res = $payload;
-        // fall through to emit rules
+    $load_api_handler = static function (string $api): array {
+        $rel = ltrim($api, '/');
+        $file = APP_PATH . 'api/' . $rel . '.php';
+
+        if (!is_file($file)) {
+            return ['ok' => false, 'error' => 'API not found', 'api' => $api, 'file' => $file];
+        }
+
+        ob_start();
+        $ret = require $file; // handler may echo or return
+        $echoed = ob_get_clean();
+
+        // If handler echoed something, try to treat it as JSON first; else wrap it.
+        if ($echoed !== '') {
+            $decoded = json_decode($echoed, true);
+            if (json_last_error() === JSON_ERROR_NONE && is_array($decoded)) {
+                return $decoded; // handler already emitted valid JSON
+            }
+            return ['ok' => true, 'echo' => $echoed, 'result' => $ret ?? null];
+        }
+
+        // If handler returned an array, pass it through unchanged.
+        if (is_array($ret)) {
+            return $ret;
+        }
+
+        // If handler returned a scalar / null, wrap it.
+        if (is_scalar($ret) || $ret === null) {
+            return ['ok' => true, 'result' => $ret];
+        }
+
+        // If it's JsonSerializable, serialize it.
+        if ($ret instanceof \JsonSerializable) {
+            return ['ok' => true, 'result' => $ret->jsonSerialize()];
+        }
+
+        // If it's an object, expose public props; if resource/other, error out.
+        if (is_object($ret)) {
+            return ['ok' => true, 'result' => get_object_vars($ret)];
+        }
+
+        return ['ok' => false, 'error' => 'Unsupported return type', 'type' => gettype($ret)];
+    };
+
+    // Emit JSON safely and STOP any further output
+    $emit_json = static function ($data, int $code = 200): void {
+        // Ensure nothing leaked before
+        while (ob_get_level() > 0) {
+            ob_end_clean();
+        }
+
+        if (!headers_sent()) {
+            http_response_code($code);
+            header('Content-Type: application/json; charset=utf-8');
+            header('Cache-Control: no-store, no-cache, must-revalidate');
+            header('Pragma: no-cache');
+            header('X-Accel-Buffering: no');
+        }
+        // Flag to suppress shutdown debug/footers
+        if (!defined('APP_EMITTED_JSON'))
+            define('APP_EMITTED_JSON', true);
+        try {
+            echo json_encode($data, JSON_UNESCAPED_SLASHES
+                | JSON_UNESCAPED_UNICODE
+                | JSON_INVALID_UTF8_SUBSTITUTE
+                | JSON_THROW_ON_ERROR);
+        } catch (Throwable $e) {
+            echo json_encode([
+                'error' => 'JSON_ENCODE_FAILED',
+                'message' => $e->getMessage(),
+            ]);
+        }
+        exit; // <- prevents any footer from appending
+    };
+
+    // --- helper: emit either text or JSON, keeping existing $emit_json semantics
+    $emit_response = static function (array $res) use ($emit_json): void {
+        $accept = strtolower($_SERVER['HTTP_ACCEPT'] ?? '');
+        $wantsPlain = (isset($_GET['plain']) && $_GET['plain'] === '1') || str_contains($accept, 'text/plain');
+
+        // 1) Explicit handler instruction to emit raw text
+        if (($res['_format'] ?? '') === 'text') {
+            if (!headers_sent()) {
+                header('Content-Type: text/plain; charset=UTF-8');
+                if (isset($res['status']) && is_numeric($res['status'])) {
+                    http_response_code((int) $res['status']);
+                }
+                // make streaming snappy (optional)
+                @ini_set('output_buffering', 'off');
+                @ini_set('zlib.output_compression', '0');
+                while (ob_get_level() > 0) {
+                    @ob_end_flush();
+                }
+                ob_implicit_flush(true);
+            }
+            echo (string) ($res['body'] ?? $res['echo'] ?? '');
+            exit;
+        }
+
+        // 2) Client prefers plain and the handler echoed text
+        if ($wantsPlain && isset($res['echo']) && is_string($res['echo']) && $res['echo'] !== '') {
+            if (!headers_sent()) {
+                header('Content-Type: text/plain; charset=UTF-8');
+            }
+            echo $res['echo'];
+            exit;
+        }
+
+        // 3) Default: JSON (existing behavior)
+        $emit_json(is_array($res) ? $res : ['ok' => true, 'result' => $res]);
+        // exit happens inside emit_json()
+    };
+
+    $emit_text = static function (string $body, string $contentType = 'text/plain; charset=utf-8', int $code = 200, array $extraHeaders = []): void {
+        while (ob_get_level() > 0) {
+            @ob_end_clean();
+        }
+
+        if (!headers_sent()) {
+            http_response_code($code);
+            header('Content-Type: ' . $contentType, true);
+            header('Cache-Control: no-store, no-cache, must-revalidate', true);
+            header('Pragma: no-cache', true);
+            header('X-Accel-Buffering: no', true);
+            foreach ($extraHeaders as $h) {
+                // e.g. 'Content-Security-Policy: ...'
+                header($h, true);
+            }
+        }
+
+        // Generic “we emitted a response” guard (name no longer JSON-specific)
+        if (!defined('APP_EMITTED_OUTPUT'))
+            define('APP_EMITTED_OUTPUT', true);
+        echo $body;
+        exit;
+    };
+    // --- routing decisions ---
+    $appRaw = (string) ($_GET['app'] ?? $_POST['app'] ?? '');
+    $apiParam = (string) ($_GET['api'] ?? $_POST['api'] ?? '');
+    $method = $_SERVER['REQUEST_METHOD'] ?? 'GET';
+    $accept = $_SERVER['HTTP_ACCEPT'] ?? '';
+    $isJson = isset($_GET['json']) || stripos($accept, 'application/json') !== false;
+    $part = isset($_GET['part']) ? strtolower((string) $_GET['part']) : null;
+
+    // 0) Method guard (optional)
+    if (!in_array($method, ['GET', 'POST'], true)) {
+        $emit_json(['error' => 'METHOD_NOT_ALLOWED'], 405);
     }
-    // 2) Command routes (POST cmd)
+
+    // NORMALIZE: prefer explicit api param; fallback to basename(app) for legacy
+    $apiName = $apiParam !== '' ? $apiParam
+        : ($appRaw !== '' ? basename(str_replace('\\', '/', $appRaw)) : '');
+
+    // 1) API route (GET or POST) -> api/{name}.php
+//    - Always emit JSON
+//    - If GET, treat as read-only (your api scripts can enforce this per action)
+    if ($apiParam !== '') {
+        $res = $load_api_handler($apiParam);
+
+        // IMPORTANT: do NOT pre-encode; $emit_json will encode it
+        //$emit_json(is_array($res) ? $res : ['ok' => true, 'result' => $res]);
+        $emit_response(is_array($res) ? $res : ['ok' => true, 'result' => $res]);
+        // exit inside emit_json()
+    }
+
+    // 2) UI PART route (?app=...&part=style|body|script) -> raw asset
+    if ($appRaw !== '' && in_array($part, ['style', 'body', 'script'], true)) {
+        $payload = $load_ui_app($appRaw);
+        $ctypeMap = [
+            'style' => 'text/css; charset=utf-8',
+            'body' => 'text/html; charset=utf-8',
+            'script' => 'application/javascript; charset=utf-8',
+        ];
+        $content = (string) ($payload[$part] ?? '');
+        $emit_text($content, $ctypeMap[$part], $content === '' ? 204 : 200);
+        // exit inside emit_text()
+    }
+
+    // 2b) Full UI payload (?app=...)
+    if ($appRaw !== '' && in_array($method, ['GET', 'POST'], true)) {
+        $payload = $load_ui_app($appRaw);
+        if ($isJson) {
+            $emit_json($payload);
+        } else {
+            $buffer = ob_get_clean();
+            if ($buffer !== '')
+                echo $buffer;
+            return;
+        }
+    }
+
+    // 3) Legacy command routing by cmd=... (optional)
     elseif (is_string($cmd) && $cmd !== '') {
         $routes = [
             '/^composer\b/i' => APP_PATH . 'api/composer.php',
@@ -525,21 +670,48 @@ try {
         if (!$matched) {
             $res = ['ok' => false, 'error' => 'Unknown command', 'cmd' => $cmd];
         }
+        $emit_json($res);
     }
-    // 3) Not handled (shouldn’t usually happen because wantsDispatcher=true)
+
+    // 4) Not handled (default route)
     else {
-        $res = null; // will 404 higher up if needed
+        // fall through to outer buffer/handler (could 404 upstream)
     }
     // ====================== END ROUTER (inlined) =======================
-
     $buffer = ob_get_clean();
-    //dd(APP_MODE);
-    //dd(get_required_files());
+    if (!defined('APP_EMITTED_OUTPUT') && !defined('APP_EMITTED_JSON')) {
+        if ($buffer !== '')
+            echo $buffer;
+    }
+    //dd(APP_MODE); // dd(get_required_files());
 } catch (\Throwable $e) {
-    while (ob_get_level() > $obLevel)
-        ob_end_clean();
+    // unwind only what *we* started
+    if (isset($obLevel)) {
+        while (ob_get_level() > $obLevel) {
+            @ob_end_clean();
+        }
+    }
+
+    // If we were handling an API/JSON request, emit a safe JSON error in non-dev
+    $wantsJson = (($_SERVER['REQUEST_METHOD'] ?? 'GET') === 'POST')
+        || (stripos($_SERVER['HTTP_ACCEPT'] ?? '', 'application/json') !== false)
+        || defined('APP_EMITTED_JSON');
+
+    if (defined('APP_DEBUG') && APP_DEBUG) {
+        throw $e; // let dev see full stack
+    }
+
+    if ($wantsJson && !headers_sent()) {
+        http_response_code(500);
+        header('Content-Type: application/json; charset=utf-8');
+        echo json_encode(['ok' => false, 'error' => 'INTERNAL_ERROR']);
+        exit;
+    }
+
+    // non-JSON path: rethrow to your global handler
     throw $e;
 }
+
 
 // ─────────────────────────────────────────────────────────────────────────────
 // 3) Selective emit (single authority here)
@@ -572,139 +744,3 @@ $payload = $includeScriptInJson
 
 $emitJson($payload);
 exit;
-
-// ─────────────────────────────────────────────────────────────────────────────
-// 6) Not handled; let bootstrap continue
-// ─────────────────────────────────────────────────────────────────────────────
-// return null;
-// ====================== END ROUTER (drop-in) ======================
-
-/*
-return (function () {
-    // Get app or command
-    $app = $_POST['app'] ?? $_GET['app'] ?? null;
-    $cmd = $_POST['cmd'] ?? null;
-
-    // Route for predefined apps
-    $routes = [
-        'composer' => APP_PATH . 'api/composer.php',
-        'git' => APP_PATH . 'api/git.php',
-        'npm' => APP_PATH . 'api/npm.php',
-    ];
-
-    // === 1. If app route matched
-    if ($app && isset($routes[$app])) {
-        // Can optionally return API output
-        return require $routes[$app];
-    }
-
-    // === 2. Command pattern routes
-    $commandRoutes = [
-        '/^git\s+/i' => APP_PATH . 'api/git.php',
-        '/^composer\s+/i' => APP_PATH . 'api/composer.php',
-        '/^npm\s+/i' => APP_PATH . 'api/npm.php',
-        '/^(chdir|cd)\s+/i' => APP_PATH . 'app/directory.php',
-        '/^ls\s+/i' => APP_PATH . 'app/list.php',
-        '/^php\s+/i' => CONFIG_PATH . 'runtime/php.php',
-    ];
-
-    if ($_SERVER['REQUEST_METHOD'] === 'POST' && $cmd) {
-        foreach ($commandRoutes as $pattern => $handlerFile) {
-            if (preg_match($pattern, $cmd)) {
-                return require $handlerFile;
-            }
-        }
-    }
-
-    // === 3. No app or command matched
-    return [
-        'status' => 'error',
-        'message' => 'No valid app or command matched.',
-        'app' => $app,
-        'cmd' => $cmd,
-    ];
-})();
-*/
-/*
-    * This file is part of the project bootstrap sequence.
-    * It handles API routing for specific apps or commands.
-    * 
-    * - If a valid app is requested, it routes to the corresponding API handler.
-    * - If a command is posted, it matches against predefined patterns and routes accordingly.
-    * - If no match is found, it returns an error response.
-
-if (!defined('APP_CONTEXT')) {
-    define('APP_CONTEXT', PHP_SAPI === 'cli' ? 'cli' : 'www');
-}
-
-switch (APP_CONTEXT) {
-    case 'cli':
-        require_once __DIR__ . '/bootstrap.cli.php';
-        break;
-
-    case 'www':
-
-        require_once APP_PATH . 'config' . DIRECTORY_SEPARATOR . 'auth.php';
-
-        if ($_SERVER['SCRIPT_NAME'] == '/dispatcher.php') {
-            file_exists(CONFIG_PATH . 'constants.env.php') && require_once CONFIG_PATH . 'constants.env.php';
-
-            file_exists(CONFIG_PATH . 'constants.env.php') && require_once CONFIG_PATH . 'constants.url.php';
-
-            file_exists(CONFIG_PATH . 'config.php') && require_once CONFIG_PATH . 'config.php';
-
-            require_once BOOTSTRAP_PATH . 'dispatcher.php';
-            require_once __DIR__ . '/../app/tools/code/git.php';
-
-            break;
-        }
-        dd(get_required_files());
-
-        $app = $_GET['app'] ?? null;
-
-        if (!$app) {
-            // No app specified: fallback full preload
-            if (!defined('UI_LOADED')) {
-                include_once APP_PATH . 'bootstrap/load_ui_apps.php';
-            }
-            break;
-        }
-
-        // Only allow safe filenames
-        $app = basename($app);
-        $file = APP_PATH . "app/{$app}.php";
-
-        if (!is_file($file)) {
-            http_response_code(404);
-            echo json_encode(['error' => "App '{$app}' not found"]);
-            break;
-        }
-
-        // 🚀 NEW: Dynamic UI app format support
-        ob_start();
-        $UI_APP = ['style' => '', 'body' => '', 'script' => ''];
-
-        include $file;
-
-        ob_end_clean(); // prevent any loose echo output
-
-        header('Content-Type: application/json');
-        echo json_encode($UI_APP);
-        break;
-    // Optional
-    case 'php':
-
-        echo 'APP_CONTEXT == ' . APP_CONTEXT;
-        dd(get_required_files());
-        break;
-    // Optional
-    case 'socket':
-        require_once __DIR__ . '/bootstrap.sockets.php';
-
-
-        echo 'APP_CONTEXT == ' . APP_CONTEXT;
-        dd(get_required_files());
-        break;
-}
-
-*/

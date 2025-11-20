@@ -1,8 +1,6 @@
 <?php
 declare(strict_types=1);
 
-use App\Core\Registry;
-
 if (defined('APP_BOOTSTRAPPED')) // Already fully bootstrapped in this request
     return;
 else
@@ -24,6 +22,7 @@ $__bootReal = @realpath($__boot) ?: $__boot;
 defined('BOOTSTRAP_PATH') || define('BOOTSTRAP_PATH', $__bootReal . DIRECTORY_SEPARATOR);
 $__app = rtrim(dirname(BOOTSTRAP_PATH), '/') . '/';
 $__appReal = @realpath($__app) ?: $__app;
+
 defined('APP_PATH') || define('APP_PATH', $__appReal . DIRECTORY_SEPARATOR);
 defined('CONFIG_PATH') || define('CONFIG_PATH', APP_PATH . 'config' . DIRECTORY_SEPARATOR);
 // optional legacy: 
@@ -41,21 +40,23 @@ if (!defined('WWW_PATH'))
 if (defined('BASE_PATH') && BASE_PATH !== BOOTSTRAP_PATH)
     trigger_error('BASE_PATH differs from BOOTSTRAP_PATH; confirm intended semantics.', E_USER_NOTICE);
 
+// A. EARLY: PHP ini + sane defaults (no env required)
+require_once __DIR__ . '/php-ini.php';  // error_reporting, timezone, mb_internal_encoding, etc.
+
 // --- Minimal env/
 // Error reporting (adjust as needed)
 error_reporting(APP_DEBUG ? E_ALL : E_ALL & ~E_NOTICE & ~E_STRICT);
 ini_set('display_errors', APP_DEBUG ? '1' : '0');
 ini_set('log_errors', '1');
 
-// ---- helpers first (defines app_context(), app_base(), etc.) ---------------
-require_once __DIR__ . '/../config/functions.php';
-
-// ---- minimal constants needed early (env + paths + url + app) -------------
-// --- Canonical constants order
-require_once __DIR__ . '/../config/constants.env.php';   // vendor-free
+// B. Minimal path constants (no env dependence)
 require_once __DIR__ . '/../config/constants.paths.php'; // defines APP_PATH, CONFIG_PATH, VENDOR_PATH, etc.
 
-require_once __DIR__ . '/php-ini.php';  // error_reporting, timezone, mb_internal_encoding, etc.
+// C. Functions / classes used by env/runtime
+require_once __DIR__ . '/../config/functions.php';
+
+// D. Load ENV (sections, typed)
+require_once __DIR__ . '/../config/constants.env.php';   // vendor-free
 
 // ---- Single autoloader include (custom or Composer) ------------------------
 $composerAutoload = __DIR__ . '/../vendor/autoload.php';
@@ -64,6 +65,7 @@ if ($autoloadFlag && is_file($composerAutoload)) {
     require_once $composerAutoload;
 }
 
+// E. Now runtime/url/app that may depend on ENV
 require_once __DIR__ . '/../config/constants.runtime.php';
 require_once __DIR__ . '/../config/constants.url.php';
 require_once __DIR__ . '/../config/constants.app.php';
@@ -78,54 +80,88 @@ defined('APP_RUNNING') || define('APP_RUNNING', true);
 // ─────────────────────────────────────────────────────────────────────────────
 // 2) Route-or-Shell gate (decide: dispatcher vs render shell)
 // ─────────────────────────────────────────────────────────────────────────────
-$isCli = (PHP_SAPI === 'cli');
+// --- helpers (PHP 7 compatible) ---
+$startsWith = static function (string $h, string $n): bool {
+    return function_exists('str_starts_with')
+        ? str_starts_with($h, $n)
+        : substr($h, 0, strlen($n)) === $n;
+};
+$contains = static function (string $h, string $n): bool {
+    return function_exists('str_contains')
+        ? str_contains($h, $n)
+        : strpos($h, $n) !== false;
+};
+
+// --- request facts ---
+$isCli = (PHP_SAPI === 'cli' || PHP_SAPI === 'phpdbg');
 $method = $_SERVER['REQUEST_METHOD'] ?? 'GET';
 $uri = $_SERVER['REQUEST_URI'] ?? '/';
 $accept = strtolower($_SERVER['HTTP_ACCEPT'] ?? '');
-
-$appParam = (isset($_GET['app']) && is_string($_GET['app'])) ? trim($_GET['app']) : null;
-$partParam = (isset($_GET['part'])) ? strtolower((string) $_GET['part']) : null;
+$appParam = isset($_GET['app']) && is_string($_GET['app']) ? trim($_GET['app']) : null;
+$partParam = isset($_GET['part']) ? strtolower((string) $_GET['part']) : null;
 $hasCmd = isset($_POST['cmd']) && is_string($_POST['cmd']) && $_POST['cmd'] !== '';
 
-$startsWith = static fn(string $h, string $n) =>
-    function_exists('str_starts_with') ? str_starts_with($h, $n) : substr($h, 0, strlen($n)) === $n;
-
-$isApiLikePath = !$isCli && ($startsWith($uri, '/api/') || isset($_GET['api']));
-
-// Heuristics that *want* JSON/dispatcher mode
-$wantsDispatcher = !$isCli && (
-    $hasCmd
-    || $appParam !== null
-    || $isApiLikePath
-    || isset($_GET['json'])
-    || strpos($accept, 'application/json') !== false
-    || in_array($partParam, ['style', 'body', 'script'], true) // partial asset fetch
+$isApiLikePath = !$isCli && (
+    $startsWith($uri, '/api/') || isset($_GET['api'])
 );
 
-// ---- Single source of truth for APP_MODE ------------------------------------
-// Priority: (already defined) > ?mode=… > $_ENV['APP_MODE'] > heuristics
-$modeOverride =
-    defined('APP_MODE') ? APP_MODE :
-    (isset($_GET['mode']) ? strtolower((string) $_GET['mode']) :
-        (isset($_ENV['APP_MODE']) ? strtolower((string) $_ENV['APP_MODE']) : null));
+// Heuristic: things that want dispatcher (JSON/JS partials/APIs/commands)
+$wantsDispatcher = !$isCli && (
+    $hasCmd ||
+    $appParam !== null ||
+    $isApiLikePath ||
+    isset($_GET['json']) ||
+    $contains($accept, 'application/json') ||
+    in_array($partParam, ['style', 'body', 'script'], true)
+);
+
+// Override via query or env (priority: defined > ?mode > env > heuristic)
+$modeOverride = $_GET['mode']
+    ?? ($_ENV['APP_MODE'] ?? getenv('APP_MODE') ?: null);
 
 if (!defined('APP_MODE')) {
-    if ($modeOverride === 'dispatcher' || $modeOverride === 'web') {
+    if (in_array($modeOverride, ['dispatcher', 'web', 'cli'], true)) {
         define('APP_MODE', $modeOverride);
     } else {
-        // default from heuristics (CLI can also force dispatcher if you prefer)
-        define('APP_MODE', $wantsDispatcher ? 'dispatcher' : 'web');
+        define('APP_MODE', $isCli ? 'cli' : ($wantsDispatcher ? 'dispatcher' : 'web'));
     }
 }
+
+// --- route by mode (do not emit HTML before this switch) ---
+switch (APP_MODE) {
+    case 'dispatcher':
+        // no head.php; keep responses lean (JSON/JS/etc)
+        require_once __DIR__ . '/dispatcher.php';
+        return;
+
+    case 'web':
+        // normal web shell: safe to emit HTML
+        require_once __DIR__ . '/head.php';
+        require_once __DIR__ . '/legacy-aliases.php'; // if needed for web
+        require_once __DIR__ . '/kernel.php';
+        return;
+
+    case 'cli':
+        // no HTML in CLI
+        require_once __DIR__ . '/cli.php';
+        return;
+
+    default:
+        throw new LogicException('Unknown APP_MODE: ' . APP_MODE);
+}
+
 
 // Debug safely (won’t explode if moved): 
 // dd(defined('APP_MODE') ? APP_MODE : '(undef)');
 
 // ---- Gate --------------------------------------------------------------------
-if (APP_MODE === 'dispatcher') {
-    require __DIR__ . '/dispatcher.php';
-    return;
-}
+//if (APP_MODE === 'dispatcher') {
+//    require __DIR__ . '/dispatcher.php';
+//    return;
+//}
+
+// Your normal web shell
+//require_once __DIR__ . '/kernel.php';
 
 // ─────────────────────────────────────────────────────────────────────────────
 // 3) Normal page shell (only when nothing routed to dispatcher)
@@ -162,6 +198,13 @@ require_once APP_PATH . 'bootstrap/updates.php';
 require_once APP_PATH . 'bootstrap/plugins.php';
 require_once APP_PATH . 'bootstrap/shortcuts.php';
 require_once APP_PATH . 'bootstrap/registry.php';
+
+// use CodeInSync\Core\Registry;
+if (!class_exists(\CodeInSync\Core\Registry::class)) {
+    require APP_PATH . 'src/Core/Registry.php';
+    @class_alias(\CodeInSync\Core\Registry::class, 'Registry');
+}
+
 //require_once APP_PATH . 'bootstrap/commands.php';
 //require_once APP_PATH . 'bootstrap/cli.php';
 //require_once APP_PATH . 'bootstrap/sockets.php';
@@ -178,20 +221,3 @@ Registry::set('app.start_time', microtime(true));
 require_once CONFIG_PATH . 'constants.paths2.php';
 //defined('APP_PATHS_READY') || define('APP_PATHS_READY', 1);
 */
-// ---------------------------------------------------------
-// [3] Sanitize Input (basic)
-// ---------------------------------------------------------
-// Example: sanitize ?path= for directory traversal
-// (your app may require more advanced input validation/sanitation)
-if (isset($_GET['path'])) {
-    $path = trim((string) $_GET['path']);
-    $path = trim($path, "\\/");           // drop leading/trailing slashes
-    $real = realpath(APP_PATH . ($path ? $path . DIRECTORY_SEPARATOR : ''));
-    if ($real && str_starts_with($real, APP_PATH)) {
-        $_GET['path'] = substr($real, strlen(APP_PATH));
-    } else {
-        unset($_GET['path']); // invalid
-    }
-}
-
-defined('APP_BOOTSTRAPPED') || define('APP_BOOTSTRAPPED', 1);

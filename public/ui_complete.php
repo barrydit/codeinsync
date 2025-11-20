@@ -87,12 +87,12 @@ $proc=proc_open('sudo ' . GIT_EXEC . ' ' . $match[1],
 */
 
 
-if (is_dir('resources/js/ace') && empty(glob('resources/js/ace')))
-  exec('sudo ' . GIT_EXEC . ' clone https://github.com/ajaxorg/ace-builds.git resources/js/ace', $output, $returnCode) or $errors['GIT-CLONE-ACE'] = $output;
-elseif (!is_dir('resources/js/ace')) {
-  if (!mkdir('resources/js/ace', 0755, true))
-    $errors['GIT-CLONE-ACE'] = ' resources/js/ace does not exist.';
-  exec('sudo ' . GIT_EXEC . ' clone https://github.com/ajaxorg/ace-builds.git resources/js/ace', $output, $returnCode) or $errors['GIT-CLONE-ACE'] = $output;
+if (is_dir('assets/js/ace') && empty(glob('assets/js/ace')))
+  exec('sudo ' . GIT_EXEC . ' clone https://github.com/ajaxorg/ace-builds.git public/assets/js/ace', $output, $returnCode) or $errors['GIT-CLONE-ACE'] = $output;
+elseif (!is_dir('assets/js/ace')) {
+  if (!mkdir('assets/js/ace', 0755, true))
+    $errors['GIT-CLONE-ACE'] = ' assets/js/ace does not exist.';
+  exec('sudo ' . GIT_EXEC . ' clone https://github.com/ajaxorg/ace-builds.git public/assets/js/ace', $output, $returnCode) or $errors['GIT-CLONE-ACE'] = $output;
 }
 
 ob_start(); ?>
@@ -155,7 +155,7 @@ ob_start(); ?>
 
     <div style="display: inline-block;">
       <div class="absolute" style="position: absolute; top: 5px; left: 10px;">
-        <img src="resources/images/ace_editor_icon.png" width="32" height="32">
+        <img src="assets/images/ace_editor_icon.png" width="32" height="32">
       </div>
       ACE Editor
     </div>
@@ -245,10 +245,10 @@ foreach($paths as $key => $path) {
 echo '<td style="border: 1px solid #000;" class="text-xs">' . "\n";
 if (is_dir($path))
 echo '<a href="?app=ace_editor&path=' . basename($path) . '">'
-. '<img src="../../resources/images/directory.png" width="50" height="32" /><br />' . basename($path) . '</a>' . "\n";
+. '<img src="assets/images/directory.png" width="50" height="32" /><br />' . basename($path) . '</a>' . "\n";
 elseif (is_file($path))
 echo '<a href="?app=ace_editor&path=' . (basename(dirname($path)) == basename(parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH) ? 'failed' : basename(dirname($path)))) . '&file=' . basename($path) . '">'
-. '<img src="../../resources/images/php_file.png" width="40" height="50" /><br />' . basename($path) . '</a>' . "\n";
+. '<img src="assets/images/php_file.png" width="40" height="50" /><br />' . basename($path) . '</a>' . "\n";
 echo '</td>' . "\n";
 if ($count >= 6 || $path == end($paths)) echo '</tr>';
 if (isset($count) && $count >= 6) $count = 1;
@@ -274,7 +274,7 @@ ob_start(); ?>
 <?php //if (isset($_GET['client']) && $_GET['client'] != '') { 
 //if (isset($_GET['domain']) && $_GET['domain'] != '') {
 ?>
-//var ace = require("resources/js/ace/src/ace.js"); // ext/language_tools
+//var ace = require("assets/js/ace/src/ace.js"); // ext/language_tools
 var editor = ace.edit("ace-editor");
 editor.setTheme("ace/theme/dracula");
 
@@ -307,7 +307,7 @@ ob_start(); ?>
 
   <?php
 
-  is_dir($path = APP_BASE['resources'] . 'js/') or mkdir($path, 0755, true);
+  is_dir($path = APP_BASE['public'] . 'assets/js/') or mkdir($path, 0755, true);
   if (is_file($path . 'tailwindcss-3.3.5.js')) {
     if (ceil(abs((strtotime(date('Y-m-d')) - strtotime(date('Y-m-d', strtotime('+5 days', filemtime($path . 'tailwindcss-3.3.5.js'))))) / 86400)) <= 0) {
       $url = 'https://cdn.tailwindcss.com';
@@ -327,7 +327,7 @@ ob_start(); ?>
   }
   ?>
 
-  <script src="<?= 'resources/js/tailwindcss-3.3.5.js' ?? $url ?>"></script>
+  <script src="<?= 'assets/js/tailwindcss-3.3.5.js' ?? $url ?>"></script>
 
 
   <style type="text/tailwindcss">
@@ -338,15 +338,15 @@ ob_start(); ?>
 <body>
   <?= $appAceEditor['body']; ?>
 
-  <script src="resources/js/ace/src/ace.js" type="text/javascript" charset="utf-8"></script>
-  <script src="resources/js/ace/src/ext-language_tools.js" type="text/javascript" charset="utf-8"></script>
+  <script src="assets/js/ace/src/ace.js" type="text/javascript" charset="utf-8"></script>
+  <script src="assets/js/ace/src/ext-language_tools.js" type="text/javascript" charset="utf-8"></script>
   <!--    <script src="https://cdnjs.cloudflare.com/ajax/libs/ace/1.4.12/ext-language_tools.js"></script>
 
-  <script src="resources/js/ace/src/mode-php.js" type="text/javascript" charset="utf-8"></script>-->
+  <script src="assets/js/ace/src/mode-php.js" type="text/javascript" charset="utf-8"></script>-->
   <!-- https://cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.min.js -->
   <script src="//code.jquery.com/jquery-1.12.4.js"></script>
   <script src="//code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
-  <!-- <script src="../resources/js/jquery/jquery.min.js"></script> -->
+  <!-- <script src="assets/js/jquery/jquery.min.js"></script> -->
   <script>
     <?= $appAceEditor['script']; ?>
   </script>
@@ -802,7 +802,7 @@ ob_start(); ?>
       style="position: absolute; display: inline-block; width: 100%; margin: -25px 0 10px 0; border-bottom: 1px solid #000; z-index: 3;">
       <label class="composer-home" style="cursor: pointer;">
         <div class="absolute" style="position: absolute; top: 0px; left: 3px;">
-          <img src="resources/images/composer_icon.png" width="32" height="40" />
+          <img src="assets/images/composer_icon.png" width="32" height="40" />
         </div>
       </label>
       <div style="display: inline; padding-left: 40px;">
@@ -880,7 +880,7 @@ ob_start(); ?>
       style="position: absolute; top: 0; left: 0; right: 0; margin: 10px auto; opacity: 1.0; text-align: center; cursor: pointer; z-index: 1;">
       <img
         class="<?= (version_compare(COMPOSER_LATEST, COMPOSER_VERSION, '>') != 0 ? 'composer-update' : 'composer-menu') ?>"
-        src="resources/images/composer.fw.png" style="margin-top: 45px;" width="150" height="198" />
+        src="assets/images/composer.fw.png" style="margin-top: 45px;" width="150" height="198" />
     </div>
 
     <div class="absolute"
@@ -902,7 +902,7 @@ ob_start(); ?>
     </div>
 
     <div style="position: absolute; bottom: 0; left: 0; padding: 2px; z-index: 1;">
-      <a href="https://github.com/composer/composer"><img src="resources/images/github-composer.fw.png" /></a>
+      <a href="https://github.com/composer/composer"><img src="assets/images/github-composer.fw.png" /></a>
     </div>
 
     <div class="absolute text-sm" style="position: absolute; bottom: 0; right: 0; padding: 2px; z-index: 1; ">
@@ -929,14 +929,14 @@ ob_start(); ?>
           <div class="drop-shadow-2xl font-bold"
             style="display: inline-block; width: 192px; margin: 10px auto; text-align: right; cursor: pointer;">
             <div id="app_composer-frameMenuInit" style="text-align: center; padding-left: 18px;"><img
-                style="display: block; margin: auto;" src="resources/images/initial_icon.fw.png" width="70"
+                style="display: block; margin: auto;" src="assets/images/initial_icon.fw.png" width="70"
                 height="57" />Init</div>
           </div>
 
           <div class="config drop-shadow-2xl font-bold"
             style="display: inline-block; width: 192px; margin: 0px auto; text-align: center; cursor: pointer;">
             <div id="app_composer-frameMenuConf" class="" style="text-align: center;"><img
-                style="display: block; margin: auto;" src="resources/images/folder.fw.png" width="70"
+                style="display: block; margin: auto;" src="assets/images/folder.fw.png" width="70"
                 height="58" />Config</div>
           </div>
         </div>
@@ -946,14 +946,14 @@ ob_start(); ?>
             <div id="app_composer-frameMenuInstall" style="position: relative; text-align: center; padding-left: 15px;">
               <div style="position: absolute; top: -10px; left: 130px; color: red;"><?= ($count >= 1 ? $count : ''); ?>
               </div>
-              <img style="display: block; margin: auto;" src="resources/images/install_icon.fw.png" width="54"
+              <img style="display: block; margin: auto;" src="assets/images/install_icon.fw.png" width="54"
                 height="54" />Install
             </div>
           </div>
           <div class="drop-shadow-2xl font-bold"
             style="display: inline-block; width: 192px; margin: 0 auto; text-align: center; cursor: pointer;">
             <div id="app_composer-frameMenuUpdate" style="text-align: center; "><img
-                style="display: block; margin: auto;" src="resources/images/update_icon.fw.png" width="54"
+                style="display: block; margin: auto;" src="assets/images/update_icon.fw.png" width="54"
                 height="54" /><a href="#!">Update<?=/*Now!*/ NULL; ?></a></div>
           </div>
         </div>
@@ -1221,7 +1221,7 @@ sudo composer self-update</textarea>
                       <div id="myDropdown" class="dropdown-content">
                         <?php foreach (['Backend', 'Designer', 'Developer', 'Programmer'] as $key2 => $role) { ?>
                           <a href="#!"><img style="float: left;" width="30" height="33"
-                              src="resources/images/role<?= $key2 ?>.fw.png"><?= $role; ?> <input type="radio" id="<?= $key2 ?>"
+                              src="assets/images/role<?= $key2 ?>.fw.png"><?= $role; ?> <input type="radio" id="<?= $key2 ?>"
                               style="float: right; cursor: pointer;" name="" value="<?= $role; ?>" <?= (isset($author->{'role'}) && $author->{'role'} == $role ? ' checked=""' : '') ?> /></a>
                         <?php } ?>
                       </div>
@@ -1243,7 +1243,7 @@ sudo composer self-update</textarea>
                     <div id="myDropdown" class="dropdown-content">
                       <?php foreach (['Backend', 'Designer', 'Developer', 'Programmer'] as $key => $role) { ?>
                         <a href="#!"><img style="float: left;" width="30" height="33"
-                            src="resources/images/role<?= $key ?>.fw.png"><?= $role; ?> <input type="radio" id="<?= $key ?>"
+                            src="assets/images/role<?= $key ?>.fw.png"><?= $role; ?> <input type="radio" id="<?= $key ?>"
                             style="float: right; cursor: pointer;" name="" value="<?= $role; ?>" /></a>
                       <?php } ?>
                     </div>
@@ -1483,7 +1483,7 @@ sudo composer self-update</textarea>
                     <div id="myDropdown" class="dropdown-content">
                       <?php foreach (['Backend', 'Designer', 'Developer', 'Programmer'] as $key2 => $role) { ?>
                         <a href="#!"><img style="float: left;" width="30" height="33"
-                            src="resources/images/role<?= $key2 ?>.fw.png"><?= $role; ?> <input type="radio" id="<?= $key2 ?>"
+                            src="assets/images/role<?= $key2 ?>.fw.png"><?= $role; ?> <input type="radio" id="<?= $key2 ?>"
                             style="float: right; cursor: pointer;" name="composer[config][authors][<?= $key ?>][role]"
                             value="<?= $role; ?>" <?= (isset($author->{'role'}) && $author->{'role'} == $role ? ' checked=""' : '') ?> /></a>
                       <?php } ?>
@@ -1508,7 +1508,7 @@ sudo composer self-update</textarea>
                   <div id="myDropdown" class="dropdown-content">
                     <?php foreach (['Backend', 'Designer', 'Developer', 'Programmer'] as $key => $role) { ?>
                       <a href="#!"><img style="float: left;" width="30" height="33"
-                          src="resources/images/role<?= $key ?>.fw.png"><?= $role; ?> <input type="radio" id="<?= $key ?>"
+                          src="assets/images/role<?= $key ?>.fw.png"><?= $role; ?> <input type="radio" id="<?= $key ?>"
                           style="float: right; cursor: pointer;" name="composer[config][authors][0][role]"
                           value="<?= $role; ?>" /></a>
                     <?php } ?>
@@ -2065,8 +2065,8 @@ for (i = 0; i < dropdowns.length; i++) { var openDropdown=dropdowns[i]; if (open
         <!-- link rel="stylesheet" href="//code.jquery.com/ui/1.12.1/themes/smoothness/jquery-ui.css" /-->
 
         <?php
-        // (APP_IS_ONLINE && check_http_status('https://cdn.tailwindcss.com') ? 'https://cdn.tailwindcss.com' : APP_URL . 'resources/js/tailwindcss-3.3.5.js')?
-        is_dir($path = APP_BASE['resources'] . 'js/') or mkdir($path, 0755, true);
+        // (APP_IS_ONLINE && check_http_status('https://cdn.tailwindcss.com') ? 'https://cdn.tailwindcss.com' : APP_URL . 'assets/js/tailwindcss-3.3.5.js')?
+        is_dir($path = APP_BASE['public'] . 'assets/js/') or mkdir($path, 0755, true);
         if (is_file($path . 'tailwindcss-3.3.5.js')) {
           if (ceil(abs((strtotime(date('Y-m-d')) - strtotime(date('Y-m-d', strtotime('+5 days', filemtime($path . 'tailwindcss-3.3.5.js'))))) / 86400)) <= 0) {
             $url = 'https://cdn.tailwindcss.com';
@@ -2086,7 +2086,7 @@ for (i = 0; i < dropdowns.length; i++) { var openDropdown=dropdowns[i]; if (open
         }
         ?>
 
-        <script src="<?= 'resources/js/tailwindcss-3.3.5.js' ?? $url ?>"></script>
+        <script src="<?= 'assets/js/tailwindcss-3.3.5.js' ?? $url ?>"></script>
 
         <style type="text/tailwindcss">
           <?= $appComposer['style']; ?>
@@ -2276,7 +2276,7 @@ for (i = 0; i < dropdowns.length; i++) { var openDropdown=dropdowns[i]; if (open
             style="position: absolute; display: inline-block; width: 100%; margin: -25px 0 10px 0; border-bottom: 1px solid #000; z-index: 3;">
             <label class="git-home" style="cursor: pointer;">
               <div class="absolute" style="position: absolute; top: 0px; left: 3px;">
-                <img src="resources/images/git_icon.fw.png" width="32" height="32" />
+                <img src="assets/images/git_icon.fw.png" width="32" height="32" />
               </div>
             </label>
             <div style="display: inline; padding-left: 40px;">
@@ -2308,7 +2308,7 @@ for (i = 0; i < dropdowns.length; i++) { var openDropdown=dropdowns[i]; if (open
               style="position: absolute; display: inline-block; top: 4px; text-align: right; width: 272px; ">
               <div class="text-xs" style="display: inline-block;">
                 + 1626 <a href="https://github.com/git/git/graphs/contributors">contributors</a>
-                <br /><a href="http://github.com/git"><img src="resources/images/github.fw.png"
+                <br /><a href="http://github.com/git"><img src="assets/images/github.fw.png"
                     title="http://github.com/git" width="18" height="18" /></a>
                 <a style="color: blue; text-decoration-line: underline; text-decoration-style: solid;"
                   href="http://git-scm.com/" title="http://git-scm.com/">http://git-scm.com/</a>
@@ -2323,7 +2323,7 @@ for (i = 0; i < dropdowns.length; i++) { var openDropdown=dropdowns[i]; if (open
           <div
             style="position: absolute; top: 0; left: 0; right: 0; margin: 10px auto; opacity: 1.0; text-align: center; cursor: pointer; z-index: 1; ">
             <img class="<?= (version_compare(GIT_LATEST, GIT_VERSION, '>') != 0 ? 'git-menu' : 'git-update') ?>"
-              src="resources/images/git_logo.gif<?= /*.fw.png*/ NULL; ?>" style="" width="229" height="96" />
+              src="assets/images/git_logo.gif<?= /*.fw.png*/ NULL; ?>" style="" width="229" height="96" />
           </div>
           <div class="absolute"
             style="position: absolute; bottom: 24px; left: 0; right: 0; width: 100%; text-align: center;">
@@ -2331,7 +2331,7 @@ for (i = 0; i < dropdowns.length; i++) { var openDropdown=dropdowns[i]; if (open
               control system</span>
           </div>
           <div style="position: absolute; bottom: 0; left: 0; padding: 2px; z-index: 1;">
-            <a href="https://github.com/git"><img src="resources/images/github-composer.fw.png" /></a>
+            <a href="https://github.com/git"><img src="assets/images/github-composer.fw.png" /></a>
           </div>
           <div class="absolute text-sm" style="position: absolute; bottom: 0; right: 0; padding: 2px; z-index: 1; ">
             <?= '<code>Latest: </code>'; ?>
@@ -2348,7 +2348,7 @@ for (i = 0; i < dropdowns.length; i++) { var openDropdown=dropdowns[i]; if (open
                     action="<?= APP_URL_BASE . '?' . http_build_query(APP_QUERY + ['app' => 'git']) . (APP_ENV == 'development' ? '#!' : '') /* $c_or_p . '=' . (empty($_GET[$c_or_p]) ? '' : $$c_or_p->name) . '&amp;app=git' */ ?>"
                     method="POST">
                     <!-- <input type="hidden"  /> -->
-                    <button type="submit" name="cmd" value="push"><img src="resources/images/green_arrow.fw.png"
+                    <button type="submit" name="cmd" value="push"><img src="assets/images/green_arrow.fw.png"
                         width="20" height="25" style="cursor: pointer; margin-left: 6px;" /><br />Push</button>
                   </form>
                 </div>
@@ -2357,7 +2357,7 @@ for (i = 0; i < dropdowns.length; i++) { var openDropdown=dropdowns[i]; if (open
                     action="<?= APP_URL_BASE . '?' . http_build_query(APP_QUERY + ['app' => 'git']) . (APP_ENV == 'development' ? '#!' : '') /* $c_or_p . '=' . (empty($_GET[$c_or_p]) ? '' : $$c_or_p->name) . '&amp;app=git' */ ?>"
                     method="POST">
                     <!-- <input type="hidden"  /> -->
-                    <button type="submit" name="cmd" value="pull"><img src="resources/images/red_arrow.fw.png"
+                    <button type="submit" name="cmd" value="pull"><img src="assets/images/red_arrow.fw.png"
                         width="20" height="25" style="cursor: pointer; margin-left: 4px;" /><br />Pull</button>
                   </form>
                 </div>
@@ -2380,7 +2380,7 @@ for (i = 0; i < dropdowns.length; i++) { var openDropdown=dropdowns[i]; if (open
                 </div>
 
                 <div style="display: inline-block; width: 32%; text-align: right;"><img
-                    src="resources/images/git.fw.png" width="52" height="37" style=" border: 1px dashed #F05033;" />
+                    src="assets/images/git.fw.png" width="52" height="37" style=" border: 1px dashed #F05033;" />
                 </div>
                 <div
                   style="display: inline-block; width: 32%; text-align: center; border: 1px dashed #F05033; height: 44px; padding: 7px;">
@@ -2394,7 +2394,7 @@ for (i = 0; i < dropdowns.length; i++) { var openDropdown=dropdowns[i]; if (open
                 </div>
                 <div style="display: inline-block; width: 33%; padding-top: 2px;">
                   <form id="app_git-cmd-selected" method="GET">
-                    <button type="submit"><img src="resources/images/git_icon_selected.fw.png" width="44" height="29"
+                    <button type="submit"><img src="assets/images/git_icon_selected.fw.png" width="44" height="29"
                         style="border: 1px dashed #F05033;" /></button>
                   </form>
                 </div>
@@ -2876,8 +2876,8 @@ for (i = 0; i < dropdowns.length; i++) { var openDropdown=dropdowns[i]; if (open
 
 
               <?php
-              // (APP_IS_ONLINE && check_http_status('https://cdn.tailwindcss.com') ? 'https://cdn.tailwindcss.com' : APP_URL . 'resources/js/tailwindcss-3.3.5.js')?
-              is_dir($path = APP_BASE['resources'] . 'js/') or mkdir($path, 0755, true);
+              // (APP_IS_ONLINE && check_http_status('https://cdn.tailwindcss.com') ? 'https://cdn.tailwindcss.com' : APP_URL . 'assets/js/tailwindcss-3.3.5.js')?
+              is_dir($path = APP_BASE['public'] . 'assets/js/') or mkdir($path, 0755, true);
               if (is_file($path . 'tailwindcss-3.3.5.js')) {
                 if (ceil(abs((strtotime(date('Y-m-d')) - strtotime(date('Y-m-d', strtotime('+5 days', filemtime($path . 'tailwindcss-3.3.5.js'))))) / 86400)) <= 0) {
                   $url = 'https://cdn.tailwindcss.com';
@@ -2897,7 +2897,7 @@ for (i = 0; i < dropdowns.length; i++) { var openDropdown=dropdowns[i]; if (open
               }
               ?>
 
-              <script src="<?= 'resources/js/tailwindcss-3.3.5.js' ?? $url ?>"></script>
+              <script src="<?= 'assets/js/tailwindcss-3.3.5.js' ?? $url ?>"></script>
 
               <style type="text/tailwindcss">
                 <?= $appGit['style']; ?>
@@ -2921,7 +2921,7 @@ for (i = 0; i < dropdowns.length; i++) { var openDropdown=dropdowns[i]; if (open
               <!-- https://cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.min.js -->
               <script src="//code.jquery.com/jquery-1.12.4.js"></script>
               <!-- script src="//code.jquery.com/ui/1.12.1/jquery-ui.js"></script -->
-              <!-- <script src="resources/js/jquery/jquery.min.js"></script> -->
+              <!-- <script src="assets/js/jquery/jquery.min.js"></script> -->
               <script>
                 <?= $appGit['script']; ?>
               </script>
@@ -2971,7 +2971,7 @@ for (i = 0; i < dropdowns.length; i++) { var openDropdown=dropdowns[i]; if (open
                   style="position: absolute; display: inline-block; width: 100%; margin: -25px 0 10px 0; border-bottom: 1px solid #000; z-index: 3;">
                   <label class="npm-home" style="cursor: pointer;">
                     <div class="absolute" style="position: absolute; top: 0px; left: 3px;">
-                      <img src="resources/images/npm_icon.png" width="32" height="32" />
+                      <img src="assets/images/npm_icon.png" width="32" height="32" />
                     </div>
                   </label>
                   <div style="display: inline; padding-left: 40px;">
@@ -3005,7 +3005,7 @@ for (i = 0; i < dropdowns.length; i++) { var openDropdown=dropdowns[i]; if (open
                     style="position: absolute; display: inline-block; top: 4px; text-align: right; width: 272px; ">
                     <div class="text-xs" style="display: inline-block;">
                       + 3357 <a href="https://github.com/nodejs/node/graphs/contributors">contributors</a>
-                      <br /><a href="https://github.com/nodejs"><img src="resources/images/node.js.png"
+                      <br /><a href="https://github.com/nodejs"><img src="assets/images/node.js.png"
                           title="https://github.com/nodejs" width="18" height="18" /></a>
                       <a style="color: blue; text-decoration-line: underline; text-decoration-style: solid;"
                         href="https://nodejs.org/" title="https://nodejs.org/">https://nodejs.org/</a>
@@ -3016,7 +3016,7 @@ for (i = 0; i < dropdowns.length; i++) { var openDropdown=dropdowns[i]; if (open
 
                 <div class=""
                   style="position: absolute; top: 0; left: 0; right: 0; margin: 10px auto; opacity: 1.0; text-align: center; cursor: pointer; z-index: 1;">
-                  <img class="npm-menu" src="resources/images/node_npm.fw.png" style="margin-top: 45px;" width="150"
+                  <img class="npm-menu" src="assets/images/node_npm.fw.png" style="margin-top: 45px;" width="150"
                     height="198" />
                 </div>
 
@@ -3248,8 +3248,8 @@ for (i = 0; i < dropdowns.length; i++) { var openDropdown=dropdowns[i]; if (open
               <!-- link rel="stylesheet" href="//code.jquery.com/ui/1.12.1/themes/smoothness/jquery-ui.css" /-->
 
               <?php
-              // (APP_IS_ONLINE && check_http_status('https://cdn.tailwindcss.com') ? 'https://cdn.tailwindcss.com' : APP_URL . 'resources/js/tailwindcss-3.3.5.js')?
-              is_dir($path = APP_BASE['resources'] . 'js/') or mkdir($path, 0755, true);
+              // (APP_IS_ONLINE && check_http_status('https://cdn.tailwindcss.com') ? 'https://cdn.tailwindcss.com' : APP_URL . 'assets/js/tailwindcss-3.3.5.js')?
+              is_dir($path = APP_BASE['public'] . 'assets/js/') or mkdir($path, 0755, true);
               if (is_file($path . 'tailwindcss-3.3.5.js')) {
                 if (ceil(abs((strtotime(date('Y-m-d')) - strtotime(date('Y-m-d', strtotime('+5 days', filemtime($path . 'tailwindcss-3.3.5.js'))))) / 86400)) <= 0) {
                   $url = 'https://cdn.tailwindcss.com';
@@ -3269,7 +3269,7 @@ for (i = 0; i < dropdowns.length; i++) { var openDropdown=dropdowns[i]; if (open
               }
               ?>
 
-              <script src="<?= 'resources/js/tailwindcss-3.3.5.js' ?? $url ?>"></script>
+              <script src="<?= 'assets/js/tailwindcss-3.3.5.js' ?? $url ?>"></script>
 
               <style type="text/tailwindcss">
                 <?= $appNpm['style']; ?>
@@ -3475,8 +3475,8 @@ for (i = 0; i < dropdowns.length; i++) { var openDropdown=dropdowns[i]; if (open
               <link rel="stylesheet" href="//code.jquery.com/ui/1.12.1/themes/smoothness/jquery-ui.css" />
 
               <?php
-              // (APP_IS_ONLINE && check_http_status('https://cdn.tailwindcss.com') ? 'https://cdn.tailwindcss.com' : APP_URL . 'resources/js/tailwindcss-3.3.5.js')?
-              is_dir($path = APP_BASE['resources'] . 'js/') or mkdir($path, 0755, true);
+              // (APP_IS_ONLINE && check_http_status('https://cdn.tailwindcss.com') ? 'https://cdn.tailwindcss.com' : APP_URL . 'assets/js/tailwindcss-3.3.5.js')?
+              is_dir($path = APP_BASE['public'] . 'assets/js/') or mkdir($path, 0755, true);
               if (is_file($path . 'tailwindcss-3.3.5.js')) {
                 if (ceil(abs((strtotime(date('Y-m-d')) - strtotime(date('Y-m-d', strtotime('+5 days', filemtime($path . 'tailwindcss-3.3.5.js'))))) / 86400)) <= 0) {
                   $url = 'https://cdn.tailwindcss.com';
@@ -3496,7 +3496,7 @@ for (i = 0; i < dropdowns.length; i++) { var openDropdown=dropdowns[i]; if (open
               }
               ?>
 
-              <script src="<?= 'resources/js/tailwindcss-3.3.5.js' ?? $url ?>"></script>
+              <script src="<?= 'assets/js/tailwindcss-3.3.5.js' ?? $url ?>"></script>
 
               <style type="text/tailwindcss">
                 <?= $appPHP['style']; ?>
@@ -3506,15 +3506,15 @@ for (i = 0; i < dropdowns.length; i++) { var openDropdown=dropdowns[i]; if (open
             <body>
               <?= $appPHP['body']; ?>
 
-              <script src="../../resources/js/ace/ace.js" type="text/javascript" charset="utf-8"></script>
-              <!--  <script src="resources/js/ace/ext-language_tools.js" type="text/javascript" charset="utf-8"></script> -->
+              <script src="assets/js/ace/ace.js" type="text/javascript" charset="utf-8"></script>
+              <!--  <script src="assets/js/ace/ext-language_tools.js" type="text/javascript" charset="utf-8"></script> -->
               <script src="https://cdnjs.cloudflare.com/ajax/libs/ace/1.4.12/ext-language_tools.js"></script>
 
-              <script src="../../resources/js/ace/mode-php.js" type="text/javascript" charset="utf-8"></script>
+              <script src="assets/js/ace/mode-php.js" type="text/javascript" charset="utf-8"></script>
               <!-- https://cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.min.js -->
               <script src="//code.jquery.com/jquery-1.12.4.js"></script>
               <script src="//code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
-              <!-- <script src="../resources/js/jquery/jquery.min.js"></script> -->
+              <!-- <script src="assets/js/jquery/jquery.min.js"></script> -->
               <script>
 <?= /*$appPHP['script'];*/ NULL; ?>
               </script>

@@ -1,6 +1,10 @@
 <?php
 
-use App\Core\Registry;
+// use CodeInSync\Core\Registry;
+if (!class_exists(\CodeInSync\Core\Registry::class)) {
+    require APP_PATH . 'src/Core/Registry.php';
+    @class_alias(\CodeInSync\Core\Registry::class, 'Registry');
+}
 
 /*
 header('Content-Type: application/json');

@@ -1208,12 +1208,12 @@ ob_start(); ?>
 
       if (isIntervalActive) {
         stopInterval();
-        $("#ts-status-light").attr('src', 'resources/images/timesheet-light-R.gif');
+        $("#ts-status-light").attr('src', 'assets/images/timesheet-light-R.gif');
         document.getElementById('app_timesheet-container').style.display = 'block';
         $("#idleTime").html('<i style="color: red;">[Stopped] at: ' + toTime(occupiedTime)['time'] + '</i>');
       } else {
         startInterval();
-        $("#ts-status-light").attr('src', 'resources/images/timesheet-light-GG.gif');
+        $("#ts-status-light").attr('src', 'assets/images/timesheet-light-GG.gif');
       }
       //console.log('Interval paused.');
     });
@@ -1308,9 +1308,9 @@ ob_start(); ?>
 
     console.log(((idleTime >= 1) ? 'Idle: ' + idleTime + ' ' : '') + 'Work: ' + occupiedTime);
 
-    if (idleTime <= 0) { $("#ts-status-light").attr('src', 'resources/images/timesheet-light-R.gif'); }
+    if (idleTime <= 0) { $("#ts-status-light").attr('src', 'assets/images/timesheet-light-R.gif'); }
     else if (idleTime > 0 && idleTime < 10) { // 1 second
-      $("#ts-status-light").attr('src', 'resources/images/timesheet-light-Y.gif');
+      $("#ts-status-light").attr('src', 'assets/images/timesheet-light-Y.gif');
       $("#idleTime").html('<i style="color: blue;">[Idling] for: ' + toTime(idleTime)['time'] + '</i>');
     } else
       if (idleTime > 1) { // 1 second
@@ -1319,7 +1319,7 @@ ob_start(); ?>
 
         if (idleTime >= 10) { // 60 second
 
-          $("#ts-status-light").attr('src', 'resources/images/timesheet-light-G.gif');
+          $("#ts-status-light").attr('src', 'assets/images/timesheet-light-G.gif');
 
           try {
             // Attempt to play the media element
@@ -1342,7 +1342,7 @@ ob_start(); ?>
 
           //snd.pause();
 
-          $("#ts-status-light").attr('src', 'resources/images/timesheet-light-Y.gif');
+          $("#ts-status-light").attr('src', 'assets/images/timesheet-light-Y.gif');
           $("#idleTime").html('<i style="color: blue;">[Idled] for: ' + toTime(idleTime)['hrs'] + 'h ' +
             toTime(idleTime)['mins'] + 'm ' + toTime(idleTime)['secs'] + 's ' + '</i>');
 
@@ -1360,7 +1360,7 @@ ob_start(); ?>
           }
 
           $("#idleTime").html('<i style="color: blue;">[Idleing] for: ' + toTime(occupiedTime)['time'] + '</i>');
-          $("#ts-status-light").attr('src', 'resources/images/timesheet-light-G.gif');
+          $("#ts-status-light").attr('src', 'assets/images/timesheet-light-G.gif');
           occupiedTime = occupiedTime + 1;
         }
       } else {
@@ -1369,7 +1369,7 @@ ob_start(); ?>
         }
         document.getElementById('adhd_song-container').style.display = 'none';
         $("#idleTime").html('<i style="color: green;">Working: ' + toTime(occupiedTime)['time'] + '</i>');
-        $("#ts-status-light").attr('src', 'resources/images/timesheet-light-GG.gif');
+        $("#ts-status-light").attr('src', 'assets/images/timesheet-light-GG.gif');
         occupiedTime = occupiedTime + 1;
       }
   }
@@ -1390,8 +1390,8 @@ ob_start(); ?>
   <link rel="stylesheet" href="//code.jquery.com/ui/1.12.1/themes/smoothness/jquery-ui.css" />
 
   <?php
-  // (check_http_status'https://cdn.tailwindcss.com') ? 'https://cdn.tailwindcss.com' : APP_URL . 'resources/js/tailwindcss-3.3.5.js')?
-  is_dir($path = APP_BASE['resources'] . 'js/') or mkdir($path, 0755, true);
+  // (check_http_status'https://cdn.tailwindcss.com') ? 'https://cdn.tailwindcss.com' : APP_URL . 'assets/js/tailwindcss-3.3.5.js')?
+  is_dir($path = APP_BASE['public'] . 'assets/js/') or mkdir($path, 0755, true);
   if (is_file($path . 'tailwindcss-3.3.5.js')) {
     if (ceil(abs((strtotime(date('Y-m-d')) - strtotime(date('Y-m-d', strtotime('+5 days', filemtime($path . 'tailwindcss-3.3.5.js'))))) / 86400)) <= 0) {
       $url = 'https://cdn.tailwindcss.com';
@@ -1411,7 +1411,7 @@ ob_start(); ?>
   }
   ?>
 
-  <script src="<?= 'resources/js/tailwindcss-3.3.5.js' ?? $url ?>"></script>
+  <script src="<?= 'assets/js/tailwindcss-3.3.5.js' ?? $url ?>"></script>
 
   <style type="text/tailwindcss">
     <?= $app['style']; ?>
@@ -1424,9 +1424,9 @@ ob_start(); ?>
   <!-- https://cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.min.js -->
   <script src="//code.jquery.com/jquery-1.12.4.js"></script>
   <script src="//code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
-  <!-- <script src="resources/js/jquery/jquery.min.js"></script> -->
+  <!-- <script src="assets/js/jquery/jquery.min.js"></script> -->
 
-  <script src="resources/js/play_sound.js"></script>
+  <script src="assets/js/play_sound.js"></script>
   <script>
     <?= $app['script']; ?>
   </script>

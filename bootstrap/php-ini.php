@@ -2,11 +2,11 @@
 declare(strict_types=1); // First Line Only!
 
 if (PHP_SAPI !== 'cli' && PHP_SAPI !== 'phpdbg') {
-    load_if_file(APP_PATH . 'bootstrap' . DIRECTORY_SEPARATOR . 'bootstrap.php'); // constants.php
+    // load_if_file(APP_PATH . 'bootstrap' . DIRECTORY_SEPARATOR . 'bootstrap.php'); // constants.php
 }
 
 // Timezone (env wins; default your local)
-$tz = $_ENV['APP_TIMEZONE'] ?? 'America/Vancouver';
+$tz = 'America/Vancouver'; // 'UTC';
 if (ini_get('date.timezone') !== $tz ?? false)
     @date_default_timezone_set(is_string($tz) && $tz ? $tz : 'UTC');
 
@@ -51,7 +51,7 @@ if (APP_DEBUG || APP_ERROR) {
     error_reporting(E_ALL/*E_STRICT |*/);
 }
 
-ini_set('error_log', is_dir($path = APP_PATH . 'config') ? dirname($path, 1) . DIRECTORY_SEPARATOR . 'error_log' : 'error_log');
+ini_set('error_log', is_dir($path = APP_PATH . 'var/log/') ? $path . 'php_error.log' : APP_PATH . 'var/log/php_error.log');
 ini_set('log_errors', 'true');
 
 ini_set('xdebug.debug', '0'); // remote_enable

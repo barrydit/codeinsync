@@ -99,12 +99,12 @@ $proc=proc_open('sudo ' . GIT_EXEC . ' ' . $match[1],
 */
 
 if (defined('GIT_EXEC'))
-    if (is_dir($path = APP_BASE['resources'] . 'js/ace') && empty(glob($path)))
-        exec((stripos(PHP_OS, 'WIN') === 0 ? '' : APP_SUDO) . GIT_EXEC . ' clone https://github.com/ajaxorg/ace-builds.git resources/js/ace', $output, $returnCode) or $errors['GIT-CLONE-ACE'] = $output;
+    if (is_dir($path = APP_BASE['public'] . 'assets/js/ace') && empty(glob($path)))
+        exec((stripos(PHP_OS, 'WIN') === 0 ? '' : APP_SUDO) . GIT_EXEC . ' clone https://github.com/ajaxorg/ace-builds.git public/assets/js/ace', $output, $returnCode) or $errors['GIT-CLONE-ACE'] = $output;
     elseif (!is_dir($path)) {
         if (!mkdir($path, 0755, true))
-            $errors['GIT-CLONE-ACE'] = ' resources/js/ace does not exist.';
-        exec((stripos(PHP_OS, 'WIN') === 0 ? '' : APP_SUDO) . GIT_EXEC . ' clone https://github.com/ajaxorg/ace-builds.git resources/js/ace', $output, $returnCode) or $errors['GIT-CLONE-ACE'] = $output;
+            $errors['GIT-CLONE-ACE'] = ' public/assets/js/ace does not exist.';
+        exec((stripos(PHP_OS, 'WIN') === 0 ? '' : APP_SUDO) . GIT_EXEC . ' clone https://github.com/ajaxorg/ace-builds.git public/assets/js/ace', $output, $returnCode) or $errors['GIT-CLONE-ACE'] = $output;
     }
 
 ob_start(); ?>
@@ -272,7 +272,7 @@ ob_start(); ?>
         style="position: relative; display: inline-block; width: 100%; /*cursor: move;*/ border-bottom: 1px solid #000;background-color: #FFF; height: 40px;">
         <label class="calendar-home" style="cursor: pointer;">
             <div class="" style="position: relative; display: inline-block; top: 0; left: 0;">
-                <img src="resources/images/calendar_icon.png" width="41" height="41" />
+                <img src="assets/images/calendar_icon.png" width="41" height="41" />
             </div>
         </label>
         <div
@@ -318,7 +318,7 @@ ob_start(); ?>
                 style="position: absolute; display: inline-block; top: 5px; right: 0; text-align: right; float: right;">
                 <div class="text-xs" style="position: relative; display: inline-block;">
                     + 495 <a href="https://github.com/ajaxorg/ace/graphs/contributors">contributors</a>
-                    <br />< a href="https://github.com/ajaxorg"><img src="resources/images/node.js.png" title="https://github.com/nodejs" width="18" height="18" /></a>
+                    <br />< a href="https://github.com/ajaxorg"><img src="assets/images/node.js.png" title="https://github.com/nodejs" width="18" height="18" /></a>
                     <a style="color: blue; text-decoration-line: underline; text-decoration-style: solid;"
                         href="https://ace.c9.io/" title="https://ace.c9.io/">https://ace.c9.io/</a>
                 </div>
@@ -353,10 +353,10 @@ foreach($paths as $key => $path) {
 echo '<td style="border: 1px solid #000;" class="text-xs">' . "\n";
 if (is_dir($path))
 echo '<a href="?app=errors&path=' . basename($path) . '">'
-. '<img src="../../resources/images/directory.png" width="50" height="32" /><br />' . basename($path) . '</a>' . "\n";
+. '<img src="assets/images/directory.png" width="50" height="32" /><br />' . basename($path) . '</a>' . "\n";
 elseif (is_file($path))
 echo '<a href="?app=errors&path=' . (basename(dirname($path)) == basename(parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH) ? 'failed' : basename(dirname($path)))) . '&file=' . basename($path) . '">'
-. '<img src="../../resources/images/php_file.png" width="40" height="50" /><br />' . basename($path) . '</a>' . "\n";
+. '<img src="assets/images/php_file.png" width="40" height="50" /><br />' . basename($path) . '</a>' . "\n";
 echo '</td>' . "\n";
 if ($count >= 6 || $path == end($paths)) echo '</tr>';
 if (isset($count) && $count >= 6) $count = 1;
@@ -391,7 +391,7 @@ else $count++;
                             style="position: relative; display: inline-block; width: 100%; cursor: move; border-bottom: 1px solid #000;background-color: #FFF;">
                             <label class="medication_log-home" style="cursor: pointer;">
                                 <div class="" style="position: relative; display: inline-block; top: 0; left: 0;">
-                                    <img src="resources/images/medication_log_icon.png" width="53" height="32" />
+                                    <img src="assets/images/medication_log_icon.png" width="53" height="32" />
                                 </div>
                             </label>
                             <div
@@ -696,7 +696,7 @@ ob_start();
     <!-- link rel="stylesheet" href="//code.jquery.com/ui/1.12.1/themes/smoothness/jquery-ui.css" / -->
 
     <?php
-    is_dir($path = APP_BASE['resources'] . 'js/') or mkdir($path, 0755, true);
+    is_dir($path = APP_BASE['public'] . 'assets/js/') or mkdir($path, 0755, true);
     if (is_file($path . 'tailwindcss-3.3.5.js')) {
         if (ceil(abs((strtotime(date('Y-m-d')) - strtotime(date('Y-m-d', strtotime('+5 days', filemtime($path . 'tailwindcss-3.3.5.js'))))) / 86400)) <= 0) {
             $url = 'https://cdn.tailwindcss.com';
@@ -717,7 +717,7 @@ ob_start();
     unset($path);
     ?>
 
-    <script src="<?= 'resources/js/tailwindcss-3.3.5.js' ?? $url ?>"></script>
+    <script src="<?= 'assets/js/tailwindcss-3.3.5.js' ?? $url ?>"></script>
 
     <style type="text/tailwindcss">
         <?= $app['style']; ?>
@@ -728,7 +728,7 @@ ob_start();
     <?= $app['body']; ?>
 
     <?php
-    is_dir($path = APP_BASE['resources'] . 'js/jquery/') or mkdir($path, 0755, true);
+    is_dir($path = APP_BASE['public'] . 'assets/js/jquery/') or mkdir($path, 0755, true);
     if (is_file($path . 'jquery-3.7.1.min.js')) {
         if (ceil(abs((strtotime(date('Y-m-d')) - strtotime(date('Y-m-d', strtotime('+5 days', filemtime($path . 'jquery-3.7.1.min.js'))))) / 86400)) <= 0) {
             $url = 'https://code.jquery.com/jquery-3.7.1.min.js';
@@ -748,24 +748,24 @@ ob_start();
     }
     unset($path); ?>
     <script
-        src="<?= defined('APP_IS_ONLINE') && APP_IS_ONLINE && check_http_status('https://code.jquery.com/jquery-3.7.1.min.js') ? 'https://code.jquery.com/jquery-3.7.1.min.js' : APP_BASE['resources'] . 'js/jquery/' . 'jquery-3.7.1.min.js' ?>"></script>
+        src="<?= defined('APP_IS_ONLINE') && APP_IS_ONLINE && check_http_status('https://code.jquery.com/jquery-3.7.1.min.js') ? 'https://code.jquery.com/jquery-3.7.1.min.js' : APP_BASE['public'] . 'assets/js/jquery/' . 'jquery-3.7.1.min.js' ?>"></script>
     <!-- You need to include jQueryUI for the extended easing options. -->
     <!-- script src="//code.jquery.com/jquery-1.12.4.js"></script -->
 
     <script
-        src="<?= defined('APP_IS_ONLINE') && APP_IS_ONLINE && check_http_status('https://code.jquery.com/ui/1.12.1/jquery-ui.min.js') ? 'https://code.jquery.com/ui/1.12.1/jquery-ui.min.js' : APP_BASE['resources'] . 'js/jquery-ui/' . 'jquery-ui-1.12.1.js' ?>"></script>
+        src="<?= defined('APP_IS_ONLINE') && APP_IS_ONLINE && check_http_status('https://code.jquery.com/ui/1.12.1/jquery-ui.min.js') ? 'https://code.jquery.com/ui/1.12.1/jquery-ui.min.js' : APP_BASE['public'] . 'assets/js/jquery-ui/' . 'jquery-ui-1.12.1.js' ?>"></script>
     <!-- Uncaught ReferenceError: jQuery is not defined -->
 
-    <script src="resources/js/ace/src/ace.js" type="text/javascript" charset="utf-8"></script>
-    <script src="resources/js/ace/src/ext-language_tools.js" type="text/javascript" charset="utf-8"></script>
+    <script src="assets/js/ace/src/ace.js" type="text/javascript" charset="utf-8"></script>
+    <script src="assets/js/ace/src/ext-language_tools.js" type="text/javascript" charset="utf-8"></script>
     <!-- <script src="https://cdnjs.cloudflare.com/ajax/libs/ace/1.4.12/ext-language_tools.js"></script>
 
-  <script src="resources/js/ace/src/mode-php.js" type="text/javascript" charset="utf-8"></script> -->
+  <script src="assets/js/ace/src/mode-php.js" type="text/javascript" charset="utf-8"></script> -->
     <!-- https://cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.min.js -->
 
     <!-- script src="//code.jquery.com/jquery-1.12.4.js"></script -->
     <!-- script src="//code.jquery.com/ui/1.12.1/jquery-ui.js"></script -->
-    <!-- <script src="../resources/js/jquery/jquery.min.js"></script> -->
+    <!-- <script src="assets/js/jquery/jquery.min.js"></script> -->
     <script>
 
         let isDragging = false;

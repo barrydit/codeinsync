@@ -9,7 +9,7 @@ defined('APP_ROOT') or
 
 //defined('APP_URL') || require_once dirname(__DIR__, 3) . '/config/constants.url.php'; // require_once (...);
 
-global $errors;
+global $errors, $asset;
 
 $app_id = 'tools/code/git';           // full path-style id
 
@@ -166,7 +166,8 @@ defined('GIT_LATEST') or define('GIT_LATEST', GIT_VERSION);
   data-drag-handle>
   <label class="git-home" style="cursor: pointer;">
     <div class="" style="position: relative; float: left; display: inline-block; top: 0; left: 0; margin-top: -5px;">
-      <img src="resources/images/git_icon.fw.png" width="32" height="32" />
+      <img src="assets/images/git_icon.fw.png" width="32"
+        height="32" />
     </div>
   </label>
   <div style="float: left; display: inline;">
@@ -192,7 +193,8 @@ defined('GIT_LATEST') or define('GIT_LATEST', GIT_VERSION);
       style="position: relative; display: block; width: 398px; background-color: rgba(251,247,241); z-index: 2;">
       <div style="display: inline-block; text-align: left; width: 125px;">
         <div class="git-menu text-sm"
-          style="cursor: pointer; font-weight: bold; padding-left: 25px; border: 1px solid #000; width: 150px;">Main Menu <a href="#" title="<?= APP_ROOT ?>">Test</a></div>
+          style="cursor: pointer; font-weight: bold; padding-left: 25px; border: 1px solid #000; width: 150px;">Main
+          Menu <a href="#" title="<?= APP_ROOT ?>">Test</a></div>
         <div class="text-xs" style="display: inline-block; border: 1px solid #000;">
           <a class="text-sm" id="app_git-frameMenuPrev"
             href="<?= /*(!empty(APP_QUERY) ? '?' . http_build_query(APP_QUERY) : '') . */ (defined('APP_ENV') && APP_ENV == 'development' ? '#!' : '#') ?>">
@@ -205,8 +207,9 @@ defined('GIT_LATEST') or define('GIT_LATEST', GIT_VERSION);
         style="position: absolute; display: inline-block; top: 4px; text-align: right; width: 272px; ">
         <div class="text-xs" style="display: inline-block;">
           + 2327 <a href="https://github.com/git/git/graphs/contributors">contributors</a>
-          <br /><a href="http://github.com/git"><img src="resources/images/github.fw.png" title="http://github.com/git"
-              width="18" height="18" /></a>
+          <br /><a href="http://github.com/git"><img
+              src="assets/images/github.fw.png"
+              title="http://github.com/git" width="18" height="18" /></a>
           <a style="color: blue; text-decoration-line: underline; text-decoration-style: solid;"
             href="http://git-scm.com/" title="http://git-scm.com/" target="_blank">http://git-scm.com/</a>
         </div>
@@ -220,7 +223,8 @@ defined('GIT_LATEST') or define('GIT_LATEST', GIT_VERSION);
     <div
       style="position: absolute; top: 0; left: 0; right: 0; margin: 10px auto; opacity: 1.0; text-align: center; cursor: pointer; /*z-index: 1;*/ ">
       <img class="<?= version_compare(GIT_LATEST, GIT_VERSION, '>') != 0 ? 'git-menu' : 'git-update' ?>"
-        src="resources/images/git_logo.gif<?= /*.fw.png*/ NULL; ?>" style="" width="229" height="300" />
+        src="assets/images/git_logo.gif" style="" width="229"
+        height="300" />
 
     </div>
     <div class="absolute" style="position: absolute; bottom: 24px; left: 0; right: 0; width: 100%; text-align: center;">
@@ -228,7 +232,8 @@ defined('GIT_LATEST') or define('GIT_LATEST', GIT_VERSION);
         system</span>
     </div>
     <div style="position: absolute; bottom: 0; left: 0; padding: 2px; z-index: 1;">
-      <a href="https://github.com/git"><img src="resources/images/github-composer.fw.png" /></a>
+      <a href="https://github.com/git"><img
+          src="assets/images/github-composer.fw.png" /></a>
     </div>
     <div class="absolute text-sm" style="position: absolute; bottom: 0; right: 0; padding: 2px; z-index: 1; ">
       <?= '<code>Latest: </code>'; ?>
@@ -245,8 +250,9 @@ defined('GIT_LATEST') or define('GIT_LATEST', GIT_VERSION);
               action="<?= APP_URL . '?' . http_build_query(APP_QUERY + ['app' => 'git']) . (defined('APP_ENV') && in_array(APP_ENV, ['development', 'production']) ? '#!' : '') /* $c_or_p . '=' . (empty($_GET[$c_or_p]) ? '' : $$c_or_p->name) . '&amp;app=git' */ ?>"
               method="POST">
               <!-- <input type="hidden"  /> -->
-              <button type="submit" name="cmd" value="push"><img src="resources/images/green_arrow.fw.png" width="20"
-                  height="25" style="cursor: pointer; margin-left: 6px;" /><br />Push</button>
+              <button type="submit" name="cmd" value="push"><img
+                  src="assets/images/green_arrow.fw.png"
+                  width="20" height="25" style="cursor: pointer; margin-left: 6px;" /><br />Push</button>
             </form>
           </div>
           <div class="text-sm" style="display: inline-block; margin: 0 auto;">
@@ -254,8 +260,9 @@ defined('GIT_LATEST') or define('GIT_LATEST', GIT_VERSION);
               action="<?= APP_URL . '?' . http_build_query(APP_QUERY + ['app' => 'git']) . (defined('APP_ENV') && in_array(APP_ENV, ['development', 'production']) ? '#!' : '') /* $c_or_p . '=' . (empty($_GET[$c_or_p]) ? '' : $$c_or_p->name) . '&amp;app=git' */ ?>"
               method="POST">
               <!-- <input type="hidden"  /> -->
-              <button type="submit" name="cmd" value="pull"><img src="resources/images/red_arrow.fw.png" width="20"
-                  height="25" style="cursor: pointer; margin-left: 4px;" /><br />Pull</button>
+              <button type="submit" name="cmd" value="pull"><img
+                  src="assets/images/red_arrow.fw.png"
+                  width="20" height="25" style="cursor: pointer; margin-left: 4px;" /><br />Pull</button>
             </form>
           </div>
         </div>
@@ -269,7 +276,8 @@ defined('GIT_LATEST') or define('GIT_LATEST', GIT_VERSION);
           <div
             style="position: absolute; top: 5px; left: 10px; border: 1px dashed #000; height: 104px; overflow-y: auto; z-index:4;"
             class="text-xs">
-            <div style="position: absolute; top: 0; right: 25px;"><img src="resources/images/oauth-token.gif"
+            <div style="position: absolute; top: 0; right: 25px;"><img
+                src="assets/images/oauth-token.gif"
                 style="position: fixed; cursor: pointer;" width="20" height="23" alt="Git token" title="OAuth Token"
                 onclick="document.getElementById('app_git-oauth').style.display='block';" /></div>
             <div style="position: absolute; font-weight: bold; color: #FFF; background-color: #B0B0B0;">Git Commands
@@ -322,8 +330,9 @@ defined('GIT_LATEST') or define('GIT_LATEST', GIT_VERSION);
               size="26" />
           </div>
 
-          <div style="display: inline-block; width: 32%; text-align: right;"><img src="resources/images/git.fw.png"
-              width="52" height="37" style=" border: 1px dashed #F05033;" /></div>
+          <div style="display: inline-block; width: 32%; text-align: right;"><img
+              src="assets/images/git.fw.png" width="52"
+              height="37" style=" border: 1px dashed #F05033;" /></div>
           <div
             style="position: relative; display: inline-block; top: 20px; width: 32%; text-align: center; border: 1px dashed #F05033; height: 44px; padding: 7px;">
             <select id="app_git-frameSelector">
@@ -340,8 +349,9 @@ defined('GIT_LATEST') or define('GIT_LATEST', GIT_VERSION);
             <form id="app_git-cmd-selected" action="/?app=git" method="POST" autocomplete="off" spellcheck="false">
               <input type="hidden" name="git[cmd]"
                 value="<?= isset($_POST['git']['cmd']) ? $_POST['git']['cmd'] : 'init'; ?>" />
-              <button type="submit"><img src="resources/images/git_icon_selected.fw.png" width="44" height="29"
-                  style="border: 1px dashed #F05033;" /></button>
+              <button type="submit"><img
+                  src="assets/images/git_icon_selected.fw.png"
+                  width="44" height="29" style="border: 1px dashed #F05033;" /></button>
             </form>
           </div>
         </div>
@@ -512,11 +522,10 @@ defined('GIT_LATEST') or define('GIT_LATEST', GIT_VERSION);
   </div>
 </div>
 <?php $UI_APP['body'] = ob_get_contents();
-ob_end_clean();
-/**/
-if (false) { ?>
-  <script type="text/javascript">
-  <?php }
+ob_end_clean(); ?>
+
+<?php if (false) { ?>
+  <script type="text/javascript"><?php }
 ob_start(); ?>
   /* IIFE 
   (() => {
@@ -825,9 +834,9 @@ ob_start(); ?>
   $__tailwindSrc = function (string $version = '3.3.5'): string {
     // You have app_base() and check_http_status() in your project.
     $cdnUrl = 'https://cdn.tailwindcss.com';
-    $localPath = rtrim(app_base('resources', null, 'abs'), DIRECTORY_SEPARATOR) . '/js/tailwindcss-' . $version . '.js';
-    $localRelDir = rtrim(app_base('resources', null, 'rel'), '/'); // e.g. 'resources/'
-    $localRel = $localRelDir . 'js/tailwindcss-' . $version . '.js';
+    $localPath = rtrim(app_base('public', null, 'abs'), DIRECTORY_SEPARATOR) . '/assets/js/tailwindcss-' . $version . '.js';
+    $localRelDir = rtrim(app_base('public', null, 'rel'), '/'); // e.g. 'public/assets/'
+    $localRel = $localRelDir . 'assets/js/tailwindcss-' . $version . '.js';
 
     // Ensure local dir
     is_dir(dirname($localPath)) || @mkdir(dirname($localPath), 0755, true);
@@ -858,7 +867,7 @@ ob_start(); ?>
       return substr($cdnUrl, $pos + strlen($host)); // e.g. "//cdn.tailwindcss.com"
     }
 
-    return $localRel; // e.g. "resources/js/tailwindcss-3.3.5.js"
+    return $localRel; // e.g. "assets/js/tailwindcss-3.3.5.js"
   };
 
   /**
@@ -867,37 +876,37 @@ ob_start(); ?>
   $__renderPage = function (array $UI_APP) use ($__tailwindSrc): void {
     $tailwindSrc = $__tailwindSrc();
     ?>
-    <!DOCTYPE html>
-    <html>
+  <!DOCTYPE html>
+  <html>
 
-    <head>
-      <meta charset="UTF-8">
-      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-      <link rel="stylesheet" href="//code.jquery.com/ui/1.12.1/themes/smoothness/jquery-ui.css" />
-      <script src="<?= htmlspecialchars($tailwindSrc, ENT_QUOTES) ?>"></script>
+    <link rel="stylesheet" href="//code.jquery.com/ui/1.12.1/themes/smoothness/jquery-ui.css" />
+    <script src="<?= htmlspecialchars($tailwindSrc, ENT_QUOTES) ?>"></script>
 
-      <style type="text/tailwindcss">
-        <?= $UI_APP['style'] ?? '' ?>
+    <style type="text/tailwindcss">
+      <?= $UI_APP['style'] ?? '' ?>
 
-        </style>
-    </head>
+              </style>
+  </head>
 
-    <body>
-      <?= $UI_APP['body'] ?? '' ?>
+  <body>
+    <?= $UI_APP['body'] ?? '' ?>
 
-      <!-- jQuery + jQuery UI -->
-      <script src="//code.jquery.com/jquery-1.12.4.js"></script>
-      <script src="//code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
+    <!-- jQuery + jQuery UI -->
+    <script src="//code.jquery.com/jquery-1.12.4.js"></script>
+    <script src="//code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
 
-      <script>
-        <?= $UI_APP['script'] ?? '' ?>
+    <script>
+      <?= $UI_APP['script'] ?? '' ?>
 
-      </script>
-    </body>
+    </script>
+  </body>
 
-    </html>
-    <?php
+  </html>
+  <?php
   };
 
   /* ───────────────────────────── Flow ───────────────────────────── */
@@ -917,7 +926,7 @@ ob_start(); ?>
 
   // If included: return data (no HTML string added)
   return $UI_APP;
-//dd($UI_APP);
-
-//str_replace(["\r", "\n"], "", $UI_APP['style']); preg_match('#\n|\r#', $UI_APP['style'], $matches) or $UI_APP['style'] = str_replace($matches[0], '', $UI_APP['style']);
+  //dd($UI_APP);
+  
+  //str_replace(["\r", "\n"], "", $UI_APP['style']); preg_match('#\n|\r#', $UI_APP['style'], $matches) or $UI_APP['style'] = str_replace($matches[0], '', $UI_APP['style']);
 //$UI_APP = ['style' => $UI_APP['style'], 'body' => $UI_APP['body'], 'script' => $UI_APP['script']];

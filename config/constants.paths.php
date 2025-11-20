@@ -1,6 +1,5 @@
 <?php
 declare(strict_types=1);
-
 // config/constants.paths.php
 
 //defined('APP_PATH') or define('APP_PATH', dirname(__DIR__) . DIRECTORY_SEPARATOR);

@@ -1,0 +1,21 @@
+git init                              Initialize repository
+git clone <repro_url>                 Clone repository
+git status                            View repository status
+git add <file>                        Stage changes
+git add                               Stage all changes
+git commit -m "message"               Commit changes
+git branch                            List branches
+git branch <branch>                   Create branch
+git checkout <branch>                 Switch to branch
+git merge <branch>                    Merge branch
+git remote -v                         Pull changes
+git pull origin <branch>              View commit history
+git push origin <branch>              View short commit history
+git log                               View commit history
+git log --oneline                     View short commit history
+git revert <commit>                   Revert commit
+git reset <commit>                    Reset to commit
+git tag                               List tags
+git tag -a v1.0 -m "tag"              Create annotated tag
+git config --global user.name "name"   Set global username
+git config --global user.email "email"  Set global email

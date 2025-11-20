@@ -1,13 +1,19 @@
 <?php
 declare(strict_types=1);
+// config/functions.php
+
+if (!class_exists(\CodeInSync\Infrastructure\Runtime\Shutdown::class)) {
+  require APP_PATH . 'src/Infrastructure/Runtime/Shutdown.php'; // classes/class.shutdown.php
+  @class_alias(\CodeInSync\Infrastructure\Runtime\Shutdown::class, 'Shutdown');
+}
 
 // minimal web entry
-if (is_file(dirname(__DIR__, 1) . DIRECTORY_SEPARATOR . 'classes/class.shutdown.php'))
-  require_once __DIR__ . DIRECTORY_SEPARATOR . '../classes/class.shutdown.php';
+//if (is_file(dirname(__DIR__, 1) . DIRECTORY_SEPARATOR . 'classes/class.shutdown.php'))
+//  require_once __DIR__ . DIRECTORY_SEPARATOR . '../classes/class.shutdown.php';
 
 // Helpers first — MUST be vendor-free 
-require_once __DIR__ . '/../classes/class.pathutils.php';
-require_once __DIR__ . '/../classes/class.queryurl.php';
+//require_once __DIR__ . '/../classes/class.pathutils.php';
+//require_once __DIR__ . '/../classes/class.queryurl.php';
 
 /**/
 function get_str(string $k): ?string
@@ -21,30 +27,179 @@ function base_val(string $key): string
   return rtrim($v, '/') . '/';
 }
 
-function norm_path(string $p): string
-{
-  // collapse duplicate slashes; keep leading / if present
-  $p = preg_replace('#/+#', '/', $p);
-  return $p;
+//function norm_path(string $p): string
+//{
+// collapse duplicate slashes; keep leading / if present
+//  $p = preg_replace('#/+#', '/', $p);
+//  return $p;
+//}
+
+if (!function_exists('sanitize_request_path')) {
+  function sanitize_request_path(?string $raw, string $baseAbs): ?string
+  {
+    if ($raw === null)
+      return null;
+
+    // Normalize slashes; keep dots intact
+    $path = (string) $raw;
+    $path = str_replace('\\', '/', $path);
+    $path = preg_replace('~/{2,}~', '/', $path);
+    $path = trim($path, '/');
+
+    // Block traversal ".." anywhere on a segment boundary
+    if (preg_match('~(^|/)\\.\\.(?:/|$)~', $path)) {
+      return null;
+    }
+
+    // If it starts with ".", DO NOT realpath() (preserve dotfiles / hidden dirs)
+    if ($path !== '' && $path[0] === '.') {
+      return $path; // keep exactly as user provided (after basic slash normalize)
+    }
+
+    // Otherwise, attempt to canonicalize within base
+    $base = rtrim(str_replace('\\', '/', $baseAbs), '/') . '/';
+    $abs = $base . $path;
+    $real = @realpath($abs);
+
+    if ($real !== false) {
+      $real = str_replace('\\', '/', $real);
+      if (strpos($real, $base) === 0) {
+        // Normalize to relative path under base
+        return ltrim(substr($real, strlen($base)), '/');
+      }
+    }
+
+    // If we can't resolve, keep sanitized relative (still no leading slash)
+    return $path;
+  }
 }
 
 
 // Sanitizers you use:
 function clean_client($s)
 {
-  return preg_replace('~[^a-z0-9._,\- ]~i', '', (string) $s);
+  $s = preg_replace('~[^a-z0-9._,\- ]~i', '', (string) $s);
+  $s = trim($s);
+
+  // reject empty / dot tricks / traversal
+  if ($s === '' || $s === '.' || $s === '..' || strpos($s, '..') !== false)
+    return null;
+
+  // optional: disallow leading dot/dash/space
+  $s = ltrim($s, ".- ");
+
+  // optional: collapse multiple spaces
+  $s = preg_replace('~\s+~', ' ', $s);
+
+  // optional: length cap
+  if (strlen($s) > 100)
+    $s = substr($s, 0, 100);
+
+  return $s === '' ? null : $s;
 }
+
 function clean_domain($s)
 {
-  return preg_replace('~[^a-z0-9.\- ]~i', '', (string) $s);
+  $s = preg_replace('~[^a-z0-9._\- ]~i', '', (string) $s); // _ are not allowed in domain names
+  $s = trim($s);
+
+  // reject empty / dot tricks / traversal
+  if ($s === '' || $s === '.' || $s === '..' || strpos($s, '..') !== false)
+    return null;
+
+  // optional: disallow leading dot/dash/space
+  $s = ltrim($s, ".- ");
+
+  // optional: collapse multiple spaces
+  $s = preg_replace('~\s+~', ' ', $s);
+
+  // optional: length cap
+  if (strlen($s) > 100)
+    $s = substr($s, 0, 100);
+
+  return $s === '' ? null : $s;
 }
 function clean_project($s)
 {
-  return preg_replace('~[^a-z0-9._\- ]~i', '', (string) $s);
+  $s = preg_replace('~[^a-z0-9._\- ]~i', '', (string) $s);
+  $s = trim($s);
+
+  // reject empty / dot tricks / traversal
+  if ($s === '' || $s === '.' || $s === '..' || strpos($s, '..') !== false)
+    return null;
+
+  // optional: disallow leading dot/dash/space
+  $s = ltrim($s, ".- ");
+
+  // optional: collapse multiple spaces
+  $s = preg_replace('~\s+~', ' ', $s);
+
+  // optional: length cap
+  if (strlen($s) > 100)
+    $s = substr($s, 0, 100);
+
+  return $s === '' ? null : $s;
 }
-function clean_path($s)
+
+function clean_path($s, array $opts = []): ?string
 {
-  return preg_replace('~[^a-z0-9._\- \/]~i', '', (string) $s);
+  $allowLeadingSlash = $opts['allow_leading_slash'] ?? false;
+  $allowDotSegments = $opts['allow_dot_segments'] ?? true;
+  $maxLen = $opts['max_len'] ?? 256; // total path cap (optional)
+  $maxDepth = $opts['max_depth'] ?? 16;  // optional depth cap
+  $segmentMax = $opts['segment_max'] ?? 64;  // per-segment cap
+
+  $s = (string) $s;
+
+  // Normalize separators, strip disallowed chars (keep / for hierarchy)
+  $s = str_replace('\\', '/', $s);
+  $s = preg_replace('~[^a-zA-Z0-9._/\- ]~', '', $s);
+
+  // Tidy: trim, collapse spaces and duplicate slashes
+  $s = trim($s);
+  $s = preg_replace('~\s+~', ' ', $s);
+  $s = preg_replace('~/+~', '/', $s);
+
+  if ($s === '')
+    return null;
+  if (!$allowLeadingSlash)
+    $s = ltrim($s, '/');
+
+  $hadTrailingSlash = substr($s, -1) === '/';
+  $parts = explode('/', $s);
+  $out = [];
+
+  foreach ($parts as $p) {
+    if ($p === '' || $p === '.')
+      continue;     // skip empties / current-dir
+    if ($p === '..')
+      return null;              // block traversal
+
+    // Clean each segment (no slashes in here by construction)
+    $p = preg_replace('~[^a-zA-Z0-9._\- ]~', '', $p);
+    if (!$allowDotSegments)
+      $p = ltrim($p, ".- ");                     // optional: no leading dot/dash/space
+    $p = rtrim($p, " ");                       // optional: trim trailing spaces
+
+    if ($p === '')
+      return null;                // don’t allow empty after cleaning
+    if ($segmentMax && strlen($p) > $segmentMax) {
+      $p = substr($p, 0, $segmentMax);
+    }
+
+    $out[] = $p;
+    if ($maxDepth && count($out) > $maxDepth)
+      return null;
+  }
+
+  if (!$out)
+    return null;
+
+  $outPath = implode('/', $out);
+  if ($maxLen && strlen($outPath) > $maxLen)
+    return null;
+
+  return ($allowLeadingSlash ? '/' : '') . $outPath . ($hadTrailingSlash ? '/' : '');
 }
 
 if (!function_exists('ctx')) {
@@ -330,8 +485,6 @@ function parse_ini_file_multi($file): array
  *
  * @return void Returns void if execution is stopped; otherwise, returns the result of var_dump().
 
-
-
 function dump(mixed ...$vars): mixed
     {
         if (!$vars) {
@@ -407,7 +560,7 @@ function dd(mixed $param = null, bool $die = true, bool $debug = true): void
   if ($die)
     // Graceful shutdown with error handling
     try {
-      Shutdown::setEnabled(false)
+      \CodeInSync\Infrastructure\Runtime\Shutdown::setEnabled(false)
         ->setShutdownMessage(fn() => $formattedOutput)
         ->shutdown();
     } catch (Throwable $e) {

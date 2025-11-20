@@ -9,12 +9,12 @@ declare(strict_types=1);
 
 // Sensible defaults
 ini_set('assert.exception', '1');
-if (!APP_DEBUG) {
-    error_reporting(E_ALL);
-    ini_set('display_errors', '1');
-} else {
-    error_reporting(E_ALL & ~E_NOTICE & ~E_STRICT & ~E_DEPRECATED);
-    ini_set('display_errors', '0');
+
+if (!empty($_ENV['APP_TIMEZONE'])) {
+    $tz = (string) $_ENV['APP_TIMEZONE'];
+    if (@timezone_open($tz)) {
+        date_default_timezone_set($tz);
+    }
 }
 
 // ---------------------------------------------------------
@@ -62,7 +62,7 @@ if (!APP_DEBUG) {
 
 !defined('APP_IS_ONLINE') and define(
     'APP_IS_ONLINE',
-    (bool) gethostbyname('github.com') !== 'github.com'
+    gethostbyname('github.com') !== 'github.com'
 );
 
 // Optional SUDO detection
@@ -102,10 +102,7 @@ defined('APP_CONTEXT') || define('APP_CONTEXT', match (true) {
 // [3] Dashboard / Versioning
 // ---------------------------------------------------------
 
-!defined('APP_DASHBOARD') and define(
-    'APP_DASHBOARD',
-    APP_PATH . 'dashboard.php'
-);
+!defined('APP_DASHBOARD') and require_once __DIR__ . '/constants.app.php'; // defines APP_DASHBOARD
 
 !defined('APP_VERSION_FILE') and define(
     'APP_VERSION_FILE',
@@ -116,16 +113,90 @@ defined('APP_CONTEXT') || define('APP_CONTEXT', match (true) {
 // [4] Runtime Executables
 // ---------------------------------------------------------
 
+function findExecutable(string $bin): ?string
+{
+    // If the caller passed a path, just validate it.
+    if (strpbrk($bin, "/\\") !== false) {
+        $p = realpath($bin);
+        return ($p && is_file($p) && is_executable($p)) ? $p : null;
+    }
+
+    $isWin = (PHP_OS_FAMILY === 'Windows');
+
+    // Search the PATH
+    $path = getenv('PATH') ?: '';
+    $dirs = array_filter(array_map('trim', $isWin ? explode(';', $path) : explode(':', $path)));
+
+    // On Windows, executables can have extensions from PATHEXT
+    $exts = ['']; // POSIX: exact name is fine
+    if ($isWin) {
+        $pathext = getenv('PATHEXT') ?: '.EXE;.BAT;.CMD;.COM';
+        $exts = array_map('strtolower', array_map('trim', explode(';', $pathext)));
+
+        // If the name already includes a known extension, try it first as-is.
+        $lower = strtolower($bin);
+        foreach ($exts as $e) {
+            if ($e !== '' && str_ends_with($lower, $e)) {
+                $exts = array_merge([''], $exts); // try as-is before appending others
+                break;
+            }
+        }
+    }
+
+    foreach ($dirs as $dir) {
+        // Strip surrounding quotes some Windows PATH entries have
+        $dir = trim($dir, "\"' ");
+        if ($dir === '' || !is_dir($dir))
+            continue;
+
+        foreach ($exts as $e) {
+            $candidate = $isWin ? ($dir . DIRECTORY_SEPARATOR . $bin . ($e === '' ? '' : $e))
+                : ($dir . DIRECTORY_SEPARATOR . $bin);
+            if (is_file($candidate) && is_readable($candidate) && is_executable($candidate)) {
+                return $candidate;
+            }
+        }
+    }
+
+    // Fallback to shell (optional)
+    if (!$isWin) {
+        $out = @shell_exec('command -v ' . escapeshellarg($bin));
+        if ($out) {
+            $p = trim($out);
+            return (is_file($p) && is_executable($p)) ? $p : null;
+        }
+    } else {
+        $exitCode = null;
+        $cmd = 'where ' . escapeshellarg($bin) . ' 2>NUL';
+        $out = @exec($cmd, $lines, $exitCode); // returns multiple lines sometimes
+        if ($exitCode !== 0) {
+            // no results → same condition as “INFO: ”
+            return 'info was detected (no matches)';
+        }
+        if ($out) {
+            foreach (preg_split('/\r?\n/', trim($out)) as $line) {
+                $p = trim($line, "\" \t");
+                if ($p !== '' && is_file($p) && is_readable($p) && is_executable($p)) {
+                    return $line;
+                }
+            }
+        }
+    }
+
+    return null;
+}
+
 // Resolve common executables like node, composer, etc.
 $executables = ['node', 'composer', 'npm', 'phpunit'];
 foreach ($executables as $bin) {
     $constant = strtoupper($bin) . '_EXEC';
     if (!defined($constant)) {
-        $path = trim(@shell_exec("which $bin") ?? '');
-        if ($path && is_executable($path)) {
+        $path = @findExecutable($bin);
+        if ($path !== null) {
             define($constant, $path);
         }
     }
+    //echo "  $constant => $path\n";
 }
 
 // ---- read inputs ----------------------------------------------------------
@@ -137,8 +208,8 @@ $project = clean_project(get_str('project'));    // ex: 123project
 $path = clean_path(get_str('path'));       // ex: sub-directory/ (may be '')
 
 // Optional: hard-block traversal in path
-if (strpos($path, '..') !== false)
-    $path = '';
+//if (strpos($path, '..') !== false)
+//    $path = '';
 
 $APP_PATH_N = rtrim(str_replace('\\', '/', APP_PATH), '/') . '/';
 $BASE_CLIENTS = base_val('clients');
@@ -164,10 +235,13 @@ if ($hasClient && $client !== '' && $hasDomain && $domain !== '') {
 $norm = static fn($s) => trim(str_replace('\\', '/', $s), '/');
 $trail = static fn($s) => $s === '' ? '' : rtrim(str_replace('\\', '/', $s), '/') . '/';
 
+!defined('APP_ROOT') and define('APP_ROOT', $trail($installRoot));  // '' | '../clients/.../' | 'projects/.../'
+
+/*
 $installSub = isset($_GET['path']) ? (string) $_GET['path'] : '';
-$installSub = preg_replace('~[^a-z0-9._\-/]~i', '', $installSub);
-if (strpos($installSub, '..') !== false)
-    $installSub = '';
+//$installSub = preg_replace('~[^a-z0-9._\-/]~i', '', $installSub);
+//if (strpos($installSub, '..') !== false)
+//    $installSub = '';
 
 $clientsLabel = basename(rtrim($BASE_CLIENTS, '/'));    // "clients"
 $projectsLabel = basename(rtrim($BASE_PROJECTS, '/'));   // "projects"
@@ -178,9 +252,13 @@ if ($installSubNorm === $clientsLabel)
     $installSub = $BASE_CLIENTS;
 if ($installSubNorm === $projectsLabel)
     $installSub = $BASE_PROJECTS;
+*/
 
-define('APP_ROOT', $trail($installRoot));  // '' | '../clients/.../' | 'projects/.../'
-define('APP_ROOT_DIR', $trail($installSub));   // '' | 'public/' | '../clients/' etc.
+$path = clean_path(get_str('path'), ['allow_leading_slash' => false, 'allow_dot_segments' => true]);
+!defined('APP_ROOT_DIR') and define('APP_ROOT_DIR', $trail((string) ($path ?? ''))); // '' | 'subdir/' | 'sub/dir/'
+
+// Optional: avoid leaking into later includes
+unset($client, $domain, $project, $path, $hasClient, $hasDomain, $hasProject, $hasPath);
 
 // Ensure var directory exists
 $varDir = app_base('var');

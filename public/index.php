@@ -5,23 +5,26 @@
 const IS_CLIENT = true;
 const IS_DEVELOPER = false;
 
+// If you need coverage, keep it — but ensure it prints NOTHING.
 require_once __DIR__ . '/../bootstrap/coverage-bootstrap.php';
 
-require_once __DIR__ . '/../config/functions.php';
-require_once __DIR__ . '/../config/constants.env.php';
-require_once __DIR__ . '/../config/constants.paths.php';
-require_once __DIR__ . '/../bootstrap/php-ini.php';
+// Hint dispatcher early for fragments/JSON
+if (!defined('APP_MODE') && (isset($_GET['part']) || isset($_GET['json']))) {
+  define('APP_MODE', 'dispatcher');
+}
 
-// Fast-path: if routing params present, hint minimal boot
-!defined('APP_MODE') and define('APP_MODE', 'web');
+// Minimal bootstrap (it will load php-ini, functions, constants, etc.)
+require_once __DIR__ . '/../bootstrap/bootstrap.php';
 
-// minimal web entry
-if (is_file(dirname(__DIR__, 1) . '/bootstrap/bootstrap.php'))
-  require_once __DIR__ . '/../bootstrap/bootstrap.php';
+// auth_require();
 
-require_once __DIR__ . '/../bootstrap/kernel.php';
+// If bootstrap routed to dispatcher, it already exited.
+// But if something returned instead of exiting, hard-exit here.
+if (defined('APP_MODE') && APP_MODE === 'dispatcher') {
+  exit; // was: return
+}
 
-//dd(get_required_files());
+// dd(get_required_files());
 
 /**
  * File Analysis Summary for PHP Project
@@ -109,12 +112,40 @@ session_start();
 $isDev = $_SESSION['mode'] ?? 'unset';
 unset($_SESSION['mode']); ?>
 <!DOCTYPE html>
-<html lang="en">
+<html lang="<?= htmlspecialchars($appLocale, ENT_QUOTES, 'UTF-8') ?>">
 
 <head>
-  <meta charset="UTF-8">
-  <link rel="icon" href="<?= APP_URL ?>/favicon.ico">
-  <title>CodeInSync - Skeleton</title>
+  <meta charset="utf-8" />
+  <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <title>
+    <?= htmlspecialchars($pageTitle, ENT_QUOTES, 'UTF-8') ?>
+  </title>
+
+  <!-- Base URL for all relative links -->
+  <base href="<?= htmlspecialchars($baseHref, ENT_QUOTES, 'UTF-8') ?>" />
+
+  <!-- SEO/meta fallbacks -->
+  <meta name="description" content="<?= htmlspecialchars($appDescription, ENT_QUOTES, 'UTF-8') ?>" />
+  <meta name="author" content="<?= htmlspecialchars($appAuthor, ENT_QUOTES, 'UTF-8') ?>" />
+  <meta name="robots" content="noindex,nofollow" />
+  <meta name="theme-color" content="<?= htmlspecialchars($appThemeColor, ENT_QUOTES, 'UTF-8') ?>" />
+
+  <!-- Open Graph (optional but nice defaults) -->
+  <meta property="og:title" content="<?= htmlspecialchars($pageTitle, ENT_QUOTES, 'UTF-8') ?>" />
+  <meta property="og:description" content="<?= htmlspecialchars($appDescription, ENT_QUOTES, 'UTF-8') ?>" />
+  <meta property="og:type" content="website" />
+  <meta property="og:url" content="<?= htmlspecialchars($baseHref, ENT_QUOTES, 'UTF-8') ?>" />
+
+  <!-- Favicons / Assets -->
+  <link rel="icon" type="image/png"
+    href="<?= htmlspecialchars($asset('assets/images/favicon.png'), ENT_QUOTES, 'UTF-8') ?>" />
+  <link rel="shortcut icon" type="image/x-icon"
+    href="<?= htmlspecialchars($asset('assets/images/favicon.ico'), ENT_QUOTES, 'UTF-8') ?>" />
+
+  <link rel="stylesheet" href="<?= htmlspecialchars($asset('assets/css/styles.css'), ENT_QUOTES, 'UTF-8') ?>" />
+
   <style>
     html,
     body {
@@ -213,13 +244,13 @@ unset($_SESSION['mode']); ?>
     }
 
     .app-container {
-      /* display: none; */
-      position: fixed;
+      /* display: none;
+      position: fixed; */
       /* width: 500px;
       height: 400px;
       top: 100px;
-      left: 100px; */
-      z-index: 100;
+      left: 100px;
+      z-index: 100; */
       /* padding: 10px; 
       background: #fff;
       border: 1px solid #000;*/
@@ -379,7 +410,7 @@ unset($_SESSION['mode']); ?>
             target="_blank" rel="noopener noreferrer" style="background-color: white;">barrydit/codeinsync</a></p>
         <p>Sidebar</p>
         <div style="position: relative; background-color: #FFF; width: 300px;">
-          <span>Logout: <a href="/?authprobe" rel="nofollow">Logout</a></span><br />
+          <span>Logout: <a href="/?logout=1" rel="nofollow">Logout</a></span><br />
           <span>Loading Time: <?= round(microtime(true) - APP_START, 3); ?>s</span><br />
           <span>OS: <?= PHP_OS; ?></span><br />
           <span>PHP: <?= PHP_VERSION; ?></span><br />
@@ -387,7 +418,7 @@ unset($_SESSION['mode']); ?>
           <span>Context: <?= APP_CONTEXT ?? ''; ?></span><br />
           <span>Mode: <?= APP_MODE ?? ''; ?></span><br />
           <span>Env: <?= APP_ENV ?? ''; ?></span><br />
-          <span>Tz: <?= date_default_timezone_get() ?? ''; ?></span><br />
+          <span>Tz: <?= date_default_timezone_get() ?? ini_get('date.timezone'); ?></span><br />
           <span>Domain: <?= APP_DOMAIN ?? ''; ?></span><br />
           <span>IP Address: <?= $_SERVER['REMOTE_ADDR'] ?? ''; ?></span><br />
           <span>App Path: <?= APP_PATH; ?></span><br />
@@ -408,41 +439,45 @@ unset($_SESSION['mode']); ?>
       </div>
       <div class="top-panel" id="top-panel">
         <div style="position: relative;">
-          <a href="#"><img src="resources/images/phpclasses_icon.png" alt="Logo"
+          <a href="#"><img
+              src="<?= htmlspecialchars($asset('assets/images/phpclasses_icon.png'), ENT_QUOTES, 'UTF-8') ?>" alt="Logo"
               style="width: 31px; height: auto; margin: 0 5px;"
               onclick="document.getElementById('app_phpclasses-container').style.display='block'; return false;"></a>
           <a href="#" data-open-app="tools/registry/composer" aria-label="Open Composer" title="Composer"><img
-              src="resources/images/composer_icon.png" alt="Logo" style="width: 31px; height: auto; margin: 0 5px;"
-              onclick="/*openApp('tools/registry/composer');*/"></a>
-          <a href="#"><img src="resources/images/packagist_icon.png" alt="Logo"
+              src="<?= htmlspecialchars($asset('assets/images/composer_icon.png'), ENT_QUOTES, 'UTF-8') ?>" alt="Logo"
+              style="width: 31px; height: auto; margin: 0 5px;" onclick="/*openApp('tools/registry/composer');*/"></a>
+          <a href="#"><img
+              src="<?= htmlspecialchars($asset('assets/images/packagist_icon.png'), ENT_QUOTES, 'UTF-8') ?>" alt="Logo"
               style="width: 31px; height: auto; margin: 0 5px;"
               onclick="document.getElementById('app_packagist-container').style.display='block'; return false;"></a>
           <a href="#" data-open-app="tools/code/git" aria-label="Open Git" title="Git"><img
-              src="resources/images/git_icon.fw.png" width="32" height="32"
-              onclick="/*openApp('tools/code/git');*/"></a>
-          <a href="#"><img src="resources/images/node_js.gif" alt="Logo"
-              style="width: 83px; height: auto; margin: 0 5px;"
+              src="<?= htmlspecialchars($asset('assets/images/git_icon.fw.png'), ENT_QUOTES, 'UTF-8') ?>" width="32"
+              height="32" onclick="/*openApp('tools/code/git');*/"></a>
+          <a href="#"><img src="<?= htmlspecialchars($asset('assets/images/node_js.gif'), ENT_QUOTES, 'UTF-8') ?>"
+              alt="Logo" style="width: 83px; height: auto; margin: 0 5px;"
               onclick="document.getElementById('app_node_js-container').style.display='block'; return false;"></a>
-          <a href="#"><img src="resources/images/npm_icon.png" alt="Logo"
-              style="width: 31px; height: auto; margin: 10px 5px;"
+          <a href="#"><img src="<?= htmlspecialchars($asset('assets/images/npm_icon.png'), ENT_QUOTES, 'UTF-8') ?>"
+              alt="Logo" style="width: 31px; height: auto; margin: 10px 5px;"
               onclick="document.getElementById('app_npmjs-container').style.display='block'; return false;"></a>
-          <a href="#"><img src="resources/images/console_icon.png" alt="Logo"
-              style="width: 31px; height: auto; margin: 0 5px;"
+          <a href="#"><img src="<?= htmlspecialchars($asset('assets/images/console_icon.png'), ENT_QUOTES, 'UTF-8') ?>"
+              alt="Logo" style="width: 31px; height: auto; margin: 0 5px;"
               onclick="isFixed = true; show_console(); return false;"></a>
 
           <a href="#" style="margin: 5px 0 0 0;"
             onclick="document.getElementById('app_tools-container').style.display='block';">
-            <img src="resources/images/apps_icon.gif" style="margin: -5px 0 0 0;" width="20" height="20"> <span
-              style="margin-top: -5px;">Tools</span></a>
+            <img src="<?= htmlspecialchars($asset('assets/images/apps_icon.gif'), ENT_QUOTES, 'UTF-8') ?>"
+              style="margin: -5px 0 0 0;" width="20" height="20"> <span style="margin-top: -5px;">Tools</span></a>
         </div>
         <div style="position: absolute; top: 5px; right: 270px;">
-          <img src="resources/images/php_icon.png" alt="Logo" style="width: 31px; height: auto; margin: 0 0;"
+          <img src="<?= htmlspecialchars($asset('assets/images/php_icon.png'), ENT_QUOTES, 'UTF-8') ?>" alt="Logo"
+            style="width: 31px; height: auto; margin: 0 0;"
             onclick="document.getElementById('app_php-container').style.display='block'; return false;"> PHP
           <button style="border: 1px solid black; border-radius: 5px;">Clock-In</button>&nbsp;
           <button style="border: 1px solid black; border-radius: 5px;">Github</button>&nbsp;
           <input type="submit" value="Test" style="border: 1px solid black; border-radius: 5px;">
           <div class="" style="position: relative; display: inline-block; top: 0; right: 2px;">
-            <img src="resources/images/calendar_icon.png" width="41" height="41"
+            <img src="<?= htmlspecialchars($asset('assets/images/calendar_icon.png'), ENT_QUOTES, 'UTF-8') ?>"
+              width="41" height="41"
               onclick="document.getElementById('app_calendar-container').style.display='block'; return false;"
               style="cursor: pointer; margin: -6px 5px;">
           </div>
@@ -475,15 +510,19 @@ unset($_SESSION['mode']); ?>
           </div>
           <div style="position: relative; top: 0; display: inline-block; width: auto; ">
             <img id="ts-status-light" style="padding-bottom: 10px; cursor: pointer;"
-              src="resources/images/timesheet-light-Y.gif" width="80" height="30">
+              src="<?= htmlspecialchars($asset('assets/images/timesheet-light-Y.gif'), ENT_QUOTES, 'UTF-8') ?>"
+              width="80" height="30">
           </div>
 
         </div>
       </div>
     </div>
-    <div class="bottom-panel" id="bottom-panel">Bottom Panel</div>
+    <div class="bottom-panel" id="bottom-panel">
+      Bottom Panel
+      <div id="app_core_console-container" class="app-fixed" data-draggable="false" data-app="core/console">
+      </div>
+    </div>
     <div class="free-space" id="free-space">
-
       <?php if (APP_DEBUG) {
         echo '<pre>';
         $report = CoverageReport::generate($files = array_filter(get_required_files(), fn($f) => str_starts_with($f, APP_PATH)));
@@ -501,13 +540,13 @@ unset($_SESSION['mode']); ?>
       <div style="position: fixed; margin: -5px 45px; text-align: center; z-index: 5;" class="text-sm"><a href="#!"
           onclick="document.getElementById('app_tools-container').style.display='none'; return false;"><img
             style="text-align: center; position: fixed;" height="25" width="25"
-            src="resources/images/close-red.png"></a><br></div>
+            src="<?= htmlspecialchars($asset('assets/images/close-red.png'), ENT_QUOTES, 'UTF-8') ?>"></a><br></div>
       <div
         style="position: absolute; overflow-x: scroll; overflow-y: hidden; height: 100%; width: 100%; padding-top: 25px; border: 1px solid #000; ">
         <div style="position: absolute; margin: 10px 75px; text-align: center;" class="text-sm"><a href="#!"
             onclick="isFixed = true; show_console(); return false;"><img style="text-align: center;"
-              src="resources/images/cli.png"></a><br><a href="?app=ace_editor&amp;path=&amp;file=app.console.php"
-            style="text-align: center;">(CLI)</a></div>
+              src="<?= htmlspecialchars($asset('assets/images/cli.png'), ENT_QUOTES, 'UTF-8') ?>"></a><br><a
+            href="?app=ace_editor&amp;path=&amp;file=app.console.php" style="text-align: center;">(CLI)</a></div>
         <!-- 
                     <a href="javascript:window.open('print.html', 'newwindow', 'width=300,height=250')">Print</a>
                     onclick="window.open('app.whiteboard.php', 'newwindow', 'width=300,height=250'); return false;"
@@ -516,38 +555,46 @@ unset($_SESSION['mode']); ?>
                      -->
         <div style="position: absolute; margin: 10px 165px; text-align: center;" class="text-sm"><a href="#"
             target="_blank" onclick="toggleIframeUrl('app.whiteboard.php'); return false;"><img
-              style="text-align: center;" src="resources/images/whiteboard.png"></a><br><a
+              style="text-align: center;"
+              src="<?= htmlspecialchars($asset('assets/images/whiteboard.png'), ENT_QUOTES, 'UTF-8') ?>"></a><br><a
             href="?app=ace_editor&amp;path=&amp;file=app.whiteboard.php" style="text-align: center;">Whiteboard</a>
         </div>
         <div style="position: absolute; margin: 10px 260px; text-align: center;" class="text-sm"><a href="#!"
             onclick="document.getElementById('app_notes-container').style.display='block'; return false;"><img
-              style="text-align: center;" src="resources/images/notes.png"></a><br><a
+              style="text-align: center;"
+              src="<?= htmlspecialchars($asset('assets/images/notes.png'), ENT_QUOTES, 'UTF-8') ?>"></a><br><a
             href="?app=ace_editor&amp;path=&amp;file=app.notes.php" style="text-align: center;">Notes</a></div>
         <div style="position: absolute; margin: 10px 350px; text-align: center;" class="text-sm">
           <a href="#!"
             onclick="document.getElementById('app_project-container').style.display='block'; document.getElementById('toggle-debug').checked = false; toggleSwitch(document.getElementById('toggle-debug')); return false;">
-            <img style="text-align: center;" src="resources/images/project.png"></a><br><a
+            <img style="text-align: center;"
+              src="<?= htmlspecialchars($asset('assets/images/project.png'), ENT_QUOTES, 'UTF-8') ?>"></a><br><a
             href="?app=ace_editor&amp;path=&amp;file=app.project.php"><span
               style="text-align: center;">Project</span></a>
         </div>
         <div style="position: absolute; margin: 10px 0 0 450px ; text-align: center;" class="text-sm"><a href="#!"
             onclick="document.getElementById('app_errors-container').style.display='block'; return false;"><img
-              style="text-align: center;" src="resources/images/debug.png"><br><span
+              style="text-align: center;"
+              src="<?= htmlspecialchars($asset('assets/images/debug.png'), ENT_QUOTES, 'UTF-8') ?>"><br><span
               style="text-align: center;">Debug</span></a></div>
         <div style="position: absolute; margin: 10px 0 0 540px; text-align: center;" class="text-sm"><a href="#!"
             onclick="document.getElementById('app_profile-container').style.display='block'; return false;"><img
-              style="text-align: center;" src="resources/images/user.png"><br><span
+              style="text-align: center;"
+              src="<?= htmlspecialchars($asset('assets/images/user.png'), ENT_QUOTES, 'UTF-8') ?>"><br><span
               style="text-align: center;">Profile</span></a></div>
         <div style="position: absolute; margin: 10px 0 0 630px; text-align: center;" class="text-sm"><a href="#!"
             onclick="toggleIframeUrl('app.browser.php'); return false;"><img style="text-align: center;"
-              src="resources/images/browser.png"><br><span style="text-align: center;">Browser</span></a></div>
+              src="<?= htmlspecialchars($asset('assets/images/browser.png'), ENT_QUOTES, 'UTF-8') ?>"><br><span
+              style="text-align: center;">Browser</span></a></div>
         <div style="position: absolute; margin: 110px 75px; text-align: center;" class="text-sm"><a href="#!"
             onclick="document.getElementById('app_tools-container').style.display='block'; return false;"><img
-              style="text-align: center;" src="resources/images/apps.png"><br><span
+              style="text-align: center;"
+              src="<?= htmlspecialchars($asset('assets/images/apps.png'), ENT_QUOTES, 'UTF-8') ?>"><br><span
               style="text-align: center;">Apps.</span></a></div>
         <div style="position: absolute; margin: 110px 170px; text-align: center;" class="text-sm"><a href="#!"
             onclick="document.getElementById('app_calendar-container').style.display='block'; return false;"><img
-              style="text-align: center;" src="resources/images/calendar.png"><br><span
+              style="text-align: center;"
+              src="<?= htmlspecialchars($asset('assets/images/calendar.png'), ENT_QUOTES, 'UTF-8') ?>"><br><span
               style="text-align: center;">Calendar</span></a></div>
         <div
           style="position: absolute; left: 50%; transform: translate(-50%, -50%); margin: 180px 0 0 80px; text-align: center;">
@@ -574,43 +621,55 @@ unset($_SESSION['mode']); ?>
         </div>
         <div style=" position: absolute; margin: 110px 0 0 540px; text-align: center;" class="text-sm"><a href="#!"
             onclick="toggleIframeUrl('pong.php'); return false;"><img style="text-align: center;"
-              src="resources/images/pong.png"><br><span style="text-align: center;">Pong</span></a>
+              src="<?= htmlspecialchars($asset('assets/images/pong.png'), ENT_QUOTES, 'UTF-8') ?>"><br><span
+              style="text-align: center;">Pong</span></a>
         </div>
         <div style="position: absolute; margin: 110px 0 0 630px; text-align: center;" class="text-sm"><a href="#!"
             onclick="document.getElementById('app_browser-container').style.display='block'; return false;"><img
-              style="text-align: center;" src="resources/images/regexp.png"><br><span
+              style="text-align: center;"
+              src="<?= htmlspecialchars($asset('assets/images/regexp.png'), ENT_QUOTES, 'UTF-8') ?>"><br><span
               style="text-align: center;">RegExp</span></a></div>
         <div style="position: absolute; margin: 210px 75px; text-align: center;" class="text-sm"><a href="#!"
             onclick="document.getElementById('app_browser-container').style.display='block'; return false;"><img
-              style="text-align: center;" src="resources/images/chatgpt.png"><br><span
+              style="text-align: center;"
+              src="<?= htmlspecialchars($asset('assets/images/chatgpt.png'), ENT_QUOTES, 'UTF-8') ?>"><br><span
               style="text-align: center;">ChatGPT</span></a></div>
         <div style="position: absolute; margin: 210px 160px; text-align: center;" class="text-sm"><a href="#!"
             onclick="document.getElementById('app_browser-container').style.display='block'; return false;"><img
-              style="text-align: center;" src="resources/images/stackoverflow.png"><br><span
+              style="text-align: center;"
+              src="<?= htmlspecialchars($asset('assets/images/stackoverflow.png'), ENT_QUOTES, 'UTF-8') ?>"><br><span
               style="text-align: center;">Stackoverflow</span></a></div>
         <div style="position: absolute; margin: 210px 260px; text-align: center;" class="text-sm"><a href="#!"
             onclick="document.getElementById('app_browser-container').style.display='block'; return false;"><img
-              style="text-align: center;" src="resources/images/validatejs.png"><br><span
+              style="text-align: center;"
+              src="<?= htmlspecialchars($asset('assets/images/validatejs.png'), ENT_QUOTES, 'UTF-8') ?>"><br><span
               style="text-align: center;">ValidateJS</span></a></div>
         <!-- https://validator.w3.org/#validate_by_input // -->
         <div style="position: absolute; margin: 210px 340px; text-align: center;" class="text-sm"><a href="#!"
             onclick="document.getElementById('app_browser-container').style.display='block'; return false;"><img
-              style="text-align: center;" src="resources/images/w3c.png"><br><span style="text-align: center;">W3C
+              style="text-align: center;"
+              src="<?= htmlspecialchars($asset('assets/images/w3c.png'), ENT_QUOTES, 'UTF-8') ?>"><br><span
+              style="text-align: center;">W3C
               Validator</span></a></div>
         <!-- https://tailwindcss.com/docs/ // -->
         <div style="position: absolute; margin: 210px 0 0 445px; text-align: center;" class="text-sm"><a href="#!"
             onclick="document.getElementById('app_browser-container').style.display='block'; return false;"><img
-              style="text-align: center;" src="resources/images/tailwindcss.png"><br><span
+              style="text-align: center;"
+              src="<?= htmlspecialchars($asset('assets/images/tailwindcss.png'), ENT_QUOTES, 'UTF-8') ?>"><br><span
               style="text-align: center;">TailwindCSS<br>Docs</span></a></div>
         <!-- https://www.php.net/docs.php // -->
         <div style="position: absolute; margin: 210px 0 0 540px; text-align: center;" class="text-sm"><a href="#!"
             onclick="document.getElementById('app_browser-container').style.display='block'; return false;"><img
-              style="text-align: center;" src="resources/images/php.png"><br><span style="text-align: center;">PHP
+              style="text-align: center;"
+              src="<?= htmlspecialchars($asset('assets/images/php.png'), ENT_QUOTES, 'UTF-8') ?>"><br><span
+              style="text-align: center;">PHP
               Docs</span></a></div>
         <!-- https://dev.mysql.com/doc/ // -->
         <div class="text-sm" style="position: absolute; margin: 210px 0 0 615px; text-align: center;"><a href="#!"
             onclick="document.getElementById('app_browser-container').style.display='block'; return false;"><img
-              style="text-align: center;" src="resources/images/mysql.png"><br><span style="text-align: center;">MySQL
+              style="text-align: center;"
+              src="<?= htmlspecialchars($asset('assets/images/mysql.png'), ENT_QUOTES, 'UTF-8') ?>"><br><span
+              style="text-align: center;">MySQL
               Docs</span></a></div>
         <div
           style="position: absolute; top: 340px; left: 65px; width: 80%; margin: 0 auto; height: 15px; border-bottom: 1px solid black; text-align: center; z-index: 0;">
@@ -620,41 +679,73 @@ unset($_SESSION['mode']); ?>
         <div style="position: absolute; margin: 360px 75px; text-align: center;" class="text-sm"><a href="#!"
             onclick="document.getElementById('app_install-container').style.display='block'; return false;"><span
               style="text-align: center;">New App.</span><br><img style="text-align: center;"
-              src="resources/images/install.png"></a></div>
+              src="<?= htmlspecialchars($asset('assets/images/install.png'), ENT_QUOTES, 'UTF-8') ?>"></a></div>
         <div style="position: absolute; margin: 360px 170px; text-align: center;" class="text-sm">
           <a href="?app=ace_editor&amp;path=&amp;file=app.user-app.php"><span style="text-align: center;">App
               #1</span></a><br>
           <a href="#!"
             onclick="document.getElementById('app_browser-container').style.display='block'; return false;"><img
-              style="text-align: center;" src="resources/images/php-app.png"></a>
+              style="text-align: center;"
+              src="<?= htmlspecialchars($asset('assets/images/php-app.png'), ENT_QUOTES, 'UTF-8') ?>"></a>
           <div style="height: 75px;"></div>
         </div>
       </div>
-    </div>
-    <div id="app_tools_code_git-container" class="app-container" data-draggable="true" data-app="tools/code/git">
     </div>
     <div id="app_visual_nodes-container" class="app-container" data-draggable="true" data-app="visual/nodes">
     </div>
     <div id="app_tools_registry_composer-container" class="app-container" data-draggable="true"
       data-app="tools/registry/composer">
     </div>
+    <div id="app_tools_code_git-container" class="app-container" data-draggable="true" data-app="tools/code/git">
+    </div>
+    <div id="app_ui_ace_editor-container" class="app-container" data-draggable="true" data-app="ui/ace_editor"
+      data-app-path="ui/ace_editor" style="">
+    </div>
   </div>
   <div class="client-view" id="clientView">
-<?= dd(APP_PATH . APP_ROOT . APP_ROOT_DIR, false); ?>
-    <iframe src="<?php
-    if (!defined('APP_ROOT')) {
-      echo 'test.php';
-    } else {
-      if (is_dir(APP_PATH . APP_ROOT . 'public'))
-        if (isset($_GET['project']) && preg_match('/^[a-zA-Z0-9_\-]+$/', $_GET['project']) && is_dir(APP_PATH . APP_ROOT . 'projects/' . $_GET['project'] . '/public'))
-          echo '/projects/' . $_GET['project'] . '/public/';
-        elseif (isset($_GET['client']) && preg_match('/^[a-zA-Z0-9_\-]+$/', $_GET['client']) && is_dir(APP_PATH . APP_ROOT . 'clients/' . $_GET['client'] . '/public'))
-          echo '/clients/' . $_GET['client'] . $_GET['domain'] . '/public/';
-        elseif (isset($_GET['domain']) && preg_match('/^[a-zA-Z0-9_\-\.]+$/', $_GET['domain']) && is_dir(APP_PATH . APP_ROOT . 'domains/' . $_GET['domain'] . '/public'))
-          echo '/clients/' . $_GET['domain'] . '/public/';
-      echo 'test.php';
+    <?php
+    $pickWebroot = static function (string $fsBase): ?string {
+      $fsBase = rtrim($fsBase, "/\\") . '/';
+      foreach (['public', 'www', 'html'] as $dir) {
+        if (is_dir($fsBase . $dir))
+          return $dir . '/';
+      }
+      return null;
+    };
+
+    $src = 'default.php'; // default fallback
+    
+    if (defined('APP_ROOT') && APP_ROOT !== '') {
+      $rootFs = rtrim(APP_PATH, "/\\") . '/' . trim(APP_ROOT, "/\\") . '/';
+
+      // pass the VALUE, not the key
+      $project = (clean_project(get_str('project')) ?: null);
+      $client = (clean_client(get_str('client')) ?: null);
+      $domain = (clean_domain(get_str('domain')) ?: null);
+
+      // 1) project under APP_ROOT/projects/$project/
+      if ($project) {
+        $fs = $rootFs . 'projects/' . $project . '/';
+        if (is_dir($fs) && ($webroot = $pickWebroot($fs))) {
+          $src = '/projects/' . $project . '/' . $webroot;
+        }
+      }
+      // 2) client+domain — APP_ROOT already points at .../clients/$client/$domain/ in your setup
+      elseif ($client && $domain) {
+        if (is_dir($rootFs) && ($webroot = $pickWebroot($rootFs))) {
+          $src = '/clients/' . $client . '/' . $domain . '/' . $webroot;
+        }
+      }
+      // 3) domain-only — APP_ROOT already points at .../clients/$domain/
+      elseif ($domain) {
+        if (is_dir($rootFs) && ($webroot = $pickWebroot($rootFs))) {
+          $src = '/clients/' . $domain . '/' . $webroot;
+        }
+      }
     }
-    ?>"></iframe>
+    //dd('/clients/' . ($client && $domain ?  $client . '/' : '' ) . $domain . '/' . $webroot . ' || ' . APP_ROOT, false);
+    ?>
+    <iframe id="clientFrame" src="<?= htmlspecialchars($src, ENT_QUOTES) ?>" title="Client View"></iframe>
   </div>
   <div class="toggle-switch">
     <label>
@@ -664,15 +755,25 @@ unset($_SESSION['mode']); ?>
     <span style="margin-left: 0.5em; color: #2196F3;">Developer</span>
   </div>
 
+  <script src="<?= htmlspecialchars($asset('assets/js/jquery/jquery-3.7.1.min.js'), ENT_QUOTES, 'UTF-8') ?>"></script>
 
   <script
-    src="<?= APP_IS_ONLINE && check_http_status('https://code.jquery.com/jquery-3.7.1.min.js') ? 'https://code.jquery.com/jquery-3.7.1.min.js' : app_base('resources', null, 'rel') . 'js/jquery/' . 'jquery-3.7.1.min.js' ?>"></script>
-
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-easing/1.4.1/jquery.easing.min.js"></script>
+    src="<?= htmlspecialchars($asset('assets/js/jquery-easing/jquery.easing.min.js'), ENT_QUOTES, 'UTF-8') ?>"></script>
   <!-- You need to include jQueryUI for the extended easing options. -->
   <!-- script src="//code.jquery.com/jquery-1.12.4.js"></script -->
   <?php
-  if (!is_file($path = app_base('resources', null, 'abs') . 'js/jquery-ui/' . 'jquery-ui-1.12.1.js') || ceil(abs((strtotime(date('Y-m-d')) - strtotime(date('Y-m-d', strtotime('+5 days', filemtime($path))))) / 86400)) <= 0) {
+  /*
+  https://cdnjs.cloudflare.com/ajax/libs/jquery-easing/1.4.1/jquery.easing.min.js
+
+  APP_IS_ONLINE && check_http_status('https://code.jquery.com/jquery-3.7.1.min.js') ? 'https://code.jquery.com/jquery-3.7.1.min.js' : app_base('public', null, 'rel') . '/assets/js/jquery/' . 'jquery-3.7.1.min.js'
+
+  APP_IS_ONLINE && check_http_status('https://code.jquery.com/ui/1.12.1/jquery-ui.min.js') ? 'https://code.jquery.com/ui/1.12.1/jquery-ui.min.js' : app_base('public', null, 'rel') . '/assets/js/jquery-ui/' . 'jquery-ui-1.12.1.js' 
+
+  app_base('public', null, 'abs') . 
+  */
+
+
+  if (!is_file($path = app_base('public', null, 'abs') . 'assets/js/jquery-ui/' . 'jquery-ui-1.12.1.js') || ceil(abs((strtotime(date('Y-m-d')) - strtotime(date('Y-m-d', strtotime('+5 days', filemtime($path))))) / 86400)) <= 0) {
     if (!realpath($pathdir = dirname($path)))
       if (!mkdir($pathdir, 0755, true))
         $errors['DOCS'] = "$pathdir does not exist";
@@ -686,7 +787,7 @@ unset($_SESSION['mode']); ?>
   } ?>
 
   <script
-    src="<?= APP_IS_ONLINE && check_http_status('https://code.jquery.com/ui/1.12.1/jquery-ui.min.js') ? 'https://code.jquery.com/ui/1.12.1/jquery-ui.min.js' : app_base('resources', null, 'rel') . 'js/jquery-ui/' . 'jquery-ui-1.12.1.js' ?>"></script>
+    src="<?= htmlspecialchars($asset('assets/js/jquery-ui/jquery-ui-1.12.1.js'), ENT_QUOTES, 'UTF-8') ?>"></script>
 
 
   <script>
@@ -885,19 +986,21 @@ unset($_SESSION['mode']); ?>
           el = document.createElement('div');
           el.id = containerId;
           el.className = 'app-container';
-          el.innerHTML = `
-      <div class="window-header" data-drag-handle>
-        <span class="title"></span>
-        <button class="close" type="button" aria-label="Close">×</button>
-      </div>
-      <div class="window-body"></div>`;
+          el.innerHTML = ``;
+          /*
+                <div class="window-header" data-drag-handle>
+                  <span class="title"></span>
+                  <button class="close" type="button" aria-label="Close">×</button>
+                </div>
+                <div class="window-body"></div>
+          */
           mount.appendChild(el);
 
           // Optional: prevent overlap
           el.style.position = 'absolute';
           const pos = nextCascadePosition();
-          el.style.left = pos.left + 'px';
-          el.style.top = pos.top + 'px';
+          //el.style.left = pos.left + 'px';
+          //el.style.top = pos.top + 'px';
 
           el.querySelector('.close')?.addEventListener('click', () => closeApp(el.dataset.appPath || ''));
         }
@@ -930,133 +1033,146 @@ unset($_SESSION['mode']); ?>
       }
 
       async function openApp(app, opts = {}) {
-        const params = new URLSearchParams(opts.params || {});
-        const locQS = new URL(location.href).searchParams;
+        // ------- tiny helpers -------
+        const q = new URL(location.href).searchParams;
+        const FORWARD_KEYS = ['client', 'domain', 'project', 'path'];
 
-        // forward these keys from the URL if present (even if empty)
-        for (const k of ['client', 'domain', 'project', 'path']) {
-          if (params.has(k)) continue;                      // opts.params wins
-          if (locQS.has(k)) params.set(k, locQS.get(k) ?? ''); // preserve empties
-        }
+        const buildParams = (base = {}) => {
+          const p = new URLSearchParams(base);
+          for (const k of FORWARD_KEYS) if (!p.has(k) && q.has(k)) p.set(k, q.get(k) ?? '');
+          return p;
+        };
 
-        params.set('json', '1'); // force JSON branch
+        const ct = r => (r.headers.get('content-type') || '').toLowerCase();
+        const isJSON = r => /\bapplication\/json\b/.test(ct(r));
+        const isJS = r => /\b(?:javascript|ecmascript|application\/x-javascript)\b/.test(ct(r));
+        const looksFullHtml = txt => /^\s*</.test(txt) && /<(?:!doctype|html|head|body)\b/i.test(txt);
 
-        const url = `?app=${encodeURIComponent(app)}&${params.toString()}`;
-        const r = await fetch(url, {
-          headers: { Accept: 'application/json' },
-          cache: 'no-store',
-          credentials: 'same-origin'
-        });
+        const fetchText = async (url, { accept, timeoutMs = 15000 } = {}) => {
+          const ctrl = new AbortController();
+          const t = setTimeout(() => ctrl.abort(), timeoutMs);
+          try {
+            const r = await fetch(url, {
+              headers: accept ? { Accept: accept } : undefined,
+              cache: 'no-store',
+              credentials: 'same-origin',
+              signal: ctrl.signal
+            });
+            const body = await r.text();
+            return { r, body };
+          } finally {
+            clearTimeout(t);
+          }
+        };
 
+        const insertStyleOnce = (name, css) => {
+          if (!css) return;
+          if (document.querySelector(`[data-app-style="${name}"]`)) return;
+          const el = document.createElement('style');
+          el.dataset.appStyle = name;
+          el.textContent = css;
+          document.head.appendChild(el);
+        };
+
+        const mountBody = (mountEl, html = '') => {
+          const body = mountEl.querySelector('.window-body') || mountEl;
+          body.innerHTML = html;
+        };
+
+        const injectModule = (name, code) => {
+          if (!code || !code.trim()) return;
+          // always fresh
+          document.querySelector(`script[data-app-script="${name}"]`)?.remove();
+          const s = document.createElement('script');
+          s.type = 'module';
+          s.dataset.appScript = name;
+          s.textContent = `${code}\n//# sourceURL=/${name}.module.js`;
+          document.body.appendChild(s);
+        };
+
+        // ------- container setup -------
         const containerId = appPathToContainerId(app);
-        const mountSelector = opts.mount || APP_MOUNTS[app] || '#container';
+        const mountSelector = opts.mount || APP_MOUNTS?.[app] || '#container';
         const el = ensureAppContainer(containerId, mountSelector);
         el.dataset.appPath = app;
 
-        // 1) Guard: if a load is already running, just focus
+        // already loading: reveal/focus
         if (el.dataset.loading === '1') {
-          el.hidden = false;
-          el.removeAttribute('aria-hidden');
+          el.hidden = false; el.removeAttribute('aria-hidden');
           window.AppWindows?.bringToFront(el);
           return;
         }
 
-        // 2) Fast path: already loaded and NOT forcing reload → unhide + focus
+        // loaded & no forceReload: reveal/focus
         if (el.dataset.loaded === '1' && !opts.forceReload) {
-          el.hidden = false;
-          el.removeAttribute('aria-hidden');
+          el.hidden = false; el.removeAttribute('aria-hidden');
           window.AppWindows?.bringToFront(el);
           return;
         }
 
-        // 3) Mark as loading (so rapid clicks don’t re-enter)
         el.dataset.loading = '1';
 
         try {
-          // ------- FETCH + PARSE (style/body JSON) -------
-          let data;
-          const r1 = await fetch(`?app=${encodeURIComponent(app)}&${params.toString()}`, {
-            headers: { Accept: 'application/json' },
-            cache: 'no-store',
-            credentials: 'same-origin'
+          // ------- 1) JSON payload (style/body) -------
+          const paramsJSON = buildParams(opts.params);
+          paramsJSON.set('json', '1');
+
+          const urlJSON = `?app=${encodeURIComponent(app)}&${paramsJSON.toString()}`;
+          const { r: r1, body: raw1 } = await fetchText(urlJSON, {
+            accept: 'application/json'
           });
-          const raw = await r1.text();
 
           if (!r1.ok) {
-            showAppError(el, 'Load failed', `HTTP ${r1.status} while loading app "${app}".`, raw.slice(0, 4000));
-            console.error('[openApp] HTTP error:', app, r1.status, raw.slice(0, 200));
+            showAppError(el, 'Load failed', `HTTP ${r1.status} while loading app "${app}".`, raw1.slice(0, 4000));
+            console.error('[openApp] HTTP error:', app, r1.status, raw1.slice(0, 200));
             return;
           }
+          if (!isJSON(r1)) {
+            const hint = looksFullHtml(raw1) ? 'a full HTML page' : (ct(r1) || 'unknown content-type');
+            showAppError(el, 'Unexpected response',
+              `Expected JSON for "${app}" but received ${hint}. Check your dispatcher JSON branch.`,
+              raw1.slice(0, 1000));
+            console.error('[openApp] Expected JSON, got:', app, ct(r1), raw1.slice(0, 200));
+            return;
+          }
+
+          let data;
           try {
-            data = JSON.parse(raw);
+            data = JSON.parse(raw1);
           } catch (e) {
-            const looksLikeFullHTML = /^\s*</.test(raw) && /<(?:!doctype|html|head|body)\b/i.test(raw);
-            showAppError(
-              el,
-              looksLikeFullHTML ? 'Unexpected HTML' : 'Invalid JSON',
-              looksLikeFullHTML
-                ? `Expected JSON for "${app}" but received a full HTML page (routing missing "?app="?).`
-                : `Could not parse JSON for "${app}".`,
-              raw.slice(0, 1000)
-            );
-            console.error('[openApp] JSON parse error:', app, e, raw.slice(0, 200));
+            showAppError(el, 'Invalid JSON', `Could not parse JSON for "${app}".`, raw1.slice(0, 1000));
+            console.error('[openApp] JSON parse error:', app, e, raw1.slice(0, 200));
             return;
           }
 
-          // ------- STYLE (insert once) -------
-          if (data.style && !document.querySelector(`[data-app-style="${app}"]`)) {
-            const styleEl = document.createElement('style');
-            styleEl.dataset.appStyle = app;
-            styleEl.textContent = data.style;
-            document.head.appendChild(styleEl);
-          }
+          insertStyleOnce(app, data.style || '');
+          mountBody(el, data.body || '');
 
-          // ------- BODY MOUNT -------
-          const body = el.querySelector('.window-body') || el;
-          body.innerHTML = data.body || '';
+          // ------- 2) Script branch (module) -------
+          const paramsJS = buildParams(opts.params);
+          paramsJS.set('part', 'script');
 
-          // ------- SCRIPT (module) -------
-          document.querySelector(`script[data-app-script="${app}"]`)?.remove();
-
-          const scriptParams = new URLSearchParams(opts.params || {});
-          scriptParams.set('part', 'script');
-
-          const r2 = await fetch(`?app=${encodeURIComponent(app)}&${scriptParams.toString()}`, {
-            headers: { Accept: 'text/javascript, application/javascript, application/x-javascript' },
-            cache: 'no-store',
-            credentials: 'same-origin'
+          const urlJS = `?app=${encodeURIComponent(app)}&${paramsJS.toString()}`;
+          const { r: r2, body: code } = await fetchText(urlJS, {
+            accept: 'application/javascript, text/javascript, application/x-javascript'
           });
-          const code = await r2.text();
 
           if (!r2.ok) {
             showAppError(el, 'Script load failed', `HTTP ${r2.status} while loading script for "${app}".`, code.slice(0, 4000));
             console.error('[openApp] Script HTTP error:', app, r2.status, code.slice(0, 200));
             return;
           }
-
-          const t = code.trimStart();
-          const looksLikeFullHTML = t.startsWith('<') && /^(?:<!doctype|<html\b|<head\b|<body\b)/i.test(t);
-          const ctLooksJS = contentTypeIncludes(r2, 'javascript') || contentTypeIncludes(r2, 'ecmascript');
-          if (!ctLooksJS && looksLikeFullHTML) {
-            showAppError(
-              el,
-              'Unexpected script response',
+          if (looksFullHtml(code) && !isJS(r2)) {
+            showAppError(el, 'Unexpected script response',
               `Expected JavaScript for "${app}" but got a full HTML page (check "part=script" routing).`,
-              t.slice(0, 1000)
-            );
-            console.error('[openApp] Expected JS, got full HTML page:', app, t.slice(0, 200));
+              code.slice(0, 1000));
+            console.error('[openApp] Expected JS, got HTML:', app, code.slice(0, 200));
             return;
           }
+          console.log('[openApp] injecting module for', app);
+          injectModule(app, code);
 
-          if (code && code.trim()) {
-            const mod = document.createElement('script');
-            mod.type = 'module';
-            mod.dataset.appScript = app;
-            mod.textContent = `${code}\n//# sourceURL=/${app}.module.js`;
-            document.body.appendChild(mod);
-          }
-
-          // ------- DRAGGABLE INIT -------
+          // ------- 3) Draggable/init + show -------
           try {
             if (window.jQuery) {
               const $el = jQuery(el);
@@ -1079,14 +1195,16 @@ unset($_SESSION['mode']); ?>
             console.warn('[openApp] draggable init warning:', e);
           }
 
-          // Success: mark loaded, unhide, focus
+          // success → mark loaded, reveal, focus
           el.dataset.loaded = '1';
           el.hidden = false;
           el.removeAttribute('aria-hidden');
           window.AppWindows?.bringToFront(el);
 
+        } catch (err) {
+          showAppError(el, 'Network error', `Failed fetching "${app}".`, String((err && err.message) || err));
+          console.error('[openApp] fetch error:', app, err);
         } finally {
-          // ALWAYS clear loading flag, success or fail
           delete el.dataset.loading;
         }
       }
@@ -1280,6 +1398,21 @@ unset($_SESSION['mode']); ?>
             window.openApp('devtools/directory', { from: 'boot', mount: '#free-space' });
           }
 
+          const ell = document.getElementById('app_core_console-container');
+
+          if (ell) {
+            window.openApp('core/console', { from: 'boot', mount: '#bottom-panel' });
+
+            window.setTimeout(() => {
+              window.runTaskSequence('startup');
+              const consoleInput = document.querySelector('#app_core_console-container .console-input');
+              if (consoleInput) {
+                consoleInput.value = 'runtask startup' + "\n" + consoleInput.value;
+                consoleInput.focus();
+                consoleInput.select();
+              }
+            }, 10000);
+          }
         }
       });
 
@@ -1339,7 +1472,8 @@ unset($_SESSION['mode']); ?>
       // Avoid putting "/* ... */" inside another "/* ... */" block; use "//" lines like these instead.
     })();
   </script>
-  <script src="https://d3js.org/d3.v4.min.js"></script>
+
+  <script src="<?= htmlspecialchars($asset('assets/js/d3js/d3.v4.min.js'), ENT_QUOTES, 'UTF-8') ?>"></script>
 
   <script>
     if (typeof jQuery === 'undefined') {

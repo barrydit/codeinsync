@@ -316,8 +316,8 @@ else
 
   <title>WebPortal</title>
   <?php
-  // (APP_IS_ONLINE && check_http_status('https://cdn.tailwindcss.com') ? 'https://cdn.tailwindcss.com' : APP_URL . 'resources/js/tailwindcss-3.3.5.js')?
-  is_dir($path = APP_BASE['resources'] . 'js/') or mkdir($path, 0755, true);
+  // (APP_IS_ONLINE && check_http_status('https://cdn.tailwindcss.com') ? 'https://cdn.tailwindcss.com' : APP_URL . 'assets/js/tailwindcss-3.3.5.js')?
+  is_dir($path = APP_BASE['public'] . 'assets/js/') or mkdir($path, 0755, true);
   if (is_file($path . 'tailwindcss-3.3.5.js')) {
     if (ceil(abs((strtotime(date('Y-m-d')) - strtotime(date('Y-m-d', strtotime('+5 days', filemtime("{$path}tailwindcss-3.3.5.js"))))) / 86400)) <= 0) {
       $url = 'https://cdn.tailwindcss.com';
@@ -337,7 +337,7 @@ else
   }
   unset($path);
   ?>
-  <script src="<?= APP_BASE['resources'] . 'js/tailwindcss-3.3.5.js' ?? $url ?>"></script>
+  <script src="<?= APP_BASE['public'] . 'assets/js/tailwindcss-3.3.5.js' ?? $url ?>"></script>
   <style type="text/tailwindcss">
     * {
 <?php if (isset($_GET['debug'])) { ?>
@@ -549,26 +549,26 @@ else
           style="position: absolute; margin-left: auto; margin-right: auto; left: 0; right: 0; text-align: center; background-color: rgba(255, 255, 255, 0.8); border: 1px solid #000; width: 800px; z-index: 1;">
           <div style="position: absolute; top: 35px; left: 403px; z-index: 2;">
             <a href="#" onclick="document.getElementById('app_packagist-container').style.display='block';"><img
-                src="resources/images/packagist_icon.png" width="30" height="34"> Packagist</a>
+                src="assets/images/packagist_icon.png" width="30" height="34"> Packagist</a>
           </div>
           <a href="#" onclick="document.getElementById('app_github-container').style.display='block';"><img
-              src="resources/images/github_icon.png" width="72" height="23"></a> |
+              src="assets/images/github_icon.png" width="72" height="23"></a> |
           <a href="#" onclick="document.getElementById('app_git-container').style.display='block';"><img
-              src="resources/images/git_icon.png" width="58" height="24"></a> | <a href="#"
+              src="assets/images/git_icon.png" width="58" height="24"></a> | <a href="#"
             onclick="document.getElementById('app_node_js-container').style.display='block';"><img
-              src="resources/images/npm_icon.png" width="32" height="32"> Node.js</a>
+              src="assets/images/npm_icon.png" width="32" height="32"> Node.js</a>
           |
           <a href="#" onclick="document.getElementById('app_php-container').style.display='block';"><img
-              src="resources/images/php_icon.png" width="40" height="27"> PHP
+              src="assets/images/php_icon.png" width="40" height="27"> PHP
             <?= (preg_match("#^(\d+\.\d+)#", PHP_VERSION, $match) ? $match[1] : '8.0') ?></a> | <a href="#"
             onclick="document.getElementById('app_composer-container').style.display='block';"><img
-              src="resources/images/composer_icon.png" width="31" height="40"> Composer</a> |
+              src="assets/images/composer_icon.png" width="31" height="40"> Composer</a> |
           <a href="#" onclick="document.getElementById('app_ace_editor-container').style.display='block';"><img
-              src="resources/images/ace_editor_icon.png" width="32" height="32"> Editor</a> |
+              src="assets/images/ace_editor_icon.png" width="32" height="32"> Editor</a> |
           <a href="#" onclick="document.getElementById('app_tools-container').style.display='block';"><img
-              src="resources/images/apps_icon.gif" width="20" height="20"> Tools</a> |
+              src="assets/images/apps_icon.gif" width="20" height="20"> Tools</a> |
           <a href="#" onclick="document.getElementById('app_timesheet-container').style.display='block';"><img
-              src="resources/images/clock.gif" width="30" height="30"> Clock-In</a>
+              src="assets/images/clock.gif" width="30" height="30"> Clock-In</a>
           <div style="position: absolute; top: 40px; left: 0; z-index: 1;">
             <?php $path = realpath(APP_ROOT . (isset($_GET['path']) ? DIRECTORY_SEPARATOR . $_GET['path'] : '')) . DIRECTORY_SEPARATOR; // getcwd()
             if (isset($_GET['path'])) { ?>
@@ -688,7 +688,7 @@ else
             </div>
             <div style="display: inline-block; width: 100px;">
               <img id="ts-status-light" style="padding-bottom: 25px; cursor: pointer;"
-                src="resources/images/timesheet-light-Clear-2.gif" width="80" height="30" />
+                src="assets/images/timesheet-light-Clear-2.gif" width="80" height="30" />
             </div>
           </div>
           <div id="app_tools-container"
@@ -696,10 +696,10 @@ else
             <div style="position: absolute; margin: 80px 45px; text-align: center;" class="text-sm"><a href="#!"
                 onclick="document.getElementById('app_tools-container').style.display='none'; return false;"><img
                   style="text-align: center;" height="25" width="25"
-                  src="<?= APP_BASE['resources'] . 'images/close-red.gif' ?>" /></a><br /></div>
+                  src="<?= APP_BASE['public'] . 'assets/images/close-red.gif' ?>" /></a><br /></div>
             <div style="position: absolute; margin: 100px 75px; text-align: center;" class="text-sm"><a href="#!"
                 onclick="isFixed = true; show_console(); return false;"><img style="text-align: center;"
-                  src="<?= APP_BASE['resources'] . 'images/cli.png' ?>" /></a><br /><a
+                  src="<?= APP_BASE['public'] . 'assets/images/cli.png' ?>" /></a><br /><a
                 href="?app=ace_editor&path=&file=app.console.php" style="text-align: center;">(CLI)</a></div>
             <!-- 
               <a href="javascript:window.open('print.html', 'newwindow', 'width=300,height=250')">Print</a>
@@ -711,36 +711,36 @@ else
                 href="app.whiteboard.php" target="_blank"
                 onclick="document.getElementById('app_whiteboard-container').style.display='block'; return false;"><img
                   style="text-align: center;"
-                  src="<?= APP_BASE['resources'] . 'images/whiteboard.png' ?>" /></a><br /><a
+                  src="<?= APP_BASE['public'] . 'assets/images/whiteboard.png' ?>" /></a><br /><a
                 href="?app=ace_editor&path=&file=app.whiteboard.php" style="text-align: center;">Whiteboard</a></div>
             <div style="position: absolute; margin: 100px 260px; text-align: center;" class="text-sm"><a href="#!"
                 onclick="document.getElementById('app_notes-container').style.display='block'; return false;"><img
-                  style="text-align: center;" src="<?= APP_BASE['resources'] . 'images/notes.png' ?>" /></a><br /><a
+                  style="text-align: center;" src="<?= APP_BASE['public'] . 'assets/images/notes.png' ?>" /></a><br /><a
                 href="?app=ace_editor&path=&file=app.notes.php" style="text-align: center;">Notes</a></div>
             <div style="position: absolute; margin: 100px 350px; text-align: center;" class="text-sm"><a href="#!"
                 onclick="document.getElementById('app_project-container').style.display='block'; return false;"><img
-                  style="text-align: center;" src="<?= APP_BASE['resources'] . 'images/project.png' ?>" /></a><br /><a
+                  style="text-align: center;" src="<?= APP_BASE['public'] . 'assets/images/project.png' ?>" /></a><br /><a
                 href="?app=ace_editor&path=&file=app.project.php"><span style="text-align: center;">Project</span></a>
             </div>
             <div style="position: absolute; margin: 100px 0 0 450px ; text-align: center;" class="text-sm"><a href="#!"
                 onclick="document.getElementById('app_debug-container').style.display='block'; return false;"><img
-                  style="text-align: center;" src="<?= APP_BASE['resources'] . 'images/debug.png' ?>" /><br /><span
+                  style="text-align: center;" src="<?= APP_BASE['public'] . 'assets/images/debug.png' ?>" /><br /><span
                   style="text-align: center;">Debug</span></a></div>
             <div style="position: absolute; margin: 100px 0 0 540px; text-align: center;" class="text-sm"><a href="#!"
                 onclick="document.getElementById('app_profile-container').style.display='block'; return false;"><img
-                  style="text-align: center;" src="<?= APP_BASE['resources'] . 'images/user.png' ?>" /><br /><span
+                  style="text-align: center;" src="<?= APP_BASE['public'] . 'assets/images/user.png' ?>" /><br /><span
                   style="text-align: center;">Profile</span></a></div>
             <div style="position: absolute; margin: 100px 0 0 630px; text-align: center;" class="text-sm"><a href="#!"
                 onclick="document.getElementById('app_browser-container').style.display='block'; return false;"><img
-                  style="text-align: center;" src="<?= APP_BASE['resources'] . 'images/browser.png' ?>" /><br /><span
+                  style="text-align: center;" src="<?= APP_BASE['public'] . 'assets/images/browser.png' ?>" /><br /><span
                   style="text-align: center;">Browser</span></a></div>
             <div style="position: absolute; margin: 200px 75px; text-align: center;" class="text-sm"><a href="#!"
                 onclick="document.getElementById('app_tools-container').style.display='block'; return false;"><img
-                  style="text-align: center;" src="<?= APP_BASE['resources'] . 'images/apps.png' ?>" /><br /><span
+                  style="text-align: center;" src="<?= APP_BASE['public'] . 'assets/images/apps.png' ?>" /><br /><span
                   style="text-align: center;">Apps.</span></a></div>
             <div style="position: absolute; margin: 200px 170px; text-align: center;" class="text-sm"><a href="#!"
                 onclick="document.getElementById('app_calendar-container').style.display='block'; return false;"><img
-                  style="text-align: center;" src="<?= APP_BASE['resources'] . 'images/calendar.png' ?>" /><br /><span
+                  style="text-align: center;" src="<?= APP_BASE['public'] . 'assets/images/calendar.png' ?>" /><br /><span
                   style="text-align: center;">Calendar</span></a></div>
             <div
               style="position: absolute; margin: 190px 240px; padding: 20px 40px; background-color: rgba(255, 255, 255, 0.8);">
@@ -760,45 +760,45 @@ else
             </div>
             <div style="position: absolute; margin: 200px 0 0 540px; text-align: center;" class="text-sm"><a href="#!"
                 onclick="document.getElementById('app_pong-container').style.display='block'; return false;"><img
-                  style="text-align: center;" src="<?= APP_BASE['resources'] . 'images/pong.png' ?>" /><br /><span
+                  style="text-align: center;" src="<?= APP_BASE['public'] . 'assets/images/pong.png' ?>" /><br /><span
                   style="text-align: center;">Pong</span></a></div>
             <div style="position: absolute; margin: 200px 0 0 630px; text-align: center;" class="text-sm"><a href="#!"
                 onclick="document.getElementById('app_browser-container').style.display='block'; return false;"><img
-                  style="text-align: center;" src="<?= APP_BASE['resources'] . 'images/regexp.png' ?>" /><br /><span
+                  style="text-align: center;" src="<?= APP_BASE['public'] . 'assets/images/regexp.png' ?>" /><br /><span
                   style="text-align: center;">RegExp</span></a></div>
             <div style="position: absolute; margin: 300px 75px; text-align: center;" class="text-sm"><a href="#!"
                 onclick="document.getElementById('app_browser-container').style.display='block'; return false;"><img
-                  style="text-align: center;" src="<?= APP_BASE['resources'] . 'images/chatgpt.png' ?>" /><br /><span
+                  style="text-align: center;" src="<?= APP_BASE['public'] . 'assets/images/chatgpt.png' ?>" /><br /><span
                   style="text-align: center;">ChatGPT</span></a></div>
             <div style="position: absolute; margin: 300px 160px; text-align: center;" class="text-sm"><a href="#!"
                 onclick="document.getElementById('app_browser-container').style.display='block'; return false;"><img
                   style="text-align: center;"
-                  src="<?= APP_BASE['resources'] . 'images/stackoverflow.png' ?>" /><br /><span
+                  src="<?= APP_BASE['public'] . 'assets/images/stackoverflow.png' ?>" /><br /><span
                   style="text-align: center;">Stackoverflow</span></a></div>
             <div style="position: absolute; margin: 300px 260px; text-align: center;" class="text-sm"><a href="#!"
                 onclick="document.getElementById('app_browser-container').style.display='block'; return false;"><img
-                  style="text-align: center;" src="<?= APP_BASE['resources'] . 'images/validatejs.png' ?>" /><br /><span
+                  style="text-align: center;" src="<?= APP_BASE['public'] . 'assets/images/validatejs.png' ?>" /><br /><span
                   style="text-align: center;">ValidateJS</span></a></div>
             <!-- https://validator.w3.org/#validate_by_input // -->
             <div style="position: absolute; margin: 300px 340px; text-align: center;" class="text-sm"><a href="#!"
                 onclick="document.getElementById('app_browser-container').style.display='block'; return false;"><img
-                  style="text-align: center;" src="<?= APP_BASE['resources'] . 'images/w3c.png' ?>" /><br /><span
+                  style="text-align: center;" src="<?= APP_BASE['public'] . 'assets/images/w3c.png' ?>" /><br /><span
                   style="text-align: center;">W3C Validator</span></a></div>
             <!-- https://tailwindcss.com/docs/ // -->
             <div style="position: absolute; margin: 300px 0 0 445px; text-align: center;" class="text-sm"><a href="#!"
                 onclick="document.getElementById('app_browser-container').style.display='block'; return false;"><img
                   style="text-align: center;"
-                  src="<?= APP_BASE['resources'] . 'images/tailwindcss.png' ?>" /><br /><span
+                  src="<?= APP_BASE['public'] . 'assets/images/tailwindcss.png' ?>" /><br /><span
                   style="text-align: center;">TailwindCSS<br />Docs</span></a></div>
             <!-- https://www.php.net/docs.php // -->
             <div style="position: absolute; margin: 300px 0 0 540px; text-align: center;" class="text-sm"><a href="#!"
                 onclick="document.getElementById('app_browser-container').style.display='block'; return false;"><img
-                  style="text-align: center;" src="<?= APP_BASE['resources'] . 'images/php.png' ?>" /><br /><span
+                  style="text-align: center;" src="<?= APP_BASE['public'] . 'assets/images/php.png' ?>" /><br /><span
                   style="text-align: center;">PHP Docs</span></a></div>
             <!-- https://dev.mysql.com/doc/ // -->
             <div style="position: absolute; margin: 300px 0 0 625px; text-align: center;" class="text-sm"><a href="#!"
                 onclick="document.getElementById('app_browser-container').style.display='block'; return false;"><img
-                  style="text-align: center;" src="<?= APP_BASE['resources'] . 'images/mysql.png' ?>" /><br /><span
+                  style="text-align: center;" src="<?= APP_BASE['public'] . 'assets/images/mysql.png' ?>" /><br /><span
                   style="text-align: center;">MySQL Docs</span></a></div>
             <div
               style="position: absolute; top: 400px; left: 65px; width: 80%; margin: 0 auto; height: 15px; border-bottom: 1px solid black; text-align: center; z-index: 0;">
@@ -807,13 +807,13 @@ else
             <div style="position: absolute; margin: 430px 75px; text-align: center;" class="text-sm"><a href="#!"
                 onclick="document.getElementById('app_install-container').style.display='block'; return false;"><span
                   style="text-align: center;">New App.</span><br /><img style="text-align: center;"
-                  src="<?= APP_BASE['resources'] . 'images/install.png' ?>" /></a></div>
+                  src="<?= APP_BASE['public'] . 'assets/images/install.png' ?>" /></a></div>
             <div style="position: absolute; margin: 430px 170px; text-align: center;" class="text-sm">
               <a href="?app=ace_editor&path=&file=app.user-app.php"><span style="text-align: center;">App
                   #1</span></a><br />
               <a href="#!"
                 onclick="document.getElementById('app_browser-container').style.display='block'; return false;"><img
-                  style="text-align: center;" src="<?= APP_BASE['resources'] . 'images/php-app.png' ?>" /></a>
+                  style="text-align: center;" src="<?= APP_BASE['public'] . 'assets/images/php-app.png' ?>" /></a>
               <div style="height: 75px;"></div>
             </div>
           </div>
@@ -1125,7 +1125,7 @@ else
   <!-- https://code.jquery.com/jquery-3.7.1.min.js -->
   <!-- script src="https://code.jquery.com/jquery-3.6.0.min.js" integrity="sha256-/xUj+3OJU5yExlq6GSYGSHk7tPXikynS7ogEvDej/m4=" crossorigin="anonymous"></script -->
   <?php
-  is_dir($path = APP_BASE['resources'] . 'js/jquery/') or mkdir($path, 0755, true);
+  is_dir($path = APP_BASE['public'] . 'assets/js/jquery/') or mkdir($path, 0755, true);
   if (is_file($path . 'jquery-3.7.1.min.js')) {
     if (ceil(abs((strtotime(date('Y-m-d')) - strtotime(date('Y-m-d', strtotime('+5 days', filemtime($path . 'jquery-3.7.1.min.js'))))) / 86400)) <= 0) {
       $url = 'https://code.jquery.com/jquery-3.7.1.min.js';
@@ -1162,7 +1162,7 @@ else
     <span>App Path: <?= APP_PATH; ?></span><br />
   </div>
   <script
-    src="<?= APP_IS_ONLINE && check_http_status('https://code.jquery.com/jquery-3.7.1.min.js') ? 'https://code.jquery.com/jquery-3.7.1.min.js' : APP_BASE['resources'] . 'js/jquery/' . 'jquery-3.7.1.min.js' ?>"></script>
+    src="<?= APP_IS_ONLINE && check_http_status('https://code.jquery.com/jquery-3.7.1.min.js') ? 'https://code.jquery.com/jquery-3.7.1.min.js' : APP_BASE['public'] . 'assets/js/jquery/' . 'jquery-3.7.1.min.js' ?>"></script>
   <!-- You need to include jQueryUI for the extended easing options. -->
   <?php /* https://stackoverflow.com/questions/12592279/typeerror-p-easingthis-easing-is-not-a-function */ ?>
   <!-- script src="//code.jquery.com/jquery-1.12.4.js"></script -->
@@ -1171,7 +1171,7 @@ else
   <!-- For Text / Ace Editor -->
   <!-- <script src="https://unpkg.com/@popperjs/core@2" type="text/javascript" charset="utf-8"></script> -->
   <?php
-  is_dir($path = APP_BASE['resources'] . 'js/requirejs/') or mkdir($path, 0755, true);
+  is_dir($path = APP_BASE['public'] . 'assets/js/requirejs/') or mkdir($path, 0755, true);
   if (is_file($path . 'require-2.3.6.js')) {
     if (ceil(abs((strtotime(date('Y-m-d')) - strtotime(date('Y-m-d', strtotime('+5 days', filemtime($path . '/require-2.3.6.js'))))) / 86400)) <= 0) {
       $url = 'https://requirejs.org/docs/release/2.3.6/minified/require.js';
@@ -1191,24 +1191,24 @@ else
   }
   unset($path);
   ?>
-  <script src="<?= APP_BASE['resources'] . 'js/requirejs/require-2.3.6.js' ?? $url ?>" type="text/javascript"
+  <script src="<?= 'assets/js/requirejs/require-2.3.6.js' ?? $url ?>" type="text/javascript"
     charset="utf-8"></script>
-  <script src="resources/js/ace/src/ace.js" type="text/javascript" charset="utf-8"></script> <!-- -->
-  <script src="resources/js/ace/src/ext-language_tools.js" type="text/javascript" charset="utf-8"></script>
+  <script src="<?= 'assets/js/ace/src/ace.js' ?>" type="text/javascript" charset="utf-8"></script> <!-- -->
+  <script src="<?= 'assets/js/ace/src/ext-language_tools.js' ?>" type="text/javascript" charset="utf-8"></script>
   <!-- <script src="https://cdnjs.cloudflare.com/ajax/libs/ace/1.4.12/ext-language_tools.js"></script>
-      <script src="resources/js/ace/src/mode-php.js" type="text/javascript" charset="utf-8"></script>
+      <script src="assets/js/ace/src/mode-php.js" type="text/javascript" charset="utf-8"></script>
       
-      <script src="resources/js/ace/src/theme-dracula.js" type="text/javascript" charset="utf-8"></script> -->
+      <script src="assets/js/ace/src/theme-dracula.js" type="text/javascript" charset="utf-8"></script> -->
   <!--   <script src="dist/bundle.js" type="text/javascript" charset="utf-8"></script> -->
   <!-- End: For Text / Ace Editor -->
-  <!-- <script src="resources/js/jquery/jquery.min.js"></script> -->
+  <!-- <script src="assets/js/jquery/jquery.min.js"></script> -->
   <?php if (date(/*Y-*/ 'm-d') == /*1928-*/ '08-07' ?? /*2023-*/ '03-30') { ?>
-    <script src="/resources/reels/leave-a-light-on.js" type="text/javascript" charset="utf-8"></script>
+    <script src="/assets/reels/leave-a-light-on.js" type="text/javascript" charset="utf-8"></script>
   <?php } elseif (date(/*Y-*/ 'm-d') == /*1976-*/ '03-20' ?? /*2017-*/ '07-20') { ?>
-    <script src="/resources/reels/leave-a-light-on.js" type="text/javascript" charset="utf-8"></script>
+    <script src="/assets/reels/leave-a-light-on.js" type="text/javascript" charset="utf-8"></script>
   <?php } else {  // array_rand() can't be empty ?>
     <script
-      src="<?= !empty($reels = glob(APP_PATH . 'resources/reels/*.js')) ? APP_BASE['resources'] . 'reels/' . basename(array_rand(array_flip(array_filter($reels, 'is_file')), 1)) : ''; /* APP_BASE['resources'] */ ?>"
+      src="<?= !empty($reels = glob(APP_PATH . 'public/assets/reels/*.js')) ? APP_BASE['public'] . 'assets/reels/' . basename(array_rand(array_flip(array_filter($reels, 'is_file')), 1)) : ''; /* APP_BASE['public'] */ ?>"
       type="text/javascript" charset="utf-8"></script>
   <?php } ?>
   <script type="text/javascript" charset="utf-8">
@@ -1429,16 +1429,16 @@ else
     + window.location.pathname.split("/").slice(0, -1).join("/"),
     
     paths: {
-      jquery: 'resources/js/jquery/jquery.min',
-      domReady: 'resources/js/domReady',
-      bootstrap: 'resources/js/bootstrap/dist/js/bootstrap',
-      ace: 'resources/js/ace/src/ace',
-      'lib/dom': 'resources/js/ace/src/lib/dom',
-      useragent: 'resources/js/ace/src/lib/useragent',
-      exports: 'resources/js/ace/src/lib/',
+      jquery: 'assets/js/jquery/jquery.min',
+      domReady: 'assets/js/domReady',
+      bootstrap: 'assets/js/bootstrap/dist/js/bootstrap',
+      ace: 'assets/js/ace/src/ace',
+      'lib/dom': 'assets/js/ace/src/lib/dom',
+      useragent: 'assets/js/ace/src/lib/useragent',
+      exports: 'assets/js/ace/src/lib/',
       
-      //'../snippets': 'resources/js/ace/lib/ace/snippets',
-      //'./lib/oop': 'resources/js/ace/src/lib'
+      //'../snippets': 'assets/js/ace/lib/ace/snippets',
+      //'./lib/oop': 'assets/js/ace/src/lib'
     }
     });
     */
@@ -1449,7 +1449,7 @@ else
       baseUrl: window.location.protocol + "//" + window.location.host
         + window.location.pathname.split("/").slice(0, -1).join("/"),
       paths: {
-        ace: "resources/js/ace/src"
+        ace: "assets/js/ace/src"
       }
     });
 
@@ -1457,7 +1457,7 @@ else
       //console.log(langtools);
 
       <?= defined('UI_ACE_EDITOR') ? UI_ACE_EDITOR['script'] : null; ?>
-      //require(["resources/js/requirejs/require-2.3.6!ace/ace"], function(e){
+      //require(["assets/js/requirejs/require-2.3.6!ace/ace"], function(e){
       //editor.setValue(e);
       //})
 

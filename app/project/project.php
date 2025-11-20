@@ -111,7 +111,7 @@ ob_start(); ?>
       style="position: absolute; display: inline-block; width: 100%; height: 25px; margin: -50px 0 25px 0; padding: 24px 0; border-bottom: 1px solid #000; z-index: 3;">
       <label class="npm-home" style="cursor: pointer;">
         <div class="" style="position: relative; display: inline-block; top: 0; left: 0; margin-top: -5px;">
-          <img src="resources/images/code_icon.png" width="40" height="40" />
+          <img src="assets/images/code_icon.png" width="40" height="40" />
         </div>
       </label>
       <div style="display: inline;">
@@ -286,8 +286,8 @@ ob_start(); ?>
   <!-- link rel="stylesheet" href="//code.jquery.com/ui/1.12.1/themes/smoothness/jquery-ui.css" /-->
 
   <?php
-  // (APP_IS_ONLINE && check_http_status('https://cdn.tailwindcss.com') ? 'https://cdn.tailwindcss.com' : APP_URL . 'resources/js/tailwindcss-3.3.5.js')?
-  is_dir($path = APP_BASE['resources'] . 'js/') or mkdir($path, 0755, true);
+  // (APP_IS_ONLINE && check_http_status('https://cdn.tailwindcss.com') ? 'https://cdn.tailwindcss.com' : APP_URL . 'assets/js/tailwindcss-3.3.5.js')?
+  is_dir($path = APP_BASE['public'] . 'assets/js/') or mkdir($path, 0755, true);
   if (is_file($path . 'tailwindcss-3.3.5.js')) {
     if (ceil(abs((strtotime(date('Y-m-d')) - strtotime(date('Y-m-d', strtotime('+5 days', filemtime($path . 'tailwindcss-3.3.5.js'))))) / 86400)) <= 0) {
       $url = 'https://cdn.tailwindcss.com';
@@ -307,7 +307,7 @@ ob_start(); ?>
   }
   ?>
 
-  <script src="<?= 'resources/js/tailwindcss-3.3.5.js' ?? $url ?>"></script>
+  <script src="<?= 'assets/js/tailwindcss-3.3.5.js' ?? $url ?>"></script>
 
   <style type="text/tailwindcss">
     <?= $app['style']; ?>
@@ -326,8 +326,8 @@ ob_start(); ?>
   <!-- Uncaught ReferenceError: jQuery is not defined -->
 
 
-  <script src="resources/js/ace/src/ace.js" type="text/javascript" charset="utf-8"></script>
-  <script src="resources/js/ace/src/ext-language_tools.js" type="text/javascript" charset="utf-8"></script>
+  <script src="assets/js/ace/src/ace.js" type="text/javascript" charset="utf-8"></script>
+  <script src="assets/js/ace/src/ext-language_tools.js" type="text/javascript" charset="utf-8"></script>
 
   <script>
     <?= $app['script']; ?>

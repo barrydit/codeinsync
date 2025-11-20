@@ -1,9 +1,63 @@
 <?php
+// app/core/console.php
 
-//dd($_POST);
-require_once dirname(__DIR__, 1) . DIRECTORY_SEPARATOR . 'config' . DIRECTORY_SEPARATOR . 'constants.runtime.php';
+defined('APP_PATH') || define('APP_PATH', dirname(__DIR__, 3) . DIRECTORY_SEPARATOR);
+defined('CONFIG_PATH') || define('CONFIG_PATH', APP_PATH . 'config' . DIRECTORY_SEPARATOR);
 
-global $shell_prompt, $auto_clear, $errors;
+// const APP_ROOT = '123';
+
+// Ensure bootstrap has run (defines env/paths/url/app and helpers)
+if (!defined('APP_BOOTSTRAPPED')) {
+  require_once APP_PATH . 'bootstrap/bootstrap.php';
+}
+
+global $shell_prompt, $auto_clear, $errors, $asset, $baseHref;
+
+// -----------------------------------------------------------------------------
+
+// Ensure COMPOSER_BIN or COMPOSER_PHAR is defined (best-effort, non-fatal)
+
+$app_id = 'core/console';           // full path-style id
+
+// Always normalize slashes first
+$app_norm = str_replace('\\', '/', $app_id);
+
+// Last segment only (for titles, labels, etc.)
+$slug = basename($app_norm);                    // "console"
+
+// Sanitized full path for DOM ids (underscores only from non [A-Za-z0-9_ -])
+$key = preg_replace('/[^\w-]+/', '_', $app_norm);  // "core_console"
+
+// If you prefer strictly underscores (no hyphens), do: '/[^\w]+/'
+
+// Core DOM ids/selectors
+$container_id = "app_{$key}-container";         // "app_core_console-container"
+$selector = "#{$container_id}";
+
+// Useful companion ids
+$style_id = "style-{$key}";                    // "style-core_console"
+$script_id = "script-{$key}";                   // "script-core_console"
+
+// Optional: data attributes you can stamp on the container for easy introspection
+$data_attrs = sprintf(
+  'data-app-path="%s" data-app-key="%s" data-app-slug="%s"',
+  htmlspecialchars($app_norm, ENT_QUOTES),
+  htmlspecialchars($key, ENT_QUOTES),
+  htmlspecialchars($slug, ENT_QUOTES),
+);
+
+// -----------------------------------------------------------------------------
+switch (__FILE__) {
+  case get_required_files()[0]:
+    if ($path = (basename(getcwd()) == 'public') ? (is_file('config.php') ? 'config.php' : '../config/config.php') : '')
+      require_once $path;
+    else
+      die(var_dump("$path path was not found. file=config.php"));
+    break;
+  default:
+    file_exists(APP_PATH . 'config/constants.paths.php') && require_once APP_PATH . 'config/constants.paths.php';
+    require_once APP_PATH . 'config' . DIRECTORY_SEPARATOR . 'constants.runtime.php';
+}
 
 /*
     realpath ? Returns canonicalized absolute pathname
@@ -11,23 +65,8 @@ global $shell_prompt, $auto_clear, $errors;
     unlink ? Deletes a file
 */
 
-//die(var_dump(get_required_files()));
-if (__FILE__ == get_required_files()[0] && __FILE__ == realpath($_SERVER["SCRIPT_FILENAME"]))
-  if ($path = basename(dirname(get_required_files()[0])) == 'public') { // (basename(getcwd())
-    chdir('../');
-    if (isset($_SERVER['REQUEST_METHOD']) && $_SERVER['REQUEST_METHOD'] == 'POST')
-      require_once realpath('bootstrap' . DIRECTORY_SEPARATOR . 'bootstrap.php');
-    elseif ($path = realpath('config' . DIRECTORY_SEPARATOR . 'config.php')) { // is_file(config/php.php
-      //dd('does this do anything?');
-      require_once $path;
-    }
-  } else
-    die(var_dump("Path was not found. file=$path"));
-else
-  require_once APP_PATH . 'config' . DIRECTORY_SEPARATOR . 'config.php';
+// die(var_dump(get_required_files()));
 
-if (preg_match('/^app\.([\w\-.]+)\.php$/', basename(__FILE__), $matches))
-  ${$matches[1]} = $matches[1];
 
 //require_once realpath(__DIR__ . DIRECTORY_SEPARATOR . '..' . DIRECTORY_SEPARATOR  . DIRECTORY_SEPARATOR . 'classes' . DIRECTORY_SEPARATOR . 'class.sockets.php');
 
@@ -40,214 +79,6 @@ if (preg_match('/^app\.([\w\-.]+)\.php$/', basename(__FILE__), $matches))
 //dd(__FILE__, false);
 //!function_exists('dd') ? die('dd is not defined') : dd(COMPOSER_EXEC);
 
-
-if ($_SERVER['REQUEST_METHOD'] == 'POST') {
-  // $auto_clear = isset($_POST['auto_clear']) && $_POST['auto_clear'] == 'on' ? true : false;
-  if (isset($_POST['group_type'])) {
-    switch ($_POST['group_type']) {
-      case 'file':
-        touch($_POST['file_name']);
-        break;
-      case 'dir':
-        if (isset($_POST['dir']) && $_POST['dir'] != '') {
-          if (!is_dir($dir = APP_PATH . APP_ROOT . $_GET['path'] . $_POST['name'])) {
-            //mkdir($dir, 0777, true);
-          } else
-            $output[] = "Directory already exists: $dir";
-        }
-        break;
-    }
-  } elseif (isset($_POST['cmd'])) {
-
-    chdir(APP_PATH . APP_ROOT);
-
-    $output = [];
-
-    //$output[] = $shell_prompt = 'www-data@localhost:' . getcwd() . '# ' . $_POST['cmd'];
-    //$socketInstance = Sockets::getInstance();
-    //$GLOBALS['runtime']['socket'] = $socketInstance->getSocket();
-
-    //$output[] = var_export(is_resource($GLOBALS['runtime']['socket']), true);
-
-    //$GLOBALS['runtime']['socket'] = fsockopen(SERVER_HOST, SERVER_PORT, $errno, $errstr, 5);
-
-    if ($_POST['cmd'] && $_POST['cmd'] != '')
-      if (preg_match('/^help/i', $_POST['cmd']))
-        $output[] = implode(', ', ['install', 'php', 'composer', 'git', 'npm', 'whoami', 'wget', 'tail', 'cat', 'echo', 'env', 'sudo']);
-      else if (preg_match('/^server\s*start$/i', $_POST['cmd'])) {
-        //require_once APP_PATH . 'server.php';
-
-        $GLOBALS['runtime']['socket']->initializeSocket();
-
-        /*
-                  if (file_exists($pidFile = APP_PATH . 'server.pid')) {
-                    $output[] = 'Server already running ...';
-                  } else {
-                    handleLinuxSocketConnection(true);
-                    $output[] = 'Sockets started ...';
-                  }
-        */
-      }  //else if (preg_match('/^install/i', $_POST['cmd']))
-    //include 'templates/' . preg_split("/^install (\s*+)/i", $_POST['cmd'])[1] . '.php';
-
-
-    /*
-    Error: To https://github.com/barrydit/codeinsync.git
-     5fbad5b..29f689e  main -> main
-
-    ^To\s(?:[a-z]+\:\/\/)?(?:[a-z0-9\\-]+\.)+[a-z]{2,6}(?:\/\S*)?
-
-
-    */
-    // 
-
-
-  } else if (preg_match('/^whoami(:?(.*))/i', $_POST['cmd'], $match))
-    exec('whoami', $output);
-  else if (preg_match('/^wget\s+(:?(.*))/i', $_POST['cmd'], $match))
-    /* https://stackoverflow.com/questions/9691367/how-do-i-request-a-file-but-not-save-it-with-wget */
-    exec("wget -qO- {$match[1]} &> /dev/null", $output);
-  else {
-
-    if (!isset($GLOBALS['runtime']['socket']) || !$GLOBALS['runtime']['socket']) {
-      //exec($_POST['cmd'], $output);
-      if (preg_match('/^(\w+)\s+(:?(.*))/i', $_POST['cmd'], $match))
-        if (isset($match[1]) && in_array($match[1], $help = ['tail', 'cat', 'unlink', 'echo', 'env', 'sudo', 'whoami'])) {
-          //exec(APP_SUDO . $match[1] . ' ' . $match[2], $output); // $output[] = var_dump($match);
-
-          $output[] = APP_SUDO . "$match[1] $match[2]";
-          $proc = proc_open(
-            (stripos(PHP_OS, 'WIN') === 0 ? '' : APP_SUDO) . "$match[1] $match[2]",
-            [
-              ["pipe", "r"],
-              ["pipe", "w"],
-              ["pipe", "w"]
-            ],
-            $pipes
-          );
-          [$stdout, $stderr, $exitCode] = [stream_get_contents($pipes[1]), stream_get_contents($pipes[2]), proc_close($proc)];
-          $output[] = !isset($stdout) ? NULL : $stdout . (isset($stderr) && $stderr === '' ? NULL : " Error: $stderr") . (isset($exitCode) && $exitCode == 0 ? NULL : "Exit Code: $exitCode");
-
-        } else {
-          $output[] = 'Server is not connected. Command not found: ' . $_POST['cmd'];
-          exit;
-        }
-    } else {
-      $errors['server-1'] = "Connected to " . SERVER_HOST . " on port " . SERVER_PORT . "\n";
-
-      if (preg_match('/^composer\s+(:?(.*))/i', $_POST['cmd'], $match))
-        $errors['server-2'] = 'Client request: ' . $message = "cmd: composer " . $match[1] . ' --working-dir="' . APP_PATH . APP_ROOT . '"' . "\n";
-      elseif (preg_match('/^git\s+(:?(.*))/i', $_POST['cmd'], $match))
-        $errors['server-2'] = 'Client request: ' . $message = "cmd: git " . $match[1] . ' --git-dir="' . APP_PATH . APP_ROOT . '.git" --work-tree="' . APP_PATH . APP_ROOT . '"' . "\n";
-      else
-        $errors['server-2'] = 'Client request: ' . $message = "cmd: " . $_POST['cmd'] . "\n";
-
-
-
-      //$socketInstance = Sockets::getInstance(); // new Sockets();
-
-      //$GLOBALS['runtime']['socket'] = $socketInstance->getSocket();
-
-      $output = []; //$_POST['cmd'] . ' test3: ';
-
-      fwrite($GLOBALS['runtime']['socket'], $message);
-
-      $buffer = '';
-
-      $response = '';
-
-      // Read response from the server
-      while (!feof($GLOBALS['runtime']['socket'])) {
-        $chunk = fgets($GLOBALS['runtime']['socket'], 1024); // Read chunks of 1024 bytes
-        echo ' test 123';
-        if ($chunk === false) {
-          // Handle any reading error
-          echo '$chunk is false';
-          break;
-        }
-
-        // Append the chunk to the response
-        $response .= $chunk;
-
-        // Optional: If the server is sending a known termination sequence like \r\n, stop reading when detected
-        if (strpos($chunk, "\r\n") !== false) {
-          break;
-        }
-      }
-
-      $response = trim($response); // Remove any extra whitespace
-
-      if ($response === '') // Handle empty response
-
-        echo 'Empty response 123';
-      else // Handle response
-        $decodedResponse = json_decode($response, true); // Decode JSON response
-
-      if ($decodedResponse === null && json_last_error() !== JSON_ERROR_NONE) // Handle JSON decoding error
-        echo $errors['server-3'] = "Error decoding JSON: " . json_last_error_msg();
-      else
-        $errors['server-3'] = "Server response: $decodedResponse\n";
-
-
-      // Append response to the output array
-      if (isset($output[count($output) - 1])) { // end()
-        $output[count($output) - 1] .= $decodedResponse;
-      }
-
-      //$buffer = $decodedResponse;
-
-
-
-      // Read response from the server
-/*
-              while (!feof($GLOBALS['runtime']['socket'])) {
-                $response = fgets($GLOBALS['runtime']['socket'], 1024); // Read in chunks of 1024 bytes
-                if ($response !== false) {
-                    $buffer .= $response; // Accumulate the response
-                }
-
-                  $response = fgets($GLOBALS['runtime']['socket'], 1024); // Reading the response 1024 bytes at a time
-                  $errors['server-3'] = "Server response: $response\n";
-          
-                  // Append or add the response to the output array
-                  if (end($output) !== false) {
-                      $output[key($output)] .= trim($response);
-                  } else {
-                      $output[] = trim($response);
-                  }
-          
-                  // Check for an empty response or end-of-message (optional)
-                  if (!empty($response)) {
-                      break; // Exit loop on receiving a non-empty response, or continue based on your logic
-                  }
-              }
-*/
-      //die(var_dump($GLOBALS['runtime']['socket']));
-
-      fclose($GLOBALS['runtime']['socket']);
-    }
-
-
-    //
-
-  }
-  //else var_dump(NULL); // eval('echo $repo->status();')
-  if (isset($output) && is_array($output)) {
-    switch (count($output)) {
-      case 1:
-        echo /*(isset($match[1]) ? $match[1] : 'PHP') . ' >>> ' . */ join("\n... <<< ", $output);
-        break;
-      default:
-        echo join("\n", $output);
-        break;
-    } // . "\n"
-    //$output[] = 'post: ' . var_dump($_POST);
-    //else var_dump(get_class_methods($repo));
-  }
-  //echo $buffer;
-  //Shutdown::setEnabled(true)->setShutdownMessage(function () { })->shutdown();
-  //exit();
-}
 
 /*
 if ($path = (basename(getcwd()) == 'public')
@@ -267,35 +98,22 @@ else die(var_dump($path . ' path was not found. file=npm.php'));
 */
 
 ob_start(); ?>
-html, body {
-height : 100%;
-margin : 0;
-padding : 0;
-}
 
-
-
-
-/* Styles for the container div */
-.container {
-position : relative;
-height : 100%;
-width : 100%;
-background-color : lightblue;
-}
 /* Styles for the absolute div */
-#app_console-container {
-position : fixed;
-bottom : 50px;
+<?= $selector ?> {
+position : absolute;
+bottom : 0px;
 left : 50%;
-transform : translateX(-50%);
+transform : translate(-50%, -50%);
 width : auto;
 /* height : 45px; */
 background-color : #FFA6A6; /* rgba(255, 0, 0, 0.35) */
+border: 1px dashed #000; display: block;
 color : white;
 text-align : center;
-z-index : 1;
+z-index : 999;
 }
+
 #responseConsole {
 position : relative;
 display : block;
@@ -303,7 +121,7 @@ margin : 0 auto;
 background-color : #D0D0D0;
 color : black;
 cursor : pointer;
-height : 235px;
+height : 185px;
 }
 
 input {
@@ -387,6 +205,7 @@ border : #4CAF50 solid 2px;
 border-radius : 50%; /* Rounded thumb */
 cursor : pointer;
 }
+
 /*
 @keyframes scroll {
 0% {
@@ -396,120 +215,256 @@ transform : translateX(100%);
 transform : translateX(-100%);
 }
 }*/
-<?php $app['style'] = ob_get_contents();
+<?php $UI_APP['style'] = ob_get_contents();
 ob_end_clean();
 
 ob_start(); ?>
-
 <!-- <div class="container" style="border: 1px solid #000;"> -->
 
-<div id="app_console-container" class="" style="border: 1px dashed #000; display: block;">
-  <div id="process-list" class="process-list" onmouseout="stopScroll()" style="display: none;">
-    <!--
-      <div style="position: relative; width: 80px; height: 20px; background-color: #000; margin: 0 auto;">
-        <div class="scroll-text" style="animation: none; border: 1px solid red; margin: auto; position: absolute; top: 50%; left: 30%; right: 50%; -ms-transform: translateY(-50%); transform: translateY(-50%);">
+<!-- Process list / marquee -->
+<div id="process-list" class="process-list" onmouseout="stopScroll()" style="display: none;">
+  <!--
+    <div style="position: relative; width: 80px; height: 20px; background-color: #000; margin: 0 auto;">
+      <div
+        class="scroll-text"
+        style="
+          animation: none;
+          border: 1px solid red;
+          margin: auto;
+          position: absolute;
+          top: 50%;
+          left: 30%;
+          right: 50%;
+          -ms-transform: translateY(-50%);
+          transform: translateY(-50%);
+        "
+      >
         Testing
-        </div>
-      </div>    
-      <div class="scroll-text" style="animation: none; position: relative; width: 80px; height: 20px; background-color: #000; margin: 0 auto;">
+      </div>
+    </div>
+
+    <div
+      class="scroll-text"
+      style="animation: none; position: relative; width: 80px; height: 20px; background-color: #000; margin: 0 auto;"
+    >
       test
-      </div>    
-      <div class="scroll-text" style="animation: none; position: relative; width: 80px; height: 20px; background-color: #000; margin: 0 auto;">
+    </div>
+
+    <div
+      class="scroll-text"
+      style="animation: none; position: relative; width: 80px; height: 20px; background-color: #000; margin: 0 auto;"
+    >
       test
+    </div>
+    -->
+</div>
+
+<!-- Help / reference overlay 1 -->
+<div class="text-sm" style="
+      position: absolute;
+      display: none;
+      top: -320px;
+      background-color: #FFF;
+      border: 1px dashed #000;
+      height: 160px;
+      width: 100%;
+      padding: 20px 10px;
+      color: #000;
+      text-align: center;
+      z-index: -1;
+    ">
+  <h1>&lt;html&gt; &lt;head&gt;</h1>
+  <h2>&lt;meta&gt;, &lt;link&gt;, &lt;base&gt;,... &lt;/head&gt;</h2>
+
+  <h1>body</h1>
+  <h2>&lt;p&gt;, &lt;pre&gt;, &lt;div&gt;,...</h2>
+
+  To put language manual / langauge specifics <br>
+  langauge function paramters and related functions <br>
+  math functions / order-of-operation <br>
+</div>
+
+<!-- Help / reference overlay 2 -->
+<div class="text-sm" style="
+      position: absolute;
+      display: none;
+      top: -160px;
+      background-color: rgba(255, 255, 255, 0.6);
+      border: 1px dashed #000;
+      height: 160px;
+      width: 100%;
+      padding: 20px 10px;
+      color: #000;
+      text-align: left;
+      z-index: -1;
+    ">
+  <div style="
+        display: inline;
+        float: left;
+        background-color: #FFF;
+        width: 50%;
+        border: 1px dashed #000;
+      ">
+    <input type="checkbox" checked> Interactive<br>
+    <input type="checkbox" checked> font-family: 'Courier New', Courier, monospace;
+  </div>
+
+  <div style="
+        display: inline;
+        float: right;
+        text-align: right;
+        width: 50%;
+        border: 1px dashed #000;
+      ">
+    <div style="
+          display: inline;
+          float: left;
+          width: 85%;
+          text-align: right;
+        ">
+      Text Zoom:
+    </div>
+
+    <div class="vert-slider-container" style="display: inline; float: right;">
+      <input type="range" min="-2" max="2" value="0" step="1" class="vert-slider" id="mySlider">
+    </div>
+  </div>
+</div>
+
+<!-- Settings button strip -->
+<div style="
+      position: absolute;
+      top: -24px;
+      background-color: #FFA6A6;
+      border: 1px dashed #000;
+      border-right: none;
+      z-index: -1;
+    ">
+  <button id="console-settings-btn" class="text-xs" style="padding: 0 4px 4px; font-weight: bold;">
+    [Settings...]
+  </button>
+</div>
+
+<!-- Mode / language buttons -->
+<div style="
+      position: absolute;
+      top: -24px;
+      left: 95px;
+      background-color: #FFA6A6;
+      border: 1px dashed #000;
+      border-left: none;
+      z-index: -1;
+    ">
+  <button class="text-xs" style="border: 1px dashed #000; padding: 0 4px 2px; font-weight: bold; color: black;">
+    Console
+  </button>
+  |
+  <button class="text-xs" style="border: 1px dashed #000; padding: 0 4px 2px; font-weight: bold;">
+    SQL Query
+  </button>
+  |
+  <button class="text-xs" style="border: 1px dashed #000; padding: 0 4px 2px; font-weight: bold;"
+    onclick="document.getElementById('app_ace_editor-container').style.display='block';">
+    PHP
+  </button>
+  |
+  <button class="text-xs" style="border: 1px dashed #000; padding: 0 4px 2px; font-weight: bold;">
+    Perl
+  </button>
+  |
+  <button class="text-xs" style="border: 1px dashed #000; padding: 0 4px 2px; font-weight: bold;">
+    Python
+  </button>
+  |
+  <button class="text-xs" style="border: 1px dashed #000; padding: 0 4px 2px; font-weight: bold;">
+    JavaScript
+  </button>
+  |
+  <button class="text-xs" style="border: 1px dashed #000; padding: 0 4px 2px; font-weight: bold;">
+    CSS
+  </button>
+  |
+  <button class="text-xs" style="border: 1px dashed #000; padding: 0 4px 2px; font-weight: bold;">
+    HTML
+  </button>
+</div>
+
+<!-- Main console area -->
+<div style="text-align: left; position: relative;">
+  <!-- Command input + Run -->
+  <div style="display: inline-block; margin: 5px 0 0 10px; float: left;">
+    <button id="requestSubmit" type="submit" style="border: 1px dashed #FFF; padding: 2px 4px;">
+      Run
+    </button>
+    &nbsp;
+    <input list="commandHistory" id="requestInput" class="console-input text-sm"
+      style="font-family: 'Courier New', Courier, monospace;" type="text" size="31" name="requestInput"
+      autocomplete="off" spellcheck="off" placeholder="php [-rn] &quot;echo 'hello world';&quot;" value="">
+    <datalist id="commandHistory">
+      <option value="Edge"></option>
+    </datalist>
+  </div>
+
+  <!-- Clear / sudo / bind controls -->
+  <div style="display: inline-block;">
+    <div style="
+          position: relative;
+          display: inline-block;
+          margin: 5px 15px 0 15px;
+          float: right;
+        ">
+      <div style="float: left;">
+        <button id="consoleCls" class="text-xs" type="submit" style="
+              border: 1px dashed #FFF;
+              padding: 2px 2px;
+              color: black;
+              background-color: yellow;
+            ">
+          Clear (auto)
+        </button>
+        <input id="app_core_console-auto_clear" type="checkbox" name="auto_clear" <?= $auto_clear ? 'checked="" ' : '' ?> />
+        &nbsp;
       </div>
-      -->
-  </div>
-  <div
-    style="position: absolute; display: none; top: -320px; background-color: #FFF; border: 1px dashed #000; height: 160px; width: 100%; padding: 20px 10px; color: #000; text-align: left; z-index: -1; text-align: center;"
-    class="text-sm">
-    <h1>&lt;html&gt; &lt;head&gt;</h1>
-    <h2>&lt;meta&gt;, &lt;link&gt;, &lt;base&gt;,... &lt;/head&gt;</h2>
 
-    <h1>body</h1>
-    <h2>&lt;p&gt;, &lt;pre&gt;, &lt;div&gt;,...</h2>
-
-    To put language manual / langauge specifics <br />
-    langauge function paramters and related functions <br />
-    math functions / order-of-operation <br />
-  </div>
-  <div
-    style="position: absolute; display: none; top: -160px; background-color: rgba(255, 255, 255, 0.6); border: 1px dashed #000; height: 160px; width: 100%; padding: 20px 10px; color: #000; text-align: left; z-index: -1;"
-    class="text-sm">
-    <div style="display: inline; float: left; background-color: #FFF; width: 50%; border: 1px dashed #000; ">
-      <input type="checkbox" checked /> Interactive<br />
-      <input type="checkbox" checked /> font-family: 'Courier New', Courier, monospace;
-    </div>
-    <div style="display: inline; float: right; text-align: right; width: 50%; border: 1px dashed #000; ">
-      <div style="display: inline; float: left; width: 85%; text-align: right;">Text Zoom:</div>
-      <div class="vert-slider-container" style="display: inline; float: right;">
-        <input type="range" min="-2" max="2" value="0" step="1" class="vert-slider" id="mySlider">
-      </div>
-    </div>
-  </div>
-
-  <div
-    style="position: absolute; top: -24px; background-color: #FFA6A6; border: 1px dashed #000; border-right: none; z-index: -1;">
-    <button id="console-settings-btn" style="padding: 0 4px 4px 4px; font-weight: bold;"
-      class="text-xs">[Settings...]</button>
-  </div>
-
-
-  <div
-    style="position: absolute; top: -24px; left: 73px; background-color: #FFA6A6; border: 1px dashed #000; border-left: none; z-index: -1;">
-    <button style="border: 1px dashed #000; padding: 0 4px 2px 4px; font-weight: bold; color: black;"
-      class="text-xs">Console</button> |
-    <button style="border: 1px dashed #000; padding: 0 4px 2px 4px; border: 1px dashed #000; font-weight: bold;"
-      class="text-xs">SQL Query</button> |
-    <button style="border: 1px dashed #000; padding: 0 4px 2px 4px; font-weight: bold;"
-      onclick="document.getElementById('app_ace_editor-container').style.display='block';" class="text-xs">PHP</button>
-    |
-    <button style="border: 1px dashed #000; padding: 0 4px 2px 4px; font-weight: bold;" class="text-xs">Perl</button> |
-    <button style="border: 1px dashed #000; padding: 0 4px 2px 4px; font-weight: bold;" class="text-xs">Python</button>
-    |
-    <button style="border: 1px dashed #000; padding: 0 4px 2px 4px; font-weight: bold;"
-      class="text-xs">JavaScript</button> |
-    <button style="border: 1px dashed #000; padding: 0 4px 2px 4px; font-weight: bold;" class="text-xs">CSS</button> |
-    <button style="border: 1px dashed #000; padding: 0 4px 2px 4px; font-weight: bold;" class="text-xs">HTML</button>
-  </div>
-  <div style="text-align: left; position: relative;">
-
-    <div style="display: inline-block; margin: 5px 0px 0px 10px; float: left;">
-      <button id="requestSubmit" type="submit" style="border: 1px dashed #FFF; padding: 2px 4px;">Run</button>&nbsp;
-
-      <input list="commandHistory" id="requestInput" class="text-sm"
-        style="font-family: 'Courier New', Courier, monospace;" type="text" size="34" name="requestInput"
-        autocomplete="off" spellcheck="off" placeholder="php [-rn] &quot;echo 'hello world';&quot;" value="">
-      <datalist id="commandHistory">
-        <option value="Edge"></option>
-      </datalist>
-
-    </div>
-    <div style="display: inline-block;">
-      <div style="position: relative; display: inline-block; margin: 5px 15px 0px 15px; float: right;">
-        <div style="float: left;">
-          <button id="consoleCls" class="text-xs" type="submit"
-            style="border: 1px dashed #FFF; padding: 2px 2px; color: black; background-color: yellow;">Clear
-            (auto)</button>
-          <input id="app_console-auto_clear" type="checkbox" name="auto_clear" <?= $auto_clear ? 'checked="" ' : '' ?> />&nbsp;
+      <form action="http://localhost/?path" method="POST" style="float: right;">
+        <div style="float: left; display: inline;">
+          <button id="consoleSudo" class="text-xs" type="submit" style="
+                border: 1px dashed #FFF;
+                padding: 2px 2px;
+                color: white;
+                background-color: red;
+              ">
+            sudo
+          </button>
+          <input id="app_core_console-sudo" type="checkbox" name="auto_sudo" <?= defined('APP_SUDO') ? 'checked="" ' : '' ?> />&nbsp;
         </div>
-        <form action="http://localhost/?path" method="POST" style="float: right;">
-          <div style="float: left; display: inline;">
-            <button id="consoleSudo" class="text-xs" type="submit"
-              style="border: 1px dashed #FFF; padding: 2px 2px; background-color: red;">sudo</button>
-            <input id="app_console-sudo" type="checkbox" name="auto_sudo" <?= defined('APP_SUDO') ? 'checked="" ' : '' ?> />&nbsp;
-          </div>
-          <div style="float: right; display: inline;">
-            &nbsp;<button id="consoleAnykeyBind" class="text-xs" type="submit"
-              style="border: 1px dashed #FFF; padding: 2px 2px; background-color: green;">Bind Any[key]</button>
-            <input id="app_ace_editor-auto_bind_anykey" type="checkbox" name="auto_bind_anykey" checked="">
-          </div>
-        </form>
-      </div>
 
+        <div style="float: right; display: inline;">
+          &nbsp;
+          <button id="consoleAnykeyBind" class="text-xs" type="submit" style="
+                border: 1px dashed #FFF;
+                padding: 2px 2px;
+                color: white;
+                background-color: green;
+              ">
+            Bind Any[key]
+          </button>
+          <input id="app_ace_editor-auto_bind_anykey" type="checkbox" name="auto_bind_anykey" checked>
+        </div>
+      </form>
     </div>
-    <button id="changePositionBtn" style="float: right; margin: 5px 10px 0 0;" type="submit">&#9650;</button>
-    <textarea id="responseConsole" spellcheck="false" rows="14" cols="92" name="responseConsole"
-      style="font-family: Monospace; overflow-y: auto;" readonly=""><?php
+  </div>
+
+  <!-- Position toggle -->
+  <button id="changePositionBtn" type="submit" style="float: right; margin: 5px 10px 0 0;">&#9660;</button>
+
+  <!-- Output console -->
+  <textarea id="responseConsole" name="responseConsole" rows="14" cols="92" spellcheck="false" readonly style="
+        font-family: monospace;
+        overflow-y: auto;
+        height: 375px;
+        width: 665px;
+      "><?php
       //$errors->{'CONSOLE'}  = 'wtf';
       
       //dd($errors);
@@ -519,7 +474,7 @@ ob_start(); ?>
         if (!empty($output['command'])) // echo join("\n$shell_prompt", $output['command']) . "\n";
           foreach ($output['command'] as $command) {
             if (!empty($output['results'])) {
-              echo $shell_prompt . $command;
+              echo "$shell_prompt$command";
               foreach ($output['results'] as $result)
                 foreach ($result as $line) {
                   echo "$line\n";
@@ -529,7 +484,7 @@ ob_start(); ?>
           echo "$shell_prompt\n";
 
       }
-      echo str_replace('{{STATUS}}', 'Server is running... PID=' . getmypid() . str_pad('', 12, " "), APP_DASHBOARD) . PHP_EOL;
+      echo str_replace('{{STATUS}}', 'Server is running... PID=' . getmypid() . str_pad('', 6, " "), APP_DASHBOARD) . PHP_EOL;
       if (!empty($errors))
         foreach ($errors as $key => $error) {
           if (!is_array($error))
@@ -539,13 +494,11 @@ ob_start(); ?>
           //else dd($error);
         }
       ?></textarea>
-
-  </div>
 </div>
 
 <!-- </div> -->
 
-<?php $app['body'] = ob_get_contents();
+<?php $UI_APP['body'] = ob_get_contents();
 ob_end_clean();
 
 if (false) { ?>
@@ -605,7 +558,7 @@ ob_start(); ?>
     console.log(this.value); // Output the value to console (you can replace this with any other action)
   });
 
-  const consoleContainer = document.getElementById('app_console-container');
+  const consoleContainer = document.getElementById('<?= $container_id; ?>');
   //const reqInp = document.getElementById('requestInput');
   const respCon = document.getElementById('responseConsole');
 
@@ -623,20 +576,20 @@ ob_start(); ?>
   changePositionBtn.addEventListener('click', () => {
     if (consoleContainer.style.position == 'fixed') {
       isFixed = false;
-      changePositionBtn.innerHTML = '&#9660;';
+      changePositionBtn.innerHTML = '&#9650;';
     } else {
 
       isFixed = !isFixed;
-      changePositionBtn.innerHTML = '&#9650;';
+      changePositionBtn.innerHTML = '&#9660;';
 
     }
     //show_console();
   });
 
-  function show_console(event) {
+  export function show_console(event) {
     console.log('showing console...');
 
-    const consoleContainer = document.getElementById('app_console-container');
+    const consoleContainer = document.getElementById('<?= $container_id ?>');
 
     //requestInput.focus();
 
@@ -695,9 +648,9 @@ ob_start(); ?>
         consoleContainer.style.textAlign = 'center';
         consoleContainer.style.zIndex = '999';
 
-        respCon.style.height = '80px';
+        respCon.style.height = '375px';
 
-        changePositionBtn.innerHTML = '&#9650;';
+        changePositionBtn.innerHTML = '&#9660;';
 
         /*
         consoleContainer.style.marginLeft = 'auto';
@@ -717,7 +670,7 @@ ob_start(); ?>
 
         respCon.style.height = '220px';
 
-        changePositionBtn.innerHTML = '&#9660;';
+        changePositionBtn.innerHTML = '&#9650;';
       }
 
     }
@@ -726,24 +679,179 @@ ob_start(); ?>
     // Toggle the state for the next click
     //isFixed = !isFixed;
   }
+  /*
+    async function runTask(name = 'startup', opts = { plain: true }) {
+      const qs = new URLSearchParams({ api: 'tasks', task: name });
+      if (opts.plain) qs.set('plain', '1');
+      const res = await fetch('/?' + qs.toString(), { headers: { 'Accept': opts.plain ? 'text/plain' : 'application/json' } });
+      const text = await res.text(); // fine for both; JSON if needed: await res.json()
+      $('#responseConsole').val('runtask ' + name + '\n' + $('#responseConsole').val());
+      $('#responseConsole').val(text + '\n' + $('#responseConsole').val());
+      //$('#responseConsole').scrollTop($('#responseConsole')[0].scrollHeight);
+      (window.ConsoleUI?.print ?? console.log)(text);
+    } */
+
+  window.runTaskSequence = function (taskName, step) {
+    step = step || 0;
+
+    const params = new URLSearchParams();
+    params.set('task', taskName);
+    params.set('step', step);
+    params.set('format', 'json');
+
+    return fetch('/?api=tasks', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8'
+      },
+      body: params
+    })
+      .then(function (res) {
+        return res.json();
+      })
+      .then(function (data) {
+        const $console = $('#responseConsole');
+
+        if (!data || !data.ok) {
+          $console.val(
+            'Task ' + taskName + ' step ' + step + ' failed.' + "\n" +
+            $console.val()
+          );
+          return;
+        }
+
+        const humanStep = data.step + 1; // 1-based
+        const total = data.total_steps;
+
+        // 1) Show job name/output now
+        const lines = [];
+        lines.push(
+          'Job ' + humanStep + ' / ' + total +
+          ' [' + (data.done ? 'done' : 'ok') + '] (' + data.duration_ms + ' ms)'
+        );
+
+        if (data.output) {
+          lines.push(String(data.output).replace(/\n+$/, ''));
+        }
+
+        // prepend just the job lines first
+        $console.val(lines.join("\n") + "\n" + $console.val());
+
+        // 2) If this was the last step, prepend the completion line separately
+        if (data.done) {
+          $console.val(
+            '=== Task ' + data.task + ' completed. ===' + "\n" +
+            $console.val()
+          );
+          return; // no next step
+        }
+
+        // 3) If there is another step, start it AFTER this one
+        if (data.next_step != null) {
+          return window.runTaskSequence(taskName, data.next_step);
+        }
+      })
+      .catch(function (err) {
+        const $console = $('#responseConsole');
+        $console.val(
+          'Error running task ' + taskName + ' step ' + step + ': ' + err + "\n" +
+          $console.val()
+        );
+      });
+  };
+
+  /*  window.runTask = function (taskName, opts) {
+      opts = opts || {};
+      const plain = !!opts.plain;
+      const format = plain ? 'text' : 'json';
+  
+      const body = new URLSearchParams();
+      body.set('task', taskName);
+      body.set('format', format);
+  
+      return fetch('/?api=tasks', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8'
+        },
+        body
+      })
+        .then(function (res) {
+          if (plain) {
+            return res.text();
+          }
+          return res.json();
+        })
+        .then(function (data) {
+          const $console = $('#responseConsole');
+  
+          if (plain) {
+            // text mode: prepend the dump
+            $console.val(data + "\n" + $console.val());
+            return;
+          }
+  
+          // json mode: structured visual confirmation
+          if (!data || !data.ok) {
+            $console.val(
+              'Task ' + taskName + ' failed: ' + (data && data.error ? data.error : 'Unknown error') +
+              "\n" + $console.val()
+            );
+            return;
+          }
+  
+          const lines = [];
+          lines.push('=== Task ' + data.task + ' (' + data.status + ') ===');
+  
+          (data.jobs || []).forEach(function (job) {
+            var line = '[' + job.status + '] ' + job.name;
+            if (job.duration_ms != null) {
+              line += ' (' + job.duration_ms + ' ms)';
+            }
+            lines.push(line);
+  
+            if (job.output) {
+              lines.push(String(job.output).replace(/\n+$/, ''));
+            }
+          });
+  
+          lines.push('=== Task ' + data.task + ' done ===');
+  
+          $console.val(lines.join("\n") + "\n" + $console.val());
+        })
+        .catch(function (err) {
+          const $console = $('#responseConsole');
+          $console.val(
+            'Error running task ' + taskName + ': ' + err +
+            "\n" + $console.val()
+          );
+        });
+    }; */
+
+  window.show_console = show_console;
 
   // Attach a focus event listener to the input element
   requestInput.addEventListener('focus', function () {
     // Check the condition before calling the show_console function
     //if (consoleContainer.style.position !== 'fixed')
-    if (document.getElementById('app_console-container').style.position != 'absolute') {
+    if (document.getElementById('<?= $container_id ?>').style.position != 'absolute') {
       if (isFixed)
         requestInput.focus();
 
       //show_console();
+      if (!isFixed) {
+        isFixed = !isFixed; //isFixed = true;
+        //show_console();
+      } else {
+        isFixed = !isFixed; //isFixed = false;
+        show_console();
+      }
     }
-    if (isFixed) { isFixed = !isFixed; }
-    isFixed = true;
-    show_console();
+
+
   });
 
-
-  <?php if (defined('COMPOSER')) { ?>
+  <?php if (defined('COMPOSER_1')) { ?>
   initSubmit.addEventListener('click', () => {
     show_console();
     const requestInput = document.getElementById('requestInput');
@@ -777,8 +885,7 @@ ob_start(); ?>
   //requestInput.addEventListener('focus', (consoleContainer.style.position == 'absolute' ? null : show_console()));
 
   $(document).ready(function () {
-
-    const autoClear = $("#app_console-auto_clear").checked;
+    const autoClear = $("#app_core_console-auto_clear").checked;
 
 
     //$('#responseConsole').css('width', $(window).width() - 20 + 'px');
@@ -829,12 +936,11 @@ ob_start(); ?>
       }
     };
 
-
     $('#consoleCls').on('click', function () {
       console.log('Button Clicked!');
       $('#responseConsole').val('<?= $shell_prompt; ?>');
-      if ($('#app_console-container').css('position') == 'absolute')
-        show_console();
+      //if ($('<?= $selector ?>').css('position') == 'absolute')
+      //  show_console();
     });
 
 
@@ -874,7 +980,7 @@ ob_start(); ?>
     });
 
     $("#app_git-clone-cmd").click(function () {
-      $('#requestInput').val('git clone '); <!--  I need to get the URL -->
+      $('#requestInput').val('git clone '); /* I need to get the URL */
 
       document.getElementById('app_git-clone-url').style.display = 'block';
 
@@ -883,400 +989,440 @@ ob_start(); ?>
       //$('#requestSubmit').click();
     });
 
-    document.getElementById('app_git-oauth-input').addEventListener("keydown", function (event) {
-      if (event.keyCode === 13) {
-        // Enter key was pressed
-        console.log("Enter key pressed");
+    /*
+        const el = document.getElementById('app_git-oauth-input');
+        document.getElementById('app_git-oauth-input').addEventListener("keydown", function (event) {
+          if (event.keyCode === 13) {
+            // Enter key was pressed
+            console.log("Enter key pressed");
+    
+            <?php
+            //dd(APP_PATH . APP_ROOT . '.git/config');
+            
+            if (is_file($file = APP_PATH . APP_ROOT . '.git/config')) {
 
-        <?php
-        //dd(APP_PATH . APP_ROOT . '.git/config');
-        
-        if (is_file($file = APP_PATH . APP_ROOT . '.git/config')) {
-
-          $config = parse_ini_file($file, true);
+              $config = parse_ini_file($file, true);
 
 
-          if (isset($config['remote origin']['url']) && preg_match('/(?:[a-z]+\:\/\/)?([^\s]+@)?((?:[a-z0-9\-]+\.)+[a-z]{2,6}(?:\/\S*))/', $config['remote origin']['url'], $matches))
-            if (count($matches) >= 2) { ?>
+              if (isset($config['remote origin']['url']) && preg_match('/(?:[a-z]+\:\/\/)?([^\s]+@)?((?:[a-z0-9\-]+\.)+[a-z]{2,6}(?:\/\S*))/', $config['remote origin']['url'], $matches))
+                if (count($matches) >= 2) { ?>
 
-        $('#requestInput').val('git remote set-url origin https://' + $("#app_git-oauth-input").val() + '@<?= $matches[2] ?>');
+    $('#requestInput').val('git remote set-url origin https://' + $("#app_git-oauth-input").val() + '@<?= $matches[2] ?>');
 
-        <?php } else { ?>
+    <?php } else { ?>
 
-        $('#requestInput').val('git remote set-url origin https://' + $("#app_git-oauth-input").val() + '@<?= $matches[1] ?>');
+    $('#requestInput').val('git remote set-url origin https://' + $("#app_git-oauth-input").val() + '@<?= $matches[1] ?>');
 
-        <?php }
-        } ?>
+    <?php }
+            } ?>
 
-        document.getElementById('app_git-clone-url').style.display = 'none';
+    document.getElementById('app_git-clone-url').style.display = 'none';
 
-        $('#requestSubmit').click();
-      }
-
-    });
-
-    document.getElementById('app_git-commit-input').addEventListener("keydown", function (event) {
-      if (event.keyCode === 13) {
-        // Enter key was pressed
-        console.log("Enter key pressed");
-
-        $('#requestInput').val('git commit -am "' + $("#app_git-commit-input").val() + '"');
-
-        document.getElementById('app_git-commit-msg').style.display = 'none';
-
-        $('#requestSubmit').click();
-      }
+    $('#requestSubmit').click();
+  }
 
     });
 
+  document.getElementById('app_git-commit-input').addEventListener("keydown", function (event) {
+    if (event.keyCode === 13) {
+      // Enter key was pressed
+      console.log("Enter key pressed");
 
+      $('#requestInput').val('git commit -am "' + $("#app_git-commit-input").val() + '"');
 
-    document.getElementById('app_git-clone-url').addEventListener("keydown", function (event) {
-      if (event.keyCode === 13) {
-        // Enter key was pressed
-        console.log("Enter key pressed");
+      document.getElementById('app_git-commit-msg').style.display = 'none';
 
-        $('#requestInput').val('git clone ' + $("#app_git-clone-url-input").val() + ' .');
-
-        document.getElementById('app_git-clone-url').style.display = 'none';
-
-        $('#requestSubmit').click();
-      }
-    });
-
-
-    $("#app_php-error-log").click(function () {
-      $('#requestInput').val('wget <?= APP_URL ?>?error_log=unlink'); // unlink
-      //show_console();
       $('#requestSubmit').click();
-    });
+    }
 
-    $("#app_composer-init-submit").click(function () {
-      const requestValue = $('#app_composer-init-input').val().replace(/\n/g, ' ');
+  });
 
-      $('#requestInput').val(requestValue);
-      $('#requestSubmit').click(); //show_console();
-      if ($('#app_console-container').css('position') == 'absolute')
-        $('#changePositionBtn').click();
-      $('#requestInput').val('');
-    });
+  document.getElementById('app_git-clone-url').addEventListener("keydown", function (event) {
+    if (event.keyCode === 13) {
+      // Enter key was pressed
+      console.log("Enter key pressed");
 
-    $('#requestSubmit').href = 'javascript:void(0);';
+      $('#requestInput').val('git clone ' + $("#app_git-clone-url-input").val() + ' .');
 
-    $('#requestSubmit').click(function () {
-      let matches = null;
-      const autoClear = document.getElementById('app_console-auto_clear').checked;
-      console.log('autoClear is ' + autoClear);
+      document.getElementById('app_git-clone-url').style.display = 'none';
 
+      $('#requestSubmit').click();
+    }
+  });
+*/
+  $("#app_php-error-log").click(function () {
+    $('#requestInput').val('wget <?= APP_URL ?>?error_log=unlink'); // unlink
+    //show_console();
+    $('#requestSubmit').click();
+  });
 
-      if (!isFixed) isFixed = true;
-      show_console();
+  $("#app_composer-init-submit").click(function () {
+    const requestValue = $('#app_composer-init-input').val().replace(/\n/g, ' ');
 
+    $('#requestInput').val(requestValue);
+    $('#requestSubmit').click(); //show_console();
+    if ($('<?= $selector ?>').css('position') == 'absolute')
+      $('#changePositionBtn').click();
+    $('#requestInput').val('');
+  });
 
-      if ($('#app_console-container').css('position') != 'absolute') {
-        //window.isFixed = true;
-        //if (!window.isFixed) window.isFixed = !window.isFixed;
+  $('#requestSubmit').href = 'javascript:void(0);';
 
-        //if (!isFixed) isFixed = true;
-        //show_console();
-        //$('#changePositionBtn').click();
-      }
-      const argv = $('#requestInput').val().trim();
+  $('#requestSubmit').click(function () {
+    let matches = null;
+    const autoClear = document.getElementById('app_core_console-auto_clear').checked;
+    console.log('autoClear is ' + autoClear);
 
-      if (argv === '') return;
+    if (!isFixed) isFixed = true;
+    //show_console();
 
-      const processList = document.getElementById('process-list');
-      const newProcess = document.createElement('div');
-      newProcess.classList.add('process');
-      newProcess.innerHTML = `<a href="#" onclick="deleteProcess(this)">[X]</a> ${argv}`;
+    if ($('<?= $selector ?>').css('position') != 'absolute') {
+      //window.isFixed = true;
+      //if (!window.isFixed) window.isFixed = !window.isFixed;
 
-      // Add mouseover event
-      newProcess.onmouseover = function () {
-        setTimeout(() => { startScroll(newProcess); }, 3000);
-      };
+      //if (!isFixed) isFixed = true;
+      //show_console();
+      //$('#changePositionBtn').click();
+    }
+    const argv = $('#requestInput').val().trim();
 
-      setTimeout(() => {
-        if (newProcess.parentNode) { // Check if process still exists
-          newProcess.textContent = argv;
-          newProcess.onmouseover = function () {
-            startScroll(newProcess);
-          };
-          // Send post request
-          // $.post('<?= /* basename(__FILE__) .*/ '?' . $_SERVER['QUERY_STRING']; /*$projectRoot*/ ?>', { cmd: argv });
-        }
-      }, 3000);
+    if (argv === '') return;
 
-      processList.prepend(newProcess);
+    const processList = document.getElementById('process-list');
+    const newProcess = document.createElement('div');
+    newProcess.classList.add('process');
+    newProcess.innerHTML = `<a href="#" onclick="deleteProcess(this)">[X]</a> ${argv}`;
 
-      console.log('Argv: ' + argv);
+    // Add mouseover event
+    newProcess.onmouseover = function () {
+      setTimeout(() => { startScroll(newProcess); }, 3000);
+    };
 
-      if (autoClear) $('#responseConsole').val('<?= $shell_prompt; ?>' + argv);
-
-      if (argv == '') $('#responseConsole').val('<?= $shell_prompt; ?>' + "\n" + $('#responseConsole').val()); // +
-      else if (matches = argv.match(/^(?:echo\s+)?(hello)\s+world/i)) { // argv == 'edit'
-        if (matches) {
-          $('#responseConsole').val(matches[1].charAt(0).toUpperCase() + matches[1].slice(1) + ' ' + 'Barry' + "\n" +
-            '<?= $shell_prompt; ?>' + argv + "\n" + $('#responseConsole').val());
-          return false;
-        } else {
-          console.log("Invalid input format.");
-        }
-      }
-      else if (matches = argv.match(/^project/i)) { // argv == 'edit'
-        if (matches) {
-          document.getElementById('app_project-container').style.display = 'block';
-          $('#responseConsole').val('Barry, here you can begin editing your project.' + "\n" + '<?= $shell_prompt; ?>' + argv +
-            "\n" + $('#responseConsole').val());
-          changePositionBtn.click();
-          return false;
-        } else {
-          console.log("Invalid input format.");
-        }
-      } else if (matches = argv.match(/^h(?:elp)?\s+?(\S+)$/)) {
-        //$('#requestInput').val('help');
-        //$('#requestSubmit').click();
-      } else if (matches = argv.match(/^j(?:ava)?s(?:cript)?\s+?(\S+)$/)) {
-        // Save the original console.log function
-        var originalLog = console.log;
-
-        // Create an array to store log messages
-        var logMessages = [];
-
-        var js_prompt = 'javascript: ';
-        var codeString = matches[1]; // "console.log('Hello, world!');";
-        var myFunction = new Function(codeString);
-
-        myFunction();
-        // Override console.log to capture messages
-        console.log = function () {
-          // Save the log message to the array
-          logMessages.push(Array.from(codeString).join(' '));
-
-          $('#responseConsole').val(logMessages[1] + "\n" + js_prompt + codeString + "\n" + $('#responseConsole').val());
-
-          // Call the original console.log function
-          originalLog.apply(console, logMessages);
-          return false;
+    setTimeout(() => {
+      if (newProcess.parentNode) { // Check if process still exists
+        newProcess.textContent = argv;
+        newProcess.onmouseover = function () {
+          startScroll(newProcess);
         };
-        console.log();
-        console.log = originalLog;
+        // Send post request
+        // $.post('<?= /* basename(__FILE__) .*/ '?' . $_SERVER['QUERY_STRING']; /*$projectRoot*/ ?>', { cmd: argv });
+      }
+    }, 3000);
+
+    processList.prepend(newProcess);
+
+    console.log('Argv: ' + argv);
+
+    if (autoClear) $('#responseConsole').val('<?= $shell_prompt; ?>' + argv);
+
+    let DirQueryParams = '<?= $baseHref ?>?api=console&cmd=' + encodeURIComponent(argv);
+
+    if (argv == '') $('#responseConsole').val('<?= $shell_prompt; ?>' + "\n" + $('#responseConsole').val()); // +
+    else if (matches = argv.match(/^(?:echo\s+)?(hello)\s+world/i)) { // argv == 'edit'
+      if (matches) {
+        $('#responseConsole').val(matches[1].charAt(0).toUpperCase() + matches[1].slice(1) + ' ' + 'Barry' + "\n" +
+          '<?= $shell_prompt; ?>' + argv + "\n" + $('#responseConsole').val());
         return false;
-      } else if (matches = argv.match(/^edit\s+(\S+)$/)) { // argv == 'edit'
-        if (matches) {
-          const pathname = matches[1]; // "/path/to/file.txt"
-          console.log("Editing: ", pathname);
+      } else {
+        console.log("Invalid input format.");
+      }
+    }
+    else if (matches = argv.match(/^project/i)) { // argv == 'edit'
+      if (matches) {
+        document.getElementById('app_project-container').style.display = 'block';
+        $('#responseConsole').val('Barry, here you can begin editing your project.' + "\n" + '<?= $shell_prompt; ?>' + argv + "\n" + $('#responseConsole').val());
+        changePositionBtn.click();
+        return false;
+      } else {
+        console.log("Invalid input format.");
+      }
+    } else if (matches = argv.match(/^h(?:elp)?\s+?(\S+)$/)) {
+      //$('#requestInput').val('help');
+      //$('#requestSubmit').click();
+    } else if ((matches = argv.match(/^(?:runtask\s+)?(\S+)$/))) {
+      const taskName = matches[1];
+      console.log('Running task: ' + taskName);
+      window.runTaskSequence(taskName); // NEW
+      $('#responseConsole').val(argv + "\n" + $('#responseConsole').val());
+      return false;
+    }/* else if ((matches = argv.match(/^(?:runtask\s+)?(\S+)$/))) {
+      const taskName = matches[1];
+      console.log('Running task: ' + taskName);
+      window.runTask(taskName, { plain: true });
+      $('#responseConsole').val(argv + "\n" + $('#responseConsole').val());
+      return false;
+    } */ else if (matches = argv.match(/^j(?:ava)?s(?:cript)?\s+?(\S+)$/)) {
+      // Save the original console.log function
+      var originalLog = console.log;
 
-          const filePath = pathname;
+      // Create an array to store log messages
+      var logMessages = [];
 
-          const lastSlashIndex = filePath.lastIndexOf('/');
-          const dirname = filePath.substring(0, lastSlashIndex);
-          const filename = filePath.substring(lastSlashIndex + 1);
+      var js_prompt = 'javascript: ';
+      var codeString = matches[1]; // "console.log('Hello, world!');";
+      var myFunction = new Function(codeString);
 
+      myFunction();
+      // Override console.log to capture messages
+      console.log = function () {
+        // Save the log message to the array
+        logMessages.push(Array.from(codeString).join(' '));
 
-          $.post(<?= 'DirQueryParams'; /*'"app.directory.php' . '?' . $_SERVER['QUERY_STRING'] . '' ;"*/ ?>,
+        $('#responseConsole').val(logMessages[1] + "\n" + js_prompt + codeString + "\n" + $('#responseConsole').val());
+
+        // Call the original console.log function
+        originalLog.apply(console, logMessages);
+        return false;
+      };
+      console.log();
+      console.log = originalLog;
+      return false;
+    } else if (matches = argv.match(/^edit\s+(\S+)$/)) { // argv == 'edit'
+      if (matches) {
+        const pathname = matches[1]; // "/path/to/file.txt"
+        console.log("Editing: ", pathname);
+
+        const filePath = pathname;
+
+        const lastSlashIndex = filePath.lastIndexOf('/');
+        const dirname = filePath.substring(0, lastSlashIndex);
+        const filename = filePath.substring(lastSlashIndex + 1);
+
+        $.post(<?= 'DirQueryParams'; /*'"app.directory.php' . '?' . $_SERVER['QUERY_STRING'] . '' ;"*/ ?>,
 {
-              cmd: argv
-            },
-            function (data, status) {
-              console.log("Data: " + data + "Status: " + status);
-              console.log("Web Query: " + DirQueryParams);
-              //data = data.trim(); // replace(/(\r\n|\n|\r)/gm, "")
+            cmd: argv
+          },
+          function (data, status) {
+            console.log("Data 1: " + data + "Status: " + status);
+            console.log("Web Query: " + DirQueryParams);
+            //data = data.trim(); // replace(/(\r\n|\n|\r)/gm, "")
 
-              if (matches = argv.match(/edit(\s+(:?.*)?|)/gm)) {
-                //editor1.setValue(data);
+            if (matches = argv.match(/edit(\s+(:?.*)?|)/gm)) {
+              //editor1.setValue(data);
 
-                document.getElementById('app_ace_editor-container').style.display = 'block';
-                //console.log(data);
-              }
-            });
+              document.getElementById('app_ace_editor-container').style.display = 'block';
+              //console.log(data);
+            }
+          });
 
-          // window.location.href = '<?= APP_URL ?>?app=ace_editor&path=' + dirname + '&file=' + filename; // filename= + pathname
-          return false;
-        } else {
-          console.log("Invalid input format.");
-        }
+        // window.location.href = '<?= APP_URL ?>?app=ace_editor&path=' + dirname + '&file=' + filename; // filename= + pathname
         return false;
-      } else if (argv == 'clear') $('#responseConsole').val('clear');
-      else if (argv == 'cls') $('#responseConsole').val('<?= $shell_prompt; ?>');
-      else if (argv == 'reset') $('#responseConsole').val('>_');
-      else {
+      } else {
+        console.log("Invalid input format.");
+      }
+      return false;
+    } else if (argv == 'clear') $('#responseConsole').val('clear');
+    else if (argv == 'cls') $('#responseConsole').val('<?= $shell_prompt; ?>');
+    else if (argv == 'reset') $('#responseConsole').val('>_');
+    else {
+      if (autoClear) {
+        $('#responseConsole').val(data + argv);
+        $('#responseConsole').val('<?= $shell_prompt; ?>' + argv + "\n");
+      } else {
+        $('#responseConsole').val('<?= $shell_prompt; ?>' + argv + "\n" + $('#responseConsole').val());
+      }
 
-        if (autoClear) {
-          $('#responseConsole').val(data + argv);
-          $('#responseConsole').val('<?= $shell_prompt; ?>' + argv + "\n");
-        } else {
-          $('#responseConsole').val('<?= $shell_prompt; ?>' + argv + "\n" + $('#responseConsole').val());
+      // $('#requestSubmit').href = 'javascript:void(0);';
+
+      $.post(<?= 'DirQueryParams' /*'"' . basename(__FILE__). '?' . $_SERVER['QUERY_STRING']. '"' : '' */ ; ?>,
+      {
+        cmd: argv
+      },
+      function(data, status) {
+        console.log("Web Query: " + DirQueryParams);
+        console.log("Data 2: " + JSON.stringify(data) + "\n Status: " + status);
+        console.log("Data Test: " + data + "\n Status: " + status);
+
+        //data = data.trim(); // replace(/(\r\n|\n|\r)/gm, "")
+
+        const gitPath = `<?= str_replace('/', '\/', defined('GIT_EXEC') ? dirname(GIT_EXEC) : ''); ?>`;
+        const gitExec = `<?= defined('GIT_EXEC') ? basename(GIT_EXEC) : ''; ?>`;
+
+        let parsed;
+        try {
+          parsed = JSON.parse(data);
+        } catch (e) {
+          console.error("Invalid JSON:", data);
+          return;
         }
 
-        // $('#requestSubmit').href = 'javascript:void(0);';
+        // If server returned ok:true
+        if (parsed.ok) {
+          // Split the result string into an array
+          //const items = parsed.result.split(',').map(s => s.trim());
+          // console.log(items);
+          // For example, show them in a textarea or console
+          //$('#responseConsole').val(items.join(', '));
+          $('#responseConsole').val(parsed.result + "\n" + $('#responseConsole').val());
+        } else {
+          // Handle error case
+          $('#responseConsole').val('<?= $shell_prompt; ?>Error: ' + (parsed.error || 'Unknown error') + "\n" + $('#responseConsole').val());
+        }
 
-        $.post(<?= 'DirQueryParams' /*'"' . basename(__FILE__). '?' . $_SERVER['QUERY_STRING']. '"' : '' */ ; ?>,
-        {
-          cmd: argv
-        },
-        function(data, status) {
-          console.log("Web Query: " + DirQueryParams);
-          console.log("Data: " + data + "Status: " + status);
+        /* if (JSON.parse(data).hasOwnProperty('ok')) {
+          $('#responseConsole').val('<?= $shell_prompt; ?>Error: ' + JSON.parse(data).error + "\n" + $('#responseConsole').val());
+      } else {
 
-          //data = data.trim(); // replace(/(\r\n|\n|\r)/gm, "")
+        processGitOutput(data, argv, gitPath, gitExec);
+      }*/
 
-          const gitPath = `<?= str_replace('/', '\/', defined('GIT_EXEC') ? dirname(GIT_EXEC) : ''); ?>`;
-          const gitExec = `<?= defined('GIT_EXEC') ? basename(GIT_EXEC) : ''; ?>`;
-
-          if (matches = argv.match(/chdir(\s+(:?.*)?|)/gm)) {
-            document.getElementById('app_directory-container').innerHTML = data;
-            //console.log(data);
-          } else if (matches = data.match(new RegExp(`((:?sudo\\s+)?(:?${gitPath}) ? ${gitExec}.*)`, 'gm'))) {
-            if (matches = data.match(/.*status.*\n+/gm)) {
-              if (matches = data.match(/.*On branch main\nYour branch is (ahead of|up to date with).*(:?by\s[0-9]+commits)?/gm)) {
-                if (matches = data.match(/.*On branch main\nYour branch is up to date with.*\n+/gm)) {
-                  if (matches = data.match(/.*nothing to commit, working tree clean/gm)) {
-                    //
-                  }
-                }
-                if (matches = data.match(/.*nothing to commit, working tree clean/gm)) {
-                  $('#requestInput').val('git push');
-                  $('#requestSubmit').click();
-                } else if (matches = data.match(/.*Changes not staged for commit:/gm)) {
-                  $('#requestInput').val('git add .');
-                  $('#requestSubmit').click();
-                  if (confirm('(Re)Check Git Status?')) {
-                    // User clicked OK
-                    $('#requestInput').val('git status');
-                    $('#requestSubmit').click();
-                  } else {
-                    // User clicked Cancel
-                    console.log('User clicked Cancel');
-                  }
-                  //
-                } else if (matches = data.match(/.*Changes to be committed:/gm)) {
-                  $('#requestInput').val('git commit -am "automatic <?= date('Y-m-d h:i:s'); ?> commit"');
-                  //$('#requestSubmit').click();
-                }
+      if (matches = argv.match(/chdir(\s+(:?.*)?|)/gm)) {
+        document.getElementById('app_directory-container').innerHTML = data;
+        //console.log(data);
+      } else if (matches = data.match(new RegExp(`((:?sudo\\s+)?(:?${gitPath}) ? ${gitExec}.*)`, 'gm'))) {
+        if (matches = data.match(/.*status.*\n+/gm)) {
+          if (matches = data.match(/.*On branch main\nYour branch is (ahead of|up to date with).*(:?by\s[0-9]+commits)?/gm)) {
+            if (matches = data.match(/.*On branch main\nYour branch is up to date with.*\n+/gm)) {
+              if (matches = data.match(/.*nothing to commit, working tree clean/gm)) {
+                //
               }
-              $('#responseConsole').val(data + "\n" + $('#responseConsole').val());
-            } else if (matches = data.match(/.*remote\s-v.*\n+/gm)) {
-              if (matches = data.match(/.*origin\s+(?:[a-z]+\:\/\/)?([^\s]+@)?((?:[a-z0-9\-]+\.)+[a-z]{2,6}(?:\/\S*))\s+\((fetch|push)\)/gm)) {
-                // if (matches === undefined || array.matches == 0) {
-                // array empty or does not exist
-                // }
-                $('#responseConsole').val(data + "\n" + $('#responseConsole').val());
-              } else {
-                $('#responseConsole').val(data + "\nNo URL were found." + $('#responseConsole').val());
-              }
-            } else if (matches = data.match(/.*push.*\n+/gm)) {
-              if (matches = data.match(/.*Error:.+(fatal: could not read Password for.+)\n+Exit Code:.([0-9]+)/gm)) {
-                $('#responseConsole').val('<?= $shell_prompt; ?>Wrong Password!' + "\n" + data + "\n" + $('#responseConsole').val());
-                document.getElementById('app_git-container').style.display = 'block';
-                document.getElementById('app_git-oauth').style.display = 'block';
-                document.getElementById('app_git-clone-url').style.display = 'none';
-                document.getElementById('app_git-commit-msg').style.display = 'none';
-              } else if (matches = data.match(/.*push.*\n+To.*/gm)) {
-                if (matches = data.match(/.*push.*\n+To.*\n.*!.*\[rejected\].+(\w+).+[->].+(\w+).\(fetch first\)/gm)) {
-                  $('#responseConsole').val('<?= $shell_prompt; ?>Push unsuccessful. Fetch first ' + "\n" + data + "\n" +
-                    $('#responseConsole').val());
-                  $('#requestInput').val('git fetch origin main');
-                  $('#requestSubmit').click();
-                  $('#requestInput').val('git merge origin/main');
-                  $('#requestSubmit').click();
-                  $('#requestInput').val('git commit');
-                  $('#requestSubmit').click();
-                  $('#requestInput').val('git push origin main');
-                  if (confirm('git push origin main?')) {
-                    $('#requestSubmit').click();
-                  }
-                } else if (matches = data.match(/.*push.*\n+To.*\n.*!.*\[rejected\].+(\w+).+[->].+(\w+).\(non-fast-forward\)/gm)) {
-                  $('#responseConsole').val('<?= $shell_prompt; ?>Push unsuccessful. "non-fast-forward" error ' + "\n" + data + "\n" +
-                    $('#responseConsole').val());
-                  $('#requestInput').val('git push --force origin main');
-                  if (confirm('(Force) git push origin main?')) {
-                    $('#requestSubmit').click();
-                  }
-                } else {
-                  $('#responseConsole').val('<?= $shell_prompt; ?>Push successful' + "\n" + data + "\n" + $('#responseConsole').val());
-                }
-              } else if (matches = data.match(/.*push.*\n+Error: Everything up-to-date/gm)) {
-                $('#responseConsole').val('<?= $shell_prompt; ?>Everything up-to-date' + "\n" + data + "\n" +
-                  $('#responseConsole').val());
-              } else {
-                $('#responseConsole').val('<?= $shell_prompt; ?>' + data + "\n" + $('#responseConsole').val());
-
-                if (matches = data.match(/.*push.*\n+To.*\n.*!.*\[.*rejected\].+/gm)) {
-                  $('#responseConsole').val('<?= $shell_prompt; ?> Error: ... secret password may have been found.' + "\n" +
-                    $('#responseConsole').val());
-                }
-              }
-            } else if (matches = data.match(/.*fetch.*\n+/gm)) {
-              if (matches = data.match(/.*Error:.+From.+\n.+\* branch.+(\w+).+[->].+(\w+)/gm)) {
-                $('#responseConsole').val('<?= $shell_prompt; ?>"non-fast-forward" error' + "\n" + data + "\n" +
-                  $('#responseConsole').val());
-                $('#requestInput').val('git fetch origin main');
-                $('#requestSubmit').click();
-                if (confirm('(Re)Check Git Status?')) {
-                  // User clicked OK
-                  $('#requestInput').val('git status');
-                  $('#requestSubmit').click();
-                } else {
-                  // User clicked Cancel
-                  console.log('User clicked Cancel');
-                }
-                $('#requestInput').val('git rebase origin/main');
-                $('#requestSubmit').click();
-                $('#requestInput').val('git rebase --continue');
-                $('#requestSubmit').click();
-                $('#requestInput').val('git push origin main');
-                $('#requestSubmit').click();
-              }
-            } else if (matches = data.match(/.*pull.*\n/gm)) {
-              $('#responseConsole').val(data + "\n" + $('#responseConsole').val());
-              if (matches = data.match(/.*Already up to date\./gm))
-                $('#responseConsole').val('<?= $shell_prompt; ?>Already up to date.' + "\n" + $('#responseConsole').val());
-              else if (confirm('(Re)load Window?')) {
+            }
+            if (matches = data.match(/.*nothing to commit, working tree clean/gm)) {
+              $('#requestInput').val('git push');
+              $('#requestSubmit').click();
+            } else if (matches = data.match(/.*Changes not staged for commit:/gm)) {
+              $('#requestInput').val('git add .');
+              $('#requestSubmit').click();
+              if (confirm('(Re)Check Git Status?')) {
                 // User clicked OK
-                $('#responseConsole').val('<?= $shell_prompt; ?>Reloading page (User Prompt).' + "\n" + $('#responseConsole').val());
-                window.location.reload(); // window.location.href = window.location.href;
+                $('#requestInput').val('git status');
+                $('#requestSubmit').click();
               } else {
                 // User clicked Cancel
                 console.log('User clicked Cancel');
               }
-            } else if (matches = data.match(new RegExp(`.*(:?${gitPath}) ? ${gitExec}.* commit.*\\n`, 'gm'))) {
-              if (matches = data.match(/.*Error: Author identity unknown\./gm)) {
-                $('#responseConsole').val('<?= $shell_prompt; ?>Author identity unknown' + "\n" + data + "\n" +
-                  $('#responseConsole').val());
-                $('#requestInput').val('git config --global user.email "barryd.it@gmail.com"');
-                $('#requestSubmit').click();
-                $('#requestInput').val('git config --global user.name "Barry Dick"');
-                $('#requestSubmit').click();
-              } else {
-                if (confirm('Git Push?')) {
-                  // User clicked OK
-                  $('#requestInput').val('git push');
-                  $('#requestSubmit').click();
-                } else {
-                  // User clicked Cancel
-                  console.log('User clicked Cancel');
-                }
-              }
-              $('#responseConsole').val(data + "\n" + $('#responseConsole').val());
-            } else {
-              $('#responseConsole').val(data + "\n" + $('#responseConsole').val());
+              //
+            } else if (matches = data.match(/.*Changes to be committed:/gm)) {
+              $('#requestInput').val('git commit -am "automatic <?= date('Y-m-d h:i:s'); ?> commit"');
+              //$('#requestSubmit').click();
             }
-          } else {
-            //$('#requestInput').val(argv);
-            //$('#requestSubmit').click();
-            $('#responseConsole').val(data + "\n" + $('#responseConsole').val());
           }
-          //if (!autoClear) { $('#responseConsole').val("\n" + $('#responseConsole').val()); }
+          $('#responseConsole').val(data + "\n" + $('#responseConsole').val());
+        } else if (matches = data.match(/.*remote\s-v.*\n+/gm)) {
+          if (matches = data.match(/.*origin\s+(?:[a-z]+\:\/\/)?([^\s]+@)?((?:[a-z0-9\-]+\.)+[a-z]{2,6}(?:\/\S*))\s+\((fetch|push)\)/gm)) {
+            // if (matches === undefined || array.matches == 0) {
+            // array empty or does not exist
+            // }
+            $('#responseConsole').val(data + "\n" + $('#responseConsole').val());
+          } else {
+            $('#responseConsole').val(data + "\nNo URL were found." + $('#responseConsole').val());
+          }
+        } else if (matches = data.match(/.*push.*\n+/gm)) {
+          if (matches = data.match(/.*Error:.+(fatal: could not read Password for.+)\n+Exit Code:.([0-9]+)/gm)) {
+            $('#responseConsole').val('<?= $shell_prompt; ?>Wrong Password!' + "\n" + data + "\n" + $('#responseConsole').val());
+            document.getElementById('app_git-container').style.display = 'block';
+            document.getElementById('app_git-oauth').style.display = 'block';
+            document.getElementById('app_git-clone-url').style.display = 'none';
+            document.getElementById('app_git-commit-msg').style.display = 'none';
+          } else if (matches = data.match(/.*push.*\n+To.*/gm)) {
+            if (matches = data.match(/.*push.*\n+To.*\n.*!.*\[rejected\].+(\w+).+[->].+(\w+).\(fetch first\)/gm)) {
+              $('#responseConsole').val('<?= $shell_prompt; ?>Push unsuccessful. Fetch first ' + "\n" + data + "\n" +
+                $('#responseConsole').val());
+              $('#requestInput').val('git fetch origin main');
+              $('#requestSubmit').click();
+              $('#requestInput').val('git merge origin/main');
+              $('#requestSubmit').click();
+              $('#requestInput').val('git commit');
+              $('#requestSubmit').click();
+              $('#requestInput').val('git push origin main');
+              if (confirm('git push origin main?')) {
+                $('#requestSubmit').click();
+              }
+            } else if (matches = data.match(/.*push.*\n+To.*\n.*!.*\[rejected\].+(\w+).+[->].+(\w+).\(non-fast-forward\)/gm)) {
+              $('#responseConsole').val('<?= $shell_prompt; ?>Push unsuccessful. "non-fast-forward" error ' + "\n" + data + "\n" +
+                $('#responseConsole').val());
+              $('#requestInput').val('git push --force origin main');
+              if (confirm('(Force) git push origin main?')) {
+                $('#requestSubmit').click();
+              }
+            } else {
+              $('#responseConsole').val('<?= $shell_prompt; ?>Push successful' + "\n" + data + "\n" + $('#responseConsole').val());
+            }
+          } else if (matches = data.match(/.*push.*\n+Error: Everything up-to-date/gm)) {
+            $('#responseConsole').val('<?= $shell_prompt; ?>Everything up-to-date' + "\n" + data + "\n" +
+              $('#responseConsole').val());
+          } else {
+            $('#responseConsole').val('<?= $shell_prompt; ?>' + data + "\n" + $('#responseConsole').val());
 
-          //$('#requestInput').val('');
+            if (matches = data.match(/.*push.*\n+To.*\n.*!.*\[.*rejected\].+/gm)) {
+              $('#responseConsole').val('<?= $shell_prompt; ?> Error: ... secret password may have been found.' + "\n" +
+                $('#responseConsole').val());
+            }
+          }
+        } else if (matches = data.match(/.*fetch.*\n+/gm)) {
+          if (matches = data.match(/.*Error:.+From.+\n.+\* branch.+(\w+).+[->].+(\w+)/gm)) {
+            $('#responseConsole').val('<?= $shell_prompt; ?>"non-fast-forward" error' + "\n" + data + "\n" +
+              $('#responseConsole').val());
+            $('#requestInput').val('git fetch origin main');
+            $('#requestSubmit').click();
+            if (confirm('(Re)Check Git Status?')) {
+              // User clicked OK
+              $('#requestInput').val('git status');
+              $('#requestSubmit').click();
+            } else {
+              // User clicked Cancel
+              console.log('User clicked Cancel');
+            }
+            $('#requestInput').val('git rebase origin/main');
+            $('#requestSubmit').click();
+            $('#requestInput').val('git rebase --continue');
+            $('#requestSubmit').click();
+            $('#requestInput').val('git push origin main');
+            $('#requestSubmit').click();
+          }
+        } else if (matches = data.match(/.*pull.*\n/gm)) {
+          $('#responseConsole').val(data + "\n" + $('#responseConsole').val());
+          if (matches = data.match(/.*Already up to date\./gm))
+            $('#responseConsole').val('<?= $shell_prompt; ?>Already up to date.' + "\n" + $('#responseConsole').val());
+          else if (confirm('(Re)load Window?')) {
+            // User clicked OK
+            $('#responseConsole').val('<?= $shell_prompt; ?>Reloading page (User Prompt).' + "\n" + $('#responseConsole').val());
+            window.location.reload(); // window.location.href = window.location.href;
+          } else {
+            // User clicked Cancel
+            console.log('User clicked Cancel');
+          }
+        } else if (matches = data.match(new RegExp(`.*(:?${gitPath}) ? ${gitExec}.* commit.*\\n`, 'gm'))) {
+          if (matches = data.match(/.*Error: Author identity unknown\./gm)) {
+            $('#responseConsole').val('<?= $shell_prompt; ?>Author identity unknown' + "\n" + data + "\n" +
+              $('#responseConsole').val());
+            $('#requestInput').val('git config --global user.email "barryd.it@gmail.com"');
+            $('#requestSubmit').click();
+            $('#requestInput').val('git config --global user.name "Barry Dick"');
+            $('#requestSubmit').click();
+          } else {
+            if (confirm('Git Push?')) {
+              // User clicked OK
+              $('#requestInput').val('git push');
+              $('#requestSubmit').click();
+            } else {
+              // User clicked Cancel
+              console.log('User clicked Cancel');
+            }
+          }
+          $('#responseConsole').val(data + "\n" + $('#responseConsole').val());
+        } else {
+          // $('#responseConsole').val(data + "\n" + $('#responseConsole').val());
+        }
+      } else {
+        //$('#requestInput').val(argv);
+        //$('#requestSubmit').click();
+        // $('#responseConsole').val(data + "\n" + $('#responseConsole').val());
+        //$('#responseConsole').val(data + "\n" + $('#responseConsole').val());
+      }
+      //if (!autoClear) { $('#responseConsole').val("\n" + $('#responseConsole').val()); }
 
-          $('#responseConsole').scrollTop = $('#responseConsole').scrollHeight;
-        });
+      //$('#requestInput').val('');
+
+      $('#responseConsole').scrollTop = $('#responseConsole').scrollHeight;
+    });
   }
 
-});
-});
-  <?php $app['script'] = ob_get_contents();
+  });
+
+  });
+
+  <?php $UI_APP['script'] = ob_get_contents();
   ob_end_clean();
 
   if (false) { ?></script><?php }
@@ -1292,12 +1438,13 @@ ob_start(); ?>
   <link rel="stylesheet" href="//code.jquery.com/ui/1.12.1/themes/smoothness/jquery-ui.css" />
 
   <?php
-  // (APP_IS_ONLINE && check_http_status('https://cdn.tailwindcss.com') ? 'https://cdn.tailwindcss.com' : APP_URL . 'resources/js/tailwindcss-3.3.5.js')?
+  // (APP_IS_ONLINE && check_http_status('https://cdn.tailwindcss.com') ? 'https://cdn.tailwindcss.com' : APP_URL . 'public/assets/js/tailwindcss-3.3.5.js')?
 // Path to the JavaScript file
-  $path = APP_BASE['resources'] . 'js/tailwindcss-3.3.5.js';
-
+  
   // Create the directory if it doesn't exist
-  is_dir(dirname($path)) or mkdir(dirname($path), 0755, true);
+  (getcwd() === rtrim($path = APP_PATH . APP_BASE['public'], '/') && is_dir($path .= 'assets/js')) or mkdir($path, 0755, true);
+
+  $path .= '/tailwindcss-3.3.5.js';
 
   // URL for the CDN
   $url = 'https://cdn.tailwindcss.com';
@@ -1319,30 +1466,31 @@ ob_start(); ?>
   ?>
 
   <script
-    src="<?= !defined('APP_IS_ONLINE') || !APP_IS_ONLINE ? '' : (check_http_status($url) ? substr($url, strpos($url, parse_url($url)['host']) + strlen(parse_url($url)['host'])) : substr($path, strpos($path, dirname(APP_BASE['resources'] . 'js')))) ?>"></script>
+    src="<?= !defined('APP_IS_ONLINE') || !APP_IS_ONLINE ? '' : (check_http_status($url) ? substr($url, strpos($url, parse_url($url)['host']) + strlen(parse_url($url)['host'])) : substr($path, strpos($path, dirname(APP_BASE['public'] . 'assets/js')))) ?>"></script>
 
   <style type="text/tailwindcss">
-    <?= $app['style']; ?>
-</style>
+    <?= $UI_APP['style']; ?>
+  </style>
 </head>
 
 <body>
-  <?= $app['body']; ?>
+  <?= $UI_APP['body']; ?>
 
   <!-- https://cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.min.js -->
   <script src="//code.jquery.com/jquery-1.12.4.js"></script>
   <script src="//code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
-  <!-- <script src="resources/js/jquery/jquery.min.js"></script> -->
+  <!-- <script src="assets/js/jquery/jquery.min.js"></script> -->
   <script>
-    <?= $app['script']; ?>
+    <?= $UI_APP['script']; ?>
   </script>
 </body>
 
 </html>
-<?php $app['html'] = ob_get_contents();
+<?php $UI_APP['html'] = ob_get_contents();
 ob_end_clean();
 
 //check if file is included or accessed directly
 if (__FILE__ == get_required_files()[0] || in_array(__FILE__, get_required_files()) && isset($_GET['app']) && $_GET['app'] == 'console' && APP_DEBUG)
-  die($app['html']);
+  die($UI_APP['html']);
 
+return $UI_APP;

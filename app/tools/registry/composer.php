@@ -1,6 +1,8 @@
 <?php
 // app/tools/registry/composer.php
 
+global $errors, $asset;
+
 defined('APP_PATH') || define('APP_PATH', dirname(__DIR__, 3) . '/');
 defined('CONFIG_PATH') || define('CONFIG_PATH', APP_PATH . 'config/');
 
@@ -106,6 +108,7 @@ $COMPOSER = json_decode($COMPOSER_JSON, true);
 */
 
 ob_start(); ?>
+
 <?= $selector ?> {
 position : absolute;
 display : block;
@@ -228,7 +231,7 @@ ob_start(); ?>
   <label class="composer-home" style="cursor: pointer;">
     <div class="absolute"
       style="position: relative; float: left; display: inline-block; top: 0; left: 0; margin-top: -5px;">
-      <img src="resources/images/composer_icon.png" width="32" height="40" />
+      <img src="assets/images/composer_icon.png" width="32" height="40" />
     </div>
   </label>
   <div style="display: inline; float: left; margin-top: 10px;">
@@ -248,15 +251,15 @@ ob_start(); ?>
         <select name="exec" onchange="this.form.submit();">
 
   <?php if (defined('COMPOSER_BIN')): ?>
-  <option <?= COMPOSER_EXEC_CMD === COMPOSER_BIN ? 'selected' : '' ?>
-  value="bin"><?= COMPOSER_BIN ?></option>
+    <option <?= COMPOSER_EXEC_CMD === COMPOSER_BIN ? 'selected' : '' ?>
+    value="bin"><?= COMPOSER_BIN ?></option>
     <?php endif; ?>
   
     <?php if (defined('COMPOSER_PHAR')): ?>
-  <option <?= COMPOSER_EXEC_CMD === COMPOSER_PHAR['exec'] ? 'selected' : '' ?>
-  value="phar">
-  <?= COMPOSER_PHAR['exec'] ?>
-  </option>
+    <option <?= COMPOSER_EXEC_CMD === COMPOSER_PHAR['exec'] ? 'selected' : '' ?>
+    value="phar">
+    <?= COMPOSER_PHAR['exec'] ?>
+    </option>
   <?php endif; ?>
 
         </select>
@@ -279,8 +282,7 @@ ob_start(); ?>
       style="position: relative; display: block; width: 398px; background-color: rgba(251,247,241); z-index: 2;">
       <div style="display: inline-block; text-align: left; width: 225px;">
         <div class="composer-menu text-sm" style="cursor: pointer; font-weight: bold; padding-left: 40px;">
-          <div style=" border: 1px solid #000; width: 150px;">Main Menu <a href="#" title="<?= APP_ROOT ?>">Test</a>
-          </div>
+          <div style=" border: 1px solid #000; width: 150px;">Main Menu</div>
         </div>
         <div class="text-xs" style="display: inline-block; border: 1px solid #000;">
           <?php
@@ -296,23 +298,31 @@ ob_start(); ?>
             href="<?= /*(!empty(APP_QUERY) ? "?$query" : '') . */ defined('APP_ENV') && APP_ENV == 'development' ? '#!' : '#' ?>">Init
             &gt;</a>
         </div>
-        <form style="display: inline-block;" action="<?= '/?app=composer' ?? basename(__FILE__); ?>" method="POST">
-          <div class="text-sm" style="font-size: small;">
-            <input type="hidden" name="composer[autoload]" value="off">
-            <!-- Checkbox input that overrides the hidden input if checked -->
+        <form style="display:inline-block" action="/?api=composer" method="POST">
+          <!-- optional: also send api via POST so either GET/POST extraction works -->
+          <input type="hidden" name="api" value="composer">
+
+          <!-- identify the intent (handy in your api/composer.php switch) -->
+          <input type="hidden" name="composer[action]" value="set_autoload">
+
+          <!-- default value when unchecked -->
+          <input type="hidden" name="composer[autoload]" value="off">
+
+          <!-- checkbox overrides when checked -->
+          <label style="font-size:small;display:inline-flex;gap:.4em;align-items:center;">
             <input type="checkbox" name="composer[autoload]" value="on" onchange="this.form.submit();"
-              <?= isset($_ENV['COMPOSER']['AUTOLOAD']) && $_ENV['COMPOSER']['AUTOLOAD'] ? 'checked="checked"' : '' ?>>
+              <?= !empty($_ENV['COMPOSER']['AUTOLOAD']) ? 'checked' : '' ?>>
             AUTOLOAD
-          </div>
+          </label>
         </form>
       </div>
       <div class="absolute"
         style="position: absolute; display: inline-block; top: 4px; text-align: right; width: 175px; ">
         <div class="text-xs" style="display: inline-block;">
-          + 987 <a href="https://github.com/composer/composer/graphs/contributors">contributors</a>
+          + 987 <a href="https://github.com/composer/composer/graphs/contributors" target="_blank" rel="noopener noreferrer">contributors</a>
           <br />
           <a style="color: blue; text-decoration-line: underline; text-decoration-style: solid;"
-            href="http://getcomposer.org/" target="_blank">http://getcomposer.org/</a>
+            href="http://getcomposer.org/" target="_blank" rel="noopener noreferrer">http://getcomposer.org/</a>
         </div>
         <!--
     <select id="frameSelector">
@@ -341,7 +351,7 @@ ob_start(); ?>
       style="position: absolute; top: 0; left: 0; right: 0; margin: 10px auto; opacity: 1.0; text-align: center; cursor: pointer; /*z-index: 1;*/">
       <img
         class="<?= defined('COMPOSER_VERSION') and version_compare(COMPOSER_LATEST, COMPOSER_VERSION, '>') != 0 ? 'composer-update' : 'composer-menu' ?>"
-        src="resources/images/composer.fw.png" style="margin-top: 45px;" width="150" height="198" />
+        src="assets/images/composer.fw.png" style="margin-top: 45px;" width="150" height="198" />
     </div>
 
     <div class="absolute"
@@ -363,7 +373,7 @@ ob_start(); ?>
     </div>
 
     <div style="position: absolute; bottom: 0; left: 0; padding: 2px; z-index: 1;">
-      <a href="https://github.com/composer/composer"><img src="resources/images/github-composer.fw.png" /></a>
+      <a href="https://github.com/composer/composer"><img src="assets/images/github-composer.fw.png" /></a>
     </div>
 
     <div class="absolute text-sm" style="position: absolute; bottom: 0; right: 0; padding: 2px; z-index: 1; ">
@@ -392,14 +402,14 @@ ob_start(); ?>
           <div class="drop-shadow-2xl font-bold"
             style="display: inline-block; width: 192px; margin: 10px auto; text-align: right; cursor: pointer;">
             <div id="app_composer-frameMenuInit" style="text-align: center; padding-left: 18px;"><img
-                style="display: block; margin: auto;" src="resources/images/initial_icon.fw.png" width="70"
+                style="display: block; margin: auto;" src="assets/images/initial_icon.fw.png" width="70"
                 height="57" />Init</div>
           </div>
 
           <div class="config drop-shadow-2xl font-bold"
             style="display: inline-block; width: 192px; margin: 0px auto; text-align: center; cursor: pointer;">
             <div id="app_composer-frameMenuConf" class="" style="text-align: center;"><img
-                style="display: block; margin: auto;" src="resources/images/folder.fw.png" width="70"
+                style="display: block; margin: auto;" src="assets/images/folder.fw.png" width="70"
                 height="58" />Config</div>
           </div>
         </div>
@@ -409,14 +419,14 @@ ob_start(); ?>
             <div id="app_composer-frameMenuInstall" style="position: relative; text-align: center; padding-left: 15px;">
               <div style="position: absolute; top: -10px; left: 130px; color: red;"><?= ($count >= 1 ? $count : ''); ?>
               </div>
-              <img style="display: block; margin: auto;" src="resources/images/install_icon.fw.png" width="54"
+              <img style="display: block; margin: auto;" src="assets/images/install_icon.fw.png" width="54"
                 height="54" />Install
             </div>
           </div>
           <div class="drop-shadow-2xl font-bold"
             style="display: inline-block; width: 192px; margin: 0 auto; text-align: center; cursor: pointer;">
             <div id="app_composer-frameMenuUpdate" style="text-align: center; "><img
-                style="display: block; margin: auto;" src="resources/images/update_icon.fw.png" width="54"
+                style="display: block; margin: auto;" src="assets/images/update_icon.fw.png" width="54"
                 height="54" /><a href="#!">Update<?=/*Now!*/ NULL; ?></a></div>
           </div>
         </div>
@@ -730,7 +740,7 @@ echo $daysLeft === null ? '' : max(0, $daysLeft);
                     <div id="myDropdown" class="dropdown-content">
                       <?php foreach (['Backend', 'Designer', 'Developer', 'Programmer'] as $key2 => $role) { ?>
                         <a href="#!"><img style="float: left;" width="30" height="33"
-                            src="resources/images/role<?= $key2 ?>.fw.png"><?= $role; ?> <input type="radio" id="<?= $key2 ?>"
+                            src="<?= 'assets/images/role' . $key2 . '.fw.png' ?>"><?= $role; ?> <input type="radio" id="<?= $key2 ?>"
                             style="float: right; cursor: pointer;" name="composer[config][authors][<?= $key ?>][role]"
                             value="<?= $role; ?>" <?= isset($author['role']) && $author['role'] == $role ? ' checked=""' : '' ?> /></a>
                       <?php } ?>
@@ -756,7 +766,7 @@ echo $daysLeft === null ? '' : max(0, $daysLeft);
                   <div id="myDropdown" class="dropdown-content">
                     <?php foreach (['Backend', 'Designer', 'Developer', 'Programmer'] as $key => $role) { ?>
                       <a href="#!"><img style="float: left;" width="30" height="33"
-                          src="resources/images/role<?= $key ?>.fw.png"><?= $role; ?> <input type="radio" id="<?= $key ?>"
+                          src="<?= 'assets/images/role' . $key . '.fw.png' ?>"><?= $role; ?> <input type="radio" id="<?= $key ?>"
                           style="float: right; cursor: pointer;" name="composer[config][authors][0][role]"
                           value="<?= $role; ?>" /></a>
                     <?php } ?>
@@ -1020,7 +1030,7 @@ echo $daysLeft === null ? '' : max(0, $daysLeft);
                       <div id="myDropdown" class="dropdown-content">
                         <?php foreach (['Backend', 'Designer', 'Developer', 'Programmer'] as $key2 => $role) { ?>
                           <a href="#!"><img style="float: left;" width="30" height="33"
-                              src="resources/images/role<?= $key2 ?>.fw.png"><?= $role; ?> <input type="radio" id="<?= $key2 ?>"
+                              src="<?= 'assets/images/role' . $key2 . '.fw.png' ?> "><?= $role; ?> <input type="radio" id="<?= $key2 ?>"
                               style="float: right; cursor: pointer;" name="" value="<?= $role; ?>" <?= isset($author->{'role'}) && $author->{'role'} == $role ? ' checked=""' : '' ?> /></a>
                         <?php } ?>
                       </div>
@@ -1042,7 +1052,7 @@ echo $daysLeft === null ? '' : max(0, $daysLeft);
                     <div id="myDropdown" class="dropdown-content">
                       <?php foreach (['Backend', 'Designer', 'Developer', 'Programmer'] as $key => $role) { ?>
                         <a href="#!"><img style="float: left;" width="30" height="33"
-                            src="resources/images/role<?= $key ?>.fw.png"><?= $role; ?> <input type="radio" id="<?= $key ?>"
+                            src="<?= 'assets/images/role' . $key . '.fw.png' ?>"><?= $role; ?> <input type="radio" id="<?= $key ?>"
                             style="float: right; cursor: pointer;" name="" value="<?= $role; ?>" /></a>
                       <?php } ?>
                     </div>
@@ -1249,7 +1259,8 @@ echo $daysLeft === null ? '' : max(0, $daysLeft);
 <?php $UI_APP['body'] = ob_get_contents();
 ob_end_clean();
 
-if (false) { ?><script type="text/javascript"><?php }
+if (false) { ?>
+  <script type="text/javascript"><?php }
 ob_start(); ?>
     (() => {
       const APP_ID = 'tools/registry/composer';
@@ -1368,8 +1379,11 @@ ob_start(); ?>
         if (!val || !list) return;
 
         list.innerHTML = '';
-        const upstream = `https://repo.packagist.org/p2/${encodeURIComponent(val)}.json`;
-        const proxied = `proxy.php?url=${encodeURIComponent(upstream)}`; // avoid hardcoding host
+        //const upstream = `https://repo.packagist.org/p2/${encodeURIComponent(val)}.json`; // proxy.php?url=${encodeURIComponent(upstream)}
+
+        //console.log('Fetching upstream:', upstream);
+
+        const proxied = `/?api=composer&action=packagist&p=${encodeURIComponent(val)}`; // avoid hardcoding host
         $.getJSON(proxied, (data) => {
           list.insertAdjacentHTML('beforeend', `<option value="${val}:dev-master"></option>`);
           const first = (data?.packages?.[val] || [])[0];
@@ -1605,7 +1619,7 @@ ob_start(); ?>
       if (currentIndex < 0) currentIndex++; //else console.log('decided: ' + currentIndex);
       composer_frame_containers.removeClass("selected"); // composer_frame_containers.css("z-index", 0); // Reset z-index for all elements
       composer_frame_containers.eq(currentIndex).addClass(' selected'); // css("z-index", totalFrames); // Set top layer
-      z - index
+      // z - index
     }); $("#frameSelector").change(function () {
       var selectedIndex = parseInt($(this).val(), 10);
       currentIndex = selectedIndex; $(".app_composer-frame-container").removeClass("selected"); // Remove selected class from all containers
@@ -1633,7 +1647,7 @@ ob_start(); ?>
 
   /* ───────────────────────────── Helpers ───────────────────────────── */
 
-  $__isDirect = (realpath($_SERVER['SCRIPT_FILENAME'] ?? '') === __FILE__);
+  $__isDirect = realpath($_SERVER['SCRIPT_FILENAME'] ?? '') === __FILE__;
   $__hasApp = defined('APP_RUNNING');
 
   /**
@@ -1662,9 +1676,9 @@ ob_start(); ?>
   $__tailwindSrc = function (string $version = '3.3.5'): string {
     // You have app_base() and check_http_status() in your project.
     $cdnUrl = 'https://cdn.tailwindcss.com';
-    $localPath = rtrim(app_base('resources', null, 'abs'), DIRECTORY_SEPARATOR) . '/js/tailwindcss-' . $version . '.js';
-    $localRelDir = rtrim(app_base('resources', null, 'rel'), '/'); // e.g. 'resources/'
-    $localRel = $localRelDir . 'js/tailwindcss-' . $version . '.js';
+    $localPath = rtrim(app_base('public', null, 'abs'), DIRECTORY_SEPARATOR) . '/assets/js/tailwindcss-' . $version . '.js';
+    $localRelDir = rtrim(app_base('public', null, 'rel'), '/'); // e.g. 'public/assets/'
+    $localRel = $localRelDir . '/assets/js/tailwindcss-' . $version . '.js';
 
     // Ensure local dir
     is_dir(dirname($localPath)) || @mkdir(dirname($localPath), 0755, true);
@@ -1695,7 +1709,7 @@ ob_start(); ?>
       return substr($cdnUrl, $pos + strlen($host)); // e.g. "//cdn.tailwindcss.com"
     }
 
-    return $localRel; // e.g. "resources/js/tailwindcss-3.3.5.js"
+    return $localRel; // e.g. "assets/js/tailwindcss-3.3.5.js"
   };
 
   /**
@@ -1717,7 +1731,7 @@ ob_start(); ?>
     <style type="text/tailwindcss">
       <?= $UI_APP['style'] ?? '' ?>
 
-      </style>
+        </style>
   </head>
 
   <body>

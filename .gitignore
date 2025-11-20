@@ -4,8 +4,9 @@
 /.ssh
 /.composer              # anchor: only root-level .composer
 /.composer/auth.json
-/.env
-/.env*                  # any .env files anywhere
+.env
+.env*                   # any .env files anywhere
+
 /.htaccess              # anchor: root .htaccess only
 /config/composer.auth.json
 /auth.json              # consider anchoring to root if you only keep one: /auth.json
@@ -32,17 +33,16 @@ package-lock.json
 # -----------------------------
 /dist
 # If these are build outputs (not source), keep ignored:
-/resources/js
-/resources/reels
-/resources/project
+/public/assets/js
+/public/assets/reels
+/public/assets/project
 
 # -----------------------------
 # App data / runtime caches
 # -----------------------------
 /data
-/var/*.html
-/var/*.php
-/var/*.json
+/var
+!/var/.gitkeep
 !/var/notes-sample.json
 !/var/notes.json
 !/var/source_code.json
@@ -54,26 +54,33 @@ package-lock.json
 # -----------------------------
 # Logs & PIDs
 # -----------------------------
-/error_log
+/var/log/php_error.log
 /server.log
 /server.pid
 
 # -----------------------------
 # Project scaffolding / examples
 # -----------------------------
+/public/assets
+/public/*.map
 /public/example.php
 /public/example*.php
-# Project slots like project0/, project1/
-# Keep only their index.php tracked
-/project?/*
-!/project?/index.php
+
+# OS/editor
+.DS_Store
+Thumbs.db
+settings.json
 
 # -----------------------------
 # Big trees you don�t want in Git
 # -----------------------------
 /applications
 /bin
-/clients
+/clients/*
+# Project slots like project0/, project1/
+# Keep only their index.php tracked
+/project?/*
+!/project?/index.php
 
 # -----------------------------
 # Tests (opt-in)

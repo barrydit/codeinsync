@@ -2,16 +2,15 @@
 declare(strict_types=1);
 
 // If you want to force JSON for any ?app=... request:
-if (isset($_GET['app']) && !isset($_GET['json'])) {
+if (isset($_GET['app']) && !isset($_GET['json']))
     $_GET['json'] = 1;
-}
 
 // Call the bootstrap dispatcher and handle its contract:
 // - true   => already emitted a response
 // - array/object => we JSON-emit here
 // - string => we echo as-is (HTML/text)
 // - false/null/other => 404-ish
-define('APP_MODE', 'dispatcher'); // anything !== 'web' triggers the gate
+const APP_MODE = 'dispatcher'; // anything !== 'web' triggers the gate
 $handled = require __DIR__ . '/../bootstrap/bootstrap.php';
 
 if ($handled === true)
@@ -64,7 +63,7 @@ if (is_string($handled)) {
 
 // Not handled
 http_response_code(404);
-if (!headers_sent()) {
+if (!headers_sent())
     header('Content-Type: application/json; charset=utf-8');
-}
+
 // echo json_encode(['error' => 'Not handled'], JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE);

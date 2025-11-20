@@ -1,0 +1,1 @@
+C:\xampp\php\php.exe C:\www\bin\server.php run --verbose

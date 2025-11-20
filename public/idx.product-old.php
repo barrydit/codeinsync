@@ -411,8 +411,8 @@ header("Pragma: no-cache"); ?>
 
   <title>WebPortal</title>
   <?php
-  // (check_http_status('https://cdn.tailwindcss.com') ? 'https://cdn.tailwindcss.com' : APP_URL . 'resources/js/tailwindcss-3.3.5.js')?
-  is_dir($path = APP_BASE['resources'] . 'js/') or mkdir($path, 0755, true);
+  // (check_http_status('https://cdn.tailwindcss.com') ? 'https://cdn.tailwindcss.com' : APP_URL . 'assets/js/tailwindcss-3.3.5.js')?
+  is_dir($path = APP_BASE['public'] . 'assets/js/') or mkdir($path, 0755, true);
   if (is_file($path . 'tailwindcss-3.3.5.js')) {
     if (ceil(abs((strtotime(date('Y-m-d')) - strtotime(date('Y-m-d', strtotime('+5 days', filemtime($path . 'tailwindcss-3.3.5.js'))))) / 86400)) <= 0) {
       $url = 'https://cdn.tailwindcss.com';
@@ -432,7 +432,7 @@ header("Pragma: no-cache"); ?>
   }
   unset($path);
   ?>
-  <script src="<?= APP_BASE['resources'] . 'js/tailwindcss-3.3.5.js' ?? $url ?>"></script>
+  <script src="<?= 'assets/js/tailwindcss-3.3.5.js' ?? $url ?>"></script>
   <style type="text/tailwindcss">
     * {
         margin: 0;
@@ -676,14 +676,14 @@ header("Pragma: no-cache"); ?>
           </div>
 
           <a href="#" onclick="document.getElementById('app_ace_editor-container').style.display='block';"><img
-              src="resources/images/ace_editor_icon.png" width="32" height="32"> (Text) Editor</a> |
+              src="assets/images/ace_editor_icon.png" width="32" height="32"> (Text) Editor</a> |
           <a href="#" onclick="document.getElementById('app_tools-container').style.display='block';"><img
-              src="resources/images/apps_icon.gif" width="20" height="20"> Tools</a> |
+              src="assets/images/apps_icon.gif" width="20" height="20"> Tools</a> |
           <a href="#" onclick="document.getElementById('app_timesheet-container').style.display='block';"><img
-              src="resources/images/clock.gif" width="30" height="30"> Clock-In</a> |
+              src="assets/images/clock.gif" width="30" height="30"> Clock-In</a> |
           <a href="#" onclick="document.getElementById('app_git-container').style.display='block';"><img
-              src="resources/images/git_icon.fw.png" width="18" height="18">Git/ <img
-              src="resources/images/github.fw.png" width="18" height="18">Hub</a>
+              src="assets/images/git_icon.fw.png" width="18" height="18">Git/ <img
+              src="assets/images/github.fw.png" width="18" height="18">Hub</a>
 
           <div style="position: relative; margin-left: 10px; right: 6px; float: right; z-index: 1;">
             <div class="text-sm" style="display: inline-block; margin: 0 auto;">
@@ -691,7 +691,7 @@ header("Pragma: no-cache"); ?>
                 action="<?= APP_URL_BASE . '?' . http_build_query(APP_QUERY + ['app' => 'git']) . (defined('APP_ENV') && APP_ENV == 'development' ? '#!' : '') /* $c_or_p . '=' . (empty($_GET[$c_or_p]) ? '' : $$c_or_p->name) . '&amp;app=git' */ ?>"
                 method="POST">
                 <!-- <input type="hidden"  /> -->
-                <button type="submit" name="cmd" value="push" disabled><img src="resources/images/green_arrow.fw.png"
+                <button type="submit" name="cmd" value="push" disabled><img src="assets/images/green_arrow.fw.png"
                     width="20" height="25" style="cursor: pointer; margin-left: 6px;"
                     title="This feature is disabled." /><br />Push</button>
               </form>
@@ -707,7 +707,7 @@ header("Pragma: no-cache"); ?>
                 action="<?= APP_URL_BASE . '?' . http_build_query(APP_QUERY + ['app' => 'git']) . (defined('APP_ENV') && APP_ENV == 'development' ? '#!' : '') /* $c_or_p . '=' . (empty($_GET[$c_or_p]) ? '' : $$c_or_p->name) . '&amp;app=git' */ ?>"
                 method="POST">
                 <!-- <input type="hidden"  /> -->
-                <button type="submit" name="cmd" value="pull"><img src="resources/images/red_arrow.fw.png" width="20"
+                <button type="submit" name="cmd" value="pull"><img src="assets/images/red_arrow.fw.png" width="20"
                     height="25" style="cursor: pointer; margin-left: 4px;" /><br />Pull</button>
               </form>
             </div>
@@ -834,10 +834,10 @@ header("Pragma: no-cache"); ?>
             <div style="position: absolute; margin: 80px 45px; text-align: center;" class="text-sm"><a href="#!"
                 onclick="document.getElementById('app_tools-container').style.display='none'; return false;"><img
                   style="text-align: center;" height="25" width="25"
-                  src="<?= APP_BASE['resources'] . 'images/close-red.gif' ?>" /></a><br /></div>
+                  src="<?= 'assets/images/close-red.gif' ?>" /></a><br /></div>
             <div style="position: absolute; margin: 100px 75px; text-align: center;" class="text-sm"><a href="#!"
                 onclick="isFixed = true; show_console(); return false;"><img style="text-align: center;"
-                  src="<?= APP_BASE['resources'] . 'images/cli.png' ?>" /></a><br /><a
+                  src="<?= 'assets/images/cli.png' ?>" /></a><br /><a
                 href="?app=ace_editor&path=&file=app.console.php" style="text-align: center;">(CLI)</a></div>
             <!-- 
               <a href="javascript:window.open('print.html', 'newwindow', 'width=300,height=250')">Print</a>
@@ -848,36 +848,36 @@ header("Pragma: no-cache"); ?>
             <div style="position: absolute; margin: 100px 165px; text-align: center;" class="text-sm"><a href="#"
                 target="_blank" onclick="toggleIframeUrl('app.whiteboard.php'); return false;"><img
                   style="text-align: center;"
-                  src="<?= APP_BASE['resources'] . 'images/whiteboard.png' ?>" /></a><br /><a
+                  src="<?= 'assets/images/whiteboard.png' ?>" /></a><br /><a
                 href="?app=ace_editor&path=&file=app.whiteboard.php" style="text-align: center;">Whiteboard</a></div>
             <div style="position: absolute; margin: 100px 260px; text-align: center;" class="text-sm"><a href="#!"
                 onclick="document.getElementById('app_notes-container').style.display='block'; return false;"><img
-                  style="text-align: center;" src="<?= APP_BASE['resources'] . 'images/notes.png' ?>" /></a><br /><a
+                  style="text-align: center;" src="<?= 'assets/images/notes.png' ?>" /></a><br /><a
                 href="?app=ace_editor&path=&file=app.notes.php" style="text-align: center;">Notes</a></div>
             <div style="position: absolute; margin: 100px 350px; text-align: center;" class="text-sm"><a href="#!"
                 onclick="document.getElementById('app_project-container').style.display='block'; document.getElementById('toggle-debug').checked = false; toggleSwitch(document.getElementById('toggle-debug')); return false;"><img
-                  style="text-align: center;" src="<?= APP_BASE['resources'] . 'images/project.png' ?>" /></a><br /><a
+                  style="text-align: center;" src="<?= 'assets/images/project.png' ?>" /></a><br /><a
                 href="?app=ace_editor&path=&file=app.project.php"><span style="text-align: center;">Project</span></a>
             </div>
             <div style="position: absolute; margin: 100px 0 0 450px ; text-align: center;" class="text-sm"><a href="#!"
                 onclick="document.getElementById('app_debug-container').style.display='block'; return false;"><img
-                  style="text-align: center;" src="<?= APP_BASE['resources'] . 'images/debug.png' ?>" /><br /><span
+                  style="text-align: center;" src="<?= 'assets/images/debug.png' ?>" /><br /><span
                   style="text-align: center;">Debug</span></a></div>
             <div style="position: absolute; margin: 100px 0 0 540px; text-align: center;" class="text-sm"><a href="#!"
                 onclick="document.getElementById('app_profile-container').style.display='block'; return false;"><img
-                  style="text-align: center;" src="<?= APP_BASE['resources'] . 'images/user.png' ?>" /><br /><span
+                  style="text-align: center;" src="<?= 'assets/images/user.png' ?>" /><br /><span
                   style="text-align: center;">Profile</span></a></div>
             <div style="position: absolute; margin: 100px 0 0 630px; text-align: center;" class="text-sm"><a href="#!"
                 onclick="document.getElementById('app_browser-container').style.display='block'; return false;"><img
-                  style="text-align: center;" src="<?= APP_BASE['resources'] . 'images/browser.png' ?>" /><br /><span
+                  style="text-align: center;" src="<?= 'assets/images/browser.png' ?>" /><br /><span
                   style="text-align: center;">Browser</span></a></div>
             <div style="position: absolute; margin: 200px 75px; text-align: center;" class="text-sm"><a href="#!"
                 onclick="document.getElementById('app_tools-container').style.display='block'; return false;"><img
-                  style="text-align: center;" src="<?= APP_BASE['resources'] . 'images/apps.png' ?>" /><br /><span
+                  style="text-align: center;" src="<?= 'assets/images/apps.png' ?>" /><br /><span
                   style="text-align: center;">Apps.</span></a></div>
             <div style="position: absolute; margin: 200px 170px; text-align: center;" class="text-sm"><a href="#!"
                 onclick="document.getElementById('app_calendar-container').style.display='block'; return false;"><img
-                  style="text-align: center;" src="<?= APP_BASE['resources'] . 'images/calendar.png' ?>" /><br /><span
+                  style="text-align: center;" src="<?= 'assets/images/calendar.png' ?>" /><br /><span
                   style="text-align: center;">Calendar</span></a></div>
             <div
               style="position: absolute; margin: 190px 240px; padding: 20px 40px; background-color: rgba(255, 255, 255, 0.8);">
@@ -897,45 +897,45 @@ header("Pragma: no-cache"); ?>
             </div>
             <div style="position: absolute; margin: 200px 0 0 540px; text-align: center;" class="text-sm"><a href="#!"
                 onclick="toggleIframeUrl('app.pong.php'); return false;"><img style="text-align: center;"
-                  src="<?= APP_BASE['resources'] . 'images/pong.png' ?>" /><br /><span
+                  src="<?= 'assets/images/pong.png' ?>" /><br /><span
                   style="text-align: center;">Pong</span></a></div>
             <div style="position: absolute; margin: 200px 0 0 630px; text-align: center;" class="text-sm"><a href="#!"
                 onclick="document.getElementById('app_browser-container').style.display='block'; return false;"><img
-                  style="text-align: center;" src="<?= APP_BASE['resources'] . 'images/regexp.png' ?>" /><br /><span
+                  style="text-align: center;" src="<?= 'assets/images/regexp.png' ?>" /><br /><span
                   style="text-align: center;">RegExp</span></a></div>
             <div style="position: absolute; margin: 300px 75px; text-align: center;" class="text-sm"><a href="#!"
                 onclick="document.getElementById('app_browser-container').style.display='block'; return false;"><img
-                  style="text-align: center;" src="<?= APP_BASE['resources'] . 'images/chatgpt.png' ?>" /><br /><span
+                  style="text-align: center;" src="<?= 'assets/images/chatgpt.png' ?>" /><br /><span
                   style="text-align: center;">ChatGPT</span></a></div>
             <div style="position: absolute; margin: 300px 160px; text-align: center;" class="text-sm"><a href="#!"
                 onclick="document.getElementById('app_browser-container').style.display='block'; return false;"><img
                   style="text-align: center;"
-                  src="<?= APP_BASE['resources'] . 'images/stackoverflow.png' ?>" /><br /><span
+                  src="<?= 'assets/images/stackoverflow.png' ?>" /><br /><span
                   style="text-align: center;">Stackoverflow</span></a></div>
             <div style="position: absolute; margin: 300px 260px; text-align: center;" class="text-sm"><a href="#!"
                 onclick="document.getElementById('app_browser-container').style.display='block'; return false;"><img
-                  style="text-align: center;" src="<?= APP_BASE['resources'] . 'images/validatejs.png' ?>" /><br /><span
+                  style="text-align: center;" src="<?= 'assets/images/validatejs.png' ?>" /><br /><span
                   style="text-align: center;">ValidateJS</span></a></div>
             <!-- https://validator.w3.org/#validate_by_input // -->
             <div style="position: absolute; margin: 300px 340px; text-align: center;" class="text-sm"><a href="#!"
                 onclick="document.getElementById('app_browser-container').style.display='block'; return false;"><img
-                  style="text-align: center;" src="<?= APP_BASE['resources'] . 'images/w3c.png' ?>" /><br /><span
+                  style="text-align: center;" src="<?= 'assets/images/w3c.png' ?>" /><br /><span
                   style="text-align: center;">W3C Validator</span></a></div>
             <!-- https://tailwindcss.com/docs/ // -->
             <div style="position: absolute; margin: 300px 0 0 445px; text-align: center;" class="text-sm"><a href="#!"
                 onclick="document.getElementById('app_browser-container').style.display='block'; return false;"><img
                   style="text-align: center;"
-                  src="<?= APP_BASE['resources'] . 'images/tailwindcss.png' ?>" /><br /><span
+                  src="<?= 'assets/images/tailwindcss.png' ?>" /><br /><span
                   style="text-align: center;">TailwindCSS<br />Docs</span></a></div>
             <!-- https://www.php.net/docs.php // -->
             <div style="position: absolute; margin: 300px 0 0 540px; text-align: center;" class="text-sm"><a href="#!"
                 onclick="document.getElementById('app_browser-container').style.display='block'; return false;"><img
-                  style="text-align: center;" src="<?= APP_BASE['resources'] . 'images/php.png' ?>" /><br /><span
+                  style="text-align: center;" src="<?= 'assets/images/php.png' ?>" /><br /><span
                   style="text-align: center;">PHP Docs</span></a></div>
             <!-- https://dev.mysql.com/doc/ // -->
             <div style="position: absolute; margin: 300px 0 0 625px; text-align: center;" class="text-sm"><a href="#!"
                 onclick="document.getElementById('app_browser-container').style.display='block'; return false;"><img
-                  style="text-align: center;" src="<?= APP_BASE['resources'] . 'images/mysql.png' ?>" /><br /><span
+                  style="text-align: center;" src="<?= 'assets/images/mysql.png' ?>" /><br /><span
                   style="text-align: center;">MySQL Docs</span></a></div>
             <div
               style="position: absolute; top: 400px; left: 65px; width: 80%; margin: 0 auto; height: 15px; border-bottom: 1px solid black; text-align: center; z-index: 0;">
@@ -944,13 +944,13 @@ header("Pragma: no-cache"); ?>
             <div style="position: absolute; margin: 430px 75px; text-align: center;" class="text-sm"><a href="#!"
                 onclick="document.getElementById('app_install-container').style.display='block'; return false;"><span
                   style="text-align: center;">New App.</span><br /><img style="text-align: center;"
-                  src="<?= APP_BASE['resources'] . 'images/install.png' ?>" /></a></div>
+                  src="<?= 'assets/images/install.png' ?>" /></a></div>
             <div style="position: absolute; margin: 430px 170px; text-align: center;" class="text-sm">
               <a href="?app=ace_editor&path=&file=app.user-app.php"><span style="text-align: center;">App
                   #1</span></a><br />
               <a href="#!"
                 onclick="document.getElementById('app_browser-container').style.display='block'; return false;"><img
-                  style="text-align: center;" src="<?= APP_BASE['resources'] . 'images/php-app.png' ?>" /></a>
+                  style="text-align: center;" src="<?= 'assets/images/php-app.png' ?>" /></a>
               <div style="height: 75px;"></div>
             </div>
           </div>
@@ -1234,14 +1234,14 @@ header("Pragma: no-cache"); ?>
           </div>
         <?php } ?>
         <div id="app_directory-container"
-          style="position: absolute; display: <?= (isset($_GET['debug']) || isset($_GET['project']) || isset($_GET['path']) ? /*'block'*/ 'none' : 'none'); ?>; background-color: white; height: 580px; position: absolute; top: 100px; margin-left: auto; margin-right: auto; left: 0; right: 0; width: 700px;">
+          style="position: absolute; display: <?= isset($_GET['debug']) || isset($_GET['project']) || isset($_GET['path']) ? /*'block'*/ 'none' : 'none'; ?>; background-color: white; height: 580px; position: absolute; top: 100px; margin-left: auto; margin-right: auto; left: 0; right: 0; width: 700px;">
           <?php if (isset($_GET['path']) && preg_match('/^vendor$/', $_GET['path'])) { ?>
             <!-- iframe src="composer_pkg.php" style="height: 500px; width: 700px;"></iframe -->
             <div style="width: 700px;">
               <div style="display: inline-block; width: 350px;">Composers Vendor Packages [Installed] List</div>
               <div style="display: inline-block; text-align: right; width: 300px;">
                 <form
-                  action="<?= !defined('APP_URL_BASE') ? '//' . APP_DOMAIN . APP_URL_PATH . '?' . http_build_query(APP_QUERY, '', '&amp;') : APP_URL_BASE . '?' . http_build_query(APP_QUERY, '', '&amp;') ?>"
+                  action="<?= '?' . http_build_query(APP_QUERY, '', '&amp;') ?>"
                   method="POST">
                   <input id="RequirePkg" type="text" title="Enter Text and onSelect" list="RequirePkgs"
                     placeholder="[vendor]/[package]" name="composer[package]" value onselect="get_package(this);"
@@ -1357,7 +1357,7 @@ header("Pragma: no-cache"); ?>
                       //if ($vendor == 'barrydit') continue;
                       if ($vendor == 'symfony') {
                         echo '<a class="pkg_dir" href="?path=vendor/' . $vendor . '">'
-                          . '<img src="resources/images/directory-symfony.png" width="50" height="32" style="' . (isset(COMPOSER->{'require'}->{$vendor . '/' . $package}) || isset(COMPOSER->{'require-dev'}->{$vendor . '/' . $package}) ?: 'opacity:0.4;filter:alpha(opacity=40);') . '" /></a><br />'
+                          . '<img src="assets/images/directory-symfony.png" width="50" height="32" style="' . (isset(COMPOSER->{'require'}->{$vendor . '/' . $package}) || isset(COMPOSER->{'require-dev'}->{$vendor . '/' . $package}) ?: 'opacity:0.4;filter:alpha(opacity=40);') . '" /></a><br />'
                           . '<div class="overlay">';
                         foreach ($packages as $package) {
                           if (in_array(APP_PATH . 'vendor/' . $vendor . '/' . $package . '/bootstrap.php', get_required_files()))
@@ -1382,7 +1382,7 @@ header("Pragma: no-cache"); ?>
                           //}
                         }
                         echo '<a class="pkg_dir" href="#!" onclick="document.getElementById(\'app_composer-container\').style.display=\'block\';">' // ?app=ace_editor&path=vendor/' . $vendor . '
-                          . '<img src="resources/images/directory-composer.png" width="50" height="32" style="' . (isset(COMPOSER->{'require'}->{$vendor . '/' . 'composer'}) || isset(COMPOSER->{'require-dev'}->{$vendor . '/' . $package}) ? '' : 'opacity:0.4;filter:alpha(opacity=40);') . '" /></a><br />'
+                          . '<img src="assets/images/directory-composer.png" width="50" height="32" style="' . (isset(COMPOSER->{'require'}->{$vendor . '/' . 'composer'}) || isset(COMPOSER->{'require-dev'}->{$vendor . '/' . $package}) ? '' : 'opacity:0.4;filter:alpha(opacity=40);') . '" /></a><br />'
                           . '<div class="pkg_dir overlay">';
                         foreach ($packages as $package) {
                           if (!in_array(APP_PATH . 'vendor/' . $vendor . '/' . $package . '/Psr/Log/LogLevel.php', get_required_files()) && $package == 'log') {
@@ -1394,7 +1394,7 @@ header("Pragma: no-cache"); ?>
                         echo '</div>' . '<a href="?path=vendor/' . $vendor . '">' . ucfirst($vendor) . '</a>' . "\n";
                       } elseif ($vendor == 'psr') {
                         echo '<a class="pkg_dir" href="#!" onclick="document.getElementById(\'app_project-container\').style.display=\'block\';">' // ?app=ace_editor&path=vendor/' . $vendor . '
-                          . '<img src="resources/images/directory-psr.png" width="50" height="32" style="' . (isset(COMPOSER->{'require'}->{$vendor . '/' . $package}) || isset(COMPOSER->{'require-dev'}->{$vendor . '/' . $package}) ? '' : (!$show_notice ? '' : 'opacity:0.4;filter:alpha(opacity=40);')) . '" />' . '</a><br />'
+                          . '<img src="assets/images/directory-psr.png" width="50" height="32" style="' . (isset(COMPOSER->{'require'}->{$vendor . '/' . $package}) || isset(COMPOSER->{'require-dev'}->{$vendor . '/' . $package}) ? '' : (!$show_notice ? '' : 'opacity:0.4;filter:alpha(opacity=40);')) . '" />' . '</a><br />'
                           . '<div class="overlay">';
                         foreach ($packages as $package) {
                           if (!in_array(APP_PATH . 'vendor/' . $vendor . '/' . $package . '/Psr/Log/LogLevel.php', get_required_files()) && $package == 'log') {
@@ -1408,7 +1408,7 @@ header("Pragma: no-cache"); ?>
                       } else {
 
                         echo '<a class="pkg_dir" href="?' . (APP_ROOT != '' ? array_key_first($_GET) . '=' . $_GET[array_key_first($_GET)] . '&' : '') . 'path=vendor/' . $vendor . '">'
-                          . '<img src="resources/images/directory.png" width="50" height="32" style="' . (isset(COMPOSER->{'require'}->{$vendor . '/' . $package}) || isset(COMPOSER->{'require-dev'}->{$vendor . '/' . $package}) ?: 'opacity:0.4;filter:alpha(opacity=40);') . '" />' . '</a><br />'
+                          . '<img src="assets/images/directory.png" width="50" height="32" style="' . (isset(COMPOSER->{'require'}->{$vendor . '/' . $package}) || isset(COMPOSER->{'require-dev'}->{$vendor . '/' . $package}) ?: 'opacity:0.4;filter:alpha(opacity=40);') . '" />' . '</a><br />'
                           . '<div class="overlay">';
                         foreach ($packages as $package) {
                           echo '<code style="background-color: white; color: #0078D7;">' . $package . '</code><br />' . PHP_EOL;
@@ -1441,7 +1441,7 @@ header("Pragma: no-cache"); ?>
                   foreach ($result as $install) {
                     echo '<td style="border: none; text-align: center;" class="text-xs">' . "\n"
                       . '<a href="#!" onclick="document.getElementById(\'app_git-container\').style.display=\'block\';">' // "?path=' . basename($path) . '" 
-                      . '<img src="resources/images/directory-install.png" width="50" height="32" ' . /*style="opacity:0.4;filter:alpha(opacity=40);"*/ ' /><br />' . $install . '/</a>' . "\n";
+                      . '<img src="assets/images/directory-install.png" width="50" height="32" ' . /*style="opacity:0.4;filter:alpha(opacity=40);"*/ ' /><br />' . $install . '/</a>' . "\n";
                     echo '</td>' . "\n";
 
                     if ($count >= 6)
@@ -1463,7 +1463,7 @@ header("Pragma: no-cache"); ?>
               <div style="text-align: center; border: none;" class="text-xs">
                 <a class="pkg_dir" href="#"
                   onclick="document.getElementById('app_project-container').style.display='block';">
-                  <img src="resources/images/project-icon.png" width="50" height="32" style="" /></a><br /><a
+                  <img src="assets/images/project-icon.png" width="50" height="32" style="" /></a><br /><a
                   href="?project">./project/</a>
               </div>
               <table width="" style="border: none;">
@@ -1485,7 +1485,7 @@ header("Pragma: no-cache"); ?>
 
                     echo '<td style="text-align: center; border: none;" class="text-xs">' . "\n";
                     echo '<a class="pkg_dir" href="?project=' . $link . '">'
-                      . '<img src="resources/images/directory.png" width="50" height="32" style="" /><br />' . $link . '</a><br />'
+                      . '<img src="assets/images/directory.png" width="50" height="32" style="" /><br />' . $link . '</a><br />'
                       . '</td>' . "\n";
                     if ($count >= 7)
                       echo '</tr><tr>';
@@ -1553,7 +1553,7 @@ header("Pragma: no-cache"); ?>
                       echo '<td style="text-align: center; border: none;" class="text-xs">' . "\n";
 
                       echo '<a class="pkg_dir" href="?application=' . $link . '">'
-                        . '<img src="resources/images/app_file.png" width="50" height="32" style="" /><br />' . $link . '</a><br />'
+                        . '<img src="assets/images/app_file.png" width="50" height="32" style="" /><br />' . $link . '</a><br />'
                         . '</td>' . "\n";
 
                       if ($count >= 3)
@@ -1608,7 +1608,7 @@ header("Pragma: no-cache"); ?>
                   echo '<td style="text-align: center; border: none;" class="text-xs">' . "\n";
 
                   echo '<a class="pkg_dir" href="?application=' . $link . '">'
-                    . '<img src="resources/images/directory.png" width="50" height="32" style="" /><br />' . $link . '</a><br />'
+                    . '<img src="assets/images/directory.png" width="50" height="32" style="" /><br />' . $link . '</a><br />'
                     . '</td>' . "\n";
 
                   if ($count >= 3)
@@ -1658,7 +1658,7 @@ header("Pragma: no-cache"); ?>
                       echo '<td style="text-align: center; border: none;" class="text-xs">' . "\n";
 
                       echo '<a class="pkg_dir" href="?client=' . $link . '">'
-                        . '<img src="resources/images/directory.png" width="50" height="32" style="" /><br />' . $link . '</a><br />'
+                        . '<img src="assets/images/directory.png" width="50" height="32" style="" /><br />' . $link . '</a><br />'
                         . '</td>' . "\n";
 
                       if ($count >= 6)
@@ -1679,7 +1679,7 @@ header("Pragma: no-cache"); ?>
                 style="position: absolute; top: 100px; width: 200px; left: 36%; right: 64%; text-align: center; border: 1px solid #000;">
                 <?php echo '<a class="pkg_dir" style="border: 1px dashed blue;" href="?client=' . '">'
                   . 'Missing directory.<br/>'
-                  . '<img src="resources/images/directory.png" width="60" height="42" style="" /><br />Create <input type="text" style="text-align: right;"size="7" name="clientele" value="clientele/"></a><br />' . "\n"; ?>
+                  . '<img src="assets/images/directory.png" width="60" height="42" style="" /><br />Create <input type="text" style="text-align: right;"size="7" name="clientele" value="clientele/"></a><br />' . "\n"; ?>
 
               </div>
 
@@ -1758,69 +1758,65 @@ header("Pragma: no-cache"); ?>
                       if (is_dir($path))
                         if (basename($path) == '.git')
                           echo '<a href="#!" onclick="document.getElementById(\'app_git-container\').style.display=\'block\';">' // "?path=' . basename($path) . '" 
-                            . '<img src="resources/images/directory-git.png" width="50" height="32" /><br />' . basename($path) . '/</a>' . "\n";
+                            . '<img src="assets/images/directory-git.png" width="50" height="32" /><br />' . basename($path) . '/</a>' . "\n";
                         elseif (basename($path) == 'applications')
                           echo '<div style="position: relative;">'
-                            . '<a href="?application" onclick="document.getElementById(\'app_application-container\').style.display=\'block\';"><img src="resources/images/directory-application.png" width="50" height="32" /></a><br />'
+                            . '<a href="?application" onclick="document.getElementById(\'app_application-container\').style.display=\'block\';"><img src="assets/images/directory-application.png" width="50" height="32" /></a><br />'
                             . '<a href="?path=' . basename($path) . '" onclick="">' . basename($path)  // "?path=' . basename($path) . '"         
                             . '/</a></div>' . "\n";
                         elseif (basename($path) == 'node_modules')
                           echo '<div style="position: relative;">'
-                            . '<a href="#!" onclick="document.getElementById(\'app_npmjs-container\').style.display=\'block\';"><img src="resources/images/directory-npm.png" width="50" height="32" /></a><br />'
+                            . '<a href="#!" onclick="document.getElementById(\'app_npmjs-container\').style.display=\'block\';"><img src="assets/images/directory-npm.png" width="50" height="32" /></a><br />'
                             . '<a href="?' . (APP_ROOT != '' ? array_key_first($_GET) . '=' . $_GET[array_key_first($_GET)] . '&' : '') . 'path=' . basename($path) . '" onclick="">' . basename($path)  // "?path=' . basename($path) . '"         
                             . '/</a></div>' . "\n";
                         elseif (basename($path) == 'projects')
                           echo '<div style="position: relative;">'
-                            . '<a href="#!" onclick="document.getElementById(\'app_project-container\').style.display=\'block\';"><img src="resources/images/directory-project.png" width="50" height="32" /></a><br />'
+                            . '<a href="#!" onclick="document.getElementById(\'app_project-container\').style.display=\'block\';"><img src="assets/images/directory-project.png" width="50" height="32" /></a><br />'
                             . '<a href="?category=' . basename($path) . '" onclick="">' . basename($path)  // "?path=' . basename($path) . '"
                             . '/</a></div>' . "\n";
                         elseif (basename($path) == 'vendor')
                           echo '<div style="position: relative;">'
-                            . '<a href="#!" onclick="document.getElementById(\'app_composer-container\').style.display=\'block\';"><img src="resources/images/directory-composer.png" width="50" height="32" /></a><br />'
+                            . '<a href="#!" onclick="document.getElementById(\'app_composer-container\').style.display=\'block\';"><img src="assets/images/directory-composer.png" width="50" height="32" /></a><br />'
                             . '<a href="?' . (APP_ROOT != '' ? array_key_first($_GET) . '=' . $_GET[array_key_first($_GET)] . '&' : '') . 'app=composer&path=' . basename($path) . '" onclick="">' . basename($path)  // "?path=' . basename($path) . '"         
                             . '/</a></div>' . "\n";
                         else
                           echo '<a href="?' . (!defined('APP_ROOT') || empty(APP_ROOT) ? '' : 'client=' . $_GET['client'] . '&') . 'path=' . (!isset($_GET['path']) ? '' : $_GET['path']) . basename($path) . '">'
-                            . '<img src="resources/images/directory.png" width="50" height="32" /><br />' . basename($path) . '/</a>';
+                            . '<img src="assets/images/directory.png" width="50" height="32" /><br />' . basename($path) . '/</a>';
                       elseif (is_file($path)) {
 
                         if (preg_match('/^\..*/', basename($path))) {
 
                           if (basename($path) == '.htaccess')
-                            echo '<div style="position: relative;"><a href="?app=ace_editor&path=' . (basename(dirname($path)) == basename(parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH) ? 'failed' : basename(dirname($path)))) . '&file=' . basename($path) . '"><img src="resources/images/htaccess_file.png" width="40" height="50" /><br />' . basename($path)
+                            echo '<div style="position: relative;"><a href="?app=ace_editor&path=' . (basename(dirname($path)) == basename(parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH) ? 'failed' : basename(dirname($path)))) . '&file=' . basename($path) . '"><img src="assets/images/htaccess_file.png" width="40" height="50" /><br />' . basename($path)
                               . '</a>'
                               /*            . (is_readable($path = ini_get('error_log')) && filesize($path) > 0 ? '<div style="position: absolute; right: 8px; bottom: -6px; color: red; font-weight: bold;">[1]</div>' : '' ) */
                               . '</div>' . "\n";
                           elseif (basename($path) == '.babelrc')
-                            echo '<div style="position: relative;"><a href="?app=ace_editor&path=' . (basename(dirname($path)) == basename(parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH) ? 'failed' : basename(dirname($path)))) . '&file=' . basename($path) . '"><img src="resources/images/babelrc_file.png" width="40" height="50" /><br />' . basename($path)
+                            echo '<div style="position: relative;"><a href="?app=ace_editor&path=' . (basename(dirname($path)) == basename(parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH) ? 'failed' : basename(dirname($path)))) . '&file=' . basename($path) . '"><img src="assets/images/babelrc_file.png" width="40" height="50" /><br />' . basename($path)
                               . '</a>'
-                              /*            . (is_readable($path = ini_get('error_log')) && filesize($path) > 0 ? '<div style="position: absolute; right: 8px; bottom: -6px; color: red; font-weight: bold;">[1]</div>' : '' ) */
                               . '</div>' . "\n";
                           elseif (basename($path) == '.gitignore')
-                            echo '<div style="position: relative;"><a href="?app=ace_editor&path=' . (basename(dirname($path)) == basename(parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH) ? 'failed' : basename(dirname($path)))) . '&file=' . basename($path) . '"><img src="resources/images/gitignore_file.png" width="40" height="50" /><br />' . basename($path)
+                            echo '<div style="position: relative;"><a href="?app=ace_editor&path=' . (basename(dirname($path)) == basename(parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH) ? 'failed' : basename(dirname($path)))) . '&file=' . basename($path) . '"><img src="assets/images/gitignore_file.png" width="40" height="50" /><br />' . basename($path)
                               . '</a>'
-                              /*            . (is_readable($path = ini_get('error_log')) && filesize($path) > 0 ? '<div style="position: absolute; right: 8px; bottom: -6px; color: red; font-weight: bold;">[1]</div>' : '' ) */
                               . '</div>' . "\n";
                           elseif (basename($path) == '.env')
-                            echo '<div style="position: relative;"><a href="?app=ace_editor&path=' . (basename(dirname($path)) == basename(parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH) ? 'failed' : basename(dirname($path)))) . '&file=' . basename($path) . '"><img src="resources/images/env_file.png" width="40" height="50" /><br />' . basename($path)
+                            echo '<div style="position: relative;"><a href="?app=ace_editor&path=' . (basename(dirname($path)) == basename(parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH) ? 'failed' : basename(dirname($path)))) . '&file=' . basename($path) . '"><img src="assets/images/env_file.png" width="40" height="50" /><br />' . basename($path)
                               . '</a>'
-                              /*            . (is_readable($path = ini_get('error_log')) && filesize($path) > 0 ? '<div style="position: absolute; right: 8px; bottom: -6px; color: red; font-weight: bold;">[1]</div>' : '' ) */
                               . '</div>' . "\n";
                           else
-                            echo '<div style="position: relative;"><a href="?app=ace_editor&path=' . (basename(dirname($path)) == basename(parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH) ? 'failed' : basename(dirname($path)))) . '&file=' . basename($path) . '"><img src="resources/images/htaccess_file.png" width="40" height="50" /><br />' . basename($path)
+                            echo '<div style="position: relative;"><a href="?app=ace_editor&path=' . (basename(dirname($path)) == basename(parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH) ? 'failed' : basename(dirname($path)))) . '&file=' . basename($path) . '"><img src="assets/images/htaccess_file.png" width="40" height="50" /><br />' . basename($path)
                               . '</a>'
-                              /*            . (is_readable($path = ini_get('error_log')) && filesize($path) > 0 ? '<div style="position: absolute; right: 8px; bottom: -6px; color: red; font-weight: bold;">[1]</div>' : '' ) */
                               . '</div>' . "\n";
 
                         } elseif (preg_match('/package(?:-lock)?\.(json)/', basename($path))) {
                           echo '<a href="?app=ace_editor&path=' . (basename(dirname($path)) == basename(parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH) ? 'failed' : basename(dirname($path)))) . '&file=' . basename($path) . '">';
 
                           if (basename($path) == 'package.json')
-                            echo '<div style="position: relative;"><img src="resources/images/package_json_file.png" width="40" height="50" /><br />' . basename($path)
+                            echo '<div style="position: relative;"><img src="assets/images/package_json_file.png" width="40" height="50" /><br />' . basename($path)
                               . (isset($errors['COMPOSER-VALIDATE-JSON']) ? '<div style="position: absolute; right: 8px; top: -6px; color: red; font-weight: bold;">[1]</div>' : '')
                               . '</a></div>' . "\n";
                           elseif (basename($path) == 'package-lock.json')
-                            echo '<div style="position: relative;"><img src="resources/images/package-lock_json_file.png" width="40" height="50" /><br />' . basename($path)
+                            echo '<div style="position: relative;"><img src="assets/images/package-lock_json_file.png" width="40" height="50" /><br />' . basename($path)
                               . (isset($errors['COMPOSER-VALIDATE-JSON']) ? '<div style="position: absolute; right: 8px; top: -6px; color: red; font-weight: bold;">[1]</div>' : '')
                               . '</a></div>' . "\n";
 
@@ -1828,54 +1824,51 @@ header("Pragma: no-cache"); ?>
                           echo '<div style="position: relative;"><a href="?app=ace_editor&path=' . (basename(dirname($path)) == basename(parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH) ? 'failed' : basename(dirname($path)))) . '&file=' . basename($path) . '">';
 
                           if (basename($path) == 'composer.json')
-                            echo '<img src="resources/images/composer_json_file.gif" width="40" height="50" /><br />' . basename($path)
+                            echo '<img src="assets/images/composer_json_file.gif" width="40" height="50" /><br />' . basename($path)
                               . (isset($errors['COMPOSER-VALIDATE-JSON']) ? '<div style="position: absolute; right: 8px; top: -6px; color: red; font-weight: bold;">[1]</div>' : '')
                               . '</a></div>' . "\n";
                           elseif (basename($path) == 'composer.lock')
 
                             //$errors['COMPOSER-VALIDATE-LOCK']
               
-                            echo '<img src="resources/images/composer_lock_file.gif" width="40" height="50" /><br />' . basename($path)
+                            echo '<img src="assets/images/composer_lock_file.gif" width="40" height="50" /><br />' . basename($path)
                               . (isset($errors['COMPOSER-VALIDATE-LOCK']) ? '<div style="position: absolute; right: 8px; top: -6px; color: red; font-weight: bold;">[1]</div>' : '')
-                              /*            . (is_readable($path = ini_get('error_log')) && filesize($path) > 0 ? '<div style="position: absolute; right: 8px; bottom: -6px; color: red; font-weight: bold;">[1]</div>' : '' ) */
                               . '</a></div>' . "\n";
                           elseif (basename($path) == 'composer.phar')
-                            echo '<img src="resources/images/phar_file.png" width="40" height="50" /><br />' . basename($path)
-                              /*            . (is_readable($path = ini_get('error_log')) && filesize($path) > 0 ? '<div style="position: absolute; right: 8px; bottom: -6px; color: red; font-weight: bold;">[1]</div>' : '' ) */
+                            echo '<img src="assets/images/phar_file.png" width="40" height="50" /><br />' . basename($path)
                               . '</a></div>' . "\n";
                           else
-                            echo '<img src="resources/images/composer_php_file.gif" width="40" height="50" /><br />' . basename($path)
+                            echo '<img src="assets/images/composer_php_file.gif" width="40" height="50" /><br />' . basename($path)
                               . '</a></div>' . "\n";
                         } elseif (preg_match('/.*\.js$/', basename($path))) {
                           if (basename($path) == 'webpack.config.js')
-                            echo '<a href="?app=ace_editor&path=' . (basename(dirname($path)) == basename(parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH) ? 'failed' : basename(dirname($path)))) . '&file=' . basename($path) . '"><img src="resources/images/webpack_config_js_file.png" width="40" height="50" /><br />' . basename($path) . '</a>';
+                            echo '<a href="?app=ace_editor&path=' . (basename(dirname($path)) == basename(parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH) ? 'failed' : basename(dirname($path)))) . '&file=' . basename($path) . '"><img src="assets/images/webpack_config_js_file.png" width="40" height="50" /><br />' . basename($path) . '</a>';
                           else
-                            echo '<a href="?app=ace_editor&path=' . (basename(dirname($path)) == basename(parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH) ? 'failed' : basename(dirname($path)))) . '&file=' . basename($path) . '"><img src="resources/images/js_file.png" width="40" height="50" /><br />' . basename($path) . '</a>';
+                            echo '<a href="?app=ace_editor&path=' . (basename(dirname($path)) == basename(parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH) ? 'failed' : basename(dirname($path)))) . '&file=' . basename($path) . '"><img src="assets/images/js_file.png" width="40" height="50" /><br />' . basename($path) . '</a>';
 
                         } elseif (preg_match('/.*\.md$/', basename($path))) {
-                          echo '<a href="?app=ace_editor&path=' . (basename(dirname($path)) == basename(parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH) ? 'failed' : basename(dirname($path)))) . '&file=' . basename($path) . '"><img src="resources/images/md_file.png" width="40" height="50" /><br />' . basename($path) . '</a>';
+                          echo '<a href="?app=ace_editor&path=' . (basename(dirname($path)) == basename(parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH) ? 'failed' : basename(dirname($path)))) . '&file=' . basename($path) . '"><img src="assets/images/md_file.png" width="40" height="50" /><br />' . basename($path) . '</a>';
 
                         } elseif (preg_match('/.*\.php$/', basename($path))) {
                           if (preg_match('/^project\.php/', basename($path)))
-                            echo '<a style="position: relative;" href="' . (isset($_GET['project']) ? '?project#!' : '#') . '" onclick="document.getElementById(\'app_project-container\').style.display=\'block\';"><div style="position: absolute; left: -60px; top: -20px; color: red; font-weight: bold;">' . (isset($_GET['project']) ? '' : '') . '</div><img src="resources/images/project-icon.png" width="40" height="50" /></a><br /><a href="' . (isset($_GET['project']) ? '?project#!' : '?app=ace_editor&path=' . (basename(dirname($path)) == basename(parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH) ? 'failed' : basename(dirname($path)))) . '&file=' . basename($path)) . '" ' . (isset($_GET['project']) ? 'onclick="document.getElementById(\'app_ace_editor-container\').style.display=\'block\';"' : '') . '>' . basename($path) . '</a>';
+                            echo '<a style="position: relative;" href="' . (isset($_GET['project']) ? '?project#!' : '#') . '" onclick="document.getElementById(\'app_project-container\').style.display=\'block\';"><div style="position: absolute; left: -60px; top: -20px; color: red; font-weight: bold;">' . (isset($_GET['project']) ? '' : '') . '</div><img src="assets/images/project-icon.png" width="40" height="50" /></a><br /><a href="' . (isset($_GET['project']) ? '?project#!' : '?app=ace_editor&path=' . (basename(dirname($path)) == basename(parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH) ? 'failed' : basename(dirname($path)))) . '&file=' . basename($path)) . '" ' . (isset($_GET['project']) ? 'onclick="document.getElementById(\'app_ace_editor-container\').style.display=\'block\';"' : '') . '>' . basename($path) . '</a>';
                           elseif (basename($path) == 'phpunit.php')
-                            echo '<a href="?app=ace_editor&path=' . (basename(dirname($path)) == basename(parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH) ? 'failed' : basename(dirname($path)))) . '&file=' . basename($path) . '"><img src="resources/images/phpunit_php_file.png" width="40" height="50" /><br />' . basename($path) . '</a>';
+                            echo '<a href="?app=ace_editor&path=' . (basename(dirname($path)) == basename(parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH) ? 'failed' : basename(dirname($path)))) . '&file=' . basename($path) . '"><img src="assets/images/phpunit_php_file.png" width="40" height="50" /><br />' . basename($path) . '</a>';
                           else
-                            echo '<a href="?app=ace_editor&path=' . (basename(dirname($path)) == basename(parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH) ? 'failed' : basename(dirname($path)))) . '&file=' . basename($path) . '"><img src="resources/images/php_file.png" width="40" height="50" /><br />' . basename($path) . '</a>';
+                            echo '<a href="?app=ace_editor&path=' . (basename(dirname($path)) == basename(parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH) ? 'failed' : basename(dirname($path)))) . '&file=' . basename($path) . '"><img src="assets/images/php_file.png" width="40" height="50" /><br />' . basename($path) . '</a>';
 
                         } elseif (basename($path) == 'LICENSE') {
                           /* https://github.com/unlicense */
-                          echo '<div style="position: relative;"><a href="?app=ace_editor&path=' . (basename(dirname($path)) == basename(parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH) ? 'failed' : basename(dirname($path)))) . '&file=' . basename($path) . '"><img src="resources/images/license_file.png" width="40" height="50" /><br />un' . basename($path)
+                          echo '<div style="position: relative;"><a href="?app=ace_editor&path=' . (basename(dirname($path)) == basename(parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH) ? 'failed' : basename(dirname($path)))) . '&file=' . basename($path) . '"><img src="assets/images/license_file.png" width="40" height="50" /><br />un' . basename($path)
                             . '.org</a>'
-                            /*            . (is_readable($path = ini_get('error_log')) && filesize($path) > 0 ? '<div style="position: absolute; right: 8px; bottom: -6px; color: red; font-weight: bold;">[1]</div>' : '' ) */
                             . '</div>' . "\n";
                         } elseif (basename($path) == basename(ini_get('error_log')))
                           echo '<a href="?app=ace_editor&path=' . (basename(dirname($path)) == basename(parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH) ? 'failed' : basename(dirname($path)))) . '&file=' . basename($path) . '">'
-                            . '<div style="position: relative;"><img src="resources/images/error_log.png" width="40" height="50" /></a><br /><a id="app_php-error-log" href="' . (APP_URL['query'] != '' ? '?' . APP_URL['query'] : '') . (defined('APP_ENV') && APP_ENV == 'development' ? '#!' : '') . /* '?' . basename(ini_get('error_log')) . '=unlink' */ '" style="text-decoration: line-through; background-color: red; color: white;">' . basename($path)
+                            . '<div style="position: relative;"><img src="assets/images/error_log.png" width="40" height="50" /></a><br /><a id="app_php-error-log" href="' . (APP_URL['query'] != '' ? '?' . APP_URL['query'] : '') . (defined('APP_ENV') && APP_ENV == 'development' ? '#!' : '') . /* '?' . basename(ini_get('error_log')) . '=unlink' */ '" style="text-decoration: line-through; background-color: red; color: white;">' . basename($path)
                             . (is_readable($path = ini_get('error_log')) && filesize($path) > 0 ? '</a><div style="position: absolute; right: 8px; bottom: -6px; color: red; font-weight: bold;">[1]</div>' : '')
                             . '</div>' . "\n";
                         else
-                          echo '<a href="?app=ace_editor&path=' . (basename(dirname($path)) == basename(parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH) ? 'failed' : basename(dirname($path)))) . '&file=' . basename($path) . '"><img src="resources/images/php_file.png" width="40" height="50" /><br />' . basename($path) . '</a>';
+                          echo '<a href="?app=ace_editor&path=' . (basename(dirname($path)) == basename(parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH) ? 'failed' : basename(dirname($path)))) . '&file=' . basename($path) . '"><img src="assets/images/php_file.png" width="40" height="50" /><br />' . basename($path) . '</a>';
                       }
                       echo '</td>' . "\n";
                       if ($count >= 6)
@@ -1926,7 +1919,7 @@ header("Pragma: no-cache"); ?>
   <!-- https://code.jquery.com/jquery-3.7.1.min.js -->
   <!-- script src="https://code.jquery.com/jquery-3.6.0.min.js" integrity="sha256-/xUj+3OJU5yExlq6GSYGSHk7tPXikynS7ogEvDej/m4=" crossorigin="anonymous"></script -->
   <?php
-  is_dir($path = APP_BASE['resources'] . 'js/jquery/') or mkdir($path, 0755, true);
+  is_dir($path = APP_BASE['public'] . 'assets/js/jquery/') or mkdir($path, 0755, true);
   if (is_file($path . 'jquery-3.7.1.min.js')) {
     if (ceil(abs((strtotime(date('Y-m-d')) - strtotime(date('Y-m-d', strtotime('+5 days', filemtime($path . 'jquery-3.7.1.min.js'))))) / 86400)) <= 0) {
       $url = 'https://code.jquery.com/jquery-3.7.1.min.js';
@@ -1956,7 +1949,7 @@ header("Pragma: no-cache"); ?>
   </div>
 
   <div id="adhd_song-container" style="position: fixed; display: none; bottom: 0; right: 0; z-index: 1;">
-    <img src="/resources/reels/adhd_song.gif" />
+    <img src="assets/reels/adhd_song.gif" />
   </div>
 
   <!--
@@ -1966,14 +1959,14 @@ header("Pragma: no-cache"); ?>
 
 
   <script
-    src="<?= APP_IS_ONLINE && check_http_status('https://code.jquery.com/jquery-3.7.1.min.js') ? 'https://code.jquery.com/jquery-3.7.1.min.js' : APP_BASE['resources'] . 'js/jquery/' . 'jquery-3.7.1.min.js' ?>"></script>
+    src="<?= APP_IS_ONLINE && check_http_status('https://code.jquery.com/jquery-3.7.1.min.js') ? 'https://code.jquery.com/jquery-3.7.1.min.js' : APP_BASE['public'] . 'assets/js/jquery/' . 'jquery-3.7.1.min.js' ?>"></script>
   <!-- You need to include jQueryUI for the extended easing options. -->
   <?php /* https://stackoverflow.com/questions/12592279/typeerror-p-easingthis-easing-is-not-a-function */ ?>
   <!-- script src="//code.jquery.com/jquery-1.12.4.js"></script -->
 
   <?php
-  // (APP_IS_ONLINE && check_http_status('https://cdn.tailwindcss.com') ? 'https://cdn.tailwindcss.com' : APP_URL . 'resources/js/tailwindcss-3.3.5.js')? [[jquery-ui]-[1.12.1].js]
-  is_dir($path = APP_BASE['resources'] . 'js/jquery-ui/') or mkdir($path, 0755, true);
+  // (APP_IS_ONLINE && check_http_status('https://cdn.tailwindcss.com') ? 'https://cdn.tailwindcss.com' : APP_URL . 'assets/js/tailwindcss-3.3.5.js')? [[jquery-ui]-[1.12.1].js]
+  is_dir($path = APP_BASE['public'] . 'assets/js/jquery-ui/') or mkdir($path, 0755, true);
   if (is_file($path . 'jquery-ui-1.12.1.js')) {
     if (ceil(abs((strtotime(date('Y-m-d')) - strtotime(date('Y-m-d', strtotime('+5 days', filemtime($path . 'jquery-ui-1.12.1.js'))))) / 86400)) <= 0) {
       $url = 'https://code.jquery.com/ui/1.12.1/jquery-ui.js';
@@ -1994,13 +1987,13 @@ header("Pragma: no-cache"); ?>
   unset($path);
   ?>
   <script
-    src="<?= (realpath(APP_PATH . ($path = APP_BASE['resources'] . 'js/jquery-ui/jquery-ui-1.12.1.js')) ? $path : (check_http_status($url) ? substr($url, strpos($url, parse_url($url)['host']) + strlen(parse_url($url)['host'])) : '')) ?>"></script>
+    src="<?= (realpath(APP_PATH . ($path = APP_BASE['public'] . 'assets/js/jquery-ui/jquery-ui-1.12.1.js')) ? $path : (check_http_status($url) ? substr($url, strpos($url, parse_url($url)['host']) + strlen(parse_url($url)['host'])) : '')) ?>"></script>
   <!-- Uncaught ReferenceError: jQuery is not defined -->
 
   <!-- For Text / Ace Editor -->
   <!-- <script src="https://unpkg.com/@popperjs/core@2" type="text/javascript" charset="utf-8"></script> -->
   <?php
-  is_dir($path = APP_BASE['resources'] . 'js/requirejs/') or mkdir($path, 0755, true);
+  is_dir($path = APP_BASE['public'] . 'assets/js/requirejs/') or mkdir($path, 0755, true);
   if (is_file($path . 'require-2.3.6.js')) {
     if (ceil(abs((strtotime(date('Y-m-d')) - strtotime(date('Y-m-d', strtotime('+5 days', filemtime($path . '/require-2.3.6.js'))))) / 86400)) <= 0) {
       $url = 'https://requirejs.org/docs/release/2.3.6/minified/require.js';
@@ -2021,13 +2014,13 @@ header("Pragma: no-cache"); ?>
   unset($path);
   ?>
 
-  <script src="<?= APP_BASE['resources'] . 'js/requirejs/require-2.3.6.js' ?? $url ?>" type="text/javascript"
+  <script src="<?= 'assets/js/requirejs/require-2.3.6.js' ?? $url ?>" type="text/javascript"
     charset="utf-8"></script>
 
-  <?php if (is_dir($path = APP_BASE['resources'] . 'js/ace')) { ?>
+  <?php if (is_dir($path = APP_BASE['public'] . 'assets/js/ace')) { ?>
 
-    <script src="resources/js/ace/src/ace.js" type="text/javascript" charset="utf-8"></script> <!-- -->
-    <script src="resources/js/ace/src/ext-language_tools.js" type="text/javascript" charset="utf-8"></script>
+    <script src="assets/js/ace/src/ace.js" type="text/javascript" charset="utf-8"></script> <!-- -->
+    <script src="assets/js/ace/src/ext-language_tools.js" type="text/javascript" charset="utf-8"></script>
 
     <script>
       document.addEventListener("DOMContentLoaded", function () {
@@ -2051,19 +2044,19 @@ header("Pragma: no-cache"); ?>
 
   <?php } ?>
   <!-- <script src="https://cdnjs.cloudflare.com/ajax/libs/ace/1.4.12/ext-language_tools.js"></script>
-      <script src="resources/js/ace/src/mode-php.js" type="text/javascript" charset="utf-8"></script>
+      <script src="assets/js/ace/src/mode-php.js" type="text/javascript" charset="utf-8"></script>
       
-      <script src="resources/js/ace/src/theme-dracula.js" type="text/javascript" charset="utf-8"></script> -->
+      <script src="assets/js/ace/src/theme-dracula.js" type="text/javascript" charset="utf-8"></script> -->
   <!--   <script src="dist/bundle.js" type="text/javascript" charset="utf-8"></script> -->
   <!-- End: For Text / Ace Editor -->
-  <!-- <script src="resources/js/jquery/jquery.min.js"></script> -->
+  <!-- <script src="assets/js/jquery/jquery.min.js"></script> -->
   <?php if (date(/*Y-*/ 'm-d') == /*1928-*/ '08-07' ?? /*2023-*/ '03-30') { ?>
-    <script src="resources/reels/leave-a-light-on.js" type="text/javascript" charset="utf-8"></script>
+    <script src="assets/reels/leave-a-light-on.js" type="text/javascript" charset="utf-8"></script>
   <?php } elseif (date(/*Y-*/ 'm-d') == /*1976-*/ '03-20' ?? /*2017-*/ '07-20') { ?>
-    <script src="resources/reels/leave-a-light-on.js" type="text/javascript" charset="utf-8"></script>
+    <script src="assets/reels/leave-a-light-on.js" type="text/javascript" charset="utf-8"></script>
   <?php } else {  // array_rand() can't be empty ?>
     <script
-      src="<?= APP_BASE['resources'] . 'reels/' . 'adhd_song.js'; /* !empty($reels = glob(APP_PATH . 'resources/reels/*.js')) ? APP_BASE['resources'] . 'reels/' . basename(array_rand(array_flip(array_filter($reels, 'is_file')), 1)) : ''; APP_BASE['resources'] */ ?>"
+      src="<?= 'assets/reels/' . 'adhd_song.js'; /* !empty($reels = glob(APP_PATH . 'public/assets/reels/*.js')) ? APP_BASE['public'] . 'assets/reels/' . basename(array_rand(array_flip(array_filter($reels, 'is_file')), 1)) : ''; APP_BASE['public'] */ ?>"
       type="text/javascript" charset="utf-8"></script>
   <?php } ?>
   <script type="text/javascript" charset="utf-8">
@@ -2452,28 +2445,28 @@ header("Pragma: no-cache"); ?>
     + window.location.pathname.split("/").slice(0, -1).join("/"),
     
     paths: {
-      jquery: 'resources/js/jquery/jquery.min',
-      domReady: 'resources/js/domReady',
-      bootstrap: 'resources/js/bootstrap/dist/js/bootstrap',
-      ace: 'resources/js/ace/src/ace',
-      'lib/dom': 'resources/js/ace/src/lib/dom',
-      useragent: 'resources/js/ace/src/lib/useragent',
-      exports: 'resources/js/ace/src/lib/',
+      jquery: 'assets/js/jquery/jquery.min',
+      domReady: 'assets/js/domReady',
+      bootstrap: 'assets/js/bootstrap/dist/js/bootstrap',
+      ace: 'assets/js/ace/src/ace',
+      'lib/dom': 'assets/js/ace/src/lib/dom',
+      useragent: 'assets/js/ace/src/lib/useragent',
+      exports: 'assets/js/ace/src/lib/',
       
-      //'../snippets': 'resources/js/ace/lib/ace/snippets',
-      //'./lib/oop': 'resources/js/ace/src/lib'
+      //'../snippets': 'assets/js/ace/lib/ace/snippets',
+      //'./lib/oop': 'assets/js/ace/src/lib'
     }
     });
     */
     <?php
-    if (is_dir($path = APP_BASE['resources'] . 'js/ace')) { ?>
+    if (is_dir($path = APP_BASE['public'] . 'assets/js/ace')) { ?>
       var globalEditor; // Define a global variable
 
       require.config({
         baseUrl: window.location.protocol + "//" + window.location.host
           + window.location.pathname.split("/").slice(0, -1).join("/"),
         paths: {
-          ace: "resources/js/ace/src"
+          ace: "assets/js/ace/src"
         }
       });
 
@@ -2481,7 +2474,7 @@ header("Pragma: no-cache"); ?>
         //console.log(langtools);
 
         <?= UI_ACE_EDITOR['script']; ?>
-        //require(["resources/js/requirejs/require-2.3.6!ace/ace"], function(e){
+        //require(["assets/js/requirejs/require-2.3.6!ace/ace"], function(e){
         //editor.setValue(e);
         //})
 

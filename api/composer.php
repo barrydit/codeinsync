@@ -204,15 +204,165 @@ function normalize_regex(?string $expr): ?string
 }
 
 if (($_SERVER['REQUEST_METHOD'] ?? '') === 'GET') {
+    if (($_GET['action'] ?? '') === 'packagist') {
+        header('Content-Type: application/json; charset=utf-8');
 
-    dd($_GET);
+        $p = strtolower(trim((string) ($_GET['p'] ?? '')));
+        if (!preg_match('~^[a-z0-9._-]+/[a-z0-9._-]+$~', $p)) {
+            http_response_code(400);
+            echo json_encode(['ok' => false, 'error' => 'Invalid package name']);
+            exit;
+        }
 
+        $url = "https://repo.packagist.org/p2/" . rawurlencode($p) . ".json";
+
+        $ch = curl_init($url);
+        curl_setopt_array($ch, [
+            CURLOPT_RETURNTRANSFER => true,
+            CURLOPT_FOLLOWLOCATION => true,
+            CURLOPT_TIMEOUT => 6,
+            CURLOPT_CONNECTTIMEOUT => 3,
+            CURLOPT_HTTPHEADER => ['Accept: application/json'],
+            CURLOPT_MAXREDIRS => 2,
+        ]);
+        $body = curl_exec($ch);
+        $code = curl_getinfo($ch, CURLINFO_RESPONSE_CODE);
+        $err = curl_error($ch);
+        curl_close($ch);
+
+        if ($body === false || $code >= 400) {
+            http_response_code(502);
+            echo json_encode(['ok' => false, 'status' => $code, 'error' => $err ?: 'Upstream error']);
+            exit;
+        }
+
+        // Optional: small in-memory/file cache here keyed by $p
+        header('Cache-Control: public, max-age=300'); // 5 min
+        echo $body; // already JSON from Packagist
+        exit;
+    }
+    dd('UNKNOWN_ACTION');
+}
+
+
+$in = $_POST['composer'] ?? [];
+$action = (string) ($in['action'] ?? '');
+$autoloadRaw = $in['autoload'] ?? null;
+
+// --- helpers ---
+$boolish = static function ($v): bool {
+    if (is_bool($v))
+        return $v;
+    $v = is_string($v) ? strtolower(trim($v)) : $v;
+    return in_array($v, ['1', 'true', 'on', 'yes'], true);
+};
+/*
+$write_env_key = static function (string $key, string $value, string $envPath): bool {
+    // Writes/updates a line like: COMPOSER[AUTOLOAD]=on    (no quotes, per your preference)
+    $line = "COMPOSER[AUTOLOAD]={$value}";
+    if (!is_file($envPath)) {
+        return (bool) file_put_contents($envPath, $line . PHP_EOL, LOCK_EX);
+    }
+    $src = file_get_contents($envPath);
+    if ($src === false)
+        return false;
+
+    $rx = '/^COMPOSER\[(["\']?AUTOLOAD["\']?)\]\s*=\s*.*$/mi';
+    if (preg_match($rx, $src)) {
+        $dst = preg_replace($rx, $line, $src, 1);
+    } else {
+        $dst = rtrim($src, "\r\n") . PHP_EOL . $line . PHP_EOL;
+    }
+    return (bool) file_put_contents($envPath, $dst, LOCK_EX);
+};
+*/
+
+$write_ini_kv = static function (string $file, string $section, string $key, $value): bool {
+    $render = static function ($v): string {
+        // booleans as true/false, numbers as-is, strings quoted only if needed
+        if (is_bool($v))
+            return $v ? 'true' : 'false';
+        if (is_int($v) || is_float($v))
+            return (string) $v;
+        $s = (string) $v;
+        if ($s === '' || preg_match('/[\s;#=]/', $s))
+            return "'" . str_replace("'", "\\'", $s) . "'";
+        return $s;
+    };
+
+    $src = is_file($file) ? file_get_contents($file) : '';
+    if ($src === false)
+        return false;
+
+    // Ensure section exists
+    if (!preg_match('/^\[' . preg_quote($section, '/') . '\]\s*$/mi', $src)) {
+        $src = rtrim($src, "\r\n") . "\n\n[" . $section . "]\n";
+    }
+
+    // Replace or insert within the section
+    $pattern = '/(^\[' . preg_quote($section, '/') . '\][^\[]*)/ms';
+    if (preg_match($pattern, $src, $m, PREG_OFFSET_CAPTURE)) {
+        $block = $m[1][0];
+        $kvRx = '/^' . preg_quote($key, '/') . '\s*=.*$/mi';
+        if (preg_match($kvRx, $block)) {
+            $block = preg_replace($kvRx, $key . '=' . $render($value), $block, 1);
+        } else {
+            $block = rtrim($block, "\r\n") . "\n" . $key . '=' . $render($value) . "\n";
+        }
+        $src = substr($src, 0, $m[1][1]) . $block . substr($src, $m[1][1] + strlen($m[1][0]));
+    }
+    return (bool) file_put_contents($file, $src, LOCK_EX);
+};
+
+switch ($action) {
+    case 'set_autoload': {
+        //header('Content-Type: text/plain; charset=utf-8');
+        //var_dump($_POST);
+        //exit;
+/*
+curl -i -X POST 'http://localhost/?api=composer' \
+ -H 'Accept: application/json' \
+ -d 'composer[action]=set_autoload' \
+ -d 'composer[autoload]=on' */
+
+        dd($_POST); // error_log(print_r($_POST, true));
+
+        $on = $boolish($autoloadRaw);
+        $on = in_array(strtolower((string) ($_POST['composer']['autoload'] ?? '')), ['on', 'true', '1', 'yes'], true);
+
+        // Update runtime env immediately
+        $_ENV['COMPOSER'] ??= [];
+        $_ENV['COMPOSER']['AUTOLOAD'] = $on;
+
+        // Persist to .env (optional but typical)
+        $envPath = APP_PATH . '.env';
+        //$ok = $write_env_key('COMPOSER[AUTOLOAD]', $on ? 'on' : 'off', $envPath);
+
+        $ok = $write_ini_kv(APP_PATH . APP_ROOT . '.env', 'COMPOSER', 'AUTOLOAD', $on);
+
+        return [
+            'ok' => $ok,
+            'action' => 'set_autoload',
+            'autoload' => $on ? 'on' : 'off',
+            'persisted' => $ok,
+            'envPath' => $envPath,
+        ];
+    }
+
+    default:
+        //dd('UNKNOWN_ACTION');
+        // Future actions: install, update, dump-autoload, etc.
+        return [
+            'ok' => false,
+            'error' => 'UNKNOWN_ACTION',
+            'hint' => 'Use composer[action]=set_autoload',
+        ];
 }
 
 /* ============================ POST handler ============================= */
 if (($_SERVER['REQUEST_METHOD'] ?? '') === 'POST') {
 
-    dd($_POST);
+    // dd($_POST);
 
     // Project dir (where composer.json lives)
     $projectDir = rtrim(APP_PATH . (defined('APP_ROOT') ? APP_ROOT : ''), '/\\');

@@ -4,10 +4,10 @@
   <title>Pong 2.0</title>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  @vite('resources/css/app.css')
+  @vite('assets/css/app.css')
 </head>
 <body class="bg-gray-300">
   {{ $slot }}
-  @vite('resources/js/app.js')
+  @vite('assets/js/app.js')
 </body>
 </html>

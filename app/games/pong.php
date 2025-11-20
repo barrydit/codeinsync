@@ -13,7 +13,7 @@ if (__FILE__ == get_required_files()[0] && __FILE__ == realpath($_SERVER["SCRIPT
 if (preg_match('/^app\.([\w\-.]+)\.php$/', basename(__FILE__), $matches))
   ${$matches[1]} = $matches[1];
 
-if (!realpath($path = APP_BASE['resources'] . 'js/pong/'))
+if (!realpath($path = APP_BASE['public'] . 'assets/js/pong/'))
   (@!mkdir(APP_PATH . $path, 0755, true) ?: $errors['APP_PONG'] = "$path could not be created.");
 
 if ($path) {
@@ -305,7 +305,7 @@ export default class Score {
 END
       );
 
-  if (!is_file($file = APP_BASE['resources'] . 'js/' . 'app.js'))
+  if (!is_file($file = APP_BASE['public'] . 'assets/js/' . 'app.js'))
     if (@touch($file))
       file_put_contents(
         $file,
@@ -316,7 +316,7 @@ END
       );
 
 
-  if (!is_file($file = APP_BASE['resources'] . 'js/' . 'bootstrap.js'))
+  if (!is_file($file = APP_BASE['public'] . 'assets/js/' . 'bootstrap.js'))
     if (@touch($file))
       file_put_contents(
         $file,
@@ -427,12 +427,12 @@ ob_start(); ?>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-  <link rel="stylesheet" href="resources/css/app.css" />
+  <link rel="stylesheet" href="assets/css/app.css" />
   <link rel="stylesheet" href="//code.jquery.com/ui/1.12.1/themes/smoothness/jquery-ui.css" />
 
   <?php
-  // (APP_IS_ONLINE && check_http_status('https://cdn.tailwindcss.com') ? 'https://cdn.tailwindcss.com' : APP_URL . 'resources/js/tailwindcss-3.3.5.js')?
-  is_dir($path = APP_BASE['resources'] . 'js/') or mkdir($path, 0755, true);
+  // (APP_IS_ONLINE && check_http_status('https://cdn.tailwindcss.com') ? 'https://cdn.tailwindcss.com' : APP_URL . 'public/js/tailwindcss-3.3.5.js')?
+  is_dir($path = APP_BASE['public'] . 'js/') or mkdir($path, 0755, true);
   if (is_file("{$path}tailwindcss-3.3.5.js")) {
     if (ceil(abs((strtotime(date('Y-m-d')) - strtotime(date('Y-m-d', strtotime('+5 days', filemtime($path . 'tailwindcss-3.3.5.js'))))) / 86400)) <= 0) {
       $url = 'https://cdn.tailwindcss.com';
@@ -452,7 +452,7 @@ ob_start(); ?>
   }
   ?>
 
-  <script src="<?= 'resources/js/tailwindcss-3.3.5.js' ?? $url ?>"></script>
+  <script src="<?= 'assets/js/tailwindcss-3.3.5.js' ?? $url ?>"></script>
 
   <style type="text/tailwindcss">
     <?= /*$appWhiteboard['style'];*/ NULL; ?>
@@ -498,8 +498,8 @@ html, body { width: 100%; height: 100%; <?= $_SERVER['SCRIPT_FILENAME'] == __FIL
       </div>
     </div>
   </div>
-  <script type="module" src="resources/js/pong/index.js"></script>
-  <script type="module" src="resources/js/bootstrap.js"></script>
+  <script type="module" src="assets/js/pong/index.js"></script>
+  <script type="module" src="assets/js/bootstrap.js"></script>
 </body>
 
 </html>
