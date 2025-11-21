@@ -35,15 +35,52 @@ $portPart = $isDefaultPort ? '' : ":$port";
 //$dir = ($scriptDir === '') ? '/' : $scriptDir . '/';
 //$baseHref = $scheme . '://' . $host . $portPart . $dir;
 
-$appFs = APP_PATH;                          // ex: /mnt/c/www
-$docFs = rtrim(str_replace('\\', '/', $_SERVER['DOCUMENT_ROOT']), '/'); // ex: /mnt/c/www
 
-// If APP_ROOT begins with DOCUMENT_ROOT, we can compute URL prefix
+defined('APP_PUBLIC_FS_ROOT') or define(
+    'APP_PUBLIC_FS_ROOT',
+    rtrim(str_replace('\\', '/', APP_PATH . 'public'), '/')
+);
+
+// --- Filesystem roots ---
+$publicFs = defined('APP_PUBLIC_FS_ROOT')
+    ? str_replace('\\', '/', APP_PUBLIC_FS_ROOT)
+    : null;
+
+$docFs = isset($_SERVER['DOCUMENT_ROOT'])
+    ? rtrim(str_replace('\\', '/', $_SERVER['DOCUMENT_ROOT']), '/')
+    : null;
+
+// Default URL path
 $appUrlPath = '/';
-if (strpos($appFs, $docFs) === 0) {
-    $suffix = substr($appFs, strlen($docFs)); // ex: '' or '/codeinsync'
-    $appUrlPath = rtrim($suffix, '/') . '/';  // always end with /
+
+// Case 1: public root is under DOCUMENT_ROOT  (the “nice” case)
+if ($publicFs && $docFs && strpos($publicFs, $docFs) === 0) {
+    $suffix = substr($publicFs, strlen($docFs));     // e.g. '' or '/codeinsync/public'
+    $suffix = rtrim($suffix, '/');
+    $appUrlPath = ($suffix === '') ? '/' : $suffix . '/';
+
+    // Case 2: Fallback – DOCUMENT_ROOT doesn't match filesystem (aliases, symlinks, etc.)
+} elseif ($publicFs) {
+    $scriptName = $_SERVER['SCRIPT_NAME'] ?? '/';
+    $scriptPath = str_replace('\\', '/', $scriptName);
+
+    // Try to clamp at "/public/"
+    $needle = '/' . basename(APP_PUBLIC_FS_ROOT) . '/';
+    $pos = strpos($scriptPath, $needle);
+
+    if ($pos !== false) {
+        // e.g. "/clients/000-AuthSecure/public/api/test.php"
+        //  -> "/clients/000-AuthSecure/public/"
+        $appUrlPath = substr($scriptPath, 0, $pos + strlen($needle));
+    } else {
+        // Fallback: just use the script directory
+        $scriptDir = rtrim(dirname($scriptPath), '/') . '/';
+        $appUrlPath = $scriptDir;
+    }
 }
+
+// IMPORTANT: use the correct variable name here
+defined('APP_PUBLIC_URL_PREFIX') or define('APP_PUBLIC_URL_PREFIX', $appUrlPath);
 
 // Final base href
 $baseHref = "$scheme://$host$portPart$appUrlPath";
