@@ -216,7 +216,6 @@ function git_origin_sha_update()
     }
     $_ENV['DEFAULT_UPDATE_NOTICE'] = false;
 
-
     // dd($data);
 
     return $_ENV['GITHUB']['REMOTE_SHA'] = $latest_local_commit_sha;
@@ -224,8 +223,6 @@ function git_origin_sha_update()
 
 //git_origin_sha_update();
 /*
-
-
 dd($errors['GIT_UPDATE']);
 */
 

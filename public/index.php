@@ -109,8 +109,24 @@ foreach ($sortedFiles as $index => $path) {
 */
 
 session_start();
-$isDev = $_SESSION['mode'] ?? 'unset';
-unset($_SESSION['mode']); ?>
+
+if (APP_ROOT !== '') {
+  if (isset($_GET['client'])) {
+    $_SESSION['mode'] = (isset($_GET['domain']) ? (realpath(APP_PATH . APP_ROOT) === realpath(APP_PATH . '../clients/' . $_ENV['DEFAULT_CLIENT'] . '/' . $_ENV['DEFAULT_DOMAIN'] . '/') && isset($_GET['domain'])) ? $_SESSION['mode'] ?? 'unset' : '' : (realpath(APP_PATH . APP_ROOT) === realpath(APP_PATH . '../clients/' . $_ENV['DEFAULT_CLIENT'] . '/'))) ? $_SESSION['mode'] ?? '' : 'unset';
+  }
+} elseif (isset($_GET['client'])) {
+  $_SESSION['mode'] = (isset($_GET['domain']) ? (realpath(APP_PATH . APP_ROOT) === realpath(APP_PATH . '../clients/' . $_ENV['DEFAULT_CLIENT'] . '/' . $_ENV['DEFAULT_DOMAIN'] . '/') && isset($_GET['domain'])) ? $_SESSION['mode'] ?? 'unset' : '' : (realpath(APP_PATH . APP_ROOT) === realpath(APP_PATH . '../clients/' . $_ENV['DEFAULT_CLIENT'] . '/'))) ? $_SESSION['mode'] ?? '' : 'unset';
+
+} else
+  $_SESSION['mode'] = '';
+//unset($_SESSION['mode']);
+
+//
+
+//dd([realpath(APP_PATH . APP_ROOT), realpath(APP_PATH . '../clients/' . $_ENV['DEFAULT_CLIENT'] . '/' . $_ENV['DEFAULT_DOMAIN'] . '/')]);
+
+// 
+?>
 <!DOCTYPE html>
 <html lang="<?= htmlspecialchars($appLocale, ENT_QUOTES, 'UTF-8') ?>">
 
@@ -237,9 +253,10 @@ unset($_SESSION['mode']); ?>
       bottom: 100px;
       left: 200px;
       width: calc(100% - 200px);
-      padding: 10px;
+      height: 100%;
+      /*padding: 10px;*/
       background: #f5f5f5;
-      overflow: auto;
+      /*overflow: auto;*/
       z-index: 1;
     }
 
@@ -395,13 +412,14 @@ unset($_SESSION['mode']); ?>
 </head>
 
 <body>
-  <div class="form-overlay" id="modeForm" style="<?php echo $isDev === 'unset' ? '' : 'display:none;'; ?>">
+
+  <div class="form-overlay" id="modeForm" style="<?= $_SESSION['mode'] === 'unset' ? 'display:none;' : ''; ?>">
     <div class="form-box">
       <p>Select interface mode:</p>
       <button onclick="chooseMode('developer')">Developer Mode</button>
       <button onclick="chooseMode('client')">Client Mode</button>
     </div>
-  </div>
+  </div> <?php // if (APP_ROOT !== '' && $_SESSION['mode'] === 'unset') unset($_SESSION['mode']); ?>
 
   <div id="container" class="container">
     <div class="developer-group" id="devGroup">
@@ -431,7 +449,7 @@ unset($_SESSION['mode']); ?>
             <div style="position: absolute; display: block; width: 165px; text-align: right;">
               <?php
               $report = CoverageReport::generate($files = array_filter(get_required_files(), fn($f) => str_starts_with($f, APP_PATH)));
-              echo ' [(<a style="font-weight: bolder; color: green;" href="#" onclick="openApp(\'visual/nodes\');">' . $report['totals']['files'] . ' loaded</a>)' . /* <b>' . $total_files . '</b> */ ' files] <br />';
+              echo ' [(<a style="font-weight: bolder; color: green;" href="#" onclick="openApp(\'visual/nodes\'); return false;">' . $report['totals']['files'] . ' loaded</a>)' . /* <b>' . $total_files . '</b> */ ' files] <br />';
               echo '[<b style="color: green;">' . /*$total_include_lines .*/ $report['totals']['logical_loc'] . '</b> @ <b>' . /*$total_lines .*/ $report['totals']['physical_loc'] . '</b> lines]'; ?>
             </div>
           </div><br /><br />
@@ -464,7 +482,7 @@ unset($_SESSION['mode']); ?>
               onclick="isFixed = true; show_console(); return false;"></a>
 
           <a href="#" style="margin: 5px 0 0 0;"
-            onclick="document.getElementById('app_tools-container').style.display='block';">
+            onclick="document.getElementById('app_tools-container').style.display='block'; return false;">
             <img src="<?= htmlspecialchars($asset('assets/images/apps_icon.gif'), ENT_QUOTES, 'UTF-8') ?>"
               style="margin: -5px 0 0 0;" width="20" height="20"> <span style="margin-top: -5px;">Tools</span></a>
         </div>
@@ -517,7 +535,7 @@ unset($_SESSION['mode']); ?>
         </div>
       </div>
     </div>
-    <div class="bottom-panel" id="bottom-panel">
+    <div class="bottom-panel exit-bottom" id="bottom-panel">
       Bottom Panel
       <div id="app_core_console-container" class="app-fixed" data-draggable="false" data-app="core/console">
       </div>
@@ -707,41 +725,47 @@ unset($_SESSION['mode']); ?>
     $pickWebroot = static function (string $fsBase): ?string {
       $fsBase = rtrim($fsBase, "/\\") . '/';
       foreach (['public', 'www', 'html'] as $dir) {
-        if (is_dir($fsBase . $dir))
-          return $dir . '/';
+        if (is_dir("$fsBase$dir"))
+          return "$dir/";
       }
       return null;
     };
 
     $src = 'default.php'; // default fallback
     
-    if (defined('APP_ROOT') && APP_ROOT !== '') {
+    if (defined('APP_ROOT') && APP_ROOT !== '')
       $rootFs = rtrim(APP_PATH, "/\\") . '/' . trim(APP_ROOT, "/\\") . '/';
 
-      // pass the VALUE, not the key
-      $project = (clean_project(get_str('project')) ?: null);
-      $client = (clean_client(get_str('client')) ?: null);
-      $domain = (clean_domain(get_str('domain')) ?: null);
+    // pass the VALUE, not the key
+    $project = (clean_project(get_str('project')) ?: null);
+    $client = (clean_client(get_str('client')) ?: null);
+    $domain = (clean_domain(get_str('domain')) ?: null);
 
-      // 1) project under APP_ROOT/projects/$project/
-      if ($project) {
-        $fs = $rootFs . 'projects/' . $project . '/';
-        if (is_dir($fs) && ($webroot = $pickWebroot($fs))) {
-          $src = '/projects/' . $project . '/' . $webroot;
-        }
+    // 1) project under APP_ROOT/projects/$project/
+    if ($project) {
+      $fs = "{$rootFs}projects/$project/";
+      if (is_dir($fs) && ($webroot = $pickWebroot($fs))) {
+        $src = "/projects/$project/$webroot";
       }
-      // 2) client+domain — APP_ROOT already points at .../clients/$client/$domain/ in your setup
-      elseif ($client && $domain) {
-        if (is_dir($rootFs) && ($webroot = $pickWebroot($rootFs))) {
-          $src = '/clients/' . $client . '/' . $domain . '/' . $webroot;
-        }
+    }
+    // 2) client+domain — APP_ROOT already points at .../clients/$client/$domain/ in your setup
+    elseif ($client && $domain) {
+      if (is_dir($rootFs) && ($webroot = $pickWebroot($rootFs))) {
+        $src = "/clients/$client/$domain/$webroot";
       }
-      // 3) domain-only — APP_ROOT already points at .../clients/$domain/
-      elseif ($domain) {
-        if (is_dir($rootFs) && ($webroot = $pickWebroot($rootFs))) {
-          $src = '/clients/' . $domain . '/' . $webroot;
-        }
+    }
+    // 3) domain-only — APP_ROOT already points at .../clients/$domain/
+    elseif ($domain) {
+      if (is_dir($rootFs) && ($webroot = $pickWebroot($rootFs))) {
+        $src = "/clients/$domain/$webroot";
       }
+    } else {
+      // no project/client/domain specified — load default
+      $src = 'default.php?' . http_build_query([
+        'project' => $project,
+        'client' => $client,
+        'domain' => $domain,
+      ]);
     }
     //dd('/clients/' . ($client && $domain ?  $client . '/' : '' ) . $domain . '/' . $webroot . ' || ' . APP_ROOT, false);
     ?>
@@ -788,7 +812,6 @@ unset($_SESSION['mode']); ?>
 
   <script
     src="<?= htmlspecialchars($asset('assets/js/jquery-ui/jquery-ui-1.12.1.js'), ENT_QUOTES, 'UTF-8') ?>"></script>
-
 
   <script>
     /* ────────────────────────────────────────────────────────────────────────────
@@ -842,7 +865,6 @@ unset($_SESSION['mode']); ?>
 
       // Helpers
       const truthyAttr = (el, name) => (el.getAttribute(name) || '').toLowerCase() === 'true';
-
 
       function makeDraggable(windowId, opts = {}) {
         const el = document.getElementById(windowId);
@@ -1300,10 +1322,10 @@ unset($_SESSION['mode']); ?>
         //try { await fetch('?setmode=' + encodeURIComponent(mode)); } catch { }
         if (mode === 'developer') {
           activateDeveloperMode();
-          if (viewToggle) viewToggle.checked = true;
+          //if (viewToggle) viewToggle.checked = true;
         } else {
           activateClientMode();
-          if (viewToggle) viewToggle.checked = false;
+          //if (viewToggle) viewToggle.checked = false;
         }
         // Hide optional mode picker UI if present
         const modeForm = document.getElementById('modeForm');
@@ -1312,11 +1334,12 @@ unset($_SESSION['mode']); ?>
 
       function toggleMode() {
         const dev = viewToggle ? !!viewToggle.checked : !isClientActive();
-        if (dev) {
+        if (!dev) {
           activateDeveloperMode();
         } else {
           activateClientMode();
         }
+        //devGroup.style.display = 'block';
       }
 
       function isClientActive() {
@@ -1330,17 +1353,17 @@ unset($_SESSION['mode']); ?>
         bottomPanel?.classList.add('exit-bottom');
         freeSpace?.classList.add('exit-free');
         if (clientView) clientView.style.display = 'block';
-
+        //if (viewToggle) viewToggle.checked = false;
         // Allow CSS animation time then hide devGroup
         setTimeout(() => {
-          if (devGroup) devGroup.style.display = 'none';
+          if (devGroup) devGroup.style.display = 'block';
         }, 600);
       }
 
       function activateDeveloperMode() {
         if (devGroup) devGroup.style.display = 'block';
         if (clientView) clientView.style.display = 'none';
-
+        //if (viewToggle) viewToggle.checked = true;
         // Force reflow before removing classes
         if (sidebar) sidebar.offsetHeight;
 
@@ -1352,7 +1375,7 @@ unset($_SESSION['mode']); ?>
 
       // Wire UI events if present
       if (viewToggle) {
-        viewToggle.addEventListener('change', toggleMode);
+        //viewToggle.addEventListener('change', toggleMode);
       }
 
       document.addEventListener('click', function (ev) {
@@ -1382,12 +1405,11 @@ unset($_SESSION['mode']); ?>
 
       // Initial boot state
       document.addEventListener('DOMContentLoaded', () => {
+        toggleMode();
         if (sessionIsDev) {
-          activateDeveloperMode();
-          if (viewToggle) viewToggle.checked = true;
+          //if (viewToggle) viewToggle.checked = true;
         } else {
-          activateClientMode();
-          if (viewToggle) viewToggle.checked = false;
+          //if (viewToggle) viewToggle.checked = false;
         }
         // run on page load
         if (typeof window.openApp === 'function') {
@@ -1404,12 +1426,12 @@ unset($_SESSION['mode']); ?>
             window.openApp('core/console', { from: 'boot', mount: '#bottom-panel' });
 
             window.setTimeout(() => {
-              window.runTaskSequence('startup');
+              //window.runTaskSequence('startup');
               const consoleInput = document.querySelector('#app_core_console-container .console-input');
               if (consoleInput) {
-                consoleInput.value = 'runtask startup' + "\n" + consoleInput.value;
-                consoleInput.focus();
-                consoleInput.select();
+                //consoleInput.value = 'runtask startup' + "\n" + consoleInput.value;
+                //consoleInput.focus();
+                //consoleInput.select();
               }
             }, 10000);
           }
@@ -1477,9 +1499,9 @@ unset($_SESSION['mode']); ?>
 
   <script>
     if (typeof jQuery === 'undefined') {
-      console.error("jQuery is not loaded. Please check the script source.");
+      console.error('jQuery is not loaded. Please check the script source.');
     } else {
-      console.log("jQuery version:", jQuery.fn.jquery);
+      console.log('jQuery version:', jQuery.fn.jquery);
     }
   </script>
 

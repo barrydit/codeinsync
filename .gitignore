@@ -36,6 +36,7 @@ package-lock.json
 /public/assets/js
 /public/assets/reels
 /public/assets/project
+/public/assets/vendor
 
 # -----------------------------
 # App data / runtime caches
@@ -61,7 +62,7 @@ package-lock.json
 # -----------------------------
 # Project scaffolding / examples
 # -----------------------------
-/public/assets
+#/public/assets
 /public/*.map
 /public/example.php
 /public/example*.php

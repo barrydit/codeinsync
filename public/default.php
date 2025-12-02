@@ -2,9 +2,7 @@
 
 require_once dirname(__DIR__) . '/bootstrap/bootstrap.php';
 
-require_once dirname(__DIR__) . '/app/productivity/notes.php';
-
-die();
+// die(require_once dirname(__DIR__) . '/app/productivity/notes.php');
 
 // dd($_ENV['PHP']['LOG_PATH'] . $_ENV['PHP']['ERROR_LOG']);
 // dd(ini_get('error_log'));
@@ -25,93 +23,180 @@ foreach (['1', '2', '3'] as $key => $item) {
     echo $key . ': ' . $item . "<br />" . PHP_EOL;
 }
 echo '</pre>'; 
+
+if (APP_ROOT === null) {
+    die('APP_ROOT is not defined');
+} elseif (APP_ROOT === '') {
+    die('APP_ROOT is empty');
+} else
+    dd(APP_ROOT);
 */
-?>
+
+$clientPath = realpath(APP_PATH . APP_BASE['clients'])
+    . '/'
+    . $_GET['client'];
+
+$dirs = glob("$clientPath/*", GLOB_ONLYDIR); // array_filter(glob('/*'), 'is_dir');
+
+// Extract folder names only
+$domains = [];
+
+foreach ($dirs as $key => $dir) {
+    $name = basename($dir); // ← folder name only
+
+    if (isDomainName($name)) {
+        $domains[] = $name;
+    }
+}
+
+$cards = [];
+
+$client = rawurlencode($_GET['client']);
+
+foreach ($domains as $domain) {
+    $safeName = htmlspecialchars($domain, ENT_QUOTES, 'UTF-8');
+    $safeDomain = rawurlencode($domain);
+
+    $cards[] = [
+        'name' => $safeName,
+        'url' => "http://localhost/clients" . ($client === '' ? '' : "/{$client}") . "/{$safeDomain}/public/"
+    ];
+} ?>
 <!DOCTYPE html>
-<html lang="<?= htmlspecialchars($appLocale, ENT_QUOTES, 'UTF-8') ?>">
+<html lang="en">
 
 <head>
-    <meta charset="utf-8" />
-    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
-
-    <title>
-        <?= htmlspecialchars($pageTitle, ENT_QUOTES, 'UTF-8') ?>
-    </title>
-
-    <!-- Base URL for all relative links -->
-    <base href="<?= htmlspecialchars($baseHref, ENT_QUOTES, 'UTF-8') ?>" />
-
-    <!-- SEO/meta fallbacks -->
-    <meta name="description" content="<?= htmlspecialchars($appDescription, ENT_QUOTES, 'UTF-8') ?>" />
-    <meta name="author" content="<?= htmlspecialchars($appAuthor, ENT_QUOTES, 'UTF-8') ?>" />
-    <meta name="robots" content="noindex,nofollow" />
-    <meta name="theme-color" content="<?= htmlspecialchars($appThemeColor, ENT_QUOTES, 'UTF-8') ?>" />
-
-    <!-- Open Graph (optional but nice defaults) -->
-    <meta property="og:title" content="<?= htmlspecialchars($pageTitle, ENT_QUOTES, 'UTF-8') ?>" />
-    <meta property="og:description" content="<?= htmlspecialchars($appDescription, ENT_QUOTES, 'UTF-8') ?>" />
-    <meta property="og:type" content="website" />
-    <meta property="og:url" content="<?= htmlspecialchars($baseHref, ENT_QUOTES, 'UTF-8') ?>" />
-
-    <!-- Favicons / Assets -->
-    <link rel="icon" type="image/png"
-        href="<?= htmlspecialchars($asset('assets/images/favicon.png'), ENT_QUOTES, 'UTF-8') ?>" />
-    <link rel="shortcut icon" type="image/x-icon"
-        href="<?= htmlspecialchars($asset('assets/images/favicon.ico'), ENT_QUOTES, 'UTF-8') ?>" />
-
-    <link rel="stylesheet" href="<?= htmlspecialchars($asset('assets/css/styles.css'), ENT_QUOTES, 'UTF-8') ?>" />
-
+    <meta charset="UTF-8">
+    <title>Live Website Preview Wall</title>
     <style>
         body {
-            background: rgba(255, 255, 255, 0.25) url("assets/images/developer.gif");
-            background-repeat: no-repeat;
-            background-position: center 25px;
-            //margin-top: 200px;
-            //height: 100vh;
-            //background-size: cover;
+            margin: 0;
+            background: #111;
+            height: 100vh;
         }
 
-
-        input[type='checkbox'] {
-            //-webkit-appearance:none;
-            width: 20px;
-            height: 20px;
-            background: white;
-            border-radius: 5px;
-            border: 2px solid #555;
-            margin-top: 6px;
-            margin-bottom: 22px;
+        span {
+            color: white;
         }
 
-        form#fimprovdev {}
+        .wrapper {
+            display: flex;
+            justify-content: center;
+            /* horizontal center */
+            align-items: center;
+            /* vertical center */
+            height: 100%;
+        }
 
-        input[type='checkbox']:checked {
-            background: #abd;
+        .grid {
+            width: 100%;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(320px, auto));
+            gap: 12px;
+            justify-content: center;
+        }
+
+        .site-card {
+            position: relative;
+            background: #222;
+            border-radius: 8px;
+            overflow: hidden;
+            border: 1px solid #333;
+        }
+
+        .site-header {
+            padding: 6px 10px;
+            font-size: 13px;
+            background: #181818;
+            border-bottom: 1px solid #333;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .site-header a {
+            color: #4ea3ff;
+            text-decoration: none;
+            font-size: 11px;
+        }
+
+        .iframe-wrapper {
+            position: relative;
+            width: 100%;
+            /* aspect-ratio keeps a nice fixed preview shape */
+            aspect-ratio: 16 / 9;
+            overflow: hidden;
+            background: #000;
+        }
+
+        .iframe-wrapper iframe {
+            position: absolute;
+            top: 0;
+            left: 0;
+            /* Make the iframe bigger, then scale it down */
+            width: 200%;
+            height: 200%;
+            transform: scale(0.5);
+            transform-origin: 0 0;
+            border: none;
+            pointer-events: none;
+            /* so clicks don’t go into the tiny iframe */
+        }
+
+        /* Overlay clickable area */
+        .click-overlay {
+            position: absolute;
+            inset: 0;
+            cursor: pointer;
         }
     </style>
 </head>
 
 <body>
-    <div style="position: absolute; left: 25%; top: 4%; margin: 0px auto;">
-        <div style="">
-            <form id="fimprovdev" action method="POST"
-                style="width: 675px; border: 1px solid #000; height: 575px; padding: 210px 0px 0px 160px;">
-                <input style="" type="checkbox" name="" value="" checked /><br />
-                <input type="checkbox" name="" value="" checked /><br />
-                <input type="checkbox" name="" value="" checked /><br />
-                <input type="checkbox" name="" value="" checked /><br />
-                <input type="checkbox" name="" value="" checked /><br />
-                <input type="checkbox" name="" value="" checked /><br />
-                <input type="checkbox" name="" value="" checked /><br />
-                <input type="checkbox" name="" value="" checked /><br />
-                <input type="checkbox" name="" value="" checked /><br />
-                <input type="checkbox" name="" value="" checked /><br />
-                <input type="checkbox" name="" value="" checked />
-            </form>
-        </div>
-        <!-- <p style="text-align: center;"><img src="developer_1.jpg" width="650" height="800" /></p> -->
+    <div class="wrapper">
+        <div class="grid" id="previewGrid"></div>
     </div>
+
+    <script>
+        const sites = <?= json_encode($cards, JSON_UNESCAPED_SLASHES); ?>;
+
+        if (Array.isArray(sites) && sites.length === 0) {
+            window.parent.toggleMode();
+            console.warn('No sites found for preview. Returning to directory view.');
+        }
+        //[{ name: 'David Raymant - client page', url: 'http://localhost/?client=000-Raymant%2CDavid&domain=davidraymant.ca&path=%2F' }],
+        // add your own URLs here
+
+        const grid = document.getElementById('previewGrid');
+
+        sites.forEach(site => {
+            const card = document.createElement('div');
+            card.className = 'site-card';
+
+            card.innerHTML = `
+        <div class="site-header">
+          <span>${site.name}</span>
+          <a href="${site.url}">
+            Visit &rarr;
+          </a>
+        </div>
+        <div class="iframe-wrapper">
+          <iframe src="${site.url}" loading="lazy"></iframe>
+          <div class="click-overlay" data-url="${site.url}"></div>
+        </div>
+      `;
+
+            grid.appendChild(card);
+        });
+
+        // When you click anywhere on the preview, open the full site
+        grid.addEventListener('click', (e) => {
+            const overlay = e.target.closest('.click-overlay');
+            if (!overlay) return;
+            const url = overlay.dataset.url;
+            window.open(url, '_blank', 'noopener,noreferrer');
+        });
+    </script>
 </body>
 
 </html>

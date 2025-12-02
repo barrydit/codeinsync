@@ -97,7 +97,7 @@ $roots = [];
 $seen = [];
 
 // Prepend APP_PATH explicitly
-foreach (array_merge([APP_PATH], $envRoots, $builtinRoots) as $r) {
+foreach ([APP_PATH, ...$envRoots, ...$builtinRoots] as $r) {
     $key = rtrim(strtolower($r), "/\\");
     if (!isset($seen[$key])) {
         $seen[$key] = true;
@@ -119,7 +119,7 @@ $PATH_SPEC = [
 
     // Projects:
     'clients' => ['default' => '../clients', 'fallbacks' => ['clients']],
-    'projects' => ['default' => 'projects', 'fallbacks' => []],
+    'projects' => ['default' => '../projects', 'fallbacks' => ['projects']],
 ];
 
 // 3) Resolve each logical directory across the roots

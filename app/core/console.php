@@ -96,12 +96,21 @@ if ($path = (basename(getcwd()) == 'public')
   : (is_file('npm.php') ? 'npm.php' : (is_file('config/npm.php') ? 'config/npm.php' : null))) require_once $path; 
 else die(var_dump($path . ' path was not found. file=npm.php'));
 */
+?>
 
-ob_start(); ?>
+<?php ob_start(); ?>
 
 /* Styles for the absolute div */
 <?= $selector ?> {
-position : absolute;
+
+z-index: 999;
+/* position: fixed;
+top: 35%;
+left: 50%;
+bottom: 36px;
+transform: translate(-50%, -50%);*/
+
+position : fixed;
 bottom : 0px;
 left : 50%;
 transform : translate(-50%, -50%);
@@ -462,7 +471,7 @@ ob_start(); ?>
   <textarea id="responseConsole" name="responseConsole" rows="14" cols="92" spellcheck="false" readonly style="
         font-family: monospace;
         overflow-y: auto;
-        height: 375px;
+        height: 40px;
         width: 665px;
       "><?php
       //$errors->{'CONSOLE'}  = 'wtf';
@@ -587,9 +596,8 @@ ob_start(); ?>
   });
 
   export function show_console(event) {
-    console.log('showing console...');
-
     const consoleContainer = document.getElementById('<?= $container_id ?>');
+    const respCon = document.getElementById('responseConsole');
 
     //requestInput.focus();
 
@@ -637,6 +645,7 @@ ob_start(); ?>
       console.log('isFixed is undefined');
     } else {
       if (!isFixed) {
+        console.log('showing console... !isFixed');
 
         // If it's currently fixed, change back to absolute
         consoleContainer.style.position = 'absolute';
@@ -659,6 +668,7 @@ ob_start(); ?>
         consoleContainer.style.transform = 'none';
         */
       } else {
+        console.log('showing console... isFixed');
 
         // If it's currently absolute, change to fixed
         consoleContainer.style.position = 'fixed';
@@ -847,8 +857,6 @@ ob_start(); ?>
         show_console();
       }
     }
-
-
   });
 
   <?php if (defined('COMPOSER_1')) { ?>
@@ -886,7 +894,6 @@ ob_start(); ?>
 
   $(document).ready(function () {
     const autoClear = $("#app_core_console-auto_clear").checked;
-
 
     //$('#responseConsole').css('width', $(window).width() - 20 + 'px');
 
@@ -1139,7 +1146,7 @@ ob_start(); ?>
     } else if (matches = argv.match(/^h(?:elp)?\s+?(\S+)$/)) {
       //$('#requestInput').val('help');
       //$('#requestSubmit').click();
-    } else if ((matches = argv.match(/^(?:runtask\s+)?(\S+)$/))) {
+    } else if ((matches = argv.match(/^r(?:untask\s+)?(\S+)$/))) {
       const taskName = matches[1];
       console.log('Running task: ' + taskName);
       window.runTaskSequence(taskName); // NEW
@@ -1231,8 +1238,9 @@ ob_start(); ?>
       function(data, status) {
         console.log("Web Query: " + DirQueryParams);
         console.log("Data 2: " + JSON.stringify(data) + "\n Status: " + status);
-        console.log("Data Test: " + data + "\n Status: " + status);
+        //console.log("Data Test: " + data + "\n Status: " + status);
 
+        $('#responseConsole').val(data.result + "\n" + $('#responseConsole').val());
         //data = data.trim(); // replace(/(\r\n|\n|\r)/gm, "")
 
         const gitPath = `<?= str_replace('/', '\/', defined('GIT_EXEC') ? dirname(GIT_EXEC) : ''); ?>`;
@@ -1442,7 +1450,7 @@ ob_start(); ?>
 // Path to the JavaScript file
   
   // Create the directory if it doesn't exist
-  (getcwd() === rtrim($path = APP_PATH . APP_BASE['public'], '/') && is_dir($path .= 'assets/js')) or mkdir($path, 0755, true);
+  getcwd() === rtrim($path = APP_PATH . APP_BASE['public'], '/') && is_dir($path .= 'assets/js') or mkdir($path, 0755, true);
 
   $path .= '/tailwindcss-3.3.5.js';
 

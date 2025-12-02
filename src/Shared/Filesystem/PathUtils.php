@@ -3,6 +3,8 @@
 
 namespace CodeInSync\Shared\Filesystem;
 
+use function count;
+
 final class PathUtils
 {
     public static function norm(?string $p): string
@@ -40,7 +42,7 @@ final class PathUtils
         if ($p === '')
             return '';
         // dirname trick with leading slash so dirname() behaves
-        $d = dirname('/' . $p);
+        $d = dirname("/$p");
         return $d === '/' ? '' : ltrim($d, '/') . '/';
     }
 

@@ -140,7 +140,7 @@ position : absolute;
 display : none;
 top : 0;
 left : 0;
-width : 400px;
+width : 420px;
 }
 .app_composer-frame-container.selected {
 display : block;
@@ -242,7 +242,7 @@ ob_start(); ?>
 
 
     <form style="display: inline;" autocomplete="off" spellcheck="false"
-      action="<?= APP_URL . '?' . http_build_query(/*APP_QUERY +*/ ['app' => 'composer']) . (defined('APP_ENV') && APP_ENV == 'development' ? '#!' : '') /* $c_or_p . '=' . (empty($_GET[$c_or_p]) ? '' : $$c_or_p->name) . '&amp;app=composer' */ ?>"
+      action="<?= APP_URL . '?' . http_build_query(/*APP_QUERY +*/ ['app' => 'composer']) . (defined('APP_ENV') && APP_ENV == 'development' ? '#' : '') /* $c_or_p . '=' . (empty($_GET[$c_or_p]) ? '' : $$c_or_p->name) . '&amp;app=composer' */ ?>"
       method="GET">
       <?php if (isset($_GET['debug'])) { ?> <input type="hidden" name="debug" value="" /> <?php } ?>
 
@@ -276,11 +276,11 @@ ob_start(); ?>
   style="width: 424px; background-color: rgba(255, 255, 255, 0.8); padding: 10px; display: block; left: 612px; top: 104px;">
 
   <div
-    style="position: relative; margin: 0 auto; width: 404px; height: 324px; border: 3px dashed #6B4329; background-color: #FBF7F1;">
+    style="position: relative; margin: 0 auto; width: 421px; height: 324px; border: 3px dashed #6B4329; background-color: #FBF7F1;">
 
     <div class="ui-widget-content"
-      style="position: relative; display: block; width: 398px; background-color: rgba(251,247,241); z-index: 2;">
-      <div style="display: inline-block; text-align: left; width: 225px;">
+      style="position: relative; display: block; width: 421px; background-color: rgba(251,247,241); z-index: 2;">
+      <div style="display: inline-block; text-align: left; width: 230px;">
         <div class="composer-menu text-sm" style="cursor: pointer; font-weight: bold; padding-left: 40px;">
           <div style=" border: 1px solid #000; width: 150px;">Main Menu</div>
         </div>
@@ -293,9 +293,9 @@ ob_start(); ?>
           // $query = ''; // preg_replace('/=(&|$)/', '$1', $query);
           ?>
           <a class="text-sm" id="app_composer-frameMenuPrev"
-            href="<?= /*(!empty(APP_QUERY) ? "?$query" : '') . */ defined('APP_ENV') && APP_ENV == 'development' ? '#!' : '#' ?>">
+            href="<?= /*(!empty(APP_QUERY) ? "?$query" : '') . */ defined('APP_ENV') && APP_ENV == 'development' ? '#' : '#' ?>">
             &lt; Menu</a> | <a class="text-sm" id="app_composer-frameMenuNext"
-            href="<?= /*(!empty(APP_QUERY) ? "?$query" : '') . */ defined('APP_ENV') && APP_ENV == 'development' ? '#!' : '#' ?>">Init
+            href="<?= /*(!empty(APP_QUERY) ? "?$query" : '') . */ defined('APP_ENV') && APP_ENV == 'development' ? '#' : '#' ?>">Init
             &gt;</a>
         </div>
         <form style="display:inline-block" action="/?api=composer" method="POST">
@@ -316,14 +316,15 @@ ob_start(); ?>
           </label>
         </form>
       </div>
-      <div class="absolute"
-        style="position: absolute; display: inline-block; top: 4px; text-align: right; width: 175px; ">
-        <div class="text-xs" style="display: inline-block;">
+      <div class="text-xs" style="position: relative; display: inline-block; text-align: right; float: right;">
           + 987 <a href="https://github.com/composer/composer/graphs/contributors" target="_blank" rel="noopener noreferrer">contributors</a>
           <br />
           <a style="color: blue; text-decoration-line: underline; text-decoration-style: solid;"
             href="http://getcomposer.org/" target="_blank" rel="noopener noreferrer">http://getcomposer.org/</a>
         </div>
+      <div class="absolute"
+        style="position: absolute; display: inline-block; top: 4px; text-align: right; width: 190px;">
+
         <!--
     <select id="frameSelector">
       <option value="0" selected>---</option>
@@ -381,7 +382,7 @@ ob_start(); ?>
         ? 'Latest: ' . highlightVersionDiff(COMPOSER_VERSION, COMPOSER_LATEST)
         : 'Installed: ' . COMPOSER_VERSION; ?>
     </div>
-    <div style="position: relative; overflow: hidden; width: 398px; height: 250px;">
+    <div style="position: relative; overflow: hidden; width: 421px; height: 250px;">
       <?php
 
       $count = 0;
@@ -427,7 +428,7 @@ ob_start(); ?>
             style="display: inline-block; width: 192px; margin: 0 auto; text-align: center; cursor: pointer;">
             <div id="app_composer-frameMenuUpdate" style="text-align: center; "><img
                 style="display: block; margin: auto;" src="assets/images/update_icon.fw.png" width="54"
-                height="54" /><a href="#!">Update<?=/*Now!*/ NULL; ?></a></div>
+                height="54" /><a href="#">Update<?=/*Now!*/ NULL; ?></a></div>
           </div>
         </div>
         <div style="height: 10px;"></div>
@@ -436,7 +437,7 @@ ob_start(); ?>
       <div id="app_composer-frameUpdate" class="app_composer-frame-container absolute"
         style="overflow: scroll; background-color: rgb(225,196,151,.75);">
         <form autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"
-          action="<?= APP_URL . '?' . http_build_query(/*APP_QUERY +*/ ['app' => 'composer']) . (defined('APP_ENV') && APP_ENV == 'development' ? '#!' : '') /* $c_or_p . '=' . (empty($_GET[$c_or_p]) ? '' : $$c_or_p->name) . '&amp;app=composer' */ ?>"
+          action="<?= APP_URL . '?' . http_build_query(/*APP_QUERY +*/ ['app' => 'composer']) . (defined('APP_ENV') && APP_ENV == 'development' ? '#' : '') /* $c_or_p . '=' . (empty($_GET[$c_or_p]) ? '' : $$c_or_p->name) . '&amp;app=composer' */ ?>"
           method="POST">
           <input type="hidden" name="composer[update]" value="" />
           <div style="position: absolute; right: 0; float: right; text-align: center;">
@@ -480,7 +481,7 @@ php composer.phar -v
         style="overflow: hidden; height: 270px;">
         <?php if (!defined('CONSOLE') && CONSOLE != true) { ?><?php } ?>
         <form autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"
-          action="<?= APP_URL . '?' . http_build_query(/*APP_QUERY +*/ ['app' => 'composer']) . (defined('APP_ENV') && APP_ENV == 'development' ? '#!' : '') /* $c_or_p . '=' . (empty($_GET[$c_or_p]) ? '' : $$c_or_p->name) . '&amp;app=composer' */ ?>"
+          action="<?= APP_URL . '?' . http_build_query(/*APP_QUERY +*/ ['app' => 'composer']) . (defined('APP_ENV') && APP_ENV == 'development' ? '#' : '') /* $c_or_p . '=' . (empty($_GET[$c_or_p]) ? '' : $$c_or_p->name) . '&amp;app=composer' */ ?>"
           method="POST">
 
           <div style="position: absolute; right: 0; float: right; text-align: center;">
@@ -508,7 +509,7 @@ php composer.phar -v
         class="app_composer-frame-container absolute <?= is_file(APP_PATH . (defined('APP_ROOT') ? APP_ROOT : '') . 'composer.json') ? 'selected' : ''; ?>"
         style="overflow-x: hidden; overflow-y: auto; height: 230px;">
         <form autocomplete="off" spellcheck="false"
-          action="<?= APP_URL . '?' . http_build_query(['app' => 'composer'], ''/*, '&amp;'*/) . (defined('APP_ENV') && APP_ENV == 'development' ? '#!' : '') ?>"
+          action="<?= APP_URL . '?' . http_build_query(['app' => 'composer'], ''/*, '&amp;'*/) . (defined('APP_ENV') && APP_ENV == 'development' ? '#' : '') ?>"
           method="POST">
           <input type="hidden" name="composer[config]" value="" />
 
@@ -739,7 +740,7 @@ echo $daysLeft === null ? '' : max(0, $daysLeft);
                   <div class="dropdown">
                     <div id="myDropdown" class="dropdown-content">
                       <?php foreach (['Backend', 'Designer', 'Developer', 'Programmer'] as $key2 => $role) { ?>
-                        <a href="#!"><img style="float: left;" width="30" height="33"
+                        <a href="#"><img style="float: left;" width="30" height="33"
                             src="<?= 'assets/images/role' . $key2 . '.fw.png' ?>"><?= $role; ?> <input type="radio" id="<?= $key2 ?>"
                             style="float: right; cursor: pointer;" name="composer[config][authors][<?= $key ?>][role]"
                             value="<?= $role; ?>" <?= isset($author['role']) && $author['role'] == $role ? ' checked=""' : '' ?> /></a>
@@ -765,7 +766,7 @@ echo $daysLeft === null ? '' : max(0, $daysLeft);
                 <div class="dropdown">
                   <div id="myDropdown" class="dropdown-content">
                     <?php foreach (['Backend', 'Designer', 'Developer', 'Programmer'] as $key => $role) { ?>
-                      <a href="#!"><img style="float: left;" width="30" height="33"
+                      <a href="#"><img style="float: left;" width="30" height="33"
                           src="<?= 'assets/images/role' . $key . '.fw.png' ?>"><?= $role; ?> <input type="radio" id="<?= $key ?>"
                           style="float: right; cursor: pointer;" name="composer[config][authors][0][role]"
                           value="<?= $role; ?>" /></a>
@@ -1029,7 +1030,7 @@ echo $daysLeft === null ? '' : max(0, $daysLeft);
                     <div class="dropdown">
                       <div id="myDropdown" class="dropdown-content">
                         <?php foreach (['Backend', 'Designer', 'Developer', 'Programmer'] as $key2 => $role) { ?>
-                          <a href="#!"><img style="float: left;" width="30" height="33"
+                          <a href="#"><img style="float: left;" width="30" height="33"
                               src="<?= 'assets/images/role' . $key2 . '.fw.png' ?> "><?= $role; ?> <input type="radio" id="<?= $key2 ?>"
                               style="float: right; cursor: pointer;" name="" value="<?= $role; ?>" <?= isset($author->{'role'}) && $author->{'role'} == $role ? ' checked=""' : '' ?> /></a>
                         <?php } ?>
@@ -1051,7 +1052,7 @@ echo $daysLeft === null ? '' : max(0, $daysLeft);
                   <div class="dropdown">
                     <div id="myDropdown" class="dropdown-content">
                       <?php foreach (['Backend', 'Designer', 'Developer', 'Programmer'] as $key => $role) { ?>
-                        <a href="#!"><img style="float: left;" width="30" height="33"
+                        <a href="#"><img style="float: left;" width="30" height="33"
                             src="<?= 'assets/images/role' . $key . '.fw.png' ?>"><?= $role; ?> <input type="radio" id="<?= $key ?>"
                             style="float: right; cursor: pointer;" name="" value="<?= $role; ?>" /></a>
                       <?php } ?>
@@ -1186,7 +1187,7 @@ echo $daysLeft === null ? '' : max(0, $daysLeft);
         class="app_composer-frame-container absolute <?= $count > 0 ? 'selected' : ''; ?>"
         style="overflow: scroll; width: 400px; height: 270px;">
         <form autocomplete="off" spellcheck="false"
-          action="<?= APP_URL . '?' . http_build_query(/* APP_QUERY +*/ ['app' => 'composer']) . (defined('APP_ENV') && APP_ENV == 'development' ? '#!' : '')  /* $c_or_p . '=' . (empty($_GET[$c_or_p]) ? '' : $$c_or_p->name) . '&amp;app=composer' */ ?>"
+          action="<?= APP_URL . '?' . http_build_query(/* APP_QUERY +*/ ['app' => 'composer']) . (defined('APP_ENV') && APP_ENV == 'development' ? '#' : '')  /* $c_or_p . '=' . (empty($_GET[$c_or_p]) ? '' : $$c_or_p->name) . '&amp;app=composer' */ ?>"
           method="POST">
           <div style="display: inline-block; width: 100%; background-color: rgb(225,196,151,.75);">
             <input type="hidden" name="composer[install]" value="" />

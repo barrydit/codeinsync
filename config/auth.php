@@ -122,6 +122,8 @@ $authprobe = array_key_exists('authprobe', $_GET);  // true for ?authprobe[...]
 
 // ---- Logout: rotate realm + silent invalidate, then land on public page
 if ($logout && $_SERVER['REQUEST_METHOD'] === 'GET') {
+    session_start();
+    session_destroy();
     auth_no_cache();
     $oldRealm = auth_realm();
     auth_rotate_realm();
@@ -255,6 +257,7 @@ if (!in_array(PHP_SAPI, ['cli', 'phpdbg'], true) && !$logout && !$authprobe) {
                     border: 1px solid #1e293b;
                     white-space: pre;
                     overflow-x: auto;
+                    height: 10rem;
                 }
 
                 .actions {
@@ -301,7 +304,7 @@ if (!in_array(PHP_SAPI, ['cli', 'phpdbg'], true) && !$logout && !$authprobe) {
   ✅ Console stub is ready. Next step: wire commands + client-side refresh.
 EOT; ?></code>
                 <div class="actions">
-                    <button class="btn" type="button" id="btn-refresh">Simulate window refresh</button>
+                    <button class="btn" type="button" id="btn-refresh">Refresh Window</button>
                     <a class="btn btn-secondary" href="?logout=1">Logout</a>
                 </div>
             </div>
@@ -313,8 +316,93 @@ EOT; ?></code>
                     if (!el) return;
                     const stamp = new Date().toISOString();
                     el.textContent += "\n$ refresh\n  ↻ Client-side refresh triggered @ " + stamp;
-                    // Later: window.location.reload();
+                    window.location.reload();
                 });
+
+
+                function runTaskSequence(taskName, step) {
+                    step = step || 0;
+
+                    const params = new URLSearchParams();
+                    params.set('task', taskName);
+                    params.set('step', step);
+                    params.set('format', 'json');
+
+                    const el = document.getElementById('console-log');
+                    if (!el) return;
+
+                    return fetch('/?api=tasks', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8'
+                        },
+                        body: params
+                    })
+                        .then(function (res) {
+                            return res.json();
+                        })
+                        .then(function (data) {
+                            if (!data || !data.ok) {
+                                //$console.val(
+                                //    'Task ' + taskName + ' step ' + step + ' failed.' + "\n" +
+                                //    $console.val()
+                                //);
+                                el.textContent += "\nTask " + taskName + " step " + step + " failed.";
+                                return;
+                            }
+
+                            const humanStep = data.step + 1; // 1-based
+                            const total = data.total_steps;
+
+                            // 1) Show job name/output now
+                            const lines = [];
+                            lines.push(
+                                'Job ' + humanStep + ' / ' + total +
+                                ' [' + (data.done ? 'done' : 'ok') + '] (' + data.duration_ms + ' ms)'
+                            );
+
+                            if (data.output) {
+                                lines.push(String(data.output).replace(/\n+$/, ''));
+                            }
+
+                            el.textContent += "\n" + lines.join("\n");
+
+                            // prepend just the job lines first
+                            //$console.val(lines.join("\n") + "\n" + $console.val());
+
+                            // 2) If this was the last step, prepend the completion line separately
+                            if (data.done) {
+                                //$console.val(
+                                //    '=== Task ' + data.task + ' completed. ===' + "\n" +
+                                //    $console.val()
+                                //);
+                                el.textContent += "\n=== Task " + data.task + " completed. ===";
+                                window.location.reload();
+                                return; // no next step
+                            }
+
+                            // 3) If there is another step, start it AFTER this one
+                            if (data.next_step != null) {
+                                return window.runTaskSequence(taskName, data.next_step);
+                            }
+                        })
+                        .catch(function (err) {
+                            //const $console = $('#responseConsole');
+                            //$console.val(
+                            //    'Error running task ' + taskName + ' step ' + step + ': ' + err + "\n" +
+                            //    $console.val()
+                            //);
+                            el.textContent += "\nError running task " + taskName + " step " + step + ": " + err;
+                        });
+                };
+                document.addEventListener('DOMContentLoaded', () => {
+
+                    window.setTimeout(() => {
+                        window.runTaskSequence('startup');
+                    }, 5000);
+
+                });
+
             </script>
         </body>
 

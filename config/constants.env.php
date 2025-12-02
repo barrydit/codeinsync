@@ -19,7 +19,7 @@ if (!defined('APP_ROOT')) {
                 // Parse query string and merge into $_GET
                 parse_str($query, $refParams);
                 if (is_array($refParams)) {
-                    $_GET = array_merge($_GET, $refParams);
+                    $_GET = [...$_GET, ...$refParams]; // array_merge()
                 }
             }
         }
@@ -27,28 +27,36 @@ if (!defined('APP_ROOT')) {
 
     if (array_key_first($_GET) != 'path') {
         // Determine base paths for client, domain, or project
-        $clientPath = isset($_GET['client'])
+        $clientPath = isset($_GET['client']) && $_GET['client'] !== ''
             ? PathUtils::rel(APP_PATH, PATH_CLIENTS) . DIRECTORY_SEPARATOR . $_GET['client'] . DIRECTORY_SEPARATOR
             : (!empty($_ENV['DEFAULT_CLIENT']) && isset($_GET['client']) ? PathUtils::rel(APP_PATH, PATH_CLIENTS) . DIRECTORY_SEPARATOR . $_ENV['DEFAULT_CLIENT'] . DIRECTORY_SEPARATOR : '');
 
         $domainPath = isset($_GET['domain']) && $_GET['domain'] !== ''
             ? (isset($_GET['client'])
                 ? $clientPath . $_GET['domain'] . DIRECTORY_SEPARATOR
-                : 'clients' . DIRECTORY_SEPARATOR . $_GET['domain'] . DIRECTORY_SEPARATOR)
-            : (!empty($_ENV['DEFAULT_DOMAIN']) ? 'clients' . DIRECTORY_SEPARATOR . $_ENV['DEFAULT_CLIENT'] . DIRECTORY_SEPARATOR . (array_key_first($_GET) == 'path' ? '' : (isset($_SERVER['REQUEST_METHOD']) && $_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['cmd']) && in_array($_POST['cmd'], ['cd ../', 'chdir ../']) ? '' : $_ENV['DEFAULT_DOMAIN']) . DIRECTORY_SEPARATOR) : '')/*''*/ ;
+                : PathUtils::rel(APP_PATH, PATH_CLIENTS) . DIRECTORY_SEPARATOR . $_GET['domain'] . DIRECTORY_SEPARATOR)
+            : (!empty($_ENV['DEFAULT_DOMAIN']) ? PathUtils::rel(APP_PATH, PATH_CLIENTS) . DIRECTORY_SEPARATOR . $_ENV['DEFAULT_CLIENT'] . DIRECTORY_SEPARATOR . (array_key_first($_GET) == 'path'
+                ? ''
+                : (isset($_SERVER['REQUEST_METHOD']) && $_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['cmd']) && in_array($_POST['cmd'], ['cd ../', 'chdir ../'])
+                    ? ''
+                    : $_ENV['DEFAULT_DOMAIN']) . DIRECTORY_SEPARATOR) : '')/*''*/ ;
 
         $projectPath = isset($_GET['project'])
-            ? 'projects' . DIRECTORY_SEPARATOR . $_GET['project'] . DIRECTORY_SEPARATOR
-            : '';
+            ? PathUtils::rel(APP_PATH, PATH_PROJECTS) . DIRECTORY_SEPARATOR . $_GET['project'] . DIRECTORY_SEPARATOR
+            : (!empty($_ENV['DEFAULT_PROJECT']) && isset($_GET['project']) ? PathUtils::rel(APP_PATH, PATH_PROJECTS) . DIRECTORY_SEPARATOR . $_ENV['DEFAULT_PROJECT'] . DIRECTORY_SEPARATOR : '');
+
         // Final path prioritizing client/domain and falling back to project if present
         $path = $domainPath ?: $clientPath ?: $projectPath;
 
         //
         //die($path);
         // Validate path and define APP_ROOT if valid
-        if ($path && is_dir(APP_PATH . $path)) {
+
+        if (/* $domainPath &&*/ $path && is_dir(APP_PATH . $path)) {
             // no realpath() – keep it relative
             define('APP_ROOT', rtrim($path, DIRECTORY_SEPARATOR) . DIRECTORY_SEPARATOR);
+        } else {
+            define('APP_ROOT', '');
         }
 
         //if ($path) {
@@ -66,7 +74,10 @@ if (!defined('APP_ROOT')) {
         // define('APP_ROOT', $resolvedPath ? $resolvedPath . DIRECTORY_SEPARATOR : '');
         //    }
         //}
+
+
     } elseif (array_key_first($_GET) == 'path') {
+
         $path = isset($_GET['path'])
             ? $_GET['path'] . DIRECTORY_SEPARATOR
             : '';

@@ -108,7 +108,7 @@ position : absolute;
 display : none;
 top : 0;
 left : 0;
-width : 400px;
+width : 420px;
 }
 
 .app_git-frame-container.selected {
@@ -166,8 +166,7 @@ defined('GIT_LATEST') or define('GIT_LATEST', GIT_VERSION);
   data-drag-handle>
   <label class="git-home" style="cursor: pointer;">
     <div class="" style="position: relative; float: left; display: inline-block; top: 0; left: 0; margin-top: -5px;">
-      <img src="assets/images/git_icon.fw.png" width="32"
-        height="32" />
+      <img src="assets/images/git_icon.fw.png" width="32" height="32" />
     </div>
   </label>
   <div style="float: left; display: inline;">
@@ -187,29 +186,28 @@ defined('GIT_LATEST') or define('GIT_LATEST', GIT_VERSION);
   style="position: fixed; z-index: 3; width: 424px; background-color: rgba(255,255,255,0.8); padding: 10px;">
 
   <div
-    style="position: relative; margin: 0 auto; width: 404px; height: 306px; border: 3px dashed #F05033; background-color: #FBF7F1;">
+    style="position: relative; margin: 0 auto; width: 420px; height: 306px; border: 3px dashed #F05033; background-color: #FBF7F1;">
 
     <div class="ui-widget-content"
-      style="position: relative; display: block; width: 398px; background-color: rgba(251,247,241); z-index: 2;">
-      <div style="display: inline-block; text-align: left; width: 125px;">
+      style="position: relative; display: block; width: 420px; background-color: rgba(251,247,241); z-index: 2;">
+      <div style="display: inline-block; text-align: left; width: 135px;">
         <div class="git-menu text-sm"
           style="cursor: pointer; font-weight: bold; padding-left: 25px; border: 1px solid #000; width: 150px;">Main
           Menu <a href="#" title="<?= APP_ROOT ?>">Test</a></div>
-        <div class="text-xs" style="display: inline-block; border: 1px solid #000;">
+        <div class="text-xs" style="display: inline-block; border: 1px solid #000; width: 100%;">
           <a class="text-sm" id="app_git-frameMenuPrev"
-            href="<?= /*(!empty(APP_QUERY) ? '?' . http_build_query(APP_QUERY) : '') . */ (defined('APP_ENV') && APP_ENV == 'development' ? '#!' : '#') ?>">
+            href="<?= /*(!empty(APP_QUERY) ? '?' . http_build_query(APP_QUERY) : '') . */ (defined('APP_ENV') && APP_ENV == 'development' ? '#' : '#') ?>">
             &lt; Menu</a> | <a class="text-sm" id="app_git-frameMenuNext"
-            href="<?= /*(!empty(APP_QUERY) ? '?' . http_build_query(APP_QUERY) : '') . */ (defined('APP_ENV') && APP_ENV == 'development' ? '#!' : '#') ?>">Init
+            href="<?= /*(!empty(APP_QUERY) ? '?' . http_build_query(APP_QUERY) : '') . */ (defined('APP_ENV') && APP_ENV == 'development' ? '#' : '#') ?>">Init
             &gt;</a>
         </div>
       </div>
       <div class="absolute"
-        style="position: absolute; display: inline-block; top: 4px; text-align: right; width: 272px; ">
+        style="position: relative; display: inline-block; top: 4px; text-align: right; float: right;">
         <div class="text-xs" style="display: inline-block;">
           + 2327 <a href="https://github.com/git/git/graphs/contributors">contributors</a>
-          <br /><a href="http://github.com/git"><img
-              src="assets/images/github.fw.png"
-              title="http://github.com/git" width="18" height="18" /></a>
+          <br /><a href="http://github.com/git"><img src="assets/images/github.fw.png" title="http://github.com/git"
+              width="18" height="18" /></a>
           <a style="color: blue; text-decoration-line: underline; text-decoration-style: solid;"
             href="http://git-scm.com/" title="http://git-scm.com/" target="_blank">http://git-scm.com/</a>
         </div>
@@ -223,8 +221,7 @@ defined('GIT_LATEST') or define('GIT_LATEST', GIT_VERSION);
     <div
       style="position: absolute; top: 0; left: 0; right: 0; margin: 10px auto; opacity: 1.0; text-align: center; cursor: pointer; /*z-index: 1;*/ ">
       <img class="<?= version_compare(GIT_LATEST, GIT_VERSION, '>') != 0 ? 'git-menu' : 'git-update' ?>"
-        src="assets/images/git_logo.gif" style="" width="229"
-        height="300" />
+        src="assets/images/git_logo.gif" style="" width="229" height="300" />
 
     </div>
     <div class="absolute" style="position: absolute; bottom: 24px; left: 0; right: 0; width: 100%; text-align: center;">
@@ -232,14 +229,13 @@ defined('GIT_LATEST') or define('GIT_LATEST', GIT_VERSION);
         system</span>
     </div>
     <div style="position: absolute; bottom: 0; left: 0; padding: 2px; z-index: 1;">
-      <a href="https://github.com/git"><img
-          src="assets/images/github-composer.fw.png" /></a>
+      <a href="https://github.com/git"><img src="assets/images/github-composer.fw.png" /></a>
     </div>
     <div class="absolute text-sm" style="position: absolute; bottom: 0; right: 0; padding: 2px; z-index: 1; ">
       <?= '<code>Latest: </code>'; ?>
       <?= version_compare(GIT_LATEST, GIT_VERSION, '>') != 0 ? '<span class="update" style="color: green; cursor: pointer;">' . 'v' . substr(GIT_LATEST, 0, similar_text(GIT_LATEST, GIT_VERSION)) . substr(GIT_LATEST, similar_text(GIT_LATEST, GIT_VERSION)) . '</span>' : 'Installed: v' . GIT_VERSION; ?>
     </div>
-    <div style="position: relative; overflow: hidden; width: 398px; height: 286px;">
+    <div style="position: relative; overflow: hidden; width: 420px; height: 286px;">
 
       <div id="app_git-frameMenu" class="app_git-frame-container selected absolute"
         style="background-color: rgb(225,196,151,.75); margin-top: 8px;">
@@ -247,22 +243,20 @@ defined('GIT_LATEST') or define('GIT_LATEST', GIT_VERSION);
         <div style="position: absolute; right: 10px; float: right; z-index: 1;">
           <div class="text-sm" style="display: inline-block; margin: 0 auto;">
             <form class="app_git-push"
-              action="<?= APP_URL . '?' . http_build_query(APP_QUERY + ['app' => 'git']) . (defined('APP_ENV') && in_array(APP_ENV, ['development', 'production']) ? '#!' : '') /* $c_or_p . '=' . (empty($_GET[$c_or_p]) ? '' : $$c_or_p->name) . '&amp;app=git' */ ?>"
+              action="<?= APP_URL . '?' . http_build_query(APP_QUERY + ['app' => 'git']) . (defined('APP_ENV') && in_array(APP_ENV, ['development', 'production']) ? '#' : '') /* $c_or_p . '=' . (empty($_GET[$c_or_p]) ? '' : $$c_or_p->name) . '&amp;app=git' */ ?>"
               method="POST">
               <!-- <input type="hidden"  /> -->
-              <button type="submit" name="cmd" value="push"><img
-                  src="assets/images/green_arrow.fw.png"
-                  width="20" height="25" style="cursor: pointer; margin-left: 6px;" /><br />Push</button>
+              <button type="submit" name="cmd" value="push"><img src="assets/images/green_arrow.fw.png" width="20"
+                  height="25" style="cursor: pointer; margin-left: 6px;" /><br />Push</button>
             </form>
           </div>
           <div class="text-sm" style="display: inline-block; margin: 0 auto;">
             <form class="app_git-pull"
-              action="<?= APP_URL . '?' . http_build_query(APP_QUERY + ['app' => 'git']) . (defined('APP_ENV') && in_array(APP_ENV, ['development', 'production']) ? '#!' : '') /* $c_or_p . '=' . (empty($_GET[$c_or_p]) ? '' : $$c_or_p->name) . '&amp;app=git' */ ?>"
+              action="<?= APP_URL . '?' . http_build_query(APP_QUERY + ['app' => 'git']) . (defined('APP_ENV') && in_array(APP_ENV, ['development', 'production']) ? '#' : '') /* $c_or_p . '=' . (empty($_GET[$c_or_p]) ? '' : $$c_or_p->name) . '&amp;app=git' */ ?>"
               method="POST">
               <!-- <input type="hidden"  /> -->
-              <button type="submit" name="cmd" value="pull"><img
-                  src="assets/images/red_arrow.fw.png"
-                  width="20" height="25" style="cursor: pointer; margin-left: 4px;" /><br />Pull</button>
+              <button type="submit" name="cmd" value="pull"><img src="assets/images/red_arrow.fw.png" width="20"
+                  height="25" style="cursor: pointer; margin-left: 4px;" /><br />Pull</button>
             </form>
           </div>
         </div>
@@ -276,21 +270,18 @@ defined('GIT_LATEST') or define('GIT_LATEST', GIT_VERSION);
           <div
             style="position: absolute; top: 5px; left: 10px; border: 1px dashed #000; height: 104px; overflow-y: auto; z-index:4;"
             class="text-xs">
-            <div style="position: absolute; top: 0; right: 25px;"><img
-                src="assets/images/oauth-token.gif"
+            <div style="position: absolute; top: 0; right: 25px;"><img src="assets/images/oauth-token.gif"
                 style="position: fixed; cursor: pointer;" width="20" height="23" alt="Git token" title="OAuth Token"
                 onclick="document.getElementById('app_git-oauth').style.display='block';" /></div>
             <div style="position: absolute; font-weight: bold; color: #FFF; background-color: #B0B0B0;">Git Commands
             </div>
             <br />
             <code class="text-xs">
-                            <a id="app_git-help-cmd" href="<?= (APP_URL_BASE['query'] != '' ? '?' . APP_URL_BASE['query'] : '') . (defined('APP_ENV') && in_array(APP_ENV, ['development', 'production']) ? '#!' : '') ?>" onclick="">git <span style="color: red;">[Help]</span></a><br />
-                            <a id="app_git-add-cmd" href="<?= (APP_URL_BASE['query'] != '' ? '?' . APP_URL_BASE['query'] : '') . (defined('APP_ENV') && in_array(APP_ENV, ['development', 'production']) ? '#!' : '') ?>" onclick="">git add .</a><br />
-                            <a id="app_git-remote-cmd" href="<?= (APP_URL_BASE['query'] != '' ? '?' . APP_URL_BASE['query'] : '') . (defined('APP_ENV') && in_array(APP_ENV, ['development', 'production']) ? '#!' : '') ?>" onclick="">git remote -v</a><br />
-                            <a id="app_git-commit-cmd" href="<?= (APP_URL_BASE['query'] != '' ? '?' . APP_URL_BASE['query'] : '') . (defined('APP_ENV') && in_array(APP_ENV, ['development', 'production']) ? '#!' : '') ?>">git commit -am "&lt;detail message&gt;"</a><br />
-                            <a id="app_git-clone-cmd" href="<?= (APP_URL_BASE['query'] != '' ? '?' . APP_URL_BASE['query'] : '') . (defined('APP_ENV') && in_array(APP_ENV, ['development', 'production']) ? '#!' : '') ?>">git clone &lt;URL&gt;</a><br />
-                            <a>Testing Again</a><br />
-                            </code>
+<a id="app_git-help-cmd" href="<?= (APP_URL_BASE['query'] != '' ? '?' . APP_URL_BASE['query'] : '') . (defined('APP_ENV') && in_array(APP_ENV, ['development', 'production']) ? '#' : '') ?>" onclick="">git <span style="color: red;">[Help]</span></a><br />
+<a id="app_git-add-cmd" href="<?= (APP_URL_BASE['query'] != '' ? '?' . APP_URL_BASE['query'] : '') . (defined('APP_ENV') && in_array(APP_ENV, ['development', 'production']) ? '#' : '') ?>" onclick="">git add .</a><br />
+<a id="app_git-remote-cmd" href="<?= (APP_URL_BASE['query'] != '' ? '?' . APP_URL_BASE['query'] : '') . (defined('APP_ENV') && in_array(APP_ENV, ['development', 'production']) ? '#' : '') ?>" onclick="">git remote -v</a><br />
+<a id="app_git-commit-cmd" href="<?= (APP_URL_BASE['query'] != '' ? '?' . APP_URL_BASE['query'] : '') . (defined('APP_ENV') && in_array(APP_ENV, ['development', 'production']) ? '#' : '') ?>">git commit -am "&lt;detail message&gt;"</a><br />
+<a id="app_git-clone-cmd" href="<?= (APP_URL_BASE['query'] != '' ? '?' . APP_URL_BASE['query'] : '') . (defined('APP_ENV') && in_array(APP_ENV, ['development', 'production']) ? '#' : '') ?>">git clone &lt;URL&gt;</a><br /></code>
           </div>
 
           <div id="app_git-commit-msg"
@@ -330,9 +321,8 @@ defined('GIT_LATEST') or define('GIT_LATEST', GIT_VERSION);
               size="26" />
           </div>
 
-          <div style="display: inline-block; width: 32%; text-align: right;"><img
-              src="assets/images/git.fw.png" width="52"
-              height="37" style=" border: 1px dashed #F05033;" /></div>
+          <div style="display: inline-block; width: 32%; text-align: right;"><img src="assets/images/git.fw.png"
+              width="52" height="37" style=" border: 1px dashed #F05033;" /></div>
           <div
             style="position: relative; display: inline-block; top: 20px; width: 32%; text-align: center; border: 1px dashed #F05033; height: 44px; padding: 7px;">
             <select id="app_git-frameSelector">
@@ -349,9 +339,8 @@ defined('GIT_LATEST') or define('GIT_LATEST', GIT_VERSION);
             <form id="app_git-cmd-selected" action="/?app=git" method="POST" autocomplete="off" spellcheck="false">
               <input type="hidden" name="git[cmd]"
                 value="<?= isset($_POST['git']['cmd']) ? $_POST['git']['cmd'] : 'init'; ?>" />
-              <button type="submit"><img
-                  src="assets/images/git_icon_selected.fw.png"
-                  width="44" height="29" style="border: 1px dashed #F05033;" /></button>
+              <button type="submit"><img src="assets/images/git_icon_selected.fw.png" width="44" height="29"
+                  style="border: 1px dashed #F05033;" /></button>
             </form>
           </div>
         </div>
@@ -360,7 +349,7 @@ defined('GIT_LATEST') or define('GIT_LATEST', GIT_VERSION);
 
       <div id="app_git-frameInit" class="app_git-frame-container absolute" style="overflow: hidden; height: 270px;">
         <form autocomplete="off" spellcheck="false"
-          action="?<?= http_build_query(APP_QUERY + ['app' => 'git']) . (defined('APP_ENV') && APP_ENV == 'development' ? '#!' : '') /* $c_or_p . '=' . (empty($_GET[$c_or_p]) ? '' : $$c_or_p->name) . '&amp;app=git' */ ?>"
+          action="?<?= http_build_query(APP_QUERY + ['app' => 'git']) . (defined('APP_ENV') && APP_ENV == 'development' ? '#' : '') /* $c_or_p . '=' . (empty($_GET[$c_or_p]) ? '' : $$c_or_p->name) . '&amp;app=git' */ ?>"
           method="POST">
           <div style="position: absolute; right: 0; float: right; text-align: center;">
             <input id="gitInitSubmit" class="btn" type="submit" value="Init/Run" />
@@ -381,7 +370,7 @@ defined('GIT_LATEST') or define('GIT_LATEST', GIT_VERSION);
 
       <div id="app_git-frameStatus" class="app_git-frame-container absolute" style="overflow: hidden; height: 270px;">
         <form autocomplete="off" spellcheck="false"
-          action="?<?= http_build_query(APP_QUERY + ['app' => 'git']) . (defined('APP_ENV') && APP_ENV == 'development' ? '#!' : '') /* $c_or_p . '=' . (empty($_GET[$c_or_p]) ? '' : $$c_or_p->name) . '&amp;app=git' */ ?>"
+          action="?<?= http_build_query(APP_QUERY + ['app' => 'git']) . (defined('APP_ENV') && APP_ENV == 'development' ? '#' : '') /* $c_or_p . '=' . (empty($_GET[$c_or_p]) ? '' : $$c_or_p->name) . '&amp;app=git' */ ?>"
           method="POST">
           <div
             style="display: inline-block; width: 100%; margin: -10px 0 10px 0; background-color: rgb(225,196,151,.75);">
@@ -403,7 +392,7 @@ defined('GIT_LATEST') or define('GIT_LATEST', GIT_VERSION);
 
       <div id="app_git-frameConfig" class="app_git-frame-container absolute" style="overflow: hidden; height: 270px;">
         <form autocomplete="off" spellcheck="false"
-          action="?<?= http_build_query(APP_QUERY + ['app' => 'git']) . (defined('APP_ENV') && APP_ENV == 'development' ? '#!' : '') /* $c_or_p . '=' . (empty($_GET[$c_or_p]) ? '' : $$c_or_p->name) . '&amp;app=git' */ ?>"
+          action="?<?= http_build_query(APP_QUERY + ['app' => 'git']) . (defined('APP_ENV') && APP_ENV == 'development' ? '#' : '') /* $c_or_p . '=' . (empty($_GET[$c_or_p]) ? '' : $$c_or_p->name) . '&amp;app=git' */ ?>"
           method="POST">
           <div style="position: absolute; right: 0; float: right; text-align: center;">
             <button id="gitConfigSubmit" class="btn absolute" style="position: absolute; top: 0; right: 0; z-index: 2;"
@@ -477,7 +466,7 @@ defined('GIT_LATEST') or define('GIT_LATEST', GIT_VERSION);
 
       <div id="app_git-frameCommit" class="app_git-frame-container absolute" style="overflow: hidden; height: 270px;">
         <form autocomplete="off" spellcheck="false"
-          action="?<?= http_build_query(APP_QUERY + ['app' => 'git']) . (defined('APP_ENV') && APP_ENV == 'development' ? '#!' : '') /* $c_or_p . '=' . (empty($_GET[$c_or_p]) ? '' : $$c_or_p->name) . '&amp;app=git' */ ?>"
+          action="?<?= http_build_query(APP_QUERY + ['app' => 'git']) . (defined('APP_ENV') && APP_ENV == 'development' ? '#' : '') /* $c_or_p . '=' . (empty($_GET[$c_or_p]) ? '' : $$c_or_p->name) . '&amp;app=git' */ ?>"
           method="POST">
           <div
             style="display: inline-block; width: 100%; margin: -10px 0 10px 0; background-color: rgb(225,196,151,.75);">
@@ -499,7 +488,7 @@ defined('GIT_LATEST') or define('GIT_LATEST', GIT_VERSION);
 
       <div id="app_git-frameUpdate" class="app_git-frame-container absolute" style="overflow: hidden; height: 270px;">
         <form autocomplete="off" spellcheck="false"
-          action="?<?= http_build_query(APP_QUERY + ['app' => 'git']) . (defined('APP_ENV') && APP_ENV == 'development' ? '#!' : '') /* $c_or_p . '=' . (empty($_GET[$c_or_p]) ? '' : $$c_or_p->name) . '&amp;app=git' */ ?>"
+          action="?<?= http_build_query(APP_QUERY + ['app' => 'git']) . (defined('APP_ENV') && APP_ENV == 'development' ? '#' : '') /* $c_or_p . '=' . (empty($_GET[$c_or_p]) ? '' : $$c_or_p->name) . '&amp;app=git' */ ?>"
           method="POST">
           <div
             style="display: inline-block; width: 100%; margin: -10px 0 10px 0; background-color: rgb(225,196,151,.75);">
@@ -889,7 +878,7 @@ ob_start(); ?>
     <style type="text/tailwindcss">
       <?= $UI_APP['style'] ?? '' ?>
 
-              </style>
+                  </style>
   </head>
 
   <body>

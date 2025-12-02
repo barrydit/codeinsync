@@ -27,6 +27,23 @@ function base_val(string $key): string
   return rtrim($v, '/') . '/';
 }
 
+function isDomainName(string $name): bool
+{
+  // Trim whitespace and trailing dot
+  $name = trim($name, " \t\n\r\0\x0B.");
+
+  // Reject client folders like "000-Whatever"
+  if (preg_match('/^\d{3}-/u', $name))
+    return false;
+
+  // RFC-ish domain (allows subdomains and punycode, TLD up to 63)
+  // Require at least one dot; allow punycode labels; 1..253 total chars
+  return (bool) preg_match(
+    '/^(?=.{1,253}$)(?:xn--)?[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?(?:\.(?:xn--)?[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?)+$/iu',
+    $name
+  );
+}
+
 //function norm_path(string $p): string
 //{
 // collapse duplicate slashes; keep leading / if present

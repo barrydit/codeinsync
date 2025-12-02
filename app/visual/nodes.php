@@ -86,11 +86,27 @@ if (isset($_GET['app'], $_GET['graph']) && $_GET['app'] === 'visual/nodes') {
   // Determine base dir
   $baseDir = APP_PATH . (APP_ROOT ?: '');
 
+  $files = get_required_files();
+  $map = [];
+
+  $root = rtrim(APP_PATH, '/') . '/';  // ensure trailing slash
+
+  foreach ($files as $f) {
+    // strip the APP_PATH prefix
+    $relative = str_starts_with($f, $root)
+      ? substr($f, strlen($root))
+      : $f;
+
+    // key = stripped parent directory + filename
+    // value = same
+    $map[] = $relative;
+  }
+
   // Entry scripts to analyze (make these relative to base)
-  $entries = [
-    'public/index.php' => (APP_ROOT ? APP_ROOT : '') . 'public/index.php',
-    'api/composer.php' => (APP_ROOT ? APP_ROOT : '') . 'api/composer.php', // add back when desired
-  ];
+  $entries = $map; //[
+
+  //'api/composer.php' => (APP_ROOT ?: '') . 'api/composer.php', // add back when desired
+  //];
 
   // Collect per-entry required files
   $jsonData = [];
@@ -510,7 +526,7 @@ ob_start(); ?>
     curl_setopt($handle, CURLOPT_RETURNTRANSFER, true);
 
     if (!empty($js = curl_exec($handle)))
-      file_put_contents($path . 'tailwindcss-3.3.5.js', $js) or $errors['JS-TAILWIND'] = $url . ' returned empty.';
+      file_put_contents("{$path}tailwindcss-3.3.5.js", $js) or $errors['JS-TAILWIND'] = "$url returned empty.";
   }
   unset($path);
   ?>

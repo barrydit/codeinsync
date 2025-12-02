@@ -191,8 +191,8 @@ if ($absDir === null && $path && !$client && !$domain && !$project) {
         $current = $curPath . (empty($curQS) ? '' : '?' . http_build_query($curQS));
 
         if ($current !== $target && !headers_sent()) {
-            header("Location: $target", true, 302);
-            exit;
+            //header("Location: $target", true, 302);
+            //exit;
         }
     }
 }

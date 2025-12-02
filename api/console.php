@@ -3,6 +3,46 @@
 
 global $baseHref, $errors;
 $output[] = 'TEST 123';
+
+if (!function_exists('cis_run_process')) {
+    function cis_run_process(string $command, ?string $cwd = null, ?array $env = null): array
+    {
+        $descriptorSpec = [
+            0 => ['pipe', 'r'],
+            1 => ['pipe', 'w'],
+            2 => ['pipe', 'w'],
+        ];
+
+        $proc = proc_open($command, $descriptorSpec, $pipes, $cwd ?: null, $env ?: null);
+
+        if (!is_resource($proc)) {
+            return [
+                'command' => $command,
+                'stdout' => '',
+                'stderr' => 'Failed to open process.',
+                'exitCode' => 1,
+            ];
+        }
+
+        fclose($pipes[0]);
+
+        $stdout = stream_get_contents($pipes[1]);
+        fclose($pipes[1]);
+
+        $stderr = stream_get_contents($pipes[2]);
+        fclose($pipes[2]);
+
+        $exitCode = proc_close($proc);
+
+        return [
+            'command' => $command,
+            'stdout' => $stdout === false ? '' : $stdout,
+            'stderr' => $stderr === false ? '' : $stderr,
+            'exitCode' => $exitCode,
+        ];
+    }
+}
+
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     // $auto_clear = isset($_POST['auto_clear']) && $_POST['auto_clear'] == 'on' ? true : false;
     if (isset($_POST['group_type'])) {
@@ -25,6 +65,10 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 
         $output = [];
 
+        $whoami = (stripos(PHP_OS, 'WIN') === 0 ? get_current_user() : trim(shell_exec('whoami 2>&1')));
+        // get_current_user();
+        // posix_getpwuid(posix_geteuid())['name'];
+
         //$output[] = $shell_prompt = 'www-data@localhost:' . getcwd() . '# ' . $_POST['cmd'];
         //$socketInstance = Sockets::getInstance();
         //$GLOBALS['runtime']['socket'] = $socketInstance->getSocket();
@@ -39,13 +83,58 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             elseif (preg_match('/^test/i', $_POST['cmd'])) {
                 $output[] = $_SERVER['HTTP_REFERER']; // $baseHref . '/?' .  $_SERVER['QUERY_STRING'];
             } elseif (preg_match('/^path/i', $_POST['cmd'])) {
-                $output[] = APP_PATH . APP_ROOT . APP_ROOT_DIR;
+                $output[] = realpath(APP_PATH . APP_ROOT . APP_ROOT_DIR) . DIRECTORY_SEPARATOR;
             } elseif (preg_match('/^files/i', $_POST['cmd'])) {
                 $output[] = implode(', ', get_required_files());
             } elseif (preg_match('/^defined/i', $_POST['cmd'])) {
                 $output[] = APP_PATH . APP_ROOT . APP_ROOT_DIR; // implode(', ', TESTING);
             } elseif (preg_match('/^123testing/i', $_POST['cmd'])) {
-                $output[] = rtrim($baseHref, '/') . $_SERVER['REQUEST_URI'];
+                $output[] = rtrim($baseHref, '/') . $_SERVER['REQUEST_URI'] . '  123';
+            } elseif (preg_match('/^whoami(:?(.*))/i', $_POST['cmd'], $match)) {
+
+                // Show the command that was run (your usual style)
+                $output[] = $whoami . '@' . APP_HOST . ':' . getcwd() . '# whoami';
+
+                // Run whoami and capture output into a temp array
+                $tmp = [];
+                exec('whoami 2>&1', $tmp, $exitCode);
+
+                // Append the result of whoami
+                if (!empty($tmp)) {
+                    foreach ($tmp as $line) {
+                        $output[] = $line;
+                    }
+                }
+
+                // Exit code if not zero
+                if ($exitCode !== 0) {
+                    $output[] = "Exit Code: $exitCode";
+                }
+            } elseif (preg_match('/^git\s+/i', $_POST['cmd'])) {
+                require_once APP_BASE['api'] . 'git.php';
+
+                $res = handle_git_command($_POST['cmd']);
+
+                // Show prompt
+                if (!empty($res['prompt'])) {
+                    $output[] = 'www-data@localhost:' . getcwd() . '# ' . $res['prompt'];
+                }
+
+                foreach ($res['output'] as $line) {
+                    if ($line === '' || $line === null)
+                        continue;
+                    foreach (explode("\n", rtrim((string) $line)) as $ln) {
+                        $output[] = $ln;
+                    }
+                }
+
+                if (!empty($res['errors'])) {
+                    foreach ($res['errors'] as $err) {
+                        foreach (explode("\n", rtrim((string) $err)) as $ln) {
+                            $output[] = 'Error: ' . $ln;
+                        }
+                    }
+                }
             } elseif (preg_match('/^server\s*start$/i', $_POST['cmd'])) {
                 //require_once APP_PATH . 'server.php';
 
@@ -59,6 +148,67 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                             $output[] = 'Sockets started ...';
                           }
                 */
+            } elseif (preg_match('/^sudo\s*(.*)(?=\r?\n$)?/si', $_POST['cmd'], $sudoMatches)) {
+
+                // Arguments after "sudo "
+                $sudoArgs = trim($sudoMatches[1]);
+
+                if ($sudoArgs === '') {
+                    $output[] = 'Error: sudo requires a command.';
+                    return;
+                }
+
+                // Build full command
+                // We do NOT prefix with APP_SUDO here, because the user explicitly typed "sudo ..."
+                // If you want to restrict this (prevent elevation), add a whitelist check here.
+                $execCmd = 'sudo ' . $sudoArgs;
+
+                // Show prompt
+                $output[] = 'www-data@localhost:' . getcwd() . '# ' . $execCmd;
+
+                // Execute with proc_open (safe + captures stdout/stderr)
+                $descriptorSpec = [
+                    0 => ['pipe', 'r'], // stdin
+                    1 => ['pipe', 'w'], // stdout
+                    2 => ['pipe', 'w'], // stderr
+                ];
+
+                $proc = proc_open($execCmd, $descriptorSpec, $pipes);
+
+                if (!is_resource($proc)) {
+                    $output[] = 'Failed to open process.';
+                    return;
+                }
+
+                // We don't need stdin
+                fclose($pipes[0]);
+
+                // Capture stdout, stderr
+                $stdout = stream_get_contents($pipes[1]);
+                fclose($pipes[1]);
+
+                $stderr = stream_get_contents($pipes[2]);
+                fclose($pipes[2]);
+
+                // Exit code
+                $exitCode = proc_close($proc);
+
+                // Output formatting
+                if ($stdout !== '' && $stdout !== false) {
+                    foreach (explode("\n", rtrim($stdout)) as $line) {
+                        $output[] = $line;
+                    }
+                }
+
+                if ($stderr !== '' && $stderr !== false) {
+                    foreach (explode("\n", rtrim($stderr)) as $line) {
+                        $output[] = 'Error: ' . $line;
+                    }
+                }
+
+                if ($exitCode !== 0) {
+                    $output[] = "Exit Code: $exitCode";
+                }
             }  //else if (preg_match('/^install/i', $_POST['cmd']))
         //include 'templates/' . preg_split("/^install (\s*+)/i", $_POST['cmd'])[1] . '.php';
 
@@ -74,9 +224,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         // 
 
 
-    } else if (preg_match('/^whoami(:?(.*))/i', $_POST['cmd'], $match))
-        exec('whoami', $output);
-    else if (preg_match('/^wget\s+(:?(.*))/i', $_POST['cmd'], $match))
+    } else if (preg_match('/^wget\s+(:?(.*))/i', $_POST['cmd'], $match))
         /* https://stackoverflow.com/questions/9691367/how-do-i-request-a-file-but-not-save-it-with-wget */
         exec("wget -qO- {$match[1]} &> /dev/null", $output);
     else {

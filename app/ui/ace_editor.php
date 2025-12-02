@@ -63,29 +63,40 @@ $data_attrs = sprintf(
 // -----------------------------------------------------------------------------
 
 if (false) { ?>
-        <style><?php }
+    <style>
+    <?php }
 ob_start(); ?>
-<?= $selector ?> {
-width : 720px;
-height : 460px;
-/* display : none; */ /* Initially hidden */
-/* border: 1px solid black; */
-position : absolute;
-top : 60px;
-left : 30%;
-right : 0;
-z-index : 1;
-/* resize: both; Make the div resizable */
-/* overflow: hidden; Hide overflow to ensure proper resizing */
-}
-<?php $UI_APP['style'] = ob_get_contents();
-ob_end_clean();
-if (false) { ?>  </style><?php }
 
-ob_start(); ?>
+    <?= $selector ?>
+        {
+        width: 720px;
+        height: 460px;
+
+        /* display : none; */
+        /* Initially hidden */
+        /* border: 1px solid black; */
+        position: absolute;
+        top: 60px;
+        left: 30%;
+        right: 0;
+        z-index: 1;
+        /* resize: both; Make the div resizable */
+        / * overflow: hidden;
+        Hide overflow to ensure proper resizing */
+    }
+
+    <?php $UI_APP['style'] = ob_get_contents();
+    ob_end_clean();
+    if (false) { ?>
+    </style><?php }
+
+    ob_start(); ?>
 <!-- Header -->
+
+
 <div class="ui-widget-header"
-    style="display:flex;align-items:center;gap:.5rem;justify-content:space-between;border-bottom:1px solid #000;background:#fff;cursor:move;" data-drag-handle="true">
+    style="display:flex;align-items:center;gap:.5rem;justify-content:space-between;border-bottom:1px solid #000;background:#fff;cursor:move;"
+    data-drag-handle="true">
     <div style="display:flex;align-items:center;gap:.5rem;">
         <img src="assets/images/ace_editor_icon.png" width="24" height="24" alt="Ace" />
         <span style="background:#38B1FF;color:#fff;padding:.1rem .4rem;border-radius:.25rem;">Ace Editor</span>
@@ -96,7 +107,7 @@ ob_start(); ?>
 </div>
 
 <!-- Save Form + Editor -->
-<form class="ace-form" action="/?api=ace_editor" method="POST"
+<form class="ace-form" action="/?api=file_save" method="POST"
     style="display:flex;flex-direction:column;height:calc(100% - 34px);">
     <!-- These can be filled by your dispatcher before render, or updated at runtime -->
     <input type="hidden" name="path" value="">
@@ -104,9 +115,11 @@ ob_start(); ?>
     <input type="hidden" name="encoding" value="utf-8">
 
     <!-- Toolbar -->
-    <div class="toolbar ui-widget-content"
+
+    <div clas s="toolbar ui-widget-content"
         style="display:flex;align-items:center;justify-content:flex-end;gap:.5rem;padding:.3rem .4rem;background:rgba(251,247,241);border-bottom:1px solid #ddd;">
-        <span style="position: absolute; left: 0;"><?= ltrim($_GET['path'] . DIRECTORY_SEPARATOR . ltrim($_GET['file'], '/'), '/') ?></span>
+        <span
+            style="position: absolute; left: 0;"><?= ltrim($_GET['path'] . DIRECTORY_SEPARATOR . ltrim($_GET['file'], '/'), '/') ?></span>
         <button type="submit" name="ace_save" class="btn">Save</button>
     </div>
 
@@ -118,8 +131,14 @@ ob_start(); ?>
 </form>
 
 <!-- Optional initial content (used if no file contents are injected) -->
-<?php $fh = fopen(realpath(APP_PATH . APP_ROOT . APP_ROOT_DIR . ltrim($_GET['file'], '/')), 'r'); ?>
-<script type="text/plain" id="initialContent"><?= $pageText = fread($fh, 25000); ?></script>
+<?php //$fh = fopen(realpath(APP_PATH . APP_ROOT . APP_ROOT_DIR . ltrim($_GET['file'], '/')), 'r'); ?>
+<script type="text/plain" id="initialContent"><?php
+//while (!feof($fh)) {
+// send the current file part to the browser
+//    print htmlspecialchars(fread($fh, 8192), ENT_QUOTES, 'UTF-8');
+//}
+//fclose($fh); 
+?></script>
 <?php $UI_APP['body'] = ob_get_contents();
 ob_end_clean();
 
@@ -156,9 +175,9 @@ ob_start(); ?>
         const versionBox = container.querySelector('#AceEditorVersionBox');
 
         // Use injected content if present, else the <script type="text/plain"> fallback
-        const injected = editorEl.getAttribute('data-initial') || '';
-        const fallback = (container.querySelector('#initialContent')?.textContent || '');
-        const initial = injected || fallback;
+        //const injected = editorEl.getAttribute('data-initial') || '';
+        //const fallback = (container.querySelector('#initialContent')?.textContent || '');
+        //const initial = injected || fallback;
 
         // Create Ace instance
         const editor = ace.edit(editorEl);
@@ -171,7 +190,58 @@ ob_start(); ?>
             showPrintMargin: false,
             fontSize: 14,
         });
-        editor.session.setValue(initial);
+        //editor.session.setValue(initial);
+
+        // --- CTRL+S / CMD+S Save Handler ---
+        editor.commands.addCommand({
+            name: "saveFile",
+            bindKey: { win: "Ctrl-S", mac: "Command-S" },
+            exec: function (editor) {
+                const content = editor.getValue();
+
+                // OPTIONAL: custom event to your window/app
+                document.dispatchEvent(new CustomEvent("app:save", {
+                    detail: { content }
+                }));
+
+                // OPTIONAL: your API call
+                fetch("/?api=file_save&ace_save=1", {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "text/plain; charset=UTF-8"
+                    },
+                    body: content   // <-- RAW TEXT, no JSON!
+                })
+                    .then(r => r.text())
+                    .then(response => {
+                        console.log("[SAVE]", response);
+                        window.location.reload();
+                        // optionally show a toast
+                    });
+
+                // Prevent browser “Save Page” dialog
+                return false;
+            }
+        });
+
+        async function loadFile() {
+            const url = `/?api=file_load&` + `<?= http_build_query($_GET); ?>`; // encodeURIComponent(path);
+
+            const resp = await fetch(url, { cache: 'no-store' });
+            if (!resp.ok) {
+                console.error('Failed to load file', await resp.text());
+                return;
+            }
+
+            let text = await resp.text();
+
+            // Normalize line endings so Ace sees consistent \n
+            text = text.replace(/\r\n/g, '\n').replace(/\r/g, '\n');
+
+            editor.setValue(text, -1); // -1 keeps cursor at top
+        }
+
+        await loadFile();
 
         // Expose for other modules if needed
         container.__editor = editor;
@@ -188,6 +258,12 @@ ob_start(); ?>
         // Example: await loadScript('assets/vendor/ace/ext-language_tools.js');
         // Then enable: editor.setOptions({ enableBasicAutocompletion: true, enableSnippets: true });
     })();
+
+    window.addEventListener("keydown", function (e) {
+        if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === "s") {
+            e.preventDefault();
+        }
+    });
     <?php $UI_APP['script'] = ob_get_contents();
     ob_end_clean();
 

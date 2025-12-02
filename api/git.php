@@ -1,7 +1,11 @@
 <?php
+// api/git.php
+use CodeInSync\Infrastructure\Runtime\Shutdown;
 
-use App\Core\Shutdown;
-
+/**
+ * Handle a git command string like "git status", "git commit -am 'msg'" etc.
+ * Assumes cis_run_process() is defined elsewhere (e.g. in api/console.php).
+ */
 function handle_git_command(string $cmd): array
 {
     $output = [];
@@ -14,16 +18,25 @@ function handle_git_command(string $cmd): array
         ];
     }
 
-    $gitCmd = $match[1];
-    $sudo = defined('APP_SUDO') && trim(APP_SUDO) !== '' ? APP_SUDO . ' -u www-data ' : '';
+    $gitCmd = trim($match[1]);
+    $sudo = (defined('APP_SUDO') && trim(APP_SUDO) !== '') ? APP_SUDO . ' -u www-data ' : '';
     $gitExec = defined('GIT_EXEC') ? GIT_EXEC : 'git';
-    $gitDir = APP_PATH . APP_ROOT . '.git';
-    $workTree = APP_PATH . APP_ROOT;
-    $shell_prompt = '$ ';
 
-    $fullCommand = "$sudo$gitExec --git-dir=\"$gitDir\" --work-tree=\"$workTree\" $gitCmd";
+    $gitDir = realpath(APP_PATH . APP_ROOT . '.git');
+    $workTree = realpath(APP_PATH . APP_ROOT) . DIRECTORY_SEPARATOR;
 
-    // Special help handler
+    $fullCommand = sprintf(
+        '%s%s --git-dir="%s" --work-tree="%s" %s',
+        $sudo,
+        $gitExec,
+        $gitDir,
+        $workTree,
+        $gitCmd
+    );
+
+    $shellPrompt = '$ ' . $fullCommand;
+
+    // ── Special: help ───────────────────────────
     if (preg_match('/^help\b/i', $gitCmd)) {
         $output[] = <<<END
 git reset filename   (unstage a specific file)
@@ -38,32 +51,40 @@ git checkout -b newBranch
 END;
     }
 
-    // Special case: git update
+    // ── Special: update ─────────────────────────
     elseif (preg_match('/^update\b/i', $gitCmd)) {
-        $output[] = function_exists('git_origin_sha_update') ? git_origin_sha_update() : 'git_origin_sha_update() not available.';
+        $output[] = function_exists('git_origin_sha_update')
+            ? git_origin_sha_update()
+            : 'git_origin_sha_update() not available.';
     }
 
-    // Special case: git clone
+    // ── Special: clone ──────────────────────────
     elseif (preg_match('/^clone\b/i', $gitCmd)) {
         if (
-            preg_match('/^git\s+clone\s+(http(?:s)?:\/\/([^@\s]+)@github\.com\/[\w.-]+\/[\w.-]+\.git)(?:\s*([\w.-]+))?/', $cmd, $github_repo)
-            || preg_match('/^git\s+clone\s+(http(?:s)?:\/\/github\.com\/[\w.-]+\/[\w.-]+\.git)(?:\s*([\w.-]+))?/', $cmd, $github_repo)
+            preg_match('/^git\s+clone\s+(http(?:s)?:\/\/([^@\s]+)@github\.com\/[\w.-]+\/[\w.-]+\.git)(?:\s*([\w.-]+))?/i', $cmd, $github_repo)
+            || preg_match('/^git\s+clone\s+(http(?:s)?:\/\/github\.com\/[\w.-]+\/[\w.-]+\.git)(?:\s*([\w.-]+))?/i', $cmd, $github_repo)
         ) {
-
             $parsedUrl = parse_url($_ENV['GIT']['ORIGIN_URL']);
             $token = $_ENV['GITHUB']['OAUTH_TOKEN'] ?? '';
-            $remoteUrl = "https://$token@" . $parsedUrl['host'] . $parsedUrl['path'] . '.git';
 
-            $fullCommand = "$cmd --git-dir=\"$gitDir\" --work-tree=\"$workTree\" $remoteUrl";
+            $remoteUrl = "https://{$token}@{$parsedUrl['host']}{$parsedUrl['path']}.git";
 
-            if (!isset($GLOBALS['runtime']['socket']) || !is_resource($GLOBALS['runtime']['socket'])) {
-                $proc = proc_open($fullCommand, [["pipe", "r"], ["pipe", "w"], ["pipe", "w"]], $pipes);
-                [$stdout, $stderr, $exitCode] = [stream_get_contents($pipes[1]), stream_get_contents($pipes[2]), proc_close($proc)];
-                $output[] = $stdout;
-                if (!empty($stderr))
-                    $errors[] = $stderr;
+            $fullCommand = $cmd . ' ' . $remoteUrl;
+
+            if (
+                !isset($GLOBALS['runtime']['socket'])
+                || !is_resource($GLOBALS['runtime']['socket'])
+            ) {
+                $res = cis_run_process($fullCommand, $workTree);
+
+                if ($res['stdout'] !== '') {
+                    $output[] = $res['stdout'];
+                }
+                if ($res['stderr'] !== '') {
+                    $errors[] = $res['stderr'];
+                }
             } else {
-                // socket handling
+                // socket handling unchanged
                 $message = "cmd: $fullCommand\n";
                 fwrite($GLOBALS['runtime']['socket'], $message);
                 $response = '';
@@ -76,44 +97,51 @@ END;
         }
     }
 
-    // Default git command
+    // ── Default git command ─────────────────────
     else {
-        $proc = proc_open($fullCommand, [["pipe", "r"], ["pipe", "w"], ["pipe", "w"]], $pipes);
-        [$stdout, $stderr, $exitCode] = [stream_get_contents($pipes[1]), stream_get_contents($pipes[2]), proc_close($proc)];
+        $res = cis_run_process($fullCommand, $workTree);
 
-        if ($exitCode !== 0 && empty($stdout)) {
-            if (!empty($stderr)) {
-                $errors["GIT-$cmd"] = $stderr;
-                error_log($stderr);
+        if ($res['exitCode'] !== 0 && $res['stdout'] === '') {
+            if ($res['stderr'] !== '') {
+                $errors["GIT-$cmd"] = $res['stderr'];
+                error_log($res['stderr']);
             }
         } else {
-            $output[] = $stdout;
-            if (!empty($stderr))
-                $output[] = "stderr: $stderr";
+            if ($res['stdout'] !== '') {
+                $output[] = $res['stdout'];
+            }
+            if ($res['stderr'] !== '') {
+                $output[] = 'stderr: ' . $res['stderr'];
+            }
         }
+
+        $output[] = var_export(get_required_files(), true);
     }
 
     return [
         'status' => empty($errors) ? 'success' : 'error',
         'command' => $cmd,
+        'prompt' => $shellPrompt,
         'output' => $output,
         'errors' => $errors,
     ];
 }
 
 // === Execution point ===
-if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['cmd'])) {
+if (
+    php_sapi_name() !== 'cli' &&
+    ($_SERVER['REQUEST_METHOD'] ?? '') === 'POST' &&
+    isset($_POST['cmd']) &&
+    realpath($_SERVER['SCRIPT_FILENAME'] ?? '') === __FILE__
+) {
     $response = handle_git_command($_POST['cmd']);
 
-    // If routed via dispatcher (wants a return)
-    if (basename($_SERVER['SCRIPT_FILENAME']) === 'dispatcher.php') {
-        return $response;
-    }
-
-    // Else (direct POST), echo as JSON
     header('Content-Type: application/json');
     echo json_encode($response, JSON_PRETTY_PRINT);
-    Shutdown::setEnabled(true)->shutdown();
+
+    if (class_exists(Shutdown::class)) {
+        Shutdown::setEnabled(true)->shutdown();
+    }
     exit;
 }
 
@@ -173,14 +201,14 @@ if (isset($_SERVER['REQUEST_METHOD']) && $_SERVER['REQUEST_METHOD'] === 'POST')
             if (preg_match('/^git\s+(help)(:?\s+)?/i', $_POST['cmd'])) {
                 $output[] = <<<END
   git reset filename   (unstage a specific file)
-  
+
   git branch
   -m   oldBranch newBranch   (Renaming a git branch)
   -d   Safe deletion
   -D   Forceful deletion
-  
+
   git commit -am "Default message"
-  
+
   git checkout -b branchName
 END;
 
