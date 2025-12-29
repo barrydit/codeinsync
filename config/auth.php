@@ -3,7 +3,7 @@
 // ==== Congig ===============================================================
 
 const AUTH_REALM_BASE = 'CodeInSync';   // base realm name
-define('AUTH_LOGOUT_LANDING', (string) $baseHref); // PUBLIC page (see #2 below)
+define('AUTH_LOGOUT_LANDING', (string) UrlContext::getBaseHref()); // PUBLIC page (see #2 below)
 
 // NEW: cookie to track whether we've already shown the welcome page
 const AUTH_WELCOME_COOKIE = 'AUTH_WELCOME_SHOWN';
@@ -165,7 +165,7 @@ if ($logout && $_SERVER['REQUEST_METHOD'] === 'GET') {
         <script>
             (async () => {
                 try {
-                    await fetch('<?= htmlspecialchars($baseHref) ?>?authprobe=1&r=<?= rawurlencode($oldRealm) ?>', {
+                    await fetch('<?= htmlspecialchars(UrlContext::getBaseHref()) ?>?authprobe=1&r=<?= rawurlencode($oldRealm) ?>', {
                         headers: { Authorization: 'Basic ' + btoa('x:x') },
                         cache: 'no-store',
                         credentials: 'omit'
@@ -347,7 +347,7 @@ EOT; ?></code>
                                 //    'Task ' + taskName + ' step ' + step + ' failed.' + "\n" +
                                 //    $console.val()
                                 //);
-                                el.textContent += "\nTask " + taskName + " step " + step + " failed.";
+                                el.textContent = "\nTask " + taskName + " step " + step + " failed.".el.textContent;
                                 return;
                             }
 
@@ -365,7 +365,7 @@ EOT; ?></code>
                                 lines.push(String(data.output).replace(/\n+$/, ''));
                             }
 
-                            el.textContent += "\n" + lines.join("\n");
+                            el.textContent = "\n" + lines.join("\n") + el.textContent;
 
                             // prepend just the job lines first
                             //$console.val(lines.join("\n") + "\n" + $console.val());
@@ -376,8 +376,7 @@ EOT; ?></code>
                                 //    '=== Task ' + data.task + ' completed. ===' + "\n" +
                                 //    $console.val()
                                 //);
-                                el.textContent += "\n=== Task " + data.task + " completed. ===";
-                                window.location.reload();
+                                el.textContent = "\n=== Task " + data.task + " completed. ===" + el.textContent;
                                 return; // no next step
                             }
 
@@ -392,13 +391,17 @@ EOT; ?></code>
                             //    'Error running task ' + taskName + ' step ' + step + ': ' + err + "\n" +
                             //    $console.val()
                             //);
-                            el.textContent += "\nError running task " + taskName + " step " + step + ": " + err;
+                            el.textContent = "\nError running task " + taskName + " step " + step + ": " + err + el.textContent;
                         });
                 };
                 document.addEventListener('DOMContentLoaded', () => {
-
+                    const el = document.getElementById('console-log');
+                    if (!el) return;
+                    el.textContent = "\n" + el.textContent;
                     window.setTimeout(() => {
                         window.runTaskSequence('startup');
+                        window.runTaskSequence('download-assets');
+                        //window.location.reload();
                     }, 5000);
 
                 });

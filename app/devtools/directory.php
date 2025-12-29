@@ -1106,7 +1106,7 @@ switch (ctx('context')) {
                       . '</div>' . "\n";
                     break;
                   case '.gitignore':
-                    echo '<div style="position: relative; border: 4px dashed #F05033;"><a href="#" ' . /*basename(__FILE__) .'?' . (!isset($_GET['client']) ? (!isset($_GET['project']) ? '' : 'project=' . $_GET['project'] . '&') : 'client=' . $_GET['client'] . '&' . (isset($_GET['domain']) ? 'domain=' . ($_GET['domain'] != '' ? $_GET['domain'] . '&' : '') : '')) . 'path=' . (basename(dirname($path)) == basename(parse_url($_SERVER['REQUEST_URI'] ?? '', PHP_URL_PATH) ? 'failed' : basename(dirname($path)))) . '&app=ace_editor' . '&file=' . basename($relativePath) . '" onclick="handleClick(event, \'' . basename($relativePath) . '\')"*/ 'data-open-app="ui/ace_editor" aria-label="Open Ace Editor" title="Ace Editor" data-path="' . dirname($relativePath) . '" data-file="' . basename($relativePath) . '"><img src="assets/images/gitignore_file.png" width="40" height="50" />' . basename($relativePath) . '</a>'
+                    echo '<div style="position: relative; border: 4px dashed #F05033;"><a href="#" ' . /*basename(__FILE__) .'?' . (!isset($_GET['client']) ? (!isset($_GET['project']) ? '' : 'project=' . $_GET['project'] . '&') : 'client=' . $_GET['client'] . '&' . (isset($_GET['domain']) ? 'domain=' . ($_GET['domain'] != '' ? $_GET['domain'] . '&' : '') : '')) . 'path=' . (basename(dirname($path)) == basename(parse_url($_SERVER['REQUEST_URI'] ?? '', PHP_URL_PATH) ? 'failed' : basename(dirname($path)))) . '&app=ace_editor' . '&file=' . basename($relativePath) . '" onclick="handleClick(event, \'' . basename($relativePath) . '\')"*/ 'data-open-app="tools/code/git" aria-label="Open Git" title="Git"><img src="assets/images/gitignore_file.png" width="40" height="50" /></a><a href="#" data-open-app="ui/ace_editor" aria-label="Open Ace Editor" title="Ace Editor" data-path="' . dirname($relativePath) . '" data-file="' . basename($relativePath) . '">' . basename($relativePath) . '</a>'
                       . '</div>' . "\n";
                     break;
                   case '.env.example':
@@ -1690,8 +1690,6 @@ ob_start(); ?>
 
   if (false) { ?></script><?php }
 
-
-
   /**
    * Expect $UI_APP = ['style' => '...', 'body' => '...', 'script' => '...'];
    * This file will:
@@ -1734,9 +1732,9 @@ ob_start(); ?>
   $__tailwindSrc = function (string $version = '3.3.5'): string {
     // You have app_base() and check_http_status() in your project.
     $cdnUrl = 'https://cdn.tailwindcss.com';
-    $localPath = rtrim(app_base('public', null, 'abs'), DIRECTORY_SEPARATOR) . '/assets/js/tailwindcss-' . $version . '.js';
+    $localPath = rtrim(app_base('public', null, 'abs'), DIRECTORY_SEPARATOR) . '/assets/vendor/tailwindcss-' . $version . '.js';
     $localRelDir = rtrim(app_base('public', null, 'rel'), '/'); // e.g. 'public/assets/'
-    $localRel = $localRelDir . '/assets/js/tailwindcss-' . $version . '.js';
+    $localRel = "$localRelDir/assets/vendor/tailwindcss-$version.js";
 
     // Ensure local dir
     is_dir(dirname($localPath)) || @mkdir(dirname($localPath), 0755, true);
@@ -1767,7 +1765,7 @@ ob_start(); ?>
       return substr($cdnUrl, $pos + strlen($host)); // e.g. "//cdn.tailwindcss.com"
     }
 
-    return $localRel; // e.g. "public/assets/js/tailwindcss-3.3.5.js"
+    return $localRel; // e.g. "public/assets/vendor/tailwindcss-3.3.5.js"
   };
 
   /**
@@ -1786,12 +1784,7 @@ ob_start(); ?>
     <link rel="stylesheet" href="//code.jquery.com/ui/1.12.1/themes/smoothness/jquery-ui.css" />
     <script src="<?= htmlspecialchars($tailwindSrc, ENT_QUOTES) ?>"></script>
 
-    <style type="text/tailwindcss">
-      <?= $UI_APP['style'] ?? '' ?>
-
-                                                                                                                
-                                                                                                                
-                                                                                                        </style>
+    <style type="text/tailwindcss"><?= $UI_APP['style'] ?? '' ?></style>
   </head>
 
   <body>
@@ -1801,10 +1794,7 @@ ob_start(); ?>
     <script src="//code.jquery.com/jquery-1.12.4.js"></script>
     <script src="//code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
 
-    <script>
-      <?= $UI_APP['script'] ?? '' ?>
-
-    </script>
+    <script><?= $UI_APP['script'] ?? '' ?></script>
   </body>
 
   </html>

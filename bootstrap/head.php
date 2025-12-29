@@ -6,13 +6,18 @@
  * It is intended to be included within the <head> section of HTML documents.
  *
  * @package    CodeInSync\SkeletonApp
- * @author     Your Team
+ * @author     Barry Dick
  * @license    MIT
  * @link       https://codeinsync.io/
  */
 
 // ---------- URL + <base> calculation (proxy-aware, no constants required) ----------
 
+if (!class_exists(\CodeInSync\Infrastructure\Http\UrlContext::class)) {
+    require APP_PATH . 'src/Infrastructure/Http/UrlContext.php';
+    @class_alias(\CodeInSync\Infrastructure\Http\UrlContext::class, 'UrlContext');
+}
+/*
 // Detect scheme (honor reverse proxy headers if present)
 $proto = (
     (isset($_SERVER['HTTP_X_FORWARDED_PROTO']) && strtolower($_SERVER['HTTP_X_FORWARDED_PROTO']) === 'https')
@@ -34,7 +39,7 @@ $portPart = $isDefaultPort ? '' : ":$port";
 //$scriptDir = rtrim(str_replace('\\', '/', dirname($_SERVER['SCRIPT_NAME'] ?? '/')), '/');
 //$dir = ($scriptDir === '') ? '/' : $scriptDir . '/';
 //$baseHref = $scheme . '://' . $host . $portPart . $dir;
-
+*/
 
 defined('APP_PUBLIC_FS_ROOT') or define(
     'APP_PUBLIC_FS_ROOT',
@@ -53,41 +58,70 @@ $docFs = isset($_SERVER['DOCUMENT_ROOT'])
 // Default URL path
 $appUrlPath = '/';
 
-// Case 1: public root is under DOCUMENT_ROOT  (the “nice” case)
+// -----------------------------
+// Case 1: public root is under DOCUMENT_ROOT
+// -----------------------------
 if ($publicFs && $docFs && strpos($publicFs, $docFs) === 0) {
     $suffix = substr($publicFs, strlen($docFs));     // e.g. '' or '/codeinsync/public'
     $suffix = rtrim($suffix, '/');
     $appUrlPath = ($suffix === '') ? '/' : $suffix . '/';
 
-    // Case 2: Fallback – DOCUMENT_ROOT doesn't match filesystem (aliases, symlinks, etc.)
+    // -----------------------------
+// Case 2: public root NOT under DOCUMENT_ROOT (aliases, direct script access, etc.)
+// -----------------------------
 } elseif ($publicFs) {
-    $scriptName = $_SERVER['SCRIPT_NAME'] ?? '/';
-    $scriptPath = str_replace('\\', '/', $scriptName);
 
-    // Try to clamp at "/public/"
-    $needle = '/' . basename(APP_PUBLIC_FS_ROOT) . '/';
-    $pos = strpos($scriptPath, $needle);
+    $scriptName = str_replace('\\', '/', $_SERVER['SCRIPT_NAME'] ?? '/');
+    $scriptFile = str_replace('\\', '/', $_SERVER['SCRIPT_FILENAME'] ?? '');
+    $appRootFs = rtrim(str_replace('\\', '/', APP_PATH), '/');
 
+    // Use "/{basename(public)}/" (usually "/public/") as the clamp marker
+    $needle = '/' . basename($publicFs) . '/';
+
+    // 2a) If the URL already contains "/public/", clamp to it
+    $pos = strpos($scriptName, $needle);
     if ($pos !== false) {
-        // e.g. "/clients/000-AuthSecure/public/api/test.php"
-        //  -> "/clients/000-AuthSecure/public/"
-        $appUrlPath = substr($scriptPath, 0, $pos + strlen($needle));
+        $appUrlPath = substr($scriptName, 0, $pos + strlen($needle));
+
     } else {
-        // Fallback: just use the script directory
-        $scriptDir = rtrim(dirname($scriptPath), '/') . '/';
-        $appUrlPath = $scriptDir;
+        // 2b) If script is under APP_PATH (but URL is /src/... or similar), compute URL prefix then add "/public/"
+        // Example:
+        //   SCRIPT_NAME:     /clients/X/site/src/Presentation/.../EntryFormController.php
+        //   SCRIPT_FILENAME: /mnt/c/clients/X/site/src/Presentation/.../EntryFormController.php
+        //   APP_PATH:        /mnt/c/clients/X/site
+        // => URL prefix:     /clients/X/site
+        // => base path:      /clients/X/site/public/
+        if ($scriptFile !== '' && strpos($scriptFile, $appRootFs . '/') === 0) {
+
+            $fsRel = substr($scriptFile, strlen($appRootFs)); // "/src/.../EntryFormController.php"
+
+            // If the URL ends with the same relative FS path, strip it to get the URL prefix
+            if ($fsRel !== '' && substr($scriptName, -strlen($fsRel)) === $fsRel) {
+                $urlPrefix = substr($scriptName, 0, -strlen($fsRel)); // "/clients/.../site"
+                $appUrlPath = rtrim($urlPrefix, '/') . $needle;        // "/clients/.../site/public/"
+            } else {
+                // 2c) last fallback: just use the URL directory of the script
+                $appUrlPath = rtrim(dirname($scriptName), '/') . '/';
+            }
+
+        } else {
+            // 2c) last fallback: just use the URL directory of the script
+            $appUrlPath = rtrim(dirname($scriptName), '/') . '/';
+        }
     }
 }
 
 // IMPORTANT: use the correct variable name here
 defined('APP_PUBLIC_URL_PREFIX') or define('APP_PUBLIC_URL_PREFIX', $appUrlPath);
 
+UrlContext::setBaseHref(APP_ORIGIN . APP_PUBLIC_URL_PREFIX);
+
 // Final base href
-$baseHref = "$scheme://$host$portPart$appUrlPath";
+//$baseHref = UrlContext::getBaseHref();
 
 // Helper to build asset URLs relative to base
-$asset = static function (string $path) use ($baseHref): string {
-    return /* $baseHref .*/ ltrim($path, '/');
+$asset = static function (string $path): string {
+    return /* UrlContext::getBaseHref() .*/ ltrim($path, '/');
 };
 
 // ---------- Meta defaults (use constants if defined; else fallbacks) ----------

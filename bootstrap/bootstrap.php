@@ -45,9 +45,9 @@ require_once __DIR__ . '/php-ini.php';  // error_reporting, timezone, mb_interna
 
 // --- Minimal env/
 // Error reporting (adjust as needed)
-error_reporting(APP_DEBUG ? E_ALL : E_ALL & ~E_NOTICE & ~E_STRICT);
-ini_set('display_errors', APP_DEBUG ? '1' : '0');
-ini_set('log_errors', '1');
+//error_reporting(APP_DEBUG ? E_ALL : E_ALL & ~E_NOTICE & ~E_STRICT);
+//ini_set('display_errors', APP_DEBUG ? '1' : '0');
+//ini_set('log_errors', '1');
 
 // B. Minimal path constants (no env dependence)
 require_once __DIR__ . '/../config/constants.paths.php'; // defines APP_PATH, CONFIG_PATH, VENDOR_PATH, etc.

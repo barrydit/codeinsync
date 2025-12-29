@@ -140,7 +140,7 @@ if (APP_ROOT !== '') {
   </title>
 
   <!-- Base URL for all relative links -->
-  <base href="<?= htmlspecialchars($baseHref, ENT_QUOTES, 'UTF-8') ?>" />
+  <base href="<?= htmlspecialchars(UrlContext::getBaseHref(), ENT_QUOTES, 'UTF-8') ?>" />
 
   <!-- SEO/meta fallbacks -->
   <meta name="description" content="<?= htmlspecialchars($appDescription, ENT_QUOTES, 'UTF-8') ?>" />
@@ -152,7 +152,7 @@ if (APP_ROOT !== '') {
   <meta property="og:title" content="<?= htmlspecialchars($pageTitle, ENT_QUOTES, 'UTF-8') ?>" />
   <meta property="og:description" content="<?= htmlspecialchars($appDescription, ENT_QUOTES, 'UTF-8') ?>" />
   <meta property="og:type" content="website" />
-  <meta property="og:url" content="<?= htmlspecialchars($baseHref, ENT_QUOTES, 'UTF-8') ?>" />
+  <meta property="og:url" content="<?= htmlspecialchars(UrlContext::getBaseHref(), ENT_QUOTES, 'UTF-8') ?>" />
 
   <!-- Favicons / Assets -->
   <link rel="icon" type="image/png"
@@ -456,7 +456,7 @@ if (APP_ROOT !== '') {
         </div>
       </div>
       <div class="top-panel" id="top-panel">
-        <div style="position: relative;">
+        <div style="position: relative; z-index: 100;">
           <a href="#"><img
               src="<?= htmlspecialchars($asset('assets/images/phpclasses_icon.png'), ENT_QUOTES, 'UTF-8') ?>" alt="Logo"
               style="width: 31px; height: auto; margin: 0 5px;"
@@ -779,30 +779,31 @@ if (APP_ROOT !== '') {
     <span style="margin-left: 0.5em; color: #2196F3;">Developer</span>
   </div>
 
-  <script src="<?= htmlspecialchars($asset('assets/js/jquery/jquery-3.7.1.min.js'), ENT_QUOTES, 'UTF-8') ?>"></script>
+  <script
+    src="<?= htmlspecialchars($asset('assets/vendor/jquery/3.7.1/jquery-3.7.1.min.js'), ENT_QUOTES, 'UTF-8') ?>"></script>
 
   <script
-    src="<?= htmlspecialchars($asset('assets/js/jquery-easing/jquery.easing.min.js'), ENT_QUOTES, 'UTF-8') ?>"></script>
+    src="<?= htmlspecialchars($asset('assets/vendor/jquery/3.7.1/jquery.easing.min.js'), ENT_QUOTES, 'UTF-8') ?>"></script>
   <!-- You need to include jQueryUI for the extended easing options. -->
   <!-- script src="//code.jquery.com/jquery-1.12.4.js"></script -->
   <?php
   /*
   https://cdnjs.cloudflare.com/ajax/libs/jquery-easing/1.4.1/jquery.easing.min.js
 
-  APP_IS_ONLINE && check_http_status('https://code.jquery.com/jquery-3.7.1.min.js') ? 'https://code.jquery.com/jquery-3.7.1.min.js' : app_base('public', null, 'rel') . '/assets/js/jquery/' . 'jquery-3.7.1.min.js'
+  APP_IS_ONLINE && check_http_status('https://code.jquery.com/jquery-3.7.1.min.js') ? 'https://code.jquery.com/jquery-3.7.1.min.js' : app_base('public', null, 'rel') . '/assets/vendor/jquery/' . 'jquery-3.7.1.min.js'
 
-  APP_IS_ONLINE && check_http_status('https://code.jquery.com/ui/1.12.1/jquery-ui.min.js') ? 'https://code.jquery.com/ui/1.12.1/jquery-ui.min.js' : app_base('public', null, 'rel') . '/assets/js/jquery-ui/' . 'jquery-ui-1.12.1.js' 
+  APP_IS_ONLINE && check_http_status('https://code.jquery.com/ui/1.12.1/jquery-ui.min.js') ? 'https://code.jquery.com/ui/1.12.1/jquery-ui.min.js' : app_base('public', null, 'rel') . '/assets/vendor/jquery/' . 'jquery-ui-1.12.1.js' 
 
   app_base('public', null, 'abs') . 
   */
 
 
-  if (!is_file($path = app_base('public', null, 'abs') . 'assets/js/jquery-ui/' . 'jquery-ui-1.12.1.js') || ceil(abs((strtotime(date('Y-m-d')) - strtotime(date('Y-m-d', strtotime('+5 days', filemtime($path))))) / 86400)) <= 0) {
+  if (!is_file($path = app_base('public', null, 'abs') . 'assets/vendor/jquery-ui/1.13.2/' . 'jquery-ui-min.js') || ceil(abs((strtotime(date('Y-m-d')) - strtotime(date('Y-m-d', strtotime('+5 days', filemtime($path))))) / 86400)) <= 0) {
     if (!realpath($pathdir = dirname($path)))
       if (!mkdir($pathdir, 0755, true))
         $errors['DOCS'] = "$pathdir does not exist";
 
-    $url = 'https://code.jquery.com/ui/1.12.1/jquery-ui.min.js';
+    $url = 'https://code.jquery.com/ui/1.13.2/jquery-ui.min.js';
     $handle = curl_init($url);
     curl_setopt($handle, CURLOPT_RETURNTRANSFER, true);
 
@@ -811,7 +812,7 @@ if (APP_ROOT !== '') {
   } ?>
 
   <script
-    src="<?= htmlspecialchars($asset('assets/js/jquery-ui/jquery-ui-1.12.1.js'), ENT_QUOTES, 'UTF-8') ?>"></script>
+    src="<?= htmlspecialchars($asset('assets/vendor/jquery-ui/1.13.2/jquery-ui-min.js'), ENT_QUOTES, 'UTF-8') ?>"></script>
 
   <script>
     /* ────────────────────────────────────────────────────────────────────────────
@@ -1334,7 +1335,7 @@ if (APP_ROOT !== '') {
 
       function toggleMode() {
         const dev = viewToggle ? !!viewToggle.checked : !isClientActive();
-        if (!dev) {
+        if (dev) {
           activateDeveloperMode();
         } else {
           activateClientMode();
@@ -1353,7 +1354,7 @@ if (APP_ROOT !== '') {
         bottomPanel?.classList.add('exit-bottom');
         freeSpace?.classList.add('exit-free');
         if (clientView) clientView.style.display = 'block';
-        //if (viewToggle) viewToggle.checked = false;
+        if (viewToggle) viewToggle.checked = false;
         // Allow CSS animation time then hide devGroup
         setTimeout(() => {
           if (devGroup) devGroup.style.display = 'block';
@@ -1363,7 +1364,7 @@ if (APP_ROOT !== '') {
       function activateDeveloperMode() {
         if (devGroup) devGroup.style.display = 'block';
         if (clientView) clientView.style.display = 'none';
-        //if (viewToggle) viewToggle.checked = true;
+        if (viewToggle) viewToggle.checked = true;
         // Force reflow before removing classes
         if (sidebar) sidebar.offsetHeight;
 
@@ -1495,7 +1496,7 @@ if (APP_ROOT !== '') {
     })();
   </script>
 
-  <script src="<?= htmlspecialchars($asset('assets/js/d3js/d3.v4.min.js'), ENT_QUOTES, 'UTF-8') ?>"></script>
+  <script src="<?= htmlspecialchars($asset('assets/vendor/d3/4.13.0/d3.v4.min.js'), ENT_QUOTES, 'UTF-8') ?>"></script>
 
   <script>
     if (typeof jQuery === 'undefined') {

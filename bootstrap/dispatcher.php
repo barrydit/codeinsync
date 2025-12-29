@@ -59,6 +59,7 @@ if (!defined('APP_CANONICAL_PRELUDE')) {
     require_once __DIR__ . '/../config/constants.url.php';
     require_once __DIR__ . '/../config/constants.app.php';
 
+    require_once __DIR__ . '/../bootstrap/head.php';
 }
 // ─────────────────────── End canonical prelude ───────────────────────
 

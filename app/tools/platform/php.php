@@ -98,14 +98,38 @@ $proc=proc_open('sudo ' . GIT_EXEC . ' ' . $match[1],
           $output[] = (!isset($stdout) ? NULL : $stdout . (isset($stderr) && $stderr === '' ? NULL : ' Error: ' . $stderr) . (isset($exitCode) && $exitCode == 0 ? NULL : 'Exit Code: ' . $exitCode));
 */
 
-if (defined('GIT_EXEC'))
-    if (is_dir($path = APP_BASE['public'] . 'assets/js/ace') && empty(glob($path)))
-        exec((stripos(PHP_OS, 'WIN') === 0 ? '' : APP_SUDO) . GIT_EXEC . ' clone https://github.com/ajaxorg/ace-builds.git public/assets/js/ace', $output, $returnCode) or $errors['GIT-CLONE-ACE'] = $output;
-    elseif (!is_dir($path)) {
-        if (!mkdir($path, 0755, true))
-            $errors['GIT-CLONE-ACE'] = ' public/assets/js/ace does not exist.';
-        exec((stripos(PHP_OS, 'WIN') === 0 ? '' : APP_SUDO) . GIT_EXEC . ' clone https://github.com/ajaxorg/ace-builds.git public/assets/js/ace', $output, $returnCode) or $errors['GIT-CLONE-ACE'] = $output;
+if (defined('GIT_EXEC')) {
+    // Filesystem path to the ACE vendor directory
+    $path = APP_BASE['public'] . 'assets/vendor/ace';
+
+    // 1) Ensure the directory exists (or can be created)
+    if (!is_dir($path)) {
+        if (!mkdir($path, 0755, true) && !is_dir($path)) {
+            // Failed to create target directory – don't try to clone
+            $errors['GIT-CLONE-ACE'] = 'public/assets/vendor/ace does not exist and could not be created.';
+            return;
+        }
     }
+
+    // 2) Only clone if the directory is empty
+    //    (glob() needs a pattern, so include "/*")
+    $isEmpty = empty(glob($path . DIRECTORY_SEPARATOR . '*'));
+
+    if ($isEmpty) {
+        $cmd = (stripos(PHP_OS, 'WIN') === 0 ? '' : (defined('APP_SUDO') ? APP_SUDO : ''));
+        $cmd .= GIT_EXEC . ' clone https://github.com/ajaxorg/ace-builds.git public/assets/vendor/ace';
+
+        $output = [];
+        $returnCode = 0;
+
+        exec($cmd, $output, $returnCode);
+
+        if ($returnCode !== 0) {
+            // Save the output so you can inspect what went wrong
+            $errors['GIT-CLONE-ACE'] = $output;
+        }
+    }
+}
 
 ob_start(); ?>
 #app_php-container {
@@ -411,7 +435,7 @@ ob_start();
     <!-- link rel="stylesheet" href="//code.jquery.com/ui/1.12.1/themes/smoothness/jquery-ui.css" / -->
 
     <?php
-    is_dir($path = APP_BASE['public'] . 'assets/js/') or mkdir($path, 0755, true);
+    is_dir($path = APP_BASE['public'] . 'assets/vendor/') or mkdir($path, 0755, true);
     if (is_file("{$path}tailwindcss-3.3.5.js")) {
         if (ceil(abs((strtotime(date('Y-m-d')) - strtotime(date('Y-m-d', strtotime('+5 days', filemtime("{$path}tailwindcss-3.3.5.js"))))) / 86400)) <= 0) {
             $url = 'https://cdn.tailwindcss.com';
@@ -432,7 +456,7 @@ ob_start();
     unset($path);
     ?>
 
-    <script src="<?= 'assets/js/tailwindcss-3.3.5.js' ?? $url ?>"></script>
+    <script src="<?= 'assets/vendor/tailwindcss-3.3.5.js' ?? $url ?>"></script>
 
     <style type="text/tailwindcss">
         <?= $app['style']; ?>
@@ -443,7 +467,7 @@ ob_start();
     <?= $app['body']; ?>
 
     <?php
-    is_dir($path = APP_BASE['public'] . 'assets/js/jquery/') or mkdir($path, 0755, true);
+    is_dir($path = APP_BASE['public'] . 'assets/vendor/jquery/') or mkdir($path, 0755, true);
     if (is_file("{$path}jquery-3.7.1.min.js")) {
         if (ceil(abs((strtotime(date('Y-m-d')) - strtotime(date('Y-m-d', strtotime('+5 days', filemtime($path . 'jquery-3.7.1.min.js'))))) / 86400)) <= 0) {
             $url = 'https://code.jquery.com/jquery-3.7.1.min.js';
@@ -463,24 +487,24 @@ ob_start();
     }
     unset($path); ?>
     <script
-        src="<?= defined('APP_IS_ONLINE') && APP_IS_ONLINE && check_http_status('https://code.jquery.com/jquery-3.7.1.min.js') ? 'https://code.jquery.com/jquery-3.7.1.min.js' : APP_BASE['public'] . 'assets/js/jquery/' . 'jquery-3.7.1.min.js' ?>"></script>
+        src="<?= defined('APP_IS_ONLINE') && APP_IS_ONLINE && check_http_status('https://code.jquery.com/jquery-3.7.1.min.js') ? 'https://code.jquery.com/jquery-3.7.1.min.js' : APP_BASE['public'] . 'assets/vendor/jquery/' . 'jquery-3.7.1.min.js' ?>"></script>
     <!-- You need to include jQueryUI for the extended easing options. -->
     <!-- script src="//code.jquery.com/jquery-1.12.4.js"></script -->
 
     <script
-        src="<?= defined('APP_IS_ONLINE') && APP_IS_ONLINE && check_http_status('https://code.jquery.com/ui/1.12.1/jquery-ui.min.js') ? 'https://code.jquery.com/ui/1.12.1/jquery-ui.min.js' : APP_BASE['public'] . 'assets/js/jquery-ui/' . 'jquery-ui-1.12.1.js' ?>"></script>
+        src="<?= defined('APP_IS_ONLINE') && APP_IS_ONLINE && check_http_status('https://code.jquery.com/ui/1.12.1/jquery-ui.min.js') ? 'https://code.jquery.com/ui/1.12.1/jquery-ui.min.js' : APP_BASE['public'] . 'assets/vendor/jquery/' . 'jquery-ui-1.12.1.js' ?>"></script>
     <!-- Uncaught ReferenceError: jQuery is not defined -->
 
-    <script src="assets/js/ace/src/ace.js" type="text/javascript" charset="utf-8"></script>
-    <script src="assets/js/ace/src/ext-language_tools.js" type="text/javascript" charset="utf-8"></script>
+    <script src="assets/vendor/ace/src/ace.js" type="text/javascript" charset="utf-8"></script>
+    <script src="assets/vendor/ace/src/ext-language_tools.js" type="text/javascript" charset="utf-8"></script>
     <!-- <script src="https://cdnjs.cloudflare.com/ajax/libs/ace/1.4.12/ext-language_tools.js"></script>
 
-  <script src="assets/js/ace/src/mode-php.js" type="text/javascript" charset="utf-8"></script> -->
+  <script src="assets/vendor/ace/src/mode-php.js" type="text/javascript" charset="utf-8"></script> -->
     <!-- https://cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.min.js -->
 
     <!-- script src="//code.jquery.com/jquery-1.12.4.js"></script -->
     <!-- script src="//code.jquery.com/ui/1.12.1/jquery-ui.js"></script -->
-    <!-- <script src="assets/js/jquery/jquery.min.js"></script> -->
+    <!-- <script src="assets/vendor/jquery/jquery.min.js"></script> -->
     <script>
 
         let isDragging = false;

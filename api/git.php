@@ -2,6 +2,8 @@
 // api/git.php
 use CodeInSync\Infrastructure\Runtime\Shutdown;
 
+require_once __DIR__ . '/../config/constants.git.php';
+
 /**
  * Handle a git command string like "git status", "git commit -am 'msg'" etc.
  * Assumes cis_run_process() is defined elsewhere (e.g. in api/console.php).

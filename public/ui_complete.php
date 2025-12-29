@@ -87,12 +87,12 @@ $proc=proc_open('sudo ' . GIT_EXEC . ' ' . $match[1],
 */
 
 
-if (is_dir('assets/js/ace') && empty(glob('assets/js/ace')))
-  exec('sudo ' . GIT_EXEC . ' clone https://github.com/ajaxorg/ace-builds.git public/assets/js/ace', $output, $returnCode) or $errors['GIT-CLONE-ACE'] = $output;
-elseif (!is_dir('assets/js/ace')) {
-  if (!mkdir('assets/js/ace', 0755, true))
-    $errors['GIT-CLONE-ACE'] = ' assets/js/ace does not exist.';
-  exec('sudo ' . GIT_EXEC . ' clone https://github.com/ajaxorg/ace-builds.git public/assets/js/ace', $output, $returnCode) or $errors['GIT-CLONE-ACE'] = $output;
+if (is_dir('assets/vendor/ace') && empty(glob('assets/vendor/ace')))
+  exec('sudo ' . GIT_EXEC . ' clone https://github.com/ajaxorg/ace-builds.git public/assets/vendor/ace', $output, $returnCode) or $errors['GIT-CLONE-ACE'] = $output;
+elseif (!is_dir('assets/vendor/ace')) {
+  if (!mkdir('assets/vendor/ace', 0755, true))
+    $errors['GIT-CLONE-ACE'] = ' assets/vendor/ace does not exist.';
+  exec('sudo ' . GIT_EXEC . ' clone https://github.com/ajaxorg/ace-builds.git public/assets/vendor/ace', $output, $returnCode) or $errors['GIT-CLONE-ACE'] = $output;
 }
 
 ob_start(); ?>
@@ -274,7 +274,7 @@ ob_start(); ?>
 <?php //if (isset($_GET['client']) && $_GET['client'] != '') { 
 //if (isset($_GET['domain']) && $_GET['domain'] != '') {
 ?>
-//var ace = require("assets/js/ace/src/ace.js"); // ext/language_tools
+//var ace = require("assets/vendor/ace/src/ace.js"); // ext/language_tools
 var editor = ace.edit("ace-editor");
 editor.setTheme("ace/theme/dracula");
 
@@ -307,7 +307,7 @@ ob_start(); ?>
 
   <?php
 
-  is_dir($path = APP_BASE['public'] . 'assets/js/') or mkdir($path, 0755, true);
+  is_dir($path = APP_BASE['public'] . 'assets/vendor/') or mkdir($path, 0755, true);
   if (is_file($path . 'tailwindcss-3.3.5.js')) {
     if (ceil(abs((strtotime(date('Y-m-d')) - strtotime(date('Y-m-d', strtotime('+5 days', filemtime($path . 'tailwindcss-3.3.5.js'))))) / 86400)) <= 0) {
       $url = 'https://cdn.tailwindcss.com';
@@ -327,7 +327,7 @@ ob_start(); ?>
   }
   ?>
 
-  <script src="<?= 'assets/js/tailwindcss-3.3.5.js' ?? $url ?>"></script>
+  <script src="<?= 'assets/vendor/tailwindcss-3.3.5.js' ?? $url ?>"></script>
 
 
   <style type="text/tailwindcss">
@@ -338,15 +338,15 @@ ob_start(); ?>
 <body>
   <?= $appAceEditor['body']; ?>
 
-  <script src="assets/js/ace/src/ace.js" type="text/javascript" charset="utf-8"></script>
-  <script src="assets/js/ace/src/ext-language_tools.js" type="text/javascript" charset="utf-8"></script>
+  <script src="assets/vendor/ace/src/ace.js" type="text/javascript" charset="utf-8"></script>
+  <script src="assets/vendor/ace/src/ext-language_tools.js" type="text/javascript" charset="utf-8"></script>
   <!--    <script src="https://cdnjs.cloudflare.com/ajax/libs/ace/1.4.12/ext-language_tools.js"></script>
 
-  <script src="assets/js/ace/src/mode-php.js" type="text/javascript" charset="utf-8"></script>-->
+  <script src="assets/vendor/ace/src/mode-php.js" type="text/javascript" charset="utf-8"></script>-->
   <!-- https://cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.min.js -->
   <script src="//code.jquery.com/jquery-1.12.4.js"></script>
   <script src="//code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
-  <!-- <script src="assets/js/jquery/jquery.min.js"></script> -->
+  <!-- <script src="assets/vendor/jquery/jquery.min.js"></script> -->
   <script>
     <?= $appAceEditor['script']; ?>
   </script>
@@ -2065,8 +2065,8 @@ for (i = 0; i < dropdowns.length; i++) { var openDropdown=dropdowns[i]; if (open
         <!-- link rel="stylesheet" href="//code.jquery.com/ui/1.12.1/themes/smoothness/jquery-ui.css" /-->
 
         <?php
-        // (APP_IS_ONLINE && check_http_status('https://cdn.tailwindcss.com') ? 'https://cdn.tailwindcss.com' : APP_URL . 'assets/js/tailwindcss-3.3.5.js')?
-        is_dir($path = APP_BASE['public'] . 'assets/js/') or mkdir($path, 0755, true);
+        // (APP_IS_ONLINE && check_http_status('https://cdn.tailwindcss.com') ? 'https://cdn.tailwindcss.com' : APP_URL . 'assets/vendor/tailwindcss-3.3.5.js')?
+        is_dir($path = APP_BASE['public'] . 'assets/vendor/') or mkdir($path, 0755, true);
         if (is_file($path . 'tailwindcss-3.3.5.js')) {
           if (ceil(abs((strtotime(date('Y-m-d')) - strtotime(date('Y-m-d', strtotime('+5 days', filemtime($path . 'tailwindcss-3.3.5.js'))))) / 86400)) <= 0) {
             $url = 'https://cdn.tailwindcss.com';
@@ -2086,7 +2086,7 @@ for (i = 0; i < dropdowns.length; i++) { var openDropdown=dropdowns[i]; if (open
         }
         ?>
 
-        <script src="<?= 'assets/js/tailwindcss-3.3.5.js' ?? $url ?>"></script>
+        <script src="<?= 'assets/vendor/tailwindcss-3.3.5.js' ?? $url ?>"></script>
 
         <style type="text/tailwindcss">
           <?= $appComposer['style']; ?>
@@ -2876,8 +2876,8 @@ for (i = 0; i < dropdowns.length; i++) { var openDropdown=dropdowns[i]; if (open
 
 
               <?php
-              // (APP_IS_ONLINE && check_http_status('https://cdn.tailwindcss.com') ? 'https://cdn.tailwindcss.com' : APP_URL . 'assets/js/tailwindcss-3.3.5.js')?
-              is_dir($path = APP_BASE['public'] . 'assets/js/') or mkdir($path, 0755, true);
+              // (APP_IS_ONLINE && check_http_status('https://cdn.tailwindcss.com') ? 'https://cdn.tailwindcss.com' : APP_URL . 'assets/vendor/tailwindcss-3.3.5.js')?
+              is_dir($path = APP_BASE['public'] . 'assets/vendor/') or mkdir($path, 0755, true);
               if (is_file($path . 'tailwindcss-3.3.5.js')) {
                 if (ceil(abs((strtotime(date('Y-m-d')) - strtotime(date('Y-m-d', strtotime('+5 days', filemtime($path . 'tailwindcss-3.3.5.js'))))) / 86400)) <= 0) {
                   $url = 'https://cdn.tailwindcss.com';
@@ -2897,7 +2897,7 @@ for (i = 0; i < dropdowns.length; i++) { var openDropdown=dropdowns[i]; if (open
               }
               ?>
 
-              <script src="<?= 'assets/js/tailwindcss-3.3.5.js' ?? $url ?>"></script>
+              <script src="<?= 'assets/vendor/tailwindcss-3.3.5.js' ?? $url ?>"></script>
 
               <style type="text/tailwindcss">
                 <?= $appGit['style']; ?>
@@ -2921,7 +2921,7 @@ for (i = 0; i < dropdowns.length; i++) { var openDropdown=dropdowns[i]; if (open
               <!-- https://cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.min.js -->
               <script src="//code.jquery.com/jquery-1.12.4.js"></script>
               <!-- script src="//code.jquery.com/ui/1.12.1/jquery-ui.js"></script -->
-              <!-- <script src="assets/js/jquery/jquery.min.js"></script> -->
+              <!-- <script src="assets/vendor/jquery/jquery.min.js"></script> -->
               <script>
                 <?= $appGit['script']; ?>
               </script>
@@ -3248,8 +3248,8 @@ for (i = 0; i < dropdowns.length; i++) { var openDropdown=dropdowns[i]; if (open
               <!-- link rel="stylesheet" href="//code.jquery.com/ui/1.12.1/themes/smoothness/jquery-ui.css" /-->
 
               <?php
-              // (APP_IS_ONLINE && check_http_status('https://cdn.tailwindcss.com') ? 'https://cdn.tailwindcss.com' : APP_URL . 'assets/js/tailwindcss-3.3.5.js')?
-              is_dir($path = APP_BASE['public'] . 'assets/js/') or mkdir($path, 0755, true);
+              // (APP_IS_ONLINE && check_http_status('https://cdn.tailwindcss.com') ? 'https://cdn.tailwindcss.com' : APP_URL . 'assets/vendor/tailwindcss-3.3.5.js')?
+              is_dir($path = APP_BASE['public'] . 'assets/vendor/') or mkdir($path, 0755, true);
               if (is_file($path . 'tailwindcss-3.3.5.js')) {
                 if (ceil(abs((strtotime(date('Y-m-d')) - strtotime(date('Y-m-d', strtotime('+5 days', filemtime($path . 'tailwindcss-3.3.5.js'))))) / 86400)) <= 0) {
                   $url = 'https://cdn.tailwindcss.com';
@@ -3269,7 +3269,7 @@ for (i = 0; i < dropdowns.length; i++) { var openDropdown=dropdowns[i]; if (open
               }
               ?>
 
-              <script src="<?= 'assets/js/tailwindcss-3.3.5.js' ?? $url ?>"></script>
+              <script src="<?= 'assets/vendor/tailwindcss-3.3.5.js' ?? $url ?>"></script>
 
               <style type="text/tailwindcss">
                 <?= $appNpm['style']; ?>
@@ -3475,8 +3475,8 @@ for (i = 0; i < dropdowns.length; i++) { var openDropdown=dropdowns[i]; if (open
               <link rel="stylesheet" href="//code.jquery.com/ui/1.12.1/themes/smoothness/jquery-ui.css" />
 
               <?php
-              // (APP_IS_ONLINE && check_http_status('https://cdn.tailwindcss.com') ? 'https://cdn.tailwindcss.com' : APP_URL . 'assets/js/tailwindcss-3.3.5.js')?
-              is_dir($path = APP_BASE['public'] . 'assets/js/') or mkdir($path, 0755, true);
+              // (APP_IS_ONLINE && check_http_status('https://cdn.tailwindcss.com') ? 'https://cdn.tailwindcss.com' : APP_URL . 'assets/vendor/tailwindcss-3.3.5.js')?
+              is_dir($path = APP_BASE['public'] . 'assets/vendor/') or mkdir($path, 0755, true);
               if (is_file($path . 'tailwindcss-3.3.5.js')) {
                 if (ceil(abs((strtotime(date('Y-m-d')) - strtotime(date('Y-m-d', strtotime('+5 days', filemtime($path . 'tailwindcss-3.3.5.js'))))) / 86400)) <= 0) {
                   $url = 'https://cdn.tailwindcss.com';
@@ -3496,7 +3496,7 @@ for (i = 0; i < dropdowns.length; i++) { var openDropdown=dropdowns[i]; if (open
               }
               ?>
 
-              <script src="<?= 'assets/js/tailwindcss-3.3.5.js' ?? $url ?>"></script>
+              <script src="<?= 'assets/vendor/tailwindcss-3.3.5.js' ?? $url ?>"></script>
 
               <style type="text/tailwindcss">
                 <?= $appPHP['style']; ?>
@@ -3506,15 +3506,15 @@ for (i = 0; i < dropdowns.length; i++) { var openDropdown=dropdowns[i]; if (open
             <body>
               <?= $appPHP['body']; ?>
 
-              <script src="assets/js/ace/ace.js" type="text/javascript" charset="utf-8"></script>
-              <!--  <script src="assets/js/ace/ext-language_tools.js" type="text/javascript" charset="utf-8"></script> -->
+              <script src="assets/vendor/ace/ace.js" type="text/javascript" charset="utf-8"></script>
+              <!--  <script src="assets/vendor/ace/ext-language_tools.js" type="text/javascript" charset="utf-8"></script> -->
               <script src="https://cdnjs.cloudflare.com/ajax/libs/ace/1.4.12/ext-language_tools.js"></script>
 
-              <script src="assets/js/ace/mode-php.js" type="text/javascript" charset="utf-8"></script>
+              <script src="assets/vendor/ace/mode-php.js" type="text/javascript" charset="utf-8"></script>
               <!-- https://cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.min.js -->
               <script src="//code.jquery.com/jquery-1.12.4.js"></script>
               <script src="//code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
-              <!-- <script src="assets/js/jquery/jquery.min.js"></script> -->
+              <!-- <script src="assets/vendor/jquery/jquery.min.js"></script> -->
               <script>
 <?= /*$appPHP['script'];*/ NULL; ?>
               </script>

@@ -1,7 +1,7 @@
 <?php
 // api/console.php
 
-global $baseHref, $errors;
+global $errors;
 $output[] = 'TEST 123';
 
 if (!function_exists('cis_run_process')) {
@@ -81,7 +81,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             if (preg_match('/^help/i', $_POST['cmd']))
                 $output[] = implode(', ', ['install', 'php', 'composer', 'git', 'npm', 'whoami', 'wget', 'tail', 'cat', 'echo', 'env', 'sudo']);
             elseif (preg_match('/^test/i', $_POST['cmd'])) {
-                $output[] = $_SERVER['HTTP_REFERER']; // $baseHref . '/?' .  $_SERVER['QUERY_STRING'];
+                $output[] = $_SERVER['HTTP_REFERER']; // UrlContext::getBaseHref() . '/?' .  $_SERVER['QUERY_STRING'];
             } elseif (preg_match('/^path/i', $_POST['cmd'])) {
                 $output[] = realpath(APP_PATH . APP_ROOT . APP_ROOT_DIR) . DIRECTORY_SEPARATOR;
             } elseif (preg_match('/^files/i', $_POST['cmd'])) {
@@ -89,7 +89,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             } elseif (preg_match('/^defined/i', $_POST['cmd'])) {
                 $output[] = APP_PATH . APP_ROOT . APP_ROOT_DIR; // implode(', ', TESTING);
             } elseif (preg_match('/^123testing/i', $_POST['cmd'])) {
-                $output[] = rtrim($baseHref, '/') . $_SERVER['REQUEST_URI'] . '  123';
+                $output[] = rtrim(UrlContext::getBaseHref(), '/') . $_SERVER['REQUEST_URI'] . '  123';
             } elseif (preg_match('/^whoami(:?(.*))/i', $_POST['cmd'], $match)) {
 
                 // Show the command that was run (your usual style)
@@ -111,7 +111,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                     $output[] = "Exit Code: $exitCode";
                 }
             } elseif (preg_match('/^git\s+/i', $_POST['cmd'])) {
-                require_once APP_BASE['api'] . 'git.php';
+                require_once app_base('api', null, 'abs') . 'git.php';
 
                 $res = handle_git_command($_POST['cmd']);
 

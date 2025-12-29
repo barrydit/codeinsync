@@ -41,11 +41,11 @@ if (!headers_sent()) {
   <title>DASHBOARD</title>
 
   <?php
-  // (APP_IS_ONLINE && check_http_status('https://cdn.tailwindcss.com') ? 'https://cdn.tailwindcss.com' : APP_URL . 'assets/js/tailwindcss-3.3.5.js')?
+  // (APP_IS_ONLINE && check_http_status('https://cdn.tailwindcss.com') ? 'https://cdn.tailwindcss.com' : APP_URL . 'assets/vendor/tailwindcss-3.3.5.js')?
 // <link rel="stylesheet" href="https://code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css">
 // <link rel="stylesheet" href="assets/css/output.css">
   
-  if (!is_file($path = APP_BASE['public'] . 'assets/js' . DIRECTORY_SEPARATOR . 'tailwindcss-3.3.5.js') || ceil(abs((strtotime(date('Y-m-d')) - strtotime(date('Y-m-d', strtotime('+5 days', filemtime($path))))) / 86400)) <= 0) {
+  if (!is_file($path = APP_BASE['public'] . 'assets/vendor' . DIRECTORY_SEPARATOR . 'tailwindcss-3.3.5.js') || ceil(abs((strtotime(date('Y-m-d')) - strtotime(date('Y-m-d', strtotime('+5 days', filemtime($path))))) / 86400)) <= 0) {
     $url = 'https://cdn.tailwindcss.com';
     $handle = curl_init($url);
     curl_setopt($handle, CURLOPT_RETURNTRANSFER, true);
@@ -55,7 +55,7 @@ if (!headers_sent()) {
   }
 
   if (is_file($path)) { ?>
-    <script src="<?= 'assets/js/tailwindcss-3.3.5.js' ?? $url ?>"></script><?php }
+    <script src="<?= 'assets/vendor/tailwindcss-3.3.5.js' ?? $url ?>"></script><?php }
   unset($path); ?>
 
   <style type="text/tailwindcss">
@@ -992,7 +992,7 @@ cursor : pointer;
     <!-- script src="https://code.jquery.com/jquery-3.6.0.min.js" integrity="sha256-/xUj+3OJU5yExlq6GSYGSHk7tPXikynS7ogEvDej/m4=" crossorigin="anonymous"></script -->
 
     <?php
-    is_dir($path = APP_BASE['public'] . 'assets/js/jquery/') or mkdir($path, 0755, true);
+    is_dir($path = APP_BASE['public'] . 'assets/vendor/jquery/') or mkdir($path, 0755, true);
     if (is_file("{$path}jquery-3.7.1.min.js")) {
       if (ceil(abs((strtotime(date('Y-m-d')) - strtotime(date('Y-m-d', strtotime('+5 days', filemtime("{$path}jquery-3.7.1.min.js"))))) / 86400)) <= 0) {
         $url = 'https://code.jquery.com/jquery-3.7.1.min.js';
@@ -1100,13 +1100,13 @@ cursor : pointer;
 -->
 
     <script
-      src="<?= APP_IS_ONLINE && check_http_status('https://code.jquery.com/jquery-3.7.1.min.js') ? 'https://code.jquery.com/jquery-3.7.1.min.js' : 'assets/js/jquery/' . 'jquery-3.7.1.min.js' ?>"></script>
+      src="<?= APP_IS_ONLINE && check_http_status('https://code.jquery.com/jquery-3.7.1.min.js') ? 'https://code.jquery.com/jquery-3.7.1.min.js' : 'assets/vendor/jquery/' . 'jquery-3.7.1.min.js' ?>"></script>
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-easing/1.4.1/jquery.easing.min.js"></script>
     <!-- You need to include jQueryUI for the extended easing options. -->
     <!-- script src="//code.jquery.com/jquery-1.12.4.js"></script -->
     <?php
-    if (!is_file($path = APP_BASE['public'] . 'assets/js/jquery-ui/' . 'jquery-ui-1.12.1.js') || ceil(abs((strtotime(date('Y-m-d')) - strtotime(date('Y-m-d', strtotime('+5 days', filemtime($path))))) / 86400)) <= 0) {
+    if (!is_file($path = APP_BASE['public'] . 'assets/vendor/jquery/' . 'jquery-ui-1.12.1.js') || ceil(abs((strtotime(date('Y-m-d')) - strtotime(date('Y-m-d', strtotime('+5 days', filemtime($path))))) / 86400)) <= 0) {
       if (!realpath($pathdir = dirname($path)))
         if (!mkdir($pathdir, 0755, true))
           $errors['DOCS'] = "$pathdir does not exist";
@@ -1120,11 +1120,11 @@ cursor : pointer;
     } ?>
 
     <script
-      src="<?= APP_IS_ONLINE && check_http_status('https://code.jquery.com/ui/1.12.1/jquery-ui.min.js') ? 'https://code.jquery.com/ui/1.12.1/jquery-ui.min.js' : APP_BASE['public'] . 'assets/js/jquery-ui/' . 'jquery-ui-1.12.1.js' ?>"></script>
+      src="<?= APP_IS_ONLINE && check_http_status('https://code.jquery.com/ui/1.12.1/jquery-ui.min.js') ? 'https://code.jquery.com/ui/1.12.1/jquery-ui.min.js' : APP_BASE['public'] . 'assets/vendor/jquery/' . 'jquery-ui-1.12.1.js' ?>"></script>
     <!-- Uncaught ReferenceError: jQuery is not defined -->
 
-    <!-- <script src="assets/js/ace/src/ace.js" type="text/javascript" charset="utf-8"></script> 
-    <script src="assets/js/ace/src/ext-language_tools.js" type="text/javascript" charset="utf-8"></script> -->
+    <!-- <script src="assets/vendor/ace/1.34.2/src/ace.js" type="text/javascript" charset="utf-8"></script> 
+    <script src="assets/vendor/ace/1.34.2/src/ext-language_tools.js" type="text/javascript" charset="utf-8"></script> -->
     <!-- For Text / Ace Editor -->
     <!-- <script src="https://unpkg.com/@popperjs/core@2" type="text/javascript" charset="utf-8"></script> -->
 
@@ -1140,11 +1140,11 @@ $(document).ready(function() {
 -->
     <?php
 
-    // (APP_IS_ONLINE && check_http_status('https://cdn.tailwindcss.com') ? 'https://cdn.tailwindcss.com' : APP_URL . 'assets/js/tailwindcss-3.3.5.js')?
-//!is_dir($path = APP_BASE['public'] . 'assets/js/') or mkdir($path, 0755, true);
+    // (APP_IS_ONLINE && check_http_status('https://cdn.tailwindcss.com') ? 'https://cdn.tailwindcss.com' : APP_URL . 'assets/vendor/tailwindcss-3.3.5.js')?
+//!is_dir($path = APP_BASE['public'] . 'assets/vendor/') or mkdir($path, 0755, true);
     
-    if (!is_file($path = APP_BASE['public'] . 'assets/js/requirejs/require.js') || ceil(abs((strtotime(date('Y-m-d')) - strtotime(date('Y-m-d', strtotime('+5 days', filemtime($path))))) / 86400)) <= 0) {
-      !is_dir($path = APP_BASE['public'] . 'assets/js/requirejs') or @mkdir($path, 0755, true);
+    if (!is_file($path = APP_BASE['public'] . 'assets/vendor/requirejs/2.3.6/require.js') || ceil(abs((strtotime(date('Y-m-d')) - strtotime(date('Y-m-d', strtotime('+5 days', filemtime($path))))) / 86400)) <= 0) {
+      !is_dir($path = APP_BASE['public'] . 'assets/vendor/requirejs') or @mkdir($path, 0755, true);
       !is_dir($path) and $errors['JS-REQUIREJS'] = "JS-REQUIREJS - Failed to create directory: $path";
       $url = 'https://requirejs.org/docs/release/2.3.6/minified/require.js';
       $handle = curl_init($url);
@@ -1156,24 +1156,24 @@ $(document).ready(function() {
 
     if (!is_file($path)) { ?>
 
-      <script src="assets/js/requirejs/require.js" type="text/javascript" charset="utf-8"></script>
+      <script src="assets/vendor/requirejs/2.3.6/require.js" type="text/javascript" charset="utf-8"></script>
 
       <script>
         var globalEditor;
         require.config({
           baseUrl: window.location.protocol + "//" + window.location.host + window.location.pathname.split("/").slice(0, -1).join("/"),
           paths: {
-            jquery: 'assets/js/jquery/jquery-3.7.1.min',
-            'jquery-ui': 'assets/js/jquery-ui/jquery-ui-1.12.1',
-            //domReady: 'assets/js/domReady',
-            //bootstrap: 'assets/js/bootstrap/dist/js/bootstrap',
-            ace: 'assets/js/ace/src/ace',
-            'ace/ext-language_tools': 'assets/js/ace/src/ext-language_tools',
-            'ace/mode/javascript': 'assets/js/ace/src/mode-javascript',
-            'ace/mode/html': 'assets/js/ace/src/mode-html',
-            'ace/mode/php': 'assets/js/ace/src/mode-php',
-            'ace/theme/monokai': 'assets/js/ace/src/theme-monokai',
-            'ace/theme/github': 'assets/js/ace/src/theme-github'
+            jquery: 'assets/vendor/jquery/3.7.1/jquery-3.7.1.min',
+            'jquery-ui': 'assets/vendor/jquery-ui/1.13.2/jquery-ui.min',
+            //domReady: 'assets/vendor/domReady',
+            //bootstrap: 'assets/vendor/bootstrap/4.0.0/dist/js/bootstrap',
+            ace: 'assets/vendor/ace/1.34.2/src/ace',
+            'ace/ext-language_tools': 'assets/vendor/ace/1.34.2/src/ext-language_tools',
+            'ace/mode/javascript': 'assets/vendor/ace/1.34.2/src/mode-javascript',
+            'ace/mode/html': 'assets/vendor/ace/1.34.2/src/mode-html',
+            'ace/mode/php': 'assets/vendor/ace/1.34.2/src/mode-php',
+            'ace/theme/monokai': 'assets/vendor/ace/1.34.2/src/theme-monokai',
+            'ace/theme/github': 'assets/vendor/ace/1.34.2/src/theme-github'
           },
           shim: {
             'ace': {
@@ -1232,10 +1232,10 @@ $(document).ready(function() {
         });
       </script>
       <?php
-    } elseif (is_dir($path = APP_BASE['public'] . 'assets/js/ace')) { ?>
+    } elseif (is_dir($path = APP_BASE['public'] . 'assets/vendor/ace')) { ?>
 
-      <script src="assets/js/ace/src/ace.js" type="text/javascript" charset="utf-8"></script>
-      <script src="assets/js/ace/src/ext-language_tools.js" type="text/javascript" charset="utf-8"></script>
+      <script src="assets/vendor/ace/1.34.2/src/ace.js" type="text/javascript" charset="utf-8"></script>
+      <script src="assets/vendor/ace/1.34.2/src/ext-language_tools.js" type="text/javascript" charset="utf-8"></script>
 
       <script>
         var editors = {}; // relative path => [ace instances]
@@ -1881,16 +1881,16 @@ $(document).ready(function() {
       + window.location.pathname.split("/").slice(0, -1).join("/"),
       
       paths: {
-        jquery: 'assets/js/jquery/jquery.min',
-        domReady: 'assets/js/domReady',
-        bootstrap: 'assets/js/bootstrap/dist/js/bootstrap',
-        ace: 'assets/js/ace/src/ace',
-        'lib/dom': 'assets/js/ace/src/lib/dom',
-        useragent: 'assets/js/ace/src/lib/useragent',
-        exports: 'assets/js/ace/src/lib/',
+        jquery: 'assets/vendor/jquery/jquery.min',
+        domReady: 'assets/vendor/domReady',
+        bootstrap: 'assets/vendor/bootstrap/4.0.0/dist/js/bootstrap',
+        ace: 'assets/vendor/ace/1.34.2/src/ace',
+        'lib/dom': 'assets/vendor/ace/1.34.2/src/lib/dom',
+        useragent: 'assets/vendor/ace/1.34.2/src/lib/useragent',
+        exports: 'assets/vendor/ace/1.34.2/src/lib/',
         
-        //'../snippets': 'assets/js/ace/lib/ace/snippets',
-        //'./lib/oop': 'assets/js/ace/src/lib'
+        //'../snippets': 'assets/vendor/ace/lib/ace/snippets',
+        //'./lib/oop': 'assets/vendor/ace/1.34.2/src/lib'
       }
       });
       */

@@ -161,9 +161,9 @@ defined('GIT_LATEST') or define('GIT_LATEST', GIT_VERSION);
 
 ?>
 
-<div class="fixed window-header"
+<div id="" class="fixed window-header"
   style="position: fixed; display: inline-block; width: 450px; height: 0; cursor: move; margin: -50px 0 0 0; padding: 24px 0; border-bottom: 1px solid #000; z-index: 3;"
-  data-drag-handle>
+  data-drag-handle="true">
   <label class="git-home" style="cursor: pointer;">
     <div class="" style="position: relative; float: left; display: inline-block; top: 0; left: 0; margin-top: -5px;">
       <img src="assets/images/git_icon.fw.png" width="32" height="32" />
@@ -183,10 +183,16 @@ defined('GIT_LATEST') or define('GIT_LATEST', GIT_VERSION);
 </div>
 <div id="" class="window-body"
   class="<?= __FILE__ == get_required_files()[0] || isset($_GET['app']) && $_GET['app'] == 'git' || isset($errors['GIT_UPDATE']) ? 'selected' : (version_compare(GIT_LATEST, GIT_VERSION, '>') != 0 ? (isset($_GET['app']) && $_GET['app'] != 'git' ? '' : '') : '') ?>"
-  style="position: fixed; z-index: 3; width: 424px; background-color: rgba(255,255,255,0.8); padding: 10px;">
-
-  <div
-    style="position: relative; margin: 0 auto; width: 420px; height: 306px; border: 3px dashed #F05033; background-color: #FBF7F1;">
+  style="position: relative; z-index: 3; width: 200px; background-color: rgba(255,255,255,0.8); padding: 10px;">
+  <?php if (git_origin_sha_update() != $_ENV['GITHUB']['REMOTE_SHA']) { ?>
+    <div
+      style="position: absolute; left: 150px; top: 80px; padding-top: 20px; display: block; border: 1px dashed #000; width: 150px; height: 50px; text-align: center; font-weight: bold; z-index: 200; background-color: rgb(255,255,255,.75);"">
+    <span style=" background-color: #0078D7; color: #FFF;">Upate Available</span><br /><span
+        style="background-color: #FFF; color: #0078D7;">Git Pull</span>
+    </div>
+  <?php } ?>
+  <div style="position: relative; margin: 0 auto; width: 420px; height: 306px; border: 3px dashed #F05033;
+    background-color: #FBF7F1;">
 
     <div class="ui-widget-content"
       style="position: relative; display: block; width: 420px; background-color: rgba(251,247,241); z-index: 2;">
@@ -823,9 +829,9 @@ ob_start(); ?>
   $__tailwindSrc = function (string $version = '3.3.5'): string {
     // You have app_base() and check_http_status() in your project.
     $cdnUrl = 'https://cdn.tailwindcss.com';
-    $localPath = rtrim(app_base('public', null, 'abs'), DIRECTORY_SEPARATOR) . '/assets/js/tailwindcss-' . $version . '.js';
+    $localPath = rtrim(app_base('public', null, 'abs'), DIRECTORY_SEPARATOR) . '/assets/vendor/tailwindcss-' . $version . '.js';
     $localRelDir = rtrim(app_base('public', null, 'rel'), '/'); // e.g. 'public/assets/'
-    $localRel = $localRelDir . 'assets/js/tailwindcss-' . $version . '.js';
+    $localRel = $localRelDir . 'assets/vendor/tailwindcss-' . $version . '.js';
 
     // Ensure local dir
     is_dir(dirname($localPath)) || @mkdir(dirname($localPath), 0755, true);
@@ -856,7 +862,7 @@ ob_start(); ?>
       return substr($cdnUrl, $pos + strlen($host)); // e.g. "//cdn.tailwindcss.com"
     }
 
-    return $localRel; // e.g. "assets/js/tailwindcss-3.3.5.js"
+    return $localRel; // e.g. "assets/vendor/tailwindcss-3.3.5.js"
   };
 
   /**
@@ -878,7 +884,7 @@ ob_start(); ?>
     <style type="text/tailwindcss">
       <?= $UI_APP['style'] ?? '' ?>
 
-                  </style>
+                                                        </style>
   </head>
 
   <body>

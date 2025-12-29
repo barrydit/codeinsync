@@ -282,8 +282,8 @@ ob_start(); ?>
 
 
   <?php
-  // (check_http_status('https://cdn.tailwindcss.com') ? 'https://cdn.tailwindcss.com' : APP_URL . 'assets/js/tailwindcss-3.3.5.js')?
-  is_dir($path = APP_BASE['public'] . 'assets/js/') or mkdir($path, 0755, true);
+  // (check_http_status('https://cdn.tailwindcss.com') ? 'https://cdn.tailwindcss.com' : APP_URL . 'assets/vendor/tailwindcss-3.3.5.js')?
+  is_dir($path = APP_BASE['public'] . 'assets/vendor/') or mkdir($path, 0755, true);
   if (is_file("{$path}tailwindcss-3.3.5.js")) {
     if (ceil(abs((strtotime(date('Y-m-d')) - strtotime(date('Y-m-d', strtotime('+5 days', filemtime("{$path}tailwindcss-3.3.5.js"))))) / 86400)) <= 0) {
       $url = 'https://cdn.tailwindcss.com';
@@ -303,7 +303,7 @@ ob_start(); ?>
   }
   ?>
 
-  <script src="<?= 'assets/js/tailwindcss-3.3.5.js' ?? $url ?>"></script>
+  <script src="<?= 'assets/vendor/tailwindcss-3.3.5.js' ?? $url ?>"></script>
 
   <style type="text/tailwindcss">
     <?= /*$appWhiteboard['style'];*/ NULL; ?>
@@ -362,7 +362,7 @@ canvas
 
   <script src="//code.jquery.com/jquery-1.12.4.js"></script>
   <script src="//code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
-  <!-- <script src="assets/js/jquery/jquery.min.js"></script> -->
+  <!-- <script src="assets/vendor/jquery/jquery.min.js"></script> -->
   <script>
     <?= $app['script']; ?>
   </script>

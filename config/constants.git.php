@@ -1,5 +1,6 @@
 <?php
-/**/
+// config/constants.git.php
+// Git-related constants and configurations
 // https://techglimpse.com/git-push-github-token-based-passwordless/
 // git push https://<GITHUB_ACCESS_TOKEN>@github.com/<GITHUB_USERNAME>/<REPOSITORY_NAME>.git
 //if ($path = realpath((basename(__DIR__) != 'config' ? NULL : __DIR__ . DIRECTORY_SEPARATOR) . 'constants.paths.php'))
@@ -103,7 +104,7 @@ $latest_remote_commit_sha = $latest_remote_commit_data['object']['sha']; */
  * Summary of git_origin_sha_update
  * @return bool|string
  */
-function git_origin_sha_update()
+function git_origin_sha_update(): bool|string
 {
     global $errors;
     $latest_local_commit_sha = exec(GIT_EXEC . ' --git-dir="' . APP_PATH . APP_ROOT . '.git" --work-tree="' . APP_PATH . APP_ROOT . '" rev-parse main');
@@ -200,17 +201,18 @@ function git_origin_sha_update()
 
     if ($data && isset($data['object']['sha'])) {
         $latest_remote_commit_sha = $data['object']['sha'];
+        /*
+                if ($latest_local_commit_sha !== $latest_remote_commit_sha) {
+                    $errors[] = 'Remote SHA ($_ENV[\'GITHUB\'][\'REMOTE_SHA\']) was updated.' . "\n" . $errors['GIT_UPDATE'] . "\n";
+                    $_ENV['GITHUB']['REMOTE_SHA'] = $latest_remote_commit_sha;
 
-        if ($latest_local_commit_sha !== $latest_remote_commit_sha) {
-            $errors[] = 'Remote SHA ($_ENV[\'GITHUB\'][\'REMOTE_SHA\']) was updated.' . "\n" . $errors['GIT_UPDATE'] . "\n";
-            $_ENV['GITHUB']['REMOTE_SHA'] = $latest_remote_commit_sha;
-
-        } else {
-            $_ENV['GITHUB']['REMOTE_SHA'] = $latest_remote_commit_sha;
-            $errors['GIT_UPDATE'] = $errors['GIT_UPDATE'] . $latest_local_commit_sha . '  ' . $latest_remote_commit_sha . "\n";
-            $_ENV['DEFAULT_UPDATE_NOTICE'] = false;
-            unset($errors['GIT_UPDATE']);
-        }
+                } else {
+                    $_ENV['GITHUB']['REMOTE_SHA'] = $latest_remote_commit_sha;
+                    $errors['GIT_UPDATE'] = $errors['GIT_UPDATE'] . $latest_local_commit_sha . '  ' . $latest_remote_commit_sha . "\n";
+                    $_ENV['DEFAULT_UPDATE_NOTICE'] = false;
+                    unset($errors['GIT_UPDATE']);
+                }
+        */
     } else {
         $errors['GIT_UPDATE'] .= "Failed to retrieve commit information.\n";
     }
@@ -218,7 +220,7 @@ function git_origin_sha_update()
 
     // dd($data);
 
-    return $_ENV['GITHUB']['REMOTE_SHA'] = $latest_local_commit_sha;
+    return /*$_ENV['GITHUB']['REMOTE_SHA'] =*/ $latest_remote_commit_sha ?? false;
 }
 
 //git_origin_sha_update();
@@ -234,7 +236,7 @@ if (is_file($file = APP_PATH . APP_ROOT . '.env') && date('Y-m-d', filemtime($fi
 }
 
 // file has to exists first
-is_dir($path = app_base('var', null, 'abs') ) or mkdir($path, 0755);
+is_dir($path = app_base('var', null, 'abs')) or mkdir($path, 0755);
 if (is_file($path . 'git-scm.com.html')) {
     if (ceil(abs((strtotime(date('Y-m-d')) - strtotime(date('Y-m-d', strtotime('+5 days', filemtime($path . 'git-scm.com.html'))))) / 86400)) <= 0) {
         $url = 'https://git-scm.com/downloads';

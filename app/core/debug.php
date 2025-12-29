@@ -40,7 +40,7 @@ if (defined('APP_ENV'))
     NULL;
 //elseif (APP_ENV == 'development' && APP_DEBUG == false)
 //require_once APP_PATH . 'public' . DIRECTORY_SEPARATOR . 'idx.develop.php';
-//  die(header('Location: ' . $baseHref . '?debug'));
+//  die(header('Location: ' . UrlContext::getBaseHref() . '?debug'));
 // is_array($ob_content)
 //$report_errors = true; 
 
@@ -317,7 +317,7 @@ HTML;
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     <title>Patient Clinic Files -- Debug Window</title>
 
-    <base href="<?= htmlspecialchars($baseHref, ENT_QUOTES, 'UTF-8') ?>" />
+    <base href="<?= htmlspecialchars(UrlContext::getBaseHref(), ENT_QUOTES, 'UTF-8') ?>" />
 
     <link rel="shortcut icon" href="assets/images/favicon.ico" />
 
@@ -484,7 +484,7 @@ HTML;
     </div>
 
     <!-- JQUERY SCRIPTS -->
-    <script src="<?= htmlspecialchars($asset('assets/js/jquery/jquery-3.5.1.min.js'), ENT_QUOTES, 'UTF-8') ?>?>"></script>
+    <script src="<?= htmlspecialchars($asset('assets/vendor/jquery/3.7.1/jquery-3.5.1.min.js'), ENT_QUOTES, 'UTF-8') ?>?>"></script>
   </body>
 
   </html>

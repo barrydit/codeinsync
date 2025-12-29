@@ -33,7 +33,7 @@ package-lock.json
 # -----------------------------
 /dist
 # If these are build outputs (not source), keep ignored:
-/public/assets/js
+#/public/assets/js
 /public/assets/reels
 /public/assets/project
 /public/assets/vendor

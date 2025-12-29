@@ -11,7 +11,7 @@ if (!defined('APP_BOOTSTRAPPED')) {
   require_once APP_PATH . 'bootstrap/bootstrap.php';
 }
 
-global $shell_prompt, $auto_clear, $errors, $asset, $baseHref;
+global $shell_prompt, $auto_clear, $errors, $asset;
 
 // -----------------------------------------------------------------------------
 
@@ -1122,7 +1122,7 @@ ob_start(); ?>
 
     if (autoClear) $('#responseConsole').val('<?= $shell_prompt; ?>' + argv);
 
-    let DirQueryParams = '<?= $baseHref ?>?api=console&cmd=' + encodeURIComponent(argv);
+    let DirQueryParams = '<?= UrlContext::getBaseHref() ?>?api=console&cmd=' + encodeURIComponent(argv);
 
     if (argv == '') $('#responseConsole').val('<?= $shell_prompt; ?>' + "\n" + $('#responseConsole').val()); // +
     else if (matches = argv.match(/^(?:echo\s+)?(hello)\s+world/i)) { // argv == 'edit'
@@ -1446,11 +1446,11 @@ ob_start(); ?>
   <link rel="stylesheet" href="//code.jquery.com/ui/1.12.1/themes/smoothness/jquery-ui.css" />
 
   <?php
-  // (APP_IS_ONLINE && check_http_status('https://cdn.tailwindcss.com') ? 'https://cdn.tailwindcss.com' : APP_URL . 'public/assets/js/tailwindcss-3.3.5.js')?
+  // (APP_IS_ONLINE && check_http_status('https://cdn.tailwindcss.com') ? 'https://cdn.tailwindcss.com' : APP_URL . 'public/assets/vendor/tailwindcss-3.3.5.js')?
 // Path to the JavaScript file
   
   // Create the directory if it doesn't exist
-  getcwd() === rtrim($path = APP_PATH . APP_BASE['public'], '/') && is_dir($path .= 'assets/js') or mkdir($path, 0755, true);
+  getcwd() === rtrim($path = APP_PATH . APP_BASE['public'], '/') && is_dir($path .= 'assets/vendor') or mkdir($path, 0755, true);
 
   $path .= '/tailwindcss-3.3.5.js';
 
@@ -1474,7 +1474,7 @@ ob_start(); ?>
   ?>
 
   <script
-    src="<?= !defined('APP_IS_ONLINE') || !APP_IS_ONLINE ? '' : (check_http_status($url) ? substr($url, strpos($url, parse_url($url)['host']) + strlen(parse_url($url)['host'])) : substr($path, strpos($path, dirname(APP_BASE['public'] . 'assets/js')))) ?>"></script>
+    src="<?= !defined('APP_IS_ONLINE') || !APP_IS_ONLINE ? '' : (check_http_status($url) ? substr($url, strpos($url, parse_url($url)['host']) + strlen(parse_url($url)['host'])) : substr($path, strpos($path, dirname(APP_BASE['public'] . 'assets/vendor')))) ?>"></script>
 
   <style type="text/tailwindcss">
     <?= $UI_APP['style']; ?>
@@ -1487,7 +1487,7 @@ ob_start(); ?>
   <!-- https://cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.min.js -->
   <script src="//code.jquery.com/jquery-1.12.4.js"></script>
   <script src="//code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
-  <!-- <script src="assets/js/jquery/jquery.min.js"></script> -->
+  <!-- <script src="assets/vendor/jquery/jquery.min.js"></script> -->
   <script>
     <?= $UI_APP['script']; ?>
   </script>

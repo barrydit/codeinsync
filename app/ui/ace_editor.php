@@ -158,7 +158,7 @@ ob_start(); ?>
     const ensureAce = async () => {
         if (window.ace) return;
         // Prefer your local copy; fall back to CDN if desired
-        try { await loadScript('assets/vendor/ace/src/ace.js'); }
+        try { await loadScript('assets/vendor/ace/1.34.2/src/ace.js'); }
         catch { await loadScript('https://cdnjs.cloudflare.com/ajax/libs/ace/1.32.9/ace.js'); }
     };
 
@@ -255,7 +255,7 @@ ob_start(); ?>
         try { versionBox.textContent = window.ace?.version ? 'v' + window.ace.version : ''; } catch { }
 
         // --- OPTIONAL: load extra libraries dynamically when needed -----------
-        // Example: await loadScript('assets/vendor/ace/ext-language_tools.js');
+        // Example: await loadScript('assets/vendor/ace/1.34.2/src/ext-language_tools.js');
         // Then enable: editor.setOptions({ enableBasicAutocompletion: true, enableSnippets: true });
     })();
 

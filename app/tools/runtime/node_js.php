@@ -322,9 +322,9 @@ ob_start(); ?>
     <!-- link rel="stylesheet" href="//code.jquery.com/ui/1.12.1/themes/smoothness/jquery-ui.css" /-->
 
     <?php
-    // (APP_IS_ONLINE && check_http_status('https://cdn.tailwindcss.com') ? 'https://cdn.tailwindcss.com' : APP_URL . 'assets/js/tailwindcss-3.3.5.js')?
+    // (APP_IS_ONLINE && check_http_status('https://cdn.tailwindcss.com') ? 'https://cdn.tailwindcss.com' : APP_URL . 'assets/vendor/tailwindcss-3.3.5.js')?
   
-    $path = APP_BASE['public'] . 'assets/js/';
+    $path = APP_BASE['public'] . 'assets/vendor/';
     $filename = 'tailwindcss-3.3.5.js';
     $filePath = "{$path}{$filename}";
     $url = 'https://cdn.tailwindcss.com';
@@ -340,7 +340,7 @@ ob_start(); ?>
       downloadFile($url, $path, $filename, $errors);
     } ?>
 
-    <script src="<?= APP_BASE['public'] . "assets/js/{$filename}" ?? $url ?>"></script>
+    <script src="<?= APP_BASE['public'] . "assets/vendor/{$filename}" ?? $url ?>"></script>
 
     <style type="text/tailwindcss">
       <?= $app['style']; ?>

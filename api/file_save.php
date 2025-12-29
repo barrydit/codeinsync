@@ -59,7 +59,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 
   if ($realpath === false) {
     http_response_code(404);
-    exit('File not found: ' . $fullPath);
+    exit("File not found: $fullPath");
   }
 
   // Build a whitelist of allowed roots
@@ -101,7 +101,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     exit('Failed to write file');
   }
 
-  echo 'OK: saved ' . basename($realpath);
+  header('Location: ' . $_SERVER['HTTP_REFERER']);
   exit;
   /*
     if (isset($_POST['ace_save']) && isset($_POST['contents']) && isset($_POST['path']))

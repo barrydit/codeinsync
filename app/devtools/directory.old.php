@@ -1508,9 +1508,9 @@ ob_start(); ?>
   $__tailwindSrc = function (string $version = '3.3.5'): string {
     // You have app_base() and check_http_status() in your project.
     $cdnUrl = 'https://cdn.tailwindcss.com';
-    $localPath = rtrim(app_base('public', null, 'abs'), DIRECTORY_SEPARATOR) . '/assets/js/tailwindcss-' . $version . '.js';
+    $localPath = rtrim(app_base('public', null, 'abs'), DIRECTORY_SEPARATOR) . '/assets/vendor/tailwindcss-' . $version . '.js';
     $localRelDir = rtrim(app_base('public', null, 'rel'), '/'); // e.g. 'public/assets/'
-    $localRel = $localRelDir . '/assets/js/tailwindcss-' . $version . '.js';
+    $localRel = $localRelDir . '/assets/vendor/tailwindcss-' . $version . '.js';
 
     // Ensure local dir
     is_dir(dirname($localPath)) || @mkdir(dirname($localPath), 0755, true);
@@ -1541,7 +1541,7 @@ ob_start(); ?>
       return substr($cdnUrl, $pos + strlen($host)); // e.g. "//cdn.tailwindcss.com"
     }
 
-    return $localRel; // e.g. "assets/js/tailwindcss-3.3.5.js"
+    return $localRel; // e.g. "assets/vendor/tailwindcss-3.3.5.js"
   };
 
   /**

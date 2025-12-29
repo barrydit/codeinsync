@@ -177,12 +177,12 @@ if (__FILE__ == get_required_files()[0] && __FILE__ == realpath($_SERVER["SCRIPT
 //  if (isset($_GET['app']) && $_GET['app'] == 'nodes')
 
 if (defined('GIT_EXEC'))
-  if (is_dir($path = app_base('public', null, 'rel') . 'assets/js/ace') && empty(glob($path)))
-    exec((stripos(PHP_OS, 'WIN') === 0 ? '' : APP_SUDO) . GIT_EXEC . ' clone https://github.com/ajaxorg/ace-builds.git public/assets/js/ace', $output, $returnCode) or $errors['GIT-CLONE-ACE'] = $output;
+  if (is_dir($path = app_base('public', null, 'rel') . 'assets/vendor/ace') && empty(glob($path)))
+    exec((stripos(PHP_OS, 'WIN') === 0 ? '' : APP_SUDO) . GIT_EXEC . ' clone https://github.com/ajaxorg/ace-builds.git public/assets/vendor/ace', $output, $returnCode) or $errors['GIT-CLONE-ACE'] = $output;
   elseif (!is_dir($path)) {
     if (!mkdir($path, 0755, true))
-      $errors['GIT-CLONE-ACE'] = ' public/assets/js/ace does not exist.';
-    exec((stripos(PHP_OS, 'WIN') === 0 ? '' : APP_SUDO) . GIT_EXEC . ' clone https://github.com/ajaxorg/ace-builds.git public/assets/js/ace', $output, $returnCode) or $errors['GIT-CLONE-ACE'] = $output;
+      $errors['GIT-CLONE-ACE'] = ' public/assets/vendor/ace does not exist.';
+    exec((stripos(PHP_OS, 'WIN') === 0 ? '' : APP_SUDO) . GIT_EXEC . ' clone https://github.com/ajaxorg/ace-builds.git public/assets/vendor/ace', $output, $returnCode) or $errors['GIT-CLONE-ACE'] = $output;
   }
 
 ob_start(); ?>
@@ -510,15 +510,15 @@ ob_start(); ?>
   <!-- link rel="stylesheet" href="//code.jquery.com/ui/1.12.1/themes/smoothness/jquery-ui.css" / -->
 
   <?php
-  is_dir($path = app_base('public', null, 'rel') . 'assets/js/') or mkdir($path, 0755, true);
-  if (is_file($path . 'tailwindcss-3.3.5.js')) {
+  is_dir($path = app_base('public', null, 'abs') . 'assets/vendor/') or mkdir($path, 0755, true);
+  if (is_file("{$path}tailwindcss-3.3.5.js")) {
     if (ceil(abs((strtotime(date('Y-m-d')) - strtotime(date('Y-m-d', strtotime('+5 days', filemtime($path . 'tailwindcss-3.3.5.js'))))) / 86400)) <= 0) {
       $url = 'https://cdn.tailwindcss.com';
       $handle = curl_init($url);
       curl_setopt($handle, CURLOPT_RETURNTRANSFER, true);
 
       if (!empty($js = curl_exec($handle)))
-        file_put_contents($path . 'tailwindcss-3.3.5.js', $js) or $errors['JS-TAILWIND'] = $url . ' returned empty.';
+        file_put_contents("{$path}tailwindcss-3.3.5.js", $js) or $errors['JS-TAILWIND'] = "$url returned empty.";
     }
   } else {
     $url = 'https://cdn.tailwindcss.com';
@@ -531,7 +531,7 @@ ob_start(); ?>
   unset($path);
   ?>
 
-  <script src="<?= 'assets/js/tailwindcss-3.3.5.js' ?? $url ?>"></script>
+  <script src="<?= 'assets/vendor/tailwindcss-3.3.5.js' ?? $url ?>"></script>
 
   <style type="text/tailwindcss">
     <?= $UI_APP['style']; ?>
@@ -542,9 +542,9 @@ ob_start(); ?>
   <?= $UI_APP['body']; ?>
 
   <script
-    src="<?= APP_IS_ONLINE && check_http_status('https://code.jquery.com/jquery-3.7.1.min.js') ? 'https://code.jquery.com/jquery-3.7.1.min.js' : app_base('public', null, 'rel') . 'assets/js/jquery/' . 'jquery-3.7.1.min.js' ?>"></script>
+    src="<?= APP_IS_ONLINE && check_http_status('https://code.jquery.com/jquery-3.7.1.min.js') ? 'https://code.jquery.com/jquery-3.7.1.min.js' : app_base('public', null, 'rel') . 'assets/vendor/jquery/' . 'jquery-3.7.1.min.js' ?>"></script>
   <?php
-  if (!is_file($path = app_base('public', null, 'abs') . 'assets/js/jquery-ui/' . 'jquery-ui-1.12.1.js') || ceil(abs((strtotime(date('Y-m-d')) - strtotime(date('Y-m-d', strtotime('+5 days', filemtime($path))))) / 86400)) <= 0) {
+  if (!is_file($path = app_base('public', null, 'abs') . 'assets/vendor/jquery-ui/' . 'jquery-ui-1.12.1.js') || ceil(abs((strtotime(date('Y-m-d')) - strtotime(date('Y-m-d', strtotime('+5 days', filemtime($path))))) / 86400)) <= 0) {
 
     if (!realpath($pathdir = dirname($path)))
       if (!mkdir($pathdir, 0755, true))
@@ -559,7 +559,7 @@ ob_start(); ?>
   } ?>
 
   <script
-    src="<?= APP_IS_ONLINE && check_http_status('https://code.jquery.com/ui/1.12.1/jquery-ui.min.js') ? 'https://code.jquery.com/ui/1.12.1/jquery-ui.min.js' : app_base('public', null, 'rel') . 'assets/js/jquery-ui/' . 'jquery-ui-1.12.1.js' ?>"></script>
+    src="<?= APP_IS_ONLINE && check_http_status('https://code.jquery.com/ui/1.12.1/jquery-ui.min.js') ? 'https://code.jquery.com/ui/1.12.1/jquery-ui.min.js' : app_base('public', null, 'rel') . 'assets/vendor/jquery-ui/' . 'jquery-ui-1.12.1.js' ?>"></script>
 
   <script src="https://d3js.org/d3.v4.min.js"></script>
 

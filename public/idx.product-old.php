@@ -411,8 +411,8 @@ header("Pragma: no-cache"); ?>
 
   <title>WebPortal</title>
   <?php
-  // (check_http_status('https://cdn.tailwindcss.com') ? 'https://cdn.tailwindcss.com' : APP_URL . 'assets/js/tailwindcss-3.3.5.js')?
-  is_dir($path = APP_BASE['public'] . 'assets/js/') or mkdir($path, 0755, true);
+  // (check_http_status('https://cdn.tailwindcss.com') ? 'https://cdn.tailwindcss.com' : APP_URL . 'assets/vendor/tailwindcss-3.3.5.js')?
+  is_dir($path = APP_BASE['public'] . 'assets/vendor/') or mkdir($path, 0755, true);
   if (is_file($path . 'tailwindcss-3.3.5.js')) {
     if (ceil(abs((strtotime(date('Y-m-d')) - strtotime(date('Y-m-d', strtotime('+5 days', filemtime($path . 'tailwindcss-3.3.5.js'))))) / 86400)) <= 0) {
       $url = 'https://cdn.tailwindcss.com';
@@ -432,7 +432,7 @@ header("Pragma: no-cache"); ?>
   }
   unset($path);
   ?>
-  <script src="<?= 'assets/js/tailwindcss-3.3.5.js' ?? $url ?>"></script>
+  <script src="<?= 'assets/vendor/tailwindcss-3.3.5.js' ?? $url ?>"></script>
   <style type="text/tailwindcss">
     * {
         margin: 0;
@@ -1919,7 +1919,7 @@ header("Pragma: no-cache"); ?>
   <!-- https://code.jquery.com/jquery-3.7.1.min.js -->
   <!-- script src="https://code.jquery.com/jquery-3.6.0.min.js" integrity="sha256-/xUj+3OJU5yExlq6GSYGSHk7tPXikynS7ogEvDej/m4=" crossorigin="anonymous"></script -->
   <?php
-  is_dir($path = APP_BASE['public'] . 'assets/js/jquery/') or mkdir($path, 0755, true);
+  is_dir($path = APP_BASE['public'] . 'assets/vendor/jquery/') or mkdir($path, 0755, true);
   if (is_file($path . 'jquery-3.7.1.min.js')) {
     if (ceil(abs((strtotime(date('Y-m-d')) - strtotime(date('Y-m-d', strtotime('+5 days', filemtime($path . 'jquery-3.7.1.min.js'))))) / 86400)) <= 0) {
       $url = 'https://code.jquery.com/jquery-3.7.1.min.js';
@@ -1959,14 +1959,14 @@ header("Pragma: no-cache"); ?>
 
 
   <script
-    src="<?= APP_IS_ONLINE && check_http_status('https://code.jquery.com/jquery-3.7.1.min.js') ? 'https://code.jquery.com/jquery-3.7.1.min.js' : APP_BASE['public'] . 'assets/js/jquery/' . 'jquery-3.7.1.min.js' ?>"></script>
+    src="<?= APP_IS_ONLINE && check_http_status('https://code.jquery.com/jquery-3.7.1.min.js') ? 'https://code.jquery.com/jquery-3.7.1.min.js' : APP_BASE['public'] . 'assets/vendor/jquery/' . 'jquery-3.7.1.min.js' ?>"></script>
   <!-- You need to include jQueryUI for the extended easing options. -->
   <?php /* https://stackoverflow.com/questions/12592279/typeerror-p-easingthis-easing-is-not-a-function */ ?>
   <!-- script src="//code.jquery.com/jquery-1.12.4.js"></script -->
 
   <?php
-  // (APP_IS_ONLINE && check_http_status('https://cdn.tailwindcss.com') ? 'https://cdn.tailwindcss.com' : APP_URL . 'assets/js/tailwindcss-3.3.5.js')? [[jquery-ui]-[1.12.1].js]
-  is_dir($path = APP_BASE['public'] . 'assets/js/jquery-ui/') or mkdir($path, 0755, true);
+  // (APP_IS_ONLINE && check_http_status('https://cdn.tailwindcss.com') ? 'https://cdn.tailwindcss.com' : APP_URL . 'assets/vendor/tailwindcss-3.3.5.js')? [[jquery-ui]-[1.12.1].js]
+  is_dir($path = APP_BASE['public'] . 'assets/vendor/jquery/') or mkdir($path, 0755, true);
   if (is_file($path . 'jquery-ui-1.12.1.js')) {
     if (ceil(abs((strtotime(date('Y-m-d')) - strtotime(date('Y-m-d', strtotime('+5 days', filemtime($path . 'jquery-ui-1.12.1.js'))))) / 86400)) <= 0) {
       $url = 'https://code.jquery.com/ui/1.12.1/jquery-ui.js';
@@ -1987,13 +1987,13 @@ header("Pragma: no-cache"); ?>
   unset($path);
   ?>
   <script
-    src="<?= (realpath(APP_PATH . ($path = APP_BASE['public'] . 'assets/js/jquery-ui/jquery-ui-1.12.1.js')) ? $path : (check_http_status($url) ? substr($url, strpos($url, parse_url($url)['host']) + strlen(parse_url($url)['host'])) : '')) ?>"></script>
+    src="<?= (realpath(APP_PATH . ($path = APP_BASE['public'] . 'assets/vendor/jquery/3.7.1/jquery-ui-1.12.1.js')) ? $path : (check_http_status($url) ? substr($url, strpos($url, parse_url($url)['host']) + strlen(parse_url($url)['host'])) : '')) ?>"></script>
   <!-- Uncaught ReferenceError: jQuery is not defined -->
 
   <!-- For Text / Ace Editor -->
   <!-- <script src="https://unpkg.com/@popperjs/core@2" type="text/javascript" charset="utf-8"></script> -->
   <?php
-  is_dir($path = APP_BASE['public'] . 'assets/js/requirejs/') or mkdir($path, 0755, true);
+  is_dir($path = APP_BASE['public'] . 'assets/vendor/requirejs/2.3.6/') or mkdir($path, 0755, true);
   if (is_file($path . 'require-2.3.6.js')) {
     if (ceil(abs((strtotime(date('Y-m-d')) - strtotime(date('Y-m-d', strtotime('+5 days', filemtime($path . '/require-2.3.6.js'))))) / 86400)) <= 0) {
       $url = 'https://requirejs.org/docs/release/2.3.6/minified/require.js';
@@ -2014,13 +2014,13 @@ header("Pragma: no-cache"); ?>
   unset($path);
   ?>
 
-  <script src="<?= 'assets/js/requirejs/require-2.3.6.js' ?? $url ?>" type="text/javascript"
+  <script src="<?= 'assets/vendor/requirejs/2.3.6/require-2.3.6.js' ?? $url ?>" type="text/javascript"
     charset="utf-8"></script>
 
-  <?php if (is_dir($path = APP_BASE['public'] . 'assets/js/ace')) { ?>
+  <?php if (is_dir($path = APP_BASE['public'] . 'assets/vendor/ace')) { ?>
 
-    <script src="assets/js/ace/src/ace.js" type="text/javascript" charset="utf-8"></script> <!-- -->
-    <script src="assets/js/ace/src/ext-language_tools.js" type="text/javascript" charset="utf-8"></script>
+    <script src="assets/vendor/ace/src/ace.js" type="text/javascript" charset="utf-8"></script> <!-- -->
+    <script src="assets/vendor/ace/src/ext-language_tools.js" type="text/javascript" charset="utf-8"></script>
 
     <script>
       document.addEventListener("DOMContentLoaded", function () {
@@ -2044,12 +2044,12 @@ header("Pragma: no-cache"); ?>
 
   <?php } ?>
   <!-- <script src="https://cdnjs.cloudflare.com/ajax/libs/ace/1.4.12/ext-language_tools.js"></script>
-      <script src="assets/js/ace/src/mode-php.js" type="text/javascript" charset="utf-8"></script>
+      <script src="assets/vendor/ace/src/mode-php.js" type="text/javascript" charset="utf-8"></script>
       
-      <script src="assets/js/ace/src/theme-dracula.js" type="text/javascript" charset="utf-8"></script> -->
+      <script src="assets/vendor/ace/src/theme-dracula.js" type="text/javascript" charset="utf-8"></script> -->
   <!--   <script src="dist/bundle.js" type="text/javascript" charset="utf-8"></script> -->
   <!-- End: For Text / Ace Editor -->
-  <!-- <script src="assets/js/jquery/jquery.min.js"></script> -->
+  <!-- <script src="assets/vendor/jquery/jquery.min.js"></script> -->
   <?php if (date(/*Y-*/ 'm-d') == /*1928-*/ '08-07' ?? /*2023-*/ '03-30') { ?>
     <script src="assets/reels/leave-a-light-on.js" type="text/javascript" charset="utf-8"></script>
   <?php } elseif (date(/*Y-*/ 'm-d') == /*1976-*/ '03-20' ?? /*2017-*/ '07-20') { ?>
@@ -2445,28 +2445,28 @@ header("Pragma: no-cache"); ?>
     + window.location.pathname.split("/").slice(0, -1).join("/"),
     
     paths: {
-      jquery: 'assets/js/jquery/jquery.min',
-      domReady: 'assets/js/domReady',
-      bootstrap: 'assets/js/bootstrap/dist/js/bootstrap',
-      ace: 'assets/js/ace/src/ace',
-      'lib/dom': 'assets/js/ace/src/lib/dom',
-      useragent: 'assets/js/ace/src/lib/useragent',
-      exports: 'assets/js/ace/src/lib/',
+      jquery: 'assets/vendor/jquery/jquery.min',
+      domReady: 'assets/vendor/domReady',
+      bootstrap: 'assets/vendor/bootstrap/4.0.0/dist/js/bootstrap',
+      ace: 'assets/vendor/ace/src/ace',
+      'lib/dom': 'assets/vendor/ace/src/lib/dom',
+      useragent: 'assets/vendor/ace/src/lib/useragent',
+      exports: 'assets/vendor/ace/src/lib/',
       
-      //'../snippets': 'assets/js/ace/lib/ace/snippets',
-      //'./lib/oop': 'assets/js/ace/src/lib'
+      //'../snippets': 'assets/vendor/ace/lib/ace/snippets',
+      //'./lib/oop': 'assets/vendor/ace/src/lib'
     }
     });
     */
     <?php
-    if (is_dir($path = APP_BASE['public'] . 'assets/js/ace')) { ?>
+    if (is_dir($path = APP_BASE['public'] . 'assets/vendor/ace')) { ?>
       var globalEditor; // Define a global variable
 
       require.config({
         baseUrl: window.location.protocol + "//" + window.location.host
           + window.location.pathname.split("/").slice(0, -1).join("/"),
         paths: {
-          ace: "assets/js/ace/src"
+          ace: "assets/vendor/ace/src"
         }
       });
 
@@ -2474,7 +2474,7 @@ header("Pragma: no-cache"); ?>
         //console.log(langtools);
 
         <?= UI_ACE_EDITOR['script']; ?>
-        //require(["assets/js/requirejs/require-2.3.6!ace/ace"], function(e){
+        //require(["assets/vendor/requirejs/2.3.6/require-2.3.6!ace/ace"], function(e){
         //editor.setValue(e);
         //})
 

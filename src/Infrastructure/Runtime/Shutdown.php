@@ -2,6 +2,9 @@
 
 namespace CodeInSync\Infrastructure\Runtime;
 
+use function defined;
+use function is_array;
+
 class Shutdown
 {
     private static $instance = false;
@@ -353,7 +356,7 @@ class Shutdown
     public static function unlinkEnvjson(): void
     {
         die(var_dump(get_required_files()));
-        require_once dirname(__DIR__, 1) . DIRECTORY_SEPARATOR . 'config' . DIRECTORY_SEPARATOR . 'config.php';
+        require_once APP_PATH . 'config' . DIRECTORY_SEPARATOR . 'config.php';
         $envJsonPath = APP_PATH . APP_ROOT . '.env.json';
         if (file_exists($envJsonPath)) {
             if (!unlink($envJsonPath)) {

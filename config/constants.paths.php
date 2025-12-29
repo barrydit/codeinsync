@@ -107,6 +107,7 @@ foreach ([APP_PATH, ...$envRoots, ...$builtinRoots] as $r) {
 
 // 2) Define your directory spec (logical keys -> default+fallback relative names)
 $PATH_SPEC = [
+    'api' => ['default' => 'api', 'fallbacks' => [], 'anchor' => 'app_root'],
     'app' => ['default' => 'app', 'fallbacks' => [], 'anchor' => 'app_root'],
     'config' => ['default' => 'config', 'fallbacks' => [], 'anchor' => 'app_root'],
     'data' => ['default' => 'data', 'fallbacks' => [], 'anchor' => 'app_root'],
@@ -156,7 +157,7 @@ foreach ($APP_BASE as $k => $abs) {
 defined('APP_BASE_MAP_ABS') || define('APP_BASE_MAP_ABS', json_encode($APP_BASE, JSON_UNESCAPED_SLASHES));
 defined('APP_BASE_MAP_REL') || define('APP_BASE_MAP_REL', json_encode($APP_BASE_REL, JSON_UNESCAPED_SLASHES));
 
-$OUTPUT_ORDER = ['app', 'config', 'data', 'public', 'resources', 'src', 'var', 'vendor', 'node', 'clients', 'projects'];
+$OUTPUT_ORDER = ['api', 'app', 'config', 'data', 'public', 'resources', 'src', 'var', 'vendor', 'node', 'clients', 'projects'];
 
 $dirsOrdered = [];
 foreach ($OUTPUT_ORDER as $k) {

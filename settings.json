@@ -1,3 +1,7 @@
 {
-    "intelliphp.inlineSuggestionsEnabled" : true
+    "intelliphp.inlineSuggestionsEnabled" : true,
+    "intelephense.diagnostics.undefinedSymbols": false,
+    "intelephense.diagnostics.undefinedFunctions": false,
+    "intelephense.diagnostics.undefinedConstants": false,
+    "intelephense.diagnostics.undefinedMethods": false
 }

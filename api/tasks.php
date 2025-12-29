@@ -57,13 +57,136 @@ $tasks = [
     'download-assets' => [
         'steps' => [
             static function (): string {
-                return "Job 1: Downloading jQuery library...\nDone.\n";
+                $dir = rtrim(app_base('public', null, 'abs') . 'assets/vendor/jquery', '/\\') . DIRECTORY_SEPARATOR;
+                if (!is_dir($dir) && !mkdir($dir, 0755, true) && !is_dir($dir)) {
+                    $errors['JQUERY-DIR'] = "Failed to create directory: {$dir}";
+                    return "Job 2: Downloading Tailwind CSS library... Failed (dir).\n";
+                }
+
+                $jqueryJS = @file_get_contents('https://code.jquery.com/jquery-3.7.1.min.js'); // jquery-3.7.1.min.js
+                //https://cdnjs.cloudflare.com/ajax/libs/jquery-easing/1.4.1/jquery.easing.min.js -> jquery-easing.min.js
+                //https://code.jquery.com/ui/1.12.1/jquery-ui.min.js -> jquery-ui-1.12.1.js
+                //https://d3js.org/d3.v4.min.js
+                if ($jqueryJS === false) {
+                    return "Job 1: Failed to download jQuery library.\n";
+                } else {
+                    file_put_contents(app_base('public', null, 'abs') . 'assets/vendor/jquery/3.7.1/jquery-3.7.1.min.js', $jqueryJS);
+                }
+                sleep(1);
+                return "Job 1: Downloading jQuery library... Done.\n";
             },
             static function (): string {
-                return "Job 2: Downloading Ace editor library...\nDone.\n";
+                $dir = rtrim(app_base('public', null, 'abs') . 'assets/vendor/tailwindcss', '/\\') . DIRECTORY_SEPARATOR;
+
+                $baseUrl = 'https://cdn.tailwindcss.com';
+
+                // Fetch CDN content and also learn final redirect URL (contains version)
+                $ch = curl_init($baseUrl);
+                curl_setopt_array($ch, [
+                    CURLOPT_RETURNTRANSFER => true,
+                    CURLOPT_FOLLOWLOCATION => true,
+                    CURLOPT_MAXREDIRS => 5,
+                    CURLOPT_CONNECTTIMEOUT => 10,
+                    CURLOPT_TIMEOUT => 30,
+                    CURLOPT_SSL_VERIFYPEER => true,
+                    CURLOPT_SSL_VERIFYHOST => 2,
+                    CURLOPT_USERAGENT => 'CodeInSync/1.0 (tailwind asset fetch)',
+                ]);
+
+                $js = curl_exec($ch);
+                $curlErr = curl_error($ch);
+                $effectiveUrl = curl_getinfo($ch, CURLINFO_EFFECTIVE_URL) ?: $baseUrl;
+                $httpCode = (int) curl_getinfo($ch, CURLINFO_RESPONSE_CODE);
+                curl_close($ch);
+
+                if ($js === false || $httpCode < 200 || $httpCode >= 300 || trim((string) $js) === '') {
+                    $errors['JS-TAILWIND'] = $curlErr ?: "HTTP {$httpCode} from {$effectiveUrl}";
+                    return "Job 2: Downloading Tailwind CSS library... Failed.\n";
+                }
+
+                // Extract version from effective URL like .../3.4.17
+                $version = null;
+                if (preg_match('~/(\\d+\\.\\d+\\.\\d+)(?:/)?$~', (string) $effectiveUrl, $m)) {
+                    $version = $m[1];
+                }
+
+                $dir = $dir . ($version ?: 'latest') . DIRECTORY_SEPARATOR;
+
+                if (!is_dir($dir) && !mkdir($dir, 0755, true) && !is_dir($dir)) {
+                    $errors['TAILWIND-DIR'] = "Failed to create directory: {$dir}";
+                    return "Job 2: Downloading Tailwind CSS library... Failed (dir).\n";
+                }
+
+                // Fallback name if we can't detect version for some reason
+                $file = $dir . 'tailwindcss-' . ($version ?: 'latest') . '.min.js';
+
+                // Refresh window (days)
+                $refreshDays = 5;
+
+                // If file exists and is still fresh, just return it
+                if (is_file($file)) {
+                    $ageSeconds = time() - (int) @filemtime($file);
+                    if ($ageSeconds >= 0 && $ageSeconds < ($refreshDays * 86400)) {
+                        return $file;
+                    }
+                }
+
+                // Write/update file
+                if (file_put_contents($file, $js) === false) {
+                    $errors['JS-TAILWIND'] = "Failed to write: {$file}";
+                    return "Job 2: Downloading Tailwind CSS library... Failed (write).\n";
+                }
+
+                // Optional: keep only the newest version file (delete older ones)
+                foreach (glob("{$dir}tailwindcss-*.min.js") ?: [] as $old) {
+                    if ($old !== $file) {
+                        // @unlink($old);
+                    }
+                }
+
+                sleep(1);
+                return "Job 2: Downloading Tailwind CSS library... Done ({$effectiveUrl}).\n";
             },
             static function (): string {
-                return "Job 3: Downloading CSS/utility assets...\nDone.\n";
+
+                if (defined('GIT_EXEC')) {
+                    // Filesystem path to the ACE vendor directory
+                    $path = APP_BASE['public'] . 'assets/vendor/ace';
+
+                    // 1) Ensure the directory exists (or can be created)
+                    if (!is_dir($path)) {
+                        if (!mkdir($path, 0755, true) && !is_dir($path)) {
+                            // Failed to create target directory – don't try to clone
+                            $errors['GIT-CLONE-ACE'] = 'public/assets/vendor/ace does not exist and could not be created.';
+                            // return; // "Job 1: Failed to download ACE library.\n";
+                        }
+                    }
+
+                    // 2) Only clone if the directory is empty
+                    //    (glob() needs a pattern, so include "/*")
+                    $isEmpty = empty(glob($path . DIRECTORY_SEPARATOR . '*'));
+
+                    if ($isEmpty) {
+                        $cmd = (stripos(PHP_OS, 'WIN') === 0 ? '' : (defined('APP_SUDO') ? APP_SUDO : ''));
+                        $cmd .= GIT_EXEC . ' clone https://github.com/ajaxorg/ace-builds.git public/assets/vendor/ace';
+
+                        $output = [];
+                        $returnCode = 0;
+
+                        exec($cmd, $output, $returnCode);
+
+                        if ($returnCode !== 0) {
+                            // Save the output so you can inspect what went wrong
+                            $errors['GIT-CLONE-ACE'] = $output;
+                        }
+                    }
+                } else
+                    return 'Git is not installed on the server. Skipping ACE editor download.'; // Skip if Git is not available
+            
+                return "Job 3: Downloading Ace editor library...\nDone.\n";
+            },
+            static function (): string {
+                return "Job 4: Downloading CSS/utility assets...\nDone.\n";
             },
         ],
     ],

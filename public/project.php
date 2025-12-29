@@ -21,7 +21,7 @@
     </title>
 
     <!-- Base URL for all relative links -->
-    <base href="<?= htmlspecialchars($baseHref, ENT_QUOTES, 'UTF-8') ?>" />
+    <base href="<?= htmlspecialchars(UrlContext::getBaseHref(), ENT_QUOTES, 'UTF-8') ?>" />
 
     <!-- SEO/meta fallbacks -->
     <meta name="description" content="<?= htmlspecialchars($appDescription, ENT_QUOTES, 'UTF-8') ?>" />
@@ -33,7 +33,7 @@
     <meta property="og:title" content="<?= htmlspecialchars($pageTitle, ENT_QUOTES, 'UTF-8') ?>" />
     <meta property="og:description" content="<?= htmlspecialchars($appDescription, ENT_QUOTES, 'UTF-8') ?>" />
     <meta property="og:type" content="website" />
-    <meta property="og:url" content="<?= htmlspecialchars($baseHref, ENT_QUOTES, 'UTF-8') ?>" />
+    <meta property="og:url" content="<?= htmlspecialchars(UrlContext::getBaseHref(), ENT_QUOTES, 'UTF-8') ?>" />
 
     <!-- Favicons / Assets -->
     <link rel="icon" type="image/png"

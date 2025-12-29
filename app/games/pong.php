@@ -452,7 +452,7 @@ ob_start(); ?>
   }
   ?>
 
-  <script src="<?= 'assets/js/tailwindcss-3.3.5.js' ?? $url ?>"></script>
+  <script src="<?= 'assets/vendor/tailwindcss-3.3.5.js' ?? $url ?>"></script>
 
   <style type="text/tailwindcss">
     <?= /*$appWhiteboard['style'];*/ NULL; ?>
@@ -499,7 +499,7 @@ html, body { width: 100%; height: 100%; <?= $_SERVER['SCRIPT_FILENAME'] == __FIL
     </div>
   </div>
   <script type="module" src="assets/js/pong/index.js"></script>
-  <script type="module" src="assets/js/bootstrap.js"></script>
+  <script type="module" src="assets/vendor/bootstrap.js"></script>
 </body>
 
 </html>

@@ -8,11 +8,11 @@ require_once dirname(__DIR__) . '/bootstrap/bootstrap.php';
 // dd(ini_get('error_log'));
 /*
 $url = 'https://cdn.tailwindcss.com';
-$path = htmlspecialchars($asset($baseHref . 'assets/js/tailwindcss-3.3.5.js'), ENT_QUOTES, 'UTF-8');
+$path = htmlspecialchars($asset(UrlContext::getBaseHref() . 'assets/vendor/tailwindcss-3.3.5.js'), ENT_QUOTES, 'UTF-8');
 
 echo 'Param 1: ' . substr($url, strpos($url, parse_url($url)['host']) + strlen(parse_url($url)['host']));
 
-echo 'Param 2: ' . substr($path, strpos($path, dirname($baseHref . 'assets/js')));
+echo 'Param 2: ' . substr($path, strpos($path, dirname(UrlContext::getBaseHref() . 'assets/vendor')));
 */
 // dd(); 
 
@@ -197,6 +197,118 @@ foreach ($domains as $domain) {
             window.open(url, '_blank', 'noopener,noreferrer');
         });
     </script>
+
+    <?php if (true /* APP_ENV['production'] === false */) { ?>
+        <script src="<?php if (date(/*Y-*/ 'm-d') == /*1928-*/ '08-07' ?? /*2023-*/ '03-30' || date(/*Y-*/ 'm-d') == /*1976-*/ '03-20' ?? /*2017-*/ '07-20') {
+            echo 'assets/reels/leave-a-light-on.js';
+        } // elseif (date(/*Y-*/ 'm-d') == /*1967-*/ '12-28') { echo 'assets/reels/happy_birthday.js'; }
+        else {
+            $reels = array_values(array_filter(glob(__DIR__ . '/assets/reels/*.js') ?: [], 'is_file'));
+            echo $reels ? 'assets/reels/' . basename($reels[random_int(0, count($reels) - 1)]) : ''; /* APP_BASE['public'] */
+        } ?>" type="text/javascript" charset="utf-8"></script>
+
+        <script type="text/javascript">
+            (function () {
+                // Safety: if snd isn't defined yet, bail
+                if (typeof snd === "undefined" || !snd) return;
+
+                let isPausedByUser = false;
+                let wired = false;
+
+                function wireOnce() {
+                    if (wired) return;
+                    wired = true;
+
+                    // Repeat unless user paused
+                    snd.addEventListener("ended", () => {
+                        if (!isPausedByUser) {
+                            try {
+                                snd.currentTime = 0;
+                                snd.play().catch(() => { });
+                            } catch (_) { }
+                        }
+                    });
+                }
+
+                function toggleSound() {
+                    // If you ever replace snd elsewhere, re-wire safely
+                    if (typeof snd === "undefined" || !snd) return;
+                    wireOnce();
+
+                    if (snd.paused) {
+                        isPausedByUser = false;
+
+                        // (optional) always restart from beginning on resume:
+                        // snd.currentTime = 0;
+
+                        snd.play().catch(err => {
+                            if (err?.name === "NotAllowedError") {
+                                console.warn("Audio blocked until user interaction.");
+                            } else {
+                                console.error("Audio play failed:", err);
+                            }
+                        });
+                    } else {
+                        isPausedByUser = true;
+                        snd.pause();
+                    }
+                }
+
+                function playSound() {
+                    if (typeof snd === "undefined" || !snd) return;
+                    wireOnce();
+                    isPausedByUser = false;
+                    snd.play().catch(() => { });
+                }
+
+                function pauseSound() {
+                    if (typeof snd === "undefined" || !snd) return;
+                    isPausedByUser = true;
+                    snd.pause();
+                }
+
+                // expose globally (drop-in friendly)
+                window.toggleSound = toggleSound;
+                window.playSound = playSound;
+                window.pauseSound = pauseSound;
+            })();
+
+
+            document.addEventListener('DOMContentLoaded', () => {
+                // Attempt to play the media element when the DOM is fully loaded
+                try {
+                    // Attempt to play the media element
+                    if (typeof snd !== 'undefined') {
+                        playSound(); // snd.play();
+                    }
+                } catch (error) {
+                    // Check if the error is a DOMException
+                    if (error instanceof DOMException && error.name === 'NotAllowedError') {
+                        // Handle the error (e.g., show a message to the user)
+                        console.error('The play method is not allowed by the user agent or the platform.');
+                    } else {
+                        // If it's a different type of error, rethrow it
+                        throw error;
+                    }
+                }
+            });
+
+            document.addEventListener('click', () => {
+                if (snd.paused) {
+                    //isPausedByUser = false;
+                    toggleSound().catch(err => {
+                        if (err.name === 'NotAllowedError') {
+                            console.warn('Playback blocked.');
+                        }
+                    });
+                } else {
+                    //isPausedByUser = true;
+                    toggleSound();
+                }
+            });
+
+        </script> <?php } ?>
+
 </body>
 
 </html>
