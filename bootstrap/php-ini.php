@@ -51,8 +51,48 @@ if (APP_DEBUG || APP_ERROR) {
     error_reporting(E_ALL/*E_STRICT |*/);
 }
 
-ini_set('error_log', is_dir($path = APP_PATH . 'var/log/') ? $path . 'php_error.log' : APP_PATH . 'var/log/php_error.log');
-ini_set('log_errors', 'true');
+// 1) Resolve log directory
+$logDir = $_ENV['PHP']['LOG_PATH'] ?? '/var/log/';
+$logDir = rtrim((string) $logDir, "\\/") . '/';
+
+// Ensure directory exists
+if (!is_dir($logDir)) {
+    @mkdir($logDir, 0775, true);
+}
+
+// If not writable, fall back to Apache log dir if available
+if (!is_writable($logDir)) {
+    $apacheDir = getenv('APACHE_LOG_DIR');
+    if (is_string($apacheDir) && $apacheDir !== '' && is_dir($apacheDir) && is_writable($apacheDir)) {
+        $logDir = rtrim($apacheDir, "\\/") . '/';
+    }
+}
+
+// 2) Resolve log file name
+$logFile = $_ENV['PHP']['ERROR_LOG'] ?? (getenv('PHP_ERROR_LOG') ?: 'php-error.log');
+$logFile = ltrim((string) $logFile, "\\/");
+
+// 3) Enable/disable logging (default: true)
+$logErrors = filter_var($_ENV['PHP']['LOG'] ?? true, FILTER_VALIDATE_BOOLEAN);
+
+// 4) Apply INI settings
+ini_set('log_errors', $logErrors ? '1' : '0');
+
+if ($logErrors) {
+    $logPath = "$logDir$logFile";
+
+    // If you only want to set when unset/blank, keep this guard:
+    $current = ini_get('error_log');
+    if (!is_string($current) || trim($current) === '') {
+        ini_set('error_log', $logPath);
+    }
+
+    // If you want to ALWAYS force it, use this instead:
+    // ini_set('error_log', $logPath);
+}
+
+// Set error_log path if unset/empty (or always set it if you prefer)
+
 
 ini_set('xdebug.debug', '0'); // remote_enable
 ini_set('xdebug.mode', 'develop'); // default_enable mode=develop,coverage,debug,gcstats,profile,trace
@@ -68,9 +108,8 @@ ini_set("include_path", "src"); // PATH_SEPARATOR ;:
 $isPhpVersion5OrHigher = version_compare(PHP_VERSION, '5.0.0', '>=');
 $includedFilesCount = count(get_included_files());
 
-if ($includedFilesCount === ($isPhpVersion5OrHigher ? 1 : 0)) {
+if ($includedFilesCount === ($isPhpVersion5OrHigher ? 1 : 0))
     exit('Direct access is not allowed.');
-}
 
 /*
 $trace = debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS, 1)[0];

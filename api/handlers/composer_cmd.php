@@ -78,9 +78,9 @@ function handle_composer_api(): void
 
     $cmd = $_POST['cmd'] ?? null;
 
-    if ($cmd) {
+    if ($cmd)
         execute_composer_command($cmd);
-    } //else {
+    //else {
     //http_response_code(400);
     //echo json_encode(['error' => 'Missing cmd']);
     //}

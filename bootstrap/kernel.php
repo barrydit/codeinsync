@@ -132,7 +132,34 @@ spl_autoload_register('autoload_class');
 
 require_once __DIR__ . '/coverage-report.php';
 
-register_shutdown_function(function () {
+$reqId = bin2hex(random_bytes(6));
+$logFile = APP_PATH . 'var/log/router-error.log';
+
+register_shutdown_function(function () use ($reqId, $logFile) {
+    $err = error_get_last();
+    if (!$err)
+        return;
+
+    $fatalTypes = [E_ERROR, E_PARSE, E_CORE_ERROR, E_COMPILE_ERROR];
+    if (!in_array($err['type'], $fatalTypes, true))
+        return;
+
+    $line = sprintf(
+        "[%s] FATAL %s in %s:%d\n",
+        $reqId,
+        $err['message'],
+        $err['file'],
+        $err['line']
+    );
+    @file_put_contents($logFile, $line, FILE_APPEND);
+
+    // If an API response wasn't already emitted, emit a JSON error (with req_id)
+    if (!defined('APP_EMITTED_OUTPUT') && !defined('APP_EMITTED_JSON') && !headers_sent()) {
+        http_response_code(500);
+        header('Content-Type: application/json; charset=utf-8');
+        echo json_encode(['ok' => false, 'error' => 'FATAL_ERROR', 'req_id' => $reqId]);
+    }
+
     require_once __DIR__ . '/../config/functions.php';
     //Shutdown::triggerShutdown('');  //
 
@@ -147,7 +174,7 @@ register_shutdown_function(function () {
             $error['line']
         );
 
-        error_log(date('c') . " | " . $message); // file_put_contents(APP_PATH . 'var/log/php_error.log', date('c') . " | " . $message . PHP_EOL, FILE_APPEND);
+        error_log(date('c') . " | " . $message); // file_put_contents(APP_PATH . 'var/log/php-error.log', date('c') . " | " . $message . PHP_EOL, FILE_APPEND);
         return;
     }
 

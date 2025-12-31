@@ -477,9 +477,10 @@ if (APP_ROOT !== '') {
           <a href="#"><img src="<?= htmlspecialchars($asset('assets/images/npm_icon.png'), ENT_QUOTES, 'UTF-8') ?>"
               alt="Logo" style="width: 31px; height: auto; margin: 10px 5px;"
               onclick="document.getElementById('app_npmjs-container').style.display='block'; return false;"></a>
-          <a href="#"><img src="<?= htmlspecialchars($asset('assets/images/console_icon.png'), ENT_QUOTES, 'UTF-8') ?>"
-              alt="Logo" style="width: 31px; height: auto; margin: 0 5px;"
-              onclick="isFixed = true; show_console(); return false;"></a>
+          <a href="#"
+            onclick="isFixed = true; document.getElementById('changePositionBtn')?.click(); return false;"><img
+              src="<?= htmlspecialchars($asset('assets/images/console_icon.png'), ENT_QUOTES, 'UTF-8') ?>" alt="Logo"
+              style="width: 31px; height: auto; margin: 0 5px;"></a>
 
           <a href="#" style="margin: 5px 0 0 0;"
             onclick="document.getElementById('app_tools-container').style.display='block'; return false;">

@@ -1,46 +1,23 @@
 <?php
 // api/console.php
 
-global $errors;
+global $shell_prompt, $errors;
 $output[] = 'TEST 123';
 
 if (!function_exists('cis_run_process')) {
-    function cis_run_process(string $command, ?string $cwd = null, ?array $env = null): array
-    {
-        $descriptorSpec = [
-            0 => ['pipe', 'r'],
-            1 => ['pipe', 'w'],
-            2 => ['pipe', 'w'],
-        ];
-
-        $proc = proc_open($command, $descriptorSpec, $pipes, $cwd ?: null, $env ?: null);
-
-        if (!is_resource($proc)) {
-            return [
-                'command' => $command,
-                'stdout' => '',
-                'stderr' => 'Failed to open process.',
-                'exitCode' => 1,
-            ];
-        }
-
-        fclose($pipes[0]);
-
-        $stdout = stream_get_contents($pipes[1]);
-        fclose($pipes[1]);
-
-        $stderr = stream_get_contents($pipes[2]);
-        fclose($pipes[2]);
-
-        $exitCode = proc_close($proc);
-
-        return [
-            'command' => $command,
-            'stdout' => $stdout === false ? '' : $stdout,
-            'stderr' => $stderr === false ? '' : $stderr,
-            'exitCode' => $exitCode,
-        ];
+    $candidate = APP_PATH . 'bootstrap/process.php';
+    if (is_file($candidate)) {
+        require_once $candidate;
     }
+}
+
+if (!function_exists('cis_run_process')) {
+    // Fail fast with a clear error instead of fatal
+    return [
+        'ok' => false,
+        'error' => 'MISSING_DEPENDENCY',
+        'message' => 'cis_run_process() is not loaded. Ensure api/console.php (or its defining file) is required.',
+    ];
 }
 
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
@@ -65,7 +42,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 
         $output = [];
 
-        $whoami = (stripos(PHP_OS, 'WIN') === 0 ? get_current_user() : trim(shell_exec('whoami 2>&1')));
+
         // get_current_user();
         // posix_getpwuid(posix_geteuid())['name'];
 
@@ -85,7 +62,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             } elseif (preg_match('/^path/i', $_POST['cmd'])) {
                 $output[] = realpath(APP_PATH . APP_ROOT . APP_ROOT_DIR) . DIRECTORY_SEPARATOR;
             } elseif (preg_match('/^files/i', $_POST['cmd'])) {
-                $output[] = implode(', ', get_required_files());
+                $output[] = implode(", \n", get_required_files());
             } elseif (preg_match('/^defined/i', $_POST['cmd'])) {
                 $output[] = APP_PATH . APP_ROOT . APP_ROOT_DIR; // implode(', ', TESTING);
             } elseif (preg_match('/^123testing/i', $_POST['cmd'])) {
@@ -93,7 +70,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             } elseif (preg_match('/^whoami(:?(.*))/i', $_POST['cmd'], $match)) {
 
                 // Show the command that was run (your usual style)
-                $output[] = $whoami . '@' . APP_HOST . ':' . getcwd() . '# whoami';
+                //$output[] = "{$shell_prompt}";
 
                 // Run whoami and capture output into a temp array
                 $tmp = [];
@@ -102,7 +79,9 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                 // Append the result of whoami
                 if (!empty($tmp)) {
                     foreach ($tmp as $line) {
-                        $output[] = $line;
+                        count($tmp) === 1
+                            ? $output[] = $shell_prompt . trim($line)
+                            : $output[] = $line;
                     }
                 }
 
@@ -110,6 +89,40 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                 if ($exitCode !== 0) {
                     $output[] = "Exit Code: $exitCode";
                 }
+            } else if (preg_match('/^wget(:?(.*))/i', $_POST['cmd'], $match)) {
+                /* https://stackoverflow.com/questions/9691367/how-do-i-request-a-file-but-not-save-it-with-wget */
+                // exec("wget -qO- {$match[1]} &> /dev/null", $output);
+                // exec("curl -O {$match[1]}", $output);
+
+                $url = $match[1];
+                $file = basename(parse_url($url, PHP_URL_PATH));
+
+                $fp = fopen($file, 'wb');
+
+                $ch = curl_init($url);
+                curl_setopt_array($ch, [
+                    CURLOPT_FILE => $fp,
+                    CURLOPT_FOLLOWLOCATION => true,   // like wget
+                    CURLOPT_FAILONERROR => true,   // fail on 4xx/5xx
+                    CURLOPT_TIMEOUT => 60,
+                    CURLOPT_USERAGENT => 'PHP-cURL',
+                ]);
+
+                $ok = curl_exec($ch);
+
+                if ($ok === false) {
+                    $error = curl_error($ch);
+                    curl_close($ch);
+                    fclose($fp);
+                    unlink($file);
+                    throw new RuntimeException("Download failed: $error");
+                }
+
+                curl_close($ch);
+                fclose($fp);
+
+                $output[] = "Saved as $file\n";
+
             } elseif (preg_match('/^git\s+/i', $_POST['cmd'])) {
                 require_once app_base('api', null, 'abs') . 'git.php';
 
@@ -117,7 +130,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 
                 // Show prompt
                 if (!empty($res['prompt'])) {
-                    $output[] = 'www-data@localhost:' . getcwd() . '# ' . $res['prompt'];
+                    $output[] = $shell_prompt . $res['prompt'];
                 }
 
                 foreach ($res['output'] as $line) {
@@ -164,7 +177,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                 $execCmd = 'sudo ' . $sudoArgs;
 
                 // Show prompt
-                $output[] = 'www-data@localhost:' . getcwd() . '# ' . $execCmd;
+                $output[] = "{$shell_prompt}" . $execCmd;
 
                 // Execute with proc_open (safe + captures stdout/stderr)
                 $descriptorSpec = [
@@ -224,10 +237,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         // 
 
 
-    } else if (preg_match('/^wget\s+(:?(.*))/i', $_POST['cmd'], $match))
-        /* https://stackoverflow.com/questions/9691367/how-do-i-request-a-file-but-not-save-it-with-wget */
-        exec("wget -qO- {$match[1]} &> /dev/null", $output);
-    else {
+    } else {
 
         if (!isset($GLOBALS['runtime']['socket']) || !$GLOBALS['runtime']['socket']) {
             //exec($_POST['cmd'], $output);

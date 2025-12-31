@@ -104,16 +104,16 @@ else die(var_dump($path . ' path was not found. file=npm.php'));
 <?= $selector ?> {
 
 z-index: 999;
-/* position: fixed;
+position: fixed;
 top: 35%;
 left: 50%;
 bottom: 36px;
-transform: translate(-50%, -50%);*/
+transform: translate(-50%, -50%);
 
-position : fixed;
+/*position : fixed;
 bottom : 0px;
 left : 50%;
-transform : translate(-50%, -50%);
+transform : translate(-50%, -50%);*/
 width : auto;
 /* height : 45px; */
 background-color : #FFA6A6; /* rgba(255, 0, 0, 0.35) */
@@ -465,15 +465,16 @@ ob_start(); ?>
   </div>
 
   <!-- Position toggle -->
-  <button id="changePositionBtn" type="submit" style="float: right; margin: 5px 10px 0 0;">&#9660;</button>
+  <button id="changePositionBtn" type="submit" style="float: right; margin: 5px 10px 0 0;">&#9650;</button>
 
   <!-- Output console -->
   <textarea id="responseConsole" name="responseConsole" rows="14" cols="92" spellcheck="false" readonly style="
         font-family: monospace;
         overflow-y: auto;
-        height: 40px;
+        height: 250px;
         width: 665px;
       "><?php
+      echo "$shell_prompt\n";
       //$errors->{'CONSOLE'}  = 'wtf';
       
       //dd($errors);
@@ -585,11 +586,10 @@ ob_start(); ?>
   changePositionBtn.addEventListener('click', () => {
     if (consoleContainer.style.position == 'fixed') {
       isFixed = false;
-      changePositionBtn.innerHTML = '&#9650;';
-    } else {
-
-      isFixed = !isFixed;
       changePositionBtn.innerHTML = '&#9660;';
+    } else {
+      isFixed = !isFixed;
+      changePositionBtn.innerHTML = '&#9650;';
 
     }
     //show_console();
@@ -598,96 +598,95 @@ ob_start(); ?>
   export function show_console(event) {
     const consoleContainer = document.getElementById('<?= $container_id ?>');
     const respCon = document.getElementById('responseConsole');
+    if (!consoleContainer || !respCon) return false;
 
-    //requestInput.focus();
+    const KEY_BACKTICK = '`';
+    const CODE_BACKTICK = 192;
+    const CODE_BACKSPACE = 8;
 
-    if (typeof event !== 'undefined')
-      if (event.key === '`' || event.keyCode === 192) // c||67
-        if (document.activeElement !== requestInput) {
-          // Replace the following line with your desired function
-          // If it's currently absolute, change to fixed
-          if (!isFixed) {
-            requestInput.value = '';
-            requestInput.focus();
-          }
-          event.preventDefault();
-          //show_console();
+    const isKeyEvent = !!event && typeof event === 'object' && ('key' in event || 'keyCode' in event);
+    const key = isKeyEvent ? (event.key ?? '') : '';
+    const keyCode = isKeyEvent ? (event.keyCode ?? 0) : 0;
+
+    const active = document.activeElement;
+    const inputActive = (active === requestInput);
+    const bodyActive = (active === document.body);
+
+    // ---------- Key handling (optional) ----------
+    if (isKeyEvent) {
+      // Toggle console with backtick
+      if (key === KEY_BACKTICK || keyCode === CODE_BACKTICK) {
+        event.preventDefault();
+
+        // Open & focus if not already in input
+        if (!inputActive) {
+          requestInput.value = '';
+          requestInput.focus();
         } else {
-          document.activeElement = null;
-          return false;
+          // if already focused, allow closing by toggling state
+          requestInput.blur();
         }
-      else if (event.keyCode === 8 && requestInput.value == '') {
-        if (document.activeElement === requestInput)
-          event.preventDefault();
+
+        // Toggle state and apply below
+        isFixed = !isFixed;
+      }
+
+      // Prevent "Back" navigation when input is empty
+      else if (keyCode === CODE_BACKSPACE && inputActive && requestInput.value === '') {
+        event.preventDefault();
         return false;
-      } else {
-        if (document.activeElement == document.body) {
-          // Replace the following line with your desired function
-          // If it's currently absolute, change to fixed
-          if (!isFixed) {
-            requestInput.value = event.key;
-            requestInput.focus();
-            //isFixed = true;
-            show_console();
-          } else { }
-          event.preventDefault();
-          console.log('activeElement');
-        } else {
-          document.activeElement = null;
-          console.log('else');
-          return false;
-        }
-      }
-    //isFixed = !isFixed;
-
-    if (typeof isFixed === 'undefined') {
-      //if (event !== undefined)
-      console.log('isFixed is undefined');
-    } else {
-      if (!isFixed) {
-        console.log('showing console... !isFixed');
-
-        // If it's currently fixed, change back to absolute
-        consoleContainer.style.position = 'absolute';
-        consoleContainer.style.top = '';
-        consoleContainer.style.left = '50%';
-        consoleContainer.style.right = '';
-        consoleContainer.style.bottom = '0';
-        consoleContainer.style.transform = 'translate(-50%, -50%)';
-        consoleContainer.style.textAlign = 'center';
-        consoleContainer.style.zIndex = '999';
-
-        respCon.style.height = '375px';
-
-        changePositionBtn.innerHTML = '&#9660;';
-
-        /*
-        consoleContainer.style.marginLeft = 'auto';
-        consoleContainer.style.marginRight = 'auto';
-        consoleContainer.style.textAlign = 'center';
-        consoleContainer.style.transform = 'none';
-        */
-      } else {
-        console.log('showing console... isFixed');
-
-        // If it's currently absolute, change to fixed
-        consoleContainer.style.position = 'fixed';
-        consoleContainer.style.top = '35%'; // Set the fixed position as needed
-        consoleContainer.style.left = '50%';
-        consoleContainer.style.bottom = '36px';
-        consoleContainer.style.transform = 'translate(-50%, -50%)';
-        consoleContainer.style.zIndex = '999';
-
-        respCon.style.height = '220px';
-
-        changePositionBtn.innerHTML = '&#9650;';
       }
 
+      // If typing while body focused, open console and place first char
+      else if (bodyActive && key && key.length === 1) {
+        event.preventDefault();
+
+        // Ensure console is visible/open
+        if (!isFixed) isFixed = true;
+
+        requestInput.value = key;
+        requestInput.focus();
+      }
     }
-    if (isFixed) isFixed = !isFixed;
-    //isFixed = true;
-    // Toggle the state for the next click
-    //isFixed = !isFixed;
+
+    // ---------- Apply layout ----------
+    applyConsoleLayout(consoleContainer, respCon);
+
+    return false;
+  }
+
+  function applyConsoleLayout(consoleContainer, respCon) {
+    // "isFixed === true" => fixed (smaller)
+    // "isFixed === false" => absolute (bigger)
+    if (isFixed) {
+      // Fixed mode
+      consoleContainer.style.position = 'fixed';
+      consoleContainer.style.top = '-300px';
+      consoleContainer.style.left = '50%';
+      consoleContainer.style.bottom = '360px';
+      consoleContainer.style.right = '';
+      consoleContainer.style.height = '295px';
+      consoleContainer.style.transform = 'translate(-50%, -50%)';
+      consoleContainer.style.textAlign = 'center';
+      consoleContainer.style.zIndex = '999';
+
+      respCon.style.height = '256px';
+      if (changePositionBtn) changePositionBtn.innerHTML = '&#9660;';
+    } else {
+      // Absolute mode
+      consoleContainer.style.position = 'absolute';
+      consoleContainer.style.top = '80px';
+      consoleContainer.style.left = '50%';
+      consoleContainer.style.right = '';
+      consoleContainer.style.bottom = '0px';
+      consoleContainer.style.height = '100px';
+      consoleContainer.style.transform = 'translate(-50%, -50%)';
+      consoleContainer.style.textAlign = 'center';
+      consoleContainer.style.zIndex = '999';
+
+      respCon.style.height = '375px';
+      if (changePositionBtn) changePositionBtn.innerHTML = '&#9650;';
+    }
   }
   /*
     async function runTask(name = 'startup', opts = { plain: true }) {
@@ -845,18 +844,12 @@ ob_start(); ?>
     // Check the condition before calling the show_console function
     //if (consoleContainer.style.position !== 'fixed')
     if (document.getElementById('<?= $container_id ?>').style.position != 'absolute') {
-      if (isFixed)
+      if (isFixed) {
         requestInput.focus();
-
-      //show_console();
-      if (!isFixed) {
-        isFixed = !isFixed; //isFixed = true;
+        //isFixed = false;
         //show_console();
-      } else {
-        isFixed = !isFixed; //isFixed = false;
-        show_console();
       }
-    }
+    } isFixed = true; show_console();
   });
 
   <?php if (defined('COMPOSER_1')) { ?>
@@ -889,8 +882,209 @@ ob_start(); ?>
     // document.getElementById('responseConsole').style.width = window.innerWidth - 15 + 'px';
   });
 
+  /* =========================
+   * Console Command Runner
+   * ========================= */
+  async function runConsoleLine(line) {
+    const input = String(line ?? '').trim();
+    if (!input) return { ok: true };
 
+    // 1) CLIENT/UI-FIRST (fast, no server)
+    const uiRes = await window.handleConsoleCommand?.(input);
+    if (uiRes?.ok) return uiRes;
+
+    // 2) ROUTE BY PREFIX
+    if (/^git(\s|$)/i.test(input)) {
+      return await runRemoteGit(input);     // ✅ tools/code/git pipeline
+    }
+
+    if (/^(composer|npm|node|php)(\s|$)/i.test(input)) {
+      return await runRemoteOp(input);      // ✅ generic server ops pipeline
+    }
+
+    // 3) FALLBACK (your existing console backend)
+    return await runRemoteConsole(input);
+  }
+
+  async function executeAndPrint(argv) {
+    // show prompt line (always new line)
+
+    const res = await runConsoleLine(argv);
+    prependToConsole('[DEBUG typeof res] ' + (typeof res));
+    // prependToConsole('[DEBUG res] ' + JSON.stringify(res));
+    const out = normalizeConsoleResponse(res);
+
+    if (!out.ok) {
+      prependToConsole(`[ERROR] ${out.error || 'Unknown error'}`);
+      if (out.raw) prependToConsole(out.raw);
+      return out;
+    }
+
+    if (out.prompt) prependToConsole(`<?= $shell_prompt; ?>${out.prompt}`);
+
+    if (out.result) prependToConsole(out.result);
+
+
+    prependToConsole(`<?= $shell_prompt; ?>`);
+    return out;
+  }
+
+
+  /* =========================
+   * Console Output Utilities
+   * ========================= */
+
+  function ensureNewline(s) {
+    s = String(s ?? '').replace(/\r\n/g, '\n').replace(/\r/g, '\n');
+    return s.endsWith('\n') ? s : s + '\n';
+  }
+
+  function prependToConsole(text) {
+    const el = document.getElementById('responseConsole');
+    if (!el) return;
+    el.value = ensureNewline(text) + el.value;
+  }
+
+  /* =========================
+   * Response Normalizer
+   * ========================= */
+
+  function normalizeConsoleResponse(res) {
+    // Plain string
+    if (typeof res === 'string') {
+      return { ok: true, result: res };
+    }
+
+    // Nothing usable
+    if (!res || typeof res !== 'object') {
+      return { ok: false, error: 'Empty response' };
+    }
+
+    // Preferred modern shape
+    if ('ok' in res) {
+      if (typeof res.result === 'string') return res;
+
+      if (Array.isArray(res.output)) {
+        return { ...res, result: res.output.join('\n') };
+      }
+
+      return {
+        ...res,
+        result: res.result != null ? String(res.result) : ''
+      };
+    }
+
+    // Legacy api/git.php shape
+    if ('status' in res) {
+      const ok = res.status === 'success';
+
+      const out = Array.isArray(res.output)
+        ? res.output.join('\n')
+        : String(res.output ?? '');
+
+      const err =
+        res.errors && typeof res.errors === 'object'
+          ? Object.values(res.errors).join('\n')
+          : String(res.errors ?? '');
+
+      return {
+        ...res,
+        ok,
+        result: (out + (err ? `\n\n${err}` : '')).trim(),
+        error: ok ? undefined : (err || res.message || 'Git error')
+      };
+    }
+
+    // Final fallback — never print [object Object]
+    return { ok: true, result: JSON.stringify(res, null, 2) };
+  }
+
+  /* =========================
+   * Remote Git Handler (POST)
+   * ========================= */
+
+  async function runRemoteGit(cmd) {
+    // Prefer git tool app if loaded
+    const tool = window.App?.['tools/code/git'];
+    if (tool && typeof tool.run === 'function') {
+      return await tool.run(cmd);
+    }
+
+    // API fallback
+    const base = `<?= UrlContext::getBaseHref(); ?>`;
+    const url = new URL(base, location.origin);
+    url.searchParams.set('api', 'git');
+
+    const res = await fetch(url.toString(), {
+      method: 'POST',
+      headers: {
+        'Accept': 'application/json',
+        'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8'
+      },
+      body: new URLSearchParams({ cmd })
+    });
+
+    const raw = await res.text();
+
+    console.log('[git] HTTP', res.status, 'raw:', raw);
+
+    try {
+      return JSON.parse(raw);
+    } catch {
+      return {
+        ok: false,
+        error: 'Git API returned invalid JSON',
+        raw
+      };
+    }
+  }
+
+  /* =========================
+   * Remote Console Fallback
+   * ========================= */
+
+  async function runRemoteConsole(cmd) {
+    const base = `<?= UrlContext::getBaseHref(); ?>`;
+    const url = new URL(base, location.origin);
+    url.searchParams.set('api', 'console');
+
+    const res = await fetch(url.toString(), {
+      method: 'POST',
+      headers: {
+        'Accept': 'application/json',
+        'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8'
+      },
+      body: new URLSearchParams({ cmd })
+    });
+
+    const raw = await res.text();
+    console.log('[console] HTTP', res.status, 'raw:', raw);
+
+    try {
+      return JSON.parse(raw);
+    } catch {
+      return raw;
+    }
+  }
   //requestInput.addEventListener('focus', (consoleContainer.style.position == 'absolute' ? null : show_console()));
+
+  /* =========================
+   * Submit Button Hook
+   * ========================= */
+
+  document.getElementById('requestSubmit')?.addEventListener('click', async (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+
+    const input = document.getElementById('requestInput');
+    if (!input) return;
+
+    const argv = input.value.trim();
+    if (!argv) return;
+
+    input.value = '';
+    await executeAndPrint(argv);
+  });
 
   $(document).ready(function () {
     const autoClear = $("#app_core_console-auto_clear").checked;
@@ -1075,359 +1269,30 @@ ob_start(); ?>
 
   $('#requestSubmit').href = 'javascript:void(0);';
 
-  $('#requestSubmit').click(function () {
-    let matches = null;
-    const autoClear = document.getElementById('app_core_console-auto_clear').checked;
-    console.log('autoClear is ' + autoClear);
-
-    if (!isFixed) isFixed = true;
-    //show_console();
-
-    if ($('<?= $selector ?>').css('position') != 'absolute') {
-      //window.isFixed = true;
-      //if (!window.isFixed) window.isFixed = !window.isFixed;
-
-      //if (!isFixed) isFixed = true;
-      //show_console();
-      //$('#changePositionBtn').click();
-    }
+/*
+  $('#requestSubmit').click(async function () {
     const argv = $('#requestInput').val().trim();
+    if (!argv) return;
 
-    if (argv === '') return;
+    // show prompt line
+    $('#responseConsole').val(`<?= $shell_prompt; ?>${ argv } \n` + $('#responseConsole').val());
+    $('#requestInput').val('');
 
-    const processList = document.getElementById('process-list');
-    const newProcess = document.createElement('div');
-    newProcess.classList.add('process');
-    newProcess.innerHTML = `<a href="#" onclick="deleteProcess(this)">[X]</a> ${argv}`;
+    // run through the router
+    const res = await runConsoleLine(argv);
 
-    // Add mouseover event
-    newProcess.onmouseover = function () {
-      setTimeout(() => { startScroll(newProcess); }, 3000);
-    };
-
-    setTimeout(() => {
-      if (newProcess.parentNode) { // Check if process still exists
-        newProcess.textContent = argv;
-        newProcess.onmouseover = function () {
-          startScroll(newProcess);
-        };
-        // Send post request
-        // $.post('<?= /* basename(__FILE__) .*/ '?' . $_SERVER['QUERY_STRING']; /*$projectRoot*/ ?>', { cmd: argv });
-      }
-    }, 3000);
-
-    processList.prepend(newProcess);
-
-    console.log('Argv: ' + argv);
-
-    if (autoClear) $('#responseConsole').val('<?= $shell_prompt; ?>' + argv);
-
-    let DirQueryParams = '<?= UrlContext::getBaseHref() ?>?api=console&cmd=' + encodeURIComponent(argv);
-
-    if (argv == '') $('#responseConsole').val('<?= $shell_prompt; ?>' + "\n" + $('#responseConsole').val()); // +
-    else if (matches = argv.match(/^(?:echo\s+)?(hello)\s+world/i)) { // argv == 'edit'
-      if (matches) {
-        $('#responseConsole').val(matches[1].charAt(0).toUpperCase() + matches[1].slice(1) + ' ' + 'Barry' + "\n" +
-          '<?= $shell_prompt; ?>' + argv + "\n" + $('#responseConsole').val());
-        return false;
-      } else {
-        console.log("Invalid input format.");
-      }
+    // print output (normalize)
+    if (res?.ok === false) {
+      $('#responseConsole').val(`[ERROR] ${ res.error || 'Unknown error' } \n` + $('#responseConsole').val());
+    } else if (res?.result != null) {
+      $('#responseConsole').val(String(res.result).replace(/\n*$/, '\n') + $('#responseConsole').val());
+    } else if (typeof res === 'string') {
+      $('#responseConsole').val(res.replace(/\n*$/, '\n') + $('#responseConsole').val());
     }
-    else if (matches = argv.match(/^project/i)) { // argv == 'edit'
-      if (matches) {
-        document.getElementById('app_project-container').style.display = 'block';
-        $('#responseConsole').val('Barry, here you can begin editing your project.' + "\n" + '<?= $shell_prompt; ?>' + argv + "\n" + $('#responseConsole').val());
-        changePositionBtn.click();
-        return false;
-      } else {
-        console.log("Invalid input format.");
-      }
-    } else if (matches = argv.match(/^h(?:elp)?\s+?(\S+)$/)) {
-      //$('#requestInput').val('help');
-      //$('#requestSubmit').click();
-    } else if ((matches = argv.match(/^r(?:untask\s+)?(\S+)$/))) {
-      const taskName = matches[1];
-      console.log('Running task: ' + taskName);
-      window.runTaskSequence(taskName); // NEW
-      $('#responseConsole').val(argv + "\n" + $('#responseConsole').val());
-      return false;
-    }/* else if ((matches = argv.match(/^(?:runtask\s+)?(\S+)$/))) {
-      const taskName = matches[1];
-      console.log('Running task: ' + taskName);
-      window.runTask(taskName, { plain: true });
-      $('#responseConsole').val(argv + "\n" + $('#responseConsole').val());
-      return false;
-    } */ else if (matches = argv.match(/^j(?:ava)?s(?:cript)?\s+?(\S+)$/)) {
-      // Save the original console.log function
-      var originalLog = console.log;
 
-      // Create an array to store log messages
-      var logMessages = [];
-
-      var js_prompt = 'javascript: ';
-      var codeString = matches[1]; // "console.log('Hello, world!');";
-      var myFunction = new Function(codeString);
-
-      myFunction();
-      // Override console.log to capture messages
-      console.log = function () {
-        // Save the log message to the array
-        logMessages.push(Array.from(codeString).join(' '));
-
-        $('#responseConsole').val(logMessages[1] + "\n" + js_prompt + codeString + "\n" + $('#responseConsole').val());
-
-        // Call the original console.log function
-        originalLog.apply(console, logMessages);
-        return false;
-      };
-      console.log();
-      console.log = originalLog;
-      return false;
-    } else if (matches = argv.match(/^edit\s+(\S+)$/)) { // argv == 'edit'
-      if (matches) {
-        const pathname = matches[1]; // "/path/to/file.txt"
-        console.log("Editing: ", pathname);
-
-        const filePath = pathname;
-
-        const lastSlashIndex = filePath.lastIndexOf('/');
-        const dirname = filePath.substring(0, lastSlashIndex);
-        const filename = filePath.substring(lastSlashIndex + 1);
-
-        $.post(<?= 'DirQueryParams'; /*'"app.directory.php' . '?' . $_SERVER['QUERY_STRING'] . '' ;"*/ ?>,
-{
-            cmd: argv
-          },
-          function (data, status) {
-            console.log("Data 1: " + data + "Status: " + status);
-            console.log("Web Query: " + DirQueryParams);
-            //data = data.trim(); // replace(/(\r\n|\n|\r)/gm, "")
-
-            if (matches = argv.match(/edit(\s+(:?.*)?|)/gm)) {
-              //editor1.setValue(data);
-
-              document.getElementById('app_ace_editor-container').style.display = 'block';
-              //console.log(data);
-            }
-          });
-
-        // window.location.href = '<?= APP_URL ?>?app=ace_editor&path=' + dirname + '&file=' + filename; // filename= + pathname
-        return false;
-      } else {
-        console.log("Invalid input format.");
-      }
-      return false;
-    } else if (argv == 'clear') $('#responseConsole').val('clear');
-    else if (argv == 'cls') $('#responseConsole').val('<?= $shell_prompt; ?>');
-    else if (argv == 'reset') $('#responseConsole').val('>_');
-    else {
-      if (autoClear) {
-        $('#responseConsole').val(data + argv);
-        $('#responseConsole').val('<?= $shell_prompt; ?>' + argv + "\n");
-      } else {
-        $('#responseConsole').val('<?= $shell_prompt; ?>' + argv + "\n" + $('#responseConsole').val());
-      }
-
-      // $('#requestSubmit').href = 'javascript:void(0);';
-
-      $.post(<?= 'DirQueryParams' /*'"' . basename(__FILE__). '?' . $_SERVER['QUERY_STRING']. '"' : '' */ ; ?>,
-      {
-        cmd: argv
-      },
-      function(data, status) {
-        console.log("Web Query: " + DirQueryParams);
-        console.log("Data 2: " + JSON.stringify(data) + "\n Status: " + status);
-        //console.log("Data Test: " + data + "\n Status: " + status);
-
-        $('#responseConsole').val(data.result + "\n" + $('#responseConsole').val());
-        //data = data.trim(); // replace(/(\r\n|\n|\r)/gm, "")
-
-        const gitPath = `<?= str_replace('/', '\/', defined('GIT_EXEC') ? dirname(GIT_EXEC) : ''); ?>`;
-        const gitExec = `<?= defined('GIT_EXEC') ? basename(GIT_EXEC) : ''; ?>`;
-
-        let parsed;
-        try {
-          parsed = JSON.parse(data);
-        } catch (e) {
-          console.error("Invalid JSON:", data);
-          return;
-        }
-
-        // If server returned ok:true
-        if (parsed.ok) {
-          // Split the result string into an array
-          //const items = parsed.result.split(',').map(s => s.trim());
-          // console.log(items);
-          // For example, show them in a textarea or console
-          //$('#responseConsole').val(items.join(', '));
-          $('#responseConsole').val(parsed.result + "\n" + $('#responseConsole').val());
-        } else {
-          // Handle error case
-          $('#responseConsole').val('<?= $shell_prompt; ?>Error: ' + (parsed.error || 'Unknown error') + "\n" + $('#responseConsole').val());
-        }
-
-        /* if (JSON.parse(data).hasOwnProperty('ok')) {
-          $('#responseConsole').val('<?= $shell_prompt; ?>Error: ' + JSON.parse(data).error + "\n" + $('#responseConsole').val());
-      } else {
-
-        processGitOutput(data, argv, gitPath, gitExec);
-      }*/
-
-      if (matches = argv.match(/chdir(\s+(:?.*)?|)/gm)) {
-        document.getElementById('app_directory-container').innerHTML = data;
-        //console.log(data);
-      } else if (matches = data.match(new RegExp(`((:?sudo\\s+)?(:?${gitPath}) ? ${gitExec}.*)`, 'gm'))) {
-        if (matches = data.match(/.*status.*\n+/gm)) {
-          if (matches = data.match(/.*On branch main\nYour branch is (ahead of|up to date with).*(:?by\s[0-9]+commits)?/gm)) {
-            if (matches = data.match(/.*On branch main\nYour branch is up to date with.*\n+/gm)) {
-              if (matches = data.match(/.*nothing to commit, working tree clean/gm)) {
-                //
-              }
-            }
-            if (matches = data.match(/.*nothing to commit, working tree clean/gm)) {
-              $('#requestInput').val('git push');
-              $('#requestSubmit').click();
-            } else if (matches = data.match(/.*Changes not staged for commit:/gm)) {
-              $('#requestInput').val('git add .');
-              $('#requestSubmit').click();
-              if (confirm('(Re)Check Git Status?')) {
-                // User clicked OK
-                $('#requestInput').val('git status');
-                $('#requestSubmit').click();
-              } else {
-                // User clicked Cancel
-                console.log('User clicked Cancel');
-              }
-              //
-            } else if (matches = data.match(/.*Changes to be committed:/gm)) {
-              $('#requestInput').val('git commit -am "automatic <?= date('Y-m-d h:i:s'); ?> commit"');
-              //$('#requestSubmit').click();
-            }
-          }
-          $('#responseConsole').val(data + "\n" + $('#responseConsole').val());
-        } else if (matches = data.match(/.*remote\s-v.*\n+/gm)) {
-          if (matches = data.match(/.*origin\s+(?:[a-z]+\:\/\/)?([^\s]+@)?((?:[a-z0-9\-]+\.)+[a-z]{2,6}(?:\/\S*))\s+\((fetch|push)\)/gm)) {
-            // if (matches === undefined || array.matches == 0) {
-            // array empty or does not exist
-            // }
-            $('#responseConsole').val(data + "\n" + $('#responseConsole').val());
-          } else {
-            $('#responseConsole').val(data + "\nNo URL were found." + $('#responseConsole').val());
-          }
-        } else if (matches = data.match(/.*push.*\n+/gm)) {
-          if (matches = data.match(/.*Error:.+(fatal: could not read Password for.+)\n+Exit Code:.([0-9]+)/gm)) {
-            $('#responseConsole').val('<?= $shell_prompt; ?>Wrong Password!' + "\n" + data + "\n" + $('#responseConsole').val());
-            document.getElementById('app_git-container').style.display = 'block';
-            document.getElementById('app_git-oauth').style.display = 'block';
-            document.getElementById('app_git-clone-url').style.display = 'none';
-            document.getElementById('app_git-commit-msg').style.display = 'none';
-          } else if (matches = data.match(/.*push.*\n+To.*/gm)) {
-            if (matches = data.match(/.*push.*\n+To.*\n.*!.*\[rejected\].+(\w+).+[->].+(\w+).\(fetch first\)/gm)) {
-              $('#responseConsole').val('<?= $shell_prompt; ?>Push unsuccessful. Fetch first ' + "\n" + data + "\n" +
-                $('#responseConsole').val());
-              $('#requestInput').val('git fetch origin main');
-              $('#requestSubmit').click();
-              $('#requestInput').val('git merge origin/main');
-              $('#requestSubmit').click();
-              $('#requestInput').val('git commit');
-              $('#requestSubmit').click();
-              $('#requestInput').val('git push origin main');
-              if (confirm('git push origin main?')) {
-                $('#requestSubmit').click();
-              }
-            } else if (matches = data.match(/.*push.*\n+To.*\n.*!.*\[rejected\].+(\w+).+[->].+(\w+).\(non-fast-forward\)/gm)) {
-              $('#responseConsole').val('<?= $shell_prompt; ?>Push unsuccessful. "non-fast-forward" error ' + "\n" + data + "\n" +
-                $('#responseConsole').val());
-              $('#requestInput').val('git push --force origin main');
-              if (confirm('(Force) git push origin main?')) {
-                $('#requestSubmit').click();
-              }
-            } else {
-              $('#responseConsole').val('<?= $shell_prompt; ?>Push successful' + "\n" + data + "\n" + $('#responseConsole').val());
-            }
-          } else if (matches = data.match(/.*push.*\n+Error: Everything up-to-date/gm)) {
-            $('#responseConsole').val('<?= $shell_prompt; ?>Everything up-to-date' + "\n" + data + "\n" +
-              $('#responseConsole').val());
-          } else {
-            $('#responseConsole').val('<?= $shell_prompt; ?>' + data + "\n" + $('#responseConsole').val());
-
-            if (matches = data.match(/.*push.*\n+To.*\n.*!.*\[.*rejected\].+/gm)) {
-              $('#responseConsole').val('<?= $shell_prompt; ?> Error: ... secret password may have been found.' + "\n" +
-                $('#responseConsole').val());
-            }
-          }
-        } else if (matches = data.match(/.*fetch.*\n+/gm)) {
-          if (matches = data.match(/.*Error:.+From.+\n.+\* branch.+(\w+).+[->].+(\w+)/gm)) {
-            $('#responseConsole').val('<?= $shell_prompt; ?>"non-fast-forward" error' + "\n" + data + "\n" +
-              $('#responseConsole').val());
-            $('#requestInput').val('git fetch origin main');
-            $('#requestSubmit').click();
-            if (confirm('(Re)Check Git Status?')) {
-              // User clicked OK
-              $('#requestInput').val('git status');
-              $('#requestSubmit').click();
-            } else {
-              // User clicked Cancel
-              console.log('User clicked Cancel');
-            }
-            $('#requestInput').val('git rebase origin/main');
-            $('#requestSubmit').click();
-            $('#requestInput').val('git rebase --continue');
-            $('#requestSubmit').click();
-            $('#requestInput').val('git push origin main');
-            $('#requestSubmit').click();
-          }
-        } else if (matches = data.match(/.*pull.*\n/gm)) {
-          $('#responseConsole').val(data + "\n" + $('#responseConsole').val());
-          if (matches = data.match(/.*Already up to date\./gm))
-            $('#responseConsole').val('<?= $shell_prompt; ?>Already up to date.' + "\n" + $('#responseConsole').val());
-          else if (confirm('(Re)load Window?')) {
-            // User clicked OK
-            $('#responseConsole').val('<?= $shell_prompt; ?>Reloading page (User Prompt).' + "\n" + $('#responseConsole').val());
-            window.location.reload(); // window.location.href = window.location.href;
-          } else {
-            // User clicked Cancel
-            console.log('User clicked Cancel');
-          }
-        } else if (matches = data.match(new RegExp(`.*(:?${gitPath}) ? ${gitExec}.* commit.*\\n`, 'gm'))) {
-          if (matches = data.match(/.*Error: Author identity unknown\./gm)) {
-            $('#responseConsole').val('<?= $shell_prompt; ?>Author identity unknown' + "\n" + data + "\n" +
-              $('#responseConsole').val());
-            $('#requestInput').val('git config --global user.email "barryd.it@gmail.com"');
-            $('#requestSubmit').click();
-            $('#requestInput').val('git config --global user.name "Barry Dick"');
-            $('#requestSubmit').click();
-          } else {
-            if (confirm('Git Push?')) {
-              // User clicked OK
-              $('#requestInput').val('git push');
-              $('#requestSubmit').click();
-            } else {
-              // User clicked Cancel
-              console.log('User clicked Cancel');
-            }
-          }
-          $('#responseConsole').val(data + "\n" + $('#responseConsole').val());
-        } else {
-          // $('#responseConsole').val(data + "\n" + $('#responseConsole').val());
-        }
-      } else {
-        //$('#requestInput').val(argv);
-        //$('#requestSubmit').click();
-        // $('#responseConsole').val(data + "\n" + $('#responseConsole').val());
-        //$('#responseConsole').val(data + "\n" + $('#responseConsole').val());
-      }
-      //if (!autoClear) { $('#responseConsole').val("\n" + $('#responseConsole').val()); }
-
-      //$('#requestInput').val('');
-
-      $('#responseConsole').scrollTop = $('#responseConsole').scrollHeight;
-    });
-  }
-
+    $('#responseConsole').scrollTop($('#responseConsole')[0].scrollHeight);
   });
-
+*/
   });
 
   <?php $UI_APP['script'] = ob_get_contents();

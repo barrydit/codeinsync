@@ -398,11 +398,14 @@ EOT; ?></code>
                     const el = document.getElementById('console-log');
                     if (!el) return;
                     el.textContent = "\n" + el.textContent;
+                    window.runTaskSequence('download-assets');
                     window.setTimeout(() => {
-                        window.runTaskSequence('startup');
-                        window.runTaskSequence('download-assets');
-                        //window.location.reload();
-                    }, 5000);
+                        //window.runTaskSequence('startup');
+
+                        //new Promise(resolve => setTimeout(resolve, 1000)).then(() => {
+                        window.location.reload();
+                        //});
+                    }, 2500);
 
                 });
 

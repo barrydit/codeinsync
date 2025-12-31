@@ -59,7 +59,11 @@ if (!defined('APP_CANONICAL_PRELUDE')) {
     require_once __DIR__ . '/../config/constants.url.php';
     require_once __DIR__ . '/../config/constants.app.php';
 
-    require_once __DIR__ . '/../bootstrap/head.php';
+    require_once __DIR__ . '/process.php'; // re-include to pick up any vendor-dependent values
+
+    // Head section (URL context, public FS root, etc.)
+
+    require_once __DIR__ . '/head.php';
 }
 // ─────────────────────── End canonical prelude ───────────────────────
 
@@ -83,6 +87,52 @@ if (!function_exists('app_context') || !function_exists('app_base')) {
     if (is_file($fn)) {
         require_once $fn;   // defines app_context(), app_base(), etc.
     }
+}
+
+/**
+ * True when THIS FILE is the entry script being executed by PHP (direct web hit).
+ * - Works for Apache/FPM.
+ * - Safe under your dispatcher/includes.
+ */
+function cis_is_direct_file(string $file): bool
+{
+    $script = $_SERVER['SCRIPT_FILENAME'] ?? '';
+    if ($script === '')
+        return false;
+
+    $a = realpath($script);
+    $b = realpath($file);
+
+    // If realpath fails (rare), fall back to raw compare
+    if ($a === false || $b === false) {
+        return $script === $file;
+    }
+
+    return $a === $b;
+}
+
+/**
+ * True when this request is a normal HTTP request (not CLI).
+ */
+function cis_is_http(): bool
+{
+    return php_sapi_name() !== 'cli';
+}
+
+/**
+ * Convenience: direct HTTP execution of a file.
+ */
+function cis_is_direct_http_file(string $file): bool
+{
+    return cis_is_http() && cis_is_direct_file($file);
+}
+
+/**
+ * Convenience: included/required (i.e., NOT the direct entry script).
+ */
+function cis_is_included_file(string $file): bool
+{
+    return !cis_is_direct_file($file);
 }
 
 //die(var_dump($_ENV['COMPOSER']['AUTOLOAD']));
@@ -663,15 +713,52 @@ try {
         foreach ($routes as $rx => $file) {
             if (preg_match($rx, $cmd)) {
                 $matched = true;
-                $r = require $file;
-                $res = is_array($r) ? $r : ['ok' => true, 'output' => (string) $r];
-                break;
+
+                $reqId = bin2hex(random_bytes(6)); // short request id
+
+                try {
+                    // Make the command available to the required file
+                    $_POST['cmd'] = $cmd;
+
+                    // Require the file; it should return an array response
+                    $r = require $file;
+
+                    if (is_array($r)) {
+                        // Preserve handler response and attach req_id
+                        $res = $r + ['req_id' => $reqId];
+                    } else {
+                        // Handler did not return an array (require returns 1 if no return)
+                        $res = [
+                            'ok' => false,
+                            'error' => 'HANDLER_NO_RETURN',
+                            'req_id' => $reqId,
+                            'cmd' => $cmd,
+                            'file' => $file,
+                            'returned_type' => gettype($r),
+                            'returned_value' => is_scalar($r) ? (string) $r : null,
+                        ];
+                    }
+
+                    break;
+                } catch (\Throwable $e) {
+                    error_log("[{$reqId}] INTERNAL_ERROR in {$file}: {$e->getMessage()} @ {$e->getFile()}:{$e->getLine()}");
+
+                    $res = [
+                        'ok' => false,
+                        'error' => 'INTERNAL_ERROR',
+                        'req_id' => $reqId,
+                        'cmd' => $cmd,
+                        'handler' => $file,
+                        'message' => $e->getMessage(),
+                        'file' => basename($e->getFile()),
+                        'line' => $e->getLine(),
+                    ];
+                }
             }
         }
-        if (!$matched) {
-            $res = ['ok' => false, 'error' => 'Unknown command', 'cmd' => $cmd];
-        }
+
         $emit_json($res);
+
     }
 
     // 4) Not handled (default route)
@@ -686,30 +773,33 @@ try {
     }
     //dd(APP_MODE); // dd(get_required_files());
 } catch (\Throwable $e) {
-    // unwind only what *we* started
-    if (isset($obLevel)) {
-        while (ob_get_level() > $obLevel) {
-            @ob_end_clean();
-        }
-    }
+    $logFile = APP_PATH . 'var/log/router-error.log';
+    $line = sprintf(
+        "[%s] EXCEPTION %s in %s:%d\n",
+        $reqId ?? 'noid',
+        $e->getMessage(),
+        $e->getFile(),
+        $e->getLine()
+    );
+    @file_put_contents($logFile, $line, FILE_APPEND);
 
-    // If we were handling an API/JSON request, emit a safe JSON error in non-dev
+    // (keep your existing unwind logic)
+
     $wantsJson = (($_SERVER['REQUEST_METHOD'] ?? 'GET') === 'POST')
         || (stripos($_SERVER['HTTP_ACCEPT'] ?? '', 'application/json') !== false)
         || defined('APP_EMITTED_JSON');
 
     if (defined('APP_DEBUG') && APP_DEBUG) {
-        throw $e; // let dev see full stack
+        throw $e;
     }
 
     if ($wantsJson && !headers_sent()) {
         http_response_code(500);
         header('Content-Type: application/json; charset=utf-8');
-        echo json_encode(['ok' => false, 'error' => 'INTERNAL_ERROR']);
+        echo json_encode(['ok' => false, 'error' => 'INTERNAL_ERROR', 'req_id' => $reqId ?? null]);
         exit;
     }
 
-    // non-JSON path: rethrow to your global handler
     throw $e;
 }
 

@@ -4,6 +4,22 @@ use CodeInSync\Infrastructure\Runtime\Shutdown;
 
 require_once __DIR__ . '/../config/constants.git.php';
 
+if (!function_exists('cis_run_process')) {
+    $candidate = APP_PATH . 'bootstrap/process.php'; // <-- adjust if your function lives elsewhere
+    if (is_file($candidate)) {
+        require_once $candidate;
+    }
+}
+
+if (!function_exists('cis_run_process')) {
+    // Fail fast with a clear error instead of fatal
+    return [
+        'ok' => false,
+        'error' => 'MISSING_DEPENDENCY',
+        'message' => 'cis_run_process() is not loaded. Ensure api/git.php (or its defining file) is required.',
+    ];
+}
+
 /**
  * Handle a git command string like "git status", "git commit -am 'msg'" etc.
  * Assumes cis_run_process() is defined elsewhere (e.g. in api/console.php).
@@ -71,7 +87,7 @@ END;
 
             $remoteUrl = "https://{$token}@{$parsedUrl['host']}{$parsedUrl['path']}.git";
 
-            $fullCommand = $cmd . ' ' . $remoteUrl;
+            $fullCommand = "$cmd $remoteUrl";
 
             if (
                 !isset($GLOBALS['runtime']['socket'])
@@ -117,36 +133,74 @@ END;
             }
         }
 
-        $output[] = var_export(get_required_files(), true);
+        // $output[] = var_export(get_required_files(), true);
+    }
+
+    // Build a printable result string
+    $resultText = '';
+    if (!empty($output)) {
+        $resultText .= implode("\n", array_map('strval', $output));
+    }
+    if (!empty($errors)) {
+        $errText = implode("\n", array_map('strval', is_array($errors) ? $errors : [$errors]));
+        $resultText .= ($resultText !== '' ? "\n\n" : '') . $errText;
     }
 
     return [
-        'status' => empty($errors) ? 'success' : 'error',
+        'ok' => empty($errors),
+        'api' => 'git',
         'command' => $cmd,
         'prompt' => $shellPrompt,
+        'result' => $resultText === '' ? '' : $resultText, // always string
         'output' => $output,
         'errors' => $errors,
     ];
 }
 
-// === Execution point ===
-if (
-    php_sapi_name() !== 'cli' &&
-    ($_SERVER['REQUEST_METHOD'] ?? '') === 'POST' &&
-    isset($_POST['cmd']) &&
-    realpath($_SERVER['SCRIPT_FILENAME'] ?? '') === __FILE__
-) {
-    $response = handle_git_command($_POST['cmd']);
+ob_start();
 
-    header('Content-Type: application/json');
-    echo json_encode($response, JSON_PRETTY_PRINT);
-
-    if (class_exists(Shutdown::class)) {
-        Shutdown::setEnabled(true)->shutdown();
-    }
-    exit;
+// If INCLUDED by another PHP file (dispatcher)
+if (cis_is_included_file(__FILE__)) {
+    $cmd = (string) ($_POST['cmd'] ?? '');
+    return handle_git_command($cmd);
 }
 
+// === Execution point (direct HTTP access) ===
+if (($_SERVER['REQUEST_METHOD'] ?? '') === 'POST')
+    if (cis_is_direct_http_file(__FILE__) && isset($_POST['cmd']) && is_string($_POST['cmd']) && $_POST['cmd'] !== '') {
+        $response = handle_git_command($_POST['cmd']);
+
+        $wantText = isset($_SERVER['HTTP_ACCEPT'])
+            && str_contains($_SERVER['HTTP_ACCEPT'], 'text/plain');
+
+        if ($wantText) {
+            header('Content-Type: text/plain; charset=utf-8');
+            echo $response['prompt'] . "\n" . $response['result'] . "\n";
+            exit;
+        }
+
+        header('Content-Type: application/json; charset=utf-8');
+        header('Cache-Control: no-store');
+
+        echo json_encode(
+            $response,
+            JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE
+        );
+
+        if (class_exists(Shutdown::class)) {
+            Shutdown::setEnabled(true)->shutdown();
+        }
+
+        exit;
+    }
+
+// Optional: if directly hit without cmd
+if (cis_is_direct_http_file(__FILE__)) {
+    http_response_code(400);
+    header('Content-Type: application/json; charset=utf-8');
+    echo json_encode(['ok' => false, 'error' => 'Missing cmd']);
+    exit;
+}
 /*
 if (isset($_SERVER['REQUEST_METHOD']) && $_SERVER['REQUEST_METHOD'] === 'POST')
 

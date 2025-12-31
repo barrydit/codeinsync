@@ -1379,8 +1379,59 @@ ob_start(); ?>
           forceReload: true,
           from: 'dir-click'
         });
+
         return false;
       }
+
+
+      // ------------------------------
+      // Global handlers (console bridge)
+      // ------------------------------
+      window.handleClick = async (path) => {
+        // normalize a bit so console inputs are predictable
+        const p = (path ?? '').toString().trim();
+        return handleClick(p);
+      };
+
+      /**
+       * Console command bridge.
+       * Your app/core/console should call this when user presses Enter.
+       *
+       * Supported:
+       *   chdir
+       *   chdir /
+       *   chdir foo/bar
+       *   cd foo/bar   (alias)
+       */
+      window.handleConsoleCommand = async (line) => {
+        try {
+          const input = (line ?? '').toString().trim();
+          if (!input) return { ok: true };
+
+          // split "cmd args..." preserving the rest as one arg string
+          const m = input.match(/^(\S+)(?:\s+(.*))?$/);
+          if (!m) return { ok: true };
+
+          const cmd = (m[1] || '').toLowerCase();
+          const argRaw = (m[2] || '').trim();
+
+          if (cmd === 'chdir' || cmd === 'cd') {
+            // If no arg => go to root (or you can choose "keep current")
+            const next = argRaw || '/';
+
+            // this will refresh directory app + update URL/state
+            await window.handleClick(next);
+
+            return { ok: true, action: 'chdir', path: next };
+          }
+
+          // Not ours; let the console handle other commands
+          return { ok: false, reason: 'unhandled' };
+        } catch (err) {
+          return { ok: false, error: String(err?.message || err) };
+        }
+      };
+
       function updateUrlParam(url, key, value) {
         // undefined → do not touch this key at all
         if (value === undefined) {

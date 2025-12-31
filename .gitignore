@@ -55,7 +55,7 @@ package-lock.json
 # -----------------------------
 # Logs & PIDs
 # -----------------------------
-/var/log/php_error.log
+/var/log/php-error.log
 /server.log
 /server.pid
 

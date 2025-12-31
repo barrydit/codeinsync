@@ -32,16 +32,9 @@ defined('CONFIG_PATH') || define('CONFIG_PATH', APP_PATH . 'config' . DIRECTORY_
 // 0) One-time guard
 // ─────────────────────────────────────────────────────────────────────────────
 
-// Define WWW_PATH (public web root) if not already defined
-if (!defined('WWW_PATH'))
-    // Adjust to your project layout
-    define('WWW_PATH', APP_PATH . 'public/');
 
 if (defined('BASE_PATH') && BASE_PATH !== BOOTSTRAP_PATH)
     trigger_error('BASE_PATH differs from BOOTSTRAP_PATH; confirm intended semantics.', E_USER_NOTICE);
-
-// A. EARLY: PHP ini + sane defaults (no env required)
-require_once __DIR__ . '/php-ini.php';  // error_reporting, timezone, mb_internal_encoding, etc.
 
 // --- Minimal env/
 // Error reporting (adjust as needed)
@@ -49,14 +42,25 @@ require_once __DIR__ . '/php-ini.php';  // error_reporting, timezone, mb_interna
 //ini_set('display_errors', APP_DEBUG ? '1' : '0');
 //ini_set('log_errors', '1');
 
-// B. Minimal path constants (no env dependence)
+// A. Minimal path constants (no env dependence)
 require_once __DIR__ . '/../config/constants.paths.php'; // defines APP_PATH, CONFIG_PATH, VENDOR_PATH, etc.
 
-// C. Functions / classes used by env/runtime
+// B. Functions / classes used by env/runtime
 require_once __DIR__ . '/../config/functions.php';
 
-// D. Load ENV (sections, typed)
+// C. Load ENV (sections, typed)
 require_once __DIR__ . '/../config/constants.env.php';   // vendor-free
+
+// D. EARLY: PHP ini + sane defaults (env required)
+require_once __DIR__ . '/php-ini.php';  // error_reporting, timezone, mb_internal_encoding, etc.
+
+// Define WWW_PATH (public web root) if not already defined
+if (!defined('WWW_PATH'))
+    // Adjust to your project layout
+    define('WWW_PATH', APP_PATH . APP_PUBLIC . '/');
+
+// Define shell prompt (used by console API)
+$shell_prompt = (string) ((stripos(PHP_OS, 'WIN') === 0 ? get_current_user() : trim(shell_exec('whoami 2>&1'))) ?? $_ENV['APACHE']['USER']) . '@' . ($_ENV['APACHE']['SERVER']) . ':' . (!getcwd() ?: rtrim(APP_PATH, '/')) . (!isset($_GET['path']) ? '' : rtrim(ltrim($_GET['path'], '/'), '/')) . '# '; // e.g., "user@server:/path/to/app# "
 
 // ---- Single autoloader include (custom or Composer) ------------------------
 $composerAutoload = __DIR__ . '/../vendor/autoload.php';

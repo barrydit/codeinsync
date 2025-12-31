@@ -183,7 +183,7 @@ defined('GIT_LATEST') or define('GIT_LATEST', GIT_VERSION);
 </div>
 <div id="" class="window-body"
   class="<?= __FILE__ == get_required_files()[0] || isset($_GET['app']) && $_GET['app'] == 'git' || isset($errors['GIT_UPDATE']) ? 'selected' : (version_compare(GIT_LATEST, GIT_VERSION, '>') != 0 ? (isset($_GET['app']) && $_GET['app'] != 'git' ? '' : '') : '') ?>"
-  style="position: relative; z-index: 3; width: 200px; background-color: rgba(255,255,255,0.8); padding: 10px;">
+  style="position: relative; z-index: 3; width: 425px; background-color: rgba(255,255,255,0.8); padding: 10px;">
   <?php if (git_origin_sha_update() != $_ENV['GITHUB']['REMOTE_SHA']) { ?>
     <div
       style="position: absolute; left: 150px; top: 80px; padding-top: 20px; display: block; border: 1px dashed #000; width: 150px; height: 50px; text-align: center; font-weight: bold; z-index: 200; background-color: rgb(255,255,255,.75);"">
@@ -884,7 +884,7 @@ ob_start(); ?>
     <style type="text/tailwindcss">
       <?= $UI_APP['style'] ?? '' ?>
 
-                                                        </style>
+                                                          </style>
   </head>
 
   <body>
