@@ -54,13 +54,13 @@ if (!defined('APP_RUNNING') || APP_MODE !== 'web') {
     throw new LogicException('kernel.php requires APP_MODE=web after bootstrap.');
 }
 
-require_once __DIR__ . '/../config/config.php';
+require_once dirname(__DIR__) . '/config/config.php';
 
-require_once __DIR__ . '/../config/auth.php';
+require_once dirname(__DIR__) . '/config/auth.php';
 
 //defined('APP_RUNTIME_READY') || define('APP_RUNTIME_READY', 1);
 
-require_once __DIR__ . '/../config/constants.exec.php';
+require_once dirname(__DIR__) . '/config/constants.exec.php';
 //defined('APP_EXEC_READY') || define('APP_EXEC_READY', 1);
 
 // Register custom error and exception handlers
@@ -160,7 +160,7 @@ register_shutdown_function(function () use ($reqId, $logFile) {
         echo json_encode(['ok' => false, 'error' => 'FATAL_ERROR', 'req_id' => $reqId]);
     }
 
-    require_once __DIR__ . '/../config/functions.php';
+    require_once dirname(__DIR__) . '/config/functions.php';
     //Shutdown::triggerShutdown('');  //
 
     //if (!empty($_ENV))

@@ -8,6 +8,18 @@ use CodeInSync\Infrastructure\Socket\Exception\SocketException;
 
 // Ensure this file is loaded and php.php is not yet loaded
 //require_once dirname(__DIR__, 1) . DIRECTORY_SEPARATOR . 'runtime' . DIRECTORY_SEPARATOR . 'php.php';
+/*
+use function {
+    defined, define, fsockopen, fclose, fwrite, feof,
+    fgets, is_resource, shell_exec, stripos, strtoupper,
+    substr, tempnam, trim, is_file, is_executable, file_put_contents,
+    file_exists, posix_kill, unlink, chdir, realpath, pclose, popen,
+    set_error_handler, restore_error_handler, error_log,
+};*/
+
+use const DIRECTORY_SEPARATOR;
+use const PHP_OS;
+use const PHP_EOL;
 
 /**
  * Summary of Sockets
@@ -27,8 +39,8 @@ final class Sockets
     public function __construct(Logger $logger)
     {
         require_once dirname(__DIR__, 1) . DIRECTORY_SEPARATOR . 'config' . DIRECTORY_SEPARATOR . 'constants.url.php';
-        defined('SERVER_HOST') or define('SERVER_HOST', 'localhost' ?? '0.0.0.0');
-        defined('SERVER_PORT') or define('SERVER_PORT', 9000); // 8080
+        \defined('SERVER_HOST') or define('SERVER_HOST', 'localhost' ?? '0.0.0.0');
+        \defined('SERVER_PORT') or define('SERVER_PORT', 9000); // 8080
         try {
             self::$logger = $logger; // Initialize logger with verbose mode
             self::$socket = $this->openSocket(SERVER_HOST, SERVER_PORT);
@@ -140,7 +152,7 @@ final class Sockets
 
     public static function handleSocketConnection($start = false)
     {
-        // if (is_file($pid_file = (!defined('APP_PATH') ? __DIR__ . DIRECTORY_SEPARATOR : APP_PATH ) . 'server.pid')) {}
+        // if (is_file($pid_file = (!\defined('APP_PATH') ? __DIR__ . DIRECTORY_SEPARATOR : APP_PATH ) . 'server.pid')) {}
         if (strtoupper(substr(PHP_OS, 0, 3)) === 'WIN') {
             Sockets::handleWindowsSocketConnection();
         } elseif (stripos(PHP_OS, 'LIN') === 0) {
@@ -156,8 +168,8 @@ final class Sockets
     public static function handleLinuxSocketConnection($start = false)
     {
         require_once dirname(__DIR__, 1) . DIRECTORY_SEPARATOR . 'config' . DIRECTORY_SEPARATOR . 'constants.runtime.php';
-        $pidFile = (defined('APP_PATH') ? APP_PATH : dirname(__DIR__) . DIRECTORY_SEPARATOR) . 'server.pid';
-        $serverExec = defined('APP_PATH_SERVER') ? APP_PATH_SERVER : dirname(__DIR__) . DIRECTORY_SEPARATOR . 'server.php';
+        $pidFile = (\defined('APP_PATH') ? APP_PATH : dirname(__DIR__) . DIRECTORY_SEPARATOR) . 'server.pid';
+        $serverExec = \defined('APP_PATH_SERVER') ? APP_PATH_SERVER : dirname(__DIR__) . DIRECTORY_SEPARATOR . 'server.php';
         $phpExec = /*APP_SUDO . '-u root ' .*/ PHP_EXEC ?? 'php';
         $temp = tempnam('/tmp', 'server');
         $sudo = 'sudo -u root ';
@@ -262,7 +274,7 @@ END
 
     public static function handleWindowsSocketConnection()
     {
-        $pidFile = (defined('APP_PATH') ? APP_PATH : dirname(__DIR__) . DIRECTORY_SEPARATOR) . 'server.pid';
+        $pidFile = (\defined('APP_PATH') ? APP_PATH : dirname(__DIR__) . DIRECTORY_SEPARATOR) . 'server.pid';
         if (file_exists($pidFile)) {
             $pid = file_get_contents($pidFile);
             exec("tasklist /FI \"PID eq $pid\" 2>NUL | find /I \"$pid\" >NUL", $output, $status);

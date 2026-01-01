@@ -1,7 +1,7 @@
 <?php
 
 if (!defined('APP_PATH')) {
-  define('APP_PATH', rtrim(realpath(__DIR__ . '/../'), '/\\') . DIRECTORY_SEPARATOR);
+  define('APP_PATH', rtrim(realpath(dirname(__DIR__)), '/\\') . DIRECTORY_SEPARATOR);
 }
 if (!defined('APP_ROOT')) {
   define('APP_ROOT', '');
@@ -46,7 +46,7 @@ $data_attrs = sprintf(
 if (isset($_GET['app'], $_GET['graph']) && $_GET['app'] === 'visual/nodes') {
   // Ensure APP_PATH/APP_ROOT exist (safe defaults)
   if (!defined('APP_PATH'))
-    define('APP_PATH', rtrim(realpath(__DIR__ . '/../'), '/\\') . DIRECTORY_SEPARATOR);
+    define('APP_PATH', rtrim(realpath(dirname(__DIR__)), '/\\') . DIRECTORY_SEPARATOR);
   if (!defined('APP_ROOT'))
     define('APP_ROOT', '');
 

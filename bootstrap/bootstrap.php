@@ -32,7 +32,6 @@ defined('CONFIG_PATH') || define('CONFIG_PATH', APP_PATH . 'config' . DIRECTORY_
 // 0) One-time guard
 // ─────────────────────────────────────────────────────────────────────────────
 
-
 if (defined('BASE_PATH') && BASE_PATH !== BOOTSTRAP_PATH)
     trigger_error('BASE_PATH differs from BOOTSTRAP_PATH; confirm intended semantics.', E_USER_NOTICE);
 
@@ -43,13 +42,13 @@ if (defined('BASE_PATH') && BASE_PATH !== BOOTSTRAP_PATH)
 //ini_set('log_errors', '1');
 
 // A. Minimal path constants (no env dependence)
-require_once __DIR__ . '/../config/constants.paths.php'; // defines APP_PATH, CONFIG_PATH, VENDOR_PATH, etc.
+require_once dirname(__DIR__) . '/config/constants.paths.php'; // defines APP_PATH, CONFIG_PATH, VENDOR_PATH, etc.
 
 // B. Functions / classes used by env/runtime
-require_once __DIR__ . '/../config/functions.php';
+require_once dirname(__DIR__) . '/config/functions.php';
 
 // C. Load ENV (sections, typed)
-require_once __DIR__ . '/../config/constants.env.php';   // vendor-free
+require_once dirname(__DIR__) . '/config/constants.env.php';   // vendor-free
 
 // D. EARLY: PHP ini + sane defaults (env required)
 require_once __DIR__ . '/php-ini.php';  // error_reporting, timezone, mb_internal_encoding, etc.
@@ -59,20 +58,17 @@ if (!defined('WWW_PATH'))
     // Adjust to your project layout
     define('WWW_PATH', APP_PATH . APP_PUBLIC . '/');
 
-// Define shell prompt (used by console API)
-$shell_prompt = (string) ((stripos(PHP_OS, 'WIN') === 0 ? get_current_user() : trim(shell_exec('whoami 2>&1'))) ?? $_ENV['APACHE']['USER']) . '@' . ($_ENV['APACHE']['SERVER']) . ':' . (!getcwd() ?: rtrim(APP_PATH, '/')) . (!isset($_GET['path']) ? '' : rtrim(ltrim($_GET['path'], '/'), '/')) . '# '; // e.g., "user@server:/path/to/app# "
-
 // ---- Single autoloader include (custom or Composer) ------------------------
-$composerAutoload = __DIR__ . '/../vendor/autoload.php';
+$composerAutoload = dirname(__DIR__) . '/vendor/autoload.php';
 $autoloadFlag = ($_ENV['COMPOSER']['AUTOLOAD'] ?? true) !== false; // default true if unset
 if ($autoloadFlag && is_file($composerAutoload)) {
     require_once $composerAutoload;
 }
 
 // E. Now runtime/url/app that may depend on ENV
-require_once __DIR__ . '/../config/constants.runtime.php';
-require_once __DIR__ . '/../config/constants.url.php';
-require_once __DIR__ . '/../config/constants.app.php';
+require_once dirname(__DIR__) . '/config/constants.runtime.php';
+require_once dirname(__DIR__) . '/config/constants.url.php';
+require_once dirname(__DIR__) . '/config/constants.app.php';
 
 // Mark the app as ready/running exactly once
 defined('APP_RUNNING') || define('APP_RUNNING', true);
@@ -131,6 +127,10 @@ if (!defined('APP_MODE')) {
     }
 }
 
+// [Optional] normalize CWD once (only if your code depends on it)
+if (!@chdir(APP_PATH))
+    throw new RuntimeException("Failed to chdir() to APP_PATH: " . APP_PATH);
+
 // --- route by mode (do not emit HTML before this switch) ---
 switch (APP_MODE) {
     case 'dispatcher':
@@ -176,10 +176,6 @@ switch (APP_MODE) {
 // (web request, or CLI)
 
 // --- end fast-path ---------------------------------------------------------
-
-// [Optional] normalize CWD once (only if your code depends on it)
-if (!@chdir(APP_PATH))
-    throw new RuntimeException("Failed to chdir() to APP_PATH: " . APP_PATH);
 
 defined('APP_CWD') || define('APP_CWD', getcwd());
 

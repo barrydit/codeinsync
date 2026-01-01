@@ -6,7 +6,7 @@ const IS_CLIENT = true;
 const IS_DEVELOPER = false;
 
 // If you need coverage, keep it — but ensure it prints NOTHING.
-require_once __DIR__ . '/../bootstrap/coverage-bootstrap.php';
+require_once dirname(__DIR__) . '/bootstrap/coverage-bootstrap.php';
 
 // Hint dispatcher early for fragments/JSON
 if (!defined('APP_MODE') && (isset($_GET['part']) || isset($_GET['json']))) {
@@ -14,7 +14,7 @@ if (!defined('APP_MODE') && (isset($_GET['part']) || isset($_GET['json']))) {
 }
 
 // Minimal bootstrap (it will load php-ini, functions, constants, etc.)
-require_once __DIR__ . '/../bootstrap/bootstrap.php';
+require_once dirname(__DIR__) . '/bootstrap/bootstrap.php';
 
 // auth_require();
 

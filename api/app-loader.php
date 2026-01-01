@@ -1,6 +1,6 @@
 <?php
 $app = preg_replace('/[^a-z0-9_.]/i', '', $_GET['app'] ?? '');
-$appFile = __DIR__ . '/../app/' . $app . '.php';
+$appFile = dirname(__DIR__) . '/app/' . $app . '.php';
 
 if (!file_exists($appFile)) {
     http_response_code(404);

@@ -13,8 +13,8 @@ if (!class_exists(\CodeInSync\Infrastructure\Socket\Sockets::class)) {
 }
 
 if (PHP_SAPI !== 'cli' || (defined('FORCE_SOCKET') && FORCE_SOCKET)) {
-    require_once __DIR__ . '/../bootstrap/bootstrap.cli.php';
-    //require_once __DIR__ . '/../classes/class.sockets.php';
+    require_once dirname(__DIR__) . '/bootstrap/bootstrap.cli.php';
+    //require_once dirname(__DIR__) . '/classes/class.sockets.php';
 
     if (!Registry::has('logger')) {
         Registry::set('logger', new Logger());

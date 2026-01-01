@@ -1,10 +1,18 @@
 <?php
+declare(strict_types=1);
 // config/constants.git.php
 // Git-related constants and configurations
 // https://techglimpse.com/git-push-github-token-based-passwordless/
 // git push https://<GITHUB_ACCESS_TOKEN>@github.com/<GITHUB_USERNAME>/<REPOSITORY_NAME>.git
 //if ($path = realpath((basename(__DIR__) != 'config' ? NULL : __DIR__ . DIRECTORY_SEPARATOR) . 'constants.paths.php'))
 //  require_once $path;
+
+use CodeInSync\Infrastructure\Dom\DomHelpers;
+
+if (!class_exists(DomHelpers::class)) {
+    require APP_PATH . 'src/Infrastructure/Dom/DomHelpers.php';
+    @class_alias(DomHelpers::class, 'DomHelpers');
+}
 
 global $shell_prompt, $errors;
 
@@ -258,12 +266,12 @@ if (is_file($path . 'git-scm.com.html')) {
 }
 
 libxml_use_internal_errors(true); // Prevent HTML errors from displaying
-$doc = new DOMDocument(1.0, 'utf-8');
+$doc = new DOMDocument('1.0', 'utf-8');
 $doc->loadHTML(file_get_contents($path . 'git-scm.com.html'));
 
 $content_node = $doc->getElementById("main");
 
-$node = getElementsByClass($content_node, 'span', 'version');
+$node = DomHelpers::getElementsByClass($content_node, 'span', 'version');
 
 //$xpath = new DOMXpath($doc); //$xpath->query('//p [contains (@class, "latest")]');
 //dd($xpath);

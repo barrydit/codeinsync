@@ -816,7 +816,7 @@ ob_start(); ?>
       @chdir(dirname(__DIR__)); // go up from /public to project root
     }
 
-    $bootstrap = __DIR__ . '/../bootstrap/bootstrap.php';
+    $bootstrap = dirname(__DIR__) . '/bootstrap/bootstrap.php';
     if (is_file($bootstrap)) {
       require_once $bootstrap;
     }

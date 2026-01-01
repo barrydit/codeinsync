@@ -1,11 +1,23 @@
 <?php
 declare(strict_types=1);
+use CodeInSync\Infrastructure\Dom\DomHelpers;
 /**
  * constants.runtime.php
  *
  * Runtime and environment state detection.
  * Assumes APP_PATH and APP_BASE are defined.
  */
+
+if (!class_exists(DomHelpers::class)) {
+    require APP_PATH . 'src/Infrastructure/Dom/DomHelpers.php';
+    @class_alias(DomHelpers::class, 'DomHelpers');
+}
+
+/*
+use function CodeInSync\Infrastructure\Dom\getElementsByClass;
+if (!function_exists('CodeInSync\\Infrastructure\\Dom\\getElementsByClass')) {
+    require_once APP_PATH . 'src/Infrastructure/Dom/DomHelpers.php';
+}*/
 
 // Sensible defaults
 ini_set('assert.exception', '1');
@@ -263,9 +275,8 @@ unset($client, $domain, $project, $path, $hasClient, $hasDomain, $hasProject, $h
 // Ensure var directory exists
 $varDir = app_base('var');
 
-if (!is_dir($varDir)) {
+if (!is_dir($varDir))
     mkdir($varDir, 0755, true);
-}
 
 $cacheFile = "{$varDir}getcomposer.org.html";
 $url = 'https://getcomposer.org/';
@@ -292,26 +303,13 @@ if ($needsUpdate) {
 
 // Parse the cached HTML
 
-if (!function_exists('getElementsByClass')) {
-    function getElementsByClass($node, $tagName, $className)
-    {
-        $elements = [];
-        foreach ($node->getElementsByTagName($tagName) as $el) {
-            if (in_array($className, explode(' ', $el->getAttribute('class')))) {
-                $elements[] = $el;
-            }
-        }
-        return $elements;
-    }
-}
-
 if (is_file($cacheFile)) {
     libxml_use_internal_errors(true);
     $doc = new DOMDocument('1.0', 'utf-8');
     $doc->loadHTML(file_get_contents($cacheFile));
 
     if ($main = $doc->getElementById("main")) {
-        $nodes = getElementsByClass($main, 'p', 'latest');
+        $nodes = DomHelpers::getElementsByClass($main, 'p', 'latest');
         if (!empty($nodes)) {
             $pattern = '/Latest: (\d+\.\d+\.\d+) \(\w+\)/';
             if (preg_match($pattern, $nodes[0]->nodeValue, $matches)) {

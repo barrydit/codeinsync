@@ -1,5 +1,5 @@
 <?php
-require_once '../bootstrap/bootstrap.php'; // if needed
+require_once dirname(__DIR__) . '/bootstrap/bootstrap.php'; // if needed
 
 // TODO: validate & sanitize $_GET['path'] so it's inside allowed dirs
 $path = $_GET['path'] ?? '';

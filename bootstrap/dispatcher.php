@@ -39,25 +39,25 @@ if (!defined('APP_CANONICAL_PRELUDE')) {
         define('VENDOR_PATH', APP_PATH . 'vendor/');
 
     // Helpers first — MUST be vendor-free
-    require_once __DIR__ . '/../config/functions.php';
+    require_once dirname(__DIR__) . '/config/functions.php';
 
     // Minimal constants (vendor-free)
-    require_once __DIR__ . '/../config/constants.env.php';
-    require_once __DIR__ . '/../config/constants.paths.php';
+    require_once dirname(__DIR__) . '/config/constants.env.php';
+    require_once dirname(__DIR__) . '/config/constants.paths.php';
 
     // php.ini tweaks BEFORE vendor/autoload
     require_once __DIR__ . '/php-ini.php';
 
     // Composer autoload (guarded by env)
     $autoloadFlag = (($_ENV['COMPOSER']['AUTOLOAD'] ?? true) !== false);
-    $autoloadFile = __DIR__ . '/../vendor/autoload.php';
+    $autoloadFile = dirname(__DIR__) . '/vendor/autoload.php';
     if ($autoloadFlag && is_file($autoloadFile))
         require_once $autoloadFile;
 
     // Remaining constants (may use vendor)
-    require_once __DIR__ . '/../config/constants.runtime.php';
-    require_once __DIR__ . '/../config/constants.url.php';
-    require_once __DIR__ . '/../config/constants.app.php';
+    require_once dirname(__DIR__) . '/config/constants.runtime.php';
+    require_once dirname(__DIR__) . '/config/constants.url.php';
+    require_once dirname(__DIR__) . '/config/constants.app.php';
 
     require_once __DIR__ . '/process.php'; // re-include to pick up any vendor-dependent values
 
@@ -137,7 +137,7 @@ function cis_is_included_file(string $file): bool
 
 //die(var_dump($_ENV['COMPOSER']['AUTOLOAD']));
 // Optional: single autoloader (cheap if already loaded)
-$autoload = __DIR__ . '/../vendor/autoload.php';
+$autoload = dirname(__DIR__) . '/vendor/autoload.php';
 if (is_file($autoload) && isset($_ENV['COMPOSER']['AUTOLOAD']) && $_ENV['COMPOSER']['AUTOLOAD'] === TRUE)
     //if (!class_exists('Composer\Autoload\ClassLoader', false))
     require_once $autoload;

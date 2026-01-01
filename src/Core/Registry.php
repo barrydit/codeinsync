@@ -1,6 +1,11 @@
 <?php
 namespace CodeInSync\Core;
 
+/*
+use function {
+    array_key_exists, is_array
+};*/
+
 /**
  * Simple Registry class for storing and retrieving application-wide settings.
  * This is a basic implementation and can be extended as needed.
@@ -30,7 +35,7 @@ class Registry
      */
     public static function has(string $key): bool
     {
-        return array_key_exists($key, self::$store);
+        return \array_key_exists($key, self::$store);
     }
 
     /**
@@ -39,7 +44,7 @@ class Registry
      */
     public static function push(string $key, mixed $value): void
     {
-        if (!isset(self::$store[$key]) || !is_array(self::$store[$key])) {
+        if (!isset(self::$store[$key]) || !\is_array(self::$store[$key])) {
             self::$store[$key] = [];
         }
         self::$store[$key][] = $value;

@@ -12,8 +12,8 @@ if (!class_exists(\CodeInSync\Infrastructure\Runtime\Shutdown::class)) {
 //  require_once __DIR__ . DIRECTORY_SEPARATOR . '../classes/class.shutdown.php';
 
 // Helpers first — MUST be vendor-free 
-//require_once __DIR__ . '/../classes/class.pathutils.php';
-//require_once __DIR__ . '/../classes/class.queryurl.php';
+//require_once dirname(__DIR__) . '/classes/class.pathutils.php';
+//require_once dirname(__DIR__) . '/classes/class.queryurl.php';
 
 /**/
 function get_str(string $k): ?string

@@ -1,7 +1,23 @@
 <?php
 // api/console.php
+declare(strict_types=1);
 
-global $shell_prompt, $errors;
+use CodeInSync\Infrastructure\Console\ShellPrompt;
+
+if (!class_exists(ShellPrompt::class)) {
+    require APP_PATH . 'src/Infrastructure/Console/ShellPrompt.php';
+    @class_alias(ShellPrompt::class, 'ShellPrompt');
+}
+
+if (!defined('APP_PATH'))
+    define('APP_PATH', dirname(__DIR__, 2) . DIRECTORY_SEPARATOR);
+
+//if (!defined('SHELL_PROMPT'))
+//    define('SHELL_PROMPT', ShellPrompt::build());
+
+$shell_prompt = ShellPrompt::build();
+
+global $errors;
 $output[] = 'TEST 123';
 
 if (!function_exists('cis_run_process')) {
@@ -77,18 +93,18 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                 exec('whoami 2>&1', $tmp, $exitCode);
 
                 // Append the result of whoami
-                if (!empty($tmp)) {
+                if (!empty($tmp))
                     foreach ($tmp as $line) {
                         count($tmp) === 1
                             ? $output[] = $shell_prompt . trim($line)
                             : $output[] = $line;
                     }
-                }
+
 
                 // Exit code if not zero
-                if ($exitCode !== 0) {
+                if ($exitCode !== 0)
                     $output[] = "Exit Code: $exitCode";
-                }
+
             } else if (preg_match('/^wget(:?(.*))/i', $_POST['cmd'], $match)) {
                 /* https://stackoverflow.com/questions/9691367/how-do-i-request-a-file-but-not-save-it-with-wget */
                 // exec("wget -qO- {$match[1]} &> /dev/null", $output);

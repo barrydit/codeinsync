@@ -1,8 +1,14 @@
 <?php
 // api/git.php
 use CodeInSync\Infrastructure\Runtime\Shutdown;
+use function CodeInSync\Infrastructure\Git\handle_git_command;
 
-require_once __DIR__ . '/../config/constants.git.php';
+if (!class_exists(\CodeInSync\Infrastructure\Git\GitManager::class)) {
+    require APP_PATH . 'src/Infrastructure/Git/GitManager.php';
+    @class_alias(\CodeInSync\Infrastructure\Git\GitManager::class, 'GitManager');
+}
+
+require_once dirname(__DIR__) . '/config/constants.git.php';
 
 if (!function_exists('cis_run_process')) {
     $candidate = APP_PATH . 'bootstrap/process.php'; // <-- adjust if your function lives elsewhere
@@ -24,6 +30,7 @@ if (!function_exists('cis_run_process')) {
  * Handle a git command string like "git status", "git commit -am 'msg'" etc.
  * Assumes cis_run_process() is defined elsewhere (e.g. in api/console.php).
  */
+/*
 function handle_git_command(string $cmd): array
 {
     $output = [];
@@ -52,7 +59,7 @@ function handle_git_command(string $cmd): array
         $gitCmd
     );
 
-    $shellPrompt = '$ ' . $fullCommand;
+    $shellPrompt = "\$ $fullCommand";
 
     // ── Special: help ───────────────────────────
     if (preg_match('/^help\b/i', $gitCmd)) {
@@ -155,7 +162,7 @@ END;
         'output' => $output,
         'errors' => $errors,
     ];
-}
+}*/
 
 ob_start();
 

@@ -11,7 +11,7 @@ if (isset($_GET['app']) && !isset($_GET['json']))
 // - string => we echo as-is (HTML/text)
 // - false/null/other => 404-ish
 const APP_MODE = 'dispatcher'; // anything !== 'web' triggers the gate
-$handled = require __DIR__ . '/../bootstrap/bootstrap.php';
+$handled = require dirname(__DIR__) . '/bootstrap/bootstrap.php';
 
 if ($handled === true)
     exit; // fully handled (output already sent)
@@ -33,7 +33,7 @@ function capture(callable $fn): string
 // For debugging: see what actually got loaded
 
 $contents = capture(function () {
-    $maybeCallable = require __DIR__ . '/../bootstrap/dispatcher.php';
+    $maybeCallable = require dirname(__DIR__) . '/bootstrap/dispatcher.php';
     if (is_callable($maybeCallable)) {
         $maybeCallable();
     }

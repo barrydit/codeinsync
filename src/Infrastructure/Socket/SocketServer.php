@@ -152,7 +152,7 @@ final class SocketServer
                     continue;
                 }
                 $resp = $this->dispatchCommand(trim($line));
-                @fwrite($sock, $resp . "\n");
+                @fwrite($sock, "$resp\n");
             }
         }
     }

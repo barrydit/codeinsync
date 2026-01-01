@@ -1,18 +1,49 @@
 <?php
 // app/core/console.php
+declare(strict_types=1);
 
-defined('APP_PATH') || define('APP_PATH', dirname(__DIR__, 3) . DIRECTORY_SEPARATOR);
-defined('CONFIG_PATH') || define('CONFIG_PATH', APP_PATH . 'config' . DIRECTORY_SEPARATOR);
+use CodeInSync\Infrastructure\Console\ShellPrompt;
 
-// const APP_ROOT = '123';
+if (!class_exists(ShellPrompt::class)) {
+  require APP_PATH . 'src/Infrastructure/Console/ShellPrompt.php';
+  @class_alias(ShellPrompt::class, 'ShellPrompt');
+}
 
-// Ensure bootstrap has run (defines env/paths/url/app and helpers)
+/**
+ * Bootstrap first.
+ * - defines APP_PATH/CONFIG_PATH
+ * - loads Composer autoload (PSR-4 for ShellPrompt)
+ * - defines APP_BOOTSTRAPPED and other runtime constants
+ */
+if (!defined('APP_PATH')) {
+  define('APP_PATH', dirname(__DIR__, 3) . DIRECTORY_SEPARATOR);
+}
+
+if (!defined('CONFIG_PATH')) {
+  define('CONFIG_PATH', APP_PATH . 'config' . DIRECTORY_SEPARATOR);
+}
+
 if (!defined('APP_BOOTSTRAPPED')) {
   require_once APP_PATH . 'bootstrap/bootstrap.php';
 }
 
-global $shell_prompt, $auto_clear, $errors, $asset;
+/**
+ * Optional: compatibility alias for older code that references \ShellPrompt
+ * (Keep this only if you actually still call ShellPrompt without namespace elsewhere.)
+ */
+if (!class_exists('ShellPrompt', false) && class_exists(ShellPrompt::class)) {
+  class_alias(ShellPrompt::class, 'ShellPrompt');
+}
 
+/**
+ * Build prompt (safe now that bootstrap/autoload are loaded)
+ */
+$shell_prompt = ShellPrompt::build();
+
+/**
+ * Globals used by the console UI/runtime
+ */
+global $auto_clear, $errors, $asset;
 // -----------------------------------------------------------------------------
 
 // Ensure COMPOSER_BIN or COMPOSER_PHAR is defined (best-effort, non-fatal)
@@ -665,12 +696,12 @@ ob_start(); ?>
       consoleContainer.style.left = '50%';
       consoleContainer.style.bottom = '360px';
       consoleContainer.style.right = '';
-      consoleContainer.style.height = '295px';
+      consoleContainer.style.height = 'fit-content';
       consoleContainer.style.transform = 'translate(-50%, -50%)';
       consoleContainer.style.textAlign = 'center';
       consoleContainer.style.zIndex = '999';
 
-      respCon.style.height = '256px';
+      //respCon.style.height = '256px';
       if (changePositionBtn) changePositionBtn.innerHTML = '&#9660;';
     } else {
       // Absolute mode
@@ -1302,62 +1333,88 @@ ob_start(); ?>
 
   ob_start(); ?>
 <!DOCTYPE html>
-<html>
-
+<html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
+  <!-- jQuery UI (CDN) -->
   <link rel="stylesheet" href="//code.jquery.com/ui/1.12.1/themes/smoothness/jquery-ui.css" />
 
   <?php
-  // (APP_IS_ONLINE && check_http_status('https://cdn.tailwindcss.com') ? 'https://cdn.tailwindcss.com' : APP_URL . 'public/assets/vendor/tailwindcss-3.3.5.js')?
-// Path to the JavaScript file
-  
-  // Create the directory if it doesn't exist
-  getcwd() === rtrim($path = APP_PATH . APP_BASE['public'], '/') && is_dir($path .= 'assets/vendor') or mkdir($path, 0755, true);
+  /**
+   * Tailwind loader (no APP_IS_ONLINE, no check_http_status).
+   *
+   * Strategy:
+   * 1) Prefer local vendor copy if present: public/assets/vendor/tailwindcss-3.3.5.js
+   * 2) If missing, try to download from CDN once (best-effort) and save locally
+   * 3) If download fails, fall back to CDN in the <script src="..."> (best-effort)
+   */
 
-  $path .= '/tailwindcss-3.3.5.js';
+  $tailwindFile = 'tailwindcss-3.4.17.js';
+  $tailwindCdn  = 'https://cdn.tailwindcss.com';
 
-  // URL for the CDN
-  $url = 'https://cdn.tailwindcss.com';
+  // Build local FS path (your structure: APP_PATH + APP_BASE['public'] + assets/vendor)
+  $publicFsRoot = rtrim(APP_PATH . APP_BASE['public'], '/');
+  $vendorDirFs  = $publicFsRoot . '/assets/vendor';
+  $tailwindFs   = $vendorDirFs . '/' . $tailwindFile;
 
-  // Check if the file exists and if it needs to be updated
-  if (defined('APP_IS_ONLINE') && APP_IS_ONLINE)
-    if (!is_file($path) || (time() - filemtime($path)) > 5 * 24 * 60 * 60) { // ceil(abs((strtotime(date('Y-m-d')) - strtotime(date('Y-m-d',strtotime('+5 days',filemtime($path . 'tailwindcss-3.3.5.js'))))) / 86400)) <= 0 
-      // Download the file from the CDN
-      $handle = curl_init($url);
-      curl_setopt($handle, CURLOPT_RETURNTRANSFER, true);
-      $js = curl_exec($handle);
+  // Build local URL path (assuming APP_URL points to site root/base)
+  $publicUrlRoot = rtrim(APP_URL . APP_BASE['public'], '/');
+  $tailwindUrl   = $publicUrlRoot . '/assets/vendor/tailwindcss/3.4.17/' . $tailwindFile;
 
-      // Check if the download was successful
-      if (!empty($js)) {
-        // Save the file
-        file_put_contents($path, $js) or $errors['JS-TAILWIND'] = "$url returned empty.";
-      }
+  // Ensure vendor dir exists (best-effort)
+  if (!is_dir($vendorDirFs)) {
+    @mkdir($vendorDirFs, 0755, true);
+  }
+
+  // If local file missing, try to fetch it once (best-effort, no "online check")
+  if (!is_file($tailwindFs)) {
+    $js = null;
+
+    if (function_exists('curl_init')) {
+      $ch = curl_init($tailwindCdn);
+      curl_setopt_array($ch, [
+        CURLOPT_RETURNTRANSFER => true,
+        CURLOPT_FOLLOWLOCATION => true,
+        CURLOPT_CONNECTTIMEOUT => 3,
+        CURLOPT_TIMEOUT        => 8,
+      ]);
+      $js = curl_exec($ch);
+      curl_close($ch);
+    } else {
+      // Fallback if curl isn't available
+      $context = stream_context_create(['http' => ['timeout' => 8]]);
+      $js = @file_get_contents($tailwindCdn, false, $context);
     }
+
+    if (is_string($js) && $js !== '') {
+      @file_put_contents($tailwindFs, $js);
+    }
+  }
+
+  // Choose script source: local if exists, otherwise CDN
+  $tailwindSrc = is_file($tailwindFs) ? $tailwindUrl : $tailwindCdn;
   ?>
 
-  <script
-    src="<?= !defined('APP_IS_ONLINE') || !APP_IS_ONLINE ? '' : (check_http_status($url) ? substr($url, strpos($url, parse_url($url)['host']) + strlen(parse_url($url)['host'])) : substr($path, strpos($path, dirname(APP_BASE['public'] . 'assets/vendor')))) ?>"></script>
+  <script src="<?= htmlspecialchars($tailwindSrc, ENT_QUOTES, 'UTF-8'); ?>"></script>
 
   <style type="text/tailwindcss">
-    <?= $UI_APP['style']; ?>
+    <?= $UI_APP['style'] ?? ''; ?>
   </style>
 </head>
 
 <body>
-  <?= $UI_APP['body']; ?>
+  <?= $UI_APP['body'] ?? ''; ?>
 
-  <!-- https://cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.min.js -->
+  <!-- jQuery + jQuery UI (CDN) -->
   <script src="//code.jquery.com/jquery-1.12.4.js"></script>
   <script src="//code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
-  <!-- <script src="assets/vendor/jquery/jquery.min.js"></script> -->
+
   <script>
-    <?= $UI_APP['script']; ?>
+    <?= $UI_APP['script'] ?? ''; ?>
   </script>
 </body>
-
 </html>
 <?php $UI_APP['html'] = ob_get_contents();
 ob_end_clean();

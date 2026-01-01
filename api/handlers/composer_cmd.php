@@ -1,6 +1,6 @@
 <?php
 
-//require_once __DIR__ . '/../../config/constants.paths.php';
+//require_once dirname(__DIR__, 2) . '/config/constants.paths.php';
 //require_once APP_PATH . 'classes/class.composer.php';
 
 // use CodeInSync\Core\Registry;

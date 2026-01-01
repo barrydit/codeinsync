@@ -3,9 +3,8 @@ declare(strict_types=1);
 
 global $errors;
 
-if (!defined('APP_BOOTSTRAPPED')) {
+if (!defined('APP_BOOTSTRAPPED'))
     require_once dirname(__DIR__) . '/bootstrap/bootstrap.php';
-}
 
 require_once APP_PATH . 'config/functions.composer.php';
 require_once APP_PATH . 'config/constants.composer.php';
