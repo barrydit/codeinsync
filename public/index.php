@@ -125,7 +125,7 @@ if (APP_ROOT !== '') {
 
 //dd([realpath(APP_PATH . APP_ROOT), realpath(APP_PATH . '../clients/' . $_ENV['DEFAULT_CLIENT'] . '/' . $_ENV['DEFAULT_DOMAIN'] . '/')]);
 
-// 
+// dd('<pre>' . var_export(get_required_files(), true) . '</pre>');
 ?>
 <!DOCTYPE html>
 <html lang="<?= htmlspecialchars($appLocale, ENT_QUOTES, 'UTF-8') ?>">
@@ -780,25 +780,24 @@ if (APP_ROOT !== '') {
     <span style="margin-left: 0.5em; color: #2196F3;">Developer</span>
   </div>
 
+  <!-- You need to include jQueryUI for the extended easing options. -->
+  <!-- script src="//code.jquery.com/jquery-1.12.4.js"></script -->
   <script
     src="<?= htmlspecialchars($asset('assets/vendor/jquery/3.7.1/jquery-3.7.1.min.js'), ENT_QUOTES, 'UTF-8') ?>"></script>
 
+  <script>
+    if (typeof jQuery === 'undefined') {
+      console.error('jQuery is not loaded. Please check the script source.');
+    } else {
+      console.log('jQuery version:', jQuery.fn.jquery);
+    }
+  </script>
+
+  <!-- script src="//cdnjs.cloudflare.com/ajax/libs/jquery-easing/1.4.1/jquery.easing.min.js"></script -->
   <script
     src="<?= htmlspecialchars($asset('assets/vendor/jquery/3.7.1/jquery.easing.min.js'), ENT_QUOTES, 'UTF-8') ?>"></script>
-  <!-- You need to include jQueryUI for the extended easing options. -->
-  <!-- script src="//code.jquery.com/jquery-1.12.4.js"></script -->
+
   <?php
-  /*
-  https://cdnjs.cloudflare.com/ajax/libs/jquery-easing/1.4.1/jquery.easing.min.js
-
-  APP_IS_ONLINE && check_http_status('https://code.jquery.com/jquery-3.7.1.min.js') ? 'https://code.jquery.com/jquery-3.7.1.min.js' : app_base('public', null, 'rel') . '/assets/vendor/jquery/' . 'jquery-3.7.1.min.js'
-
-  APP_IS_ONLINE && check_http_status('https://code.jquery.com/ui/1.12.1/jquery-ui.min.js') ? 'https://code.jquery.com/ui/1.12.1/jquery-ui.min.js' : app_base('public', null, 'rel') . '/assets/vendor/jquery/' . 'jquery-ui-1.12.1.js' 
-
-  app_base('public', null, 'abs') . 
-  */
-
-
   if (!is_file($path = app_base('public', null, 'abs') . 'assets/vendor/jquery-ui/1.13.2/' . 'jquery-ui-min.js') || ceil(abs((strtotime(date('Y-m-d')) - strtotime(date('Y-m-d', strtotime('+5 days', filemtime($path))))) / 86400)) <= 0) {
     if (!realpath($pathdir = dirname($path)))
       if (!mkdir($pathdir, 0755, true))
@@ -1499,21 +1498,12 @@ if (APP_ROOT !== '') {
 
   <script src="<?= htmlspecialchars($asset('assets/vendor/d3/4.13.0/d3.v4.min.js'), ENT_QUOTES, 'UTF-8') ?>"></script>
 
-  <script>
-    if (typeof jQuery === 'undefined') {
-      console.error('jQuery is not loaded. Please check the script source.');
-    } else {
-      console.log('jQuery version:', jQuery.fn.jquery);
-    }
-  </script>
-
   <?php
   if (isset($_GET['setmode'])) {
     $_SESSION['mode'] = $_GET['setmode'] === 'developer' ? 'developer' : 'client';
     exit;
   }
   ?>
-
 </body>
 
 </html>

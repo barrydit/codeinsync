@@ -39,6 +39,81 @@ defined('GIT_MODULES') || define('GIT_MODULES', '.gitmodules');
 // Optional: Add existence check constants if needed in runtime
 // define('GIT_EXISTS', is_dir(GIT_FOLDER));
 */
+
+function cis_git_local_get(string $key, string $workTree, string $gitDir): string
+{
+    $cmd = sprintf(
+        'git --git-dir=%s --work-tree=%s config --local %s',
+        escapeshellarg($gitDir),
+        escapeshellarg($workTree),
+        escapeshellarg($key)
+    );
+
+    $out = trim((string) shell_exec($cmd));
+    return $out;
+}
+
+function cis_git_local_set(string $key, string $value, string $workTree, string $gitDir): void
+{
+    $cmd = sprintf(
+        'git --git-dir=%s --work-tree=%s config --local %s %s',
+        escapeshellarg($gitDir),
+        escapeshellarg($workTree),
+        escapeshellarg($key),
+        escapeshellarg($value)
+    );
+
+    shell_exec($cmd);
+}
+
+// Call this during auth/login bootstrap:
+function cis_git_ensure_identity(string $workTree, string $gitDir): void
+{
+    $name = cis_git_local_get('user.name', $workTree, $gitDir);
+    $email = cis_git_local_get('user.email', $workTree, $gitDir);
+
+    $envName = trim((string) ($_ENV['GITHUB']['USERNAME'] ?? ''));
+    $envEmail = trim((string) ($_ENV['GITHUB']['EMAIL'] ?? ''));
+
+    // only set if missing AND env provides values
+    if ($name === '' && $envName !== '') {
+        cis_git_local_set('user.name', $envName, $workTree, $gitDir);
+    }
+    if ($email === '' && $envEmail !== '') {
+        cis_git_local_set('user.email', $envEmail, $workTree, $gitDir);
+    }
+}
+
+function cis_git_commit_with_identity(string $gitArgs, string $workTree, string $gitDir): string
+{
+    $name = cis_git_local_get('user.name', $workTree, $gitDir);
+    $email = cis_git_local_get('user.email', $workTree, $gitDir);
+
+    $envName = trim((string) ($_ENV['GITHUB']['USERNAME'] ?? ''));
+    $envEmail = trim((string) ($_ENV['GITHUB']['EMAIL'] ?? ''));
+
+    $inject = '';
+    if ($name === '' && $envName !== '') {
+        $inject .= ' -c user.name=' . escapeshellarg($envName);
+    }
+    if ($email === '' && $envEmail !== '') {
+        $inject .= ' -c user.email=' . escapeshellarg($envEmail);
+    }
+
+    $cmd = sprintf(
+        'git%s --git-dir=%s --work-tree=%s %s',
+        $inject,
+        escapeshellarg($gitDir),
+        escapeshellarg($workTree),
+        $gitArgs // e.g. commit -m "msg"
+    );
+
+    return (string) shell_exec($cmd);
+}
+
+// $out = cis_git_commit_with_identity('commit -m ' . escapeshellarg($msg), $workTree, $gitDir);
+
+
 class GitPaths
 {
     // Path to the Git executable
@@ -67,29 +142,6 @@ class GitPaths
 //if (GitPaths::exists()) {
 //    echo "Git repo found. HEAD is at: " . GitPaths::HEAD;
 //}
-
-
-$gitconfig = <<<END
-[safe]
-    directory = /mnt/c/www
-
-[user]
-    name = <Your Name>
-    email = <your.email@example.com>
-
-[core]
-    editor = vim
-    autocrlf = input
-
-[alias]
-    co = checkout
-    br = branch
-    ci = commit
-    st = status
-
-[color]
-    ui = auto
-END;
 
 if (!is_dir($dirname = (defined('APP_PATH') ? APP_PATH : dirname(__DIR__) . DIRECTORY_SEPARATOR) . '.ssh'))
     (@!mkdir($dirname, 0755, true) ?: $errors['APP_BASE'][basename($dirname)] = "$dirname could not be created.");
@@ -252,7 +304,7 @@ if (is_file($path . 'git-scm.com.html')) {
         curl_setopt($handle, CURLOPT_RETURNTRANSFER, true);
 
         if (!empty($html = curl_exec($handle))) {
-            file_put_contents($path . 'git-scm.com.html', $html) or $errors['GIT_LATEST'] = "$url returned empty.";
+            file_put_contents("{$path}git-scm.com.html", $html) or $errors['GIT_LATEST'] = "$url returned empty.";
         }
     }
 } else {
@@ -261,13 +313,13 @@ if (is_file($path . 'git-scm.com.html')) {
     curl_setopt($handle, CURLOPT_RETURNTRANSFER, true);
 
     if (!empty($html = curl_exec($handle))) {
-        file_put_contents($path . 'git-scm.com.html', $html) or $errors['GIT_LATEST'] = "$url returned empty.";
+        file_put_contents("{$path}git-scm.com.html", $html) or $errors['GIT_LATEST'] = "$url returned empty.";
     }
 }
 
 libxml_use_internal_errors(true); // Prevent HTML errors from displaying
 $doc = new DOMDocument('1.0', 'utf-8');
-$doc->loadHTML(file_get_contents($path . 'git-scm.com.html'));
+$doc->loadHTML(file_get_contents("{$path}git-scm.com.html"));
 
 $content_node = $doc->getElementById("main");
 

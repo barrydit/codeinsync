@@ -747,7 +747,9 @@ ob_start(); ?>
       body: params
     })
       .then(function (res) {
-        return res.json();
+        return res.text().then(t => {
+          try { return JSON.parse(t); } catch { throw new Error("Invalid JSON: " + t); }
+        });
       })
       .then(function (data) {
         const $console = $('#responseConsole');
@@ -1334,6 +1336,7 @@ ob_start(); ?>
   ob_start(); ?>
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -1352,16 +1355,16 @@ ob_start(); ?>
    */
 
   $tailwindFile = 'tailwindcss-3.4.17.js';
-  $tailwindCdn  = 'https://cdn.tailwindcss.com';
+  $tailwindCdn = 'https://cdn.tailwindcss.com';
 
   // Build local FS path (your structure: APP_PATH + APP_BASE['public'] + assets/vendor)
   $publicFsRoot = rtrim(APP_PATH . APP_BASE['public'], '/');
-  $vendorDirFs  = $publicFsRoot . '/assets/vendor';
-  $tailwindFs   = $vendorDirFs . '/' . $tailwindFile;
+  $vendorDirFs = $publicFsRoot . '/assets/vendor';
+  $tailwindFs = $vendorDirFs . '/' . $tailwindFile;
 
   // Build local URL path (assuming APP_URL points to site root/base)
   $publicUrlRoot = rtrim(APP_URL . APP_BASE['public'], '/');
-  $tailwindUrl   = $publicUrlRoot . '/assets/vendor/tailwindcss/3.4.17/' . $tailwindFile;
+  $tailwindUrl = $publicUrlRoot . '/assets/vendor/tailwindcss/3.4.17/' . $tailwindFile;
 
   // Ensure vendor dir exists (best-effort)
   if (!is_dir($vendorDirFs)) {
@@ -1378,7 +1381,7 @@ ob_start(); ?>
         CURLOPT_RETURNTRANSFER => true,
         CURLOPT_FOLLOWLOCATION => true,
         CURLOPT_CONNECTTIMEOUT => 3,
-        CURLOPT_TIMEOUT        => 8,
+        CURLOPT_TIMEOUT => 8,
       ]);
       $js = curl_exec($ch);
       curl_close($ch);
@@ -1415,6 +1418,7 @@ ob_start(); ?>
     <?= $UI_APP['script'] ?? ''; ?>
   </script>
 </body>
+
 </html>
 <?php $UI_APP['html'] = ob_get_contents();
 ob_end_clean();

@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 use CodeInSync\Infrastructure\Console\ShellPrompt;
+use CodeInSync\Infrastructure\Git\GitManager;
 
 if (!class_exists(ShellPrompt::class)) {
     require APP_PATH . 'src/Infrastructure/Console/ShellPrompt.php';
@@ -19,22 +20,6 @@ $shell_prompt = ShellPrompt::build();
 
 global $errors;
 $output[] = 'TEST 123';
-
-if (!function_exists('cis_run_process')) {
-    $candidate = APP_PATH . 'bootstrap/process.php';
-    if (is_file($candidate)) {
-        require_once $candidate;
-    }
-}
-
-if (!function_exists('cis_run_process')) {
-    // Fail fast with a clear error instead of fatal
-    return [
-        'ok' => false,
-        'error' => 'MISSING_DEPENDENCY',
-        'message' => 'cis_run_process() is not loaded. Ensure api/console.php (or its defining file) is required.',
-    ];
-}
 
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     // $auto_clear = isset($_POST['auto_clear']) && $_POST['auto_clear'] == 'on' ? true : false;
@@ -142,7 +127,8 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             } elseif (preg_match('/^git\s+/i', $_POST['cmd'])) {
                 require_once app_base('api', null, 'abs') . 'git.php';
 
-                $res = handle_git_command($_POST['cmd']);
+                $manager = GitManager::fromGlobals();
+                $res = $manager->handleCommand($_POST['cmd']); // handle_git_command($_POST['cmd']);
 
                 // Show prompt
                 if (!empty($res['prompt'])) {

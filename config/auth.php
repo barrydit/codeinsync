@@ -377,6 +377,14 @@ EOT; ?></code>
                                 //    $console.val()
                                 //);
                                 el.textContent = "\n=== Task " + data.task + " completed. ===" + el.textContent;
+
+                                window.setTimeout(() => {
+                                    //window.runTaskSequence('startup');
+
+                                    //new Promise(resolve => setTimeout(resolve, 1000)).then(() => {
+                                    //window.location.reload();
+                                    //});
+                                }, 2500);
                                 return; // no next step
                             }
 
@@ -398,15 +406,8 @@ EOT; ?></code>
                     const el = document.getElementById('console-log');
                     if (!el) return;
                     el.textContent = "\n" + el.textContent;
-                    window.runTaskSequence('download-assets');
-                    window.setTimeout(() => {
-                        //window.runTaskSequence('startup');
-
-                        //new Promise(resolve => setTimeout(resolve, 1000)).then(() => {
-                        window.location.reload();
-                        //});
-                    }, 2500);
-
+                    //window.runTaskSequence('download-assets');
+                    window.runTaskSequence('git_seed_identity');
                 });
 
             </script>

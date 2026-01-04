@@ -1,29 +1,17 @@
 <?php
 // api/git.php
 use CodeInSync\Infrastructure\Runtime\Shutdown;
-use function CodeInSync\Infrastructure\Git\handle_git_command;
+use CodeInSync\Infrastructure\Git\GitManager;
+use CodeInSync\Infrastructure\Runtime\ProcessRunner;
 
 if (!class_exists(\CodeInSync\Infrastructure\Git\GitManager::class)) {
     require APP_PATH . 'src/Infrastructure/Git/GitManager.php';
     @class_alias(\CodeInSync\Infrastructure\Git\GitManager::class, 'GitManager');
 }
 
-require_once dirname(__DIR__) . '/config/constants.git.php';
-
-if (!function_exists('cis_run_process')) {
-    $candidate = APP_PATH . 'bootstrap/process.php'; // <-- adjust if your function lives elsewhere
-    if (is_file($candidate)) {
-        require_once $candidate;
-    }
-}
-
-if (!function_exists('cis_run_process')) {
-    // Fail fast with a clear error instead of fatal
-    return [
-        'ok' => false,
-        'error' => 'MISSING_DEPENDENCY',
-        'message' => 'cis_run_process() is not loaded. Ensure api/git.php (or its defining file) is required.',
-    ];
+if (!class_exists(\CodeInSync\Infrastructure\Runtime\ProcessRunner::class)) {
+    require APP_PATH . 'src/Infrastructure/Runtime/ProcessRunner.php';
+    @class_alias(\CodeInSync\Infrastructure\Runtime\ProcessRunner::class, 'ProcessRunner');
 }
 
 /**
@@ -169,13 +157,15 @@ ob_start();
 // If INCLUDED by another PHP file (dispatcher)
 if (cis_is_included_file(__FILE__)) {
     $cmd = (string) ($_POST['cmd'] ?? '');
-    return handle_git_command($cmd);
+    $manager = GitManager::fromGlobals();
+    return $manager->handleCommand($cmd);
 }
 
 // === Execution point (direct HTTP access) ===
 if (($_SERVER['REQUEST_METHOD'] ?? '') === 'POST')
     if (cis_is_direct_http_file(__FILE__) && isset($_POST['cmd']) && is_string($_POST['cmd']) && $_POST['cmd'] !== '') {
-        $response = handle_git_command($_POST['cmd']);
+        $manager = GitManager::fromGlobals();
+        $response = $manager->handleCommand($_POST['cmd']);
 
         $wantText = isset($_SERVER['HTTP_ACCEPT'])
             && str_contains($_SERVER['HTTP_ACCEPT'], 'text/plain');

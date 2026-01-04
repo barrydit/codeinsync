@@ -1,4 +1,14 @@
 <?php
+//use CodeInSync\Infrastructure\Git\GitManager;
+
+if (!class_exists(\CodeInSync\Infrastructure\Git\GitManager::class)) {
+  require APP_PATH . 'src/Infrastructure/Git/GitManager.php';
+  @class_alias(\CodeInSync\Infrastructure\Git\GitManager::class, 'GitManager');
+}
+
+GitManager::resolveGitExec();
+
+// GitManager::refreshGitDownloadCacheAndVersion();
 
 if (!defined('APP_BOOTSTRAPPED')) { // defined('APP_PATH') || require_once (...);
   require_once dirname(__DIR__, 3) . '/bootstrap/bootstrap.php';
@@ -43,7 +53,7 @@ $data_attrs = sprintf(
 //$hash = substr(sha1($app_norm), 0, 6);
 //$key = preg_replace('/[^\w-]+/', '_', $app_norm) . "_{$hash}";
 
-
+/*
 switch (__FILE__) {
   case get_required_files()[0]:
     if ($path = (basename(getcwd()) == 'public') ? (is_file('config.php') ? 'config.php' : '../config/config.php') : '')
@@ -60,6 +70,7 @@ if ($path = realpath(app_base('config', null, 'abs') . 'constants.git.php')) {
   require_once $path;
 } else
   die(var_dump("constants.git.php path was not found. file=" . basename($path)));
+*/
 
 /* https://stackoverflow.com/questions/73026623/how-to-ignore-or-permanently-block-the-files-which-contain-date-or-datetime-in */
 
@@ -184,7 +195,7 @@ defined('GIT_LATEST') or define('GIT_LATEST', GIT_VERSION);
 <div id="" class="window-body"
   class="<?= __FILE__ == get_required_files()[0] || isset($_GET['app']) && $_GET['app'] == 'git' || isset($errors['GIT_UPDATE']) ? 'selected' : (version_compare(GIT_LATEST, GIT_VERSION, '>') != 0 ? (isset($_GET['app']) && $_GET['app'] != 'git' ? '' : '') : '') ?>"
   style="position: relative; z-index: 3; width: 425px; background-color: rgba(255,255,255,0.8); padding: 10px;">
-  <?php if (git_origin_sha_update() != $_ENV['GITHUB']['REMOTE_SHA']) { ?>
+  <?php if (\CodeInSync\Infrastructure\Git\git_origin_sha_update() != $_ENV['GITHUB']['REMOTE_SHA']) { ?>
     <div
       style="position: absolute; left: 150px; top: 80px; padding-top: 20px; display: block; border: 1px dashed #000; width: 150px; height: 50px; text-align: center; font-weight: bold; z-index: 200; background-color: rgb(255,255,255,.75);"">
     <span style=" background-color: #0078D7; color: #FFF;">Upate Available</span><br /><span

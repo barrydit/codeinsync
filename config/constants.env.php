@@ -173,6 +173,16 @@ if (!defined('APP_ENV')) {
     $errors['APP_ENV'] = 'App Env must be a string: ' . var_export(APP_ENV, true);
 }
 
+// Define WWW_PATH (public web root) if not already defined
+if (!defined('WWW_PATH'))
+    // Adjust to your project layout
+    define('WWW_PATH', APP_PATH . $env['APACHE']['PUBLIC']);
+
+// Git owner (used for sudo -u <user>)
+if (!defined('GIT_OWNER') && !empty($env['GIT']['OWNER'])) {
+    define('GIT_OWNER', $env['GIT']['OWNER']);
+}
+
 // Fallback detection for host and domain
 if (!defined('APP_HOST')) {
     define('APP_HOST', $_SERVER['HTTP_HOST'] ?? '127.0.0.1');

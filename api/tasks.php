@@ -2,18 +2,65 @@
 // api/tasks.php
 declare(strict_types=1);
 
-header('X-Content-Type-Options: nosniff');
+if (!defined('APP_BOOTSTRAPPED')) {
+    require_once \dirname(__DIR__, 2) . '/bootstrap/bootstrap.php';
+}
 
+// Temporary manual load (until PSR-4 is complete)
+$gitMgrFqn = \CodeInSync\Infrastructure\Git\GitManager::class;
+
+if (!\class_exists($gitMgrFqn, false)) {
+    require_once APP_PATH . 'src/Infrastructure/Git/GitManager.php';
+}
+
+// Optional convenience alias (global) for legacy code paths
+if (!\class_exists('GitManager', false) && \class_exists($gitMgrFqn, false)) {
+    \class_alias($gitMgrFqn, 'GitManager');
+}
+
+// Temporary manual load (until PSR-4 is complete)
+$processRunnerFqn = \CodeInSync\Infrastructure\Runtime\ProcessRunner::class;
+
+if (!\class_exists($processRunnerFqn, false)) {
+    require_once APP_PATH . 'src/Infrastructure/Runtime/ProcessRunner.php';
+}
+
+// Optional convenience alias (global) for legacy code paths
+if (!\class_exists('ProcessRunner', false) && \class_exists($processRunnerFqn, false)) {
+    \class_alias($processRunnerFqn, 'ProcessRunner');
+}
+
+\header('X-Content-Type-Options: nosniff');
+\header('Cache-Control: no-store');
+
+// ---------------------------
+// Helpers
+// ---------------------------
+$emit_json = static function (array $data, int $code = 200): void {
+    // make sure nothing leaked before JSON
+    while (\ob_get_level() > 0) {
+        @\ob_end_clean();
+    }
+
+    \http_response_code($code);
+    \header('Content-Type: application/json; charset=utf-8');
+
+    echo \json_encode($data, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE);
+    exit;
+};
+
+// ---------------------------
 // Input (GET or POST)
+// ---------------------------
 $taskName = (string) ($_GET['task'] ?? $_POST['task'] ?? 'startup');
 $step = isset($_GET['step']) || isset($_POST['step'])
     ? (int) ($_GET['step'] ?? $_POST['step'])
-    : 0; // default: first job
+    : 0;
+
 $format = (string) ($_GET['format'] ?? $_POST['format'] ?? 'json');
 
 // --- Define tasks as sequences of jobs ---
 $tasks = [
-
     'onetask' => [
         'steps' => [
             static function (): string {
@@ -49,6 +96,60 @@ $tasks = [
             static function (): string {
                 // e.g. check npm/node
                 return "Testing:\n Startup job 5: npm checks... Done.\n";
+            },
+        ],
+    ],
+
+    'git_seed_identity' => [
+        'steps' => [
+            static function (): string {
+                $cls = \CodeInSync\Infrastructure\Git\GitManager::class;
+
+                if (!\class_exists($cls)) {
+                    return "[git_seed_identity] GitManager class not loaded.\n";
+                }
+
+                if (!\method_exists($cls, 'fromGlobals')) {
+                    return "[git_seed_identity] GitManager::fromGlobals() missing.\n";
+                }
+
+                $mgr = $cls::fromGlobals();
+
+                if (!\method_exists($mgr, 'maybeSeedLocalIdentityFromEnv')) {
+                    return "[git_seed_identity] maybeSeedLocalIdentityFromEnv() missing.\n";
+                }
+
+                try {
+                    $res = $mgr->maybeSeedLocalIdentityFromEnv();
+
+                    // Normalize message
+                    if (!\is_array($res)) {
+                        return "[git_seed_identity] Unexpected return type.\n";
+                    }
+
+                    if (!($res['ok'] ?? false)) {
+                        $missing = isset($res['missing']) ? \implode(', ', (array) $res['missing']) : 'unknown';
+                        return "[git_seed_identity] FAILED: " . ($res['error'] ?? 'unknown') . " (missing: {$missing}) " . var_export($res, true) . "\n";
+                    }
+
+                    if (($res['seeded'] ?? false) === true) {
+                        $written = \implode(', ', (array) ($res['written'] ?? []));
+                        $name = (string) ($res['name'] ?? '');
+                        $email = (string) ($res['email'] ?? '');
+
+                        return "[git_seed_identity] Seeded repo-local identity ({$written}) as {$name} <{$email}>.\n";
+                    }
+
+                    // already configured (no change)
+                    $name = (string) ($res['name'] ?? '');
+                    $email = (string) ($res['email'] ?? '');
+                    return "[git_seed_identity] Already configured: {$name} <{$email}>.\n";
+
+                } catch (\Throwable $e) {
+                    // This is important: tasks should not white-screen
+                    \error_log("[git_seed_identity] " . $e->getMessage());
+                    return "[git_seed_identity] EXCEPTION: " . $e->getMessage() . "\n";
+                }
             },
         ],
     ],
@@ -193,57 +294,100 @@ $tasks = [
 
 ];
 
+// ---------------------------
+// Validate
+// ---------------------------
 if (!isset($tasks[$taskName])) {
-    http_response_code(404);
-    header('Content-Type: text/plain; charset=utf-8');
-    echo "Unknown task: {$taskName}\n";
-    exit;
+    $emit_json(['ok' => false, 'error' => 'TASK_NOT_FOUND', 'task' => $taskName], 404);
 }
 
-$steps = $tasks[$taskName]['steps'];
-$total = count($steps);
+$steps = $tasks[$taskName]['steps'] ?? null;
+if (!\is_array($steps) || $steps === []) {
+    $emit_json(['ok' => false, 'error' => 'TASK_HAS_NO_STEPS', 'task' => $taskName], 500);
+}
+
+$total = \count($steps);
 
 if ($step < 0 || $step >= $total) {
-    http_response_code(400);
-    header('Content-Type: text/plain; charset=utf-8');
-    echo "Invalid step {$step} for task {$taskName} (total {$total}).\n";
-    exit;
+    $emit_json([
+        'ok' => false,
+        'error' => 'STEP_OUT_OF_RANGE',
+        'task' => $taskName,
+        'step' => $step,
+        'total_steps' => $total,
+    ], 400);
 }
 
-// --- Run exactly ONE job ---
+// ---------------------------
+// Run exactly ONE job
+// ---------------------------
 $fn = $steps[$step];
-$start = microtime(true);
-$output = $fn();
-$durationMs = (microtime(true) - $start) * 1000.0;
+$start = \microtime(true);
 
-$nextStep = ($step + 1 < $total) ? $step + 1 : null;
-$done = ($nextStep === null);
+try {
+    // Capture any stray output so it doesn't corrupt JSON
+    \ob_start();
+    $ret = $fn();
+    $echoed = \ob_get_clean();
 
-// You can still support text, but JSON is easier for the JS to work with.
-if ($format === 'text') {
-    header('Content-Type: text/plain; charset=utf-8');
+    $durationMs = (\microtime(true) - $start) * 1000.0;
 
-    echo "Job " . ($step + 1) . " / {$total}\n";
-    echo rtrim($output, "\n") . "\n";
-    echo "[done] step {$step} (" . round($durationMs, 2) . " ms)\n";
-    if ($done) {
-        echo "=== Task {$taskName} completed. ===\n";
-    } else {
-        echo "=== Next step: {$nextStep} / {$total} ===\n";
+    // Normalize output to a printable string (prevents "1" and [object Object])
+    $output = '';
+    if ($echoed !== '') {
+        $output .= $echoed;
+        if (!\str_ends_with($output, "\n"))
+            $output .= "\n";
     }
-    exit;
+
+    if (\is_string($ret)) {
+        $output .= $ret;
+    } elseif (\is_scalar($ret) || $ret === null) {
+        $output .= (string) $ret;
+    } else {
+        $output .= \json_encode($ret, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE) ?: '[unprintable output]';
+    }
+
+    // Console-friendly line endings + newline
+    $output = \str_replace(["\r\n", "\r"], "\n", $output);
+    if ($output !== '' && !\str_ends_with($output, "\n"))
+        $output .= "\n";
+
+    $nextStep = ($step + 1 < $total) ? $step + 1 : null;
+    $done = ($nextStep === null);
+
+    if ($format === 'text') {
+        // Keep text mode for manual curl testing etc.
+        \header('Content-Type: text/plain; charset=utf-8');
+        echo "Job " . ($step + 1) . " / {$total}\n";
+        echo \rtrim($output, "\n") . "\n";
+        echo "[done] step {$step} (" . \round($durationMs, 2) . " ms)\n";
+        echo $done
+            ? "=== Task {$taskName} completed. ===\n"
+            : "=== Next step: {$nextStep} / {$total} ===\n";
+        exit;
+    }
+
+    $emit_json([
+        'ok' => true,
+        'task' => $taskName,
+        'step' => $step,
+        'total_steps' => $total,
+        'output' => $output,
+        'duration_ms' => \round($durationMs, 2),
+        'done' => $done,
+        'next_step' => $nextStep,
+    ]);
+} catch (\Throwable $e) {
+    if (\ob_get_level() > 0) {
+        @\ob_end_clean();
+    }
+    \error_log("[tasks] {$taskName} step {$step} INTERNAL_ERROR: {$e->getMessage()} @ {$e->getFile()}:{$e->getLine()}");
+
+    $emit_json([
+        'ok' => false,
+        'error' => 'INTERNAL_ERROR',
+        'task' => $taskName,
+        'step' => $step,
+    ], 500);
 }
-
-// JSON mode
-header('Content-Type: application/json; charset=utf-8');
-
-echo json_encode([
-    'ok' => true,
-    'task' => $taskName,
-    'step' => $step,
-    'total_steps' => $total,
-    'output' => $output,
-    'duration_ms' => round($durationMs, 2),
-    'done' => $done,
-    'next_step' => $nextStep,
-]);

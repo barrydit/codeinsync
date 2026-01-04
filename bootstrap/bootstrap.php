@@ -53,11 +53,6 @@ require_once dirname(__DIR__) . '/config/constants.env.php';   // vendor-free
 // D. EARLY: PHP ini + sane defaults (env required)
 require_once __DIR__ . '/php-ini.php';  // error_reporting, timezone, mb_internal_encoding, etc.
 
-// Define WWW_PATH (public web root) if not already defined
-if (!defined('WWW_PATH'))
-    // Adjust to your project layout
-    define('WWW_PATH', APP_PATH . APP_PUBLIC . '/');
-
 // ---- Single autoloader include (custom or Composer) ------------------------
 $composerAutoload = dirname(__DIR__) . '/vendor/autoload.php';
 $autoloadFlag = ($_ENV['COMPOSER']['AUTOLOAD'] ?? true) !== false; // default true if unset
@@ -67,6 +62,18 @@ if ($autoloadFlag && is_file($composerAutoload)) {
 
 // E. Now runtime/url/app that may depend on ENV
 require_once dirname(__DIR__) . '/config/constants.runtime.php';
+
+// Detect sudo capability (default: none)
+$sudo = '';
+
+if (PHP_OS_FAMILY !== 'Windows' && function_exists('posix_geteuid')) {
+    $sudo = require __DIR__ . '/sudo.php'; // returns string
+}
+
+if (!defined('APP_SUDO')) {
+    define('APP_SUDO', $sudo ?: '');
+}
+
 require_once dirname(__DIR__) . '/config/constants.url.php';
 require_once dirname(__DIR__) . '/config/constants.app.php';
 
@@ -141,7 +148,7 @@ switch (APP_MODE) {
     case 'web':
         // normal web shell: safe to emit HTML
         require_once __DIR__ . '/head.php';
-        require_once __DIR__ . '/legacy-aliases.php'; // if needed for web
+        //require_once __DIR__ . '/legacy-aliases.php'; // if needed for web
         require_once __DIR__ . '/kernel.php';
         return;
 

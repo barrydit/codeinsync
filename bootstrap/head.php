@@ -43,7 +43,7 @@ $portPart = $isDefaultPort ? '' : ":$port";
 
 defined('APP_PUBLIC_FS_ROOT') or define(
     'APP_PUBLIC_FS_ROOT',
-    rtrim(str_replace('\\', '/', APP_PATH . 'public'), '/')
+    rtrim(str_replace('\\', '/', WWW_PATH), '/')
 );
 
 // --- Filesystem roots ---

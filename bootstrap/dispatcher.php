@@ -59,8 +59,6 @@ if (!defined('APP_CANONICAL_PRELUDE')) {
     require_once dirname(__DIR__) . '/config/constants.url.php';
     require_once dirname(__DIR__) . '/config/constants.app.php';
 
-    require_once __DIR__ . '/process.php'; // re-include to pick up any vendor-dependent values
-
     // Head section (URL context, public FS root, etc.)
 
     require_once __DIR__ . '/head.php';
