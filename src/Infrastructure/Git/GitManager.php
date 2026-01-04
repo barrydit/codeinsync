@@ -139,6 +139,34 @@ final class GitManager
         return new self($appPath, $appRoot, $GLOBALS['errors']);
     }
 
+    private function okResponse(string $cmd, string $prompt, int $exit, string $stdout = '', string $stderr = '', ?array $meta = null): array
+    {
+        return [
+            'ok' => ($exit === 0),
+            'runtime' => 'git',
+            'command' => $cmd,
+            'prompt' => $prompt,
+            'exit' => $exit,
+            'stdout' => $stdout,
+            'stderr' => $stderr,
+            'meta' => $meta,
+        ];
+    }
+
+    private function errResponse(string $cmd, string $prompt, int $exit, string $message, string $code, array $meta = []): array
+    {
+        $meta = ['code' => $code] + $meta;
+
+        return $this->okResponse(
+            cmd: $cmd,
+            prompt: $prompt,
+            exit: $exit,
+            stdout: '',
+            stderr: $message,
+            meta: $meta
+        );
+    }
+
     /**
      * Main entry: replaces handle_git_command(), but is also wrapped
      * by the global function for backwards-compatibility.
@@ -148,17 +176,45 @@ final class GitManager
         $output = [];
         $errors = [];
 
-        if (!\preg_match('/^git\s+(.*)/i', $cmd, $match)) {
+        // Track last process exit code when we actually run git
+        $lastExitCode = null; // ?int
+
+        // ---------- local helpers ----------
+        $okResponse = static function (string $cmd, string $prompt, int $exit, string $stdout = '', string $stderr = '', ?array $meta = null): array {
             return [
-                'ok' => false,
-                'api' => 'git',
+                'ok' => ($exit === 0),
+                'runtime' => 'git',
                 'command' => $cmd,
-                'prompt' => '$',
-                'result' => 'Invalid or missing git command',
-                'error' => 'INVALID_GIT_COMMAND',
-                'output' => [],
-                'errors' => ['INVALID_GIT_COMMAND' => 'Invalid or missing git command'],
+                'prompt' => $prompt,
+                'exit' => $exit,
+                'stdout' => $stdout,
+                'stderr' => $stderr,
+                'meta' => $meta,
             ];
+        };
+
+        $errResponse = static function (string $cmd, string $prompt, int $exit, string $message, string $code, array $meta = []) use ($okResponse): array {
+            $meta = ['code' => $code] + $meta;
+
+            return $okResponse(
+                cmd: $cmd,
+                prompt: $prompt,
+                exit: $exit,
+                stdout: '',
+                stderr: $message,
+                meta: $meta
+            );
+        };
+
+        // ---------- validate cmd ----------
+        if (!\preg_match('/^git\s+(.*)/i', $cmd, $match)) {
+            return $errResponse(
+                cmd: $cmd,
+                prompt: '$',
+                exit: 400,
+                message: 'Invalid or missing git command',
+                code: 'INVALID_GIT_COMMAND'
+            );
         }
 
         $gitCmd = \trim($match[1]);
@@ -168,16 +224,14 @@ final class GitManager
 
         // Repo not resolvable / not a git worktree
         if (empty($argv) || $workTree === '') {
-            return [
-                'ok' => false,
-                'api' => 'git',
-                'command' => $cmd,
-                'prompt' => $shellPrompt ?: '$',
-                'result' => 'Invalid repository path (missing .git or work-tree)',
-                'error' => 'GIT_PATHS_INVALID',
-                'output' => [],
-                'errors' => ['GIT_PATHS_INVALID' => 'Missing .git directory or invalid work-tree'],
-            ];
+            return $errResponse(
+                cmd: $cmd,
+                prompt: $shellPrompt ?: '$',
+                exit: 400,
+                message: 'Invalid repository path (missing .git or work-tree)',
+                code: 'GIT_PATHS_INVALID',
+                meta: ['workTree' => $workTree]
+            );
         }
 
         // Commit-like commands require identity
@@ -187,20 +241,17 @@ final class GitManager
             if (empty($inj['ok'])) {
                 $missing = $inj['missing'] ?? ['user.name', 'user.email'];
 
-                return [
-                    'ok' => false,
-                    'api' => 'git',
-                    'command' => $cmd,
-                    'prompt' => $shellPrompt,
-                    'result' => 'Git identity required: missing ' . \implode(', ', $missing),
-                    'error' => 'GIT_IDENTITY_REQUIRED',
-                    'missing' => $missing,
-                    'output' => [],
-                    'errors' => ['GIT_IDENTITY_REQUIRED' => 'Missing user.name and/or user.email'],
-                ];
+                return $errResponse(
+                    cmd: $cmd,
+                    prompt: $shellPrompt ?: '$',
+                    exit: 412,
+                    message: 'Git identity required: missing ' . \implode(', ', $missing),
+                    code: 'GIT_IDENTITY_REQUIRED',
+                    meta: ['missing' => $missing]
+                );
             }
 
-            // ✅ IMPORTANT: apply injected argv/prompt
+            // apply injected argv/prompt
             if (!empty($inj['argv']) && \is_array($inj['argv'])) {
                 $argv = $inj['argv'];
             }
@@ -209,70 +260,87 @@ final class GitManager
             }
         }
 
-        // -- Special: help ----------------------------------------
+        // ---------- special commands ----------
         if (\preg_match('/^help\b/i', $gitCmd)) {
             $output[] = $this->helpText();
 
-            // -- Special: update --------------------------------------
         } elseif (\preg_match('/^update\b/i', $gitCmd)) {
             $output[] = \function_exists('git_origin_sha_update')
                 ? git_origin_sha_update()
                 : 'git_origin_sha_update() not available.';
 
-            // -- Special: push ----------------------------------------
         } elseif (\preg_match('/^push\b/i', $gitCmd)) {
-            $pushResult = $this->handlePushCommand($gitCmd, $workTree); // <-- pass subcommand only
+            $pushResult = $this->handlePushCommand($gitCmd, $workTree);
             $output = [...$output, ...($pushResult['output'] ?? [])];
             $errors = [...$errors, ...($pushResult['errors'] ?? [])];
 
-            // -- Special: clone ---------------------------------------
         } elseif (\preg_match('/^clone\b/i', $gitCmd)) {
-            // For now keep legacy clone handler signature
             $cloneResult = $this->handleCloneCommand($cmd, $workTree);
             $output = [...$output, ...($cloneResult['output'] ?? [])];
             $errors = [...$errors, ...($cloneResult['errors'] ?? [])];
 
-            // -- Default git command ----------------------------------
         } else {
+            // Default git command
             $res = $this->runProcess($argv, $workTree);
 
-            if (($res['exitCode'] ?? 0) !== 0 && ($res['stdout'] ?? '') === '') {
-                if (!empty($res['stderr'])) {
-                    $errors["GIT-$gitCmd"] = $res['stderr'];
-                    \error_log((string) $res['stderr']);
+            $exitCode = (int) ($res['exitCode'] ?? 0);
+            $lastExitCode = $exitCode;
+
+            $resOut = (string) ($res['stdout'] ?? '');
+            $resErr = (string) ($res['stderr'] ?? '');
+
+            if ($exitCode !== 0 && $resOut === '') {
+                // treat stderr as error
+                if ($resErr !== '') {
+                    $errors["GIT-$gitCmd"] = $resErr;
+                    \error_log($resErr);
                 } else {
                     $errors["GIT-$gitCmd"] = 'Git command failed.';
                 }
             } else {
-                if (!empty($res['stdout'])) {
-                    $output[] = $res['stdout'];
+                if ($resOut !== '') {
+                    $output[] = $resOut;
                 }
-                if (!empty($res['stderr'])) {
-                    $output[] = 'stderr: ' . $res['stderr'];
+                if ($resErr !== '') {
+                    $output[] = 'stderr: ' . $resErr;
                 }
             }
         }
 
-        // Build a printable result string
-        $resultText = '';
-        if (!empty($output)) {
-            $resultText .= \implode("\n", \array_map('strval', $output));
-        }
-        if (!empty($errors)) {
-            $errText = \implode("\n", \array_map('strval', \is_array($errors) ? $errors : [$errors]));
-            $resultText .= ($resultText !== '' ? "\n\n" : '') . $errText;
+        // ---------- normalize to stdout/stderr/exit ----------
+        $stdout = !empty($output)
+            ? \implode("\n", \array_map('strval', $output))
+            : '';
+
+        $stderr = !empty($errors)
+            ? \implode("\n", \array_map('strval', \is_array($errors) ? $errors : [$errors]))
+            : '';
+
+        // Exit logic:
+        // - If we actually ran a git process, prefer its exit code.
+        // - Otherwise (special handlers), use 0 unless errors exist.
+        if (\is_int($lastExitCode)) {
+            $exit = $lastExitCode;
+        } else {
+            $exit = $stderr !== '' ? 1 : 0;
         }
 
-        return [
-            'ok' => empty($errors),
-            'api' => 'git',
-            'command' => $cmd,
-            'prompt' => $shellPrompt,
-            'result' => $resultText === '' ? '' : $resultText,
-            'output' => $output,
-            'errors' => $errors,
-        ];
+        return $okResponse(
+            cmd: $cmd,
+            prompt: '$ ' . ($shellPrompt ?: 'git'),
+            exit: $exit,
+            stdout: $stdout,
+            stderr: $stderr,
+            meta: [
+                'gitCmd' => $gitCmd,
+                'workTree' => $workTree,
+                'output' => $output, // legacy detail
+                'errors' => $errors, // legacy detail
+            ]
+        );
     }
+
+
 
     /**
      * Read a git config key from local or global scope.

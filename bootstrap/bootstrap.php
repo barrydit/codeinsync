@@ -24,6 +24,11 @@ $__app = rtrim(dirname(BOOTSTRAP_PATH), '/') . '/';
 $__appReal = @realpath($__app) ?: $__app;
 
 defined('APP_PATH') || define('APP_PATH', $__appReal . DIRECTORY_SEPARATOR);
+
+// [Optional] normalize CWD once (only if your code depends on it)
+if (!@chdir(APP_PATH))
+    throw new RuntimeException("Failed to chdir() to APP_PATH: " . APP_PATH);
+
 defined('CONFIG_PATH') || define('CONFIG_PATH', APP_PATH . 'config' . DIRECTORY_SEPARATOR);
 // optional legacy: 
 // defined('BASE_PATH') || define('BASE_PATH', BOOTSTRAP_PATH);
@@ -133,10 +138,6 @@ if (!defined('APP_MODE')) {
         define('APP_MODE', $isCli ? 'cli' : ($wantsDispatcher ? 'dispatcher' : 'web'));
     }
 }
-
-// [Optional] normalize CWD once (only if your code depends on it)
-if (!@chdir(APP_PATH))
-    throw new RuntimeException("Failed to chdir() to APP_PATH: " . APP_PATH);
 
 // --- route by mode (do not emit HTML before this switch) ---
 switch (APP_MODE) {

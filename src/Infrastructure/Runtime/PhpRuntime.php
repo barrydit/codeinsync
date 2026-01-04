@@ -3,84 +3,167 @@ declare(strict_types=1);
 
 namespace CodeInSync\Infrastructure\Runtime;
 
-final class PhpRuntime
+final class PhpRuntime implements RuntimeInterface
 {
-    public const DEFAULT_MAX_INLINE = 10_000;   // 10 KB: safe for -r
-    public const DEFAULT_TIMEOUT = 10;
-
-    public static function execPath(): string
+    public function name(): string
     {
-        if (defined('PHP_EXEC') && is_string(PHP_EXEC) && PHP_EXEC !== '') {
-            return PHP_EXEC;
-        }
-        foreach (['/usr/bin/php', '/bin/php', '/usr/local/bin/php'] as $p) {
-            if (is_file($p) && is_executable($p))
-                return $p;
-        }
         return 'php';
     }
 
-    public static function normalize(string $code): string
+    public function supports(string $cmd): bool
     {
-        $code = trim($code);
-
-        // strip escaped wrapping quotes: \"...\"
-        if (preg_match('/^\\\\(["\'])(.*)\\\\\\1$/s', $code, $m)) {
-            $code = $m[2];
-        }
-
-        // strip normal wrapping quotes: "..." or '...'
-        if (
-            (str_starts_with($code, '"') && str_ends_with($code, '"')) ||
-            (str_starts_with($code, "'") && str_ends_with($code, "'"))
-        ) {
-            $code = substr($code, 1, -1);
-        }
-
-        // unescape quotes
-        $code = str_replace(['\\"', "\\'"], ['"', "'"], $code);
-
-        // ensure trailing ;
-        $code = rtrim($code);
-        if ($code !== '' && substr($code, -1) !== ';')
-            $code .= ';';
-
-        return $code;
+        $cmd = ltrim($cmd);
+        return $cmd !== '' && \preg_match('/^php(?:\s|$)/i', $cmd) === 1;
     }
 
-    public static function run(string $code, array $opts = []): array
+    /**
+     * @param array{cwd?:string, env?:array<string,string>, timeout?:int, max_inline?:int} $ctx
+     * @return array<string,mixed>
+     */
+    public function run(string $cmd, array $ctx = []): array
     {
-        $php = self::execPath();
-        $timeout = (int) ($opts['timeout'] ?? self::DEFAULT_TIMEOUT);
-        $maxInline = (int) ($opts['max_inline'] ?? self::DEFAULT_MAX_INLINE);
+        $parsed = self::parsePhpCmd($cmd);
 
-        $code = self::normalize($code);
-
-        $iniArgs = ['-d', 'display_errors=1', '-d', 'html_errors=0'];
-
-        // Decide inline vs file
-        if (strlen($code) <= $maxInline) {
-            $argv = array_merge([$php], $iniArgs, ['-r', $code]);
-            return ProcessRunner::run($argv, ['cwd' => getcwd(), 'timeout' => $timeout]);
+        if ($parsed === null) {
+            return $this->err(
+                cmd: $cmd,
+                prompt: '$ ' . $cmd,
+                exit: 400,
+                message: 'Unsupported command format',
+                code: 'PHP_UNSUPPORTED_FORMAT',
+                meta: ['expected' => ['php <code>', 'php -r "<code>"']]
+            );
         }
 
-        // File execution fallback
-        $tmp = tempnam(sys_get_temp_dir(), 'cis_php_');
-        if ($tmp === false) {
-            return ['ok' => false, 'exit' => 255, 'out' => '', 'err' => 'tempnam() failed', 'cmd' => ''];
+        $phpExec = self::phpExec();
+        $argv = [
+            $phpExec,
+            '-d',
+            'display_errors=1',
+            '-d',
+            'html_errors=0',
+            '-r',
+            $parsed['code'],
+        ];
+
+        $timeout = (int) ($ctx['timeout'] ?? 10);
+        $cwd = (string) ($ctx['cwd'] ?? getcwd());
+
+        // Run through shared process pipeline
+        $res = ProcessRunner::run($argv, [
+            'cwd' => $cwd,
+            'timeout' => $timeout,
+            // 'env' => $ctx['env'] ?? null, // enable later if your ProcessRunner supports it
+        ]);
+
+        // ProcessRunner returns: exit/out/err/cmd
+        $exit = (int) ($res['exit'] ?? 255);
+        $stdout = (string) ($res['out'] ?? '');
+        $stderr = (string) ($res['err'] ?? '');
+
+        return [
+            'ok' => ($exit === 0),
+            'runtime' => 'php',
+            'command' => $cmd,
+            'prompt' => '$ ' . $cmd,
+            'exit' => $exit,
+            'stdout' => $stdout,
+            'stderr' => $stderr,
+            'meta' => [
+                'mode' => $parsed['mode'],
+                'php_exec' => $phpExec,
+                'argv' => $argv,
+                'cwd' => $cwd,
+            ],
+        ];
+    }
+
+    // ---------------- internals ----------------
+
+    private function err(string $cmd, string $prompt, int $exit, string $message, string $code, array $meta = []): array
+    {
+        return [
+            'ok' => false,
+            'runtime' => 'php',
+            'command' => $cmd,
+            'prompt' => $prompt,
+            'exit' => $exit,
+            'stdout' => '',
+            'stderr' => $message,
+            'meta' => ['code' => $code] + $meta,
+        ];
+    }
+
+    /**
+     * Accept:
+     *  - php <code>
+     *  - php -r "<code>"
+     *
+     * @return array{mode:string, code:string}|null
+     */
+    private static function parsePhpCmd(string $cmd): ?array
+    {
+        $cmd = trim($cmd);
+
+        // php -r "<code>"
+        if (\preg_match('/^php\s+-r\s+(.+)$/is', $cmd, $m)) {
+            $code = self::normalizeInlinePhp($m[1]);
+            return ['mode' => 'php -r', 'code' => $code];
         }
-        $file = $tmp . '.php';
 
-        $template = (string) ($opts['template'] ?? "<?php\n\n%s\n");
-        file_put_contents($file, sprintf($template, $code));
-
-        $argv = array_merge([$php], $iniArgs, [$file]);
-        $res = ProcessRunner::run($argv, ['cwd' => getcwd(), 'timeout' => $timeout]);
-
-        if (empty($opts['keep_file'])) {
-            @unlink($file);
+        // php <code> (not php -r)
+        if (\preg_match('/^php\s+(?!-r\b)(.+)$/is', $cmd, $m)) {
+            $code = self::normalizeInlinePhp($m[1]);
+            return ['mode' => 'php', 'code' => $code];
         }
 
-        return $res;
+        return null;
+    }
+
+    private static function normalizeInlinePhp(string $s): string
+    {
+        $s = trim($s);
+
+        // 1) If input arrives as \"...\" or \'...\', strip those first
+        if (\preg_match('/^\\\\(["\'])(.*)\\\\\\1$/s', $s, $m)) {
+            $s = $m[2];
+        }
+
+        // 2) Strip normal wrapping quotes "..." or '...'
+        if (
+            (str_starts_with($s, '"') && str_ends_with($s, '"')) ||
+            (str_starts_with($s, "'") && str_ends_with($s, "'"))
+        ) {
+            $s = substr($s, 1, -1);
+        }
+
+        // 3) Unescape remaining \" and \'
+        $s = str_replace(['\\"', "\\'"], ['"', "'"], $s);
+
+        // 4) Ensure trailing semicolon
+        $s = rtrim($s);
+        if ($s !== '' && substr($s, -1) !== ';') {
+            $s .= ';';
+        }
+
+        return $s;
+    }
+
+    private static function phpExec(): string
+    {
+        // 1) explicit constant wins
+        if (defined('PHP_EXEC') && is_string(PHP_EXEC) && PHP_EXEC !== '') {
+            return PHP_EXEC;
+        }
+
+        // 2) common absolute paths
+        foreach (['/usr/bin/php', '/bin/php', '/usr/local/bin/php'] as $p) {
+            if (is_file($p) && is_executable($p)) {
+                return $p;
+            }
+        }
+
+        // 3) last resort: rely on PATH
+        return 'php';
     }
 }

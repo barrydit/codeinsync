@@ -926,22 +926,45 @@ ob_start(); ?>
     const uiRes = await window.handleConsoleCommand?.(input);
     if (uiRes?.ok) return uiRes;
 
-    // 2) ROUTE BY PREFIX
-    if (/^git(\s|$)/i.test(input)) {
-      return await runRemoteGit(input);     // ✅ tools/code/git pipeline
+    // Prefer php tool app if loaded
+    const tool = window.App?.['tools/platform/php'];
+    if (tool && typeof tool.run === 'function') {
+      return await tool.run(input);
     }
 
-    if (/^(php)(\s|$)/i.test(input)) { // composer|npm|node|php
-      return await runRemotePhp(input);      // ✅ generic server ops pipeline
+    // API fallback
+    const base = `<?= UrlContext::getBaseHref(); ?>`;
+    const url = new URL(base, location.origin);
+    url.searchParams.set('api', 'console');
+
+    const res = await fetch(url.toString(), {
+      method: 'POST',
+      headers: {
+        'Accept': 'application/json',
+        'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8'
+      },
+      body: new URLSearchParams({ cmd: input })
+    });
+
+    const raw = await res.text();
+
+    console.log('[git] HTTP', res.status, 'raw:', raw);
+
+    try {
+      return JSON.parse(raw);
+    } catch {
+      return {
+        ok: false,
+        error: 'Git API returned invalid JSON',
+        raw
+      };
     }
 
-    // 3) FALLBACK (your existing console backend)
-    return await runRemoteConsole(input);
   }
 
   async function executeAndPrint(argv) {
     // show prompt line (always new line)
-
+    console.log('[DEBUG executeAndPrint] argv=' + argv);
     const res = await runConsoleLine(argv);
     prependToConsole('[DEBUG typeof res] ' + (typeof res));
     // prependToConsole('[DEBUG res] ' + JSON.stringify(res));
@@ -955,8 +978,7 @@ ob_start(); ?>
 
     if (out.prompt) prependToConsole(`<?= $shell_prompt; ?>${out.prompt}`);
 
-    if (out.result) prependToConsole(out.result);
-
+    if (out.stdout) prependToConsole(out.stdout);
 
     prependToConsole(`<?= $shell_prompt; ?>`);
     return out;
@@ -1037,39 +1059,7 @@ ob_start(); ?>
    * ========================= */
 
   async function runRemotePhp(cmd) {
-    // Prefer php tool app if loaded
-    const tool = window.App?.['tools/platform/php'];
-    if (tool && typeof tool.run === 'function') {
-      return await tool.run(cmd);
-    }
 
-    // API fallback
-    const base = `<?= UrlContext::getBaseHref(); ?>`;
-    const url = new URL(base, location.origin);
-    url.searchParams.set('api', 'php');
-
-    const res = await fetch(url.toString(), {
-      method: 'POST',
-      headers: {
-        'Accept': 'application/json',
-        'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8'
-      },
-      body: new URLSearchParams({ cmd })
-    });
-
-    const raw = await res.text();
-
-    console.log('[git] HTTP', res.status, 'raw:', raw);
-
-    try {
-      return JSON.parse(raw);
-    } catch {
-      return {
-        ok: false,
-        error: 'Git API returned invalid JSON',
-        raw
-      };
-    }
   }
 
   /* =========================

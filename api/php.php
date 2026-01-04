@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 use CodeInSync\Infrastructure\Runtime\Shutdown;
 use CodeInSync\Infrastructure\Runtime\ProcessRunner;
-use CodeInSync\Infrastructure\Runtime\PhpRuntime;
+// use CodeInSync\Infrastructure\Runtime\PhpRuntime;
 
 if (!defined('APP_BOOTSTRAPPED')) {
     // require_once dirname(__DIR__, 2) . '/bootstrap/bootstrap.php';
