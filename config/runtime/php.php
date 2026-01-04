@@ -193,7 +193,6 @@ foreach ($dirs as $includeFile) {
     $previousFilename = $currentFilename;
 }
 
-
 //die(var_dump(get_defined_constants(true)['user']));
 
 // Get all PHP files in the 'classes' directory

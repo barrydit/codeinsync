@@ -17,7 +17,7 @@ final class ShellPrompt
         $cwd = self::detectCwdOrAppPath();
 
         $rel = self::normalizeRelativePath(
-            $relativePath . /*rtrim((string) (\defined('APP_ROOT') ? APP_ROOT : ''), DIRECTORY_SEPARATOR) .*/ (DIRECTORY_SEPARATOR . ($_GET['path'] ?? null))
+            $relativePath . /*rtrim((string) (\defined('APP_ROOT') ? APP_ROOT : ''), DIRECTORY_SEPARATOR) .*/ (DIRECTORY_SEPARATOR . (isset($_GET['path']) ? $_GET['path'] : null))
         );
 
         return \sprintf('%s@%s:%s%s# ', $user, $server, $cwd, $rel);
@@ -52,7 +52,7 @@ final class ShellPrompt
 
     private static function detectCwdOrAppPath(): string
     {
-        $cwd = realpath(getcwd() . (\defined('APP_ROOT') ? '/' . APP_ROOT : '') . (\defined('APP_ROOT_PATH') ? '/' . APP_ROOT_PATH : '')) . DIRECTORY_SEPARATOR;
+        $cwd = realpath(getcwd() . (\defined('APP_ROOT') ? '/' . APP_ROOT : '') . (\defined('APP_ROOT_PATH') ? '/' . APP_ROOT_PATH : '')); //. DIRECTORY_SEPARATOR
         if ($cwd !== false && $cwd !== '') {
             return $cwd;
         }

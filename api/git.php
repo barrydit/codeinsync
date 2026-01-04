@@ -2,17 +2,18 @@
 // api/git.php
 use CodeInSync\Infrastructure\Runtime\Shutdown;
 use CodeInSync\Infrastructure\Git\GitManager;
-use CodeInSync\Infrastructure\Runtime\ProcessRunner;
+//use CodeInSync\Infrastructure\Runtime\ProcessRunner;
 
 if (!class_exists(\CodeInSync\Infrastructure\Git\GitManager::class)) {
     require APP_PATH . 'src/Infrastructure/Git/GitManager.php';
     @class_alias(\CodeInSync\Infrastructure\Git\GitManager::class, 'GitManager');
 }
 
+/*
 if (!class_exists(\CodeInSync\Infrastructure\Runtime\ProcessRunner::class)) {
     require APP_PATH . 'src/Infrastructure/Runtime/ProcessRunner.php';
     @class_alias(\CodeInSync\Infrastructure\Runtime\ProcessRunner::class, 'ProcessRunner');
-}
+}*/
 
 /**
  * Handle a git command string like "git status", "git commit -am 'msg'" etc.
@@ -154,16 +155,15 @@ END;
 
 ob_start();
 
-// If INCLUDED by another PHP file (dispatcher)
-if (cis_is_included_file(__FILE__)) {
-    $cmd = (string) ($_POST['cmd'] ?? '');
-    $manager = GitManager::fromGlobals();
-    return $manager->handleCommand($cmd);
-}
 
 // === Execution point (direct HTTP access) ===
-if (($_SERVER['REQUEST_METHOD'] ?? '') === 'POST')
-    if (cis_is_direct_http_file(__FILE__) && isset($_POST['cmd']) && is_string($_POST['cmd']) && $_POST['cmd'] !== '') {
+if (($_SERVER['REQUEST_METHOD'] ?? '') === 'POST' && isset($_POST['cmd']) && is_string($_POST['cmd']) && $_POST['cmd'] !== '')
+    // If INCLUDED by another PHP file (dispatcher)
+    if (cis_is_included_file(__FILE__)) {
+        $cmd = (string) ($_POST['cmd'] ?? '');
+        $manager = GitManager::fromGlobals();
+        return $manager->handleCommand($cmd);
+    } elseif (cis_is_direct_http_file(__FILE__)) {
         $manager = GitManager::fromGlobals();
         $response = $manager->handleCommand($_POST['cmd']);
 

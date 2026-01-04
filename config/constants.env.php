@@ -173,6 +173,8 @@ if (!defined('APP_ENV')) {
     $errors['APP_ENV'] = 'App Env must be a string: ' . var_export(APP_ENV, true);
 }
 
+define('APP_DEV_MODE', in_array(APP_ENV, ['development', 'dev', 'local'], true));
+
 // Define WWW_PATH (public web root) if not already defined
 if (!defined('WWW_PATH'))
     // Adjust to your project layout

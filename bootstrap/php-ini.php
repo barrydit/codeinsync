@@ -52,7 +52,7 @@ if (APP_DEBUG || APP_ERROR) {
 }
 
 // 1) Resolve log directory
-$logDir = $_ENV['PHP']['LOG_PATH'] ?? '/var/log/';
+$logDir = APP_PATH . $_ENV['PHP']['LOG_PATH'] ?? '/var/log/';
 $logDir = rtrim((string) $logDir, "\\/") . '/';
 
 // Ensure directory exists

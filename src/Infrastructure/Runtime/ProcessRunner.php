@@ -33,9 +33,10 @@ final class ProcessRunner
         ));
 
         $pipes = [];
-        $proc = @proc_open($cmdForExec, $desc, $pipes, $cwd);
+        $env = $opts['env'] ?? null;
+        $proc = @proc_open($cmdForExec, $desc, $pipes, $cwd, $env);
 
-        if (!is_resource($proc)) {
+        if (!\is_resource($proc)) {
             $err = error_get_last();
             return [
                 'exit' => -1,
@@ -56,6 +57,7 @@ final class ProcessRunner
         $exit = proc_close($proc);
 
         return [
+            'ok' => ((int) $exit === 0),
             'exit' => (int) $exit,
             'out' => $out,
             'err' => $err,

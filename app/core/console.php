@@ -931,8 +931,8 @@ ob_start(); ?>
       return await runRemoteGit(input);     // ✅ tools/code/git pipeline
     }
 
-    if (/^(composer|npm|node|php)(\s|$)/i.test(input)) {
-      return await runRemoteOp(input);      // ✅ generic server ops pipeline
+    if (/^(php)(\s|$)/i.test(input)) { // composer|npm|node|php
+      return await runRemotePhp(input);      // ✅ generic server ops pipeline
     }
 
     // 3) FALLBACK (your existing console backend)
@@ -1030,6 +1030,46 @@ ob_start(); ?>
 
     // Final fallback — never print [object Object]
     return { ok: true, result: JSON.stringify(res, null, 2) };
+  }
+
+  /* =========================
+   * Remote PHP Handler (POST)
+   * ========================= */
+
+  async function runRemotePhp(cmd) {
+    // Prefer php tool app if loaded
+    const tool = window.App?.['tools/platform/php'];
+    if (tool && typeof tool.run === 'function') {
+      return await tool.run(cmd);
+    }
+
+    // API fallback
+    const base = `<?= UrlContext::getBaseHref(); ?>`;
+    const url = new URL(base, location.origin);
+    url.searchParams.set('api', 'php');
+
+    const res = await fetch(url.toString(), {
+      method: 'POST',
+      headers: {
+        'Accept': 'application/json',
+        'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8'
+      },
+      body: new URLSearchParams({ cmd })
+    });
+
+    const raw = await res.text();
+
+    console.log('[git] HTTP', res.status, 'raw:', raw);
+
+    try {
+      return JSON.parse(raw);
+    } catch {
+      return {
+        ok: false,
+        error: 'Git API returned invalid JSON',
+        raw
+      };
+    }
   }
 
   /* =========================

@@ -480,6 +480,7 @@ try {
     $cmd = $_POST['cmd'] ?? null;
     // --- helpers ---
     $load_ui_app = static function (string $app): array {
+
         $rel = ltrim($app, '/');
         $file = APP_PATH . 'app/' . $rel . '.php';
         if (!is_file($file)) {
@@ -514,45 +515,98 @@ try {
         $file = APP_PATH . 'api/' . $rel . '.php';
 
         if (!is_file($file)) {
-            return ['ok' => false, 'error' => 'API not found', 'api' => $api, 'file' => $file];
+            return [
+                'ok' => false,
+                'api' => $api,
+                'file' => $file,
+                'error' => 'API not found',
+            ];
         }
+
+        $wrapOk = static function ($result, array $extra = []): array {
+            return ['ok' => true] + $extra + ['result' => $result];
+        };
+
+        $wrapErr = static function (string $message, array $extra = []): array {
+            return ['ok' => false, 'error' => $message] + $extra;
+        };
+
+        $decodeJsonIfArray = static function (string $s): ?array {
+            $s = trim($s);
+            if ($s === '')
+                return null;
+
+            $decoded = json_decode($s, true);
+            if (json_last_error() !== JSON_ERROR_NONE || !is_array($decoded)) {
+                return null;
+            }
+            return $decoded;
+        };
+
+        $normalizeReturn = static function ($ret) use ($wrapOk, $wrapErr): array {
+            if (is_array($ret)) {
+                return $ret; // pass-through contract
+            }
+
+            if (is_scalar($ret) || $ret === null) {
+                return $wrapOk($ret);
+            }
+
+            if ($ret instanceof \JsonSerializable) {
+                return $wrapOk($ret->jsonSerialize());
+            }
+
+            if (is_object($ret)) {
+                return $wrapOk(get_object_vars($ret));
+            }
+
+            return $wrapErr('Unsupported return type', ['type' => gettype($ret)]);
+        };
 
         ob_start();
-        $ret = require $file; // handler may echo or return
+        try {
+            $ret = require $file; // handler may echo or return
+        } catch (\Throwable $e) {
+            $echoed = ob_get_clean(); // discard or include below if you want
+
+            return $wrapErr('API exception', [
+                'api' => $api,
+                'file' => $file,
+                'exception' => get_class($e),
+                'message' => $e->getMessage(),
+                // Optional (dev only): include trace
+                // 'trace'  => $e->getTraceAsString(),
+                // Optional: include whatever was echoed before crash
+                // 'echo'   => $echoed,
+            ]);
+        }
+
         $echoed = ob_get_clean();
 
-        // If handler echoed something, try to treat it as JSON first; else wrap it.
+        // 1) If handler echoed JSON, that wins.
         if ($echoed !== '') {
-            $decoded = json_decode($echoed, true);
-            if (json_last_error() === JSON_ERROR_NONE && is_array($decoded)) {
-                return $decoded; // handler already emitted valid JSON
+            $decoded = $decodeJsonIfArray($echoed);
+            if (is_array($decoded)) {
+                return $decoded;
             }
-            return ['ok' => true, 'echo' => $echoed, 'result' => $ret ?? null];
+
+            // 2) Otherwise, treat echo as a result channel and include return value too.
+            return $wrapOk($ret ?? null, [
+                'echo' => $echoed,
+                'api' => $api,
+                'file' => $file,
+            ]);
         }
 
-        // If handler returned an array, pass it through unchanged.
-        if (is_array($ret)) {
-            return $ret;
-        }
+        // 3) No echo; normalize return value.
+        $out = $normalizeReturn($ret);
+        // Optional: attach api/file context for debugging
+        // $out['api'] = $out['api'] ?? $api;
+        // $out['file'] = $out['file'] ?? $file;
 
-        // If handler returned a scalar / null, wrap it.
-        if (is_scalar($ret) || $ret === null) {
-            return ['ok' => true, 'result' => $ret];
-        }
-
-        // If it's JsonSerializable, serialize it.
-        if ($ret instanceof \JsonSerializable) {
-            return ['ok' => true, 'result' => $ret->jsonSerialize()];
-        }
-
-        // If it's an object, expose public props; if resource/other, error out.
-        if (is_object($ret)) {
-            return ['ok' => true, 'result' => get_object_vars($ret)];
-        }
-
-        return ['ok' => false, 'error' => 'Unsupported return type', 'type' => gettype($ret)];
+        return $out;
     };
-
+    
     // Emit JSON safely and STOP any further output
     $emit_json = static function ($data, int $code = 200): void {
         // Ensure nothing leaked before

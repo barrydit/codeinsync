@@ -7,6 +7,11 @@ use DOMDocument;
 use CodeInSync\Infrastructure\Dom\DomHelpers;
 use CodeInSync\Infrastructure\Runtime\ProcessRunner;
 
+if (!class_exists(\CodeInSync\Infrastructure\Runtime\ProcessRunner::class)) {
+    require APP_PATH . 'src/Infrastructure/Runtime/ProcessRunner.php';
+    @class_alias(\CodeInSync\Infrastructure\Runtime\ProcessRunner::class, 'ProcessRunner');
+}
+
 if (!class_exists(DomHelpers::class)) {
     require APP_PATH . 'src/Infrastructure/Dom/DomHelpers.php';
     @class_alias(DomHelpers::class, 'DomHelpers');
@@ -213,6 +218,12 @@ final class GitManager
             $output[] = \function_exists('git_origin_sha_update')
                 ? git_origin_sha_update()
                 : 'git_origin_sha_update() not available.';
+
+            // -- Special: push ----------------------------------------
+        } elseif (\preg_match('/^push\b/i', $gitCmd)) {
+            $pushResult = $this->handlePushCommand($gitCmd, $workTree); // <-- pass subcommand only
+            $output = [...$output, ...($pushResult['output'] ?? [])];
+            $errors = [...$errors, ...($pushResult['errors'] ?? [])];
 
             // -- Special: clone ---------------------------------------
         } elseif (\preg_match('/^clone\b/i', $gitCmd)) {
@@ -1002,6 +1013,148 @@ git commit -am "Message"
 git checkout -b newBranch
 END;
     }
+
+    /**
+     * Build: https://<token>@github.com/<user>/<repo>.git
+     * Returns null if env missing.
+     */
+    private function buildAuthedGithubPushUrl(): ?string
+    {
+        $token = (string) ($_ENV['GITHUB']['OAUTH_TOKEN'] ?? '');
+        $user = (string) ($_ENV['GITHUB']['USERNAME'] ?? '');
+        $repo = (string) ($_ENV['GITHUB']['REPOSITORY'] ?? '');
+
+        if ($token === '' || $user === '' || $repo === '') {
+            return null;
+        }
+
+        // URL-encode token for safety (in case it contains special chars)
+        $tokenEnc = \rawurlencode($token);
+
+        return "https://{$tokenEnc}@github.com/{$user}/{$repo}.git";
+    }
+
+    /**
+     * Redact token from any output (stdout/stderr/prompt strings).
+     */
+    private function redactGithubToken(string $text): string
+    {
+        $token = (string) ($_ENV['GITHUB']['OAUTH_TOKEN'] ?? '');
+        if ($token === '') {
+            return $text;
+        }
+
+        // If we url-encoded it in the URL, redact both raw and encoded forms
+        $encoded = \rawurlencode($token);
+
+        $text = \str_replace($token, '[REDACTED]', $text);
+        $text = \str_replace($encoded, '[REDACTED]', $text);
+
+        return $text;
+    }
+
+    /**
+     * Special handler: git push
+     * - If user runs `git push` (or `git push origin`) with no explicit URL,
+     *   auto-build: https://<token>@github.com/<user>/<repo>.git
+     *
+     * @return array{output:array<int,string>,errors:array<string,string>}
+     */
+    private function handlePushCommand(string $gitCmd, string $workTree): array
+    {
+        $output = [];
+        $errors = [];
+
+        // Tokenize the push subcommand (already without leading "git ")
+        $args = $this->tokenizeCommand($gitCmd);
+
+        // Expect: ["push", ...]
+        if (empty($args) || \strtolower($args[0]) !== 'push') {
+            $errors['GIT_PUSH'] = 'Invalid push command.';
+            return compact('output', 'errors');
+        }
+
+        // Build base argv/prompt like normal:
+        // baseArgv = [sudo..., gitExec, --git-dir=..., --work-tree=...]
+        $gitDir = \realpath(\rtrim($workTree, DIRECTORY_SEPARATOR) . DIRECTORY_SEPARATOR . GitPaths::FOLDER);
+        if ($gitDir === false) {
+            $errors['GIT_PUSH'] = 'GIT_DIR_NOT_FOUND';
+            return compact('output', 'errors');
+        }
+
+        $baseArgv = [
+            ...$this->computeSudoArgvForRepoOwner($workTree),
+            $this->gitExec,
+            '--git-dir=' . $gitDir,
+            '--work-tree=' . \rtrim($workTree, DIRECTORY_SEPARATOR) . DIRECTORY_SEPARATOR,
+        ];
+
+        // Decide whether user already provided a URL (or something URL-like)
+        // Examples that mean "already provided":
+        //   git push https://...
+        //   git push git@github.com:...
+        //   git push http://...
+        $hasExplicitUrl = false;
+        foreach ($args as $tok) {
+            if (!\is_string($tok))
+                continue;
+            if (\preg_match('#^(https?://|git@|ssh://)#i', $tok)) {
+                $hasExplicitUrl = true;
+                break;
+            }
+        }
+
+        // If no explicit URL, inject URL as the "remote" argument
+        // `git push <url> <refspec>` is valid.
+        if (!$hasExplicitUrl) {
+            $url = $this->buildAuthedGithubPushUrl();
+            if ($url === null) {
+                $errors['GIT_PUSH'] = 'Missing GITHUB.OAUTH_TOKEN and/or GITHUB.USERNAME/REPOSITORY in env.';
+                return compact('output', 'errors');
+            }
+
+            // Where to insert URL?
+            // args = ["push", ...]
+            // If user said only "push": becomes ["push", "<url>"]
+            // If user said "push origin": replace "origin" with url (so they can still add refs)
+            if (isset($args[1]) && \is_string($args[1]) && $args[1] !== '' && $args[1][0] !== '-') {
+                // Replace remote name with URL
+                $args[1] = $url;
+            } else {
+                // Insert URL after "push"
+                \array_splice($args, 1, 0, [$url]);
+            }
+        }
+
+        // Final argv
+        $argv = [...$baseArgv, ...$args];
+
+        $res = $this->runProcess($argv, $workTree);
+
+        // Redact token from anything that might be shown/logged
+        $resStdout = (string) ($res['stdout'] ?? '');
+        $resStderr = (string) ($res['stderr'] ?? '');
+        $redactedStdout = $this->redactGithubToken($resStdout);
+        $redactedStderr = $this->redactGithubToken($resStderr);
+
+        if (($res['exitCode'] ?? 0) !== 0) {
+            $errors['GIT_PUSH'] = $redactedStderr !== '' ? $redactedStderr : 'git push failed.';
+            if ($redactedStdout !== '') {
+                $output[] = $redactedStdout;
+            }
+            return compact('output', 'errors');
+        }
+
+        if ($redactedStdout !== '') {
+            $output[] = $redactedStdout;
+        }
+        if ($redactedStderr !== '') {
+            $output[] = 'stderr: ' . $redactedStderr;
+        }
+
+        return compact('output', 'errors');
+    }
+
 
     /**
      * Handle the special "git clone ..." logic, including socket branch.
