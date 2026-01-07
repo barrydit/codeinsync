@@ -1,4 +1,11 @@
 <?php
+// app/tools/registry/npmjs.php
+declare(strict_types=1);
+
+if (!defined('APP_BOOTSTRAPPED')) {
+  require_once dirname(__DIR__, 3) . '/bootstrap/bootstrap.php';
+}
+
 /**
  * npmjs.com Package Search
  *
@@ -79,16 +86,6 @@ switch ($_GET['app']) {
     break;
 }*/
 
-
-
-if (__FILE__ == get_required_files()[0]) //die(getcwd());
-  if (
-    $path = (basename(getcwd()) == 'public')
-    ? (is_file('config.php') ? 'config.php' : '..' . DIRECTORY_SEPARATOR . 'config' . DIRECTORY_SEPARATOR . 'config.php') : ''
-  )
-    require_once $path;
-  else
-    die(var_dump("$path path was not found. file=config.php"));
 /*
 if ($path = (basename(getcwd()) == 'public')
     ? (is_file('../console_app.php') ? '../console_app.php' : (is_file('../config/console_app.php') ? '../config/console_app.php' : 'console_app.php'))
@@ -180,11 +177,9 @@ ob_start(); ?>
     color: black;
   }
 
-  <?php $app['style'] = ob_get_contents();
+  <?php $UI_APP['style'] = ob_get_contents();
   ob_end_clean();
-  if (false) { ?>
-  </style>
-<?php }
+  if (false) { ?></style><?php }
 
   ob_start();
 
@@ -209,7 +204,7 @@ ob_start(); ?>
 </div>
 <!-- </div> -->
 
-<?php $app['body'] = ob_get_contents();
+<?php $UI_APP['body'] = ob_get_contents();
 ob_end_clean();
 
 if (false) { ?>
@@ -217,14 +212,14 @@ if (false) { ?>
   <?php }
 ob_start(); ?>
   // Javascript comment
-  <?php $app['script'] = ob_get_contents();
+  <?php $UI_APP['script'] = ob_get_contents();
   ob_end_clean();
 
   if (false) { ?></script> <?php }
 
   ob_start(); ?>
 
-<?php $app['html'] = ob_get_contents();
+<?php $UI_APP['html'] = ob_get_contents();
 ob_end_clean();
 
 /*
@@ -250,9 +245,9 @@ $dom->appendChild($elm);
 //echo file_get_contents("https://npmjs.com/");
 
 //check if file is included or accessed directly
-if (__FILE__ == get_required_files()[0] || in_array(__FILE__, get_required_files()) && array_key_first($_GET) == 'npmjs' && APP_DEBUG)
-  Shutdown::setEnabled(false)->setShutdownMessage(function () use ($dom) {
-    return $dom->saveHTML(); /* eval('?>' . $project_code); // -wow */
-  })->shutdown(); // exit;
+if (cis_is_direct_http_file(__FILE__) && APP_DEBUG && ($_GET['app'] ?? null) === 'npmjs') {
+  die($UI_APP['html']);
+}
 
+return $UI_APP;
 

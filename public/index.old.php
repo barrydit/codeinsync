@@ -21,8 +21,6 @@ if (is_file(dirname(__DIR__, 1) . '/bootstrap/bootstrap.php'))
 
 require_once dirname(__DIR__) . '/bootstrap/kernel.php';
 
-//dd(get_required_files());
-
 /**
  * File Analysis Summary for PHP Project
  * Counts PHP files, lines of code, and included files excluding vendor/.

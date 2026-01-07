@@ -349,7 +349,6 @@ curl -i -X POST 'http://localhost/?api=composer' \
     }
 
     default:
-        //dd('UNKNOWN_ACTION');
         // Future actions: install, update, dump-autoload, etc.
         return [
             'ok' => false,
@@ -606,10 +605,6 @@ if (($_SERVER['REQUEST_METHOD'] ?? '') === 'POST') {
 //require_once 'config' . DIRECTORY_SEPARATOR . 'config.php';
 
 //die(var_dump(get_defined_constants(true)['user'], false)); // get_defined_constants(true) or die('get_defined_constants() failed.');
-
-//dd(PHP_EXEC);
-
-
 
 
 use PHPUnit\Event\Code\Throwable;

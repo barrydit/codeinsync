@@ -13,15 +13,15 @@ $errors ??= [];
 
 // Normalized server array (avoid notices; still works in CLI)
 $server = $_SERVER ?? [];
-$isCli  = (PHP_SAPI === 'cli' || PHP_SAPI === 'phpdbg');
+$isCli = (PHP_SAPI === 'cli' || PHP_SAPI === 'phpdbg');
 
 // ---------------------------------------------------------
 // 1) Scheme (http / https)
 // ---------------------------------------------------------
-$xfp       = strtolower($server['HTTP_X_FORWARDED_PROTO'] ?? '');
-$rs        = strtolower($server['REQUEST_SCHEME'] ?? '');
+$xfp = strtolower($server['HTTP_X_FORWARDED_PROTO'] ?? '');
+$rs = strtolower($server['REQUEST_SCHEME'] ?? '');
 $httpsFlag = $server['HTTPS'] ?? '';
-$rawPort   = (int) ($server['HTTP_X_FORWARDED_PORT'] ?? ($server['SERVER_PORT'] ?? 80));
+$rawPort = (int) ($server['HTTP_X_FORWARDED_PORT'] ?? ($server['SERVER_PORT'] ?? 80));
 
 $isHttps =
     $xfp === 'https' ||
@@ -55,9 +55,9 @@ if (strpos($host, ':') !== false) {
 // ---------------------------------------------------------
 // 3) Port (honor proxy port, strip default)
 // ---------------------------------------------------------
-$port          = $rawPort ?: ($isHttps ? 443 : 80);
+$port = $rawPort ?: ($isHttps ? 443 : 80);
 $isDefaultPort = (!$isHttps && $port === 80) || ($isHttps && $port === 443);
-$portPart      = $isDefaultPort ? '' : ':' . $port;
+$portPart = $isDefaultPort ? '' : ':' . $port;
 
 // ---------------------------------------------------------
 // 4) Request URI, path, query, fragment
@@ -72,14 +72,14 @@ if ($isCli) {
     }
 }
 
-$path        = parse_url($requestUri, PHP_URL_PATH) ?: '/';
+$path = parse_url($requestUri, PHP_URL_PATH) ?: '/';
 $queryString = (string) (parse_url($requestUri, PHP_URL_QUERY) ?? '');
-$fragment    = parse_url($requestUri, PHP_URL_FRAGMENT) ?: null;
+$fragment = parse_url($requestUri, PHP_URL_FRAGMENT) ?: null;
 
 // ---------------------------------------------------------
 // 5) Core URL-related constants
 // ---------------------------------------------------------
-defined('APP_SCHEME')   or define('APP_SCHEME', $scheme);
+defined('APP_SCHEME') or define('APP_SCHEME', $scheme);
 defined('APP_IS_HTTPS') or define('APP_IS_HTTPS', $isHttps);
 
 // Domain without leading "www."
@@ -93,7 +93,7 @@ defined('APP_HOST') or define('APP_HOST', $host);
 defined('APP_PORT') or define('APP_PORT', $port);
 
 // Origin: scheme://host[:port]
-defined('APP_ORIGIN') or define('APP_ORIGIN', APP_SCHEME . '://' . APP_HOST . $portPart);
+defined('APP_ORIGIN') or define('APP_ORIGIN', APP_SCHEME . '://' . APP_HOST . '/' . $portPart);
 
 // ---------------------------------------------------------
 // 6) Query string parsed into array (APP_QUERY)
@@ -111,7 +111,7 @@ if (!defined('APP_QUERY')) {
 // ---------------------------------------------------------
 if (!defined('APP_URL')) {
     $qsPart = $queryString !== '' ? '?' . $queryString : '';
-    define('APP_URL', APP_ORIGIN . $path . $qsPart);
+    define('APP_URL', APP_ORIGIN . '/' . $path . $qsPart);
 }
 
 // ---------------------------------------------------------
@@ -145,14 +145,14 @@ if (!is_string(SERVER_HOST)) {
 // ---------------------------------------------------------
 if (!defined('APP_URL_BASE')) {
     define('APP_URL_BASE', [
-        'scheme'   => APP_SCHEME,
-        'host'     => APP_HOST,
-        'port'     => APP_PORT,
-        'path'     => $path,
-        'query'    => $queryString,
+        'scheme' => APP_SCHEME,
+        'host' => APP_HOST,
+        'port' => APP_PORT,
+        'path' => $path,
+        'query' => $queryString,
         'fragment' => $fragment,
-        'user'     => $server['PHP_AUTH_USER'] ?? null,
-        'pass'     => $server['PHP_AUTH_PW'] ?? null,
+        'user' => $server['PHP_AUTH_USER'] ?? null,
+        'pass' => $server['PHP_AUTH_PW'] ?? null,
     ]);
 }
 
@@ -176,13 +176,13 @@ if (!defined('APP_HTTPS')) {
 //   Previously: scheme/host/port/user/pass/path/query/fragment
 if (!defined('APP_URL_PARTS')) {
     define('APP_URL_PARTS', [
-        'scheme'   => APP_SCHEME,
-        'host'     => APP_HOST,
-        'port'     => APP_PORT,
-        'user'     => $server['PHP_AUTH_USER'] ?? null,
-        'pass'     => $server['PHP_AUTH_PW'] ?? null,
-        'path'     => APP_URL_PATH,
-        'query'    => $queryString,
+        'scheme' => APP_SCHEME,
+        'host' => APP_HOST,
+        'port' => APP_PORT,
+        'user' => $server['PHP_AUTH_USER'] ?? null,
+        'pass' => $server['PHP_AUTH_PW'] ?? null,
+        'path' => APP_URL_PATH,
+        'query' => $queryString,
         'fragment' => $fragment ?? '',
     ]);
 }
@@ -192,8 +192,8 @@ if (!defined('APP_URL_PARTS')) {
 if (!defined('APP_URI')) {
     $scriptName = $server['SCRIPT_NAME'] ?? '';
     $scriptBase = basename($scriptName);
-    $dir        = rtrim(str_replace('\\', '/', dirname($scriptName)), '/');
-    $dir        = ($dir === '') ? '' : $dir . '/';
+    $dir = rtrim(str_replace('\\', '/', dirname($scriptName)), '/');
+    $dir = ($dir === '') ? '' : $dir . '/';
 
     $qs = APP_QUERY ? ('?' . http_build_query(APP_QUERY)) : '';
 
@@ -204,7 +204,7 @@ if (!defined('APP_URI')) {
     define('APP_URI', htmlspecialchars($uri, ENT_QUOTES, 'UTF-8'));
 }
 
-// Done – clean up local variables if you want
+// Done ï¿½ clean up local variables if you want
 unset(
     $xfp,
     $rs,

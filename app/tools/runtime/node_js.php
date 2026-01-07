@@ -1,14 +1,10 @@
 <?php
+// app/tools/registry/node_js.php
+declare(strict_types=1);
 
-if (__FILE__ == get_required_files()[0])
-  if (
-    $path = (basename(getcwd()) != 'public')
-    ?: (is_file('config.php') ? 'config.php' : '..' . DIRECTORY_SEPARATOR . 'config' . DIRECTORY_SEPARATOR . 'config.php')
-
-  )
-    require_once $path;
-  else
-    die(var_dump("$path path was not found. file=$path"));
+if (!defined('APP_BOOTSTRAPPED')) {
+  require_once dirname(__DIR__, 3) . '/bootstrap/bootstrap.php';
+}
 
 if (is_file($path = APP_BASE['config'] . 'constants.npm.php'))
   require_once $path;
@@ -40,12 +36,11 @@ font-weight: bold;
 img {
 display : inline;
 }
-<?php $app['style'] = ob_get_contents();
+<?php $UI_APP['style'] = ob_get_contents();
 ob_end_clean();
 
 ob_start(); ?>
-<div id="app_node_js-container"
-  class="absolute <?= (__FILE__ == get_required_files()[0] || (isset($_GET['app']) && $_GET['app'] == 'npm') && !isset($_GET['path']) ? 'selected' : '') ?>"
+<div id="app_node_js-container" class=""
   style="z-index: 1; width: 424px; background-color: rgba(255,255,255,0.8); padding: 10px;">
   <div
     style="position: relative; margin: 0 auto; width: 404px; height: 306px; border: 3px dashed #DD0000; background-color: #FBF7F1;">
@@ -295,23 +290,22 @@ ob_start(); ?>
     </div>
   </div>
 </div>
-<?php $app['body'] = ob_get_contents();
+<?php $UI_APP['body'] = ob_get_contents();
 ob_end_clean();
 
 if (false) { ?>
   <script type="text/javascript"><?php }
 ob_start(); ?>
   // Javascript comment
-  <?php $app['script'] = ob_get_contents();
+  <?php $UI_APP['script'] = ob_get_contents();
   ob_end_clean();
 
   if (false) { ?></script><?php }
 
   //check if file is included or accessed directly
-  if (__FILE__ == get_required_files()[0] || in_array(__FILE__, get_required_files()) && isset($_GET['app']) && $_GET['app'] == 'npm' && APP_DEBUG) {
+  if (cis_is_direct_http_file(__FILE__) && APP_DEBUG && ($_GET['app'] ?? null) === 'node_js') {
     header("Cache-Control: no-store, no-cache, must-revalidate, max-age=0");
-    header("Pragma: no-cache");
-    ob_start(); ?>
+    header("Pragma: no-cache"); ?>
   <!DOCTYPE html>
   <html>
 
@@ -343,19 +337,18 @@ ob_start(); ?>
     <script src="<?= APP_BASE['public'] . "assets/vendor/{$filename}" ?? $url ?>"></script>
 
     <style type="text/tailwindcss">
-      <?= $app['style']; ?>
-                </style>
+      <?= $UI_APP['style']; ?>
+      </style>
   </head>
 
   <body>
-    <?= $app['body']; ?>
+    <?= $UI_APP['body']; ?>
 
-    <script
-      src="<?= APP_IS_ONLINE && check_http_status('https://code.jquery.com/jquery-3.7.1.min.js') ? 'https://code.jquery.com/jquery-3.7.1.min.js' : "{$path}jquery-3.7.1.min.js" ?>"></script>
-    <!-- You need to include jQueryUI for the extended easing options. -->
-    <?php /* https://stackoverflow.com/questions/12592279/typeerror-p-easingthis-easing-is-not-a-function */ ?>
-    <!-- script src="//code.jquery.com/jquery-1.12.4.js"></script -->
-    <script src="//code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
+    <script src="assets/vendor/js/jquery/jquery-3.7.1.min.js""></script>
+      <!-- You need to include jQueryUI for the extended easing options. -->
+      <?php /* https://stackoverflow.com/questions/12592279/typeerror-p-easingthis-easing-is-not-a-function */ ?>
+      <!-- script src=" //code.jquery.com/jquery-1.12.4.js"></script -->
+      <script src="//code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
     <!-- Uncaught ReferenceError: jQuery is not defined -->
 
     <script>
@@ -400,14 +393,11 @@ ob_start(); ?>
 
       makeDraggable('app_node_js-container');
 
-      <?= $app['script']; ?>
+      <?= $UI_APP['script']; ?>
     </script>
   </body>
 
   </html>
-  <?php $app['html'] = ob_get_contents();
-  ob_end_clean();
-  return $app['html'];
-  } else {
-    return $app;
+<?php } else {
+    return $UI_APP;
   }

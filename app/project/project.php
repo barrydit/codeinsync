@@ -1,13 +1,17 @@
 <?php
+// app/project/project.php
+declare(strict_types=1);
 
-if (__FILE__ == get_required_files()[0] && __FILE__ == realpath($_SERVER["SCRIPT_FILENAME"]))
-  if ($path = basename(dirname(get_required_files()[0])) == 'public') { // (basename(getcwd())
-    if (is_file($bootstrap = dirname(__DIR__, 1) . DIRECTORY_SEPARATOR . 'bootstrap' . DIRECTORY_SEPARATOR . 'bootstrap.php')) {
-      require_once $bootstrap;
-    }
-  } else
-    die(var_dump("Path was not found. file=$path"));
+/**
+ * Bootstrap first.
+ * - defines APP_PATH/CONFIG_PATH
+ * - loads Composer autoload (PSR-4 for ShellPrompt)
+ * - defines APP_BOOTSTRAPPED and other runtime constants
+ */
 
+if (!defined('APP_BOOTSTRAPPED')) {
+  require_once dirname(__DIR__, 2) . '/bootstrap/bootstrap.php';
+}
 
 if (!$path = realpath(APP_BASE['projects'] . 'index.php')) // file_put_contents($path, $_POST['contents']);
   $errors['project.php'] = APP_BASE['projects'] . "index.php was missing. Using template.\n";
@@ -98,7 +102,7 @@ z-index : 1;
 transform : translateZ(0);
 overflow-x : hidden;
 }
-<?php $app['style'] = ob_get_contents();
+<?php $UI_APP['style'] = ob_get_contents();
 ob_end_clean();
 if (false) { ?></style><?php }
 ob_start(); ?>
@@ -169,7 +173,7 @@ ob_start(); ?>
     </div>
   </div>
 </div>
-<?php $app['body'] = ob_get_contents();
+<?php $UI_APP['body'] = ob_get_contents();
 ob_end_clean();
 
 if (false) { ?>
@@ -269,7 +273,7 @@ ob_start(); ?>
     });
 
 
-  <?php $app['script'] = ob_get_contents();
+  <?php $UI_APP['script'] = ob_get_contents();
   ob_end_clean();
 
   if (false) { ?></script><?php }
@@ -310,12 +314,12 @@ ob_start(); ?>
   <script src="<?= 'assets/vendor/tailwindcss-3.3.5.js' ?? $url ?>"></script>
 
   <style type="text/tailwindcss">
-    <?= $app['style']; ?>
+    <?= $UI_APP['style']; ?>
 </style>
 </head>
 
 <body>
-  <?= $app['body']; ?>
+  <?= $UI_APP['body']; ?>
 
   <script
     src="<?= APP_IS_ONLINE && check_http_status('https://code.jquery.com/jquery-3.7.1.min.js') ? 'https://code.jquery.com/jquery-3.7.1.min.js' : "{$path}jquery-3.7.1.min.js" ?>"></script>
@@ -330,16 +334,14 @@ ob_start(); ?>
   <script src="assets/vendor/ace/src/ext-language_tools.js" type="text/javascript" charset="utf-8"></script>
 
   <script>
-    <?= $app['script']; ?>
+    <?= $UI_APP['script']; ?>
   </script>
 </body>
 
 </html>
-<?php $app['html'] = ob_get_contents();
+<?php $UI_APP['html'] = ob_get_contents();
 ob_end_clean();
 
 //check if file is included or accessed directly
-if (__FILE__ == get_required_files()[0] || in_array(__FILE__, get_required_files()) && isset($_GET['app']) && $_GET['app'] == 'project' && APP_DEBUG)
-  Shutdown::setEnabled(false)->setShutdownMessage(function () {
-    return eval ('?>' . file_get_contents(APP_BASE['projects'] . 'index.php') ?? 'Template Replace'); // -wow */
-  })->shutdown(); // exit; ob_start();
+if (cis_is_direct_http_file(__FILE__) && APP_DEBUG && ($_GET['app'] ?? null) === 'project')
+  die($UI_APP['html']);

@@ -2,8 +2,7 @@
 
 namespace CodeInSync\Infrastructure\WebSocket;
 
-(!defined('SERVER_SCRIPT') && SERVER_SCRIPT !== get_required_files()[0])
-  and exit(1);
+(!\defined('SERVER_SCRIPT') && SERVER_SCRIPT !== get_required_files()[0]) and exit(1);
 
 use Ratchet\Server\IoServer;
 use Ratchet\Http\HttpServer;

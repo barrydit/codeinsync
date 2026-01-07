@@ -1,17 +1,22 @@
 <?php
+// app/project/github.php
+declare(strict_types=1);
+
+/**
+ * Bootstrap first.
+ * - defines APP_PATH/CONFIG_PATH
+ * - loads Composer autoload (PSR-4 for ShellPrompt)
+ * - defines APP_BOOTSTRAPPED and other runtime constants
+ */
+
+if (!defined('APP_BOOTSTRAPPED')) {
+    require_once dirname(__DIR__, 3) . '/bootstrap/bootstrap.php';
+}
+
 global $errors;
 //if (isset($_GET['path']) && isset($_GET['file']) && $path = realpath($_GET['path'] . $_GET['file']))
 
 //$errors->{'TEXT_MANAGER'} = $path . "\n" . 'File Modified:    Rights:    Date of creation: ';
-
-if (__FILE__ == get_required_files()[0] && __FILE__ == realpath($_SERVER["SCRIPT_FILENAME"]))
-    if ($path = basename(dirname(get_required_files()[0])) == 'public') { // (basename(getcwd())
-        if (is_file($path = realpath('..' . DIRECTORY_SEPARATOR . 'bootstrap' . DIRECTORY_SEPARATOR . 'bootstrap.php'))) {
-            require_once $path;
-        }
-    } else {
-        die(var_dump("Path was not found. file=$path"));
-    }
 
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 
@@ -195,14 +200,14 @@ padding : 8px;
 img {
 display : inline;
 }
-<?php $app['style'] = ob_get_contents();
+<?php $UI_APP['style'] = ob_get_contents();
 ob_end_clean();
 
 ob_start(); ?>
 
 <div id="app_php-container"
-    class="<?= __FILE__ == get_required_files()[0] || (isset($_GET['app']) && $_GET['app'] == 'errors') && !isset($_GET['path']) ? 'selected' : '' ?>"
-    style="position: fixed; left: 44px; top: 64px; display: <?= __FILE__ == get_required_files()[0] || (isset($_GET['app']) && $_GET['app'] == 'php') ? 'block' : 'none' ?>; resize: both; overflow: hidden;">
+    class=""
+    style="position: fixed; left: 44px; top: 64px; resize: both; overflow: hidden;">
     <div class="ui-widget-header"
         style="position: relative; display: inline-block; width: 100%; cursor: move; border-bottom: 1px solid #000;background-color: #FFF;">
         <label class="errors-home" style="cursor: pointer;">
@@ -404,7 +409,7 @@ if ($path)
 
 <?php
 
-$app['body'] = ob_get_contents();
+$UI_APP['body'] = ob_get_contents();
 ob_end_clean();
 
 if (false) { ?>
@@ -415,7 +420,7 @@ ob_start();
 //if (isset($_GET['domain']) && $_GET['domain'] != '') {
 ?>
 
-    <?php $app['script'] = ob_get_contents();
+    <?php $UI_APP['script'] = ob_get_contents();
     ob_end_clean();
 
     if (false) { ?></script><?php }
@@ -459,12 +464,12 @@ ob_start();
     <script src="<?= 'assets/vendor/tailwindcss-3.3.5.js' ?? $url ?>"></script>
 
     <style type="text/tailwindcss">
-        <?= $app['style']; ?>
+        <?= $UI_APP['style']; ?>
     </style>
 </head>
 
 <body>
-    <?= $app['body']; ?>
+    <?= $UI_APP['body']; ?>
 
     <?php
     is_dir($path = APP_BASE['public'] . 'assets/vendor/jquery/') or mkdir($path, 0755, true);
@@ -558,19 +563,17 @@ ob_start();
         });
 
 
-        <?= $app['script']; ?>
+        <?= $UI_APP['script']; ?>
     </script>
 </body>
 
 </html>
 <?php
-$app['html'] = ob_get_contents();
+$UI_APP['html'] = ob_get_contents();
 ob_end_clean();
 
-if (__FILE__ == get_required_files()[0] && __FILE__ == realpath($_SERVER["SCRIPT_FILENAME"])) {
-    print $app['html'];
-} elseif (in_array(__FILE__, get_required_files()) && isset($_GET['app']) && $_GET['app'] == 'errors' && APP_DEBUG) {
-    return $app['html'];
-} else {
-    return $app;
-}
+//check if file is included or accessed directly
+if (cis_is_direct_http_file(__FILE__) && APP_DEBUG && ($_GET['app'] ?? null) === 'github')
+    die($UI_APP['html']);
+
+return $UI_APP;

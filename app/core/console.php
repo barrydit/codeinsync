@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 use CodeInSync\Infrastructure\Console\ShellPrompt;
 
-if (!class_exists(ShellPrompt::class)) {
+if (!class_exists(CodeInSync\Infrastructure\Console\ShellPrompt::class)) {
   require APP_PATH . 'src/Infrastructure/Console/ShellPrompt.php';
-  @class_alias(ShellPrompt::class, 'ShellPrompt');
+  @class_alias(CodeInSync\Infrastructure\Console\ShellPrompt::class, 'ShellPrompt');
 }
 
 /**
@@ -15,16 +15,9 @@ if (!class_exists(ShellPrompt::class)) {
  * - loads Composer autoload (PSR-4 for ShellPrompt)
  * - defines APP_BOOTSTRAPPED and other runtime constants
  */
-if (!defined('APP_PATH')) {
-  define('APP_PATH', dirname(__DIR__, 3) . DIRECTORY_SEPARATOR);
-}
-
-if (!defined('CONFIG_PATH')) {
-  define('CONFIG_PATH', APP_PATH . 'config' . DIRECTORY_SEPARATOR);
-}
 
 if (!defined('APP_BOOTSTRAPPED')) {
-  require_once APP_PATH . 'bootstrap/bootstrap.php';
+  require_once dirname(__DIR__, 2) . '/bootstrap/bootstrap.php';
 }
 
 /**
@@ -77,27 +70,11 @@ $data_attrs = sprintf(
   htmlspecialchars($slug, ENT_QUOTES),
 );
 
-// -----------------------------------------------------------------------------
-switch (__FILE__) {
-  case get_required_files()[0]:
-    if ($path = (basename(getcwd()) == 'public') ? (is_file('config.php') ? 'config.php' : '../config/config.php') : '')
-      require_once $path;
-    else
-      die(var_dump("$path path was not found. file=config.php"));
-    break;
-  default:
-    file_exists(APP_PATH . 'config/constants.paths.php') && require_once APP_PATH . 'config/constants.paths.php';
-    require_once APP_PATH . 'config' . DIRECTORY_SEPARATOR . 'constants.runtime.php';
-}
-
 /*
     realpath ? Returns canonicalized absolute pathname
     is_writable ? Tells whether the filename is writable
     unlink ? Deletes a file
 */
-
-// die(var_dump(get_required_files()));
-
 
 //require_once realpath(__DIR__ . DIRECTORY_SEPARATOR . '..' . DIRECTORY_SEPARATOR  . DIRECTORY_SEPARATOR . 'classes' . DIRECTORY_SEPARATOR . 'class.sockets.php');
 
@@ -106,10 +83,6 @@ switch (__FILE__) {
 //} else {
 //  echo "included/required";
 //}
-
-//dd(__FILE__, false);
-//!function_exists('dd') ? die('dd is not defined') : dd(COMPOSER_EXEC);
-
 
 /*
 if ($path = (basename(getcwd()) == 'public')
@@ -504,12 +477,8 @@ ob_start(); ?>
         overflow-y: auto;
         height: 250px;
         width: 665px;
-      "><?php
-      echo "$shell_prompt\n";
-      //$errors->{'CONSOLE'}  = 'wtf';
-      
-      //dd($errors);
-      
+      "><?= "$shell_prompt\n"; ?>
+<?php
       if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         //var_dump($output['results']);
         if (!empty($output['command'])) // echo join("\n$shell_prompt", $output['command']) . "\n";
@@ -532,7 +501,6 @@ ob_start(); ?>
             echo /*$key . '=>' . */ $error . ($key != end($errors) ? '' : "\n");
           else
             echo var_export($error, true); // foreach($error as $err) echo $err . "\n";
-          //else dd($error);
         }
       ?></textarea>
 </div>
@@ -1261,12 +1229,9 @@ ob_start(); ?>
             console.log("Enter key pressed");
     
             <?php
-            //dd(APP_PATH . APP_ROOT . '.git/config');
-            
             if (is_file($file = APP_PATH . APP_ROOT . '.git/config')) {
 
               $config = parse_ini_file($file, true);
-
 
               if (isset($config['remote origin']['url']) && preg_match('/(?:[a-z]+\:\/\/)?([^\s]+@)?((?:[a-z0-9\-]+\.)+[a-z]{2,6}(?:\/\S*))/', $config['remote origin']['url'], $matches))
                 if (count($matches) >= 2) { ?>
@@ -1454,7 +1419,7 @@ ob_start(); ?>
 ob_end_clean();
 
 //check if file is included or accessed directly
-if (__FILE__ == get_required_files()[0] || in_array(__FILE__, get_required_files()) && isset($_GET['app']) && $_GET['app'] == 'console' && APP_DEBUG)
+if (cis_is_direct_http_file(__FILE__) && APP_DEBUG && ($_GET['app'] ?? null) === 'console')
   die($UI_APP['html']);
 
 return $UI_APP;

@@ -1,15 +1,16 @@
 <?php
+// app/devtools/backup.php
+declare(strict_types=1);
 
-if (__FILE__ != get_required_files()[0]) {
-  if ($path = basename(dirname(get_required_files()[0])) == 'public') { // (basename(getcwd())
-    if (is_file($path = realpath('..' . DIRECTORY_SEPARATOR . 'config' . DIRECTORY_SEPARATOR . 'config.php'))) {
-      require_once $path;
-    }
-  } elseif (is_file($path = realpath('config' . DIRECTORY_SEPARATOR . 'config.php'))) {
-    require_once $path;
-  } else {
-    die(var_dump("Path was not found. file=$path"));
-  }
+/**
+ * Bootstrap first.
+ * - defines APP_PATH/CONFIG_PATH
+ * - loads Composer autoload (PSR-4 for ShellPrompt)
+ * - defines APP_BOOTSTRAPPED and other runtime constants
+ */
+
+if (!defined('APP_BOOTSTRAPPED')) {
+  require_once dirname(__DIR__, 2) . '/bootstrap/bootstrap.php';
 }
 
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
@@ -101,7 +102,7 @@ white-space: pre-wrap;
 }
 
 
-<?php $app['style'] = ob_get_contents();
+<?php $UI_APP['style'] = ob_get_contents();
 ob_end_clean();
 
 ob_start(); ?>
@@ -180,7 +181,6 @@ ob_start(); ?>
 
                 <?php
                 $dir = basename($dir);
-                //dd($dir);
                 $files = glob(dirname(__DIR__) . '/../../' . APP_BASE['clients'] . $_GET['client'] . '/' . $_GET['domain'] . '/' . $dir . '/*.php');
                 foreach ($files as $key => $file) {
                   $b_file = APP_BACKUP_PATH . APP_BASE['clients'] . $_GET['client'] . '/' . $_GET['domain'] . '/' . $dir . '/' . basename($file);
@@ -224,7 +224,7 @@ ob_start(); ?>
 
 </div>
 
-<?php $app['body'] = ob_get_contents();
+<?php $UI_APP['body'] = ob_get_contents();
 ob_end_clean();
 
 if (false) { ?>
@@ -278,19 +278,17 @@ ob_start(); ?>
 
   dragElement(document.getElementById("separator"), "V");
 
-  <?php $app['script'] = ob_get_contents();
+  <?php $UI_APP['script'] = ob_get_contents();
   ob_end_clean();
 
   if (false) { ?></script><?php }
 
   ob_start(); ?>
 
-<?php $app['html'] = ob_get_contents();
+<?php $UI_APP['html'] = ob_get_contents();
 ob_end_clean();
 
 //check if file is included or accessed directly
-if (__FILE__ == get_required_files()[0] || in_array(__FILE__, get_required_files()) && isset($_GET['app']) && $_GET['app'] == 'backup' && APP_DEBUG)
-  Shutdown::setEnabled(false)->setShutdownMessage(function () {
-    return '<!DOCTYPE html>'; // -wow */
-  })->shutdown(); // exit; ob_start();
-?>
+
+if (cis_is_direct_http_file(__FILE__) && APP_DEBUG && ($_GET['app'] ?? null) === 'backup')
+  die($UI_APP['html']);

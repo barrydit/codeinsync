@@ -87,52 +87,6 @@ if (!function_exists('app_context') || !function_exists('app_base')) {
     }
 }
 
-/**
- * True when THIS FILE is the entry script being executed by PHP (direct web hit).
- * - Works for Apache/FPM.
- * - Safe under your dispatcher/includes.
- */
-function cis_is_direct_file(string $file): bool
-{
-    $script = $_SERVER['SCRIPT_FILENAME'] ?? '';
-    if ($script === '')
-        return false;
-
-    $a = realpath($script);
-    $b = realpath($file);
-
-    // If realpath fails (rare), fall back to raw compare
-    if ($a === false || $b === false) {
-        return $script === $file;
-    }
-
-    return $a === $b;
-}
-
-/**
- * True when this request is a normal HTTP request (not CLI).
- */
-function cis_is_http(): bool
-{
-    return php_sapi_name() !== 'cli';
-}
-
-/**
- * Convenience: direct HTTP execution of a file.
- */
-function cis_is_direct_http_file(string $file): bool
-{
-    return cis_is_http() && cis_is_direct_file($file);
-}
-
-/**
- * Convenience: included/required (i.e., NOT the direct entry script).
- */
-function cis_is_included_file(string $file): bool
-{
-    return !cis_is_direct_file($file);
-}
-
 //die(var_dump($_ENV['COMPOSER']['AUTOLOAD']));
 // Optional: single autoloader (cheap if already loaded)
 $autoload = dirname(__DIR__) . '/vendor/autoload.php';
@@ -823,7 +777,7 @@ try {
         if ($buffer !== '')
             echo $buffer;
     }
-    //dd(APP_MODE); // dd(get_required_files());
+    //dd(APP_MODE);
 } catch (\Throwable $e) {
     $logFile = APP_PATH . 'var/log/router-error.log';
     $line = sprintf(

@@ -39,8 +39,6 @@ $contents = capture(function () {
     }
 });
 
-dd(get_required_files());
-
 echo $contents;
 
 if (is_array($handled) || is_object($handled)) {

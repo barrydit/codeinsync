@@ -1,20 +1,23 @@
 <?php
-// test.php
+// public/ext.xdebug.php
+declare(strict_types=1);
+
+/**
+ * Bootstrap first.
+ * - defines APP_PATH/CONFIG_PATH
+ * - loads Composer autoload (PSR-4 for ShellPrompt)
+ * - defines APP_BOOTSTRAPPED and other runtime constants
+ */
+
+if (!defined('APP_BOOTSTRAPPED')) {
+  require_once dirname(__DIR__) . '/bootstrap/bootstrap.php';
+}
 
 // php -dxdebug.profiler_enable=1 -dxdebug.profiler_output_dir=. public/ui_complete.php
 
 phpinfo();
 
 exit;
-
-if (__FILE__ == get_required_files()[0])
-  if (
-    $path = (basename(getcwd()) == 'public')
-    ? (is_file('config.php') ? 'config.php' : '../config/config.php') : ''
-  )
-    require_once $path;
-  else
-    die(var_dump("$path path was not found. file=config.php"));
 
 function calculateSum($a, $b)
 {
@@ -44,4 +47,3 @@ if (function_exists('xdebug_stop_trace'))
   xdebug_stop_trace();
 
 echo "Result: $result";
-?>

@@ -1,8 +1,9 @@
 <?php
+// api/file_save.php
 
 // Ensure bootstrap has run (defines env/paths/url/app and helpers)
 if (!defined('APP_BOOTSTRAPPED')) {
-  require_once APP_PATH . 'bootstrap/bootstrap.php';
+  require_once dirname(__DIR__) . '/bootstrap/bootstrap.php';
 }
 
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
@@ -112,8 +113,6 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 
   exit();
     */
-  // dd([$_POST, realpath(APP_PATH . (APP_ROOT ?? (APP_BASE['clients'] . ($_GET['client'] . '/' . ($_GET['domain'] ?? '') ?? $_GET['domain'] ?? ''))) . (APP_ROOT_DIR ?? rtrim($_GET['path'], '/') . '/') . ($_GET['file'] ?? $_POST['ace_path'])), $_SERVER['HTTP_REFERER']]);
-
 
   if (isset($_POST["restore_backup"])) {
 
@@ -129,22 +128,14 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     die(header('Location: ' . APP_URL_BASE['scheme'] . '://' . APP_URL_BASE['host'] . '/?' . http_build_query(APP_QUERY + ['path' => $_GET['path'] ?? '', 'app' => $_GET['app'] ?? 'ace_editor', 'file' => basename($_POST['restore_backup'])])));
   }
 
-  //dd($_POST, false);
-
   if (isset($_GET['app']) && $_GET['app'] == 'ace_editor' && isset($_POST['ace_save']))
 
-    if (isset($_POST['ace_path']) && realpath($path = APP_PATH . (APP_ROOT ?? (APP_BASE['clients'] . ($_GET['client'] . '/' . ($_GET['domain'] ?? '') ?? $_GET['domain'] ?? ''))) . ($_GET['path'] . '/' . $_GET['file'] ?? $_POST['ace_path']))) {
-      //dd($path, false);   
+    if (isset($_POST['ace_path']) && realpath($path = APP_PATH . (APP_ROOT ?? (APP_BASE['clients'] . ($_GET['client'] . '/' . ($_GET['domain'] ?? '') ?? $_GET['domain'] ?? ''))) . ($_GET['path'] . '/' . $_GET['file'] ?? $_POST['ace_path']))) { 
       if (isset($_POST['ace_contents']))
-        //dd($_POST['ace_contents']);
+
         file_put_contents($path, $_POST['ace_contents']);
 
-      //dd($_POST, true);
       //http://localhost/Array?app=ace_editor&path=&file=test.txt    obj.prop.second = value    obj->prop->second = value
-      //dd( APP_URL . '1234?' . http_build_query(['path' => dirname( $_POST['ace_path']), 'app' => 'ace_editor', 'file' => basename($path)]), true);
-
-
-      //dd(APP_URL_BASE);
 
       die(header('Location: ' . APP_URL_BASE['scheme'] . '://' . APP_URL_BASE['host'] . '/?' . http_build_query(APP_QUERY + ['path' => dirname($_POST['ace_path']), 'file' => basename($path)])));
     } else

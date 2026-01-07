@@ -16,7 +16,7 @@ if (isset($_GET['CLIENT']) || isset($_GET['DOMAIN']) && !defined('APP_ROOT')) {
       'domain' => $_ENV['DEFAULT_DOMAIN']
     ]) . '#'));
   else
-    $_GET = array_merge($_GET, APP_QUERY);
+    $_GET = [...$_GET, ...APP_QUERY];
 
 }
 

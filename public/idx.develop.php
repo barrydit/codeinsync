@@ -1,22 +1,16 @@
 <?php
+// public/idx.develop.php
+declare(strict_types=1);
 
-//if (__FILE__==get_required_files()[0] && __FILE__==realpath($_SERVER["SCRIPT_FILENAME"]))
+/**
+ * Bootstrap first.
+ * - defines APP_PATH/CONFIG_PATH
+ * - loads Composer autoload (PSR-4 for ShellPrompt)
+ * - defines APP_BOOTSTRAPPED and other runtime constants
+ */
 
-if (dirname(get_required_files()[0]) == getcwd()) {
-  if ($path = basename(dirname(get_required_files()[0])) == 'public') { //
-    if (basename(getcwd())) {
-      // if (is_file($path = realpath('index.php'))) require_once $path;
-/*
-      if (is_file($path = realpath('..' . DIRECTORY_SEPARATOR . 'config' . DIRECTORY_SEPARATOR . 'php.php')))
-        require_once $path;
-      else
-        die(var_dump("Path was not found. file=$path"));
-*/
-      if ($config = realpath(dirname(__DIR__, 1) . DIRECTORY_SEPARATOR . 'index.php'))
-        require_once $config; // APP_PATH . 'index.php'
-
-    }
-  }
+if (!defined('APP_BOOTSTRAPPED')) {
+  require_once dirname(__DIR__, 2) . '/bootstrap/bootstrap.php';
 }
 
 if (!headers_sent()) {

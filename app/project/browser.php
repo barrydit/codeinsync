@@ -1,15 +1,16 @@
 <?php
+// app/project/browser.php
+declare(strict_types=1);
 
-if (__FILE__ == get_required_files()[0] && __FILE__ == realpath($_SERVER["SCRIPT_FILENAME"])) {
-  if ($path = basename(dirname(get_required_files()[0])) == 'public') { // (basename(getcwd())
-    if (is_file($path = realpath('../config/config.php'))) {
-      require_once $path;
-    }
-  } elseif (is_file($path = realpath('config/config.php'))) {
-    require_once $path;
-  } else {
-    die(var_dump("Path was not found. file=$path"));
-  }
+/**
+ * Bootstrap first.
+ * - defines APP_PATH/CONFIG_PATH
+ * - loads Composer autoload (PSR-4 for ShellPrompt)
+ * - defines APP_BOOTSTRAPPED and other runtime constants
+ */
+
+if (!defined('APP_BOOTSTRAPPED')) {
+  require_once dirname(__DIR__, 2) . '/bootstrap/bootstrap.php';
 }
 
 if (preg_match('/^app\.([\w\-.]+)\.php$/', basename(__FILE__), $matches))
@@ -136,14 +137,14 @@ z-index : 1;
 input {
 color : black;
 }
-<?php $app['style'] = ob_get_contents();
+<?php $UI_APP['style'] = ob_get_contents();
 ob_end_clean();
 
 ob_start(); ?>
 
 <!-- <div class="container" style="border: 1px solid #000;"> -->
 <div id="app_browser-container"
-  class="<?= __FILE__ == get_required_files()[0] || (isset($_GET['app']) && $_GET['app'] == 'browser') ? 'selected' : '' ?>"
+  class=""
   style="border: 1px solid #000;">
   <div class="header ui-widget-header">
     <div style="display: inline-block;">Browser (Google.ca)</div>
@@ -166,20 +167,20 @@ ob_start(); ?>
 </div>
 <!-- </div> -->
 
-<?php $app['body'] = ob_get_contents();
+<?php $UI_APP['body'] = ob_get_contents();
 ob_end_clean();
 
 if (false) { ?>
   <script type="text/javascript"><?php }
 ob_start(); ?>
   // Javascript comment
-  <?php $app['script'] = ob_get_contents();
+  <?php $UI_APP['script'] = ob_get_contents();
   ob_end_clean();
 
   if (false) { ?></script><?php }
   ob_start(); ?>
 
-<?php $app['html'] = ob_get_contents();
+<?php $UI_APP['html'] = ob_get_contents();
 ob_end_clean();
 
 is_dir(APP_BASE['var']) or mkdir(APP_BASE['var'], 0755);
@@ -281,7 +282,6 @@ ob_start(); ?>
   <script src="<?= 'assets/vendor/tailwindcss-3.3.5.js' ?? $url ?>"></script>
 
   <style type="text/tailwindcss">
-    <?= /*$appWhiteboard['style'];*/ NULL; ?>
 * { margin: 0; padding: 0; } /* to remove the top and left whitespace */
 
 html, body { width: 100%; height: 100%; <?= $_SERVER['SCRIPT_FILENAME'] == __FILE__ ? 'overflow:hidden;' : '' ?> } /* just to be sure these are full screen*/
@@ -289,7 +289,7 @@ html, body { width: 100%; height: 100%; <?= $_SERVER['SCRIPT_FILENAME'] == __FIL
 </head>
 
 <body class="bg-gray-300">
-  <?= $app['body']; ?>
+  <?= $UI_APP['body']; ?>
 </body>
 <script type="text/javascript" charset="utf-8">
 
@@ -300,14 +300,9 @@ html, body { width: 100%; height: 100%; <?= $_SERVER['SCRIPT_FILENAME'] == __FIL
 </script>
 
 </html>
-<?php $app['html'] = ob_get_contents();
+<?php $UI_APP['html'] = ob_get_contents();
 ob_end_clean();
 
 //check if file is included or accessed directly
-if (__FILE__ == get_required_files()[0] || in_array(__FILE__, get_required_files()) && isset($_GET['app']) && $_GET['app'] == 'browser' && APP_DEBUG)
-  die($app['html']);
-
-/*
-Shutdown::setEnabled(false)->setShutdownMessage(function () { // use($dom)
-  return '<!DOCTYPE html>'; //  $dom->saveHTML() ?? file_get_contents("https://github.com/barrydit/codeinsync"); // $dom->saveHTML(); /* eval('? >' . $project_code); // -wow
-})->shutdown(); // exit; */
+if (cis_is_direct_http_file(__FILE__) && APP_DEBUG && ($_GET['app'] ?? null) === 'browser')
+  die($UI_APP['html']);

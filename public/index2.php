@@ -1,54 +1,33 @@
 <?php
+// public/index2.php
+declare(strict_types=1);
 
-//dd(get_required_files());
+/**
+ * Bootstrap first.
+ * - defines APP_PATH/CONFIG_PATH
+ * - loads Composer autoload (PSR-4 for ShellPrompt)
+ * - defines APP_BOOTSTRAPPED and other runtime constants
+ */
 
-//die(var_dump(get_required_files()));
+if (!defined('APP_BOOTSTRAPPED')) {
+  require_once dirname(__DIR__) . '/bootstrap/bootstrap.php';
+}
+
 //require_once dirname(__DIR__, 1) . DIRECTORY_SEPARATOR . 'config/functions.php';
 
 // if ($path = (basename(getcwd()) == 'public') chdir('..');
 //APP_PATH == dirname(PATH_PUBLIC)
 
-defined('APP_ROOT') or
-  define('APP_ROOT', '');
-
-// Always resolve to full paths
-//defined('APP_PATH') or define('APP_PATH', realpath(__DIR__) . DIRECTORY_SEPARATOR);
-
-defined('PATH_PUBLIC') or define(
-  'PATH_PUBLIC',
-  realpath(__DIR__)
-);
-
-defined('APP_SELF') or
-  define('APP_SELF', realpath($_SERVER['SCRIPT_FILENAME'] ?? (get_included_files()[0] ?? __FILE__))); //mnt/c/www/public/index.php
-
-switch (APP_SELF) {
-  case __FILE__:
-    file_exists(dirname(__DIR__, 1) . '/bootstrap/bootstrap.php') && require_once dirname(__DIR__, 1) . '/bootstrap/bootstrap.php';
-    break;
-  default:
-    if ($php = realpath(dirname(__DIR__, 1) . DIRECTORY_SEPARATOR . 'config' . DIRECTORY_SEPARATOR . 'runtime' . DIRECTORY_SEPARATOR . 'php.php'))
-      require_once $php; // APP_PATH . 'index.php'
-    else
-      die(var_dump("$php was not found."));
-}
-//dd(get_required_files());
 //if ($file = realpath(dirname(__DIR__, 1) . DIRECTORY_SEPARATOR . 'autoload.php'))
 //  require_once $file; // APP_PATH . 'autoload.php'
-
 
 //die(var_export($_GET, true));
 
 //dd($_ENV, false);
 
-
 //dd(get_defined_constants(true)['user']);
 
-
-
 //die(var_dump(APP_ROOT));
-
-//die(var_dump(get_required_files()));
 
 /*
 switch ($_SERVER['REQUEST_URI']) {
@@ -71,10 +50,6 @@ if ($path = (basename(getcwd()) == 'public') ? (is_file('../config/config.php') 
 else
   die(var_dump("$path was not found. file=config.php"));
 
-if (__FILE__ == get_required_files()[0] && __FILE__ == realpath($_SERVER["SCRIPT_FILENAME"])) {
-  if (is_file($path = dirname(getcwd()) . DIRECTORY_SEPARATOR . 'config' . DIRECTORY_SEPARATOR . 'config.php')) require_once $path; 
-  else die(var_dump("$path path was not found. file=" . basename($path)));
-}
 */
 
 //? (is_file('../config.php') ? '../config.php' : 'config.php')
@@ -178,7 +153,7 @@ if (isset($_SERVER['REQUEST_METHOD']))
 
       // Now $queryArray contains the parsed query parameters as an array
 //dd($_SERVER);
-      //dd(get_required_files());
+
       if (preg_match('/^\/(?!\?)$/', $_SERVER['REQUEST_URI']))
         exit(header('Location: ' . APP_URL . '?'));
 
@@ -270,7 +245,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'GET' && __FILE__ == PATH_PUBLIC)
 $entryFile = get_required_files()[0] ?? null;
 
 // Resolve the directory of the entry script
-$entryDir = $entryFile ? realpath(dirname($entryFile)) : null;
+$entryDir = $entryFile ? dirname($entryFile) : null;
 
 // Strict check: entry script dir must equal PATH_PUBLIC
 if ($entryDir && $entryDir === realpath(PATH_PUBLIC)) {

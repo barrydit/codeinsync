@@ -128,8 +128,6 @@ END;
                 $output[] = 'stderr: ' . $res['stderr'];
             }
         }
-
-        // $output[] = var_export(get_required_files(), true);
     }
 
     // Build a printable result string
@@ -406,7 +404,7 @@ END;
             if (isset($output) && is_array($output)) {
                 switch (count($output) > 0) {
                     case true:
-                        echo join("\n" , $output); //  (isset($match[1]) ? $match[1] : 'PHP') . ' >>> ' . ... <<<
+                        echo join("\n", $output); //  (isset($match[1]) ? $match[1] : 'PHP') . ' >>> ' . ... <<<
                         break;
                     default:
                         echo join("\n", $output);
@@ -414,11 +412,10 @@ END;
                 }
 
                 Shutdown::setEnabled(true)->setShutdownMessage(function () { })->shutdown();
-                //dd('test');
+
                 // . "\n"
                 //$output[] = 'post: ' . var_dump($_POST);
                 //else var_dump(get_class_methods($repo));
             }
         }
-
-        */
+*/

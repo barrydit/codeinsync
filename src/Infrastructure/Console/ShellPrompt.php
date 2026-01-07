@@ -17,7 +17,7 @@ final class ShellPrompt
         $cwd = self::detectCwdOrAppPath();
 
         $rel = self::normalizeRelativePath(
-            $relativePath . /*rtrim((string) (\defined('APP_ROOT') ? APP_ROOT : ''), DIRECTORY_SEPARATOR) .*/ (DIRECTORY_SEPARATOR . (isset($_GET['path']) ? $_GET['path'] : null))
+            $relativePath . /*rtrim((string) (\defined('APP_ROOT') ? APP_ROOT : ''), DIRECTORY_SEPARATOR) .*/ (($_GET['path'] ?? null))
         );
 
         return \sprintf('%s@%s:%s%s# ', $user, $server, $cwd, $rel);
@@ -67,7 +67,7 @@ final class ShellPrompt
             return '';
         }
 
-        $path = trim((string) $path, '/');
+        $path = rtrim((string) $path, '/');
 
         // Match your existing behavior: append as a relative tail with no leading slash.
         return $path === '' ? '' : $path;

@@ -37,7 +37,6 @@ if (PHP_OS_FAMILY === 'Windows') {
         }
     */
 
-    //dd('test');
     // Create the scheduled task (if not exists)
     // exec(sprintf('schtasks.exe /create /tn %s /tr %s /sc ONLOGON', escapeshellarg($taskName), escapeshellarg($batWin)), $out, $rc);
 
@@ -57,7 +56,6 @@ if (PHP_OS_FAMILY === 'Windows') {
         echo "Failed to start task, rc=$rc\n";
         echo implode("\n", $out) . "\n";
     }
-    dd('test');
 */
     /*
     // Opens a *new* Windows CMD window that runs the .bat then closes

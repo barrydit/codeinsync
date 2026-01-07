@@ -1,8 +1,5 @@
 <?php
-
-//require_once('session.php');
-
-//dd( dirname(__DIR__) . DIRECTORY_SEPARATOR . 'config' . DIRECTORY_SEPARATOR . 'config.php');
+// app/core/debug.php
 
 require_once dirname(__DIR__, 2) . DIRECTORY_SEPARATOR . 'bootstrap' . DIRECTORY_SEPARATOR . 'bootstrap.php';
 
@@ -13,28 +10,6 @@ require_once __DIR__ . '/core/debug/trace.php';
 trace_execution_block();
 */
 
-/*
-if (__FILE__ == get_required_files()[0]) { //die(getcwd());
-  if (
-    $path = (basename(getcwd()) == 'public')
-    ? (is_file('config.php') ? 'config.php' : '..' . DIRECTORY_SEPARATOR . 'config' . DIRECTORY_SEPARATOR . 'config.php') : ''
-  )
-    require_once $path;
-  else
-    die(var_dump("$path path was not found. file=config.php"));
-} elseif (!in_array($path = dirname(__DIR__) . DIRECTORY_SEPARATOR . 'config' . DIRECTORY_SEPARATOR . 'config.php', get_required_files()))
-  require_once $path;
-
-if (!empty($_SERVER['REQUEST_URI']))
-  $path = $_SERVER['DOCUMENT_ROOT'] . parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH);
-
-require_once realpath('index.php');
-*/
-//dd( realpath($path) == realpath(APP_PATH) );
-
-//dd(APP_ERRORS);
-
-//dd($_ENV);
 if (defined('APP_ENV'))
   if (APP_ENV == 'development' && defined('APP_ERRORS') && APP_ERRORS && defined('APP_DEBUG') && APP_DEBUG == $report_errors = true)
     NULL;
@@ -45,7 +20,6 @@ if (defined('APP_ENV'))
 //$report_errors = true; 
 
 // realpath($path) == "/mnt/c/www/public/composer" ... $path == "[/var/www/public]/composer/" == $_SERVER['DOCUMENT_ROOT'] . parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH)
-
 
 // Initialize an associative array with the desired keys
 //$files = array( /* 0 => array('path', 'filesize') */
@@ -63,7 +37,6 @@ if (defined('APP_ENV'))
 
 if (preg_match('/^([\w\-.]+)\.php$/', basename(__FILE__), $matches))
   ${$matches[1]} = $matches[1];
-
 
 ob_start(); ?>
 html, body {
@@ -146,10 +119,6 @@ ob_start(); ?>
     $total_filesize += $sortedArray[$key]['filesize'];
     $total_lines += count(file($sortedArray[$key]['path']));
   }
-
-
-  //die(include 'example-nodes.php');
-  
 
   if (isset($_GET['debug']) && $_GET['debug'] == 'stats') {
     //define('APP_END',     microtime(true));
@@ -272,10 +241,6 @@ chart2.render();
 SCRIPT;
     echo <<<HTML
 </head>
-
-
-
-
 <body>
 
   <form style="display: inline;" action="" method="POST">
@@ -484,7 +449,8 @@ HTML;
     </div>
 
     <!-- JQUERY SCRIPTS -->
-    <script src="<?= htmlspecialchars($asset('assets/vendor/jquery/3.7.1/jquery-3.5.1.min.js'), ENT_QUOTES, 'UTF-8') ?>?>"></script>
+    <script
+      src="<?= htmlspecialchars($asset('assets/vendor/jquery/3.7.1/jquery-3.5.1.min.js'), ENT_QUOTES, 'UTF-8') ?>?>"></script>
   </body>
 
   </html>

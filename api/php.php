@@ -2,13 +2,15 @@
 // api/php.php
 declare(strict_types=1);
 
+if (!defined('APP_BOOTSTRAPPED')) {
+    require_once dirname(__DIR__, 2) . '/bootstrap/bootstrap.php';
+}
+
+use RuntimeException;
 use CodeInSync\Infrastructure\Runtime\Shutdown;
 use CodeInSync\Infrastructure\Runtime\ProcessRunner;
-// use CodeInSync\Infrastructure\Runtime\PhpRuntime;
 
-if (!defined('APP_BOOTSTRAPPED')) {
-    // require_once dirname(__DIR__, 2) . '/bootstrap/bootstrap.php';
-}
+// use CodeInSync\Infrastructure\Runtime\PhpRuntime;
 
 if (!defined('APP_DEV_MODE') || APP_DEV_MODE !== true) {
     throw new RuntimeException('Inline PHP execution is disabled.');

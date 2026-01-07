@@ -1,5 +1,10 @@
 <?php
 // app/tools/registry/composer.php
+declare(strict_types=1);
+
+if (!defined('APP_BOOTSTRAPPED')) {
+  require_once dirname(__DIR__, 3) . '/bootstrap/bootstrap.php';
+}
 
 global $errors, $asset;
 
@@ -75,18 +80,6 @@ $data_attrs = sprintf(
 //$hash = substr(sha1($app_norm), 0, 6);
 //$key = preg_replace('/[^\w-]+/', '_', $app_norm) . "_{$hash}";
 
-
-switch (__FILE__) {
-  case get_required_files()[0]:
-    if ($path = (basename(getcwd()) == 'public') ? (is_file('config.php') ? 'config.php' : '../config/config.php') : '')
-      require_once $path;
-    else
-      die(var_dump("$path path was not found. file=config.php"));
-    break;
-  default:
-    file_exists(APP_PATH . 'config/constants.paths.php') && require_once APP_PATH . 'config/constants.paths.php';
-}
-
 if (!isset($composer_obj)) {
   if (function_exists('load_feature_constants')) {
     load_feature_constants('composer');
@@ -96,11 +89,10 @@ if (!isset($composer_obj)) {
 
 $COMPOSER_JSON = json_encode($composer_obj); // @file_get_contents("composer.json");
 $COMPOSER = json_decode($COMPOSER_JSON, true);
-// dd(get_required_files());
+
 // define("COMPOSER_JSON_RAW", $COMPOSER_JSON);
 //!defined('COMPOSER') && define("COMPOSER", ['json' => $composer_obj]); // ← This is what’s missing!
 
-//dd(get_required_files());
 /*
 <?php ob_start(); ?>
 <HTML ...>

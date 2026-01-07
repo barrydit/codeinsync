@@ -1,13 +1,16 @@
 <?php
+// app/games/pong.php
+declare(strict_types=1);
 
-if (__FILE__ == get_required_files()[0] && __FILE__ == realpath($_SERVER["SCRIPT_FILENAME"])) {
-  if ($path = basename(dirname(get_required_files()[0])) == 'public') { // (basename(getcwd())
-    require_once '..' . DIRECTORY_SEPARATOR . 'bootstrap' . DIRECTORY_SEPARATOR . 'bootstrap.php';
-  } elseif (is_file($path = realpath('config' . DIRECTORY_SEPARATOR . 'config.php'))) {
-    require_once $path;
-  } else {
-    die(var_dump("Path was not found. file=$path"));
-  }
+/**
+ * Bootstrap first.
+ * - defines APP_PATH/CONFIG_PATH
+ * - loads Composer autoload (PSR-4 for ShellPrompt)
+ * - defines APP_BOOTSTRAPPED and other runtime constants
+ */
+
+if (!defined('APP_BOOTSTRAPPED')) {
+  require_once dirname(__DIR__, 2) . '/bootstrap/bootstrap.php';
 }
 
 if (preg_match('/^app\.([\w\-.]+)\.php$/', basename(__FILE__), $matches))
@@ -381,14 +384,14 @@ z-index : 1;
 }
 
 
-<?php $app['style'] = ob_get_contents();
+<?php $UI_APP['style'] = ob_get_contents();
 ob_end_clean();
 
 ob_start(); ?>
 
 <!-- <div class="container" style="border: 1px solid #000;"> -->
 <div id="app_pong-container"
-  class="<?= __FILE__ == get_required_files()[0] || (isset($_GET['app']) && $_GET['app'] == 'pong') ? 'selected' : '' ?>"
+  class=""
   style="border: 1px solid #000; overflow-x: scroll;">
   <div class="header ui-widget-header">
     <div style="display: inline-block;">Pong</div>
@@ -405,7 +408,7 @@ ob_start(); ?>
 </div>
 <!-- </div> -->
 
-<?php $app['body'] = ob_get_contents();
+<?php $UI_APP['body'] = ob_get_contents();
 ob_end_clean();
 
 if (false) { ?>
@@ -413,7 +416,7 @@ if (false) { ?>
   <?php }
 ob_start(); ?>
   // Javascript comment
-  <?php $app['script'] = ob_get_contents();
+  <?php $UI_APP['script'] = ob_get_contents();
   ob_end_clean();
 
   if (false) { ?></script><?php }
@@ -455,7 +458,6 @@ ob_start(); ?>
   <script src="<?= 'assets/vendor/tailwindcss-3.3.5.js' ?? $url ?>"></script>
 
   <style type="text/tailwindcss">
-    <?= /*$appWhiteboard['style'];*/ NULL; ?>
 * { margin: 0; padding: 0; } /* to remove the top and left whitespace */
 
 html, body { width: 100%; height: 100%; <?= $_SERVER['SCRIPT_FILENAME'] == __FILE__ ? 'overflow:hidden;' : '' ?> } /* just to be sure these are full screen*/
@@ -503,9 +505,9 @@ html, body { width: 100%; height: 100%; <?= $_SERVER['SCRIPT_FILENAME'] == __FIL
 </body>
 
 </html>
-<?php $app['html'] = ob_get_contents();
+<?php $UI_APP['html'] = ob_get_contents();
 ob_end_clean();
 
 //check if file is included or accessed directly
-if (__FILE__ == realpath($_SERVER["SCRIPT_FILENAME"]) || in_array(__FILE__, get_required_files()) && isset($_GET['app']) && $_GET['app'] == 'pong' && APP_DEBUG)
-  die($app['html']);
+if (cis_is_direct_http_file(__FILE__) && APP_DEBUG && ($_GET['app'] ?? null) === 'console')
+  die($UI_APP['html']);

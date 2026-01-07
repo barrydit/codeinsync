@@ -1,16 +1,17 @@
 <?php
+// app/visual/nodes.php
+declare(strict_types=1);
 
-if (!defined('APP_PATH')) {
-  define('APP_PATH', rtrim(realpath(dirname(__DIR__)), '/\\') . DIRECTORY_SEPARATOR);
+/**
+ * Bootstrap first.
+ * - defines APP_PATH/CONFIG_PATH
+ * - loads Composer autoload (PSR-4 for ShellPrompt)
+ * - defines APP_BOOTSTRAPPED and other runtime constants
+ */
+
+if (!defined('APP_BOOTSTRAPPED')) {
+  require_once dirname(__DIR__, 2) . '/bootstrap/bootstrap.php';
 }
-if (!defined('APP_ROOT')) {
-  define('APP_ROOT', '');
-}
-
-$pathsFile = APP_PATH . 'config/constants.paths.php';
-if (is_file($pathsFile))
-  require_once $pathsFile;
-
 
 $app_id = 'visual/nodes';           // full path-style id
 
@@ -166,13 +167,6 @@ if (isset($_GET['app'], $_GET['graph']) && $_GET['app'] === 'visual/nodes') {
   exit;
 }
 
-if (__FILE__ == get_required_files()[0] && __FILE__ == realpath($_SERVER["SCRIPT_FILENAME"]))
-  if ($path = basename(dirname(get_required_files()[0])) == 'public') { // (basename(getcwd())
-    if (is_file($path = realpath('index.php')))
-      require_once $path;
-  } else
-    die(var_dump("Path was not found. file=$path"));
-
 //if ($_SERVER['REQUEST_METHOD'] == 'POST')
 //  if (isset($_GET['app']) && $_GET['app'] == 'nodes')
 
@@ -249,12 +243,6 @@ font: 10px sans-serif;
 
 <?php $UI_APP['style'] = ob_get_contents();
 ob_end_clean();
-
-/*
-<div id="<?= $container_id ?>"
-  class="absolute <?= __FILE__ == get_required_files()[0] || (isset($_GET['app']) && $_GET['app'] == 'nodes') && !isset($_GET['path']) ? 'selected' : '' ?>"
-  style="display: <?= __FILE__ == get_required_files()[0] || (isset($_GET['app']) && $_GET['app'] == 'nodes') ? 'block' : 'block' ?>; resize: both; overflow: hidden;">
-*/
 
 ob_start(); ?>
 <div class="window-header"
@@ -616,7 +604,7 @@ ob_start(); ?>
 $return_contents = ob_get_contents();
 ob_end_clean();
 
-if (__FILE__ == get_required_files()[0] && __FILE__ == realpath($_SERVER["SCRIPT_FILENAME"]))
+if (cis_is_direct_http_file(__FILE__) && APP_DEBUG && ($_GET['app'] ?? null) === 'visual/nodes')
   print $return_contents;
 elseif (in_array(__FILE__, get_required_files()) && isset($_GET['app']) && $_GET['app'] == 'visual/nodes' && APP_DEBUG)
   return $return_contents; // Return only script if requested

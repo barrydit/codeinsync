@@ -128,8 +128,6 @@ if (isset($_SERVER['REQUEST_METHOD']) && $_SERVER['REQUEST_METHOD'] == 'POST') {
         //die(header('Location: ' . APP_URL_BASE . '?app=text_editor&filename='.$_POST['cmd']));
         //$output[] = "Changing directory to " . $path;
 
-        //$output[] = var_dump(get_required_files()); //'Location: ' . APP_PATH . APP_ROOT . rtrim(trim(preg_match('#(?:\.\./)+#', $match[1]) ? '/' : $match[1]), DIRECTORY_SEPARATOR);
-
         /**/
         error_log("Path: $match[1]");
 
@@ -171,7 +169,7 @@ if (isset($_SERVER['REQUEST_METHOD']) && $_SERVER['REQUEST_METHOD'] == 'POST') {
                 $_GET['path'] = '';
               }
               //$_GET['path'] =  . '>>' . APP_CLIENT . ($_GET['domain'] ?? '');
-              //dd(get_required_files(), false);
+
               ob_start();
               //if (is_file($include = APP_PATH . APP_ROOT . APP_BASE['vendor'] . 'autoload.php'))
               //if (isset($_ENV['COMPOSER']['AUTOLOAD']) && (bool) $_ENV['COMPOSER']['AUTOLOAD'] === TRUE)
@@ -219,8 +217,6 @@ if (isset($_SERVER['REQUEST_METHOD']) && $_SERVER['REQUEST_METHOD'] == 'POST') {
       } else if (preg_match('/^edit\s+(:?(.*))/i', $_POST['cmd'], $match)) {
         //exec($_POST['cmd'], $output);
         //die(header('Location: ' . APP_URL_BASE . '?app=text_editor&filename='.$_POST['cmd']));
-
-        //$output[] = 'This works ... ' . dd(get_required_files(), false) . dd($_POST, false) . APP_PATH . APP_ROOT; // APP_ROOT; 
 
         // . DIRECTORY_SEPARATOR . ($_GET['domain'] ?? '')
         // . DIRECTORY_SEPARATOR . ($_GET['path'] ?? '')
@@ -287,10 +283,6 @@ if (isset($_SERVER['REQUEST_METHOD']) && $_SERVER['REQUEST_METHOD'] == 'POST') {
       return ''; // 'The application has been terminated.';  
     })->shutdown();
 }
-
-
-
-//dd($directory, true);
 
 // $style = file_get_contents(__DIR__ . '/devtools.directory.css'); // put your CSS here
 if (false) { ?>
@@ -364,8 +356,6 @@ if (!$exists) {
 //    'vals' => compact('client', 'domain', 'project', 'path')
 //  ]);
 
-//dd($_GET, false); // { "app": "devtools\/directory", "json": "1" } 
-
 $UI_APP['body'] = ob_get_contents();
 ob_end_clean();
 if (false) { ?>
@@ -387,8 +377,7 @@ return $UI_APP; */
   <?php $app['style'] = ob_get_contents();
   ob_end_clean();  */
 
-  ob_start();
-  //dd(get_required_files(), false); ?>
+  ob_start(); ?>
 <div style="position: fixed; z-index: 50; left: 0px; top: 0px;">
   <div
     style="position: absolute; top: -10px; left: 0px; width: 395px; z-index: 50; background-color: rgb(250, 250, 250); border: 1px solid black; box-shadow: rgba(0, 0, 0, 0.5) 0px 0px 10px; border-radius: 5px; padding: 3px;">
@@ -511,7 +500,7 @@ left: calc(50% - 265px); /* 1207 / 2 */ /*transform: translate(-50%, -50%);*/ bo
 
 <?php
 //$path = APP_PATH . APP_ROOT . ($_GET['path'] ?? '');
-//dd($_GET);
+
 // $context = $context ?? 'app'; // fallback
 /* ---------- inputs ---------- */
 $base = rtrim(APP_PATH, '/'); // e.g. /mnt/c/www
@@ -661,8 +650,6 @@ $exists = (bool) realpath($absDir ?? '');
 if (!$exists) {
   echo 'Missing directory: ' . htmlspecialchars($absDir ?? '');
 }
-
-// dd("APP_PATH = " . APP_PATH . '  APP_ROOT = ' . APP_ROOT . '  APP_ROOT_DIR = ' . APP_ROOT_DIR, false);
 
 // ---- existence check ------------------------------------------------------
 switch (ctx('context')) {
@@ -1244,7 +1231,6 @@ switch (ctx('context')) {
 dd($_GET, false);
 
 dd(APP_PATH . APP_ROOT, false);
-  dd(get_required_files(), false);
 dd($_POST, false);*/
 //dd(APP_CLIENT, false);
 

@@ -72,9 +72,3 @@ ob_start(); ?>
 </html>
 <?php $app[$install]['html'] = ob_get_contents();
 ob_end_clean();
-
-//if (__FILE__ == get_required_files()[0] || in_array(__FILE__, get_required_files()) && isset($_GET['app']) && $_GET['app'] == 'backup' && APP_DEBUG)
-//  Shutdown::setEnabled(false)->setShutdownMessage(function() {
-//      return $app[$install]['html'];  // -wow */
-//    })->shutdown(); // exit; ob_start();
-?>

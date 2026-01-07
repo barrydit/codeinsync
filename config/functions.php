@@ -1,6 +1,7 @@
 <?php
-declare(strict_types=1);
 // config/functions.php
+declare(strict_types=1);
+
 
 if (!class_exists(\CodeInSync\Infrastructure\Runtime\Shutdown::class)) {
   require APP_PATH . 'src/Infrastructure/Runtime/Shutdown.php'; // classes/class.shutdown.php
@@ -14,6 +15,53 @@ if (!class_exists(\CodeInSync\Infrastructure\Runtime\Shutdown::class)) {
 // Helpers first — MUST be vendor-free 
 //require_once dirname(__DIR__) . '/classes/class.pathutils.php';
 //require_once dirname(__DIR__) . '/classes/class.queryurl.php';
+
+/**
+ * True when THIS FILE is the entry script being executed by PHP (direct web hit).
+ * - Works for Apache/FPM.
+ * - Safe under dispatcher/includes.
+ */
+function cis_is_direct_file(string $file): bool
+{
+    $script = $_SERVER['SCRIPT_FILENAME'] ?? '';
+    if ($script === '') {
+        return false;
+    }
+
+    $a = realpath($script);
+    $b = realpath($file);
+
+    // If realpath fails (rare), fall back to raw compare
+    if ($a === false || $b === false) {
+        return $script === $file;
+    }
+
+    return $a === $b;
+}
+
+/**
+ * True when this request is a normal HTTP request (not CLI).
+ */
+function cis_is_http(): bool
+{
+    return PHP_SAPI !== 'cli';
+}
+
+/**
+ * Convenience: direct HTTP execution of a file.
+ */
+function cis_is_direct_http_file(string $file): bool
+{
+    return cis_is_http() && cis_is_direct_file($file);
+}
+
+/**
+ * Convenience: included/required (i.e., NOT the direct entry script).
+ */
+function cis_is_included_file(string $file): bool
+{
+    return !cis_is_direct_file($file);
+}
 
 /**/
 function get_str(string $k): ?string

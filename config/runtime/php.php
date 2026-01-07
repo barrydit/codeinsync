@@ -1,10 +1,21 @@
 <?php
+// config/runtime/php.php
+declare(strict_types=1);
 
-!defined('APP_PATH') and define('APP_PATH', dirname(__DIR__) . DIRECTORY_SEPARATOR);
+/**
+ * Bootstrap first.
+ * - defines APP_PATH/CONFIG_PATH
+ * - loads Composer autoload (PSR-4 for ShellPrompt)
+ * - defines APP_BOOTSTRAPPED and other runtime constants
+ */
+
+if (!defined('APP_BOOTSTRAPPED')) {
+  require_once dirname(__DIR__, 2) . '/bootstrap/bootstrap.php';
+}
 
 // Define PHP_EXEC if not already defined
 if (!defined('PHP_EXEC')) {
-    define('PHP_EXEC', $_ENV['PHP']['EXEC'] ?? PHP_BINARY ?? '/usr/bin/php');
+    define('PHP_EXEC', PHP_BINARY ?? $_ENV['PHP']['EXEC'] ?? '/usr/bin/php');
 }
 
 // Register PHP runner in the global runtime registry
@@ -37,18 +48,6 @@ $GLOBALS['runtimes']['php'] = [
 ];
 
 /*
-if (__FILE__ == get_required_files()[0] && __FILE__ == realpath($_SERVER["SCRIPT_FILENAME"]))
-    if ($path = basename(dirname(get_required_files()[0])) == 'public') { // (basename(getcwd())
-        chdir('../');
-        if ($path = realpath('bootstrap' . DIRECTORY_SEPARATOR . 'bootstrap.php')) // is_file()
-            require_once $path;
-        //die('does this do anything?');
-
-    } else
-        die(var_dump("Path was not found. file=$path"));
-else
-    require_once APP_PATH . 'bootstrap' . DIRECTORY_SEPARATOR . 'bootstrap.php';
-
 require_once APP_PATH . 'config' . DIRECTORY_SEPARATOR . 'constants.env.php';
 require_once APP_PATH . 'config' . DIRECTORY_SEPARATOR . 'constants.paths.php';
 require_once APP_PATH . 'config' . DIRECTORY_SEPARATOR . 'constants.runtime.php';
@@ -86,7 +85,7 @@ file_put_contents(
 
 //require_once APP_PATH . 'config' . DIRECTORY_SEPARATOR . 'autoload.php';
 
-!defined('APP_SELF') and define('APP_SELF', get_required_files()[0] ?? realpath($_SERVER["SCRIPT_FILENAME"])); /*__FILE__*/
+
 // define('PATH_PUBLIC', __DIR__);
 
 $previousFilename = '';

@@ -152,7 +152,7 @@ final class PhpRuntime implements RuntimeInterface
     private static function phpExec(): string
     {
         // 1) explicit constant wins
-        if (defined('PHP_EXEC') && is_string(PHP_EXEC) && PHP_EXEC !== '') {
+        if (\defined('PHP_EXEC') && \is_string(PHP_EXEC) && PHP_EXEC !== '') {
             return PHP_EXEC;
         }
 

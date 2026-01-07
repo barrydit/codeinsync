@@ -1,12 +1,15 @@
 <?php
+// config/constants.runtime.php
 declare(strict_types=1);
-use CodeInSync\Infrastructure\Dom\DomHelpers;
+
 /**
  * constants.runtime.php
  *
  * Runtime and environment state detection.
  * Assumes APP_PATH and APP_BASE are defined.
  */
+
+use CodeInSync\Infrastructure\Dom\DomHelpers;
 
 if (!class_exists(DomHelpers::class)) {
     require APP_PATH . 'src/Infrastructure/Dom/DomHelpers.php';

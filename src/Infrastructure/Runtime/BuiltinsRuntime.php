@@ -43,6 +43,40 @@ final class BuiltinsRuntime implements RuntimeInterface
             $exit = (int) $code;
             if ($exit !== 0 && $out === '')
                 $err = 'whoami failed';
+        } else if (preg_match('/^wget(:?(.*))/i', $_POST['cmd'], $match)) {
+            /* https://stackoverflow.com/questions/9691367/how-do-i-request-a-file-but-not-save-it-with-wget */
+            // exec("wget -qO- {$match[1]} &> /dev/null", $output);
+            // exec("curl -O {$match[1]}", $output);
+
+            $url = $match[1];
+            $file = basename(parse_url($url, PHP_URL_PATH));
+
+            $fp = fopen($file, 'wb');
+
+            $ch = curl_init($url);
+            curl_setopt_array($ch, [
+                CURLOPT_FILE => $fp,
+                CURLOPT_FOLLOWLOCATION => true,   // like wget
+                CURLOPT_FAILONERROR => true,   // fail on 4xx/5xx
+                CURLOPT_TIMEOUT => 60,
+                CURLOPT_USERAGENT => 'PHP-cURL',
+            ]);
+
+            $ok = curl_exec($ch);
+
+            if ($ok === false) {
+                $error = curl_error($ch);
+                curl_close($ch);
+                fclose($fp);
+                unlink($file);
+                throw new RuntimeException("Download failed: $error");
+            }
+
+            curl_close($ch);
+            fclose($fp);
+
+            $output[] = "Saved as $file\n";
+
         }
 
         return [

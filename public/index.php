@@ -24,8 +24,6 @@ if (defined('APP_MODE') && APP_MODE === 'dispatcher') {
   exit; // was: return
 }
 
-// dd(get_required_files());
-
 /**
  * File Analysis Summary for PHP Project
  * Counts PHP files, lines of code, and included files excluding vendor/.
@@ -120,8 +118,6 @@ if (APP_ROOT !== '') {
 } else
   $_SESSION['mode'] = '';
 //unset($_SESSION['mode']);
-
-//
 
 //dd([realpath(APP_PATH . APP_ROOT), realpath(APP_PATH . '../clients/' . $_ENV['DEFAULT_CLIENT'] . '/' . $_ENV['DEFAULT_DOMAIN'] . '/')]);
 
@@ -271,6 +267,16 @@ if (APP_ROOT !== '') {
       /* padding: 10px; 
       background: #fff;
       border: 1px solid #000;*/
+    }
+
+    .med-container {
+      position: fixed;
+      display: block;
+      overflow: hidden;
+      right: 20px;
+      top: 50px;
+      width: 400px;
+      height: 400px;
     }
 
     .toggle-switch {
@@ -486,21 +492,19 @@ if (APP_ROOT !== '') {
             onclick="document.getElementById('app_tools-container').style.display='block'; return false;">
             <img src="<?= htmlspecialchars($asset('assets/images/apps_icon.gif'), ENT_QUOTES, 'UTF-8') ?>"
               style="margin: -5px 0 0 0;" width="20" height="20"> <span style="margin-top: -5px;">Tools</span></a>
-        </div>
-        <div style="position: absolute; top: 5px; right: 270px;">
-          <img src="<?= htmlspecialchars($asset('assets/images/php_icon.png'), ENT_QUOTES, 'UTF-8') ?>" alt="Logo"
-            style="width: 31px; height: auto; margin: 0 0;"
-            onclick="document.getElementById('app_php-container').style.display='block'; return false;"> PHP
-          <button style="border: 1px solid black; border-radius: 5px;">Clock-In</button>&nbsp;
-          <button style="border: 1px solid black; border-radius: 5px;">Github</button>&nbsp;
-          <input type="submit" value="Test" style="border: 1px solid black; border-radius: 5px;">
-          <div class="" style="position: relative; display: inline-block; top: 0; right: 2px;">
-            <img src="<?= htmlspecialchars($asset('assets/images/calendar_icon.png'), ENT_QUOTES, 'UTF-8') ?>"
-              width="41" height="41"
-              onclick="document.getElementById('app_calendar-container').style.display='block'; return false;"
-              style="cursor: pointer; margin: -6px 5px;">
-          </div>
-          <!-- button>Git</button>
+          <div style="position: absolute; top: 5px; right: 270px;">
+            <img src="<?= htmlspecialchars($asset('assets/images/php_icon.png'), ENT_QUOTES, 'UTF-8') ?>" alt="Logo"
+              style="width: 31px; height: auto; margin: 0 0;"
+              onclick="document.getElementById('app_php-container').style.display='block'; return false;"> PHP
+            <button style="border: 1px solid black; border-radius: 5px;">Clock-In</button>&nbsp;
+            <button style="border: 1px solid black; border-radius: 5px;">Github</button>&nbsp;
+            <input type="submit" value="Test" style="border: 1px solid black; border-radius: 5px;">
+            <div class="" style="position: relative; display: inline-block; top: 0; right: 2px;">
+              <img src="<?= htmlspecialchars($asset('assets/images/calendar_icon.png'), ENT_QUOTES, 'UTF-8') ?>"
+                width="41" height="41" onclick="openApp('productivity/calendar'); return false;"
+                style="cursor: pointer; margin: -6px 5px;">
+            </div>
+            <!-- button>Git</button>
         <button>GitHub</button>
         <button>GitLab</button>
         <button>Bitbucket</button>
@@ -510,7 +514,9 @@ if (APP_ROOT !== '') {
         <button>GitX</button>
         <button>GitAhead</button -->
 
+          </div>
         </div>
+
         <div
           style="position: absolute; width: auto; top: 5px; right: 0; border: 1px dashed green; height: 20px; z-index: 99;">
           <div id="clockTime"
@@ -611,8 +617,7 @@ if (APP_ROOT !== '') {
               src="<?= htmlspecialchars($asset('assets/images/apps.png'), ENT_QUOTES, 'UTF-8') ?>"><br><span
               style="text-align: center;">Apps.</span></a></div>
         <div style="position: absolute; margin: 110px 170px; text-align: center;" class="text-sm"><a href="#!"
-            onclick="document.getElementById('app_calendar-container').style.display='block'; return false;"><img
-              style="text-align: center;"
+            onclick="openApp('productivity/calendar'); return false;"><img style="text-align: center;"
               src="<?= htmlspecialchars($asset('assets/images/calendar.png'), ENT_QUOTES, 'UTF-8') ?>"><br><span
               style="text-align: center;">Calendar</span></a></div>
         <div
@@ -710,6 +715,10 @@ if (APP_ROOT !== '') {
         </div>
       </div>
     </div>
+    <div id="app_productivity_calendar-container" class="app-fixed" data-draggable="false"
+      data-app="productivity/calendar"
+      style="position: absolute; display: block; overflow: hidden; right: 20px; top: 50px; width: 400px; height: 400px;">
+    </div>
     <div id="app_visual_nodes-container" class="app-container" data-draggable="true" data-app="visual/nodes">
     </div>
     <div id="app_tools_registry_composer-container" class="app-container" data-draggable="true"
@@ -720,6 +729,8 @@ if (APP_ROOT !== '') {
     <div id="app_ui_ace_editor-container" class="app-container" data-draggable="true" data-app="ui/ace_editor"
       data-app-path="ui/ace_editor" style="">
     </div>
+
+  </div>
   </div>
   <div class="client-view" id="clientView">
     <?php
@@ -1008,7 +1019,7 @@ if (APP_ROOT !== '') {
         if (!el) {
           el = document.createElement('div');
           el.id = containerId;
-          el.className = 'app-container';
+          el.className = 'med-container app-container';
           el.innerHTML = ``;
           /*
                 <div class="window-header" data-drag-handle>

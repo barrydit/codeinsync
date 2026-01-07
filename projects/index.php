@@ -1,25 +1,16 @@
 <?php
-//if (__FILE__ != get_required_files()[0])
-//die(__FILE__ . '==' . $_SERVER["SCRIPT_FILENAME"]);
-//die(realpath($_SERVER["SCRIPT_FILENAME"]) . '==' . get_required_files()[0]);
-//
-/*
-if (realpath($_SERVER["SCRIPT_FILENAME"]) == get_required_files()[0] && in_array(__FILE__, get_required_files()) ) {
-  if ($path = basename(dirname(get_required_files()[0])) == 'public') { // (basename(getcwd())
-    if (is_file($path = realpath('../config/config.php'))) {
-      require_once $path;
-    }
-  } elseif (is_file($path = realpath('config/config.php'))) {
-    require_once $path;
-  } else {
-    die(var_dump("Path was not found. file=$path"));
-  }
-  //require_once(realpath('../config/constants.php')); 
-}
-*/
+// config/runtime/php.php
+declare(strict_types=1);
 
-if (is_file($bootstrap = dirname(__DIR__, 1) . DIRECTORY_SEPARATOR . 'bootstrap.php')) {
-  require_once $bootstrap;
+/**
+ * Bootstrap first.
+ * - defines APP_PATH/CONFIG_PATH
+ * - loads Composer autoload (PSR-4 for ShellPrompt)
+ * - defines APP_BOOTSTRAPPED and other runtime constants
+ */
+
+if (!defined('APP_BOOTSTRAPPED')) {
+  require_once dirname(__DIR__) . '/bootstrap/bootstrap.php';
 }
 
 //if (isset($_ENV['COMPOSER']['AUTOLOAD']) && (bool) $_ENV['COMPOSER']['AUTOLOAD'] === true)
@@ -133,5 +124,4 @@ pre {
 {$output}
 </body>
 </html>
-END
-;
+END;

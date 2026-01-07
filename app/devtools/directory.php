@@ -154,8 +154,6 @@ if (isset($_SERVER['REQUEST_METHOD']) && $_SERVER['REQUEST_METHOD'] == 'POST') {
         //die(header('Location: ' . APP_URL_BASE . '?app=text_editor&filename='.$_POST['cmd']));
         //$output[] = "Changing directory to " . $path;
 
-        //$output[] = var_dump(get_required_files()); //'Location: ' . APP_PATH . APP_ROOT . rtrim(trim(preg_match('#(?:\.\./)+#', $match[1]) ? '/' : $match[1]), DIRECTORY_SEPARATOR);
-
         /**/
         error_log("Path: $match[1]");
 
@@ -197,7 +195,7 @@ if (isset($_SERVER['REQUEST_METHOD']) && $_SERVER['REQUEST_METHOD'] == 'POST') {
                 $_GET['path'] = '';
               }
               //$_GET['path'] =  . '>>' . APP_CLIENT . ($_GET['domain'] ?? '');
-              //dd(get_required_files(), false);
+
               ob_start();
               //if (is_file($include = APP_PATH . APP_ROOT . APP_BASE['vendor'] . 'autoload.php'))
               //if (isset($_ENV['COMPOSER']['AUTOLOAD']) && (bool) $_ENV['COMPOSER']['AUTOLOAD'] === TRUE)
@@ -245,8 +243,6 @@ if (isset($_SERVER['REQUEST_METHOD']) && $_SERVER['REQUEST_METHOD'] == 'POST') {
       } else if (preg_match('/^edit\s+(:?(.*))/i', $_POST['cmd'], $match)) {
         //exec($_POST['cmd'], $output);
         //die(header('Location: ' . APP_URL_BASE . '?app=text_editor&filename='.$_POST['cmd']));
-
-        //$output[] = 'This works ... ' . dd(get_required_files(), false) . dd($_POST, false) . APP_PATH . APP_ROOT; // APP_ROOT; 
 
         // . DIRECTORY_SEPARATOR . ($_GET['domain'] ?? '')
         // . DIRECTORY_SEPARATOR . ($_GET['path'] ?? '')
@@ -439,8 +435,7 @@ ob_start(); ?>
   <?php $app['style'] = ob_get_contents();
   ob_end_clean();  */
 
-  ob_start();
-  //dd(get_required_files(), false); ?>
+  ob_start(); ?>
 
 <div
   style="position: fixed; top: -10px; left: 0px; width: 405px; z-index: 50; background-color: rgb(250, 250, 250); border: 1px solid black; box-shadow: rgba(0, 0, 0, 0.5) 0px 0px 10px; border-radius: 5px; padding: 3px;">
@@ -1230,7 +1225,7 @@ switch (ctx('context')) {
 dd($_GET, false);
 
 dd(APP_PATH . APP_ROOT, false);
-  dd(get_required_files(), false);
+
 dd($_POST, false);*/
 //dd(APP_CLIENT, false);
 

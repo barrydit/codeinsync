@@ -533,8 +533,6 @@ try {
     // ====================== END ROUTER (inlined) =======================
 
     $buffer = ob_get_clean();
-    //dd(APP_MODE);
-    //dd(get_required_files());
 } catch (\Throwable $e) {
     while (ob_get_level() > $obLevel)
         ob_end_clean();
@@ -658,7 +656,6 @@ switch (APP_CONTEXT) {
 
             break;
         }
-        dd(get_required_files());
 
         $app = $_GET['app'] ?? null;
 
@@ -695,7 +692,7 @@ switch (APP_CONTEXT) {
     case 'php':
 
         echo 'APP_CONTEXT == ' . APP_CONTEXT;
-        dd(get_required_files());
+
         break;
     // Optional
     case 'socket':
@@ -703,7 +700,6 @@ switch (APP_CONTEXT) {
 
 
         echo 'APP_CONTEXT == ' . APP_CONTEXT;
-        dd(get_required_files());
         break;
 }
 

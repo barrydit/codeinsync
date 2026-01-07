@@ -1,4 +1,17 @@
 <?php
+// app/visual/whiteboard.php
+declare(strict_types=1);
+
+/**
+ * Bootstrap first.
+ * - defines APP_PATH/CONFIG_PATH
+ * - loads Composer autoload (PSR-4 for ShellPrompt)
+ * - defines APP_BOOTSTRAPPED and other runtime constants
+ */
+
+if (!defined('APP_BOOTSTRAPPED')) {
+  require_once dirname(__DIR__, 2) . '/bootstrap/bootstrap.php';
+}
 
 /*
 
@@ -7,16 +20,6 @@ https://stackoverflow.com/questions/2368784/draw-on-html5-canvas-using-a-mouse
 https://leimao.github.io/blog/HTML-Canvas-Mouse-Touch-Drawing/
 
 */
-
-if (__FILE__ == get_required_files()[0] && __FILE__ == realpath($_SERVER["SCRIPT_FILENAME"])) {
-  if ($path = basename(dirname(get_required_files()[0])) == 'public') { // (basename(getcwd())
-    if (is_file($path = realpath('../config/config.php')))
-      require_once $path;
-  } elseif (is_file($path = realpath('config/config.php')))
-    require_once $path;
-  else
-    die(var_dump("Path was not found. file=$path"));
-}
 
 /*
 if ($path = (basename(getcwd()) == 'public')
@@ -28,8 +31,6 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
   if (isset($_GET['app']) && $_GET['app'] == 'php')
     if (isset($_POST['path']) && isset($_GET['filename']) && $path = realpath($_POST['path'] . $_GET['filename']))
       file_put_contents($path, $_POST['editor']);
-
-  //dd($_POST);
 
   //  if (isset($_GET['filename'])) {
 //    file_put_contents($projectRoot.(!$_POST['path'] ? '' : DIRECTORY_SEPARATOR.$_POST['path']).DIRECTORY_SEPARATOR.$_POST['filename'], $_POST['editor']);
@@ -101,7 +102,7 @@ text-align : center;
 padding : 10px;
 z-index : 1;
 }
-<?php $app['style'] = ob_get_contents();
+<?php $UI_APP['style'] = ob_get_contents();
 ob_end_clean();
 
 if (false) { ?></style><?php }
@@ -129,7 +130,7 @@ ob_start(); ?>
 </div>
 <!-- </div> -->
 
-<?php $app['body'] = ob_get_contents();
+<?php $UI_APP['body'] = ob_get_contents();
 ob_end_clean();
 
 if (false) { ?>
@@ -265,7 +266,7 @@ ob_start(); ?>
     prevent = false;
   }
 
-  <?php $app['script'] = ob_get_contents();
+  <?php $UI_APP['script'] = ob_get_contents();
   ob_end_clean();
 
   if (false) { ?></script><?php }
@@ -364,15 +365,16 @@ canvas
   <script src="//code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
   <!-- <script src="assets/vendor/jquery/jquery.min.js"></script> -->
   <script>
-    <?= $app['script']; ?>
+    <?= $UI_APP['script']; ?>
   </script>
 </body>
 
 </html>
-<?php $app['html'] = ob_get_contents();
+<?php $UI_APP['html'] = ob_get_contents();
 ob_end_clean();
 
 //check if file is included or accessed directly
-if (__FILE__ == get_required_files()[0] || in_array(__FILE__, get_required_files()) && isset($_GET['app']) && $_GET['app'] == 'php' && APP_DEBUG)
-  die($app['html']);
+if (cis_is_direct_http_file(__FILE__) && APP_DEBUG && ($_GET['app'] ?? null) === 'visual/whiteboard')
+  die($UI_APP['html']);
 
+return $UI_APP;

@@ -84,7 +84,7 @@ final class Sockets
         $socketToCheck = $socket ?? $GLOBALS['runtime']['socket'] ?? self::$socket;
 
         // Return true if the socket is set and is a valid resource
-        return isset($socketToCheck) && is_resource($socketToCheck);
+        return isset($socketToCheck) && \is_resource($socketToCheck);
     }
 
     /**

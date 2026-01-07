@@ -1,4 +1,18 @@
 <?php
+// app/productivity/timesheet.php
+declare(strict_types=1);
+
+/**
+ * Bootstrap first.
+ * - defines APP_PATH/CONFIG_PATH
+ * - loads Composer autoload (PSR-4 for ShellPrompt)
+ * - defines APP_BOOTSTRAPPED and other runtime constants
+ */
+
+if (!defined('APP_BOOTSTRAPPED')) {
+  require_once dirname(__DIR__, 2) . '/bootstrap/bootstrap.php';
+}
+
 /*
 include('config.php'); /// BAD ... causes errors due to requireing redunantly.
 
@@ -8,33 +22,27 @@ https://stackoverflow.com/questions/17694894/different-timezone-types-on-datetim
 //die('$json_decode: ' . json_encode($json_decode));
 
 /**/
-if (__FILE__ == get_required_files()[0] && __FILE__ == realpath($_SERVER["SCRIPT_FILENAME"]))
 
-  if ($path = basename(dirname(get_required_files()[0])) == 'public') { // (basename(getcwd())
 
-    require_once '..' . DIRECTORY_SEPARATOR . 'bootstrap' . DIRECTORY_SEPARATOR . 'bootstrap.php';
+if (isset($_GET['json'])) {
+  header('Content-Type: application/json');
+  header('Access-Control-Allow-Origin: *');
+  header('Access-Control-Allow-Methods: GET, POST, OPTIONS');
+  header('Access-Control-Allow-Headers: Content-Type, Authorization, X-Requested-With');
+  header('Access-Control-Max-Age: 86400'); // 24 hours
+  header('Cache-Control: no-cache, no-store, must-revalidate'); // HTTP 1.1
+  header('Pragma: no-cache'); // HTTP 1.0
+  header('Expires: 0'); // Proxies
 
-    if (isset($_GET['json'])) {
-      header('Content-Type: application/json');
-      header('Access-Control-Allow-Origin: *');
-      header('Access-Control-Allow-Methods: GET, POST, OPTIONS');
-      header('Access-Control-Allow-Headers: Content-Type, Authorization, X-Requested-With');
-      header('Access-Control-Max-Age: 86400'); // 24 hours
-      header('Cache-Control: no-cache, no-store, must-revalidate'); // HTTP 1.1
-      header('Pragma: no-cache'); // HTTP 1.0
-      header('Expires: 0'); // Proxies
+  echo file_get_contents($file = APP_BASE['data'] . 'weekly-timesheet-' . date('Y-m') . '.json'); //json_encode()
+  //die(var_dump($file));
 
-      echo file_get_contents($file = APP_BASE['data'] . 'weekly-timesheet-' . date('Y-m') . '.json'); //json_encode()
-      //die(var_dump($file));
+  exit;
+}
 
-      exit;
-    }
+//if (is_file($path = realpath('index.php')))
+//  require_once $path;
 
-    //if (is_file($path = realpath('index.php')))
-    //  require_once $path;
-
-  } else
-    die(var_dump("Path was not found. file=$path"));
 
 if (preg_match('/^app\.([\w\-.]+)\.php$/', basename(__FILE__), $matches))
   ${$matches[1]} = $matches[1];
@@ -334,7 +342,7 @@ if (!empty($json_data))
                       //$it = DateTime::createFromFormat('Y-m-d H:i:s', $idleTime);
 
                       if ($idleTime = new DateTime($date . ' ' . $idleTime)) { // DateInterval("PT{$hrs}H{$min}M{$sec}S")
-                      
+
                         // [$hrs, $min, $sec] = explode(':', $idleTime);
 
                         //var_dump($idleTime);
@@ -354,14 +362,14 @@ if (!empty($json_data))
                         if ($idleTime <= $firstRangeEnd)
                           //var_dump('idleTime: ' . $idleTime->format('H:i:s'));
                         else {
-                        
+
                         }
 
                           // [$hrs, $min, $sec] = explode(':', $firstRangeEnd->format('H:i:s'));
-                          
+
                           //$idleTime->sub("PT{$hrs}H{$min}M{$sec}S");
-                          
-                          
+
+
 
                         //}
 
@@ -381,7 +389,7 @@ if (!empty($json_data))
       2023-09-18T06:00:00-21:00
 
       if the timestamp is the last one as apposed to one in a sequence
-      
+
      Night  start : 00 end:06
      Morning  start : 06 end:12
       this fits here ... 21:00:00>=12:00:00 END
@@ -547,7 +555,7 @@ $weeklyHours = [
             //$it = DateTime::createFromFormat('Y-m-d H:i:s', $idleTime);
 
             if ($idleTime = new DateTime($date . ' ' . $idleTime)) { // DateInterval("PT{$hrs}H{$min}M{$sec}S")
-            
+
               // [$hrs, $min, $sec] = explode(':', $idleTime);
 
               //var_dump($idleTime);
@@ -567,14 +575,14 @@ $weeklyHours = [
               if ($idleTime <= $firstRangeEnd)
                 dd('idleTime: ' . $idleTime->format('H:i:s'));
               else {
-              
+
               }
 
                 // [$hrs, $min, $sec] = explode(':', $firstRangeEnd->format('H:i:s'));
-                
+
                 //$idleTime->sub("PT{$hrs}H{$min}M{$sec}S");
-                
-                
+
+
 
               //}
 
@@ -740,7 +748,7 @@ border : none;
 display : none;
 }
 
-<?php $app['style'] = ob_get_contents();
+<?php $UI_APP['style'] = ob_get_contents();
 ob_end_clean();
 
 ob_start(); ?>
@@ -1101,7 +1109,7 @@ END;
 
 </div>
 
-<?php $app['body'] = ob_get_contents();
+<?php $UI_APP['body'] = ob_get_contents();
 ob_end_clean();
 
 if (false) { ?>
@@ -1374,7 +1382,7 @@ ob_start(); ?>
       }
   }
 
-  <?php $app['script'] = ob_get_contents();
+  <?php $UI_APP['script'] = ob_get_contents();
   ob_end_clean();
 
   if (false) { ?></script><?php }
@@ -1414,12 +1422,12 @@ ob_start(); ?>
   <script src="<?= 'assets/vendor/tailwindcss-3.3.5.js' ?? $url ?>"></script>
 
   <style type="text/tailwindcss">
-    <?= $app['style']; ?>
+    <?= $UI_APP['style']; ?>
 </style>
 </head>
 
 <body>
-  <?= $app['body']; ?>
+  <?= $UI_APP['body']; ?>
 
   <!-- https://cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.min.js -->
   <script src="//code.jquery.com/jquery-1.12.4.js"></script>
@@ -1428,14 +1436,14 @@ ob_start(); ?>
 
   <script src="assets/js/play_sound.js"></script>
   <script>
-    <?= $app['script']; ?>
+    <?= $UI_APP['script']; ?>
   </script>
 </body>
 
 </html>
-<?php $app['html'] = ob_get_contents();
+<?php $UI_APP['html'] = ob_get_contents();
 ob_end_clean();
 
 //check if file is included or accessed directly
-if (__FILE__ == get_required_files()[0] || in_array(__FILE__, get_required_files()) && isset($_GET['app']) && $_GET['app'] == 'git' && APP_DEBUG)
-  die($app['html']);
+if (cis_is_direct_http_file(__FILE__) && APP_DEBUG && ($_GET['app'] ?? null) === 'timesheet')
+  die($UI_APP['html']);

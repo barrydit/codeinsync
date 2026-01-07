@@ -1,14 +1,16 @@
 <?php
+// app/productivity/notes.php
+declare(strict_types=1);
 
-if (__FILE__ == get_required_files()[0] && __FILE__ == realpath($_SERVER["SCRIPT_FILENAME"])) {
-  if ($path = basename(dirname(get_required_files()[0])) == 'public') { // (basename(getcwd())
-    if (is_file($path = realpath('..' . DIRECTORY_SEPARATOR . 'bootstrap' . DIRECTORY_SEPARATOR . 'bootstrap.php'))) {
-      require_once $path;
-    }
-  } elseif (is_file($path = realpath('config' . DIRECTORY_SEPARATOR . 'config.php')))
-    require_once $path;
-  else
-    die(var_dump("Path was not found. file=$path"));
+/**
+ * Bootstrap first.
+ * - defines APP_PATH/CONFIG_PATH
+ * - loads Composer autoload (PSR-4 for ShellPrompt)
+ * - defines APP_BOOTSTRAPPED and other runtime constants
+ */
+
+if (!defined('APP_BOOTSTRAPPED')) {
+  require_once dirname(__DIR__, 2) . '/bootstrap/bootstrap.php';
 }
 
 if (preg_match('/^app\.([\w\-.]+)\.php$/', basename(__FILE__), $matches))
@@ -24,8 +26,6 @@ else die(var_dump($path . ' path was not found. file=console_app.php'));
 //if (isset($_GET['app']) && $_GET['app'] == 'php')
 //  if (isset($_POST['path']) && isset($_GET['filename']) && $path = realpath($_POST['path'] . $_GET['filename']))
 //    file_put_contents($path, $_POST['editor']);
-
-//dd($_POST);
 
 //  if (isset($_GET['filename'])) {
 //    file_put_contents($projectRoot.(!$_POST['path'] ? '' : DIRECTORY_SEPARATOR.$_POST['path']).DIRECTORY_SEPARATOR.$_POST['filename'], $_POST['editor']);
@@ -217,7 +217,7 @@ padding : 10px;
 z-index : 1;
 }
 
-<?php $app['style'] = ob_get_contents();
+<?php $UI_APP['style'] = ob_get_contents();
 ob_end_clean();
 
 ob_start(); ?>
@@ -245,18 +245,17 @@ ob_start(); ?>
 </div>
 <!-- </div> -->
 
-<?php $app['body'] = ob_get_contents();
+<?php $UI_APP['body'] = ob_get_contents();
 ob_end_clean();
 
 if (false) { ?>
   <script type="text/javascript"><?php }
 ob_start(); ?>
   // Javascript comment
-  <?php $app['script'] = ob_get_contents();
+  <?php $UI_APP['script'] = ob_get_contents();
   ob_end_clean();
 
   if (false) { ?></script><?php }
-  //dd($_SERVER);
   ob_start(); ?>
 <!DOCTYPE html>
 <html>
@@ -399,8 +398,8 @@ pre {
         </div>
         <pre
           style="margin: 0px;"><code class="language-<?= $sample['language']; ?>"><?= $snippet['code']; ?></code>
-                                                                                                                                                                            <?= $snippet['description']; ?>
-                                                                                                                                                                              </pre>
+                                                                                                                                                                                <?= $snippet['description']; ?>
+                                                                                                                                                                                  </pre>
       </form>
       <div style=" margin-left: 15px;">
 
@@ -415,7 +414,7 @@ pre {
 
   <?php
   // (APP_IS_ONLINE && check_http_status('https://cdn.tailwindcss.com') ? 'https://cdn.tailwindcss.com' : APP_URL . 'assets/vendor/highlight.min.js"')?
-
+  
   (getcwd() === rtrim($path = APP_PATH . APP_BASE['public'], '/') && is_dir($path .= 'assets/vendor/highlight.js/11.6.0/')) or mkdir($path, 0755, true);
   if (is_file($path . 'highlight.min.js')) {
     if (ceil(abs((strtotime(date('Y-m-d')) - strtotime(date('Y-m-d', strtotime('+5 days', filemtime($path . 'highlight.min.js'))))) / 86400)) <= 0) {
@@ -439,8 +438,6 @@ pre {
   <script src="<?= 'assets/vendor/highlight.js/11.6.0/highlight.min.js' ?? $url ?>"></script>
 
   <script>
-<?= /* $appWhiteboard['script']; */ NULL; ?>
-
     hljs.highlightAll();
     $(document).ready(function () {
       $('#open_add_new').click(function () {
@@ -494,10 +491,11 @@ pre {
 </body>
 
 </html>
-<?php $app['html'] = ob_get_contents();
+<?php $UI_APP['html'] = ob_get_contents();
 ob_end_clean();
 
 //check if file is included or accessed directly
-//if (__FILE__ == get_required_files()[0] || in_array(__FILE__, get_required_files()) && isset($_GET['app']) && $_GET['app'] == 'php' && APP_DEBUG)
-die($app['html']);
+if (cis_is_direct_http_file(__FILE__) && APP_DEBUG && ($_GET['app'] ?? null) === 'productivity/notes')
+  die($UI_APP['html']);
 
+return $UI_APP;

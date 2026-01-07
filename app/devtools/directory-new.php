@@ -1,22 +1,23 @@
 <?php
-defined('APP_BASE') or
-    require_once APP_PATH . 'config/constants.paths.php';
+// app/devtools/directory-new.php
+declare(strict_types=1);
+
+/**
+ * Bootstrap first.
+ * - defines APP_PATH/CONFIG_PATH
+ * - loads Composer autoload (PSR-4 for ShellPrompt)
+ * - defines APP_BOOTSTRAPPED and other runtime constants
+ */
+
+if (!defined('APP_BOOTSTRAPPED')) {
+    require_once dirname(__DIR__, 2) . '/bootstrap/bootstrap.php';
+}
+
     
 global $errors;
 
 defined('APP_ROOT') or
     define('APP_ROOT', APP_BASE['root'] ?? '');
-
-if (__FILE__ == get_required_files()[0] && __FILE__ == realpath($_SERVER["SCRIPT_FILENAME"]))
-    if ($path = basename(dirname(get_required_files()[0])) == 'public') { // (basename(getcwd())
-        chdir('../');
-        if ($path = realpath(/*'config' . DIRECTORY_SEPARATOR . */ 'bootstrap' . DIRECTORY_SEPARATOR . 'bootstrap.php')) // is_file('bootstrap.php')
-            require_once $path;
-
-        //die(var_dump(APP_PATH));
-    } else
-        die(var_dump("Path was not found. file=$path"));
-//else {}
 
 defined('APP_URL_BASE') or
     require_once APP_PATH . 'config/constants.url.php';
@@ -178,7 +179,7 @@ left: calc(50% - 265px); /* 1207 / 2 */ /*transform: translate(-50%, -50%);*/ bo
 
     <?php
     //$path = APP_PATH . APP_ROOT . ($_GET['path'] ?? '');
-//dd($_GET);
+
 // Base navigation path
 
     $base = rtrim(APP_PATH, '/');               // e.g., /mnt/c/www
@@ -238,14 +239,8 @@ left: calc(50% - 265px); /* 1207 / 2 */ /*transform: translate(-50%, -50%);*/ bo
     /*  $cwd = getcwd();
     (str_starts_with($cwd, APP_PATH)
       ? substr($cwd, strlen(APP_PATH))
-      : '')
-    dd($_GET, false);
-
-    dd(APP_PATH . APP_ROOT, false);
-      dd(get_required_files(), false);
-    dd($_POST, false);*/
-    //dd(APP_CLIENT, false);
-
+      : '') */
+  
     if (isset($_GET['path']) && preg_match('/^project\/?/', $_GET['path']) || isset($_GET['project']) && empty($_GET['project'])) {
         if (isset($_SERVER['HOME']) && readlinkToEnd($_SERVER['HOME'] . DIRECTORY_SEPARATOR . APP_BASE['projects'] . DIRECTORY_SEPARATOR) == APP_BASE['projects'] || realpath(APP_BASE['projects'])) { ?>
             <div style="text-align: center; border: none;" class="text-xs">
@@ -261,7 +256,7 @@ left: calc(50% - 265px); /* 1207 / 2 */ /*transform: translate(-50%, -50%);*/ bo
 
                     if (empty($links))
                         echo "<hr />\n"; // label="     "
-                    else  //dd($links);
+                    else
                         $old_links = $links;
 
                     while ($link = array_shift($links)) {
@@ -319,7 +314,7 @@ left: calc(50% - 265px); /* 1207 / 2 */ /*transform: translate(-50%, -50%);*/ bo
                         <?php
                         //if (empty($links)) {
                         //  echo '<option value="" selected>---</option>' . "\n"; // label="     "
-                        //} else  //dd($links);
+                        //}
                         $count = 1;
                         $old_links = $links;
                         while ($link = array_shift($links)) {
@@ -369,7 +364,7 @@ left: calc(50% - 265px); /* 1207 / 2 */ /*transform: translate(-50%, -50%);*/ bo
             <?php
             //if (empty($links)) {
             //  echo '<option value="" selected>---</option>' . "\n"; // label="     "
-            //} else  //dd($links);
+            //}
             $count = 1;
             $old_links = $links;
             while ($link = array_shift($links)) {
@@ -406,7 +401,7 @@ left: calc(50% - 265px); /* 1207 / 2 */ /*transform: translate(-50%, -50%);*/ bo
 
                     //if (empty($links)) {
                     //  echo '<option value="" selected>---</option>' . "\n"; // label="     "
-                    //} else  //dd($links);
+                    //}
         
                     $links = array_filter(glob(APP_PATH . 'clients' . DIRECTORY_SEPARATOR . '*', GLOB_ONLYDIR), function ($link) {
                         // Apply regex to the basename (last part of the path)
@@ -455,7 +450,7 @@ left: calc(50% - 265px); /* 1207 / 2 */ /*transform: translate(-50%, -50%);*/ bo
 
                         //if (empty($links)) {
                         //  echo '<option value="" selected>---</option>' . "\n"; // label="     "
-                        //} else  //dd($links);
+                        //}
                         $old_links = $links;
                         while ($link = array_shift($links)) {
                             $old_link = $link;
@@ -581,8 +576,6 @@ left: calc(50% - 265px); /* 1207 / 2 */ /*transform: translate(-50%, -50%);*/ bo
                     */
                 }
 
-                //dd(APP_CLIENT, false);
-    
                 //$path = (defined('APP_CLIENT')) ? APP_CLIENT : APP_PATH . (!isset($_GET['domain']) && isset($_GET['client']) ? APP_ROOT : APP_ROOT);
     
                 //echo dirname($pathAvail) . DIRECTORY_SEPARATOR . ($_GET['path'] ?? '');
@@ -591,7 +584,6 @@ left: calc(50% - 265px); /* 1207 / 2 */ /*transform: translate(-50%, -50%);*/ bo
                 $paths = glob(rtrim($path . ($_GET['path'] ?? ''), DIRECTORY_SEPARATOR) . DIRECTORY_SEPARATOR . '{.[!.]*,*}', GLOB_BRACE | GLOB_MARK);
 
                 unset($path);
-                //dd(urldecode($_GET['path']));
     
                 usort($paths, function ($a, $b) {
                     $aIsDir = is_dir($a);
@@ -1131,8 +1123,6 @@ left: calc(50% - 265px); /* 1207 / 2 */ /*transform: translate(-50%, -50%);*/ bo
                     //die(header('Location: ' . APP_URL_BASE . '?app=text_editor&filename='.$_POST['cmd']));
                     //$output[] = "Changing directory to " . $path;
     
-                    //$output[] = var_dump(get_required_files()); //'Location: ' . APP_PATH . APP_ROOT . rtrim(trim(preg_match('#(?:\.\./)+#', $match[1]) ? '/' : $match[1]), DIRECTORY_SEPARATOR);
-    
                     /**/
                     error_log("Path: $match[1]");
 
@@ -1174,7 +1164,7 @@ left: calc(50% - 265px); /* 1207 / 2 */ /*transform: translate(-50%, -50%);*/ bo
                                     $_GET['path'] = '';
                                 }
                                 //$_GET['path'] =  . '>>' . APP_CLIENT . ($_GET['domain'] ?? '');
-                                //dd(get_required_files(), false);
+
                                 ob_start();
                                 //if (is_file($include = APP_PATH . APP_ROOT . APP_BASE['vendor'] . 'autoload.php'))
                                 //if (isset($_ENV['COMPOSER']['AUTOLOAD']) && (bool) $_ENV['COMPOSER']['AUTOLOAD'] === TRUE)
@@ -1222,8 +1212,6 @@ left: calc(50% - 265px); /* 1207 / 2 */ /*transform: translate(-50%, -50%);*/ bo
                 } else if (preg_match('/^edit\s+(:?(.*))/i', $_POST['cmd'], $match)) {
                     //exec($_POST['cmd'], $output);
                     //die(header('Location: ' . APP_URL_BASE . '?app=text_editor&filename='.$_POST['cmd']));
-    
-                    //$output[] = 'This works ... ' . dd(get_required_files(), false) . dd($_POST, false) . APP_PATH . APP_ROOT; // APP_ROOT; 
     
                     // . DIRECTORY_SEPARATOR . ($_GET['domain'] ?? '')
                     // . DIRECTORY_SEPARATOR . ($_GET['path'] ?? '')

@@ -1,21 +1,22 @@
 <?php
+// public/ui.complete.php
+declare(strict_types=1);
+
+/**
+ * Bootstrap first.
+ * - defines APP_PATH/CONFIG_PATH
+ * - loads Composer autoload (PSR-4 for ShellPrompt)
+ * - defines APP_BOOTSTRAPPED and other runtime constants
+ */
+
+if (!defined('APP_BOOTSTRAPPED')) {
+  require_once dirname(__DIR__) . '/bootstrap/bootstrap.php';
+}
 
 
 //if (isset($_GET['path']) && isset($_GET['file']) && $path = realpath($_GET['path'] . $_GET['file']))
 
 //$errors->{'TEXT_MANAGER'} = $path . "\n" . 'File Modified:    Rights:    Date of creation: ';
-
-if (__FILE__ == get_required_files()[0])
-  if (
-    $path = (basename(getcwd()) == 'public')
-    ? (is_file('../config.php') ? '../config.php' : (is_file('../config/config.php') ? '../config/config.php' : null))
-    : (is_file('config.php') ? 'config.php' : (is_file('config/config.php') ? 'config/config.php' : null))
-  )
-    require_once $path;
-  else
-    die(var_dump("$path path was not found. file=config.php"));
-
-//dd($_GET);
 
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
   if (isset($_GET['app']) && $_GET['app'] == 'ace_editor')
@@ -357,7 +358,7 @@ ob_start(); ?>
 ob_end_clean();
 
 //check if file is included or accessed directly
-if (__FILE__ == get_required_files()[0] || in_array(__FILE__, get_required_files()) && isset($_GET['app']) && $_GET['app'] == 'ace_editor' && APP_DEBUG)
+if (cis_is_direct_http_file(__FILE__) && APP_DEBUG && ($_GET['app'] ?? null) === 'ace_editor')
   die($appAceEditor['html']);
 
 // 4.826 @ 4.802
@@ -2932,7 +2933,7 @@ for (i = 0; i < dropdowns.length; i++) { var openDropdown=dropdowns[i]; if (open
             ob_end_clean();
 
             //check if file is included or accessed directly
-            if (__FILE__ == get_required_files()[0] || in_array(__FILE__, get_required_files()) && isset($_GET['app']) && $_GET['app'] == 'git' && APP_DEBUG)
+            if (cis_is_direct_http_file(__FILE__) && APP_DEBUG && ($_GET['app'] ?? null) === 'git')
               die($appGit['html']);
 
 
@@ -3297,7 +3298,7 @@ for (i = 0; i < dropdowns.length; i++) { var openDropdown=dropdowns[i]; if (open
             ob_end_clean();
 
             //check if file is included or accessed directly
-            if (__FILE__ == get_required_files()[0] || in_array(__FILE__, get_required_files()) && isset($_GET['app']) && $_GET['app'] == 'npm' && APP_DEBUG)
+            if (cis_is_direct_http_file(__FILE__) && APP_DEBUG && ($_GET['app'] ?? null) === 'npm')
               die($appNpm['html']);
 
             /****   END of ui.npm.php   ****/
@@ -3525,7 +3526,7 @@ for (i = 0; i < dropdowns.length; i++) { var openDropdown=dropdowns[i]; if (open
             ob_end_clean();
 
             //check if file is included or accessed directly
-            if (__FILE__ == get_required_files()[0] || in_array(__FILE__, get_required_files()) && isset($_GET['app']) && $_GET['app'] == 'php' && APP_DEBUG)
+            if (cis_is_direct_http_file(__FILE__) && APP_DEBUG && ($_GET['app'] ?? null) === 'php')
               die($appPHP['html']);
 
             // 4.961 @ 4.937
