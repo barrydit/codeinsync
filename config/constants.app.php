@@ -50,18 +50,18 @@ declare(strict_types=1);
 !defined('APP_DASHBOARD') and define('APP_DASHBOARD', "\n" . sprintf(<<<EOL
   %s
 
-                mmm             #         mmmmm          mmmm                      
-              m"   "  mmm    mmm#   mmm     #    m mm   #"   " m   m  m mm    mmm  
-              #      #" "#  #" "#  #"  #    #    #"  #  "#mmm  "m m"  #"  #  #"  " 
-              #      #   #  #   #  #""""    #    #   #      "#  #m#   #   #  #     
-               "mmm" "#m#"  "#m##  "#mm"  mm#mm  #   #  "mmm#"  "#    #   #  "#mm" 
-                                                                m"                 
-                                                               ""                  
+              mmm             #         mmmmm          mmmm                      
+            m"   "  mmm    mmm#   mmm     #    m mm   #"   " m   m  m mm    mmm  
+            #      #" "#  #" "#  #"  #    #    #"  #  "#mmm  "m m"  #"  #  #"  " 
+            #      #   #  #   #  #""""    #    #   #      "#  #m#   #   #  #     
+             "mmm" "#m#"  "#m##  "#mm"  mm#mm  #   #  "mmm#"  "#    #   #  "#mm" 
+                                                              m"                 
+                                                             ""                  
   %s
       {{STATUS}} Version: %s       Written by %s (%s)
   EOL
   ,
-  $padding = str_pad('', 92, '='),
+  $padding = str_pad('', 90, '='),
   $padding,
   APP_VERSION,
   APP_AUTHOR,

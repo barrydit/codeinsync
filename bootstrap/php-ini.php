@@ -18,8 +18,8 @@ if (ini_get('date.timezone') !== $tz ?? false)
 if (APP_DEBUG || APP_ERROR) {
     $errors['APP_DEBUG'] = "Debugging is enabled.\n";
     $errors['APP_ERROR'] = "Error handling is enabled.\n";
-    ini_set('display_errors', 1);
-    ini_set('display_startup_errors', 1);
+    ini_set('display_errors', '1');
+    ini_set('display_startup_errors', '1');
     error_reporting(E_ALL/*E_STRICT |*/);
 
     defined('PHP_ZTS') and $errors['PHP_ZTS'] = "PHP was built with ZTS enabled.\n";
@@ -46,8 +46,8 @@ if (APP_DEBUG || APP_ERROR) {
     // PHP_FD_SETSIZE
 
 } else {
-    ini_set('display_errors', 1);
-    ini_set('display_startup_errors', 1);
+    ini_set('display_errors', '1');
+    ini_set('display_startup_errors', '1');
     error_reporting(E_ALL/*E_STRICT |*/);
 }
 
@@ -98,11 +98,11 @@ ini_set('xdebug.debug', '0'); // remote_enable
 ini_set('xdebug.mode', 'develop'); // default_enable mode=develop,coverage,debug,gcstats,profile,trace
 //ini_set('xdebug.mode', 'profile'); // profiler_enable
 
-putenv("XDEBUG_MODE=off");
+putenv('XDEBUG_MODE=off');
 // Enable output buffering
 ini_set('output_buffering', 'On');
 
-ini_set("include_path", "src"); // PATH_SEPARATOR ;:
+ini_set('include_path', 'src'); // PATH_SEPARATOR ;:
 
 // Prevent direct access to the file
 $isPhpVersion5OrHigher = version_compare(PHP_VERSION, '5.0.0', '>=');

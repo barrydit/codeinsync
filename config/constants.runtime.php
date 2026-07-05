@@ -107,11 +107,32 @@ if (!defined('APP_SELF')) {
 // ------------------------------------------------------
 
 // APP_CONTEXT: tells runtime *what kind of environment* we're in
-defined('APP_CONTEXT') || define('APP_CONTEXT', match (true) {
-    (defined('APP_MODE') && APP_MODE === 'socket') || (PHP_SAPI === 'cli' && isset($argv[1]) && str_starts_with($argv[1], 'socket')) => 'socket',
-    (defined('APP_MODE') && APP_MODE === 'cli') || PHP_SAPI === 'cli' => 'cli',
-    default => 'www', // most likely browser
-});
+if (!defined('APP_CONTEXT')) {
+    if (PHP_VERSION_ID >= 80000) {
+        define('APP_CONTEXT', match (true) {
+            (defined('APP_MODE') && APP_MODE === 'socket')
+                || (PHP_SAPI === 'cli' && isset($argv[1]) && str_starts_with($argv[1], 'socket')) => 'socket',
+
+            (defined('APP_MODE') && APP_MODE === 'cli') || PHP_SAPI === 'cli' => 'cli',
+
+            default => 'www',
+        });
+    } else {
+        if (
+            (defined('APP_MODE') && APP_MODE === 'socket') ||
+            (PHP_SAPI === 'cli' && isset($argv[1]) && strpos($argv[1], 'socket') === 0)
+        ) {
+            define('APP_CONTEXT', 'socket');
+        } elseif (
+            (defined('APP_MODE') && APP_MODE === 'cli') ||
+            PHP_SAPI === 'cli'
+        ) {
+            define('APP_CONTEXT', 'cli');
+        } else {
+            define('APP_CONTEXT', 'www');
+        }
+    }
+}
 
 // ---------------------------------------------------------
 // [3] Dashboard / Versioning

@@ -152,11 +152,12 @@ if (APP_ROOT !== '') {
 
   <!-- Favicons / Assets -->
   <link rel="icon" type="image/png"
-    href="<?= htmlspecialchars($asset('assets/images/favicon.png'), ENT_QUOTES, 'UTF-8') ?>" />
+    href="<?= htmlspecialchars(UrlContext::publicUrl('assets/images/favicon.png'), ENT_QUOTES, 'UTF-8') ?>" />
   <link rel="shortcut icon" type="image/x-icon"
-    href="<?= htmlspecialchars($asset('assets/images/favicon.ico'), ENT_QUOTES, 'UTF-8') ?>" />
+    href="<?= htmlspecialchars(UrlContext::publicUrl('assets/images/favicon.ico'), ENT_QUOTES, 'UTF-8') ?>" />
 
-  <link rel="stylesheet" href="<?= htmlspecialchars($asset('assets/css/styles.css'), ENT_QUOTES, 'UTF-8') ?>" />
+  <link rel="stylesheet"
+    href="<?= htmlspecialchars(UrlContext::publicUrl('assets/css/styles.css'), ENT_QUOTES, 'UTF-8') ?>" />
 
   <style>
     html,
@@ -249,7 +250,7 @@ if (APP_ROOT !== '') {
       bottom: 100px;
       left: 200px;
       width: calc(100% - 200px);
-      height: 100%;
+      height: calc(100% - 200px);
       /*padding: 10px;*/
       background: #f5f5f5;
       /*overflow: auto;*/
@@ -464,45 +465,51 @@ if (APP_ROOT !== '') {
       <div class="top-panel" id="top-panel">
         <div style="position: relative; z-index: 100;">
           <a href="#"><img
-              src="<?= htmlspecialchars($asset('assets/images/phpclasses_icon.png'), ENT_QUOTES, 'UTF-8') ?>" alt="Logo"
-              style="width: 31px; height: auto; margin: 0 5px;"
+              src="<?= htmlspecialchars(UrlContext::publicUrl('assets/images/phpclasses_icon.png'), ENT_QUOTES, 'UTF-8') ?>"
+              alt="Logo" style="width: 31px; height: auto; margin: 0 5px;"
               onclick="document.getElementById('app_phpclasses-container').style.display='block'; return false;"></a>
           <a href="#" data-open-app="tools/registry/composer" aria-label="Open Composer" title="Composer"><img
-              src="<?= htmlspecialchars($asset('assets/images/composer_icon.png'), ENT_QUOTES, 'UTF-8') ?>" alt="Logo"
-              style="width: 31px; height: auto; margin: 0 5px;" onclick="/*openApp('tools/registry/composer');*/"></a>
+              src="<?= htmlspecialchars(UrlContext::publicUrl('assets/images/composer_icon.png'), ENT_QUOTES, 'UTF-8') ?>"
+              alt="Logo" style="width: 31px; height: auto; margin: 0 5px;"
+              onclick="/*openApp('tools/registry/composer');*/"></a>
           <a href="#"><img
-              src="<?= htmlspecialchars($asset('assets/images/packagist_icon.png'), ENT_QUOTES, 'UTF-8') ?>" alt="Logo"
-              style="width: 31px; height: auto; margin: 0 5px;"
+              src="<?= htmlspecialchars(UrlContext::publicUrl('assets/images/packagist_icon.png'), ENT_QUOTES, 'UTF-8') ?>"
+              alt="Logo" style="width: 31px; height: auto; margin: 0 5px;"
               onclick="document.getElementById('app_packagist-container').style.display='block'; return false;"></a>
           <a href="#" data-open-app="tools/code/git" aria-label="Open Git" title="Git"><img
-              src="<?= htmlspecialchars($asset('assets/images/git_icon.fw.png'), ENT_QUOTES, 'UTF-8') ?>" width="32"
-              height="32" onclick="/*openApp('tools/code/git');*/"></a>
-          <a href="#"><img src="<?= htmlspecialchars($asset('assets/images/node_js.gif'), ENT_QUOTES, 'UTF-8') ?>"
+              src="<?= htmlspecialchars(UrlContext::publicUrl('assets/images/git_icon.fw.png'), ENT_QUOTES, 'UTF-8') ?>"
+              width="32" height="32" onclick="/*openApp('tools/code/git');*/"></a>
+          <a href="#"><img
+              src="<?= htmlspecialchars(UrlContext::publicUrl('assets/images/node_js.gif'), ENT_QUOTES, 'UTF-8') ?>"
               alt="Logo" style="width: 83px; height: auto; margin: 0 5px;"
               onclick="document.getElementById('app_node_js-container').style.display='block'; return false;"></a>
-          <a href="#"><img src="<?= htmlspecialchars($asset('assets/images/npm_icon.png'), ENT_QUOTES, 'UTF-8') ?>"
+          <a href="#"><img
+              src="<?= htmlspecialchars(UrlContext::publicUrl('assets/images/npm_icon.png'), ENT_QUOTES, 'UTF-8') ?>"
               alt="Logo" style="width: 31px; height: auto; margin: 10px 5px;"
               onclick="document.getElementById('app_npmjs-container').style.display='block'; return false;"></a>
           <a href="#"
             onclick="isFixed = true; document.getElementById('changePositionBtn')?.click(); return false;"><img
-              src="<?= htmlspecialchars($asset('assets/images/console_icon.png'), ENT_QUOTES, 'UTF-8') ?>" alt="Logo"
-              style="width: 31px; height: auto; margin: 0 5px;"></a>
+              src="<?= htmlspecialchars(UrlContext::publicUrl('assets/images/console_icon.png'), ENT_QUOTES, 'UTF-8') ?>"
+              alt="Logo" style="width: 31px; height: auto; margin: 0 5px;"></a>
 
           <a href="#" style="margin: 5px 0 0 0;"
             onclick="document.getElementById('app_tools-container').style.display='block'; return false;">
-            <img src="<?= htmlspecialchars($asset('assets/images/apps_icon.gif'), ENT_QUOTES, 'UTF-8') ?>"
+            <img
+              src="<?= htmlspecialchars(UrlContext::publicUrl('assets/images/apps_icon.gif'), ENT_QUOTES, 'UTF-8') ?>"
               style="margin: -5px 0 0 0;" width="20" height="20"> <span style="margin-top: -5px;">Tools</span></a>
           <div style="position: absolute; top: 5px; right: 270px;">
-            <img src="<?= htmlspecialchars($asset('assets/images/php_icon.png'), ENT_QUOTES, 'UTF-8') ?>" alt="Logo"
-              style="width: 31px; height: auto; margin: 0 0;"
+            <img src="<?= htmlspecialchars(UrlContext::publicUrl('assets/images/php_icon.png'), ENT_QUOTES, 'UTF-8') ?>"
+              alt="Logo" style="width: 31px; height: auto; margin: 0 0;"
               onclick="document.getElementById('app_php-container').style.display='block'; return false;"> PHP
             <button style="border: 1px solid black; border-radius: 5px;">Clock-In</button>&nbsp;
             <button style="border: 1px solid black; border-radius: 5px;">Github</button>&nbsp;
             <input type="submit" value="Test" style="border: 1px solid black; border-radius: 5px;">
             <div class="" style="position: relative; display: inline-block; top: 0; right: 2px;">
-              <img src="<?= htmlspecialchars($asset('assets/images/calendar_icon.png'), ENT_QUOTES, 'UTF-8') ?>"
-                width="41" height="41" onclick="openApp('productivity/calendar'); return false;"
-                style="cursor: pointer; margin: -6px 5px;">
+              <a href="#" data-open-app="productivity/calendar" aria-label="Open Calendar" title="Calendar">
+                <img
+                  src="<?= htmlspecialchars(UrlContext::publicUrl('assets/images/calendar_icon.png'), ENT_QUOTES, 'UTF-8') ?>"
+                  width="41" height="41" onclick="/*openApp('productivity/calendar');*/"
+                  style="cursor: pointer; margin: -6px 5px;"></a>
             </div>
             <!-- button>Git</button>
         <button>GitHub</button>
@@ -535,7 +542,7 @@ if (APP_ROOT !== '') {
           </div>
           <div style="position: relative; top: 0; display: inline-block; width: auto; ">
             <img id="ts-status-light" style="padding-bottom: 10px; cursor: pointer;"
-              src="<?= htmlspecialchars($asset('assets/images/timesheet-light-Y.gif'), ENT_QUOTES, 'UTF-8') ?>"
+              src="<?= htmlspecialchars(UrlContext::publicUrl('assets/images/timesheet-light-Y.gif'), ENT_QUOTES, 'UTF-8') ?>"
               width="80" height="30">
           </div>
 
@@ -565,12 +572,13 @@ if (APP_ROOT !== '') {
       <div style="position: fixed; margin: -5px 45px; text-align: center; z-index: 5;" class="text-sm"><a href="#!"
           onclick="document.getElementById('app_tools-container').style.display='none'; return false;"><img
             style="text-align: center; position: fixed;" height="25" width="25"
-            src="<?= htmlspecialchars($asset('assets/images/close-red.png'), ENT_QUOTES, 'UTF-8') ?>"></a><br></div>
+            src="<?= htmlspecialchars(UrlContext::publicUrl('assets/images/close-red.png'), ENT_QUOTES, 'UTF-8') ?>"></a><br>
+      </div>
       <div
         style="position: absolute; overflow-x: scroll; overflow-y: hidden; height: 100%; width: 100%; padding-top: 25px; border: 1px solid #000; ">
         <div style="position: absolute; margin: 10px 75px; text-align: center;" class="text-sm"><a href="#!"
             onclick="isFixed = true; show_console(); return false;"><img style="text-align: center;"
-              src="<?= htmlspecialchars($asset('assets/images/cli.png'), ENT_QUOTES, 'UTF-8') ?>"></a><br><a
+              src="<?= htmlspecialchars(UrlContext::publicUrl('assets/images/cli.png'), ENT_QUOTES, 'UTF-8') ?>"></a><br><a
             href="?app=ace_editor&amp;path=&amp;file=app.console.php" style="text-align: center;">(CLI)</a></div>
         <!-- 
                     <a href="javascript:window.open('print.html', 'newwindow', 'width=300,height=250')">Print</a>
@@ -581,44 +589,44 @@ if (APP_ROOT !== '') {
         <div style="position: absolute; margin: 10px 165px; text-align: center;" class="text-sm"><a href="#"
             target="_blank" onclick="toggleIframeUrl('app.whiteboard.php'); return false;"><img
               style="text-align: center;"
-              src="<?= htmlspecialchars($asset('assets/images/whiteboard.png'), ENT_QUOTES, 'UTF-8') ?>"></a><br><a
+              src="<?= htmlspecialchars(UrlContext::publicUrl('assets/images/whiteboard.png'), ENT_QUOTES, 'UTF-8') ?>"></a><br><a
             href="?app=ace_editor&amp;path=&amp;file=app.whiteboard.php" style="text-align: center;">Whiteboard</a>
         </div>
         <div style="position: absolute; margin: 10px 260px; text-align: center;" class="text-sm"><a href="#!"
             onclick="document.getElementById('app_notes-container').style.display='block'; return false;"><img
               style="text-align: center;"
-              src="<?= htmlspecialchars($asset('assets/images/notes.png'), ENT_QUOTES, 'UTF-8') ?>"></a><br><a
+              src="<?= htmlspecialchars(UrlContext::publicUrl('assets/images/notes.png'), ENT_QUOTES, 'UTF-8') ?>"></a><br><a
             href="?app=ace_editor&amp;path=&amp;file=app.notes.php" style="text-align: center;">Notes</a></div>
         <div style="position: absolute; margin: 10px 350px; text-align: center;" class="text-sm">
           <a href="#!"
             onclick="document.getElementById('app_project-container').style.display='block'; document.getElementById('toggle-debug').checked = false; toggleSwitch(document.getElementById('toggle-debug')); return false;">
             <img style="text-align: center;"
-              src="<?= htmlspecialchars($asset('assets/images/project.png'), ENT_QUOTES, 'UTF-8') ?>"></a><br><a
+              src="<?= htmlspecialchars(UrlContext::publicUrl('assets/images/project.png'), ENT_QUOTES, 'UTF-8') ?>"></a><br><a
             href="?app=ace_editor&amp;path=&amp;file=app.project.php"><span
               style="text-align: center;">Project</span></a>
         </div>
         <div style="position: absolute; margin: 10px 0 0 450px ; text-align: center;" class="text-sm"><a href="#!"
             onclick="document.getElementById('app_errors-container').style.display='block'; return false;"><img
               style="text-align: center;"
-              src="<?= htmlspecialchars($asset('assets/images/debug.png'), ENT_QUOTES, 'UTF-8') ?>"><br><span
+              src="<?= htmlspecialchars(UrlContext::publicUrl('assets/images/debug.png'), ENT_QUOTES, 'UTF-8') ?>"><br><span
               style="text-align: center;">Debug</span></a></div>
         <div style="position: absolute; margin: 10px 0 0 540px; text-align: center;" class="text-sm"><a href="#!"
             onclick="document.getElementById('app_profile-container').style.display='block'; return false;"><img
               style="text-align: center;"
-              src="<?= htmlspecialchars($asset('assets/images/user.png'), ENT_QUOTES, 'UTF-8') ?>"><br><span
+              src="<?= htmlspecialchars(UrlContext::publicUrl('assets/images/user.png'), ENT_QUOTES, 'UTF-8') ?>"><br><span
               style="text-align: center;">Profile</span></a></div>
         <div style="position: absolute; margin: 10px 0 0 630px; text-align: center;" class="text-sm"><a href="#!"
             onclick="toggleIframeUrl('app.browser.php'); return false;"><img style="text-align: center;"
-              src="<?= htmlspecialchars($asset('assets/images/browser.png'), ENT_QUOTES, 'UTF-8') ?>"><br><span
+              src="<?= htmlspecialchars(UrlContext::publicUrl('assets/images/browser.png'), ENT_QUOTES, 'UTF-8') ?>"><br><span
               style="text-align: center;">Browser</span></a></div>
         <div style="position: absolute; margin: 110px 75px; text-align: center;" class="text-sm"><a href="#!"
             onclick="document.getElementById('app_tools-container').style.display='block'; return false;"><img
               style="text-align: center;"
-              src="<?= htmlspecialchars($asset('assets/images/apps.png'), ENT_QUOTES, 'UTF-8') ?>"><br><span
+              src="<?= htmlspecialchars(UrlContext::publicUrl('assets/images/apps.png'), ENT_QUOTES, 'UTF-8') ?>"><br><span
               style="text-align: center;">Apps.</span></a></div>
         <div style="position: absolute; margin: 110px 170px; text-align: center;" class="text-sm"><a href="#!"
             onclick="openApp('productivity/calendar'); return false;"><img style="text-align: center;"
-              src="<?= htmlspecialchars($asset('assets/images/calendar.png'), ENT_QUOTES, 'UTF-8') ?>"><br><span
+              src="<?= htmlspecialchars(UrlContext::publicUrl('assets/images/calendar.png'), ENT_QUOTES, 'UTF-8') ?>"><br><span
               style="text-align: center;">Calendar</span></a></div>
         <div
           style="position: absolute; left: 50%; transform: translate(-50%, -50%); margin: 180px 0 0 80px; text-align: center;">
@@ -645,54 +653,54 @@ if (APP_ROOT !== '') {
         </div>
         <div style=" position: absolute; margin: 110px 0 0 540px; text-align: center;" class="text-sm"><a href="#!"
             onclick="toggleIframeUrl('pong.php'); return false;"><img style="text-align: center;"
-              src="<?= htmlspecialchars($asset('assets/images/pong.png'), ENT_QUOTES, 'UTF-8') ?>"><br><span
+              src="<?= htmlspecialchars(UrlContext::publicUrl('assets/images/pong.png'), ENT_QUOTES, 'UTF-8') ?>"><br><span
               style="text-align: center;">Pong</span></a>
         </div>
         <div style="position: absolute; margin: 110px 0 0 630px; text-align: center;" class="text-sm"><a href="#!"
             onclick="document.getElementById('app_browser-container').style.display='block'; return false;"><img
               style="text-align: center;"
-              src="<?= htmlspecialchars($asset('assets/images/regexp.png'), ENT_QUOTES, 'UTF-8') ?>"><br><span
+              src="<?= htmlspecialchars(UrlContext::publicUrl('assets/images/regexp.png'), ENT_QUOTES, 'UTF-8') ?>"><br><span
               style="text-align: center;">RegExp</span></a></div>
         <div style="position: absolute; margin: 210px 75px; text-align: center;" class="text-sm"><a href="#!"
             onclick="document.getElementById('app_browser-container').style.display='block'; return false;"><img
               style="text-align: center;"
-              src="<?= htmlspecialchars($asset('assets/images/chatgpt.png'), ENT_QUOTES, 'UTF-8') ?>"><br><span
+              src="<?= htmlspecialchars(UrlContext::publicUrl('assets/images/chatgpt.png'), ENT_QUOTES, 'UTF-8') ?>"><br><span
               style="text-align: center;">ChatGPT</span></a></div>
         <div style="position: absolute; margin: 210px 160px; text-align: center;" class="text-sm"><a href="#!"
             onclick="document.getElementById('app_browser-container').style.display='block'; return false;"><img
               style="text-align: center;"
-              src="<?= htmlspecialchars($asset('assets/images/stackoverflow.png'), ENT_QUOTES, 'UTF-8') ?>"><br><span
+              src="<?= htmlspecialchars(UrlContext::publicUrl('assets/images/stackoverflow.png'), ENT_QUOTES, 'UTF-8') ?>"><br><span
               style="text-align: center;">Stackoverflow</span></a></div>
         <div style="position: absolute; margin: 210px 260px; text-align: center;" class="text-sm"><a href="#!"
             onclick="document.getElementById('app_browser-container').style.display='block'; return false;"><img
               style="text-align: center;"
-              src="<?= htmlspecialchars($asset('assets/images/validatejs.png'), ENT_QUOTES, 'UTF-8') ?>"><br><span
+              src="<?= htmlspecialchars(UrlContext::publicUrl('assets/images/validatejs.png'), ENT_QUOTES, 'UTF-8') ?>"><br><span
               style="text-align: center;">ValidateJS</span></a></div>
         <!-- https://validator.w3.org/#validate_by_input // -->
         <div style="position: absolute; margin: 210px 340px; text-align: center;" class="text-sm"><a href="#!"
             onclick="document.getElementById('app_browser-container').style.display='block'; return false;"><img
               style="text-align: center;"
-              src="<?= htmlspecialchars($asset('assets/images/w3c.png'), ENT_QUOTES, 'UTF-8') ?>"><br><span
+              src="<?= htmlspecialchars(UrlContext::publicUrl('assets/images/w3c.png'), ENT_QUOTES, 'UTF-8') ?>"><br><span
               style="text-align: center;">W3C
               Validator</span></a></div>
         <!-- https://tailwindcss.com/docs/ // -->
         <div style="position: absolute; margin: 210px 0 0 445px; text-align: center;" class="text-sm"><a href="#!"
             onclick="document.getElementById('app_browser-container').style.display='block'; return false;"><img
               style="text-align: center;"
-              src="<?= htmlspecialchars($asset('assets/images/tailwindcss.png'), ENT_QUOTES, 'UTF-8') ?>"><br><span
+              src="<?= htmlspecialchars(UrlContext::publicUrl('assets/images/tailwindcss.png'), ENT_QUOTES, 'UTF-8') ?>"><br><span
               style="text-align: center;">TailwindCSS<br>Docs</span></a></div>
         <!-- https://www.php.net/docs.php // -->
         <div style="position: absolute; margin: 210px 0 0 540px; text-align: center;" class="text-sm"><a href="#!"
             onclick="document.getElementById('app_browser-container').style.display='block'; return false;"><img
               style="text-align: center;"
-              src="<?= htmlspecialchars($asset('assets/images/php.png'), ENT_QUOTES, 'UTF-8') ?>"><br><span
+              src="<?= htmlspecialchars(UrlContext::publicUrl('assets/images/php.png'), ENT_QUOTES, 'UTF-8') ?>"><br><span
               style="text-align: center;">PHP
               Docs</span></a></div>
         <!-- https://dev.mysql.com/doc/ // -->
         <div class="text-sm" style="position: absolute; margin: 210px 0 0 615px; text-align: center;"><a href="#!"
             onclick="document.getElementById('app_browser-container').style.display='block'; return false;"><img
               style="text-align: center;"
-              src="<?= htmlspecialchars($asset('assets/images/mysql.png'), ENT_QUOTES, 'UTF-8') ?>"><br><span
+              src="<?= htmlspecialchars(UrlContext::publicUrl('assets/images/mysql.png'), ENT_QUOTES, 'UTF-8') ?>"><br><span
               style="text-align: center;">MySQL
               Docs</span></a></div>
         <div
@@ -703,21 +711,21 @@ if (APP_ROOT !== '') {
         <div style="position: absolute; margin: 360px 75px; text-align: center;" class="text-sm"><a href="#!"
             onclick="document.getElementById('app_install-container').style.display='block'; return false;"><span
               style="text-align: center;">New App.</span><br><img style="text-align: center;"
-              src="<?= htmlspecialchars($asset('assets/images/install.png'), ENT_QUOTES, 'UTF-8') ?>"></a></div>
+              src="<?= htmlspecialchars(UrlContext::publicUrl('assets/images/install.png'), ENT_QUOTES, 'UTF-8') ?>"></a>
+        </div>
         <div style="position: absolute; margin: 360px 170px; text-align: center;" class="text-sm">
           <a href="?app=ace_editor&amp;path=&amp;file=app.user-app.php"><span style="text-align: center;">App
               #1</span></a><br>
           <a href="#!"
             onclick="document.getElementById('app_browser-container').style.display='block'; return false;"><img
               style="text-align: center;"
-              src="<?= htmlspecialchars($asset('assets/images/php-app.png'), ENT_QUOTES, 'UTF-8') ?>"></a>
+              src="<?= htmlspecialchars(UrlContext::publicUrl('assets/images/php-app.png'), ENT_QUOTES, 'UTF-8') ?>"></a>
           <div style="height: 75px;"></div>
         </div>
       </div>
     </div>
-    <div id="app_productivity_calendar-container" class="app-fixed" data-draggable="false"
-      data-app="productivity/calendar"
-      style="position: absolute; display: block; overflow: hidden; right: 20px; top: 50px; width: 400px; height: 400px;">
+    <div id="app_productivity_calendar-container" class="app-container" data-draggable="true"
+      data-app="productivity/calendar">
     </div>
     <div id="app_visual_nodes-container" class="app-container" data-draggable="true" data-app="visual/nodes">
     </div>
@@ -794,7 +802,7 @@ if (APP_ROOT !== '') {
   <!-- You need to include jQueryUI for the extended easing options. -->
   <!-- script src="//code.jquery.com/jquery-1.12.4.js"></script -->
   <script
-    src="<?= htmlspecialchars($asset('assets/vendor/jquery/3.7.1/jquery-3.7.1.min.js'), ENT_QUOTES, 'UTF-8') ?>"></script>
+    src="<?= htmlspecialchars(UrlContext::publicUrl('assets/vendor/jquery/3.7.1/jquery-3.7.1.min.js'), ENT_QUOTES, 'UTF-8') ?>"></script>
 
   <script>
     if (typeof jQuery === 'undefined') {
@@ -806,7 +814,7 @@ if (APP_ROOT !== '') {
 
   <!-- script src="//cdnjs.cloudflare.com/ajax/libs/jquery-easing/1.4.1/jquery.easing.min.js"></script -->
   <script
-    src="<?= htmlspecialchars($asset('assets/vendor/jquery/3.7.1/jquery.easing.min.js'), ENT_QUOTES, 'UTF-8') ?>"></script>
+    src="<?= htmlspecialchars(UrlContext::publicUrl('assets/vendor/jquery/3.7.1/jquery.easing.min.js'), ENT_QUOTES, 'UTF-8') ?>"></script>
 
   <?php
   if (!is_file($path = app_base('public', null, 'abs') . 'assets/vendor/jquery-ui/1.13.2/' . 'jquery-ui-min.js') || ceil(abs((strtotime(date('Y-m-d')) - strtotime(date('Y-m-d', strtotime('+5 days', filemtime($path))))) / 86400)) <= 0) {
@@ -823,7 +831,7 @@ if (APP_ROOT !== '') {
   } ?>
 
   <script
-    src="<?= htmlspecialchars($asset('assets/vendor/jquery-ui/1.13.2/jquery-ui-min.js'), ENT_QUOTES, 'UTF-8') ?>"></script>
+    src="<?= htmlspecialchars(UrlContext::publicUrl('assets/vendor/jquery-ui/1.13.2/jquery-ui-min.js'), ENT_QUOTES, 'UTF-8') ?>"></script>
 
   <script>
     /* ────────────────────────────────────────────────────────────────────────────
@@ -1019,7 +1027,7 @@ if (APP_ROOT !== '') {
         if (!el) {
           el = document.createElement('div');
           el.id = containerId;
-          el.className = 'med-container app-container';
+          el.className = 'app-container';
           el.innerHTML = ``;
           /*
                 <div class="window-header" data-drag-handle>
@@ -1068,6 +1076,8 @@ if (APP_ROOT !== '') {
 
       async function openApp(app, opts = {}) {
         // ------- tiny helpers -------
+
+        console.log('[openApp]');
         const q = new URL(location.href).searchParams;
         const FORWARD_KEYS = ['client', 'domain', 'project', 'path'];
 
@@ -1507,7 +1517,8 @@ if (APP_ROOT !== '') {
     })();
   </script>
 
-  <script src="<?= htmlspecialchars($asset('assets/vendor/d3/4.13.0/d3.v4.min.js'), ENT_QUOTES, 'UTF-8') ?>"></script>
+  <script
+    src="<?= htmlspecialchars(UrlContext::publicUrl('assets/vendor/d3/4.13.0/d3.v4.min.js'), ENT_QUOTES, 'UTF-8') ?>"></script>
 
   <?php
   if (isset($_GET['setmode'])) {

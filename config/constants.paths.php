@@ -7,11 +7,172 @@ declare(strict_types=1);
 //define('BOOTSTRAP_PATH', APP_PATH . 'bootstrap' . DIRECTORY_SEPARATOR);
 //define('PATH_PUBLIC', APP_PATH . 'public' . DIRECTORY_SEPARATOR);
 
-defined('APP_PATH') or die('APP_PATH must be defined before constants.paths.php');
+if (!defined('APP_PATH')) {
+    throw new RuntimeException('Path constants require APP_PATH to be defined first.');
+}
+
+
+if (!function_exists('define_once')) {
+    function define_once(string $name, $value): void
+    {
+        if (!defined($name)) {
+            define($name, $value);
+        }
+    }
+}
+
+if (!function_exists('path_join')) {
+    function path_join(string ...$parts): string
+    {
+        $clean = [];
+
+        foreach ($parts as $index => $part) {
+            $part = str_replace(['/', '\\'], DIRECTORY_SEPARATOR, $part);
+
+            if ($index === 0) {
+                $clean[] = rtrim($part, DIRECTORY_SEPARATOR);
+                continue;
+            }
+
+            $clean[] = trim($part, DIRECTORY_SEPARATOR);
+        }
+
+        return implode(DIRECTORY_SEPARATOR, array_filter($clean, static function ($part): bool {
+            return $part !== '';
+        })) . DIRECTORY_SEPARATOR;
+    }
+}
+
+if (!function_exists('file_path')) {
+    function file_path(string $directory, string $file): string
+    {
+        return rtrim($directory, DIRECTORY_SEPARATOR) . DIRECTORY_SEPARATOR . ltrim($file, DIRECTORY_SEPARATOR);
+    }
+}
+
+/*
+|--------------------------------------------------------------------------
+| Root Directories
+|--------------------------------------------------------------------------
+*/
+
+define_once('ROOT_PATH', APP_PATH . DIRECTORY_SEPARATOR); // backward compatibility
+define_once('CONFIG_PATH', path_join(APP_PATH, 'config'));
+define_once('BOOTSTRAP_PATH', path_join(APP_PATH, 'bootstrap'));
+define_once('SRC_PATH', path_join(APP_PATH, 'src'));
+define_once('APP_DIR_PATH', path_join(APP_PATH, 'app'));
+define_once('PUBLIC_PATH', path_join(APP_PATH, 'public'));
+define_once('VIEWS_PATH', path_join(APP_PATH, 'views'));
+define_once('ROUTES_PATH', path_join(APP_PATH, 'routes'));
+define_once('ASSETS_PATH', path_join(APP_PATH, 'assets'));
+define_once('STORAGE_PATH', path_join(APP_PATH, 'storage'));
+define_once('VAR_PATH', path_join(APP_PATH, 'var'));
+define_once('VENDOR_PATH', path_join(APP_PATH, 'vendor'));
+define_once('TESTS_PATH', path_join(APP_PATH, 'tests'));
+
+/*
+|--------------------------------------------------------------------------
+| Writable Directories
+|--------------------------------------------------------------------------
+*/
+
+define_once('LOG_PATH', path_join(VAR_PATH, 'log'));
+define_once('CACHE_PATH', path_join(VAR_PATH, 'cache'));
+define_once('TEMP_PATH', path_join(VAR_PATH, 'temp'));
+define_once('SESSION_PATH', path_join(VAR_PATH, 'sessions')); // backward compatibility
+//define_once('STORAGE_UPLOADS_PATH', path_join(STORAGE_PATH, 'uploads'));
+define_once('UPLOADS_PATH', path_join(STORAGE_PATH, 'uploads')); // backward compatibility
+
+/*
+|--------------------------------------------------------------------------
+| PHP / Composer Files
+|--------------------------------------------------------------------------
+*/
+
+define_once('COMPOSER_AUTOLOAD_FILE_PATH', file_path(VENDOR_PATH, 'autoload.php'));
+
+define_once('PHP_INI_FILE_PATH', file_path(CONFIG_PATH, 'php-ini.php'));
+//define_once('PHP_ENV_FILE_PATH', file_path(CONFIG_PATH, 'php-env.php'));
+//define_once('PHP_CONSTANTS_FILE_PATH', file_path(CONFIG_PATH, 'php-constants.php'));
+
+/*
+|--------------------------------------------------------------------------
+| Environment / Config Files
+|--------------------------------------------------------------------------
+*/
+
+define_once('ENV_PATH', file_path(APP_PATH, '.env'));
+define_once('ENV_EXAMPLE_PATH', file_path(APP_PATH, '.env.example'));
+
+define_once('CONFIG_FILE_PATH', file_path(CONFIG_PATH, 'config.php'));
+define_once('CONFIG_EXAMPLE_FILE_PATH', file_path(CONFIG_PATH, 'config.example.php'));
+define_once('SESSION_CONFIG_FILE_PATH', file_path(CONFIG_PATH, 'session.php'));
+
+/*
+|--------------------------------------------------------------------------
+| App Bootstrap / Runtime Files
+|--------------------------------------------------------------------------
+*/
+
+define_once('RUNTIME_FILE_PATH', file_path(BOOTSTRAP_PATH, 'runtime.php'));
+define_once('DISPATCH_FILE_PATH', file_path(APP_DIR_PATH, 'dispatch.php'));
+
+define_once('ROUTES_FILE_PATH', file_path(APP_DIR_PATH, 'routes.php'));
+define_once('GUARD_FILE_PATH', file_path(APP_DIR_PATH . 'auth' . DIRECTORY_SEPARATOR, 'guard.php'));
+define_once('MIDDLEWARE_FILE_PATH', file_path(APP_DIR_PATH, 'middleware.php'));
+define_once('HELPERS_FILE_PATH', file_path(APP_DIR_PATH, 'helpers.php'));
+define_once('FUNCTIONS_FILE_PATH', file_path(APP_DIR_PATH, 'functions.php'));
+define_once('CLASSES_FILE_PATH', file_path(APP_DIR_PATH, 'classes.php'));
+define_once('INTERFACES_FILE_PATH', file_path(APP_DIR_PATH, 'interfaces.php'));
+define_once('TRAITS_FILE_PATH', file_path(APP_DIR_PATH, 'traits.php'));
+
+define_once('CONSTANTS_FILE_PATH', file_path(APP_DIR_PATH, 'constants.php'));
+define_once('CONSTANTS_RUNTIME_FILE_PATH', file_path(APP_DIR_PATH, 'constants.runtime.php'));
+define_once('CONFIG_RUNTIME_FILE_PATH', file_path(APP_DIR_PATH, 'config.runtime.php'));
+
+/*
+|--------------------------------------------------------------------------
+| Public Files
+|--------------------------------------------------------------------------
+*/
+
+define_once('INDEX_FILE_PATH', file_path(PUBLIC_PATH, 'index.php'));
+
+/*
+|--------------------------------------------------------------------------
+| Log Files
+|--------------------------------------------------------------------------
+*/
+
+define_once('ACCESS_LOG_PATH', file_path(LOG_PATH, 'access.log'));
+define_once('DEBUG_LOG_PATH', file_path(LOG_PATH, 'debug.log'));
+define_once('ERROR_LOG_PATH', file_path(LOG_PATH, 'php-error.log'));
+
 
 defined('PATH_PUBLIC') || define(
     'PATH_PUBLIC',
-    APP_PATH . 'public' . DIRECTORY_SEPARATOR
+    rtrim(APP_PATH, DIRECTORY_SEPARATOR) . DIRECTORY_SEPARATOR . 'public' . DIRECTORY_SEPARATOR
+);
+
+$documentRoot = isset($_SERVER['DOCUMENT_ROOT'])
+    ? rtrim(str_replace('\\', '/', realpath($_SERVER['DOCUMENT_ROOT']) ?: $_SERVER['DOCUMENT_ROOT']), '/')
+    : '';
+
+$pathPublic = rtrim(str_replace('\\', '/', realpath(PATH_PUBLIC) ?: PATH_PUBLIC), '/');
+
+defined('APP_PUBLIC_IS_DOCUMENT_ROOT') || define(
+    'APP_PUBLIC_IS_DOCUMENT_ROOT',
+    $documentRoot !== '' && $documentRoot === $pathPublic
+);
+
+defined('APP_PUBLIC_URL_PREFIX') || define(
+    'APP_PUBLIC_URL_PREFIX',
+    APP_PUBLIC_IS_DOCUMENT_ROOT ? '' : '/public'
+);
+
+defined('APP_PUBLIC_FS_ROOT') || define(
+    'APP_PUBLIC_FS_ROOT',
+    $pathPublic
 );
 
 /**

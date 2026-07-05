@@ -1090,13 +1090,13 @@ function packagist_return_source($vendor, $package)
  *
  * @return string|null The sanitized string. Returns null if the input is null.
  */
-function htmlsanitize(mixed $input = '')
+function htmlsanitize(mixed $input = null): ?string
 {
   if (is_array($input))
     $input = var_export($input, true);
 
-  if (is_null($input))
-    return;
+  if ($input === null)
+    return null;
 
   // Convert HTML entities to their corresponding characters
   $decoded = html_entity_decode($input, ENT_QUOTES, 'UTF-8');

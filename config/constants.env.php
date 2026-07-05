@@ -100,25 +100,43 @@ class EnvReader
 {
     public static function read(string $file): array
     {
-        if (!is_file($file))
+        if (!is_file($file)) {
             return [];
+        }
+
         $data = parse_ini_file($file, true, INI_SCANNER_RAW) ?: [];
         return self::normalize($data);
     }
-    private static function normalize(mixed $v): mixed
+
+    /**
+     * @param mixed $v
+     * @return mixed
+     */
+    private static function normalize($v)
     {
         if (is_array($v)) {
-            foreach ($v as $k => $vv)
+            foreach ($v as $k => $vv) {
                 $v[$k] = self::normalize($vv);
+            }
             return $v;
         }
-        if (!is_string($v))
+
+        if (!is_string($v)) {
             return $v;
+        }
+
         $raw = trim($v);
+
         // keep quoted values as strings (strip quotes)
-        if (strlen($raw) >= 2 && (($raw[0] === '"' && $raw[-1] === '"') || ($raw[0] === "'" && $raw[-1] === "'"))) {
+        if (
+            strlen($raw) >= 2 && (
+                ($raw[0] === '"' && $raw[strlen($raw) - 1] === '"') ||
+                ($raw[0] === "'" && $raw[strlen($raw) - 1] === "'")
+            )
+        ) {
             return substr($raw, 1, -1);
         }
+
         $l = strtolower($raw);
         if (in_array($l, ['true', 'on', 'yes'], true))
             return true;
@@ -128,6 +146,7 @@ class EnvReader
             return true;
         if ($raw === '0')
             return false;
+
         return $v;
     }
 }

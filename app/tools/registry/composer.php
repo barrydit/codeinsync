@@ -106,6 +106,7 @@ position : absolute;
 display : block;
 left : 250px;
 top : 125px;
+width : 445px;
 resize : both; /* Make the div resizable */
 margin : 0 auto;
 /* z-index : 1; */
@@ -203,7 +204,7 @@ background-color : #ddd;
 .show {
 display : block;
 }
-img {
+<?= $selector ?> img {
 display : inline;
 }
 <?php $UI_APP['style'] = ob_get_contents();
@@ -217,9 +218,7 @@ ob_end_clean();
 
 ob_start(); ?>
 
-<div id="" class="fixed window-header"
-  style="position: fixed; display: inline-block; width: 445px; height: 25px; cursor: move; margin: -45px 0 25px 0; padding: 10px 0 10px 0; border-bottom: 1px solid #000; z-index: 3;"
-  data-drag-handle="true">
+<div class="window-header ui-widget-header ui-draggable-handle" style="position: relative; display: block; width: 445px; height: 25px; cursor: move; border-bottom: 1px solid #000; background-color: rgba(255, 255, 255, 0.8); z-index: 2;" data-drag-handle="true">
   <label class="composer-home" style="cursor: pointer;">
     <div class="absolute"
       style="position: relative; float: left; display: inline-block; top: 0; left: 0; margin-top: -5px;">
@@ -264,8 +263,8 @@ ob_start(); ?>
   </div>
 </div>
 
-<div class="window-body" class=""
-  style="width: 424px; background-color: rgba(255, 255, 255, 0.8); padding: 10px; display: block; left: 612px; top: 104px;">
+<div class="window-body"
+  style="position: relative; width: 424px; background-color: rgba(255, 255, 255, 0.8); padding: 10px; display: block;">
 
   <div
     style="position: relative; margin: 0 auto; width: 421px; height: 324px; border: 3px dashed #6B4329; background-color: #FBF7F1;">

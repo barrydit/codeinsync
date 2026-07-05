@@ -47,9 +47,8 @@ defined('APP_PUBLIC_FS_ROOT') or define(
 );
 
 // --- Filesystem roots ---
-$publicFs = defined('APP_PUBLIC_FS_ROOT')
-    ? str_replace('\\', '/', APP_PUBLIC_FS_ROOT)
-    : null;
+$publicFs = APP_PUBLIC_FS_ROOT;
+$publicUrlPrefix = APP_PUBLIC_URL_PREFIX;
 
 $docFs = isset($_SERVER['DOCUMENT_ROOT'])
     ? rtrim(str_replace('\\', '/', $_SERVER['DOCUMENT_ROOT']), '/')
@@ -121,7 +120,11 @@ UrlContext::setBaseHref(APP_ORIGIN . APP_PUBLIC_URL_PREFIX);
 
 // Helper to build asset URLs relative to base
 $asset = static function (string $path): string {
-    return /* UrlContext::getBaseHref() .*/ ltrim($path, '/');
+    $path = ltrim($path, '/');
+
+    return APP_PUBLIC_IS_DOCUMENT_ROOT
+        ? '/' . $path
+        : APP_PUBLIC_URL_PREFIX . '/' . $path;
 };
 
 // ---------- Meta defaults (use constants if defined; else fallbacks) ----------

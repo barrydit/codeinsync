@@ -10,7 +10,7 @@ declare(strict_types=1);
  */
 
 if (!defined('APP_BOOTSTRAPPED')) {
-  require_once dirname(__DIR__, 2) . '/bootstrap/bootstrap.php';
+  require_once dirname(__DIR__, 3) . '/bootstrap/bootstrap.php';
 }
 
 //use CodeInSync\Infrastructure\Git\GitManager;
@@ -24,9 +24,9 @@ GitManager::resolveGitExec();
 
 // GitManager::refreshGitDownloadCacheAndVersion();
 
-if (!defined('APP_BOOTSTRAPPED')) { // defined('APP_PATH') || require_once (...);
-  require_once dirname(__DIR__, 3) . '/bootstrap/bootstrap.php';
-}
+//if (!defined('APP_BOOTSTRAPPED')) { // defined('APP_PATH') || require_once (...);
+//  require_once dirname(__DIR__, 3) . '/bootstrap/bootstrap.php';
+//}
 
 defined('APP_ROOT') or
   define('APP_ROOT', ''); // '' or 'public/' etc.
@@ -83,14 +83,12 @@ ob_end_clean(); ?> */
 
 ob_start(); ?>
 <?= $selector ?> {
-position : absolute; /* fixed */
-display : block;
-top : 20%;
-left : 25%; /* right: 50%; */
-margin-left: -[212px]; /* margin-right: -[212px]; */
-margin-top: -[153px];
-/* transform: translate(-50%, -50%); */
-/* margin: 0 auto; */
+position: absolute;
+display: block;
+top: 20%;
+left: 25%;
+width: 450px;
+margin: 0;
 }
 
 
@@ -167,8 +165,8 @@ defined('GIT_LATEST') or define('GIT_LATEST', GIT_VERSION);
 
 ?>
 
-<div id="" class="fixed window-header"
-  style="position: fixed; display: inline-block; width: 450px; height: 0; cursor: move; margin: -50px 0 0 0; padding: 24px 0; border-bottom: 1px solid #000; z-index: 3;"
+<div class="window-header ui-widget-header ui-draggable-handle"
+  style="position: relative; display: block; width: 445px; min-height: 14px; cursor: move; margin: 0; padding: 8px 0; border-bottom: 1px solid #000; background-color: rgba(255,255,255,0.8); z-index: 4;"
   data-drag-handle="true">
   <label class="git-home" style="cursor: pointer;">
     <div class="" style="position: relative; float: left; display: inline-block; top: 0; left: 0; margin-top: -5px;">
@@ -187,12 +185,12 @@ defined('GIT_LATEST') or define('GIT_LATEST', GIT_VERSION);
     <!-- document.getElementById('<?= $container_id ?>').style.display='none'; -->
   </div>
 </div>
-<div id="" class="window-body"
-  style="position: relative; z-index: 3; width: 425px; background-color: rgba(255,255,255,0.8); padding: 10px;">
+<div class="window-body"
+  style="position: relative; display: block; z-index: 3; width: 425px; background-color: rgba(255,255,255,0.8); padding: 10px;">
   <?php if (\CodeInSync\Infrastructure\Git\git_origin_sha_update() != $_ENV['GITHUB']['REMOTE_SHA']) { ?>
     <div
-      style="position: absolute; left: 150px; top: 80px; padding-top: 20px; display: block; border: 1px dashed #000; width: 150px; height: 50px; text-align: center; font-weight: bold; z-index: 200; background-color: rgb(255,255,255,.75);"">
-    <span style=" background-color: #0078D7; color: #FFF;">Upate Available</span><br /><span
+      style="position: absolute; left: 150px; top: 80px; padding-top: 20px; display: block; border: 1px dashed #000; width: 150px; height: 50px; text-align: center; font-weight: bold; z-index: 200; background-color: rgba(255,255,255,.75);">
+      <span style=" background-color: #0078D7; color: #FFF;">Upate Available</span><br /><span
         style="background-color: #FFF; color: #0078D7;">Git Pull</span>
     </div>
   <?php } ?>
@@ -249,7 +247,7 @@ defined('GIT_LATEST') or define('GIT_LATEST', GIT_VERSION);
     <div style="position: relative; overflow: hidden; width: 420px; height: 286px;">
 
       <div id="app_git-frameMenu" class="app_git-frame-container selected absolute"
-        style="background-color: rgb(225,196,151,.75); margin-top: 8px;">
+        style="background-color: rgba(225,196,151,.75); margin-top: 8px;">
         <!--<h3>Main Menu</h3> <h4>Update - Edit Config - Initalize - Install</h4> -->
         <div style="position: absolute; right: 10px; float: right; z-index: 1;">
           <div class="text-sm" style="display: inline-block; margin: 0 auto;">
@@ -263,7 +261,15 @@ defined('GIT_LATEST') or define('GIT_LATEST', GIT_VERSION);
           </div>
           <div class="text-sm" style="display: inline-block; margin: 0 auto;">
             <form class="app_git-pull"
-              action="<?= APP_URL . '?' . http_build_query(APP_QUERY + ['app' => 'git']) . (defined('APP_ENV') && in_array(APP_ENV, ['development', 'production']) ? '#' : '') /* $c_or_p . '=' . (empty($_GET[$c_or_p]) ? '' : $$c_or_p->name) . '&amp;app=git' */ ?>"
+              action="<?= UrlContext::getBaseUrl()
+                . '?'
+                . http_build_query($_GET + ['app' => 'git'])
+                . (
+                  defined('APP_ENV')
+                  && in_array(APP_ENV, ['development', 'production'], true)
+                  ? '#'
+                  : ''
+                ) ?>"
               method="POST">
               <!-- <input type="hidden"  /> -->
               <button type="submit" name="cmd" value="pull"><img src="assets/images/red_arrow.fw.png" width="20"
@@ -277,7 +283,7 @@ defined('GIT_LATEST') or define('GIT_LATEST', GIT_VERSION);
             <input id="app_git-commit_msg" type="text " />
           </div>
         </div>
-        <div style="display: block; margin: 10px auto; width: 100%; background-color: rgb(255,255,255,.75);">
+        <div style="display: block; margin: 10px auto; width: 100%; background-color: rgba(255,255,255,.75);">
           <div
             style="position: absolute; top: 5px; left: 10px; border: 1px dashed #000; height: 104px; overflow-y: auto; z-index:4;"
             class="text-xs">
@@ -288,11 +294,23 @@ defined('GIT_LATEST') or define('GIT_LATEST', GIT_VERSION);
             </div>
             <br />
             <code class="text-xs">
-<a id="app_git-help-cmd" href="<?= (APP_URL_BASE['query'] != '' ? '?' . APP_URL_BASE['query'] : '') . (defined('APP_ENV') && in_array(APP_ENV, ['development', 'production']) ? '#' : '') ?>" onclick="">git <span style="color: red;">[Help]</span></a><br />
-<a id="app_git-add-cmd" href="<?= (APP_URL_BASE['query'] != '' ? '?' . APP_URL_BASE['query'] : '') . (defined('APP_ENV') && in_array(APP_ENV, ['development', 'production']) ? '#' : '') ?>" onclick="">git add .</a><br />
-<a id="app_git-remote-cmd" href="<?= (APP_URL_BASE['query'] != '' ? '?' . APP_URL_BASE['query'] : '') . (defined('APP_ENV') && in_array(APP_ENV, ['development', 'production']) ? '#' : '') ?>" onclick="">git remote -v</a><br />
-<a id="app_git-commit-cmd" href="<?= (APP_URL_BASE['query'] != '' ? '?' . APP_URL_BASE['query'] : '') . (defined('APP_ENV') && in_array(APP_ENV, ['development', 'production']) ? '#' : '') ?>">git commit -am "&lt;detail message&gt;"</a><br />
-<a id="app_git-clone-cmd" href="<?= (APP_URL_BASE['query'] != '' ? '?' . APP_URL_BASE['query'] : '') . (defined('APP_ENV') && in_array(APP_ENV, ['development', 'production']) ? '#' : '') ?>">git clone &lt;URL&gt;</a><br /></code>
+
+<?php
+
+$gitHref = UrlContext::requestQuery() !== ''
+    ? '?' . UrlContext::requestQuery()
+    : '';
+
+if (defined('APP_ENV') && in_array(APP_ENV, ['development', 'production'], true)) {
+    $gitHref .= '#';
+}
+
+?>
+<a id="app_git-help-cmd" href="<?= htmlspecialchars($gitHref) ?>" onclick="">git <span style="color: red;">[Help]</span></a><br />
+<a id="app_git-add-cmd" href="<?= htmlspecialchars($gitHref) ?>" onclick="">git add .</a><br />
+<a id="app_git-remote-cmd" href="<?= htmlspecialchars($gitHref) ?>" onclick="">git remote -v</a><br />
+<a id="app_git-commit-cmd" href="<?= htmlspecialchars($gitHref) ?>">git commit -am "&lt;detail message&gt;"</a><br />
+<a id="app_git-clone-cmd" href="<?= htmlspecialchars($gitHref) ?>">git clone &lt;URL&gt;</a><br /></code>
           </div>
 
           <div id="app_git-commit-msg"
@@ -365,14 +383,14 @@ defined('GIT_LATEST') or define('GIT_LATEST', GIT_VERSION);
           <div style="position: absolute; right: 0; float: right; text-align: center;">
             <input id="gitInitSubmit" class="btn" type="submit" value="Init/Run" />
           </div>
-          <div style="display: inline-block; width: 100%; background-color: rgb(225,196,151,.75);">
+          <div style="display: inline-block; width: 100%; background-color: rgba(225,196,151,.75);">
             <div class="text-sm" style="display: inline;">
               <label id="gitInitLabel" for="gitInit" style="background-color: #6781B2; color: white;">&#9650;
                 <code>Init</code></label>
             </div>
           </div>
           <div id="gitInitForm"
-            style="display: inline-block; padding: 10px; background-color: rgb(225,196,151,.75);7 border: 1px dashed #0078D7;">
+            style="display: inline-block; padding: 10px; background-color: rgba(225,196,151,.75); border: 1px dashed #0078D7;">
             <label>Git Command</label>
             <textarea cols="40" rows="2" name="git[init]"><?= /* GIT_INIT_PARAMS  NULL*/ 'git init'; ?></textarea>
           </div>
@@ -384,7 +402,7 @@ defined('GIT_LATEST') or define('GIT_LATEST', GIT_VERSION);
           action="?<?= http_build_query(APP_QUERY + ['app' => 'git']) . (defined('APP_ENV') && APP_ENV == 'development' ? '#' : '') /* $c_or_p . '=' . (empty($_GET[$c_or_p]) ? '' : $$c_or_p->name) . '&amp;app=git' */ ?>"
           method="POST">
           <div
-            style="display: inline-block; width: 100%; margin: -10px 0 10px 0; background-color: rgb(225,196,151,.75);">
+            style="display: inline-block; width: 100%; margin: -10px 0 10px 0; background-color: rgba(225,196,151,.75);">
             <div class="text-sm" style="display: inline;">
               <label id="gitStatusLabel" for="gitStatus" style="background-color: #6781B2; color: white;">&#9650;
                 <code>Status</code></label>
@@ -394,7 +412,7 @@ defined('GIT_LATEST') or define('GIT_LATEST', GIT_VERSION);
             </div>
           </div>
           <div id="gitStatusForm"
-            style="display: inline-block; padding: 10px; background-color: rgb(225,196,151,.75);7 border: 1px dashed #0078D7;">
+            style="display: inline-block; padding: 10px; background-color: rgba(225,196,151,.75); border: 1px dashed #0078D7;">
             <label>Git Command</label>
             <textarea cols="40" rows="6" name="git[status]"><?= /* GIT_INIT_PARAMS  NULL*/ 'git status'; ?></textarea>
           </div>
@@ -409,7 +427,7 @@ defined('GIT_LATEST') or define('GIT_LATEST', GIT_VERSION);
             <button id="gitConfigSubmit" class="btn absolute" style="position: absolute; top: 0; right: 0; z-index: 2;"
               type="submit" value>Modify</button>
           </div>
-          <div style="display: inline-block; width: 100%; background-color: rgb(225,196,151,.75);">
+          <div style="display: inline-block; width: 100%; background-color: rgba(225,196,151,.75);">
             <div class="text-sm" style="display: inline;">
               <label id="gitStatusLabel" for="gitStatus"
                 style="background-color: hsl(29, 100%, 42%); color: white; cursor: pointer;">&#9650;
@@ -417,11 +435,11 @@ defined('GIT_LATEST') or define('GIT_LATEST', GIT_VERSION);
             </div>
           </div>
           <div id="appGitIgnoreForm"
-            style="display:<?= (file_exists('.gitignore') ? 'inline-block' : 'none') ?>; padding: 10px; background-color: rgb(235,216,186,.80); border: 1px dashed #0078D7;">
+            style="display:<?= (file_exists('.gitignore') ? 'inline-block' : 'none') ?>; padding: 10px; background-color: rgba(235,216,186,.80); border: 1px dashed #0078D7;">
             <label>Git Command</label>
             <textarea cols="40" rows="2" name="git[status]"><?= /* GIT_INIT_PARAMS  NULL*/ 'git status'; ?></textarea>
           </div>
-          <div style="display: inline-block; width: 100%; background-color: rgb(225,196,151,.75);">
+          <div style="display: inline-block; width: 100%; background-color: rgba(225,196,151,.75);">
             <div class="text-sm" style="display: inline;">
               <label id="gitStatusLabel" for="gitStatus"
                 style="background-color: hsl(29, 100%, 42%); color: white; cursor: pointer;">&#9650;
@@ -429,7 +447,7 @@ defined('GIT_LATEST') or define('GIT_LATEST', GIT_VERSION);
             </div>
           </div>
           <div id="appGitConfigForm"
-            style="display: <?= (exec('git config -l') == NULL ? 'inline-block' : 'none') ?>; overflow-x: hidden; overflow-y: auto; height: 180px; padding: 10px; background-color: rgb(235,216,186,.80); border: 1px dashed #0078D7;">
+            style="display: <?= (exec('git config -l') == NULL ? 'inline-block' : 'none') ?>; overflow-x: hidden; overflow-y: auto; height: 180px; padding: 10px; background-color: rgba(235,216,186,.80); border: 1px dashed #0078D7;">
             <div style="display: none; width: 100%;">
               <input type="checkbox" name="gitConfigList" />
               <label style="font-style: italic;">git config -l</label>
@@ -480,7 +498,7 @@ defined('GIT_LATEST') or define('GIT_LATEST', GIT_VERSION);
           action="?<?= http_build_query(APP_QUERY + ['app' => 'git']) . (defined('APP_ENV') && APP_ENV == 'development' ? '#' : '') /* $c_or_p . '=' . (empty($_GET[$c_or_p]) ? '' : $$c_or_p->name) . '&amp;app=git' */ ?>"
           method="POST">
           <div
-            style="display: inline-block; width: 100%; margin: -10px 0 10px 0; background-color: rgb(225,196,151,.75);">
+            style="display: inline-block; width: 100%; margin: -10px 0 10px 0; background-color: rgba(225,196,151,.75);">
             <div class="text-sm" style="display: inline;">
               <label id="gitStatusLabel" for="gitStatus"
                 style="background-color: hsl(343, 100%, 42%); color: white;">&#9650; <code>Stage / Commit</code></label>
@@ -490,7 +508,7 @@ defined('GIT_LATEST') or define('GIT_LATEST', GIT_VERSION);
             </div>
           </div>
           <div id="gitStatusForm"
-            style="display: inline-block; padding: 10px; background-color: rgb(225,196,151,.75);7 border: 1px dashed #0078D7;">
+            style="display: inline-block; padding: 10px; background-color: rgba(225,196,151,.75); border: 1px dashed #0078D7;">
             <label>Git Command</label>
             <textarea cols="40" rows="6" name="git[status]"><?= /* GIT_INIT_PARAMS  NULL*/ 'git commit'; ?></textarea>
           </div>
@@ -502,7 +520,7 @@ defined('GIT_LATEST') or define('GIT_LATEST', GIT_VERSION);
           action="?<?= http_build_query(APP_QUERY + ['app' => 'git']) . (defined('APP_ENV') && APP_ENV == 'development' ? '#' : '') /* $c_or_p . '=' . (empty($_GET[$c_or_p]) ? '' : $$c_or_p->name) . '&amp;app=git' */ ?>"
           method="POST">
           <div
-            style="display: inline-block; width: 100%; margin: -10px 0 10px 0; background-color: rgb(225,196,151,.75);">
+            style="display: inline-block; width: 100%; margin: -10px 0 10px 0; background-color: rgba(225,196,151,.75);">
             <div class="text-sm" style="display: inline;">
               <label id="gitStatusLabel" for="gitStatus"
                 style="background-color:hsl(89, 100%, 42%); color: white;">&#9650; <code>Update</code></label>
@@ -512,7 +530,7 @@ defined('GIT_LATEST') or define('GIT_LATEST', GIT_VERSION);
             </div>
           </div>
           <div id="gitStatusForm"
-            style="display: inline-block; padding: 10px; background-color: rgb(225,196,151,.75);7 border: 1px dashed #0078D7;">
+            style="display: inline-block; padding: 10px; background-color: rgba(225,196,151,.75); border: 1px dashed #0078D7;">
             <label>Git Command</label>
             <textarea cols="40" rows="6" name="git[status]"><?= /* GIT_INIT_PARAMS  NULL*/ 'git update'; ?></textarea>
           </div>
@@ -533,44 +551,46 @@ ob_start(); ?>
     // all your logic inside this block
   })(); */
 
-  // Select the element
+  // Select the app container when this tool is loaded inside the draggable app shell.
   const element = document.getElementById('app_tools_code_git-container');
 
-  // Create a MutationObserver instance
-  const mutation_observer = new MutationObserver((mutationsList, observer) => {
-    for (const mutation of mutationsList) {
-      if (mutation.attributeName === 'style') {
-        const display = element.style.display;
-        if (display === 'block' && !isDragging) {
-          // Trigger your action here
+  if (element) {
+    // Create a MutationObserver instance
+    const mutation_observer = new MutationObserver((mutationsList, observer) => {
+      for (const mutation of mutationsList) {
+        if (mutation.attributeName === 'style') {
+          const display = element.style.display;
+          if (display === 'block' && !isDragging) {
+            // Trigger your action here
 
-          // Get the <select> element
-          const selectElement = document.getElementById('app_git-frameSelector');
+            // Get the <select> element
+            const selectElement = document.getElementById('app_git-frameSelector');
 
-          // Get the selected value
-          const selectedValue = selectElement.value;
+            // Get the selected value
+            const selectedValue = selectElement.value;
 
-          // Log the selected value to the console
-          console.log('Selected value:', selectedValue);
+            // Log the selected value to the console
+            console.log('Selected value:', selectedValue);
 
-          if (confirm('Run Git ' + selectedValue.charAt(0).toUpperCase() + selectedValue.slice(1) + '?')) {
-            // User clicked OK
-            $('#requestInput').val('git ' + selectedValue);
-            $('#requestSubmit').click();
+            if (confirm('Run Git ' + selectedValue.charAt(0).toUpperCase() + selectedValue.slice(1) + '?')) {
+              // User clicked OK
+              $('#requestInput').val('git ' + selectedValue);
+              $('#requestSubmit').click();
+            }
+            console.log('Element is displayed');
           }
-          console.log('Element is displayed');
         }
       }
-    }
-  });
+    });
 
-  // Start observing the target node for configured mutations
-  mutation_observer.observe(element, { attributes: true });
+    // Start observing the target node for configured mutations
+    mutation_observer.observe(element, { attributes: true });
+  }
 
 
   var appGitPushElements = document.getElementsByClassName('app_git-push'); // getElementById('app_git-push')
   for (var i = 0; i < appGitPushElements.length; i++) {
-    appGitPushElements[i].addEventListener('click', function () {
+    appGitPushElements[i].addEventListener('click', function (event) {
       /* Prevent the default form submission */
       event.preventDefault();
       /* For example, you can show an alert to indicate that the form submission is disabled */
@@ -587,7 +607,7 @@ ob_start(); ?>
   }
   var appGitPullElements = document.getElementsByClassName('app_git-pull'); /* getElementById('app_git-pull') */
   for (var i = 0; i < appGitPullElements.length; i++) {
-    appGitPullElements[i].addEventListener('click', function () {
+    appGitPullElements[i].addEventListener('click', function (event) {
       // Prevent the default form submission
       event.preventDefault(); /* For example, you can show an alert to indicate that the form
     submission is disabled */ alert('Pull request was made.'); document.getElementById('requestInput').value = 'git pull'
@@ -762,7 +782,7 @@ ob_start(); ?>
       }
       if (currentIndex < 0) currentIndex++; //else console.log('decided: ' + currentIndex);
       git_frame_containers.removeClass("selected"); // git_frame_containers.css("z-index", 0); // Reset z-index for all elements
-      git_frame_containers.eq(currentIndex).addClass(' selected'); // css("z-index", git_frame_totalFrames); // Set top layer z - index
+      git_frame_containers.eq(currentIndex).addClass('selected'); // css("z-index", git_frame_totalFrames); // Set top layer z - index
     }); /* $("#app_git-push").click(function() { e.preventDefault(); });
         $("#app_git-pull").click(function() { }); $("#app_git-frameSelector").change(function() { var
         selectedIndex=parseInt($(this).val(), 10); currentIndex=selectedIndex; if (currentIndex>= git_frame_totalFrames)
@@ -889,7 +909,7 @@ ob_start(); ?>
     <style type="text/tailwindcss">
       <?= $UI_APP['style'] ?? '' ?>
 
-                                                          </style>
+                                                            </style>
   </head>
 
   <body>

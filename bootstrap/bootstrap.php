@@ -1,10 +1,26 @@
 <?php
 declare(strict_types=1);
 
-if (defined('APP_BOOTSTRAPPED')) // Already fully bootstrapped in this request
+require_once __DIR__ . '/../src/Infrastructure/Runtime/BootstrapTracker.php';
+
+use Bioage_App\Infrastructure\Runtime\BootstrapTracker;
+
+if (defined('APP_BOOTSTRAPPED'))
     return;
 else
     define('APP_BOOTSTRAPPED', true);
+
+defined('APP_VERSION') || define('APP_VERSION', '1.0.0');
+
+defined('APP_START') || define('APP_START', microtime(true));
+
+//const APP_BOOTSTRAP_START_TIME = microtime(true); // Fatal error:  Constant expression contains invalid operations
+
+$errors = $errors ?? [];
+$warnings = $warnings ?? [];
+$notices = $notices ?? [];
+
+$isCli = PHP_SAPI === 'cli' || PHP_SAPI === 'phpdbg';
 
 // ------------------------------------------------------
 // Minimal Environment Setup
@@ -24,7 +40,9 @@ $__app = rtrim(dirname(BOOTSTRAP_PATH), '/') . '/';
 $__appReal = @realpath($__app) ?: $__app;
 
 defined('APP_PATH') || define('APP_PATH', $__appReal . DIRECTORY_SEPARATOR);
+?>
 
+<?php
 // [Optional] normalize CWD once (only if your code depends on it)
 if (!@chdir(APP_PATH))
     throw new RuntimeException("Failed to chdir() to APP_PATH: " . APP_PATH);
@@ -149,6 +167,9 @@ switch (APP_MODE) {
     case 'web':
         // normal web shell: safe to emit HTML
         require_once __DIR__ . '/head.php';
+
+        ($_SERVER['DOCUMENT_ROOT'] === PATH_PUBLIC ? define('DOCUMENT_ROOT', APP_PATH) : define('DOCUMENT_ROOT', APP_PATH . 'public/')); 
+        
         //require_once __DIR__ . '/legacy-aliases.php'; // if needed for web
         require_once __DIR__ . '/kernel.php';
         return;

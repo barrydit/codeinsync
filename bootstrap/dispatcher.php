@@ -34,7 +34,7 @@ if (!defined('APP_CANONICAL_PRELUDE')) {
     if (!defined('CONFIG_PATH'))
         define('CONFIG_PATH', APP_PATH . 'config/');
     if (!defined('WWW_PATH'))
-        define('WWW_PATH', APP_PATH . 'public/');
+        define('WWW_PATH', PATH_PUBLIC);
     if (!defined('VENDOR_PATH'))
         define('VENDOR_PATH', APP_PATH . 'vendor/');
 

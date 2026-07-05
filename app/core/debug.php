@@ -450,7 +450,7 @@ HTML;
 
     <!-- JQUERY SCRIPTS -->
     <script
-      src="<?= htmlspecialchars($asset('assets/vendor/jquery/3.7.1/jquery-3.5.1.min.js'), ENT_QUOTES, 'UTF-8') ?>?>"></script>
+      src="<?= htmlspecialchars(UrlContext::publicUrl('assets/vendor/jquery/3.7.1/jquery-3.5.1.min.js'), ENT_QUOTES, 'UTF-8') ?>?>"></script>
   </body>
 
   </html>

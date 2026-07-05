@@ -2,16 +2,80 @@
 // app/productivity/calendar.php
 declare(strict_types=1);
 
-/**
- * Bootstrap first.
- * - defines APP_PATH/CONFIG_PATH
- * - loads Composer autoload (PSR-4 for ShellPrompt)
- * - defines APP_BOOTSTRAPPED and other runtime constants
- */
-
 if (!defined('APP_BOOTSTRAPPED')) {
-    require_once dirname(__DIR__, 2) . '/bootstrap/bootstrap.php';
+    require_once dirname(__DIR__, 3) . '/bootstrap/bootstrap.php';
 }
+
+global $errors, $asset;
+
+
+if (!function_exists('calendar_h')) {
+    function calendar_h($value): string
+    {
+        return htmlspecialchars((string) $value, ENT_QUOTES, 'UTF-8');
+    }
+}
+
+if (!function_exists('calendar_asset')) {
+    function calendar_asset(string $path): string
+    {
+        $path = ltrim(str_replace('\\', '/', $path), '/');
+
+        if (class_exists('UrlContext') && method_exists('UrlContext', 'assetPath')) {
+            return UrlContext::assetPath($path);
+        }
+
+        $prefix = UrlContext::getBaseUrl() ?? (defined('APP_PUBLIC_RELATIVE_URL') ? APP_PUBLIC_RELATIVE_URL : 'public/');
+        return rtrim($prefix, '/') . ($prefix === '' ? '' : '/') . $path;
+    }
+}
+
+if (!function_exists('calendar_app_url')) {
+    function calendar_app_url(array $params = [], string $fragment = ''): string
+    {
+        $query = array_merge($_GET, $params);
+
+        $base = '';
+        if (class_exists('UrlContext') && method_exists('UrlContext', 'getBaseUrl')) {
+            $base = UrlContext::getBaseUrl();
+        } elseif (defined('APP_URL')) {
+            $base = APP_URL;
+        }
+
+        return rtrim($base, '/')
+            . ($query !== [] ? '?' . http_build_query($query) : '')
+            . $fragment;
+    }
+}
+
+$app_id = 'productivity/calendar';           // full path-style id
+
+// Always normalize slashes first
+$app_norm = str_replace('\\', '/', $app_id);
+
+// Last segment only (for titles, labels, etc.)
+$slug = basename($app_norm);                    // "console"
+
+// Sanitized full path for DOM ids (underscores only from non [A-Za-z0-9_ -])
+$key = preg_replace('/[^\w-]+/', '_', $app_norm);  // "core_console"
+
+// If you prefer strictly underscores (no hyphens), do: '/[^\w]+/'
+
+// Core DOM ids/selectors
+$container_id = "app_{$key}-container";         // "app_core_console-container"
+$selector = "#{$container_id}";
+
+// Useful companion ids
+$style_id = "style-{$key}";                    // "style-core_console"
+$script_id = "script-{$key}";                   // "script-core_console"
+
+// Optional: data attributes you can stamp on the container for easy introspection
+$data_attrs = sprintf(
+    'data-app-path="%s" data-app-key="%s" data-app-slug="%s"',
+    htmlspecialchars($app_norm, ENT_QUOTES),
+    htmlspecialchars($key, ENT_QUOTES),
+    htmlspecialchars($slug, ENT_QUOTES),
+);
 
 //global $errors;
 //if (isset($_GET['path']) && isset($_GET['file']) && $path = realpath($_GET['path'] . $_GET['file']))
@@ -111,21 +175,21 @@ if (defined('GIT_EXEC'))
     }
 
 ob_start(); ?>
-#app_calendar-container {
+<?= $selector ?> {
 position : absolute;
-width : 405px;
-height : calc(100% + 5px);
+width : 445px;
+min-height : 420px;
 /* border: 1px solid black; */
 
-top : 12px;
-right : 0;
+top : 60px;
+right : 42px;
 z-index : 1;
-margin-bottom: -25px;
+margin-bottom: 0;
 /* resize: both; Make the div resizable */
 /* overflow: hidden; Hide overflow to ensure proper resizing */
 }
 
-#app_calendar-container.selected {
+<?= $selector ?>.selected {
 display : block;
 z-index : 1;
 resize : both; /* Make the div resizable */
@@ -268,52 +332,60 @@ ob_end_clean();
 
 ob_start(); ?>
 
-<div class="ui-widget-header"
-    style="position: relative; display: inline-block; width: 100%; /*cursor: move;*/ border-bottom: 1px solid #000;background-color: #FFF; height: 40px;">
-    <label class="calendar-home" style="cursor: pointer;">
-        <div class="" style="position: relative; display: inline-block; top: 0; left: 0;">
-            <img src="assets/images/calendar_icon.png" width="41" height="41" />
+<div class="window-header ui-widget-header ui-draggable-handle" data-drag-handle="true"
+    style="position: absolute; width: 445px; min-height: 420px; top: 60px; right: 42px; z-index: 1000;">
+    <div class="window-header ui-widget-header ui-draggable-handle"
+        style="position: relative; display: block; width: 100%; min-height: 45px; cursor: move; padding: 0; border-bottom: 1px solid #000; background-color: rgba(255, 255, 255, 0.8); z-index: 3;">
+        <label class="calendar-home" style="cursor: pointer;">
+            <div class="" style="position: relative; display: inline-block; top: 0; left: 0;">
+                <img src="<?= calendar_h(calendar_asset('assets/images/calendar_icon.png')) ?>" width="41"
+                    height="41" />
+            </div>
+        </label>
+        <div
+            style="position: absolute; top: 11px; left: 45px; display: inline-block; text-align: center; display: inline;">
+            <span style="background-color: #38B1FF; color: #FFF; margin-top: 10px;">PHP Calendar
+                <?= /* (version_compare(NPM_LATEST, NPM_VERSION, '>') != 0 ? 'v'.substr(NPM_LATEST, 0, similar_text(NPM_LATEST, NPM_VERSION)) . '<span class="update" style="color: green; cursor: pointer;">' . substr(NPM_LATEST, similar_text(NPM_LATEST, NPM_VERSION)) . '</span>' : 'v'.NPM_VERSION ); */ NULL; ?></span>
+            <span style="background-color: #0078D7; color: white;"><code id="AceEditorVersionBox" class="text-sm"
+                    style="background-color: white; color: #0078D7;"></code></span>
         </div>
-    </label>
-    <div style="position: absolute; top: 11px; left: 45px; display: inline-block; text-align: center; display: inline;">
-        <span style="background-color: #38B1FF; color: #FFF; margin-top: 10px;">PHP Calendar
-            <?= /* (version_compare(NPM_LATEST, NPM_VERSION, '>') != 0 ? 'v'.substr(NPM_LATEST, 0, similar_text(NPM_LATEST, NPM_VERSION)) . '<span class="update" style="color: green; cursor: pointer;">' . substr(NPM_LATEST, similar_text(NPM_LATEST, NPM_VERSION)) . '</span>' : 'v'.NPM_VERSION ); */ NULL; ?></span>
-        <span style="background-color: #0078D7; color: white;"><code id="AceEditorVersionBox" class="text-sm"
-                style="background-color: white; color: #0078D7;"></code></span>
+        <div
+            style="position: absolute; right: 35px; display: inline-block; text-align: center; color: blue; width: auto; border: 2px solid lightblue; margin-top: 20px;">
+            <small><a href="#medication_log" onclick="
+      const el = document.getElementById('app_medication_log-container');
+      el.style.display = (el.style.display === 'none') ? 'block' : 'none';
+      return false;
+   " style="display:block; color: red; text-decoration-line: underline; text-decoration-style: solid; font-size: 13px;">
+                    Medication Log
+                </a></small>
+        </div>
+        <div style="display: inline; float: right; text-align: center; color: blue;"><code
+                style="background-color: white; color: #0078D7;"><a style="cursor: pointer; font-size: 13px;" onclick="closeApp('productivity/calendar', {fullReset:true})">[X]</a></code>
+        </div>
     </div>
-    <div
-        style="position: absolute; right: 35px; display: inline-block; text-align: center; color: blue; width: auto; border: 2px solid lightblue;">
-        <small><a href="#time" onclick="document.getElementById('app_medication_log-container')" style="display: block"
-                ;>Medication
-                Log</a></small>
-    </div>
-    <div style="display: inline; float: right; text-align: center; color: blue;"><code
-            style="background-color: white; color: #0078D7;"><a style="cursor: pointer; font-size: 13px;" onclick="closeApp('productivity/calendar', {fullReset:true})">[X]</a></code>
-    </div>
-</div>
 
-<!-- form id="" name="ace_form"
+    <!-- form id="" name="ace_form"
         style="position: relative; width: 100%; height: 100%; border: 3px dashed #38B1FF; background-color: rgba(56,177,255,0.6);"
         action="app/directory.php<?= /*basename(__FILE__) . */ '?' . http_build_query(APP_QUERY + ['app' => 'errors']) . (defined('APP_ENV') && APP_ENV == 'development' ? '#!' : '') /* $c_or_p . '=' . (empty($_GET[$c_or_p]) ? '' : $$c_or_p->name) . '&amp;app=composer' */ ?>"
         method="POST" onsubmit="syncAceContent()">
         <input type="hidden" name="ace_path" value="<?= /* APP_BASE['public']; */ NULL; ?>" / -->
 
-<div class="ui-widget-content"
-    style="position: relative; display: block; margin: 0 auto; width: calc(100% - 2px); height: auto; background-color: rgba(251,247,241);">
-    <div style="display: none; text-align: left; width: 125px;">
-        <div class="npm-menu text-sm"
-            style="cursor: pointer; font-weight: bold; padding-left: 25px; border: 1px solid #000;">Main Menu
-        </div>
-        <div class="text-xs inline-block border border-black w-[400px]" style="text-align: center;">
+    <div class="window-body"
+        style="position: relative; width: calc(100% - 20px); background-color: rgba(255, 255, 255, 0.8); padding: 10px; display: block;">
+        <div style="display: none; text-align: left; width: 125px;">
+            <div class="npm-menu text-sm"
+                style="cursor: pointer; font-weight: bold; padding-left: 25px; border: 1px solid #000;">Main Menu
+            </div>
+            <div class="text-xs inline-block border border-black w-[400px]" style="text-align: center;">
 
+            </div>
         </div>
-    </div>
-    <!-- onclick="document.getElementsByClassName('ace_text-input')[0].value = globalEditor.getSession().getValue(); document.getElementsByClassName('ace_text-input')[0].name = 'editor';"   -->
-    <div style="position:absolute; right: 100px; top: 10px; display: inline-block; width: auto; text-align: right;">
-        <!-- input type="submit" name="ace_save" value="Save" class="btn" style="margin: -5px 5px 5px 0;">
+        <!-- onclick="document.getElementsByClassName('ace_text-input')[0].value = globalEditor.getSession().getValue(); document.getElementsByClassName('ace_text-input')[0].name = 'editor';"   -->
+        <div style="position:absolute; right: 100px; top: 10px; display: inline-block; width: auto; text-align: right;">
+            <!-- input type="submit" name="ace_save" value="Save" class="btn" style="margin: -5px 5px 5px 0;">
             </div -->
 
-        <!-- div class="absolute"
+            <!-- div class="absolute"
                 style="position: absolute; display: inline-block; top: 5px; right: 0; text-align: right; float: right;">
                 <div class="text-xs" style="position: relative; display: inline-block;">
                     + 495 <a href="https://github.com/ajaxorg/ace/graphs/contributors">contributors</a>
@@ -322,9 +394,9 @@ ob_start(); ?>
                         href="https://ace.c9.io/" title="https://ace.c9.io/">https://ace.c9.io/</a>
                 </div>
             </div -->
-        <div style="clear: both;"></div>
+            <div style="clear: both;"></div>
 
-        <?= /*
+            <?= /*
 <div class="containerTbl" style="background-ground: #fff; border: 1px solid #000; display: <?= (isset($_GET['file']) && isset($_GET['path']) && is_file($_GET['path'] . $_GET['file']) ? 'none': 'block' ) ?>;">
 <table width="" style="border: 1px solid #000;">
 <tr>
@@ -367,81 +439,83 @@ else $count++;
 </div>
 */ NULL; ?>
 
-    </div>
+        </div>
 
-    <div style="position: relative; margin: 0 auto; width: calc(100% - 2px); height: 100%; float: right;">
-        <!--
+        <div style="position: relative; margin: 0 auto; width: calc(100% - 2px); height: 100%; float: right;">
+            <!--
       <div id="app_calendar-frameMenu" class="app_calendar-frame-container absolute selected" style="background-color: rgb(225,196,151,.75); margin-top: 8px; height: 100%;">
 -->
 
-        <!--   A (<?= /* $path */ ''; ?>) future note: keep ace-editor nice and tight ... no spaces, as it interferes with the content window.
+            <!--   A (<?= /* $path */ ''; ?>) future note: keep ace-editor nice and tight ... no spaces, as it interferes with the content window.
  https://scribbled.space/ace-editor-setup-usage/ -->
 
-        <div id="ui_calendar" class="errors"
-            style="position: relative; display: <?= isset($_GET['file']) && isset($_GET['path']) && is_file($_GET['path'] . $_GET['file']) ? 'block' : 'block' ?>; z-index: 1;">
-            <div id="app_calendar-frameInit" class="app_calendar-frame-container absolute"
-                style="overflow: hidden; height: 100%; position: relative; margin: 0 auto;">
-                <div id="app_medication_log-container" class=""
-                    style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); display: block; resize: both; overflow: hidden; z-index: 2;">
-                    <div class="ui-widget-header"
-                        style="position: relative; display: inline-block; width: 100%; cursor: move; border-bottom: 1px solid #000;background-color: #FFF;">
-                        <label class="medication_log-home" style="cursor: pointer;">
-                            <div class="" style="position: relative; display: inline-block; top: 0; left: 0;">
-                                <img src="assets/images/medication_log_icon.png" width="53" height="32" />
+            <div id="ui_calendar" class="errors"
+                style="position: relative; display: <?= isset($_GET['file']) && isset($_GET['path']) && is_file($_GET['path'] . $_GET['file']) ? 'block' : 'block' ?>; z-index: 1;">
+                <div id="app_calendar-frameInit" class="app_calendar-frame-container absolute"
+                    style="overflow: hidden; height: 100%; position: relative; margin: 0 auto;">
+                    <div id="app_medication_log-container" class=""
+                        style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); display: block; resize: both; overflow: hidden; z-index: 2;">
+                        <div class="ui-widget-header"
+                            style="position: relative; display: inline-block; width: 100%; cursor: move; border-bottom: 1px solid #000;background-color: #FFF;">
+                            <label class="medication_log-home" style="cursor: pointer;">
+                                <div class="" style="position: relative; display: inline-block; top: 0; left: 0;">
+                                    <img src="<?= calendar_h(calendar_asset('assets/images/medication_log_icon.png')) ?>"
+                                        width="53" height="32" />
+                                </div>
+                            </label>
+                            <div
+                                style="position: absolute; top: 11px; left: 45px; display: inline-block; text-align: center; display: inline;">
+                                <span style="background-color: #38B1FF; color: #FFF; margin-top: 10px;">Medication log
+                                    <?= /* (version_compare(NPM_LATEST, NPM_VERSION, '>') != 0 ? 'v'.substr(NPM_LATEST, 0, similar_text(NPM_LATEST, NPM_VERSION)) . '<span class="update" style="color: green; cursor: pointer;">' . substr(NPM_LATEST, similar_text(NPM_LATEST, NPM_VERSION)) . '</span>' : 'v'.NPM_VERSION ); */ NULL; ?></span>
+                                <span style="background-color: #0078D7; color: white;"><code id="AceEditorVersionBox"
+                                        class="text-sm" style="background-color: white; color: #0078D7;"></code></span>
                             </div>
-                        </label>
-                        <div
-                            style="position: absolute; top: 11px; left: 45px; display: inline-block; text-align: center; display: inline;">
-                            <span style="background-color: #38B1FF; color: #FFF; margin-top: 10px;">Medication log
-                                <?= /* (version_compare(NPM_LATEST, NPM_VERSION, '>') != 0 ? 'v'.substr(NPM_LATEST, 0, similar_text(NPM_LATEST, NPM_VERSION)) . '<span class="update" style="color: green; cursor: pointer;">' . substr(NPM_LATEST, similar_text(NPM_LATEST, NPM_VERSION)) . '</span>' : 'v'.NPM_VERSION ); */ NULL; ?></span>
-                            <span style="background-color: #0078D7; color: white;"><code id="AceEditorVersionBox"
-                                    class="text-sm" style="background-color: white; color: #0078D7;"></code></span>
+
+                            <div style="display: inline; float: right; text-align: center; color: blue;"><code
+                                    style="background-color: white; color: #0078D7;"><a style="cursor: pointer; font-size: 13px;" onclick="document.getElementById('app_medication_log-container').style.display='none';">[X]</a></code>
+                            </div>
                         </div>
 
-                        <div style="display: inline; float: right; text-align: center; color: blue;"><code
-                                style="background-color: white; color: #0078D7;"><a style="cursor: pointer; font-size: 13px;" onclick="document.getElementById('app_medication_log-container').style.display='none';">[X]</a></code>
+                        <div class="ui-widget-content"
+                            style="position: relative; display: block; margin: 0 auto; width: calc(100% - 2px); height: 45px; background-color: rgba(251,247,241); text-align: center; font-weight: bold; padding-top: 0px;">
+                            Did you remember to <br />take your medication?
+                            <div style="clear: both;"></div>
                         </div>
-                    </div>
-
-                    <div class="ui-widget-content"
-                        style="position: relative; display: block; margin: 0 auto; width: calc(100% - 2px); height: 45px; background-color: rgba(251,247,241); text-align: center; font-weight: bold; padding-top: 0px;">
-                        Did you remember to <br />take your medication?
-                        <div style="clear: both;"></div>
-                    </div>
 
 
-                    <div style="position: relative; margin: 0 auto; width: calc(100% - 2px); height: 100%;">
-                        <!--
+                        <div style="position: relative; margin: 0 auto; width: calc(100% - 2px); height: 100%;">
+                            <!--
       <div id="app_medication_log-frameMenu" class="app_medication_log-frame-container absolute selected" style="background-color: rgb(225,196,151,.75); margin-top: 8px; height: 100%;">
 -->
 
-                        <!--   A (<?= /* $path */ ''; ?>) future note: keep ace-editor nice and tight ... no spaces, as it interferes with the content window.
+                            <!--   A (<?= /* $path */ ''; ?>) future note: keep ace-editor nice and tight ... no spaces, as it interferes with the content window.
  https://scribbled.space/ace-editor-setup-usage/ -->
 
-                        <div id="ui_medication_log" class="medication_log"
-                            style="display: <?= isset($_GET['file']) && isset($_GET['path']) && is_file($_GET['path'] . $_GET['file']) ? 'block' : 'block' ?>; z-index: 1;">
-                            <div style="background-color: white; height: 100%; width: 100%; overflow: hidden;">
-                                <div
-                                    style="text-align: center; width: 92%; margin-left:auto; margin-right:auto; margin-top: 20px;">
-                                    <form autocomplete="off" spellcheck="false" method="POST"
-                                        action="<?= APP_URL . /**/ '/medication_log.php'. (defined('APP_ENV') && APP_ENV == 'development' ? '#!' : '') /* $c_or_p . '=' . (empty($_GET[$c_or_p]) ? '' : $$c_or_p->name) . '&amp;app=composer' */ ?>">
-                                        <input type="hidden" name="app" value="medication_log" />
-                                        <input id="date_slot" type="date" name="date" value="<?= date('Y-m-d') ?>" />
-                                        <input id="time_slot" type="time" name="time_slot"
-                                            value="<?= date('H:i') ?>" /><br />&nbsp;&nbsp;
-                                        <input type="radio" name="status" value="taken"
-                                            class="green-radio" />Taken&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-                                        <input type="radio" name="status" value="missed"
-                                            class="red-radio" />Missed<br />
-                                        <input type="text" name="note" value="" />
-                                        <input type="submit" value="Save" />
-                                    </form>
+                            <div id="ui_medication_log" class="medication_log"
+                                style="display: <?= isset($_GET['file']) && isset($_GET['path']) && is_file($_GET['path'] . $_GET['file']) ? 'block' : 'block' ?>; z-index: 1;">
+                                <div style="background-color: white; height: 100%; width: 100%; overflow: hidden;">
+                                    <div
+                                        style="text-align: center; width: 92%; margin-left:auto; margin-right:auto; margin-top: 20px;">
+                                        <form autocomplete="off" spellcheck="false" method="POST"
+                                            action="<?= calendar_h(calendar_app_url(['api' => 'calendar'])) ?>">
+                                            <input type="hidden" name="app" value="medication_log" />
+                                            <input id="date_slot" type="date" name="date"
+                                                value="<?= date('Y-m-d') ?>" />
+                                            <input id="time_slot" type="time" name="time_slot"
+                                                value="<?= date('H:i') ?>" /><br />&nbsp;&nbsp;
+                                            <input type="radio" name="status" value="taken"
+                                                class="green-radio" />Taken&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                                            <input type="radio" name="status" value="missed"
+                                                class="red-radio" />Missed<br />
+                                            <input type="text" name="note" value="" />
+                                            <input type="submit" value="Save" />
+                                        </form>
+                                    </div>
                                 </div>
                             </div>
                         </div>
-                    </div>
 
-                    <!-- div style="position: relative; display: inline-block; width: 100%; height: 100%; padding-left: 10px;">
+                        <!-- div style="position: relative; display: inline-block; width: 100%; height: 100%; padding-left: 10px;">
 
       <form style="display: inline;" autocomplete="off" spellcheck="false" action="<?= APP_URL . /*basename(__FILE__) .*/ '?' . http_build_query(APP_QUERY /*+ ['app' => 'medication_log']*/) . (defined('APP_ENV') && APP_ENV == 'development' ? '#!' : '') /* $c_or_p . '=' . (empty($_GET[$c_or_p]) ? '' : $$c_or_p->name) . '&amp;app=composer' */ ?>" method="GET">
         <input type="hidden" name="app" value="medication_log" />
@@ -482,108 +556,108 @@ if ($path)
 
 
 
-                    <!-- <pre id="ace-editor" class="medication_log"></pre> -->
+                        <!-- <pre id="ace-editor" class="medication_log"></pre> -->
 
-                </div>
+                    </div>
 
-                <div style="background-color: white; height: 100%; width: 100%; overflow: hidden;">
-                    <?php function generateCalendar($month, $year)
-                    {
-                        $firstDayOfMonth = strtotime("$year-$month-01");
-                        $totalDays = date('t', $firstDayOfMonth);
-                        $startingDay = date('w', $firstDayOfMonth);
+                    <div style="background-color: white; height: 100%; width: 100%; overflow: hidden;">
+                        <?php function generateCalendar($month, $year)
+                        {
+                            $firstDayOfMonth = strtotime("$year-$month-01");
+                            $totalDays = date('t', $firstDayOfMonth);
+                            $startingDay = date('w', $firstDayOfMonth);
 
-                        $currentDate = new DateTime();
-                        $nextMonth = (clone $currentDate)->modify('+1 month')->format('F');
-                        $prevMonth = (clone $currentDate)->modify('-1 month')->format('F');
+                            $currentDate = new DateTime();
+                            $nextMonth = (clone $currentDate)->modify('+1 month')->format('F');
+                            $prevMonth = (clone $currentDate)->modify('-1 month')->format('F');
 
-                        $calendar = "<table border='1' cellpadding='5' cellspacing='0'>";
-                        $calendar .= '<tr><th colspan="7"><div class="float-left w-auto" style="display: inline;">
+                            $calendar = "<table border='1' cellpadding='5' cellspacing='0'>";
+                            $calendar .= '<tr><th colspan="7"><div class="float-left w-auto" style="display: inline;">
                     <a class="text-sm" id="app_calendar-frameMenuPrev"
                         href="' . (!empty(APP_QUERY) ? '?' . http_build_query(APP_QUERY) : '') . (defined('APP_ENV') && APP_ENV === 'development' ? '#!' : '#') . '">&lt; ' . $prevMonth . '</a> | </div>' . date('F Y', $firstDayOfMonth) .
-                            '<div class="float-right w-auto" style="display: inline;"> | 
+                                '<div class="float-right w-auto" style="display: inline;"> | 
                     <a class="text-sm" id="app_calendar-frameMenuNext"
                         href="' . (!empty(APP_QUERY) ? '?' . http_build_query(APP_QUERY) : '') . (defined('APP_ENV') && APP_ENV === 'development' ? '#!' : '#') . '">' . $nextMonth . ' &gt;</a></div></th></tr>';
 
-                        $today = date('Y-m-d');
+                            $today = date('Y-m-d');
 
-                        // Determine background color
-                        $isToday = $currentDate == $today;
-                        $bgColor = $isToday ? 'background-color: lightblue;' : '';
+                            // Determine background color
+                            $isToday = $currentDate == $today;
+                            $bgColor = $isToday ? 'background-color: lightblue;' : '';
 
-                        $calendar .= "<tr><th style=\"$bgColor\">Sun</th><th>Mon</th><th>Tue</th><th>Wed</th><th>Thu</th><th>Fri</th><th>Sat</th></tr>";
-                        "<tr>";
+                            $calendar .= "<tr><th style=\"$bgColor\">Sun</th><th>Mon</th><th>Tue</th><th>Wed</th><th>Thu</th><th>Fri</th><th>Sat</th></tr>";
+                            "<tr>";
 
-                        // Print empty cells before the first day
-                        for ($i = 0; $i < $startingDay; $i++) {
-                            $calendar .= "<td></td>";
-                        }
+                            // Print empty cells before the first day
+                            for ($i = 0; $i < $startingDay; $i++) {
+                                $calendar .= "<td></td>";
+                            }
 
-                        // Load medication log
-                        $logFile = APP_BASE['data'] . 'medication_log.json';
-                        //error_log("Loading medication log from: $logFile");
-                        $logData = json_decode(file_get_contents($logFile), true);
+                            // Load medication log
+                            $logFile = APP_BASE['data'] . 'medication_log.json';
+                            //error_log("Loading medication log from: $logFile");
+                            $logData = json_decode(file_get_contents($logFile), true);
 
-                        // Convert log to date-indexed array
-                        $medLogByDate = [];
-                        foreach ($logData as $entry) {
-                            $date = $entry['date'];
-                            $statuses = array_column($entry['doses'], 'status');
-                            $medLogByDate[$date] = $statuses;
-                        }
+                            // Convert log to date-indexed array
+                            $medLogByDate = [];
+                            foreach ($logData as $entry) {
+                                $date = $entry['date'];
+                                $statuses = array_column($entry['doses'], 'status');
+                                $medLogByDate[$date] = $statuses;
+                            }
 
-                        // Print days of the month
-                        for ($day = 1; $day <= $totalDays; $day++) {
-                            $dayStr = str_pad((string) $day, 2, '0', STR_PAD_LEFT);
-                            $currentDate = "$year-$month-$dayStr";
+                            // Print days of the month
+                            for ($day = 1; $day <= $totalDays; $day++) {
+                                $dayStr = str_pad((string) $day, 2, '0', STR_PAD_LEFT);
+                                $currentDate = "$year-$month-$dayStr";
 
-                            // Determine dose indicators
-                            $indicators = '';
-                            if (isset($medLogByDate[$currentDate])) {
-                                $statuses = $medLogByDate[$currentDate];
-                                foreach ($statuses as $status) {
-                                    $color = $status == 'taken' ? 'limegreen' : 'red';
-                                    $indicators .= "<div style='width:10px;height:10px;background:$color;margin:1px;border-radius:50%;'></div>";
+                                // Determine dose indicators
+                                $indicators = '';
+                                if (isset($medLogByDate[$currentDate])) {
+                                    $statuses = $medLogByDate[$currentDate];
+                                    foreach ($statuses as $status) {
+                                        $color = $status == 'taken' ? 'limegreen' : 'red';
+                                        $indicators .= "<div style='width:10px;height:10px;background:$color;margin:1px;border-radius:50%;'></div>";
+                                    }
+                                }
+
+                                // Build cell
+                                $calendar .= "<td style=\"$bgColor; vertical-align: top; text-align: center; min-width: 40px;" . (date('d') == $day ? 'background-color: lightgreen;' : '') . "\">";
+                                $calendar .= "<a href=\"?date-app=calendar&day=$day\">$day</a>";
+                                $calendar .= "<div style='display:flex;justify-content:center;gap:2px;'>$indicators</div>";
+                                $calendar .= "</td>";
+
+                                if (($startingDay + $day) % 7 == 0) {
+                                    $calendar .= "</tr><tr>";
                                 }
                             }
+                            /*
+                                                        // Print days of the month
+                                                        for ($day = 1; $day <= $totalDays; $day++) {
+                                                            $calendar .= "<td style=\"" . ($day == date('d') ? 'background-color: lightblue;' : '') . "\"><a href=\"?app=calendar&day=$day\">$day</a></td>";
 
-                            // Build cell
-                            $calendar .= "<td style=\"$bgColor; vertical-align: top; text-align: center; min-width: 40px;\">";
-                            $calendar .= "<a href=\"?date-app=calendar&day=$day\">$day</a>";
-                            $calendar .= "<div style='display:flex;justify-content:center;gap:2px;'>$indicators</div>";
-                            $calendar .= "</td>";
-
-                            if (($startingDay + $day) % 7 == 0) {
-                                $calendar .= "</tr><tr>";
-                            }
-                        }
-                        /*
-                                                    // Print days of the month
-                                                    for ($day = 1; $day <= $totalDays; $day++) {
-                                                        $calendar .= "<td style=\"" . ($day == date('d') ? 'background-color: lightblue;' : '') . "\"><a href=\"?app=calendar&day=$day\">$day</a></td>";
-
-                                                        if (($startingDay + $day) % 7 == 0) {
-                                                            $calendar .= "</tr><tr>";
+                                                            if (($startingDay + $day) % 7 == 0) {
+                                                                $calendar .= "</tr><tr>";
+                                                            }
                                                         }
-                                                    }
-                        */
-                        // Complete the last row with empty cells
-                        while (($startingDay + $day) % 7 != 1) {
-                            $calendar .= "<td></td>";
-                            $day++;
+                            */
+                            // Complete the last row with empty cells
+                            while (($startingDay + $day) % 7 != 1) {
+                                $calendar .= "<td></td>";
+                                $day++;
+                            }
+
+                            $calendar .= "</tr></table>";
+                            return $calendar;
                         }
 
-                        $calendar .= "</tr></table>";
-                        return $calendar;
-                    }
+                        // Get current month and year
+                        $month = date('m');
+                        $year = date('Y');
 
-                    // Get current month and year
-                    $month = date('m');
-                    $year = date('Y');
-
-                    echo generateCalendar($month, $year); ?>
-                </div>
-                <!--
+                        echo generateCalendar($month, $year); ?>
+                    </div>
+                    <!--
     <form autocomplete="off" spellcheck="false" action="?app=git#!" method="POST">
       <div style="position: absolute; right: 0; float: right; text-align: center;">
         <input id="gitInitSubmit" class="btn" type="submit" value="Init/Run">
@@ -599,19 +673,19 @@ if ($path)
       </div>
     </form>
 -->
-            </div>
+                </div>
 
-            <div id="app_calendar-frameExtra"
-                style="position: relative; width: 100%; height: 100%; border: 1px #000 solid;">
+                <div id="app_calendar-frameExtra"
+                    style="position: relative; width: 100%; height: 100%; border: 1px #000 solid;">
 
+
+                </div>
 
             </div>
 
         </div>
-
-    </div>
-    <!-- /form -->
-    <!-- div style="position: relative; display: inline-block; width: 100%; height: 100%; padding-left: 10px;">
+        <!-- /form -->
+        <!-- div style="position: relative; display: inline-block; width: 100%; height: 100%; padding-left: 10px;">
 
       <form style="display: inline;" autocomplete="off" spellcheck="false" action="<?= APP_URL . /*basename(__FILE__) .*/ '?' . http_build_query(APP_QUERY /*+ ['app' => 'errors']*/) . (defined('APP_ENV') && APP_ENV == 'development' ? '#!' : '') /* $c_or_p . '=' . (empty($_GET[$c_or_p]) ? '' : $$c_or_p->name) . '&amp;app=composer' */ ?>" method="GET">
         <input type="hidden" name="app" value="errors" />
@@ -652,8 +726,9 @@ if ($path)
 
 
 
-    <!-- <pre id="ace-editor" class="errors"></pre> -->
+        <!-- <pre id="ace-editor" class="errors"></pre> -->
 
+    </div>
 </div>
 
 <?php $UI_APP['body'] = ob_get_contents();
@@ -707,7 +782,7 @@ ob_start();
     unset($path);
     ?>
 
-    <script src="<?= 'assets/vendor/tailwindcss-3.3.5.js' ?? $url ?>"></script>
+    <script src="<?= calendar_h(calendar_asset('assets/vendor/tailwindcss-3.3.5.js')) ?>"></script>
 
     <style type="text/tailwindcss">
         <?= $UI_APP['style']; ?>
@@ -738,16 +813,18 @@ ob_start();
     }
     unset($path); ?>
     <script
-        src="<?= defined('APP_IS_ONLINE') && APP_IS_ONLINE && check_http_status('https://code.jquery.com/jquery-3.7.1.min.js') ? 'https://code.jquery.com/jquery-3.7.1.min.js' : APP_BASE['public'] . 'assets/vendor/jquery/' . 'jquery-3.7.1.min.js' ?>"></script>
+        src="<?= calendar_h(defined('APP_IS_ONLINE') && APP_IS_ONLINE && check_http_status('https://code.jquery.com/jquery-3.7.1.min.js') ? 'https://code.jquery.com/jquery-3.7.1.min.js' : calendar_asset('assets/vendor/jquery/jquery-3.7.1.min.js')) ?>"></script>
     <!-- You need to include jQueryUI for the extended easing options. -->
     <!-- script src="//code.jquery.com/jquery-1.12.4.js"></script -->
 
     <script
-        src="<?= defined('APP_IS_ONLINE') && APP_IS_ONLINE && check_http_status('https://code.jquery.com/ui/1.12.1/jquery-ui.min.js') ? 'https://code.jquery.com/ui/1.12.1/jquery-ui.min.js' : APP_BASE['public'] . 'assets/vendor/jquery/' . 'jquery-ui-1.12.1.js' ?>"></script>
+        src="<?= calendar_h(defined('APP_IS_ONLINE') && APP_IS_ONLINE && check_http_status('https://code.jquery.com/ui/1.12.1/jquery-ui.min.js') ? 'https://code.jquery.com/ui/1.12.1/jquery-ui.min.js' : calendar_asset('assets/vendor/jquery/jquery-ui-1.12.1.js')) ?>"></script>
     <!-- Uncaught ReferenceError: jQuery is not defined -->
 
-    <script src="assets/vendor/ace/src/ace.js" type="text/javascript" charset="utf-8"></script>
-    <script src="assets/vendor/ace/src/ext-language_tools.js" type="text/javascript" charset="utf-8"></script>
+    <script src="<?= calendar_h(calendar_asset('assets/vendor/ace/src/ace.js')) ?>" type="text/javascript"
+        charset="utf-8"></script>
+    <script src="<?= calendar_h(calendar_asset('assets/vendor/ace/src/ext-language_tools.js')) ?>"
+        type="text/javascript" charset="utf-8"></script>
     <!-- <script src="https://cdnjs.cloudflare.com/ajax/libs/ace/1.4.12/ext-language_tools.js"></script>
 
   <script src="assets/vendor/ace/src/mode-php.js" type="text/javascript" charset="utf-8"></script> -->
@@ -758,48 +835,79 @@ ob_start();
     <!-- <script src="assets/vendor/jquery/jquery.min.js"></script> -->
     <script>
 
-        let isDragging = false;
-        let activeWindow = null;
+        let calendarDragState = null;
+        let calendarTopZIndex = 1000;
 
-        function makeDraggable(windowId) {
+        function makeDraggable(windowId, handleSelector) {
             const windowElement = document.getElementById(windowId);
-            const headerElement = windowElement.querySelector('.ui-widget-header');
-            let offsetX, offsetY;
 
-            headerElement.addEventListener('mousedown', function (event) {
-                if (!isDragging) {
-                    // Bring the clicked window to the front
-                    document.body.appendChild(windowElement);
-                    offsetX = event.clientX - windowElement.getBoundingClientRect().left;
-                    offsetY = event.clientY - windowElement.getBoundingClientRect().top;
-                    isDragging = true;
-                    activeWindow = windowElement;
+            if (!windowElement) {
+                return;
+            }
+
+            const handleElement = windowElement.querySelector(handleSelector || '.window-header, .ui-widget-header');
+
+            if (!handleElement) {
+                return;
+            }
+
+            if (windowElement.dataset.draggableBound === '1') {
+                return;
+            }
+
+            windowElement.dataset.draggableBound = '1';
+            windowElement.style.position = windowElement.style.position || 'absolute';
+            handleElement.style.cursor = 'move';
+
+            handleElement.addEventListener('mousedown', function (event) {
+                if (event.button !== 0) {
+                    return;
                 }
-            });
 
-            document.addEventListener('mousemove', function (event) {
-                if (isDragging && activeWindow === windowElement) {
-                    const left = event.clientX - offsetX;
-                    const top = event.clientY - offsetY;
-
-                    // Boundary restrictions
-                    const maxX = window.innerWidth - windowElement.clientWidth - 100;
-                    const maxY = window.innerHeight - windowElement.clientHeight;
-
-                    windowElement.style.left = `${Math.max(-200, Math.min(left, maxX))}px`;
-                    windowElement.style.top = `${Math.max(0, Math.min(top, maxY))}px`;
+                if (event.target.closest('a, button, input, select, textarea, label')) {
+                    return;
                 }
-            });
 
-            document.addEventListener('mouseup', function () {
-                if (activeWindow === windowElement) {
-                    isDragging = false;
-                    activeWindow = null;
-                }
+                const rect = windowElement.getBoundingClientRect();
+
+                windowElement.style.right = 'auto';
+                windowElement.style.bottom = 'auto';
+                windowElement.style.transform = 'none';
+                windowElement.style.left = rect.left + 'px';
+                windowElement.style.top = rect.top + 'px';
+                windowElement.style.zIndex = String(++calendarTopZIndex);
+
+                calendarDragState = {
+                    element: windowElement,
+                    offsetX: event.clientX - rect.left,
+                    offsetY: event.clientY - rect.top
+                };
+
+                event.preventDefault();
             });
         }
 
-        makeDraggable('app_calendar-container');
+        document.addEventListener('mousemove', function (event) {
+            if (!calendarDragState) {
+                return;
+            }
+
+            const element = calendarDragState.element;
+            const maxLeft = window.innerWidth - element.offsetWidth;
+            const maxTop = window.innerHeight - element.offsetHeight;
+            const left = event.clientX - calendarDragState.offsetX;
+            const top = event.clientY - calendarDragState.offsetY;
+
+            element.style.left = Math.max(0, Math.min(left, maxLeft)) + 'px';
+            element.style.top = Math.max(0, Math.min(top, maxTop)) + 'px';
+        });
+
+        document.addEventListener('mouseup', function () {
+            calendarDragState = null;
+        });
+
+        makeDraggable('app_productivity_calendar-container', '.window-header');
+        makeDraggable('app_medication_log-container', '.ui-widget-header');
 
         $(function () {
             $("#app_calendar-frameExtra").resizable({

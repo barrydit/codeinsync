@@ -537,8 +537,8 @@ final class ServerDaemon
                 );
 
                 // Determine context
-                $isCli = defined('APP_CLI') && APP_CLI;                       // daemon/foreground
-                $hasCtx = defined('APP_CONTEXT');
+                $isCli = \defined('APP_CLI') && APP_CLI;                       // daemon/foreground
+                $hasCtx = \defined('APP_CONTEXT');
                 $context = $hasCtx ? APP_CONTEXT : ($isCli ? 'cli' : 'web');    // fallback guess
                 $isSocket = $hasCtx && APP_CONTEXT === 'socket';
 

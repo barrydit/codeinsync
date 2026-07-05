@@ -693,7 +693,7 @@ if ($project && !$client && !$domain) {
 /* ---------- segment: current path with quick "up" ---------- */
 if ($visiblePath !== '') {
   $parent = PathUtils::parentPath($visiblePath);
-  $segments[] = sprintf(' <a href="#" title="Up one level" data-path="/%s"' . /*onclick="return App[\'devtools/directory\'].handleClick(\'%s\'); return false;"'*/ '>&#9664; up</a> ', htmlspecialchars($parent, ENT_QUOTES));
+  $segments[] = sprintf(' <a href="#" title="Up one level" style="font-weight: bold;" data-path="/%s"' . /*onclick="return App[\'devtools/directory\'].handleClick(\'%s\'); return false;"'*/ '>&uarr; ../</a> ', htmlspecialchars($parent, ENT_QUOTES));
 }
 
 /* ---------- render ---------- */

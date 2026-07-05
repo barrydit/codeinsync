@@ -37,11 +37,11 @@
 
     <!-- Favicons / Assets -->
     <link rel="icon" type="image/png"
-        href="<?= htmlspecialchars($asset('assets/images/favicon.png'), ENT_QUOTES, 'UTF-8') ?>" />
+        href="<?= htmlspecialchars(UrlContext::publicUrl('assets/images/favicon.png'), ENT_QUOTES, 'UTF-8') ?>" />
     <link rel="shortcut icon" type="image/x-icon"
-        href="<?= htmlspecialchars($asset('assets/images/favicon.ico'), ENT_QUOTES, 'UTF-8') ?>" />
+        href="<?= htmlspecialchars(UrlContext::publicUrl('assets/images/favicon.ico'), ENT_QUOTES, 'UTF-8') ?>" />
 
-    <link rel="stylesheet" href="<?= htmlspecialchars($asset('assets/css/styles.css'), ENT_QUOTES, 'UTF-8') ?>" />
+    <link rel="stylesheet" href="<?= htmlspecialchars(UrlContext::publicUrl('assets/css/styles.css'), ENT_QUOTES, 'UTF-8') ?>" />
 
     <style>
         body {
